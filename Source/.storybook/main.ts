@@ -9,7 +9,7 @@ const config: StorybookConfig = {
     options: {}
   },
   core: { builder: '@storybook/builder-vite' },
-  staticDirs: ['../public']
+  staticDirs: ['../public'],
   // Ensure Vite dev server does not open the browser when Storybook starts
   async viteFinal(existingConfig: ViteConfig) {
     const cfg: ViteConfig = { ...existingConfig };
