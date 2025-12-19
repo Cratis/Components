@@ -1,0 +1,213 @@
+/* Events View Container */
+.events-view-container {
+    position: absolute;
+    inset: 0;
+    padding: 5rem 2rem 2rem;
+    overflow-y: auto;
+    background: transparent;
+    z-index: 1;
+}
+
+/* Timeline customization */
+.events-view-timeline {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 0 3rem;
+}
+
+.events-view-timeline .p-timeline {
+    display: flex;
+    flex-direction: column;
+}
+
+.events-view-scroll-button {
+    position: relative;
+    margin-right: 0.5rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(15, 23, 42, 0.75);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 5;
+    pointer-events: auto;
+}
+
+.events-view-scroll-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+.events-view-scroll-button:active {
+    transform: translateY(0);
+}
+
+.events-view-scroll-button--top {
+    top: auto;
+}
+
+.events-view-scroll-button--bottom {
+    bottom: auto;
+}
+
+.events-view-scroll-button-wrapper {
+    position: sticky;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    pointer-events: none;
+    z-index: 5;
+    height: 0;
+    overflow: visible;
+}
+
+.events-view-scroll-button-wrapper--top {
+    top: 4.5rem;
+}
+
+.events-view-scroll-button-wrapper--bottom {
+    bottom: 2.5rem;
+}
+
+/* Event Card */
+.events-view-event-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    max-width: 380px;
+}
+
+.events-view-event-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(100, 150, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Event Header */
+.events-view-event-header {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.events-view-event-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 0.5rem 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+}
+
+.events-view-event-timestamp {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+}
+
+.events-view-event-header--right {
+    text-align: right;
+}
+
+.events-view-event-name--right,
+.events-view-event-timestamp--right {
+    text-align: right;
+}
+
+/* Event Properties */
+.events-view-event-properties {
+    margin-top: 1rem;
+}
+
+/* Custom Marker */
+.events-view-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, rgba(100, 150, 255, 0.2), rgba(100, 150, 255, 0.1));
+    border: 2px solid rgba(100, 150, 255, 0.5);
+    border-radius: 50%;
+    position: relative;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.events-view-marker:hover {
+    background: linear-gradient(135deg, rgba(100, 150, 255, 0.4), rgba(100, 150, 255, 0.2));
+    border-color: rgba(100, 150, 255, 0.8);
+    transform: scale(1.1);
+}
+
+.events-view-marker-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    background: rgba(100, 150, 255, 0.9);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+}
+
+/* PrimeReact Timeline connector styling */
+.events-view-timeline .p-timeline-event-connector {
+    background: linear-gradient(to bottom, rgba(100, 150, 255, 0.6), rgba(100, 150, 255, 0.4));
+}
+
+.events-view-timeline .p-timeline-event:last-child .p-timeline-event-connector {
+    visibility: hidden;
+}
+
+/* Remove default padding from PrimeReact timeline content areas */
+.events-view-timeline .p-timeline-event-opposite,
+.events-view-timeline .p-timeline-event-content {
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure cards hug the timeline on both sides */
+.events-view-timeline .p-timeline-event:nth-child(odd) .p-timeline-event-content {
+    justify-content: flex-start;
+}
+
+.events-view-timeline .p-timeline-event:nth-child(even) .p-timeline-event-content {
+    justify-content: flex-end;
+}
+
+.events-view-timeline .p-timeline-event:nth-child(odd) .p-timeline-event-opposite {
+    justify-content: flex-end;
+}
+
+.events-view-timeline .p-timeline-event:nth-child(even) .p-timeline-event-opposite {
+    justify-content: flex-start;
+}
+
+.events-view-event-card--left,
+.events-view-event-card--right {
+    max-width: 380px;
+}
+
+/* Right-align content in left-side cards */
+.events-view-timeline .p-timeline-event-opposite .events-view-event-card {
+    text-align: right;
+}
+
+.events-view-timeline .p-timeline-event-opposite .events-view-event-card table {
+    margin-left: auto;
+    direction: rtl;
+}
+
+.events-view-timeline .p-timeline-event-opposite .events-view-event-card table td {
+    direction: ltr;
+    text-align: right;
+}
+

@@ -1,0 +1,312 @@
+import * as PIXI from 'pixi.js';
+import type { CardSprite } from './constants';
+import { CARD_GAP } from './constants';
+import type { LayoutResult } from '../engine/types';
+import { destroySprite } from './sprites';
+
+export interface SyncParams<TItem> {
+  root: PIXI.Container | null;
+  container: HTMLDivElement | null;
+  sprites: Map<any, CardSprite>;
+  layout: LayoutResult;
+  visibleIds: Uint32Array;
+  items: TItem[];
+  cardWidth: number;
+  cardHeight: number;
+  panX: number;
+  panY: number;
+  panDeltaX?: number;
+  panDeltaY?: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  zoomLevel: number;
+  createCardSprite: (id: any, x: number, y: number) => CardSprite;
+  updateCardContent: (sprite: CardSprite, item: TItem) => void;
+  isViewTransition?: boolean;
+  prevLayout?: LayoutResult | null;
+}
+
+export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
+  const { root, container, sprites, layout, visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, prevLayout } = params as any;
+  if (!root || !container) return;
+
+  // Apply pan delta to animating sprites to keep them visually stable during camera jumps
+  if (isViewTransition && (panDeltaX || panDeltaY)) {
+    const dx = (panDeltaX || 0) / (zoomLevel || 1);
+    const dy = (panDeltaY || 0) / (zoomLevel || 1);
+
+    for (const sprite of sprites.values()) {
+      if (sprite.animationStartTime !== undefined) {
+        if (sprite.startX !== undefined) sprite.startX += dx;
+        if (sprite.startY !== undefined) sprite.startY += dy;
+        sprite.currentX += dx;
+        sprite.currentY += dy;
+        sprite.container.position.set(sprite.currentX, sprite.currentY);
+      }
+    }
+  }
+
+  const visibleSet = new Set<any>();
+
+  // Increase buffer (in world units) to reduce edge cases where rapid
+  // scrolling skips sprite creation. Keep buffer in world units and convert
+  // DOM pixel measurements into world coordinates below to avoid mixing
+  // coordinate spaces which can cause precision drift at browser zooms.
+  const baseBufferWorld = Math.max(cardWidth, cardHeight) * 4;
+  // Ensure buffer scales with viewport size (in world units) so that when
+  // zoomed out we still pre-create enough sprites ahead of the viewport.
+  const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
+  // The layout positions are in world units; when the root container is scaled
+  // (zoomed) the rendered pixel position = position * zoomLevel. The DOM
+  // scroll positions (`container.scrollLeft/Top`) are the authoritative pixel
+  // camera offsets; prefer them over the passed `panX/panY` to avoid stale
+  // values or race conditions between React state and direct DOM updates.
+  const effectivePanX = typeof container.scrollLeft === 'number' ? container.scrollLeft : (panX || 0);
+  const effectivePanY = typeof container.scrollTop === 'number' ? container.scrollTop : (panY || 0);
+
+  // Convert pixel-based DOM measurements into world units so we compare like
+  // with like. root.position is set using -pixels, so the mapping
+  // from DOM scroll (pixels) to world units is: world = pixels / zoomLevel.
+  const panWorldX = effectivePanX * invScale;
+  const panWorldY = effectivePanY * invScale;
+
+  // Use the container's measured client size for the viewport dimensions
+  // (in pixels). The passed `viewportWidth`/`viewportHeight` can be stale
+  // when the browser/device zoom changes; `clientWidth/clientHeight` are
+  // authoritative for the actual visible pixel area.
+  const viewportPxWidth = container.clientWidth || viewportWidth;
+  const viewportPxHeight = container.clientHeight || viewportHeight;
+
+  const viewportWorldWidth = viewportPxWidth * invScale;
+  const viewportWorldHeight = viewportPxHeight * invScale;
+
+  // Ensure bufferWorld is calculated from the actual measured viewport
+  // in world units (after converting client pixel dims using invScale).
+  // Make buffer adaptive to zoom: when zoomed out (invScale > 1) a small
+  // pixel scroll maps to a larger world delta, so increase the buffer.
+  // Use the larger of width/height to ensure we buffer enough in both directions.
+  const bufferWorld = Math.max(baseBufferWorld * invScale, Math.max(viewportWorldWidth, viewportWorldHeight) * 2.0, baseBufferWorld);
+
+  // Do not clamp viewport edges to 0 — allow negative top/left values so the
+  // visible window correctly follows the scroll even when the buffer is
+  // larger than the current scroll offset.
+  const viewportLeftWorld = panWorldX - bufferWorld;
+  const viewportRightWorld = panWorldX + viewportWorldWidth + bufferWorld;
+  const viewportTopWorld = panWorldY - bufferWorld;
+  const viewportBottomWorld = panWorldY + viewportWorldHeight + bufferWorld;
+
+  const inViewportIds: any[] = [];
+  // Small tolerance in world units to avoid floating-point edge cases when
+  // browser/device zoom or high scroll values produce tiny rounding errors.
+  // Scale epsilon with invScale so tolerance grows when zoomed out.
+  const worldEpsilon = Math.max(0.5, 0.5 * invScale);
+
+  // Iterate layout positions directly to avoid depending on `visibleIds`
+  // which may be calculated in a different coordinate space or with
+  // different assumptions about zoom. Looping the positions map is
+  // deterministic and uses world coordinates directly.
+  for (const [id, position] of layout.positions) {
+    if (!position) continue;
+    const worldX = position.x;
+    const worldY = position.y;
+    const worldCardW = cardWidth;
+    const worldCardH = cardHeight;
+
+    if (
+      worldX + worldCardW >= viewportLeftWorld - worldEpsilon &&
+      worldX <= viewportRightWorld + worldEpsilon &&
+      worldY + worldCardH >= viewportTopWorld - worldEpsilon &&
+      worldY <= viewportBottomWorld + worldEpsilon
+    ) {
+      inViewportIds.push(id);
+      visibleSet.add(id);
+    }
+  }
+
+  // Ensure last rows are present when the user scrolls near the bottom.
+  // Compute slot/row information and force-insert IDs from the last few
+  // rows to avoid missing tiles due to rounding/precision at zoom levels.
+  try {
+    const slotHeight = cardHeight + (CARD_GAP || 8);
+    const totalRows = Math.ceil((layout.totalHeight || 0) / slotHeight) || 0;
+    // Determine how many rows are visible in the viewport (world units),
+    // then prefetch a fraction of that adjusted by zoom (invScale).
+    const rowsVisible = Math.max(1, Math.ceil(viewportWorldHeight / slotHeight));
+    const prefetchMultiplier = 0.75; // fraction of viewport to prefetch
+    const prefetchRows = Math.max(2, Math.ceil(rowsVisible * prefetchMultiplier * Math.max(1, invScale)));
+    const lastRowThresholdY = Math.max(0, (totalRows - prefetchRows) * slotHeight);
+    for (const [id, position] of layout.positions) {
+      if (position.y >= lastRowThresholdY) {
+        if (!visibleSet.has(id)) {
+          inViewportIds.push(id);
+          visibleSet.add(id);
+        }
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // If we detect a very large discrepancy between created sprites and the
+  // computed in-viewport count, that's a signal our culling math may be
+  // unstable (especially at non-100% zoom). In that case, skip hiding this
+  // frame as a conservative safeguard to avoid mass disappearing tiles.
+  // However, disable this safeguard during view transitions to ensure old sprites are cleaned up.
+  const aggressiveCull = !isViewTransition && sprites.size > Math.max(120, Math.ceil(inViewportIds.length * 1.5));
+
+  for (const [id, sprite] of sprites) {
+    if (!visibleSet.has(id)) {
+      // If view transition is active, check if this sprite has a valid target in the new layout
+      // If so, keep it visible and animate it to the new position (even if off-screen)
+      if (isViewTransition && layout.positions.has(id)) {
+        const newPos = layout.positions.get(id);
+        if (newPos) {
+          sprite.targetX = newPos.x;
+          sprite.targetY = newPos.y;
+
+          // Trigger animation if not already animating
+          if (sprite.animationStartTime === undefined) {
+             sprite.startX = sprite.currentX;
+             sprite.startY = sprite.currentY;
+             sprite.animationStartTime = Date.now();
+             sprite.animationDelay = Math.random() * 300;
+          }
+
+          try { if (sprite.container) sprite.container.visible = true; } catch (e) {}
+          // Don't mark as hidden, so it won't be swept
+          if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
+          continue;
+        }
+      }
+
+      if (aggressiveCull) {
+        // Keep sprite visible this frame to avoid visual holes
+        try { if (sprite.container) sprite.container.visible = true; } catch (e) {}
+        continue;
+      }
+
+      try {
+        if (sprite.container) {
+          sprite.container.visible = false;
+        }
+        (sprite as any).__lastHiddenAt = Date.now();
+      } catch (e) {
+        // ignore
+      }
+    } else {
+      try {
+        if (sprite.container) {
+          sprite.container.visible = true;
+        }
+        if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
+      } catch (e) {}
+    }
+  }
+
+  // Sweep: actually destroy sprites that have been hidden longer than threshold
+  try {
+    const SWEEP_MS = 500; // keep hidden sprites for 500ms before destruction
+    const now = Date.now();
+    for (const [id, sprite] of sprites) {
+      const lastHidden = (sprite as any).__lastHiddenAt as number | undefined;
+      if (lastHidden && now - lastHidden > SWEEP_MS) {
+        try {
+          // remove from parent if present
+          if (sprite.container && sprite.container.parent) sprite.container.parent.removeChild(sprite.container);
+        } catch (e) {
+          // ignore
+        }
+        try {
+          destroySprite(sprite);
+        } catch (e) {
+          // ignore
+        }
+        sprites.delete(id);
+      }
+    }
+  } catch (e) {
+    // ignore sweep errors
+  }
+
+  // Limit the number of sprites created per frame to avoid choking the GPU/CPU
+  // when scrolling rapidly or zooming out significantly.
+  const MAX_SPRITES_PER_FRAME = 50;
+  let createdCount = 0;
+
+  for (const id of inViewportIds) {
+    const position = layout.positions.get(id);
+    if (!position) continue;
+
+    let sprite = sprites.get(id);
+    if (!sprite) {
+      if (createdCount >= MAX_SPRITES_PER_FRAME) continue;
+      createdCount++;
+
+      let startX = position.x;
+      let startY = position.y;
+      let shouldAnimate = false;
+
+      // If view transition, try to find old position to fly in from
+      if (isViewTransition && prevLayout && prevLayout.positions.has(id)) {
+        const oldPos = prevLayout.positions.get(id);
+        if (oldPos) {
+          startX = oldPos.x;
+          startY = oldPos.y;
+
+          // If we have a pan delta (camera jump), we need to adjust the start position
+          // so that the sprite appears at the same visual location relative to the NEW camera.
+          // StartWorld = OldWorld + PanDelta
+          if (panDeltaX || panDeltaY) {
+             const dx = (panDeltaX || 0) / (zoomLevel || 1);
+             const dy = (panDeltaY || 0) / (zoomLevel || 1);
+             startX += dx;
+             startY += dy;
+          }
+
+          shouldAnimate = true;
+        }
+      }
+
+      sprite = createCardSprite(id, startX, startY);
+      sprites.set(id, sprite);
+      root.addChild(sprite.container);
+      sprite.currentX = startX;
+      sprite.currentY = startY;
+      // Keep sprite.container positioned in world units; animation/update
+      // loop will apply root.scale/position to convert to pixels.
+      sprite.container.position.set(startX, startY);
+
+      if (shouldAnimate) {
+        sprite.targetX = position.x;
+        sprite.targetY = position.y;
+        sprite.startX = startX;
+        sprite.startY = startY;
+        sprite.animationStartTime = Date.now();
+        sprite.animationDelay = Math.random() * 300;
+      }
+    }
+
+    // Check if target changed to trigger animation
+    if (sprite.targetX !== position.x || sprite.targetY !== position.y) {
+      if (isViewTransition) {
+        sprite.startX = sprite.currentX;
+        sprite.startY = sprite.currentY;
+        sprite.targetX = position.x;
+        sprite.targetY = position.y;
+        sprite.animationStartTime = Date.now();
+        // Add random delay for "organic" fly effect
+        sprite.animationDelay = Math.random() * 300;
+      } else {
+        sprite.targetX = position.x;
+        sprite.targetY = position.y;
+        delete sprite.animationStartTime;
+        delete sprite.animationDelay;
+      }
+    }
+
+    const item = (items as any)[id];
+    if (item) {
+      updateCardContent(sprite, item);
+    }
+  }
+}

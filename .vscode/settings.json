@@ -1,0 +1,13 @@
+{
+  "cSpell.words": [
+    "primeicons",
+    "primereact"
+  ],
+  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "search.exclude": {
+    "**/.yarn": true,
+    "**/.pnp.*": true
+  },
+  "eslint.nodePath": ".yarn/sdks",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}
