@@ -14,7 +14,7 @@ type Story = StoryObj<typeof ConfirmationDialog>;
 const DialogWrapper = ({ title, message }: { title: string; message: string }) => {
     const [showDialog] = useConfirmationDialog(title, message, DialogButtons.YesNoCancel);
     return (
-        <button onClick={showDialog}>Show dialog</button>
+        <button onClick={() => showDialog()}>Show dialog</button>
     )
 }
 
@@ -25,7 +25,7 @@ export const Default: Story = {
         message: 'Do you really really want to proceed with this action?'
     },
     render: (args) => (
-        <div div className="storybook-wrapper" >
+        <div className="storybook-wrapper" >
             <DialogComponents confirmation={ConfirmationDialog}>
                 <DialogWrapper title={args.title} message={args.message} />
             </DialogComponents>
