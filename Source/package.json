@@ -8,9 +8,6 @@
         "type": "git",
         "url": "git+https://github.com/cratis/arc.git"
     },
-    "engines": {
-        "node": ">=23.0.0"
-    },
     "publishConfig": {
         "access": "public"
     },
@@ -66,11 +63,11 @@
     "devDependencies": {
         "@eslint/eslintrc": "3.3.1",
         "@eslint/js": "9.39.1",
-        "@storybook/addon-essentials": "^7.0.0",
-        "@storybook/addon-interactions": "^7.0.0",
-        "@storybook/builder-vite": "^7.0.0",
-        "@storybook/react": "^7.0.0",
-        "@storybook/react-vite": "^7.0.0",
+        "@storybook/addon-essentials": "8.6.15",
+        "@storybook/addon-interactions": "8.6.15",
+        "@storybook/builder-vite": "8.6.15",
+        "@storybook/react": "8.6.15",
+        "@storybook/react-vite": "8.6.15",
         "@tailwindcss/postcss": "4.1.17",
         "@tailwindcss/vite": "4.1.17",
         "@types/chai": "5.2.3",
@@ -84,7 +81,7 @@
         "@typescript-eslint/parser": "8.47.0",
         "@vitejs/plugin-react": "5.1.1",
         "@vitest/coverage-v8": "4.0.10",
-        "autoprefixer": "10.4.22",
+        "autoprefixer": "^10.4.14",
         "chai": "6.2.1",
         "chai-as-promised": "8.0.2",
         "edit-json-file": "1.8.1",
@@ -100,6 +97,7 @@
         "mocha": "11.7.5",
         "module-alias": "2.2.3",
         "npm-check-updates": "19.1.2",
+        "postcss": "^8.4.24",
         "prettier": "3.6.2",
         "rollup": "4.53.3",
         "rollup-plugin-commonjs": "10.1.0",
@@ -107,7 +105,8 @@
         "rollup-plugin-typescript2": "0.36.0",
         "sinon": "21.0.0",
         "sinon-chai": "4.0.1",
-        "tailwindcss": "4.1.17",
+        "storybook": "8.6.15",
+        "tailwindcss": "3.4.19",
         "ts-node": "10.9.2",
         "typescript": "5.9.3",
         "typescript-eslint": "8.47.0",
@@ -117,16 +116,9 @@
         "vitest": "4.0.10"
     },
     "dependencies": {
-        "@cratis/arc": "18.5.0",
-        "@cratis/arc.react": "18.5.0",
-        "allotment": "1.20.4",
-        "chart.js": "^4.5.1",
-        "echarts": "6.0.0",
-        "framer-motion": "12.23.26",
-        "leaflet": "^1.9.4",
-        "mobx": "6.15.0",
-        "mobx-react": "9.2.1",
-        "pixi.js": "^8.14.3",
+        "@cratis/arc": "^18.5.0",
+        "@cratis/arc.react": "^18.5.0",
+        "@cratis/arc.vite": "^18.5.0",
         "primeicons": "7.0.0",
         "primereact": "10.9.7",
         "quill": "^2.0.3",
