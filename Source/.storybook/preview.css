@@ -3,7 +3,12 @@
 @tailwind utilities;
 
 .storybook-wrapper {
-  @apply flex items-center justify-center min-h-screen p-4 bg-gray-100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background-color: #f3f4f6; /* approx. Tailwind bg-gray-100 */
 }
 
 /* small helper to ensure Dialog widths appear nicely in Storybook */
