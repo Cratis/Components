@@ -1,6 +1,21 @@
 import React from 'react';
-import CommandForm from './CommandForm';
+import { Meta, StoryObj } from '@storybook/react';
+import { CommandForm } from './CommandForm';
 
-export default { title: 'CommandForm/CommandForm', component: CommandForm };
+const meta: Meta<typeof CommandForm> = {
+  title: 'CommandForm/CommandForm',
+  component: CommandForm,
+};
 
-export const Default = () => <CommandForm />;
+export default meta;
+type Story = StoryObj<typeof CommandForm>;
+export const Default: Story = {
+    args: {
+
+    },
+    render: (args) => (
+        <div className="storybook-wrapper">
+            <CommandForm {...args} />
+        </div>
+    )
+}
