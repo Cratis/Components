@@ -18,7 +18,6 @@ const DialogWrapper = ({ title, message }: { title: string; message: string }) =
     )
 }
 
-
 export const Default: Story = {
     args: {
         title: 'Are you sure you want to proceed?', 

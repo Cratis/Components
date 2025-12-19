@@ -10,7 +10,6 @@ const meta: Meta<typeof PivotViewer> = {
 export default meta;
 type Story = StoryObj<typeof PivotViewer>;
 
-
 export const Default: Story = {
     args: {
     },
