@@ -1,5 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 import * as PIXI from 'pixi.js';
 import type { CardColors } from './constants';
 import type { GroupingResult, LayoutResult } from '../engine/types';

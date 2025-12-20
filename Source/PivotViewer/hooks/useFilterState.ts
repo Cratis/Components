@@ -1,5 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 import { useState, useEffect, useCallback } from 'react';
 import { buildFilterState, buildRangeFilterState } from '../utils/utils';
 import { FilterState, RangeFilterState, PivotFilter } from '../types';

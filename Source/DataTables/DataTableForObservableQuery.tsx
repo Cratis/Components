@@ -1,5 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 import { DataTable, DataTableFilterMeta, DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
 import { Constructor } from '@cratis/fundamentals';
 import { IObservableQueryFor, Paging } from '@cratis/arc/queries';

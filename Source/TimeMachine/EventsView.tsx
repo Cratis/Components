@@ -1,5 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Timeline } from 'primereact/timeline';
 import type { Event } from './types';

@@ -1,5 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 import { DEFAULT_COLORS, type CardColors } from './constants';
 
 export function createCssColorResolver() {
