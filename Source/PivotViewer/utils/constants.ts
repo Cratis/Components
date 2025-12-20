@@ -1,6 +1,5 @@
-/**
- * Constants and configuration for PivotViewerOptimized
- */
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // Zoom constants
 export const ZOOM_MIN = 0.1;

@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import * as PIXI from 'pixi.js';
 import { CARD_GAP, CARD_PADDING, CARD_RADIUS } from './constants';
 import type { CardSprite, CardColors } from './constants';
@@ -40,7 +42,7 @@ export function createCardSprite<TItem extends object>(
     sprite.lastValues = undefined;
 
     // Update event context
-    (sprite.container as any)._eventContext = { items, onCardClick, id };
+    (sprite.container as unknown)._eventContext = { items, onCardClick, id };
 
     return sprite;
   }
@@ -51,7 +53,7 @@ export function createCardSprite<TItem extends object>(
   container.position.set(x, y);
 
   // Store context for event handlers
-  (container as any)._eventContext = { items, onCardClick, id };
+  (container as unknown)._eventContext = { items, onCardClick, id };
 
   const graphics = new PIXI.Graphics();
 
@@ -78,7 +80,7 @@ export function createCardSprite<TItem extends object>(
       lineHeight: 18,
       wordWrap: false,
     },
-  } as any);
+  } as unknown);
   titleText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING);
   container.addChild(titleText);
 
@@ -90,7 +92,7 @@ export function createCardSprite<TItem extends object>(
       fontWeight: '400',
       lineHeight: 18,
     },
-  } as any);
+  } as unknown);
   labelsText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING + 40);
   container.addChild(labelsText);
 
@@ -103,14 +105,15 @@ export function createCardSprite<TItem extends object>(
       lineHeight: 18,
       wordWrap: false,
     },
-  } as any);
+  } as unknown);
   valuesText.position.set(offsetX + CARD_PADDING + 65, offsetY + CARD_PADDING + 40);
   container.addChild(valuesText);
 
   container.on('click', (e: PIXI.FederatedPointerEvent) => {
     e.stopPropagation();
-    const ctx = (container as any)._eventContext;
-    const item = (ctx.items as any)[ctx.id];
+    const ctx = (container as unknown)._eventContext as { items: unknown; onCardClick: (item: unknown, e: MouseEvent, id: number | string) => void; id: number | string };
+    const itemsMap = ctx.items as unknown as Record<string, unknown>;
+    const item = itemsMap[String(ctx.id)];
     if (item) {
       ctx.onCardClick(item, e.nativeEvent as MouseEvent, ctx.id);
     }
@@ -155,7 +158,7 @@ export function clearSpritePool() {
       sprite.valuesText?.destroy();
       sprite.container?.destroy();
     } catch (e) {
-      // ignore
+      void e;
     }
   }
   spritePool.length = 0;
@@ -171,7 +174,7 @@ export function updateCardContent<TItem extends object>(
 ) {
   if (!item) return;
 
-  const event = item as any;
+  const event = item as unknown;
   const eventType = event.type || event.name || event.title || 'Event';
 
   const timeStr = event.occurred ? new Date(event.occurred).toLocaleString('en-US', {
@@ -212,7 +215,7 @@ export function updateCardContent<TItem extends object>(
   }
 
   if (colorsChanged) {
-    sprite.labelsText.style.fill = colors.textSecondary as any;
+    sprite.labelsText.style.fill = colors.textSecondary as unknown;
   }
 
   if (sprite.lastValues !== valuesText) {
@@ -221,7 +224,7 @@ export function updateCardContent<TItem extends object>(
   }
 
   if (colorsChanged) {
-    sprite.valuesText.style.fill = colors.text as any;
+    sprite.valuesText.style.fill = colors.text as unknown;
   }
 
   sprite.titleText.visible = true;

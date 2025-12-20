@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { useEffect, useState } from 'react';
 
 /**
@@ -9,7 +11,7 @@ import { useEffect, useState } from 'react';
  */
 export function useContainerDimensions(
   containerRef: React.RefObject<HTMLDivElement>,
-  dependency?: any
+  dependency?: unknown
 ) {
   const [dimensions, setDimensions] = useState({ width: 1200, height: 600 });
 

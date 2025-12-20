@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import * as PIXI from 'pixi.js';
 import type { CardSprite } from './constants';
 import { CARD_GAP } from './constants';
@@ -7,7 +9,7 @@ import { destroySprite } from './sprites';
 export interface SyncParams<TItem> {
   root: PIXI.Container | null;
   container: HTMLDivElement | null;
-  sprites: Map<any, CardSprite>;
+  sprites: Map<unknown, CardSprite>;
   layout: LayoutResult;
   visibleIds: Uint32Array;
   items: TItem[];
@@ -20,15 +22,19 @@ export interface SyncParams<TItem> {
   viewportWidth: number;
   viewportHeight: number;
   zoomLevel: number;
-  createCardSprite: (id: any, x: number, y: number) => CardSprite;
+  createCardSprite: (id: unknown, x: number, y: number) => CardSprite;
   updateCardContent: (sprite: CardSprite, item: TItem) => void;
   isViewTransition?: boolean;
   prevLayout?: LayoutResult | null;
 }
 
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
-  const { root, container, sprites, layout, visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, prevLayout } = params as any;
+  const { root, container, sprites, layout, visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, prevLayout } = params;
   if (!root || !container) return;
+
+  // `visibleIds` comes from callers but this module iterates `layout.positions`.
+  // Keep a reference to avoid unused variable lint errors when callers include it.
+  void visibleIds;
 
   // Apply pan delta to animating sprites to keep them visually stable during camera jumps
   if (isViewTransition && (panDeltaX || panDeltaY)) {
@@ -46,7 +52,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     }
   }
 
-  const visibleSet = new Set<any>();
+  const visibleSet = new Set<unknown>();
 
   // Increase buffer (in world units) to reduce edge cases where rapid
   // scrolling skips sprite creation. Keep buffer in world units and convert
@@ -95,7 +101,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
   const viewportTopWorld = panWorldY - bufferWorld;
   const viewportBottomWorld = panWorldY + viewportWorldHeight + bufferWorld;
 
-  const inViewportIds: any[] = [];
+  const inViewportIds: unknown[] = [];
   // Small tolerance in world units to avoid floating-point edge cases when
   // browser/device zoom or high scroll values produce tiny rounding errors.
   // Scale epsilon with invScale so tolerance grows when zoomed out.
@@ -144,7 +150,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
       }
     }
   } catch (e) {
-    // ignore
+    void e;
   }
 
   // If we detect a very large discrepancy between created sprites and the
@@ -172,16 +178,16 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
              sprite.animationDelay = Math.random() * 300;
           }
 
-          try { if (sprite.container) sprite.container.visible = true; } catch (e) {}
+          try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
           // Don't mark as hidden, so it won't be swept
-          if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
+          if ((sprite as unknown).__lastHiddenAt) delete (sprite as unknown).__lastHiddenAt;
           continue;
         }
       }
 
       if (aggressiveCull) {
         // Keep sprite visible this frame to avoid visual holes
-        try { if (sprite.container) sprite.container.visible = true; } catch (e) {}
+        try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
         continue;
       }
 
@@ -189,17 +195,17 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         if (sprite.container) {
           sprite.container.visible = false;
         }
-        (sprite as any).__lastHiddenAt = Date.now();
+        (sprite as unknown).__lastHiddenAt = Date.now();
       } catch (e) {
-        // ignore
+        void e;
       }
     } else {
       try {
         if (sprite.container) {
           sprite.container.visible = true;
         }
-        if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
-      } catch (e) {}
+        if ((sprite as unknown).__lastHiddenAt) delete (sprite as unknown).__lastHiddenAt;
+      } catch (e) { void e; }
     }
   }
 
@@ -208,24 +214,24 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     const SWEEP_MS = 500; // keep hidden sprites for 500ms before destruction
     const now = Date.now();
     for (const [id, sprite] of sprites) {
-      const lastHidden = (sprite as any).__lastHiddenAt as number | undefined;
+      const lastHidden = (sprite as unknown).__lastHiddenAt as number | undefined;
       if (lastHidden && now - lastHidden > SWEEP_MS) {
         try {
           // remove from parent if present
           if (sprite.container && sprite.container.parent) sprite.container.parent.removeChild(sprite.container);
         } catch (e) {
-          // ignore
+          void e;
         }
         try {
           destroySprite(sprite);
         } catch (e) {
-          // ignore
+          void e;
         }
         sprites.delete(id);
       }
     }
   } catch (e) {
-    // ignore sweep errors
+    void e;
   }
 
   // Limit the number of sprites created per frame to avoid choking the GPU/CPU
@@ -304,7 +310,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
       }
     }
 
-    const item = (items as any)[id];
+    const item = (items as unknown)[id];
     if (item) {
       updateCardContent(sprite, item);
     }

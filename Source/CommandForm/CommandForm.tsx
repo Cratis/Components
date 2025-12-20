@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { CommandFormFields, ColumnInfo } from './CommandFormFields';
 import { Constructor } from '@cratis/fundamentals';
 import { useCommand, SetCommandValues } from '@cratis/arc.react/commands';
@@ -10,9 +12,9 @@ export type BeforeExecuteCallback<TCommand> = (values: TCommand) => TCommand;
 export interface CommandFormProps<TCommand> {
     command: Constructor<TCommand>;
     initialValues?: Partial<TCommand>;
-    currentValues?: any;
-    onFieldValidate?: (command: TCommand, fieldName: string, oldValue: any, newValue: any) => string | undefined;
-    onFieldChange?: (command: TCommand, fieldName: string, oldValue: any, newValue: any) => void;
+    currentValues?: unknown;
+    onFieldValidate?: (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => string | undefined;
+    onFieldChange?: (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => void;
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     children?: React.ReactNode;
 }
@@ -21,19 +23,19 @@ interface CommandFormContextValue<TCommand> {
     command: Constructor<TCommand>;
     commandInstance: TCommand;
     setCommandValues: SetCommandValues<TCommand>;
-    commandResult?: ICommandResult<any>;
-    setCommandResult: (result: ICommandResult<any>) => void;
+    commandResult?: ICommandResult<unknown>;
+    setCommandResult: (result: ICommandResult<unknown>) => void;
     getFieldError: (propertyName: string) => string | undefined;
     isValid: boolean;
     setFieldValidity: (fieldName: string, isValid: boolean) => void;
-    onFieldValidate?: (command: TCommand, fieldName: string, oldValue: any, newValue: any) => string | undefined;
-    onFieldChange?: (command: TCommand, fieldName: string, oldValue: any, newValue: any) => void;
+    onFieldValidate?: (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => string | undefined;
+    onFieldChange?: (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => void;
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     customFieldErrors: Record<string, string>;
     setCustomFieldError: (fieldName: string, error: string | undefined) => void;
 }
 
-const CommandFormContext = createContext<CommandFormContextValue<any> | undefined>(undefined);
+const CommandFormContext = createContext<CommandFormContextValue<unknown> | undefined>(undefined);
 
 export const useCommandFormContext = <TCommand,>() => {
     const context = useContext(CommandFormContext);
@@ -58,7 +60,7 @@ export const useSetCommandResult = () => {
 const CommandFormFieldsWrapper = (props: { children: React.ReactNode }) => {
     React.Children.forEach(props.children, child => {
         if (React.isValidElement(child)) {
-            const component = child.type as any;
+            const component = child.type as unknown;
             if (component.displayName !== 'CommandFormField') {
                 throw new Error(`Only CommandFormField components are allowed as children of CommandForm.Fields. Got: ${component.displayName || component.name || 'Unknown'}`);
             }
@@ -75,13 +77,13 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
         return { fieldsOrColumns: [], otherChildren: [], initialValuesFromFields: {} };
     }
     let fields: React.ReactElement[] = [];
-    let columns: ColumnInfo[] = [];
+    const columns: ColumnInfo[] = [];
     let hasColumns = false;
-    let otherChildren: React.ReactNode[] = [];
+    const otherChildren: React.ReactNode[] = [];
     let initialValuesFromFields: Partial<TCommand> = {};
 
     const extractInitialValue = (field: React.ReactElement) => {
-        const fieldProps = field.props as any;
+        const fieldProps = field.props as unknown;
         if (fieldProps.currentValue !== undefined && fieldProps.value) {
             const propertyAccessor = fieldProps.value;
             const propertyName = getPropertyNameFromAccessor(propertyAccessor);
@@ -97,7 +99,7 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
             return;
         }
 
-        const component = child.type as any;
+        const component = child.type as unknown;
 
         // Check if child is a CommandFormColumn
         if (component.displayName === 'CommandFormColumn') {
@@ -105,7 +107,7 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
             const childProps = child.props as { children?: React.ReactNode };
             const columnFields = React.Children.toArray(childProps.children).filter(child => {
                 if (React.isValidElement(child)) {
-                    const comp = child.type as any;
+                    const comp = child.type as unknown;
                     if (comp.displayName === 'CommandFormField') {
                         extractInitialValue(child as React.ReactElement);
                         return true;
@@ -125,7 +127,7 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
             const childProps = child.props as { children: React.ReactNode };
             const relevantChildren = React.Children.toArray(childProps.children).filter(child => {
                 if (React.isValidElement(child)) {
-                    const component = child.type as any;
+                    const component = child.type as unknown;
                     if (component.displayName === 'CommandFormField') {
                         extractInitialValue(child as React.ReactElement);
                         return true;
@@ -145,7 +147,7 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
 };
 
 // Helper function to extract property name from accessor function
-function getPropertyNameFromAccessor<T>(accessor: (obj: T) => any): string {
+function getPropertyNameFromAccessor<T>(accessor: (obj: T) => unknown): string {
     const fnStr = accessor.toString();
     const match = fnStr.match(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/);
     return match ? match[1] : '';
@@ -159,12 +161,12 @@ const CommandFormComponent = <TCommand,>(props: CommandFormProps<TCommand>) => {
         if (!props.currentValues) return {};
 
         const tempCommand = new props.command();
-        const commandProperties = (tempCommand as any).properties || [];
+        const commandProperties = (tempCommand as unknown).properties || [];
         const extracted: Partial<TCommand> = {};
 
         commandProperties.forEach((propertyName: string) => {
             if (props.currentValues[propertyName] !== undefined) {
-                (extracted as any)[propertyName] = props.currentValues[propertyName];
+                (extracted as unknown)[propertyName] = props.currentValues[propertyName];
             }
         });
 
@@ -178,8 +180,8 @@ const CommandFormComponent = <TCommand,>(props: CommandFormProps<TCommand>) => {
         ...props.initialValues
     }), [valuesFromCurrentValues, initialValuesFromFields, props.initialValues]);
 
-    const [commandInstance, setCommandValues] = useCommand<any, TCommand>(props.command as any, mergedInitialValues as any);
-    const [commandResult, setCommandResult] = useState<ICommandResult<any> | undefined>(undefined);
+    const [commandInstance, setCommandValues] = useCommand<unknown, TCommand>(props.command as unknown, mergedInitialValues as unknown);
+    const [commandResult, setCommandResult] = useState<ICommandResult<unknown> | undefined>(undefined);
     const [fieldValidities, setFieldValidities] = useState<Record<string, boolean>>({});
     const [customFieldErrors, setCustomFieldErrors] = useState<Record<string, string>>({});
 
@@ -245,10 +247,11 @@ const CommandFormComponent = <TCommand,>(props: CommandFormProps<TCommand>) => {
             )}
             {otherChildren}
         </CommandFormContext.Provider>
-    )
-}
+    );
+};
 
-const CommandFormColumnComponent = (props: { children: React.ReactNode }) => {
+const CommandFormColumnComponent = (_props: { children: React.ReactNode }) => {
+    void _props;
     return <></>;
 };
 

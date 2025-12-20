@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { AnimatePresence, motion } from 'framer-motion';
 
 type WithRecord<TItem> = TItem extends Record<string, unknown> ? TItem : never;

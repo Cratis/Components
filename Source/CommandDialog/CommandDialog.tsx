@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { ICommandResult } from '@cratis/arc/commands';
 import { Constructor } from '@cratis/fundamentals';
 import { Dialog } from 'primereact/dialog';
@@ -6,13 +8,13 @@ import React, { createContext, useContext } from 'react';
 import { CommandForm, useCommandFormContext, BeforeExecuteCallback } from '../CommandForm/CommandForm';
 import { useCommandInstance } from '../CommandForm/CommandForm';
 
-export type FieldValidator<TCommand> = (command: TCommand, fieldName: string, oldValue: any, newValue: any) => string | undefined;
-export type FieldChangeCallback<TCommand> = (command: TCommand, fieldName: string, oldValue: any, newValue: any) => void;
+export type FieldValidator<TCommand> = (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => string | undefined;
+export type FieldChangeCallback<TCommand> = (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => void;
 
 export interface CommandDialogProps<TCommand, TResponse = object> {
     command: Constructor<TCommand>;
     initialValues?: Partial<TCommand>;
-    currentValues?: any;
+    currentValues?: unknown;
     visible: boolean;
     header: string;
     confirmLabel?: string;
@@ -29,8 +31,8 @@ export interface CommandDialogProps<TCommand, TResponse = object> {
     width?: string;
 }
 
-interface CommandDialogContextValue<TCommand = any> {
-    onSuccess: (result: ICommandResult<any>) => void | Promise<void>;
+interface CommandDialogContextValue<TCommand = unknown> {
+    onSuccess: (result: ICommandResult<unknown>) => void | Promise<void>;
     onCancel: () => void;
     confirmLabel: string;
     cancelLabel: string;
@@ -41,9 +43,9 @@ interface CommandDialogContextValue<TCommand = any> {
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
 }
 
-const CommandDialogContext = createContext<CommandDialogContextValue<any> | undefined>(undefined);
+const CommandDialogContext = createContext<CommandDialogContextValue<unknown> | undefined>(undefined);
 
-export const useCommandDialogContext = <TCommand = any,>() => {
+export const useCommandDialogContext = <TCommand = unknown,>() => {
     const context = useContext(CommandDialogContext);
     if (!context) {
         throw new Error('useCommandDialogContext must be used within a CommandDialog');
@@ -52,7 +54,7 @@ export const useCommandDialogContext = <TCommand = any,>() => {
 };
 
 const CommandDialogFormContent = () => {
-    const command = useCommandInstance<any>();
+    const command = useCommandInstance<unknown>();
     const { setCommandResult, setCommandValues, isValid, onBeforeExecute } = useCommandFormContext();
     const { onSuccess: onConfirm, onCancel, confirmLabel, cancelLabel, confirmIcon, cancelIcon } = useCommandDialogContext();
 
@@ -86,7 +88,7 @@ const CommandDialogFormContent = () => {
 const CommandDialogFieldsWrapper = (props: { children: React.ReactNode }) => {
     React.Children.forEach(props.children, child => {
         if (React.isValidElement(child)) {
-            const component = child.type as any;
+            const component = child.type as unknown;
             if (component.displayName !== 'CommandFormField') {
                 throw new Error(`Only CommandFormField components are allowed as children of CommandDialog.Fields. Got: ${component.displayName || component.name || 'Unknown'}`);
             }

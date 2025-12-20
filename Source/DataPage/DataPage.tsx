@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
@@ -81,11 +83,11 @@ export interface IDetailsComponentProps<TDataType> {
 }
 
 interface IDataPageContext extends DataPageProps<any, any, any> {
-    selectedItem: any;
-    onSelectionChanged: (e: DataTableSelectionSingleChangeEvent<any>) => void;
+    selectedItem: unknown;
+    onSelectionChanged: (e: DataTableSelectionSingleChangeEvent<unknown>) => void;
 }
 
-const DataPageContext = React.createContext<IDataPageContext>(null as any);
+const DataPageContext = React.createContext<IDataPageContext>(null as unknown);
 
 /**
  * Props for the DataPage component
@@ -104,7 +106,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     /**
      * Component to render when the selection changes
      */
-    detailsComponent?: React.FC<IDetailsComponentProps<any>>;
+    detailsComponent?: React.FC<IDetailsComponentProps<unknown>>;
 
     /**
      * The type of query to use
@@ -129,12 +131,12 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     /**
      * The current selection.
      */
-    selection?: any[number] | undefined | null;
+    selection?: unknown[number] | undefined | null;
 
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<any>): void;
+    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<unknown>): void;
 
     /**
      * Fields to use for global filtering
@@ -155,7 +157,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
 const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
 
-    const selectionChanged = (e: DataTableSelectionSingleChangeEvent<any>) => {
+    const selectionChanged = (e: DataTableSelectionSingleChangeEvent<unknown>) => {
         setSelectedItem(e.value);
         if (props.onSelectionChange) {
             props.onSelectionChange(e);

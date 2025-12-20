@@ -1,7 +1,9 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import React from 'react';
 
 interface PropertiesProps {
-    data: Record<string, any>;
+    data: Record<string, unknown>;
     /** CSS class name for the container */
     className?: string;
     /** Text alignment for the table */
@@ -34,7 +36,7 @@ export const Properties: React.FC<PropertiesProps> = ({ data, className, align =
         textAlign: align,
     };
 
-    const renderValue = (value: any): React.ReactNode => {
+    const renderValue = (value: unknown): React.ReactNode => {
         if (value === null || value === undefined) {
             return <span style={{ color: 'rgba(255,255,255,0.4)' }}>null</span>;
         }

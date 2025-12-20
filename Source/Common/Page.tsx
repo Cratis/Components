@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { HTMLAttributes, ReactNode } from 'react';
 
 export interface PageProps extends HTMLAttributes<HTMLDivElement> {

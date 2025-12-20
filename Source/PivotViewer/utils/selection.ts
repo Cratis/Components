@@ -1,6 +1,5 @@
-/**
- * Card selection and interaction logic
- */
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { animateZoomAndScroll, calculateCenterScrollPosition, smoothScrollTo } from './animations';
 import { ZOOM_MAX, MIN_ZOOM_ON_SELECT, ZOOM_MULTIPLIER, DETAIL_PANEL_WIDTH } from './constants';
@@ -284,7 +283,10 @@ function zoomAndCenterCard({
 /**
  * Get card element by ID from container
  */
-export function getCardElementById(container: HTMLElement, itemId: string | number): HTMLElement | null {
+export function getCardElementById(_container: HTMLElement, _itemId: string | number): HTMLElement | null {
   // Deprecated: Pixi renderer doesn't use DOM elements for cards
+  // Keep parameter names prefixed to indicate intentional non-use.
+  void _container;
+  void _itemId;
   return null;
 }

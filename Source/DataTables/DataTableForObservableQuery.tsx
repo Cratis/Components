@@ -1,10 +1,12 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { DataTable, DataTableFilterMeta, DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
 import { Constructor } from '@cratis/fundamentals';
 import { IObservableQueryFor, Paging } from '@cratis/arc/queries';
 import { useObservableQueryWithPaging } from '@cratis/arc.react/queries';
 import { ReactNode, useState } from 'react';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 
 /**
  * Props for the DataTableForQuery component
@@ -38,12 +40,12 @@ export interface DataTableForObservableQueryProps<TQuery extends IObservableQuer
     /**
      * The current selection.
      */
-    selection?: any[number] | undefined | null;
+    selection?: unknown[number] | undefined | null;
 
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<any>): void;
+    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<unknown>): void;
 
     /**
      * Fields to use for global filtering

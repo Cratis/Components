@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { Dialog } from 'primereact/dialog';
 import { DialogButtons, ConfirmationDialogRequest } from '@cratis/arc.react/dialogs';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';

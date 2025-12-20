@@ -1,5 +1,7 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import React, { useState } from 'react';
-import type { Event, Version } from './types';
+import type { Version } from './types';
 import { Properties } from './Properties';
 
 interface ReadModelViewProps {

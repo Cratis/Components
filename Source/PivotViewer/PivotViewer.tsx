@@ -9,7 +9,7 @@ import { computeLayout } from './engine/layout';
 import { useFilterState } from './hooks/useFilterState';
 import { useDimensionState } from './hooks/useDimensionState';
 import { useZoomState } from './hooks/useZoomState';
-import { handleCardSelection, getCardElementById } from './utils/selection';
+import { handleCardSelection } from './utils/selection';
 import { animateZoomAndScroll, smoothScrollTo } from './utils/animations';
 import {
     BASE_CARD_WIDTH,
@@ -56,7 +56,7 @@ export function PivotViewer<TItem extends object>({
     const [grouping, setGrouping] = useState<GroupingResult>({ groups: [] });
     const [hoveredGroupIndex, setHoveredGroupIndex] = useState<number | null>(null);
     const [preSelectionState, setPreSelectionState] = useState<{ zoom: number; scrollLeft: number; scrollTop: number } | null>(null);
-    const [animationMode, setAnimationMode] = useState<'layout' | 'filter'>('layout');
+    const [, setAnimationMode] = useState<'layout' | 'filter'>('layout');
     const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
 
     // Filter hooks

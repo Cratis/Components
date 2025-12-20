@@ -1,5 +1,7 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { useMemo } from 'react';
-import type { PivotDimension, PivotFilter, PivotGroup, PivotPrimitive } from '../types';
+import type { PivotDimension, PivotFilter, PivotGroup } from '../types';
 import { applyFilters, groupData, toKey } from '../utils/utils';
 import type { FilterState, RangeFilterState } from '../utils/utils';
 

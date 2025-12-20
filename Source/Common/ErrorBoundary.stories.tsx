@@ -1,7 +1,9 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import React from 'react';
 import * as Comp from './ErrorBoundary.tsx';
 // @ts-ignore
-const Component: any = (Comp as any).default || Object.values(Comp)[0];
+const Component: unknown = (Comp as unknown).default || Object.values(Comp)[0];
 
 export default { title: 'Common/ErrorBoundary', component: Component };
 

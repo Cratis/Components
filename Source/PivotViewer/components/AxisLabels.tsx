@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import type { PivotGroup } from '../types';
 import { GROUP_SPACING } from '../constants';
 
@@ -7,7 +9,6 @@ export interface AxisLabelsProps<TItem extends object> {
   dimensionFilter: string | null;
   hoveredGroup: string | null;
   zoomLevel: number;
-  scrollLeft: number;
   onHover: (key: string | null) => void;
   onClick: (key: string) => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -19,7 +20,6 @@ export function AxisLabels<TItem extends object>({
   dimensionFilter,
   hoveredGroup,
   zoomLevel,
-  scrollLeft,
   onHover,
   onClick,
   containerRef,

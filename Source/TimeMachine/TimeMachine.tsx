@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { Version } from './types';
 import { ReadModelView } from './ReadModelView';
@@ -84,7 +86,9 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
   }, [versions.length, selectedIndex, onVersionChange, scrollSensitivity, isHoveringCard, viewMode]);
 
   // Calculate the display index - either hovered or selected
-  const displayIndex = hoveredIndex ?? selectedIndex;
+  // (not used in this component; ReadModelView computes its own display index)
+  void hoveredIndex;
+  void selectedIndex;
 
   // Get all events from all versions
   const allEvents = versions.flatMap(version => version.events || []);

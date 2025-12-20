@@ -1,4 +1,5 @@
-// Constants for PivotViewerOptimized
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 export const BASE_CARD_WIDTH = 200;
 export const BASE_CARD_HEIGHT = 176;
 export const CARDS_PER_COLUMN = 5;

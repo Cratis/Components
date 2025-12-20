@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { PropertyAccessor } from '@cratis/fundamentals';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import React, { useState, useEffect } from 'react';
@@ -12,9 +14,9 @@ export interface DropdownFieldProps<TCommand, TOption> {
     optionIdField: keyof TOption;
     optionLabelField: keyof TOption;
     placeholder?: string;
-    onChange?: (value: any) => void;
-    currentValue?: any;
-    onValueChange?: (value: any) => void;
+    onChange?: (value: unknown) => void;
+    currentValue?: unknown;
+    onValueChange?: (value: unknown) => void;
     required?: boolean;
     title?: string;
     description?: string;

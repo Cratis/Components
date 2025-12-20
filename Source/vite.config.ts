@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference types="vitest/config" />
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { defineConfig } from 'vitest/config';
 import react from "@vitejs/plugin-react";
@@ -54,7 +54,7 @@ export default defineConfig({
     plugins: [
         react(),
         tailwindcss(),
-        EmitMetadataPlugin() as any
+        EmitMetadataPlugin() as unknown
     ],
     server: {
         port: process.env.PORT ? parseInt(process.env.PORT) : 9000,

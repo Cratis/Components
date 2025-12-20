@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { useMemo } from 'react';
 import type { PivotFilter, PivotFilterOption, PivotPrimitive } from '../types';
 import { applyFilters, computeFilterOptions, computeNumericRange } from '../utils/utils';

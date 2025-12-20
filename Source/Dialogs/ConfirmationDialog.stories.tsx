@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { ConfirmationDialog } from './ConfirmationDialog';
@@ -15,8 +17,8 @@ const DialogWrapper = ({ title, message }: { title: string; message: string }) =
     const [showDialog] = useConfirmationDialog(title, message, DialogButtons.YesNoCancel);
     return (
         <button onClick={() => showDialog()}>Show dialog</button>
-    )
-}
+    );
+};
 
 export const Default: Story = {
     args: {

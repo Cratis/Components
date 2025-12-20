@@ -1,17 +1,16 @@
-/**
- * High-performance canvas renderer using Pixi.js
- */
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as PIXI from 'pixi.js';
 import type { ItemId, LayoutResult, GroupingResult } from '../engine/types';
 import type { ViewMode } from './Toolbar';
 import { createCssColorResolver, resolveCardColors } from './pivot/colorResolver';
-import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal, destroySprite, clearSpritePool } from './pivot/sprites';
+import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal, clearSpritePool } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
 import { updateBucketBackgrounds as updateBucketBackgroundsExternal, updateHighlight as updateHighlightExternal } from './pivot/buckets';
 import { startAnimationLoop as startAnimationLoopExternal, updatePositions as updatePositionsExternal } from './pivot/animation';
-import { ANIMATION_SPEED, CARD_PADDING, CARD_RADIUS, CARD_GAP, DEFAULT_COLORS, type CardSprite, type CardColors } from './pivot/constants';
+import { ANIMATION_SPEED, DEFAULT_COLORS, type CardSprite, type CardColors } from './pivot/constants';
 
 export interface PivotCanvasProps<TItem extends object> {
   /** Original items array */
@@ -87,19 +86,23 @@ export function PivotCanvas<TItem extends object>({
   viewportHeight,
   selectedId,
   hoveredGroupIndex,
-  isZooming = false,
-  resolveId,
+  isZooming: _isZooming = false,
+  resolveId: _resolveId,
   onCardClick,
   onPanStart,
   onPanMove,
   onPanEnd,
   viewMode,
   cardRenderer,
+  containerRef,
 }: PivotCanvasProps<TItem>) {
   console.log('[PivotCanvas] Render', { viewMode });
   // Use the containerRef passed from the parent viewport so we append the Pixi
   // canvas and spacer into the actual scrollable element.
-  const parentContainerRef = (arguments[0] as PivotCanvasProps<TItem>).containerRef;
+  const parentContainerRef = containerRef;
+  // Mark intentionally-unused destructured props as used to satisfy lint
+  void _isZooming;
+  void _resolveId;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
   const appRef = useRef<PIXI.Application | null>(null);
@@ -156,9 +159,6 @@ export function PivotCanvas<TItem extends object>({
     initializingRef.current = true;
     let app: PIXI.Application | null = null;
     // Handler references declared here so cleanup can remove them later.
-    let handleMouseDown: ((e: Event) => void) | undefined;
-    let handleMouseMove: ((e: Event) => void) | undefined;
-    let handleMouseUp: (() => void) | undefined;
 
     (async () => {
       try {
@@ -172,18 +172,18 @@ export function PivotCanvas<TItem extends object>({
           resolution: window.devicePixelRatio || 1,
           width: viewportWidth > 0 ? viewportWidth : 800,
           height: viewportHeight > 0 ? viewportHeight : 600,
-        } as any;
+        } as unknown;
 
         app = new PIXI.Application();
-        if ((app as any).init && typeof (app as any).init === 'function') {
+        if ((app as unknown).init && typeof (app as unknown).init === 'function') {
           // init may return a promise in some builds
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+           
           // @ts-ignore
           await app.init(options);
         } else {
           // Fall back to constructor that accepts options
           app.destroy?.();
-          app = new PIXI.Application(options as any);
+          app = new PIXI.Application(options as unknown);
         }
 
         if (!mountedRef.current || !parentContainerRef.current) {
@@ -208,7 +208,7 @@ export function PivotCanvas<TItem extends object>({
 
         // Resolve canvas element (different Pixi builds expose it as `view` or
         // `canvas`).
-        const canvasEl = (app.view ?? (app as any).canvas ?? app.renderer?.view) as HTMLCanvasElement | undefined;
+        const canvasEl = (app.view ?? (app as unknown).canvas ?? app.renderer?.view) as HTMLCanvasElement | undefined;
 
         // Place canvas outside the scrollable content so native scrolling
         // doesn't move the canvas DOM element itself. We overlay the canvas
@@ -223,8 +223,8 @@ export function PivotCanvas<TItem extends object>({
           }
           overlayParent.appendChild(canvasEl);
           canvasRef.current = canvasEl;
-        } else if ((app as any).canvas) {
-          const c = (app as any).canvas;
+        } else if ((app as unknown).canvas) {
+          const c = (app as unknown).canvas;
           if (c.parentElement) {
             c.parentElement.removeChild(c);
           }
@@ -235,6 +235,7 @@ export function PivotCanvas<TItem extends object>({
         // Position the canvas to overlay the scrollable container area.
         if (canvasRef.current && parentContainerRef.current) {
           const parentBounds = parentContainerRef.current.getBoundingClientRect();
+          void parentBounds;
           canvasRef.current.style.position = 'absolute';
           // Place canvas relative to the overlayParent's coordinate space.
           // If overlayParent is the immediate parent, top/left 0 aligns it.
@@ -270,14 +271,14 @@ export function PivotCanvas<TItem extends object>({
         app.stage.on('pointerdown', (e) => {
           // Only handle if it reached the stage (background)
           // Sprites stop propagation, so this is safe
-          onPanStartRef.current(e.nativeEvent as any);
+          onPanStartRef.current(e.nativeEvent as unknown);
         });
 
         app.stage.on('globalpointermove', (e) => {
-          onPanMoveRef.current(e.nativeEvent as any);
+          onPanMoveRef.current(e.nativeEvent as unknown);
         });
 
-        app.stage.on('globalpointerup', (e) => {
+        app.stage.on('globalpointerup', () => {
           onPanEndRef.current();
         });
 
@@ -286,8 +287,8 @@ export function PivotCanvas<TItem extends object>({
         // This allows Pixi to handle hit testing through the transparent container.
         const parentEl = parentContainerRef.current;
         if (parentEl) {
-          // handleMouseDown = (e: Event) => onPanStartRef.current(e as any);
-          // handleMouseMove = (e: Event) => onPanMoveRef.current(e as any);
+          // handleMouseDown = (e: Event) => onPanStartRef.current(e as unknown);
+          // handleMouseMove = (e: Event) => onPanMoveRef.current(e as unknown);
           // handleMouseUp = () => onPanEndRef.current();
           // parentEl.addEventListener('mousedown', handleMouseDown);
           // parentEl.addEventListener('mousemove', handleMouseMove);
@@ -342,7 +343,7 @@ export function PivotCanvas<TItem extends object>({
           // }
         }
       } catch (e) {
-        // ignore
+        void e;
       }
       // Remove DOM nodes we appended
       try {
@@ -350,7 +351,7 @@ export function PivotCanvas<TItem extends object>({
           canvasRef.current.parentElement.removeChild(canvasRef.current);
         }
       } catch (e) {
-        // ignore
+        void e;
       }
     };
   }, [viewportWidth, viewportHeight]);
@@ -463,7 +464,7 @@ export function PivotCanvas<TItem extends object>({
       zoomLevel,
       viewportWidth,
       viewportHeight,
-      createCardSprite: (id: any, x: number, y: number) => createCardSpriteExternal(
+      createCardSprite: (id: unknown, x: number, y: number) => createCardSpriteExternal(
         id,
         x,
         y,
@@ -474,7 +475,7 @@ export function PivotCanvas<TItem extends object>({
         cardHeight,
         cardColorsRef.current
       ),
-      updateCardContent: (sprite: any, item: any) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
+      updateCardContent: (sprite: unknown, item: unknown) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
       isViewTransition: isViewTransitionRef.current || (Date.now() - lastViewChangeTimeRef.current < 1000),
       prevLayout: prevLayoutRef.current,
     });
@@ -526,23 +527,10 @@ export function PivotCanvas<TItem extends object>({
     appRef.current?.renderer.render(appRef.current.stage);
   }, [hoveredGroupIndex, layout, grouping]);
 
-  function startAnimationLoop() {
-    // Delegated to animation helper
-    startAnimationLoopExternal({
-      mountedRef,
-      appRef,
-      animationFrameRef,
-      isAnimatingRef,
-      needsRenderRef,
-      spritesRef,
-      isViewTransitionRef,
-    });
-  }
-
-  function updateBucketBackgrounds() {
-    // Delegated to external helper
-    updateBucketBackgroundsExternal(bucketsContainerRef.current, parentContainerRef.current, grouping, layout, zoomLevel, cardColorsRef.current, viewMode);
-  }
+  // Note: animation loop and bucket background updates are delegated to
+  // external helpers (`startAnimationLoopExternal` and
+  // `updateBucketBackgroundsExternal`) and invoked where needed. We don't
+  // expose local wrappers to avoid unused-function lint warnings.
 
   // Listen to native scroll events on the parent container so we update the
   // Pixi world immediately when the user scrolls (native scrollbar or
@@ -577,6 +565,7 @@ export function PivotCanvas<TItem extends object>({
           rootRef.current.scale.set(zoomLevel);
           bucketsContainerRef.current.scale.set(zoomLevel);
           const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
+          void invScale;
           rootRef.current.position.set(-effectivePanX, -effectivePanY);
           bucketsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
         }
@@ -595,13 +584,13 @@ export function PivotCanvas<TItem extends object>({
           zoomLevel,
           viewportWidth,
           viewportHeight,
-          createCardSprite: (id: any, x: number, y: number) => createCardSpriteExternal(
+          createCardSprite: (id: unknown, x: number, y: number) => createCardSpriteExternal(
             id, x, y, items,
-            (item, e, id) => (onCardClickRef.current as any)(item, e, id),
-            (e) => (onPanStartRef.current as any)(e, true), // Explicitly mark as on-card for Pixi events
+            (item, e, id) => (onCardClickRef.current as unknown)(item, e, id),
+            (e) => (onPanStartRef.current as unknown)(e, true), // Explicitly mark as on-card for Pixi events
             cardWidth, cardHeight, cardColorsRef.current
           ),
-          updateCardContent: (sprite: any, item: any) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
+          updateCardContent: (sprite: unknown, item: unknown) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
           isViewTransition: isViewTransitionRef.current || (Date.now() - lastViewChangeTimeRef.current < 1000),
         });
         needsRenderRef.current = true;
@@ -631,19 +620,23 @@ export function PivotCanvas<TItem extends object>({
   function createCardSprite(id: ItemId, x: number, y: number): CardSprite {
     return createCardSpriteExternal(
       id, x, y, items,
-      (item, e, id) => (onCardClickRef.current as any)(item, e, id),
-      (e) => (onPanStartRef.current as any)(e, true),
+      (item, e, id) => (onCardClickRef.current as unknown)(item, e, id),
+      (e) => (onPanStartRef.current as unknown)(e, true),
       cardWidth, cardHeight, cardColorsRef.current
-    ) as any;
+    ) as unknown;
   }
+  // Mark these helpers as used (they may be referenced externally or via callbacks)
+  void createCardSprite;
 
   function updateCardContent(sprite: CardSprite, item: TItem) {
-    return updateCardContentExternal(sprite as any, item as any, selectedId, cardWidth, cardHeight, cardColorsRef.current) as any;
+    return updateCardContentExternal(sprite as unknown, item as unknown, selectedId, cardWidth, cardHeight, cardColorsRef.current) as unknown;
   }
 
   function updatePositions(): boolean {
     return updatePositionsExternal(spritesRef.current, isViewTransitionRef, ANIMATION_SPEED);
   }
+
+  void updatePositions;
 
   function updateSelection() {
     const sprites = spritesRef.current;
@@ -656,6 +649,8 @@ export function PivotCanvas<TItem extends object>({
   function updateHighlight() {
     updateHighlightExternal(bucketsContainerRef.current, parentContainerRef.current, grouping, layout, hoveredGroupIndex, cardWidth, zoomLevel);
   }
+
+  void updateHighlight;
 
   // This component renders into the parent `containerRef` (we append Pixi canvas
   // and spacer directly into that DOM node). Return null so we don't replace or

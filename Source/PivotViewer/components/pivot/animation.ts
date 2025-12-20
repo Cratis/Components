@@ -1,7 +1,9 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import type { CardSprite } from './constants';
 import type * as PIXI from 'pixi.js';
 
-export function updatePositions(sprites: Map<any, CardSprite>, isViewTransitionRef: { current: boolean }, animationSpeed = 0.15) {
+export function updatePositions(sprites: Map<unknown, CardSprite>, isViewTransitionRef: { current: boolean }, animationSpeed = 0.15) {
   let isAnimating = false;
   const threshold = 0.5;
   const shouldAnimate = isViewTransitionRef.current;
@@ -74,7 +76,7 @@ export function startAnimationLoop(
     animationFrameRef: { current: number };
     isAnimatingRef: { current: boolean };
     needsRenderRef: { current: boolean };
-    spritesRef: { current: Map<any, CardSprite> };
+    spritesRef: { current: Map<unknown, CardSprite> };
     isViewTransitionRef: { current: boolean };
   },
   animationSpeed = 0.15,

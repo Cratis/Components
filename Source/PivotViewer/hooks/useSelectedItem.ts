@@ -1,6 +1,7 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { flushSync } from 'react-dom';
-import type { PivotPrimitive } from '../types';
 import { ZOOM_MAX } from '../utils/utils';
 
 function getOffsetWithin(element: HTMLElement, ancestor: HTMLElement) {

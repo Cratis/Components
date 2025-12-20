@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { PivotViewer } from './PivotViewer';
@@ -15,7 +17,7 @@ export const Default: Story = {
     },
     render: (args) => (
         <div className="storybook-wrapper" >
-            <PivotViewer {...args} />
+            <PivotViewer {...args} data={[]} />
         </div>
     )
-}
+};

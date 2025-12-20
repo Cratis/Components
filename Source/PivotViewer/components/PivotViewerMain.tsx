@@ -1,3 +1,5 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 import type { ReactNode } from 'react';
 import type { ItemId, LayoutResult, GroupingResult } from '../engine/types';
 import type { ViewMode } from './Toolbar';
@@ -186,8 +188,8 @@ export function PivotViewerMain<TItem extends object>({
               cardRenderer={cardRenderer}
               resolveId={resolveId}
               onCardClick={onCardClick}
-              onPanStart={onPanStart as any}
-              onPanMove={onPanMove as any}
+              onPanStart={onPanStart as unknown}
+              onPanMove={onPanMove as unknown}
               onPanEnd={onPanEnd}
               containerRef={containerRef}
               viewMode={viewMode}
@@ -202,7 +204,7 @@ export function PivotViewerMain<TItem extends object>({
 
       {viewMode === 'grouped' && grouping.groups.length > 0 && (
         <AxisLabels
-          groups={grouping.groups.map((g, i) => ({
+            groups={grouping.groups.map((g) => ({
             key: g.key,
             value: g.value,
             label: String(g.value),
@@ -211,7 +213,6 @@ export function PivotViewerMain<TItem extends object>({
           }))}
           bucketWidths={layout.bucketWidths || []}
           zoomLevel={zoomLevel}
-          scrollLeft={scrollPosition.x}
           dimensionFilter={dimensionFilter}
           hoveredGroup={hoveredGroupIndex !== null ? String(grouping.groups[hoveredGroupIndex]?.value) : null}
           onHover={(label) => {
