@@ -49,14 +49,14 @@
         }
     },
     "scripts": {
-        "prepare": "yarn build",
-        "clean": "tsc -b --clean",
-        "build": "vite build",
-        "lint": "eslint --cache --quiet --fix",
-        "lint:ci": "eslint --cache --quiet",
-        "test": "vitest run",
-        "ci": "yarn clean && yarn lint:ci && yarn build && yarn test",
-        "up": "ncu -u && yarn",
+        "prepare": "yarn g:build",
+        "clean": "yarn g:clean",
+        "build": "yarn g:build",
+        "lint": "yarn g:lint",
+        "lint:ci": "yarn g:lint:ci",
+        "test": "yarn g:test",
+        "ci": "yarn g:ci",
+        "up": "yarn g:up",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
     },
