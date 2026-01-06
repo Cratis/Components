@@ -12,9 +12,7 @@
         "access": "public"
     },
     "files": [
-        "dist",
-        "**/*.ts",
-        "**/*.tsx"
+        "dist"
     ],
     "type": "module",
     "main": "dist/cjs/index.js",
@@ -72,6 +70,7 @@
         "prepare": "yarn g:build",
         "clean": "yarn g:clean",
         "build": "tsc -p tsconfig.json",
+        "copy-css": "./scripts/copy-css.sh",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
