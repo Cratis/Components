@@ -46,7 +46,12 @@ export function rollup(cjsPath, esmPath, tsconfigPath, pkg) {
             typescript2({
                 exclude: "for_**/**/*",
                 tsconfig: tsconfigPath,
-                clean: true
+                clean: true,
+                tsconfigOverride: {
+                    compilerOptions: {
+                        skipLibCheck: true
+                    }
+                }
             })
         ]
     };
