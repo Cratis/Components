@@ -2,8 +2,9 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "baseUrl": ".",
-        "rootDir": ".",
-        "outDir": "dist/esm"
+        "rootDir": "./",
+        "outDir": "dist/esm",
+        "skipLibCheck": true
     },
     "references": [],
     "exclude": [
