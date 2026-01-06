@@ -6,10 +6,15 @@
         "outDir": "dist/esm",
         "skipLibCheck": true
     },
+    "include": [
+        "**/*.ts",
+        "**/*.tsx"
+    ],
     "references": [],
     "exclude": [
         "dist",
         "**/for_*/**",
-        "vite.config.mts"
+        "vite.config.mts",
+        "node_modules"
     ]
 }
