@@ -27,25 +27,45 @@
             "require": "./dist/cjs/index.js",
             "import": "./dist/esm/index.js"
         },
-        "./commands": {
-            "types": "./dist/esm/commands/index.d.ts",
-            "require": "./dist/cjs/commands/index.js",
-            "import": "./dist/esm/commands/index.js"
+        "./CommandDialog": {
+            "types": "./dist/esm/CommandDialog/index.d.ts",
+            "require": "./dist/cjs/CommandDialog/index.js",
+            "import": "./dist/esm/CommandDialog/index.js"
         },
-        "./queries": {
-            "types": "./dist/esm/queries/index.d.ts",
-            "require": "./dist/cjs/queries/index.js",
-            "import": "./dist/esm/queries/index.js"
+        "./CommandForm": {
+            "types": "./dist/esm/CommandForm/index.d.ts",
+            "require": "./dist/cjs/CommandForm/index.js",
+            "import": "./dist/esm/CommandForm/index.js"
+        },
+        "./DataPage": {
+            "types": "./dist/esm/DataPage/index.js",
+            "require": "./dist/cjs/DataPage/index.js",
+            "import": "./dist/esm/DataPage/index.js"
+        },
+        "./dataTables": {
+            "types": "./dist/esm/dataTables/index.d.ts",
+            "require": "./dist/cjs/dataTables/index.js",
+            "import": "./dist/esm/dataTables/index.js"
         },
         "./dialogs": {
-            "types": "./dist/esm/dialogs/index.js",
+            "types": "./dist/esm/dialogs/index.d.ts",
             "require": "./dist/cjs/dialogs/index.js",
             "import": "./dist/esm/dialogs/index.js"
         },
-        "./identity": {
-            "types": "./dist/esm/identity/index.d.ts",
-            "require": "./dist/cjs/identity/index.js",
-            "import": "./dist/esm/identity/index.js"
+        "./DropDown": {
+            "types": "./dist/esm/DropDown/index.d.ts",
+            "require": "./dist/cjs/DropDown/index.js",
+            "import": "./dist/esm/DropDown/index.js"
+        },
+        "./PivotViewer": {
+            "types": "./dist/esm/PivotViewer/index.d.ts",
+            "require": "./dist/cjs/PivotViewer/index.js",
+            "import": "./dist/esm/PivotViewer/index.js"
+        },
+        "./TimeMachine": {
+            "types": "./dist/esm/TimeMachine/index.d.ts",
+            "require": "./dist/cjs/TimeMachine/index.js",
+            "import": "./dist/esm/TimeMachine/index.js"
         }
     },
     "scripts": {
