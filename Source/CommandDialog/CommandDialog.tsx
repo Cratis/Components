@@ -15,7 +15,7 @@ export type FieldChangeCallback<TCommand> = (command: TCommand, fieldName: strin
 export interface CommandDialogProps<TCommand, TResponse = object> {
     command: Constructor<TCommand>;
     initialValues?: Partial<TCommand>;
-    currentValues?: unknown;
+    currentValues?: Partial<TCommand> | undefined;
     visible: boolean;
     header: string;
     confirmLabel?: string;
@@ -33,7 +33,7 @@ export interface CommandDialogProps<TCommand, TResponse = object> {
 }
 
 interface CommandDialogContextValue<TCommand = unknown> {
-    onSuccess: (result: ICommandResult<unknown>) => void | Promise<void>;
+    onSuccess: (result: ICommandResult<any>) => void | Promise<void>;
     onCancel: () => void;
     confirmLabel: string;
     cancelLabel: string;
@@ -55,7 +55,7 @@ export const useCommandDialogContext = <TCommand = unknown,>() => {
 };
 
 const CommandDialogFormContent = () => {
-    const command = useCommandInstance<unknown>();
+    const command = useCommandInstance();
     const { setCommandResult, setCommandValues, isValid, onBeforeExecute } = useCommandFormContext();
     const { onSuccess: onConfirm, onCancel, confirmLabel, cancelLabel, confirmIcon, cancelIcon } = useCommandDialogContext();
 
@@ -89,7 +89,7 @@ const CommandDialogFormContent = () => {
 const CommandDialogFieldsWrapper = (props: { children: React.ReactNode }) => {
     React.Children.forEach(props.children, child => {
         if (React.isValidElement(child)) {
-            const component = child.type as unknown;
+            const component = child.type as any;
             if (component.displayName !== 'CommandFormField') {
                 throw new Error(`Only CommandFormField components are allowed as children of CommandDialog.Fields. Got: ${component.displayName || component.name || 'Unknown'}`);
             }
@@ -103,7 +103,7 @@ const CommandDialogFieldsWrapper = (props: { children: React.ReactNode }) => {
     );
 };
 
-const CommandDialogComponent = <TCommand, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
+const CommandDialogComponent = <TCommand extends object = any, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
     const {
         command,
         initialValues,

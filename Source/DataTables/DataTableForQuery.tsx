@@ -41,12 +41,12 @@ export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType>, TDa
     /**
      * The current selection.
      */
-    selection?: unknown[number] | undefined | null;
+    selection?: any | undefined | null;
 
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<unknown>): void;
+    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<any>): void;
 
     /**
      * Fields to use for global filtering

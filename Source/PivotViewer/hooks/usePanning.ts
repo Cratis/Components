@@ -37,9 +37,9 @@ export function usePanning(
     didDragRef.current = false;
     velocityRef.current = { x: 0, y: 0 };
 
-    if (e.button === 1 || (e.button === 0 && (e.altKey || !isOnCard))) {
+      if (e.button === 1 || (e.button === 0 && (e.altKey || !isOnCard))) {
       if (!isOnCard) {
-        e.preventDefault();
+        (e as any).preventDefault?.();
       }
       setIsPanning(true);
       panStartRef.current = {

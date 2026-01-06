@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React from 'react';
-import * as Comp from './DataTableForQuery.tsx';
-// @ts-ignore
-const Component: unknown = (Comp as unknown).default || Object.values(Comp)[0];
+import * as Comp from './DataTableForQuery';
+const Component: React.ComponentType<any> | undefined = (Comp as any).default || (Object.values(Comp)[0] as any);
 
 export default { title: 'DataTables/DataTableForQuery', component: Component };
 

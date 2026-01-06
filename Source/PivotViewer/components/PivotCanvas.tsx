@@ -172,10 +172,10 @@ export function PivotCanvas<TItem extends object>({
           resolution: window.devicePixelRatio || 1,
           width: viewportWidth > 0 ? viewportWidth : 800,
           height: viewportHeight > 0 ? viewportHeight : 600,
-        } as unknown;
+        } as PIXI.ApplicationOptions;
 
-        app = new PIXI.Application();
-        if ((app as unknown).init && typeof (app as unknown).init === 'function') {
+          app = new PIXI.Application();
+        if ((app as any).init && typeof (app as any).init === 'function') {
           // init may return a promise in some builds
            
           // @ts-ignore
@@ -183,7 +183,7 @@ export function PivotCanvas<TItem extends object>({
         } else {
           // Fall back to constructor that accepts options
           app.destroy?.();
-          app = new PIXI.Application(options as unknown);
+          app = new PIXI.Application(options);
         }
 
         if (!mountedRef.current || !parentContainerRef.current) {
@@ -208,7 +208,7 @@ export function PivotCanvas<TItem extends object>({
 
         // Resolve canvas element (different Pixi builds expose it as `view` or
         // `canvas`).
-        const canvasEl = (app.view ?? (app as unknown).canvas ?? app.renderer?.view) as HTMLCanvasElement | undefined;
+        const canvasEl = (app.view ?? (app as any).canvas ?? app.renderer?.view) as HTMLCanvasElement | undefined;
 
         // Place canvas outside the scrollable content so native scrolling
         // doesn't move the canvas DOM element itself. We overlay the canvas
@@ -223,8 +223,8 @@ export function PivotCanvas<TItem extends object>({
           }
           overlayParent.appendChild(canvasEl);
           canvasRef.current = canvasEl;
-        } else if ((app as unknown).canvas) {
-          const c = (app as unknown).canvas;
+        } else if ((app as any).canvas) {
+          const c = (app as any).canvas;
           if (c.parentElement) {
             c.parentElement.removeChild(c);
           }
@@ -271,11 +271,11 @@ export function PivotCanvas<TItem extends object>({
         app.stage.on('pointerdown', (e) => {
           // Only handle if it reached the stage (background)
           // Sprites stop propagation, so this is safe
-          onPanStartRef.current(e.nativeEvent as unknown);
+          onPanStartRef.current(e.nativeEvent as unknown as MouseEvent);
         });
 
         app.stage.on('globalpointermove', (e) => {
-          onPanMoveRef.current(e.nativeEvent as unknown);
+          onPanMoveRef.current(e.nativeEvent as unknown as MouseEvent);
         });
 
         app.stage.on('globalpointerup', () => {
@@ -464,18 +464,18 @@ export function PivotCanvas<TItem extends object>({
       zoomLevel,
       viewportWidth,
       viewportHeight,
-      createCardSprite: (id: unknown, x: number, y: number) => createCardSpriteExternal(
+      createCardSprite: (id: string | number, x: number, y: number) => createCardSpriteExternal(
         id,
         x,
         y,
-        items,
-        (item, e, id) => onCardClickRef.current(item, e, id),
-        onPanStart,
+        items as any,
+        (item: TItem, e: any, id: string | number) => (onCardClickRef.current as any)(item, e, id),
+        (onPanStart as any),
         cardWidth,
         cardHeight,
         cardColorsRef.current
       ),
-      updateCardContent: (sprite: unknown, item: unknown) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
+      updateCardContent: (sprite: CardSprite | any, item: any) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
       isViewTransition: isViewTransitionRef.current || (Date.now() - lastViewChangeTimeRef.current < 1000),
       prevLayout: prevLayoutRef.current,
     });
@@ -584,13 +584,13 @@ export function PivotCanvas<TItem extends object>({
           zoomLevel,
           viewportWidth,
           viewportHeight,
-          createCardSprite: (id: unknown, x: number, y: number) => createCardSpriteExternal(
-            id, x, y, items,
-            (item, e, id) => (onCardClickRef.current as unknown)(item, e, id),
-            (e) => (onPanStartRef.current as unknown)(e, true), // Explicitly mark as on-card for Pixi events
+          createCardSprite: (id: string | number, x: number, y: number) => createCardSpriteExternal(
+            id, x, y, items as any,
+            (item, e, id) => (onCardClickRef.current as any)(item, e, id),
+            (e) => (onPanStartRef.current as any)(e, true), // Explicitly mark as on-card for Pixi events
             cardWidth, cardHeight, cardColorsRef.current
           ),
-          updateCardContent: (sprite: unknown, item: unknown) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
+          updateCardContent: (sprite: CardSprite | any, item: any) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
           isViewTransition: isViewTransitionRef.current || (Date.now() - lastViewChangeTimeRef.current < 1000),
         });
         needsRenderRef.current = true;
@@ -619,17 +619,17 @@ export function PivotCanvas<TItem extends object>({
 
   function createCardSprite(id: ItemId, x: number, y: number): CardSprite {
     return createCardSpriteExternal(
-      id, x, y, items,
-      (item, e, id) => (onCardClickRef.current as unknown)(item, e, id),
-      (e) => (onPanStartRef.current as unknown)(e, true),
+      id, x, y, items as any,
+      (item, e, id) => (onCardClickRef.current as any)(item, e, id),
+      (e) => (onPanStartRef.current as any)(e, true),
       cardWidth, cardHeight, cardColorsRef.current
-    ) as unknown;
+    );
   }
   // Mark these helpers as used (they may be referenced externally or via callbacks)
   void createCardSprite;
 
   function updateCardContent(sprite: CardSprite, item: TItem) {
-    return updateCardContentExternal(sprite as unknown, item as unknown, selectedId, cardWidth, cardHeight, cardColorsRef.current) as unknown;
+    return updateCardContentExternal(sprite as any, item as any, selectedId, cardWidth, cardHeight, cardColorsRef.current) as any;
   }
 
   function updatePositions(): boolean {
@@ -642,7 +642,8 @@ export function PivotCanvas<TItem extends object>({
     const sprites = spritesRef.current;
 
     for (const sprite of sprites.values()) {
-      updateCardContent(sprite, items[sprite.itemId]);
+      const val = (items as any)[String(sprite.itemId)];
+      updateCardContent(sprite, val);
     }
   }
 

@@ -84,11 +84,11 @@ export interface IDetailsComponentProps<TDataType> {
 }
 
 interface IDataPageContext extends DataPageProps<any, any, any> {
-    selectedItem: unknown;
-    onSelectionChanged: (e: DataTableSelectionSingleChangeEvent<unknown>) => void;
+    selectedItem: any;
+    onSelectionChanged: (e: DataTableSelectionSingleChangeEvent<any>) => void;
 }
 
-const DataPageContext = React.createContext<IDataPageContext>(null as unknown);
+const DataPageContext = React.createContext<IDataPageContext>(null as any);
 
 /**
  * Props for the DataPage component
@@ -107,7 +107,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     /**
      * Component to render when the selection changes
      */
-    detailsComponent?: React.FC<IDetailsComponentProps<unknown>>;
+    detailsComponent?: React.FC<IDetailsComponentProps<any>>;
 
     /**
      * The type of query to use
@@ -132,12 +132,12 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     /**
      * The current selection.
      */
-    selection?: unknown[number] | undefined | null;
+    selection?: any | undefined | null;
 
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<unknown>): void;
+    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<any>): void;
 
     /**
      * Fields to use for global filtering
@@ -158,7 +158,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
 const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
 
-    const selectionChanged = (e: DataTableSelectionSingleChangeEvent<unknown>) => {
+    const selectionChanged = (e: DataTableSelectionSingleChangeEvent<any>) => {
         setSelectedItem(e.value);
         if (props.onSelectionChange) {
             props.onSelectionChange(e);

@@ -4,6 +4,8 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import type { PivotDimension } from '../types';
 
+export type PivotDimensionFilter = string | null;
+
 export function useDimensionState<TItem extends object>(
     dimensions: PivotDimension<TItem>[],
     defaultDimensionKey?: string

@@ -467,8 +467,8 @@ export function PivotViewer<TItem extends object>({
         } : null;
 
         // Calculate target position for animation
-        let targetCardPosition = null;
-        let getCardPositionAtZoom = undefined;
+        let targetCardPosition: { x: number; y: number; width: number; height: number } | null = null;
+        let getCardPositionAtZoom: ((zoom: number) => { x: number; y: number; width: number; height: number } | null) | undefined = undefined;
         let targetTotalHeight = layout.totalHeight;
 
         if (viewMode === 'grouped' && cardPosition) {
@@ -626,8 +626,8 @@ export function PivotViewer<TItem extends object>({
         }
 
         // Calculate target position for animation (zooming out)
-        let targetCardPosition = null;
-        let getCardPositionAtZoom = undefined;
+        let targetCardPosition: { x: number; y: number; width: number; height: number } | null = null;
+        let getCardPositionAtZoom: ((zoom: number) => { x: number; y: number; width: number; height: number } | null) | undefined = undefined;
 
         if (viewMode === 'grouped') {
             const targetZoom = preSelectionState.zoom;

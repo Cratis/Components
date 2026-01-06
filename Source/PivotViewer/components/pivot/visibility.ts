@@ -4,13 +4,13 @@
 import * as PIXI from 'pixi.js';
 import type { CardSprite } from './constants';
 import { CARD_GAP } from './constants';
-import type { LayoutResult } from '../engine/types';
+import type { LayoutResult } from '../../engine/types';
 import { destroySprite } from './sprites';
 
 export interface SyncParams<TItem> {
   root: PIXI.Container | null;
   container: HTMLDivElement | null;
-  sprites: Map<unknown, CardSprite>;
+  sprites: Map<string | number, CardSprite>;
   layout: LayoutResult;
   visibleIds: Uint32Array;
   items: TItem[];
@@ -23,7 +23,7 @@ export interface SyncParams<TItem> {
   viewportWidth: number;
   viewportHeight: number;
   zoomLevel: number;
-  createCardSprite: (id: unknown, x: number, y: number) => CardSprite;
+  createCardSprite: (id: string | number, x: number, y: number) => CardSprite;
   updateCardContent: (sprite: CardSprite, item: TItem) => void;
   isViewTransition?: boolean;
   prevLayout?: LayoutResult | null;
@@ -53,7 +53,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     }
   }
 
-  const visibleSet = new Set<unknown>();
+  const visibleSet = new Set<string | number>();
 
   // Increase buffer (in world units) to reduce edge cases where rapid
   // scrolling skips sprite creation. Keep buffer in world units and convert
@@ -102,7 +102,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
   const viewportTopWorld = panWorldY - bufferWorld;
   const viewportBottomWorld = panWorldY + viewportWorldHeight + bufferWorld;
 
-  const inViewportIds: unknown[] = [];
+  const inViewportIds: (string | number)[] = [];
   // Small tolerance in world units to avoid floating-point edge cases when
   // browser/device zoom or high scroll values produce tiny rounding errors.
   // Scale epsilon with invScale so tolerance grows when zoomed out.
@@ -181,7 +181,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
           try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
           // Don't mark as hidden, so it won't be swept
-          if ((sprite as unknown).__lastHiddenAt) delete (sprite as unknown).__lastHiddenAt;
+          if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
           continue;
         }
       }
@@ -196,7 +196,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         if (sprite.container) {
           sprite.container.visible = false;
         }
-        (sprite as unknown).__lastHiddenAt = Date.now();
+        (sprite as any).__lastHiddenAt = Date.now();
       } catch (e) {
         void e;
       }
@@ -205,7 +205,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         if (sprite.container) {
           sprite.container.visible = true;
         }
-        if ((sprite as unknown).__lastHiddenAt) delete (sprite as unknown).__lastHiddenAt;
+        if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
       } catch (e) { void e; }
     }
   }
@@ -215,7 +215,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     const SWEEP_MS = 500; // keep hidden sprites for 500ms before destruction
     const now = Date.now();
     for (const [id, sprite] of sprites) {
-      const lastHidden = (sprite as unknown).__lastHiddenAt as number | undefined;
+      const lastHidden = (sprite as any).__lastHiddenAt as number | undefined;
       if (lastHidden && now - lastHidden > SWEEP_MS) {
         try {
           // remove from parent if present
@@ -311,7 +311,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
       }
     }
 
-    const item = (items as unknown)[id];
+    const item = (items as any)[String(id)];
     if (item) {
       updateCardContent(sprite, item);
     }

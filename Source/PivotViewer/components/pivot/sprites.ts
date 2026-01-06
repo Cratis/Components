@@ -43,7 +43,7 @@ export function createCardSprite<TItem extends object>(
     sprite.lastValues = undefined;
 
     // Update event context
-    (sprite.container as unknown)._eventContext = { items, onCardClick, id };
+    (sprite.container as any)._eventContext = { items, onCardClick, id };
 
     return sprite;
   }
@@ -54,7 +54,7 @@ export function createCardSprite<TItem extends object>(
   container.position.set(x, y);
 
   // Store context for event handlers
-  (container as unknown)._eventContext = { items, onCardClick, id };
+  (container as any)._eventContext = { items, onCardClick, id };
 
   const graphics = new PIXI.Graphics();
 
@@ -72,48 +72,39 @@ export function createCardSprite<TItem extends object>(
 
   container.addChild(graphics);
 
-  const titleText = new PIXI.Text({
-    text: '',
-    style: {
-      fontSize: 13,
-      fill: cardColors.text,
-      fontWeight: '600',
-      lineHeight: 18,
-      wordWrap: false,
-    },
-  } as unknown);
+  const titleText = new PIXI.Text('', {
+    fontSize: 13,
+    fill: cardColors.text as any,
+    fontWeight: '600',
+    lineHeight: 18,
+    wordWrap: false,
+  } as any);
   titleText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING);
   container.addChild(titleText);
 
-  const labelsText = new PIXI.Text({
-    text: '',
-    style: {
-      fontSize: 11,
-      fill: cardColors.textSecondary,
-      fontWeight: '400',
-      lineHeight: 18,
-    },
-  } as unknown);
+  const labelsText = new PIXI.Text('', {
+    fontSize: 11,
+    fill: cardColors.textSecondary as any,
+    fontWeight: '400',
+    lineHeight: 18,
+  } as any);
   labelsText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING + 40);
   container.addChild(labelsText);
 
-  const valuesText = new PIXI.Text({
-    text: '',
-    style: {
-      fontSize: 11,
-      fill: cardColors.text,
-      fontWeight: '500',
-      lineHeight: 18,
-      wordWrap: false,
-    },
-  } as unknown);
+  const valuesText = new PIXI.Text('', {
+    fontSize: 11,
+    fill: cardColors.text as any,
+    fontWeight: '500',
+    lineHeight: 18,
+    wordWrap: false,
+  } as any);
   valuesText.position.set(offsetX + CARD_PADDING + 65, offsetY + CARD_PADDING + 40);
   container.addChild(valuesText);
 
   container.on('click', (e: PIXI.FederatedPointerEvent) => {
     e.stopPropagation();
-    const ctx = (container as unknown)._eventContext as { items: unknown; onCardClick: (item: unknown, e: MouseEvent, id: number | string) => void; id: number | string };
-    const itemsMap = ctx.items as unknown as Record<string, unknown>;
+    const ctx = (container as any)._eventContext as { items: any; onCardClick: (item: any, e: MouseEvent, id: number | string) => void; id: number | string };
+    const itemsMap = ctx.items as Record<string, any>;
     const item = itemsMap[String(ctx.id)];
     if (item) {
       ctx.onCardClick(item, e.nativeEvent as MouseEvent, ctx.id);
@@ -175,7 +166,7 @@ export function updateCardContent<TItem extends object>(
 ) {
   if (!item) return;
 
-  const event = item as unknown;
+  const event = item as any;
   const eventType = event.type || event.name || event.title || 'Event';
 
   const timeStr = event.occurred ? new Date(event.occurred).toLocaleString('en-US', {
@@ -210,13 +201,13 @@ export function updateCardContent<TItem extends object>(
     sprite.lastTitle = titleDisplay;
   }
 
-  if (sprite.lastLabels !== labelsText) {
+    if (sprite.lastLabels !== labelsText) {
     sprite.labelsText.text = labelsText;
     sprite.lastLabels = labelsText;
   }
 
   if (colorsChanged) {
-    sprite.labelsText.style.fill = colors.textSecondary as unknown;
+    (sprite.labelsText.style as any).fill = colors.textSecondary as any;
   }
 
   if (sprite.lastValues !== valuesText) {
@@ -225,7 +216,7 @@ export function updateCardContent<TItem extends object>(
   }
 
   if (colorsChanged) {
-    sprite.valuesText.style.fill = colors.text as unknown;
+    (sprite.valuesText.style as any).fill = colors.text as any;
   }
 
   sprite.titleText.visible = true;

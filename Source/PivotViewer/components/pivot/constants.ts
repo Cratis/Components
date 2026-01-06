@@ -15,7 +15,7 @@ export const DEFAULT_COLORS = {
   border: 0x5ad1a0,
   text: 0xffffff,
   textSecondary: 0x8899aa,
-} as const;
+};
 
 export type CardColors = typeof DEFAULT_COLORS;
 

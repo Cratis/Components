@@ -97,7 +97,7 @@ export function PivotViewerMain<TItem extends object>({
             worldY >= pos.y && worldY <= pos.y + cardHeight) {
           const item = data[id];
           if (item) {
-            onCardClick(item, e.nativeEvent, id);
+            onCardClick(item, e.nativeEvent as unknown as MouseEvent, id);
           }
           return;
         }
@@ -189,8 +189,8 @@ export function PivotViewerMain<TItem extends object>({
               cardRenderer={cardRenderer}
               resolveId={resolveId}
               onCardClick={onCardClick}
-              onPanStart={onPanStart as unknown}
-              onPanMove={onPanMove as unknown}
+              onPanStart={onPanStart as any}
+              onPanMove={onPanMove as any}
               onPanEnd={onPanEnd}
               containerRef={containerRef}
               viewMode={viewMode}

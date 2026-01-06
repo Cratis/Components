@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import type { PivotFilter, PivotFilterOption, PivotPrimitive } from '../types';
 import { applyFilters, computeFilterOptions, computeNumericRange } from '../utils/utils';
-import type { FilterState, RangeFilterState } from '../utils/utils';
+import type { FilterState, RangeFilterState } from '../types';
 
 export function useFilterOptions<TItem extends object>(
   data: TItem[],

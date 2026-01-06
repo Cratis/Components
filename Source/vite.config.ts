@@ -54,7 +54,7 @@ export default defineConfig({
     plugins: [
         react(),
         tailwindcss(),
-        EmitMetadataPlugin() as unknown
+        EmitMetadataPlugin() as any
     ],
     server: {
         port: process.env.PORT ? parseInt(process.env.PORT) : 9000,

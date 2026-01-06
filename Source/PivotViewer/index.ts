@@ -1,5 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-export { PivotViewerOptimized } from './PivotViewer';
+import { PivotViewer } from './PivotViewer';
+
+export { PivotViewer, PivotViewer as PivotViewerOptimized };
 export type { PivotViewerProps, PivotDimension, PivotFilter, PivotFilterOption, PivotGroup, PivotPrimitive } from './types';

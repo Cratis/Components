@@ -53,3 +53,7 @@ export interface PivotViewerProps<TItem extends object> {
   emptyContent?: ReactNode;
   isLoading?: boolean;
 }
+
+export type FilterState = Record<string, Set<string>>;
+
+export type RangeFilterState = Record<string, [number, number] | null>;
