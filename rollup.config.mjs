@@ -32,6 +32,9 @@ export function rollup(cjsPath, esmPath, tsconfigPath, pkg) {
             ...Object.keys(pkg.peerDependencies || {}),
             /^@cratis\/components/,
             /^@cratis\/arc/,
+            /^primereact\//,
+            /^primeicons/,
+            /\.css$/,
             'react',
             'react-dom',
         ],
@@ -45,13 +48,12 @@ export function rollup(cjsPath, esmPath, tsconfigPath, pkg) {
                 },
             }),
             typescript2({
-                exclude: "for_**/**/*",
                 tsconfig: tsconfigPath,
                 clean: true,
+                check: false,
+                useTsconfigDeclarationDir: true,
                 tsconfigOverride: {
-                    compilerOptions: {
-                        skipLibCheck: true
-                    }
+                    exclude: ["node_modules", "../node_modules", "for_*/**/*"]
                 }
             })
         ]

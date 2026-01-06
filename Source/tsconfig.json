@@ -2,19 +2,20 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "baseUrl": ".",
-        "rootDir": "./",
         "outDir": "dist/esm",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "types": []
     },
     "include": [
-        "**/*.ts",
-        "**/*.tsx"
+        "./**/*.ts",
+        "./**/*.tsx"
     ],
     "references": [],
     "exclude": [
         "dist",
         "**/for_*/**",
         "vite.config.mts",
-        "node_modules"
+        "node_modules",
+        "../node_modules"
     ]
 }

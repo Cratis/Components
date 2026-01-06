@@ -25,5 +25,8 @@
     },
     "license": "MIT",
     "version": "0.0.0",
-    "packageManager": "yarn@4.5.3"
+    "packageManager": "yarn@4.5.3",
+    "devDependencies": {
+        "rollup-plugin-typescript2": "^0.36.0"
+    }
 }
