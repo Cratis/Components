@@ -45,13 +45,19 @@ const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<C
             if (propertyName) {
                 const oldValue = currentValue;
 
+                // Update the command value
+                context.setCommandValues({ [propertyName]: value } as any);
+
+                // Call validate() on the command instance if it exists
+                if (context.commandInstance && typeof (context.commandInstance as any).validate === 'function') {
+                    (context.commandInstance as any).validate();
+                }
+
                 // Call custom field validator if provided
                 if (context.onFieldValidate) {
                     const validationError = context.onFieldValidate(context.commandInstance as any, propertyName, oldValue, value);
                     context.setCustomFieldError(propertyName, validationError);
                 }
-
-                context.setCommandValues({ [propertyName]: value } as any);
 
                 // Call field change callback if provided
                 if (context.onFieldChange) {
