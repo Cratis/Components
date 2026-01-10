@@ -143,7 +143,7 @@ export function PivotViewerMain<TItem extends object>({
         <div
           className={`pv-viewport ${isZooming ? 'pv-zooming' : ''}`}
           ref={containerRef}
-          style={{ overflow: 'auto', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}
+          style={{ overflow: 'auto', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           onClick={handleViewportClick}
           onMouseMove={handleViewportMouseMove}
         >

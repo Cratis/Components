@@ -3,9 +3,7 @@
 
 export * from './CommandForm';
 export * from './CommandFormField';
+export * from './ValidationMessage';
 export * from './CommandFormFields';
 export * from './asCommandFormField';
-export * from './InputTextField';
-export * from './DatePickerField';
-export * from './DropdownField';
-export * from './SliderField';
+export * from './fields';

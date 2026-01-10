@@ -5,6 +5,38 @@ import type { ReactNode } from 'react';
 
 export type PivotPrimitive = string | number | boolean | Date | null | undefined;
 
+/**
+ * Type-safe property accessor for accessing properties, including nested ones
+ */
+export type PropertyAccessor<TItem> = (item: TItem) => unknown;
+
+/**
+ * Extract property path from a property accessor function
+ * Supports nested properties like item => item.address.city
+ */
+export function getPropertyPath<TItem>(accessor: PropertyAccessor<TItem>): string {
+    const fnStr = accessor.toString();
+    // Match patterns like: item => item.prop or item => item.prop.nested or (item) => item.prop
+    const match = fnStr.match(/(?:=>|return)\s*[a-zA-Z_$][a-zA-Z0-9_$]*\.([a-zA-Z_$][a-zA-Z0-9_$.]*)/)
+    return match ? match[1] : '';
+}
+
+/**
+ * Get the value from an item using a property path string
+ * Supports nested properties like "address.city"
+ */
+export function getValueByPath<TItem>(item: TItem, path: string): unknown {
+    const parts = path.split('.');
+    let value: any = item;
+    for (const part of parts) {
+        if (value === null || value === undefined) {
+            return undefined;
+        }
+        value = value[part];
+    }
+    return value;
+}
+
 export interface PivotGroup<TItem extends object> {
   key: string;
   label: string;
@@ -48,7 +80,7 @@ export interface PivotViewerProps<TItem extends object> {
   defaultDimensionKey?: string;
   cardRenderer?: (item: TItem) => ReactNode;
   getItemId?: (item: TItem, index: number) => string | number;
-  searchFields?: (keyof TItem)[];
+  searchFields?: PropertyAccessor<TItem>[];
   className?: string;
   emptyContent?: ReactNode;
   isLoading?: boolean;

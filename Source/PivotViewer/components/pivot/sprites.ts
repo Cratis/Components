@@ -20,9 +20,11 @@ export function createCardSprite<TItem extends object>(
 ): CardSprite {
   if (spritePool.length > 0) {
     const sprite = spritePool.pop()!;
-    sprite.container.visible = true;
-    sprite.container.alpha = 1;
-    sprite.container.position.set(x, y);
+    if (sprite.container) {
+      sprite.container.visible = true;
+      sprite.container.alpha = 1;
+      sprite.container.position.set(x, y);
+    }
     sprite.itemId = id;
     sprite.targetX = x;
     sprite.targetY = y;
@@ -42,8 +44,18 @@ export function createCardSprite<TItem extends object>(
     sprite.lastLabels = undefined;
     sprite.lastValues = undefined;
 
+    // Recreate graphics if it was destroyed
+    if (!sprite.graphics || sprite.graphics.destroyed) {
+      sprite.graphics = new PIXI.Graphics();
+      if (sprite.container) {
+        sprite.container.addChildAt(sprite.graphics, 0);
+      }
+    }
+
     // Update event context
-    (sprite.container as any)._eventContext = { items, onCardClick, id };
+    if (sprite.container) {
+      (sprite.container as any)._eventContext = { items, onCardClick, id };
+    }
 
     return sprite;
   }
@@ -233,7 +245,7 @@ export function updateCardContent<TItem extends object>(
   sprite.lastSelectedId = selectedId;
   sprite.lastCardColors = cardColors;
 
-  if (sprite.graphics) {
+  if (sprite.graphics && !sprite.graphics.destroyed) {
     sprite.graphics.clear();
   } else {
     sprite.graphics = new PIXI.Graphics();

@@ -294,9 +294,12 @@ export function PivotViewer<TItem extends object>({
     // Compute grouping
     useEffect(() => {
         if (!ready || visibleIds.length === 0) {
+            console.log('[PivotViewer] Skipping grouping - ready:', ready, 'visibleIds.length:', visibleIds.length);
             setGrouping({ groups: [] });
             return;
         }
+
+        console.log('[PivotViewer] Computing grouping - viewMode:', viewMode, 'visibleIds:', visibleIds.length);
 
         if (viewMode === 'collection') {
             // In collection mode, create a single group with all items
@@ -327,7 +330,9 @@ export function PivotViewer<TItem extends object>({
             return;
         }
 
+        console.log('[PivotViewer] Computing grouping with:', currentGroupBy);
         computeGrouping(visibleIds, currentGroupBy).then((result) => {
+            console.log('[PivotViewer] Grouping result:', result);
             setGrouping(result);
         });
     }, [ready, visibleIds, currentGroupBy, viewMode, computeGrouping, sortIds, activeDimensionKey]);

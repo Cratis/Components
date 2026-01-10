@@ -2,7 +2,9 @@
   "cSpell.words": [
     "cratis",
     "primeicons",
-    "primereact"
+    "primereact",
+    "trackpad",
+    "trackpads"
   ],
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "search.exclude": {

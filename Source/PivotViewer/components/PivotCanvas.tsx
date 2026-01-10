@@ -195,13 +195,10 @@ export function PivotCanvas<TItem extends object>({
 
         appRef.current = app;
 
-        // Create containers in correct z-order
-        // 1. Bucket backgrounds (zebra striping) - bottom
         const bucketsContainer = new PIXI.Container();
         bucketsContainerRef.current = bucketsContainer;
         app.stage.addChild(bucketsContainer);
 
-        // 2. Cards container - on top of buckets
         const root = new PIXI.Container();
         rootRef.current = root;
         app.stage.addChild(root);
@@ -402,14 +399,14 @@ export function PivotCanvas<TItem extends object>({
 
   // Update bucket backgrounds only when layout/grouping changes
   useEffect(() => {
-    if (!bucketsContainerRef.current || !pixiReady) return;
+    if (!bucketsContainerRef.current || !parentContainerRef.current || !pixiReady) return;
     updateBucketBackgroundsExternal(bucketsContainerRef.current, parentContainerRef.current, grouping, layout, zoomLevel, cardColorsRef.current, viewMode);
     needsRenderRef.current = true;
     appRef.current?.renderer?.render(appRef.current.stage);
   }, [grouping, layout, zoomLevel, viewMode, pixiReady]);
 
   useEffect(() => {
-    if (!rootRef.current || !pixiReady) {
+    if (!rootRef.current || !parentContainerRef.current || !pixiReady) {
       return;
     }
 
@@ -506,10 +503,14 @@ export function PivotCanvas<TItem extends object>({
     const effectivePanY = parentContainerRef.current ? parentContainerRef.current.scrollTop : panY;
 
     // Apply zoom and position to root and buckets.
-    rootRef.current.scale.set(zoomLevel);
-    bucketsContainerRef.current.scale.set(zoomLevel);
-    rootRef.current.position.set(-effectivePanX, -effectivePanY);
-    bucketsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
+    if (rootRef.current.scale && bucketsContainerRef.current.scale) {
+      rootRef.current.scale.set(zoomLevel);
+      bucketsContainerRef.current.scale.set(zoomLevel);
+    }
+    if (rootRef.current.position && bucketsContainerRef.current.position) {
+      rootRef.current.position.set(-effectivePanX, -effectivePanY);
+      bucketsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
+    }
     appRef.current?.renderer?.render(appRef.current.stage);
   }, [zoomLevel, panX, panY]);
 
@@ -562,12 +563,16 @@ export function PivotCanvas<TItem extends object>({
         lastScroll.y = effectivePanY;
 
         if (rootRef.current && bucketsContainerRef.current) {
-          rootRef.current.scale.set(zoomLevel);
-          bucketsContainerRef.current.scale.set(zoomLevel);
+          if (rootRef.current.scale && bucketsContainerRef.current.scale) {
+            rootRef.current.scale.set(zoomLevel);
+            bucketsContainerRef.current.scale.set(zoomLevel);
+          }
           const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
           void invScale;
-          rootRef.current.position.set(-effectivePanX, -effectivePanY);
-          bucketsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
+          if (rootRef.current.position && bucketsContainerRef.current.position) {
+            rootRef.current.position.set(-effectivePanX, -effectivePanY);
+            bucketsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
+          }
         }
 
         syncSpritesToViewport({

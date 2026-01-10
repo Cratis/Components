@@ -290,15 +290,22 @@ export function computeGrouping(
   visibleIds: Uint32Array,
   groupBy: GroupSpec
 ): GroupingResult {
+  console.log('[computeGrouping] field:', groupBy.field, 'buckets:', groupBy.buckets, 'visibleIds:', visibleIds.length);
   const field = store.fields.get(groupBy.field);
   if (!field) {
+    console.log('[computeGrouping] Field not found:', groupBy.field);
     return { groups: [] };
   }
 
+  console.log('[computeGrouping] Field kind:', field.kind);
   if (field.kind === 'string') {
-    return groupByCategorical(field, visibleIds, indexes.categorical.get(groupBy.field));
+    const result = groupByCategorical(field, visibleIds, indexes.categorical.get(groupBy.field));
+    console.log('[computeGrouping] Categorical result:', result.groups.length, 'groups');
+    return result;
   } else if (field.kind === 'number') {
-    return groupByNumeric(field, visibleIds, groupBy.buckets);
+    const result = groupByNumeric(field, visibleIds, groupBy.buckets);
+    console.log('[computeGrouping] Numeric result:', result.groups.length, 'groups');
+    return result;
   }
 
   return { groups: [] };

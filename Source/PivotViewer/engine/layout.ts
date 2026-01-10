@@ -118,10 +118,10 @@ function computeGroupedLayout(
       const row = Math.floor(i / COLUMNS_PER_BUCKET);
 
       const x = groupX + col * slotWidth;
-      // Stack from bottom of total content upward:
-      // row 0 (first card) at bottom: contentHeight - slotHeight
-      // row 1 above it: contentHeight - 2*slotHeight, etc.
-      const y = contentHeight - (row + 1) * slotHeight + CANVAS_PADDING;
+      // Position cards from bottom of container, stacking upwards
+      // Start from contentHeight and subtract row positions
+      const rowsInGroup = Math.ceil(itemsInGroup / COLUMNS_PER_BUCKET);
+      const y = CANVAS_PADDING + contentHeight - (rowsInGroup - row) * slotHeight;
 
       positions.set(id, {
         x,

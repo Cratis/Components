@@ -3,15 +3,17 @@
 
 import { InputText } from 'primereact/inputtext';
 import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from './asCommandFormField';
+import { asCommandFormField, WrappedFieldProps } from '../asCommandFormField';
 
 interface InputTextComponentProps extends WrappedFieldProps<string> {
+    type?: 'text' | 'email' | 'password' | 'color' | 'date' | 'datetime-local' | 'time' | 'url' | 'tel' | 'search';
     placeholder?: string;
 }
 
 export const InputTextField = asCommandFormField<InputTextComponentProps>(
     (props) => (
         <InputText
+            type={props.type || 'text'}
             value={props.value}
             onChange={props.onChange}
             invalid={props.invalid}

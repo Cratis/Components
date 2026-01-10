@@ -7,7 +7,10 @@ import { ReadModelView } from './ReadModelView';
 import { EventsView } from './EventsView';
 import './TimeMachine.css';
 
-type ViewMode = 'readmodel' | 'events';
+enum ViewModes {
+  ReadModel = 'ReadModel',
+  Events = 'Events',
+}
 
 interface TimeMachineProps {
   versions: Version[];
@@ -26,7 +29,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(currentVersionIndex);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isHoveringCard, setIsHoveringCard] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('readmodel');
+  const [viewMode, setViewMode] = useState<ViewModes>(ViewModes.ReadModel);
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollAccumulatorRef = useRef(0);
 
@@ -41,7 +44,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
 
   // Handle trackpad two-finger scroll gesture
   useEffect(() => {
-    if (viewMode !== 'readmodel') {
+    if (viewMode !== ViewModes.ReadModel) {
       return;
     }
 
@@ -99,16 +102,16 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
       {/* View Switcher */}
       <div className="view-switcher">
         <button
-          className={`view-button ${viewMode === 'readmodel' ? 'active' : ''}`}
-          onClick={() => setViewMode('readmodel')}
+          className={`view-button ${viewMode === ViewModes.ReadModel ? 'active' : ''}`}
+          onClick={() => setViewMode(ViewModes.ReadModel)}
           aria-label="Read Model View"
           title="Read Model View"
         >
           <i className="pi pi-box" />
         </button>
         <button
-          className={`view-button ${viewMode === 'events' ? 'active' : ''}`}
-          onClick={() => setViewMode('events')}
+          className={`view-button ${viewMode === ViewModes.Events ? 'active' : ''}`}
+          onClick={() => setViewMode(ViewModes.Events)}
           aria-label="Events View"
           title="Events View"
         >
@@ -117,7 +120,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
       </div>
 
       {/* Render the appropriate view */}
-      {viewMode === 'readmodel' ? (
+      {viewMode === ViewModes.ReadModel ? (
         <ReadModelView
           versions={versions}
           selectedIndex={selectedIndex}
@@ -130,7 +133,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
       )}
 
       {/* Timeline - only show in ReadModel view */}
-      {viewMode === 'readmodel' && (
+      {viewMode === ViewModes.ReadModel && (
         <Timeline
           versions={versions}
           selectedIndex={selectedIndex}
@@ -141,7 +144,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
       )}
 
       {/* Navigation arrows - only show in ReadModel view */}
-      {viewMode === 'readmodel' && (
+      {viewMode === ViewModes.ReadModel && (
         <div className="navigation-controls">
           <button
             className="nav-button prev"

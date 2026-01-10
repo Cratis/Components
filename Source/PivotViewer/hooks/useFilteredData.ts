@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useMemo } from 'react';
-import type { PivotDimension, PivotFilter, PivotGroup } from '../types';
+import type { PivotDimension, PivotFilter, PivotGroup, PropertyAccessor } from '../types';
+import { getPropertyPath, getValueByPath } from '../types';
 import { applyFilters, groupData, toKey } from '../utils/utils';
 import type { FilterState, RangeFilterState } from '../utils/utils';
 
@@ -14,7 +15,7 @@ export function useFilteredData<TItem extends object>(
   activeDimension: PivotDimension<TItem> | undefined,
   dimensionFilter: string | null,
   searchTerm: string,
-  searchFields?: (keyof TItem)[]
+  searchFields?: PropertyAccessor<TItem>[]
 ) {
   const filteredData = useMemo(() => {
     let dataWithFilters = applyFilters(data, filters, filterState, rangeFilterState);
@@ -34,8 +35,9 @@ export function useFilteredData<TItem extends object>(
     // Optimize search by using indexOf instead of includes for better performance
     return dataWithFilters.filter((item) => {
       if (searchFields && searchFields.length) {
-        for (const field of searchFields) {
-          const value = item[field];
+        for (const accessor of searchFields) {
+          const propertyPath = getPropertyPath(accessor);
+          const value = getValueByPath(item, propertyPath);
           if (value !== undefined && String(value).toLowerCase().indexOf(searchTerm) !== -1) {
             return true;
           }

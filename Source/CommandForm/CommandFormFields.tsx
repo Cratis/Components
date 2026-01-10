@@ -48,9 +48,12 @@ const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<C
                 // Update the command value
                 context.setCommandValues({ [propertyName]: value } as any);
 
-                // Call validate() on the command instance if it exists
+                // Call validate() on the command instance and store the result
                 if (context.commandInstance && typeof (context.commandInstance as any).validate === 'function') {
-                    (context.commandInstance as any).validate();
+                    const validationResult = (context.commandInstance as any).validate();
+                    if (validationResult) {
+                        context.setCommandResult(validationResult);
+                    }
                 }
 
                 // Call custom field validator if provided
@@ -73,8 +76,8 @@ const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<C
     const tooltipId = fieldProps.description ? `tooltip-${propertyName}-${index}` : undefined;
 
     return (
-        <div style={{ width: '100%' }}>
-            <div className="p-inputgroup" style={{ width: '100%' }}>
+        <div className="w-full">
+            <div className="p-inputgroup w-full">
                 {fieldProps.description && (
                     <Tooltip target={`.${tooltipId}`} content={fieldProps.description} />
                 )}
@@ -122,7 +125,7 @@ export const CommandFormFields = (props: CommandFormFieldsProps) => {
 
     // Render fields (single column layout)
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+        <div className="flex flex-col gap-4 w-full">
             {(fields || []).map((field, index) => {
                 const fieldProps = field.props as CommandFormFieldProps<any>;
                 const propertyAccessor = fieldProps.value;
