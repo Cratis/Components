@@ -41,15 +41,18 @@ export function usePivotEngine<TItem extends object>({
   const pendingCallbacksRef = useRef<Map<string, (result: unknown) => void>>(new Map());
 
   useEffect(() => {
+    console.log('[PivotEngine] Creating worker');
     const worker = new Worker(
       new URL('../engine/pivot.worker.ts', import.meta.url),
       { type: 'module' }
     );
 
     workerRef.current = worker;
+    console.log('[PivotEngine] Worker created, setting up message handlers');
 
     worker.onmessage = (e: MessageEvent<WorkerOutMessage>) => {
       const message = e.data;
+      console.log('[PivotEngine] Received message from worker:', message.type);
 
       switch (message.type) {
         case 'indexesReady':
@@ -67,10 +70,14 @@ export function usePivotEngine<TItem extends object>({
         }
 
         case 'groupingResult': {
+          console.log('[PivotEngine] Received groupingResult:', message.result);
           const callback = pendingCallbacksRef.current.get('grouping');
           if (callback) {
+            console.log('[PivotEngine] Calling grouping callback');
             callback(message.result);
             pendingCallbacksRef.current.delete('grouping');
+          } else {
+            console.warn('[PivotEngine] No callback registered for grouping result!');
           }
           break;
         }
@@ -109,13 +116,17 @@ export function usePivotEngine<TItem extends object>({
   }, []);
 
   useEffect(() => {
-    if (!workerRef.current) return;
+    if (!workerRef.current) {
+      console.warn('[PivotEngine] Worker not available in data effect');
+      return;
+    }
 
     console.log('[PivotEngine] Building indexes for', data.length, 'items');
     setReady(false);
 
     const store = buildStore(data, fieldExtractors);
     storeRef.current = store;
+    console.log('[PivotEngine] Store built with', store.items.length, 'items and', store.fields.size, 'fields');
 
     // compute indexes locally for immediate fallback and cache
     try {
@@ -126,12 +137,20 @@ export function usePivotEngine<TItem extends object>({
     }
 
     if (workerRef.current) {
+      // Convert Map to array for serialization
+      const fieldsArray = Array.from(store.fields.entries());
+      const serializableStore = {
+        ...store,
+        fields: fieldsArray,
+      };
+
       const message: WorkerInMessage = {
         type: 'buildIndexes',
-        store,
+        store: serializableStore as any,
         fields: indexFields,
       };
 
+      console.log('[PivotEngine] Posting buildIndexes with', fieldsArray.length, 'fields');
       workerRef.current.postMessage(message);
     } else {
       // no worker available, mark ready to allow fallback synchronous usage
@@ -176,14 +195,17 @@ export function usePivotEngine<TItem extends object>({
 
   const computeGroupingCallback = useCallback(
     (visibleIds: Uint32Array, groupBy: GroupSpec): Promise<GroupingResult> => {
+      console.log('[PivotEngine] computeGroupingCallback called with', visibleIds.length, 'visibleIds');
       return new Promise((resolve) => {
         // synchronous fallback if worker unavailable
         if (!workerRef.current || fallbackRef.current) {
+          console.log('[PivotEngine] Using synchronous fallback for grouping');
           try {
             const store = storeRef.current;
             const indexes = indexesRef.current;
             if (store && indexes) {
               const result = computeGrouping(store, indexes, visibleIds, groupBy);
+              console.log('[PivotEngine] Fallback grouping result:', result);
               resolve(result);
               return;
             }
@@ -191,10 +213,12 @@ export function usePivotEngine<TItem extends object>({
             console.error('[PivotEngine] fallback computeGrouping error:', e);
           }
 
+          console.warn('[PivotEngine] No store/indexes for fallback, returning empty');
           resolve({ groups: [] });
           return;
         }
 
+        console.log('[PivotEngine] Setting grouping callback and posting to worker');
         pendingCallbacksRef.current.set('grouping', resolve as (result: unknown) => void);
 
         const message: WorkerInMessage = {
@@ -204,6 +228,7 @@ export function usePivotEngine<TItem extends object>({
         };
 
         workerRef.current.postMessage(message);
+        console.log('[PivotEngine] Message posted to worker');
       });
     },
     [ready]

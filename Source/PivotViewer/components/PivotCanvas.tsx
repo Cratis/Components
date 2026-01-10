@@ -477,6 +477,13 @@ export function PivotCanvas<TItem extends object>({
       prevLayout: prevLayoutRef.current,
     });
     needsRenderRef.current = true;
+    
+    // Force an immediate render after syncing sprites to ensure cards appear
+    if (appRef.current?.renderer && rootRef.current) {
+      appRef.current.renderer.render(appRef.current.stage);
+      needsRenderRef.current = false;
+    }
+    
     startAnimationLoopExternal({
       mountedRef,
       appRef,

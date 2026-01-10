@@ -14,16 +14,30 @@ let indexes: PivotIndexes | null = null;
 
 self.onmessage = (e: MessageEvent<WorkerInMessage>) => {
   const message = e.data;
+  console.log('[Worker] Received message:', message.type);
 
   switch (message.type) {
     case 'buildIndexes': {
-      store = message.store;
+      console.log('[Worker] Building indexes for', message.store.items.length, 'items');
+      
+      // Convert fields array back to Map
+      const fieldsArray = message.store.fields as any;
+      const fieldsMap = new Map(fieldsArray);
+      
+      store = {
+        ...message.store,
+        fields: fieldsMap,
+      };
+      
+      console.log('[Worker] Store converted, fields:', Array.from(fieldsMap.keys()));
       indexes = buildIndexes(store, message.fields);
+      console.log('[Worker] Indexes built');
 
       const response: WorkerOutMessage = {
         type: 'indexesReady',
         indexes,
       };
+      console.log('[Worker] Posting indexesReady');
       self.postMessage(response);
       break;
     }
@@ -46,21 +60,24 @@ self.onmessage = (e: MessageEvent<WorkerInMessage>) => {
 
     case 'computeGrouping': {
       if (!store || !indexes) {
-        console.error('Store or indexes not initialized');
+        console.error('[Worker] Store or indexes not initialized');
         return;
       }
 
+      console.log('[Worker] Computing grouping for', message.visibleIds.length, 'items, groupBy:', message.groupBy);
       const result = computeGrouping(
         store,
         indexes,
         message.visibleIds,
         message.groupBy
       );
+      console.log('[Worker] Grouping computed:', result.groups.length, 'groups');
 
       const response: WorkerOutMessage = {
         type: 'groupingResult',
         result,
       };
+      console.log('[Worker] Posting groupingResult');
       self.postMessage(response);
       break;
     }

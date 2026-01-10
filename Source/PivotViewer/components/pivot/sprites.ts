@@ -52,6 +52,51 @@ export function createCardSprite<TItem extends object>(
       }
     }
 
+    // Recreate text objects if they were destroyed
+    const offsetX = CARD_GAP / 2;
+    const offsetY = CARD_GAP / 2;
+    
+    if (!sprite.titleText || sprite.titleText.destroyed) {
+      sprite.titleText = new PIXI.Text('', {
+        fontSize: 13,
+        fill: cardColors.text as any,
+        fontWeight: '600',
+        lineHeight: 18,
+        wordWrap: false,
+      } as any);
+      sprite.titleText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING);
+      if (sprite.container) {
+        sprite.container.addChild(sprite.titleText);
+      }
+    }
+
+    if (!sprite.labelsText || sprite.labelsText.destroyed) {
+      sprite.labelsText = new PIXI.Text('', {
+        fontSize: 11,
+        fill: cardColors.textSecondary as any,
+        fontWeight: '400',
+        lineHeight: 18,
+      } as any);
+      sprite.labelsText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING + 40);
+      if (sprite.container) {
+        sprite.container.addChild(sprite.labelsText);
+      }
+    }
+
+    if (!sprite.valuesText || sprite.valuesText.destroyed) {
+      sprite.valuesText = new PIXI.Text('', {
+        fontSize: 11,
+        fill: cardColors.text as any,
+        fontWeight: '500',
+        lineHeight: 18,
+        wordWrap: false,
+      } as any);
+      sprite.valuesText.position.set(offsetX + CARD_PADDING + 65, offsetY + CARD_PADDING + 40);
+      if (sprite.container) {
+        sprite.container.addChild(sprite.valuesText);
+      }
+    }
+
     // Update event context
     if (sprite.container) {
       (sprite.container as any)._eventContext = { items, onCardClick, id };
@@ -116,8 +161,8 @@ export function createCardSprite<TItem extends object>(
   container.on('click', (e: PIXI.FederatedPointerEvent) => {
     e.stopPropagation();
     const ctx = (container as any)._eventContext as { items: any; onCardClick: (item: any, e: MouseEvent, id: number | string) => void; id: number | string };
-    const itemsMap = ctx.items as Record<string, any>;
-    const item = itemsMap[String(ctx.id)];
+    const itemsArray = ctx.items as any[];
+    const item = itemsArray[Number(ctx.id)];
     if (item) {
       ctx.onCardClick(item, e.nativeEvent as MouseEvent, ctx.id);
     }
@@ -168,6 +213,7 @@ export function clearSpritePool() {
   spritePool.length = 0;
 }
 
+// Updated: Text objects now recreated when recycling pooled sprites
 export function updateCardContent<TItem extends object>(
   sprite: CardSprite,
   item: TItem,
@@ -208,6 +254,11 @@ export function updateCardContent<TItem extends object>(
   const valuesText = `${typeDisplay}\n${timeStr}\n${correlationShort}`;
   const colorsChanged = sprite.lastCardColors !== colors;
 
+  // Ensure text objects exist before using them
+  if (!sprite.titleText) return;
+  if (!sprite.labelsText) return;
+  if (!sprite.valuesText) return;
+
   if (sprite.lastTitle !== titleDisplay) {
     sprite.titleText.text = titleDisplay;
     sprite.lastTitle = titleDisplay;
@@ -245,11 +296,14 @@ export function updateCardContent<TItem extends object>(
   sprite.lastSelectedId = selectedId;
   sprite.lastCardColors = cardColors;
 
-  if (sprite.graphics && !sprite.graphics.destroyed) {
-    sprite.graphics.clear();
-  } else {
+  // Ensure graphics exists before attempting to use it
+  if (!sprite.graphics || sprite.graphics.destroyed) {
     sprite.graphics = new PIXI.Graphics();
-    sprite.container.addChildAt(sprite.graphics, 0);
+    if (sprite.container) {
+      sprite.container.addChildAt(sprite.graphics, 0);
+    }
+  } else {
+    sprite.graphics.clear();
   }
 
   const actualWidth = cardWidth - CARD_GAP;
@@ -267,11 +321,19 @@ export function updateCardContent<TItem extends object>(
   }
 
   sprite.graphics.roundRect(offsetX, offsetY, actualWidth, actualHeight, CARD_RADIUS);
-  sprite.graphics.fill(gradient);
+  
+  // Ensure graphics is still valid before filling
+  if (sprite.graphics && !sprite.graphics.destroyed) {
+    sprite.graphics.fill(gradient);
+  }
 
   if (isSelected) {
-    sprite.graphics.stroke({ width: 2, color: colors.border });
+    if (sprite.graphics && !sprite.graphics.destroyed) {
+      sprite.graphics.stroke({ width: 2, color: colors.border });
+    }
   } else {
-    sprite.graphics.stroke({ width: 1, color: colors.border, alpha: 0.35 });
+    if (sprite.graphics && !sprite.graphics.destroyed) {
+      sprite.graphics.stroke({ width: 1, color: colors.border, alpha: 0.35 });
+    }
   }
 }
