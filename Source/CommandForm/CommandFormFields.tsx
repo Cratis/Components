@@ -7,32 +7,32 @@ import { Tooltip } from 'primereact/tooltip';
 import type { CommandFormFieldProps } from './CommandFormField';
 
 export interface ColumnInfo {
-    fields: React.ReactElement<CommandFormFieldProps<any>>[];
+    fields: React.ReactElement<CommandFormFieldProps<unknown>>[];
 }
 
 export interface CommandFormFieldsProps {
-    fields?: React.ReactElement<CommandFormFieldProps<any>>[];
+    fields?: React.ReactElement<CommandFormFieldProps<unknown>>[];
     columns?: ColumnInfo[];
 }
 
 // Separate component for each field to prevent re-rendering all fields
-const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<CommandFormFieldProps<any>>; index: number }) => {
-    const context = useCommandFormContext<any>();
-    const fieldProps = field.props as CommandFormFieldProps<any>;
+const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<CommandFormFieldProps<unknown>>; index: number }) => {
+    const context = useCommandFormContext<unknown>();
+    const fieldProps = field.props as CommandFormFieldProps<unknown>;
     const propertyAccessor = fieldProps.value;
 
     // Get the property name from the accessor function
     const propertyName = propertyAccessor ? getPropertyName(propertyAccessor) : '';
 
     // Get the current value from the command instance
-    const currentValue = propertyName ? (context.commandInstance as any)?.[propertyName] : undefined;
+    const currentValue = propertyName ? (context.commandInstance as Record<string, unknown>)?.[propertyName] : undefined;
 
     // Get the error message for this field, if any
     const errorMessage = propertyName ? context.getFieldError(propertyName) : undefined;
 
     // Get the property descriptor for this field from the command instance
-    const propertyDescriptor = propertyName && (context.commandInstance as any)?.propertyDescriptors
-        ? (context.commandInstance as any).propertyDescriptors.find((pd: any) => pd.name === propertyName)
+    const propertyDescriptor = propertyName && (context.commandInstance as Record<string, unknown>)?.propertyDescriptors
+        ? (context.commandInstance as Record<string, unknown>).propertyDescriptors.find((pd: Record<string, unknown>) => pd.name === propertyName)
         : undefined;
 
     // Clone the field element with the current value and onChange handler
@@ -46,11 +46,11 @@ const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<C
                 const oldValue = currentValue;
 
                 // Update the command value
-                context.setCommandValues({ [propertyName]: value } as any);
+                context.setCommandValues({ [propertyName]: value } as Record<string, unknown>);
 
                 // Call validate() on the command instance and store the result
-                if (context.commandInstance && typeof (context.commandInstance as any).validate === 'function') {
-                    const validationResult = (context.commandInstance as any).validate();
+                if (context.commandInstance && typeof (context.commandInstance as Record<string, unknown>).validate === 'function') {
+                    const validationResult = (context.commandInstance as Record<string, unknown>).validate();
                     if (validationResult) {
                         context.setCommandResult(validationResult);
                     }
@@ -58,20 +58,20 @@ const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<C
 
                 // Call custom field validator if provided
                 if (context.onFieldValidate) {
-                    const validationError = context.onFieldValidate(context.commandInstance as any, propertyName, oldValue, value);
+                    const validationError = context.onFieldValidate(context.commandInstance as Record<string, unknown>, propertyName, oldValue, value);
                     context.setCustomFieldError(propertyName, validationError);
                 }
 
                 // Call field change callback if provided
                 if (context.onFieldChange) {
-                    context.onFieldChange(context.commandInstance as any, propertyName, oldValue, value);
+                    context.onFieldChange(context.commandInstance as Record<string, unknown>, propertyName, oldValue, value);
                 }
             }
-            fieldProps.onChange?.(value as any);
+            fieldProps.onChange?.(value as unknown);
         },
         required: fieldProps.required ?? true,
         invalid: !!errorMessage
-    } as any);
+    } as Record<string, unknown>);
 
     const tooltipId = fieldProps.description ? `tooltip-${propertyName}-${index}` : undefined;
 
@@ -105,7 +105,7 @@ export const CommandFormFields = (props: CommandFormFieldsProps) => {
                 {columns.map((column, columnIndex) => (
                     <div key={`column-${columnIndex}`} className="flex flex-column gap-3 flex-1">
                             {column.fields.map((field, index) => {
-                                const fieldProps = field.props as CommandFormFieldProps<any>;
+                                const fieldProps = field.props as CommandFormFieldProps<unknown>;
                                 const propertyAccessor = fieldProps.value;
                                 const propertyName = propertyAccessor ? getPropertyName(propertyAccessor) : `field-${columnIndex}-${index}`;
 
@@ -127,7 +127,7 @@ export const CommandFormFields = (props: CommandFormFieldsProps) => {
     return (
         <div className="flex flex-col gap-4 w-full">
             {(fields || []).map((field, index) => {
-                const fieldProps = field.props as CommandFormFieldProps<any>;
+                const fieldProps = field.props as CommandFormFieldProps<unknown>;
                 const propertyAccessor = fieldProps.value;
                 const propertyName = propertyAccessor ? getPropertyName(propertyAccessor) : `field-${index}`;
 

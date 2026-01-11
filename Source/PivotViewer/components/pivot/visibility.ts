@@ -194,7 +194,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
                     try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
                     // Don't mark as hidden, so it won't be swept
-                    if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
+                    if ((sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt) delete (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
                     continue;
                 }
             }
@@ -209,7 +209,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
                 if (sprite.container) {
                     sprite.container.visible = false;
                 }
-                (sprite as any).__lastHiddenAt = Date.now();
+                (sprite as unknown as { __lastHiddenAt: number }).__lastHiddenAt = Date.now();
             } catch (e) {
                 void e;
             }
@@ -218,7 +218,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
                 if (sprite.container) {
                     sprite.container.visible = true;
                 }
-                if ((sprite as any).__lastHiddenAt) delete (sprite as any).__lastHiddenAt;
+                if ((sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt) delete (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
             } catch (e) { void e; }
         }
     }
@@ -228,7 +228,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
         const now = Date.now();
         for (const [id, sprite] of sprites) {
-            const lastHidden = (sprite as any).__lastHiddenAt as number | undefined;
+            const lastHidden = (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
             if (lastHidden && now - lastHidden > SWEEP_MS) {
                 try {
                     // remove from parent if present

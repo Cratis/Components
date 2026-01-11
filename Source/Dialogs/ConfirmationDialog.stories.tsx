@@ -26,7 +26,7 @@ export const Default: Story = {
         title: 'Are you sure you want to proceed?', 
         message: 'Do you really really want to proceed with this action?'
     },
-    render: (args: any) => (
+    render: (args: { title: string; message: string }) => (
         <div className="storybook-wrapper" >
             <DialogComponents confirmation={ConfirmationDialog}>
                 <DialogWrapper title={args.title} message={args.message} />

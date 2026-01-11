@@ -152,7 +152,7 @@ export function usePivotEngine<TItem extends object>({
 
       const message: WorkerInMessage = {
         type: 'buildIndexes',
-        store: serializableStore as any,
+        store: serializableStore as unknown as PivotStore,
         fields: indexFields,
       };
 

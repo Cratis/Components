@@ -41,12 +41,12 @@ export interface DataTableForObservableQueryProps<TQuery extends IObservableQuer
     /**
      * The current selection.
      */
-    selection?: any | undefined | null;
+    selection?: TDataType | undefined | null;
 
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<any>): void;
+    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<TDataType[]>): void;
 
     /**
      * Fields to use for global filtering

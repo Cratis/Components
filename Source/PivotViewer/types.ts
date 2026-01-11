@@ -17,7 +17,7 @@ export type PropertyAccessor<TItem> = (item: TItem) => unknown;
 export function getPropertyPath<TItem>(accessor: PropertyAccessor<TItem>): string {
     const fnStr = accessor.toString();
     // Match patterns like: item => item.prop or item => item.prop.nested or (item) => item.prop
-    const match = fnStr.match(/(?:=>|return)\s*[a-zA-Z_$][a-zA-Z0-9_$]*\.([a-zA-Z_$][a-zA-Z0-9_$.]*)/)
+    const match = fnStr.match(/(?:=>|return)\s*[a-zA-Z_$][a-zA-Z0-9_$]*\.([a-zA-Z_$][a-zA-Z0-9_$.]*)/);
     return match ? match[1] : '';
 }
 
@@ -27,7 +27,7 @@ export function getPropertyPath<TItem>(accessor: PropertyAccessor<TItem>): strin
  */
 export function getValueByPath<TItem>(item: TItem, path: string): unknown {
     const parts = path.split('.');
-    let value: any = item;
+    let value: unknown = item;
     for (const part of parts) {
         if (value === null || value === undefined) {
             return undefined;

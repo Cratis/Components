@@ -189,8 +189,8 @@ export function PivotViewerMain<TItem extends object>({
               cardRenderer={cardRenderer}
               resolveId={resolveId}
               onCardClick={onCardClick}
-              onPanStart={onPanStart as any}
-              onPanMove={onPanMove as any}
+              onPanStart={onPanStart}
+              onPanMove={onPanMove}
               onPanEnd={onPanEnd}
               containerRef={containerRef}
               viewMode={viewMode}

@@ -87,7 +87,7 @@ export function RangeHistogramFilter({
     e: React.MouseEvent,
     handle: 'left' | 'right' | 'range'
   ) => {
-    (e as any).preventDefault?.();
+    e.preventDefault?.();
     setIsDragging(handle);
     setDragStart({ x: e.clientX, range: [...currentRange] as [number, number] });
   };

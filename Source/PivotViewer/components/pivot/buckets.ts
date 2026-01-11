@@ -23,7 +23,7 @@ export function updateBucketBackgrounds(
     // If we shouldn't show anything, hide all existing backgrounds
     // We keep the highlight if it exists
     for (const child of bucketsContainer.children) {
-      if ((child as any).name !== 'highlight') {
+      if ((child as unknown as { name?: string }).name !== 'highlight') {
         child.visible = false;
       }
     }
@@ -34,7 +34,7 @@ export function updateBucketBackgrounds(
   const worldHeight = layout.totalHeight || container.clientHeight;
 
   // Get existing background graphics (excluding highlight)
-  const backgroundGraphics = bucketsContainer.children.filter(c => (c as any).name !== 'highlight') as PIXI.Graphics[];
+  const backgroundGraphics = bucketsContainer.children.filter(c => (c as unknown as { name?: string }).name !== 'highlight') as PIXI.Graphics[];
   let bgIndex = 0;
 
   // Instead of re-deriving bucket geometry from constants, compute bucket bounds
@@ -69,7 +69,7 @@ export function updateBucketBackgrounds(
       } else {
         bg = new PIXI.Graphics();
         // Insert before highlight if it exists, otherwise at end
-        const highlightIndex = bucketsContainer.children.findIndex(c => (c as any).name === 'highlight');
+        const highlightIndex = bucketsContainer.children.findIndex(c => (c as unknown as { name?: string }).name === 'highlight');
         if (highlightIndex >= 0) {
           bucketsContainer.addChildAt(bg, highlightIndex);
         } else {
@@ -106,11 +106,11 @@ export function updateHighlight(
   // to avoid unused-parameter lint errors when callers pass it.
   void zoomLevel;
 
-  let highlight = bucketsContainer.children.find(child => (child as any).name === 'highlight') as PIXI.Graphics;
+  let highlight = bucketsContainer.children.find(child => (child as unknown as { name?: string }).name === 'highlight') as PIXI.Graphics;
 
   if (!highlight) {
     highlight = new PIXI.Graphics();
-    (highlight as any).name = 'highlight';
+    (highlight as unknown as { name: string }).name = 'highlight';
     bucketsContainer.addChild(highlight);
   }
 

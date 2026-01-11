@@ -21,8 +21,8 @@ self.onmessage = (e: MessageEvent<WorkerInMessage>) => {
       console.log('[Worker] Building indexes for', message.store.items.length, 'items');
       
       // Convert fields array back to Map
-      const fieldsArray = message.store.fields as any;
-      const fieldsMap = new Map<string, any>(fieldsArray);
+      const fieldsArray = message.store.fields as [string, unknown][];
+      const fieldsMap = new Map<string, unknown>(fieldsArray);
       
       store = {
         ...message.store,

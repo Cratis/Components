@@ -3,7 +3,7 @@
 
 import React from 'react';
 import * as Comp from './FormElement';
-const Component: React.ComponentType<any> | undefined = (Comp as any).default || (Object.values(Comp)[0] as any);
+const Component: React.ComponentType<Record<string, never>> | undefined = (Comp as Record<string, unknown>).default as React.ComponentType<Record<string, never>> | undefined || (Object.values(Comp)[0] as React.ComponentType<Record<string, never>> | undefined);
 
 export default { title: 'Common/FormElement', component: Component };
 

@@ -33,7 +33,7 @@ export interface CommandDialogProps<TCommand, TResponse = object> {
 }
 
 interface CommandDialogContextValue<TCommand = unknown> {
-    onSuccess: (result: ICommandResult<any>) => void | Promise<void>;
+    onSuccess: (result: ICommandResult<unknown>) => void | Promise<void>;
     onCancel: () => void;
     confirmLabel: string;
     cancelLabel: string;
@@ -89,7 +89,7 @@ const CommandDialogFormContent = () => {
 const CommandDialogFieldsWrapper = (props: { children: React.ReactNode }) => {
     React.Children.forEach(props.children, child => {
         if (React.isValidElement(child)) {
-            const component = child.type as any;
+            const component = child.type as React.ComponentType<unknown>;
             if (component.displayName !== 'CommandFormField') {
                 throw new Error(`Only CommandFormField components are allowed as children of CommandDialog.Fields. Got: ${component.displayName || component.name || 'Unknown'}`);
             }
@@ -103,7 +103,7 @@ const CommandDialogFieldsWrapper = (props: { children: React.ReactNode }) => {
     );
 };
 
-const CommandDialogComponent = <TCommand extends object = any, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
+const CommandDialogComponent = <TCommand extends object = object, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
     const {
         command,
         initialValues,

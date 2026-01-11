@@ -9,7 +9,7 @@ export function useFilterPanelDrag() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const handleFilterPanelDragStart = useCallback((e: React.MouseEvent) => {
-    (e as any).preventDefault?.();
+    e.preventDefault?.();
     setIsDraggingPanel(true);
     setDragOffset({
       x: e.clientX - filterPanelPos.x,

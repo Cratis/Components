@@ -39,7 +39,7 @@ export function usePanning(
 
       if (e.button === 1 || (e.button === 0 && (e.altKey || !isOnCard))) {
       if (!isOnCard) {
-        (e as any).preventDefault?.();
+        e.preventDefault?.();
       }
       setIsPanning(true);
       panStartRef.current = {

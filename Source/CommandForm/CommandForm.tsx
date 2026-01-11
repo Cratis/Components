@@ -37,7 +37,7 @@ interface CommandFormContextValue<TCommand> {
     setCustomFieldError: (fieldName: string, error: string | undefined) => void;
 }
 
-const CommandFormContext = createContext<CommandFormContextValue<any> | undefined>(undefined);
+const CommandFormContext = createContext<CommandFormContextValue<unknown> | undefined>(undefined);
 
 export const useCommandFormContext = <TCommand,>() => {
     const context = useContext(CommandFormContext);
@@ -48,8 +48,8 @@ export const useCommandFormContext = <TCommand,>() => {
 };
 
 // Hook to get just the command instance for easier access
-export const useCommandInstance = <TCommand = any>() => {
-    const { commandInstance } = useCommandFormContext<any>();
+export const useCommandInstance = <TCommand = unknown>() => {
+    const { commandInstance } = useCommandFormContext<TCommand>();
     return commandInstance as TCommand;
 };
 
@@ -62,7 +62,7 @@ export const useSetCommandResult = () => {
 const CommandFormFieldsWrapper = (props: { children: React.ReactNode }) => {
     React.Children.forEach(props.children, child => {
         if (React.isValidElement(child)) {
-            const component = child.type as any;
+            const component = child.type as React.ComponentType<unknown>;
             if (component.displayName !== 'CommandFormField') {
                 throw new Error(`Only CommandFormField components are allowed as children of CommandForm.Fields. Got: ${component.displayName || component.name || 'Unknown'}`);
             }
@@ -78,14 +78,14 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
     if (!props.children) {
         return { fieldsOrColumns: [], otherChildren: [], initialValuesFromFields: {} };
     }
-    let fields: React.ReactElement<CommandFormFieldProps<any>>[] = [];
+    let fields: React.ReactElement<CommandFormFieldProps<unknown>>[] = [];
     const columns: ColumnInfo[] = [];
     let hasColumns = false;
     const otherChildren: React.ReactNode[] = [];
     let initialValuesFromFields: Partial<TCommand> = {};
 
     const extractInitialValue = (field: React.ReactElement) => {
-        const fieldProps = field.props as any;
+        const fieldProps = field.props as Record<string, unknown>;
         if (fieldProps.currentValue !== undefined && fieldProps.value) {
             const propertyAccessor = fieldProps.value;
             const propertyName = getPropertyNameFromAccessor(propertyAccessor);
@@ -101,7 +101,7 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
             return;
         }
 
-        const component = child.type as any;
+        const component = child.type as React.ComponentType<unknown>;
 
         // Check if child is a CommandFormColumn
         if (component.displayName === 'CommandFormColumn') {
@@ -109,7 +109,7 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
             const childProps = child.props as { children?: React.ReactNode };
             const columnFields = React.Children.toArray(childProps.children).filter(child => {
                 if (React.isValidElement(child)) {
-                    const comp = child.type as any;
+                    const comp = child.type as React.ComponentType<unknown>;
                     if (comp.displayName === 'CommandFormField') {
                         extractInitialValue(child as React.ReactElement);
                         return true;
@@ -117,19 +117,19 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
                 }
                 return false;
             }) as React.ReactElement[];
-            columns.push({ fields: columnFields as React.ReactElement<CommandFormFieldProps<any>>[] });
+            columns.push({ fields: columnFields as React.ReactElement<CommandFormFieldProps<unknown>>[] });
         }
         // Check if child is a CommandFormField (direct child)
         else if (component.displayName === 'CommandFormField') {
             extractInitialValue(child as React.ReactElement);
-            fields.push(child as React.ReactElement<CommandFormFieldProps<any>>);
+            fields.push(child as React.ReactElement<CommandFormFieldProps<unknown>>);
         }
         // Check if child is Fields wrapper (backwards compatibility)
         else if (component === CommandFormFieldsWrapper || component.displayName === 'CommandFormFieldsWrapper') {
             const childProps = child.props as { children: React.ReactNode };
             const relevantChildren = React.Children.toArray(childProps.children).filter(child => {
                 if (React.isValidElement(child)) {
-                    const component = child.type as any;
+                    const component = child.type as React.ComponentType<unknown>;
                     if (component.displayName === 'CommandFormField') {
                         extractInitialValue(child as React.ReactElement);
                         return true;
@@ -137,7 +137,7 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
                 }
                 return false;
             }) as React.ReactElement[];
-            fields = [...fields, ...(relevantChildren as React.ReactElement<CommandFormFieldProps<any>>[])];
+            fields = [...fields, ...(relevantChildren as React.ReactElement<CommandFormFieldProps<unknown>>[])];
         }
         // Everything else is not a field, keep it as other children
         else {
@@ -155,7 +155,7 @@ function getPropertyNameFromAccessor<T>(accessor: (obj: T) => unknown): string {
     return match ? match[1] : '';
 }
 
-const CommandFormComponent = <TCommand extends object = any>(props: CommandFormProps<TCommand>) => {
+const CommandFormComponent = <TCommand extends object = object>(props: CommandFormProps<TCommand>) => {
     const { fieldsOrColumns, otherChildren, initialValuesFromFields } = useMemo(() => getCommandFormFields<TCommand>(props), [props.children]);
 
     // Extract matching properties from currentValues
@@ -163,12 +163,12 @@ const CommandFormComponent = <TCommand extends object = any>(props: CommandFormP
         if (!props.currentValues) return {};
 
         const tempCommand = new props.command();
-        const commandProperties = (tempCommand as any).properties || [];
+        const commandProperties = (tempCommand as Record<string, unknown>).properties || [];
         const extracted: Partial<TCommand> = {};
 
         commandProperties.forEach((propertyName: string) => {
-            if ((props.currentValues as any)[propertyName] !== undefined) {
-                (extracted as any)[propertyName] = (props.currentValues as any)[propertyName];
+            if ((props.currentValues as Record<string, unknown>)[propertyName] !== undefined) {
+                (extracted as Record<string, unknown>)[propertyName] = (props.currentValues as Record<string, unknown>)[propertyName];
             }
         });
 
@@ -183,7 +183,7 @@ const CommandFormComponent = <TCommand extends object = any>(props: CommandFormP
     }), [valuesFromCurrentValues, initialValuesFromFields, props.initialValues]);
 
     // useCommand returns [instance, setter] for the typed command. Provide generics so commandInstance is TCommand.
-    const [commandInstance, setCommandValues] = useCommand<any>(props.command as Constructor<any>, mergedInitialValues as Partial<any>);
+    const [commandInstance, setCommandValues] = useCommand<TCommand>(props.command as Constructor<TCommand>, mergedInitialValues as Partial<TCommand>);
     const [commandResult, setCommandResult] = useState<ICommandResult<unknown> | undefined>(undefined);
     const [fieldValidities, setFieldValidities] = useState<Record<string, boolean>>({});
     const [customFieldErrors, setCustomFieldErrors] = useState<Record<string, string>>({});
@@ -236,7 +236,7 @@ const CommandFormComponent = <TCommand extends object = any>(props: CommandFormP
 
     return (
         <CommandFormContext.Provider value={{ command: props.command, commandInstance, setCommandValues, commandResult, setCommandResult, getFieldError, isValid, setFieldValidity, onFieldValidate: props.onFieldValidate, onFieldChange: props.onFieldChange, onBeforeExecute: props.onBeforeExecute, customFieldErrors, setCustomFieldError }}>
-            <CommandFormFields fields={hasColumns ? undefined : (fieldsOrColumns as React.ReactElement<CommandFormFieldProps<any>>[])} columns={hasColumns ? fieldsOrColumns as ColumnInfo[] : undefined} />
+            <CommandFormFields fields={hasColumns ? undefined : (fieldsOrColumns as React.ReactElement<CommandFormFieldProps<unknown>>[])} columns={hasColumns ? fieldsOrColumns as ColumnInfo[] : undefined} />
             {exceptionMessages.length > 0 && (
                 <div className="card flex flex-row gap-3 mt-3">
                     <Panel header="The server responded with" className="w-full">
