@@ -30,7 +30,7 @@ export class UserRegistrationCommandValidator extends CommandValidator<IUserRegi
     }
 }
 
-export class UserRegistrationCommand extends Command<IUserRegistrationCommand, string> implements IUserRegistrationCommand {
+export class UserRegistrationCommand extends Command<IUserRegistrationCommand, object> implements IUserRegistrationCommand {
     readonly route: string = '/api/users/register';
     readonly validation: CommandValidator = new UserRegistrationCommandValidator();
     readonly propertyDescriptors: PropertyDescriptor[] = [
@@ -60,7 +60,7 @@ export class UserRegistrationCommand extends Command<IUserRegistrationCommand, s
     private _role!: string;
 
     constructor() {
-        super(String, false);
+        super(Object, false);
     }
 
     get requestParameters(): string[] {

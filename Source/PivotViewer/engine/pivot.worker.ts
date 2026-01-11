@@ -22,7 +22,7 @@ self.onmessage = (e: MessageEvent<WorkerInMessage>) => {
       
       // Convert fields array back to Map
       const fieldsArray = message.store.fields as any;
-      const fieldsMap = new Map(fieldsArray);
+      const fieldsMap = new Map<string, any>(fieldsArray);
       
       store = {
         ...message.store,
@@ -30,15 +30,17 @@ self.onmessage = (e: MessageEvent<WorkerInMessage>) => {
       };
       
       console.log('[Worker] Store converted, fields:', Array.from(fieldsMap.keys()));
-      indexes = buildIndexes(store, message.fields);
-      console.log('[Worker] Indexes built');
+      if (store) {
+        indexes = buildIndexes(store, message.fields);
+        console.log('[Worker] Indexes built');
 
-      const response: WorkerOutMessage = {
-        type: 'indexesReady',
-        indexes,
-      };
-      console.log('[Worker] Posting indexesReady');
-      self.postMessage(response);
+        const response: WorkerOutMessage = {
+          type: 'indexesReady',
+          indexes,
+        };
+        console.log('[Worker] Posting indexesReady');
+        self.postMessage(response);
+      }
       break;
     }
 

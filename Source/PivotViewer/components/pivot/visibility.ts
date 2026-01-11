@@ -35,7 +35,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
     console.log('[syncSpritesToViewport] Called with', {
         layoutPositionsSize: layout.positions.size,
-        visibleIdsSize: visibleIds.size,
+        visibleIdsSize: visibleIds.length,
         spritesSize: sprites.size,
         itemsLength: items.length,
         isViewTransition,
