@@ -465,6 +465,7 @@ export function PivotCanvas<TItem extends object>({
     
     syncSpritesToViewport({
       root: rootRef.current,
+      groupsContainer: groupsContainerRef.current,
       container: parentContainerRef.current,
       sprites: spritesRef.current,
       layout,
