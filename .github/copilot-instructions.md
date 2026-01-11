@@ -12,8 +12,9 @@
 
 - Make only high confidence suggestions when reviewing code changes.
 - Never change package.json or package-lock.json files unless explicitly asked to.
-- Never leave unused using statements in the code.
+- Never leave unused import statements in the code.
 - Always ensure that the code compiles without warnings.
+  - Use yarn compile to verify.
 - Always ensure that the code passes all tests.
 - Always ensure that the code adheres to the project's coding standards.
 - Always ensure that the code is maintainable.
@@ -53,18 +54,38 @@
 - When type assertions are necessary, use `unknown` as an intermediate type:
   - Prefer `value as unknown as TargetType` over `value as any`
   - For objects with dynamic properties: `(obj as unknown as { prop: Type }).prop`
+  - For incompatible type conversions in Storybook: `Comp as unknown as React.ComponentType<...>`
 - For generic React components:
   - Use `unknown` as default generic parameter instead of `any`
   - Example: `<TCommand = unknown>` not `<TCommand = any>`
+  - Add proper constraints when working with libraries (e.g., PrimeReact DataTable requires `extends object`)
 - For Storybook files:
   - Use `React.ComponentType<Record<string, never>>` for components with no props
+  - Always use `as unknown as` when converting component imports to avoid type mismatch errors
   - Properly type story args instead of using `any`
 - For event handlers:
+  - Be careful with React.MouseEvent vs DOM MouseEvent - they are different types
+  - React synthetic events: `React.MouseEvent<Element, MouseEvent>`
+  - DOM native events: `MouseEvent`
+  - Convert between them using: `nativeEvent as unknown as React.MouseEvent`
   - Use proper event types: `React.MouseEvent`, `MouseEvent`, etc.
   - Use `e.preventDefault?.()` instead of `(e as any).preventDefault?.()`
 - For library objects (PIXI, etc.):
   - Use proper library types when available
   - Use specific property types: `{ canvas?: HTMLCanvasElement }` instead of `any`
+- When working with external libraries that have strict generic constraints:
+  - Import necessary types (e.g., `Command` from `@cratis/arc/commands`)
+  - Use type assertions through `unknown` to satisfy constraints: `props.command as unknown as Constructor<Command<...>>`
+  - Extract tuple results explicitly rather than destructuring when type assertions are needed
+- For function parameter types that may be unknown:
+  - Add type guards: `if (typeof accessor !== 'function') return ''`
+  - Type parameters with fallbacks: `function<T = unknown>(accessor: ((obj: T) => unknown) | unknown)`
+- For arrays and collections accessed from `unknown` types:
+  - Cast to proper array type: `((obj as Record<string, unknown>).items || []) as string[]`
+  - Type array elements when iterating: `array.forEach((item: string) => ...)`
+- For generic type parameters:
+  - Ensure proper type conversions: `String(value)` when string operations are needed
+  - Use explicit Date parameter types: `new Date(value as string | number | Date)`
 
 ## Testing
 
