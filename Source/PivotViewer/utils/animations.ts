@@ -202,29 +202,11 @@ export function calculateCenterScrollPosition(
   const scrollLeft = Math.max(0, cardCenterX - targetX);
   let scrollTop = Math.max(0, cardCenterY - targetY);
 
-  console.log('[Animation] calculateCenterScrollPosition', {
-    cardY: cardPosition.y,
-    zoomLevel,
-    cardCenterY,
-    targetY,
-    initialScrollTop: scrollTop,
-    totalHeight,
-    containerHeight: container.clientHeight
-  });
-
   // If totalHeight is provided, clamp to valid scroll range
   if (totalHeight) {
     const contentHeight = totalHeight * zoomLevel;
     const viewportHeight = container.clientHeight;
     const maxScrollTop = Math.max(0, contentHeight - viewportHeight);
-
-    console.log('[Animation] Clamping', {
-      contentHeight,
-      viewportHeight,
-      maxScrollTop,
-      currentScrollTop: scrollTop,
-      clamped: Math.min(scrollTop, maxScrollTop)
-    });
 
     scrollTop = Math.min(scrollTop, maxScrollTop);
   }

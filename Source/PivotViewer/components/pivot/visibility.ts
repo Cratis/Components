@@ -33,15 +33,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     const { root, container, sprites, layout, visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, prevLayout } = params;
     if (!root || !container) return;
 
-    console.log('[syncSpritesToViewport] Called with', {
-        layoutPositionsSize: layout.positions.size,
-        visibleIdsSize: visibleIds.length,
-        spritesSize: sprites.size,
-        itemsLength: items.length,
-        isViewTransition,
-        zoomLevel
-    });
-
     // `visibleIds` comes from callers but this module iterates `layout.positions`.
     // Keep a reference to avoid unused variable lint errors when callers include it.
     void visibleIds;
@@ -253,25 +244,19 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     const MAX_SPRITES_PER_FRAME = 50;
     let createdCount = 0;
 
-    console.log('[syncSpritesToViewport] About to create sprites for inViewportIds:', inViewportIds.length);
-    console.log('[syncSpritesToViewport] layout.positions IDs:', Array.from(layout.positions.keys()));
 
     for (const id of inViewportIds) {
         const position = layout.positions.get(id);
         if (!position) {
-            console.log('[syncSpritesToViewport] No position for id:', id, 'in layout.positions');
             continue;
         }
 
         let sprite = sprites.get(id);
         if (!sprite) {
             if (createdCount >= MAX_SPRITES_PER_FRAME) {
-                console.log('[syncSpritesToViewport] Max sprites per frame reached');
                 continue;
             }
             createdCount++;
-
-            console.log('[syncSpritesToViewport] Creating sprite for id:', id, 'at position:', position);
 
             let startX = position.x;
             let startY = position.y;
@@ -321,10 +306,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
         // Check if target changed to trigger animation
         if (sprite.targetX !== position.x || sprite.targetY !== position.y) {
-            console.log('[syncSpritesToViewport] Updating sprite target position for id:', id, 'from', {
-                oldX: sprite.targetX,
-                oldY: sprite.targetY
-            }, 'to', position);
             if (isViewTransition) {
                 sprite.startX = sprite.currentX;
                 sprite.startY = sprite.currentY;
@@ -339,8 +320,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
                 delete sprite.animationStartTime;
                 delete sprite.animationDelay;
             }
-        } else {
-            console.log('[syncSpritesToViewport] Sprite position unchanged for id:', id, 'at', position);
         }
 
         const item = items[Number(id)];

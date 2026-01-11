@@ -96,7 +96,6 @@ export function PivotCanvas<TItem extends object>({
   cardRenderer,
   containerRef,
 }: PivotCanvasProps<TItem>) {
-  console.log('[PivotCanvas] Render', { viewMode });
   // Use the containerRef passed from the parent viewport so we append the Pixi
   // canvas and spacer into the actual scrollable element.
   const parentContainerRef = containerRef;
@@ -422,7 +421,6 @@ export function PivotCanvas<TItem extends object>({
       
       // When switching modes, mark all sprites for cleanup by hiding them
       // The normal sweep logic will remove them after SWEEP_MS delay
-      console.log('[PivotCanvas] View mode or grouping changed - marking sprites for cleanup');
       for (const sprite of spritesRef.current.values()) {
         try {
           if (sprite.container) {

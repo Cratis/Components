@@ -43,7 +43,6 @@ export function usePivotEngine<TItem extends object>({
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof Worker === 'undefined') {
-      console.warn('[PivotEngine] Worker not supported in this environment, using main thread');
       fallbackRef.current = true;
       setWorkerAvailable(false);
       return;
@@ -65,13 +64,11 @@ export function usePivotEngine<TItem extends object>({
           const contentType = response.headers.get('content-type') ?? '';
 
           if (!response.ok || !contentType.includes('javascript')) {
-            console.warn('[PivotEngine] Worker asset not reachable, using main thread');
             enableFallback();
             return;
           }
         }
       } catch (error) {
-        console.warn('[PivotEngine] Worker preflight failed, using main thread', error);
         enableFallback();
         return;
       }
@@ -80,44 +77,33 @@ export function usePivotEngine<TItem extends object>({
         return;
       }
 
-      console.log('[PivotEngine] Creating worker');
       const worker = new Worker(workerUrl, { type: 'module' });
 
       workerRef.current = worker;
       setWorkerAvailable(true);
-      console.log('[PivotEngine] Worker created, setting up message handlers');
 
       worker.onmessage = (e: MessageEvent<WorkerOutMessage>) => {
         const message = e.data;
-        console.log('[PivotEngine] Received message from worker:', message.type);
 
         switch (message.type) {
           case 'indexesReady':
-            console.log('[PivotEngine] Indexes ready');
             setReady(true);
             break;
 
           case 'filterResult': {
             const callback = pendingCallbacksRef.current.get('filter');
             if (callback) {
-              console.log('[PivotEngine] Calling filter callback and deleting');
               callback(message.result);
               pendingCallbacksRef.current.delete('filter');
-            } else {
-              console.warn('[PivotEngine] No callback registered for filter result - ignoring duplicate message');
             }
             break;
           }
 
           case 'groupingResult': {
-            console.log('[PivotEngine] Received groupingResult:', message.result);
             const callback = pendingCallbacksRef.current.get('grouping');
             if (callback) {
-              console.log('[PivotEngine] Calling grouping callback and deleting');
               callback(message.result);
               pendingCallbacksRef.current.delete('grouping');
-            } else {
-              console.warn('[PivotEngine] No callback registered for grouping result - ignoring duplicate message');
             }
             break;
           }
@@ -125,11 +111,8 @@ export function usePivotEngine<TItem extends object>({
           case 'sortResult': {
             const callback = pendingCallbacksRef.current.get('sort');
             if (callback) {
-              console.log('[PivotEngine] Calling sort callback and deleting');
               callback(message.result);
               pendingCallbacksRef.current.delete('sort');
-            } else {
-              console.warn('[PivotEngine] No callback registered for sort result - ignoring duplicate message');
             }
             break;
           }
@@ -161,12 +144,10 @@ export function usePivotEngine<TItem extends object>({
   }, [indexFields]);
 
   useEffect(() => {
-    console.log('[PivotEngine] Building indexes for', data.length, 'items');
     setReady(false);
 
     const store = buildStore(data, fieldExtractors);
     storeRef.current = store;
-    console.log('[PivotEngine] Store built with', store.items.length, 'items and', store.fields.size, 'fields');
 
     try {
       indexesRef.current = buildIndexes(store, indexFields);
@@ -187,8 +168,6 @@ export function usePivotEngine<TItem extends object>({
         store: serializableStore as unknown as PivotStore,
         fields: indexFields,
       };
-
-      console.log('[PivotEngine] Posting buildIndexes with', fieldsArray.length, 'fields');
       workerRef.current.postMessage(message);
     } else {
       setReady(true);
@@ -232,24 +211,19 @@ export function usePivotEngine<TItem extends object>({
 
   const computeGroupingCallback = useCallback(
     (visibleIds: Uint32Array, groupBy: GroupSpec): Promise<GroupingResult> => {
-      console.log('[PivotEngine] computeGroupingCallback called with', visibleIds.length, 'visibleIds');
-      
       // Check if there's already a pending grouping request
       if (pendingCallbacksRef.current.has('grouping')) {
-        console.warn('[PivotEngine] Grouping already in progress, ignoring duplicate request');
         return Promise.resolve({ groups: [] });
       }
-      
+
       return new Promise((resolve) => {
         // synchronous fallback if worker unavailable
         if (!workerRef.current || fallbackRef.current) {
-          console.log('[PivotEngine] Using synchronous fallback for grouping');
           try {
             const store = storeRef.current;
             const indexes = indexesRef.current;
             if (store && indexes) {
               const result = computeGrouping(store, indexes, visibleIds, groupBy);
-              console.log('[PivotEngine] Fallback grouping result:', result);
               resolve(result);
               return;
             }
@@ -257,12 +231,10 @@ export function usePivotEngine<TItem extends object>({
             console.error('[PivotEngine] fallback computeGrouping error:', e);
           }
 
-          console.warn('[PivotEngine] No store/indexes for fallback, returning empty');
           resolve({ groups: [] });
           return;
         }
 
-        console.log('[PivotEngine] Setting grouping callback and posting to worker');
         pendingCallbacksRef.current.set('grouping', resolve as (result: unknown) => void);
 
         const message: WorkerInMessage = {
@@ -272,7 +244,6 @@ export function usePivotEngine<TItem extends object>({
         };
 
         workerRef.current.postMessage(message);
-        console.log('[PivotEngine] Message posted to worker');
       });
     },
     [ready]

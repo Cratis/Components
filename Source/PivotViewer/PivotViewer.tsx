@@ -192,15 +192,12 @@ export function PivotViewer<TItem extends object>({
             (lastRequest.groupBy as unknown as typeof currentGroupBy)?.field === currentGroupBy.field &&
             lastRequest.visibleIds === visibleIds
         ) {
-            console.log('[PivotViewer] Skipping duplicate grouping request');
             return;
         }
 
         lastGroupingRequest.current = { viewMode, groupBy: currentGroupBy, visibleIds };
         
-        console.log('[PivotViewer] Computing grouping for', visibleIds.length, 'items');
         computeGrouping(visibleIds, currentGroupBy).then((result) => {
-            console.log('[PivotViewer] Grouping result received:', result.groups.length, 'groups');
             setGrouping(result);
         });
     }, [ready, visibleIds, currentGroupBy, viewMode, computeGrouping, sortIds, activeDimensionKey]);
