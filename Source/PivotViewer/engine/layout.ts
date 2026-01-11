@@ -80,9 +80,14 @@ function computeGroupedLayout(
   spec: LayoutSpec,
   positions: Map<ItemId, ItemPosition>
 ): LayoutResult {
-  const { cardWidth, cardHeight, cardsPerColumn, groupSpacing } = spec;
+  const { cardWidth, cardHeight, cardsPerColumn } = spec;
+  // Override group spacing to ensure consistent card spacing across groups
+  // We want visual gap between groups to match gap between cards (CARD_GAP)
+  const effectiveGroupSpacing = 0;
+
   const slotWidth = cardWidth + CARD_GAP;
   const slotHeight = cardHeight + CARD_GAP;
+  const BOTTOM_MARGIN = 40;
 
   // Fixed bucket width: 2 columns of cards per bucket (always)
   const COLUMNS_PER_BUCKET = 2;
@@ -92,6 +97,7 @@ function computeGroupedLayout(
   // Use container height for layout, or fallback to cardsPerColumn height
   const layoutHeight = spec.containerHeight || (cardsPerColumn * slotHeight);
   const bucketWidths: number[] = [];
+  const groupXs: number[] = [];
   let maxRows = 0;
 
   // First pass: calculate max rows to determine total height
@@ -102,10 +108,12 @@ function computeGroupedLayout(
   }
 
   // Calculate actual content height needed (ensure it's at least as tall as the container)
-  const contentHeight = Math.max(layoutHeight, maxRows * slotHeight);
+  // We need to fit the tallest column plus the bottom margin
+  const contentHeight = Math.max(layoutHeight, (maxRows * slotHeight) + BOTTOM_MARGIN);
 
   for (let groupIndex = 0; groupIndex < grouping.groups.length; groupIndex++) {
     const group = grouping.groups[groupIndex];
+    groupXs.push(groupX);
 
     const itemsInGroup = group.ids.length;
 
@@ -117,11 +125,13 @@ function computeGroupedLayout(
       const col = i % COLUMNS_PER_BUCKET;
       const row = Math.floor(i / COLUMNS_PER_BUCKET);
 
-      const x = groupX + col * slotWidth;
-      // Position cards from bottom of container, stacking upwards
-      // Start from contentHeight and subtract row positions
-      const rowsInGroup = Math.ceil(itemsInGroup / COLUMNS_PER_BUCKET);
-      const y = CANVAS_PADDING + contentHeight - (rowsInGroup - row) * slotHeight;
+      // Center the cards within the bucket
+      // The bucket width fits 2 slots (2W + 2G). Cards take 2W + G.
+      // So we have G/2 padding on each side to center them.
+      const x = groupX + (col * slotWidth) + (CARD_GAP / 2);
+
+      // Position cards from bottom of container, stacking upwards, starting at row 0 (bottom)
+      const y = CANVAS_PADDING + contentHeight - BOTTOM_MARGIN - ((row + 1) * slotHeight);
 
       positions.set(id, {
         x,
@@ -136,7 +146,7 @@ function computeGroupedLayout(
     // Advance position by fixed bucket width + spacing
     groupX += bucketWidth;
     if (groupIndex < grouping.groups.length - 1) {
-      groupX += groupSpacing;
+      groupX += effectiveGroupSpacing;
     }
   }
 
@@ -145,5 +155,6 @@ function computeGroupedLayout(
     totalWidth: groupX + CANVAS_PADDING,
     totalHeight: contentHeight + (CANVAS_PADDING * 2),
     bucketWidths,
+    groupXs,
   };
 }

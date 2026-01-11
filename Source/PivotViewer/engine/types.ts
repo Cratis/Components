@@ -173,6 +173,9 @@ export interface LayoutResult {
 
   /** Width of each bucket (only for grouped layout) */
   bucketWidths?: number[];
+
+  /** X position of each group bucket (only for grouped layout) */
+  groupXs?: number[];
 }
 
 /**

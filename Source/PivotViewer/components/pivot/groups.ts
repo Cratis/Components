@@ -61,12 +61,16 @@ export function updateGroupBackgrounds(
       }
     }
 
-    if (minX === Infinity) continue;
+    if (minX === Infinity && (!layout.groupXs || layout.groupXs[index] === undefined)) continue;
 
-    // Prefer explicit bucket width from layout when available
+    // Prefer explicit bucket width and position from layout when available
     const bucketWidths = layout.bucketWidths || [];
+    const groupXs = layout.groupXs || [];
     const widthFromLayout = bucketWidths[index];
-    const width = widthFromLayout && widthFromLayout > 0 ? widthFromLayout : (maxX - minX) || 0;
+    const xFromLayout = groupXs[index];
+
+    const width = widthFromLayout && widthFromLayout > 0 ? widthFromLayout : ((maxX - minX) || 0);
+    const x = xFromLayout !== undefined ? xFromLayout : minX;
 
     if (index % 2 === 0 && width > 0) {
       let bg: PIXI.Graphics;
@@ -85,7 +89,7 @@ export function updateGroupBackgrounds(
         }
       }
 
-      bg.rect(minX, startY, width, worldHeight);
+      bg.rect(x, startY, width, worldHeight);
       bg.fill(cardColors.base);
       bg.alpha = 0.15;
       bg.visible = true;
@@ -133,21 +137,38 @@ export function updateHighlight(
     return;
   }
 
-  let minX = Infinity;
-  let maxX = -Infinity;
+  // Use layout info if available
+  const bucketWidths = layout.bucketWidths || [];
+  const groupXs = layout.groupXs || [];
+  const widthFromLayout = bucketWidths[hoveredGroupIndex];
+  const xFromLayout = groupXs[hoveredGroupIndex];
 
-  for (let j = 0; j < group.ids.length; j++) {
-    const id = group.ids[j];
-    const pos = layout.positions.get(id);
-    if (pos) {
-      minX = Math.min(minX, pos.x);
-      maxX = Math.max(maxX, pos.x + cardWidth);
+  let rectX = 0;
+  let rectWidth = 0;
+
+  if (widthFromLayout !== undefined && xFromLayout !== undefined) {
+    rectX = xFromLayout;
+    rectWidth = widthFromLayout;
+  } else {
+    // Fallback: derive from items bounding box
+    let minX = Infinity;
+    let maxX = -Infinity;
+
+    for (let j = 0; j < group.ids.length; j++) {
+      const id = group.ids[j];
+      const pos = layout.positions.get(id);
+      if (pos) {
+        minX = Math.min(minX, pos.x);
+        maxX = Math.max(maxX, pos.x + cardWidth);
+      }
     }
-  }
 
-  if (minX === Infinity) {
-    highlight.visible = false;
-    return;
+    if (minX === Infinity) {
+      highlight.visible = false;
+      return;
+    }
+    rectX = minX;
+    rectWidth = maxX - minX;
   }
 
   const containerWorldHeight = Math.max(
@@ -159,7 +180,7 @@ export function updateHighlight(
   const worldHeight = baseWorldHeight + bufferWorld * 2;
   const startY = -bufferWorld;
 
-  highlight.rect(minX, startY, maxX - minX, worldHeight);
+  highlight.rect(rectX, startY, rectWidth, worldHeight);
   highlight.fill(0xffffff);
   highlight.alpha = 0.05;
   highlight.visible = true;
