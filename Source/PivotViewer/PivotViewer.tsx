@@ -31,11 +31,13 @@ export function PivotViewer<TItem extends object>({
     filters,
     defaultDimensionKey,
     cardRenderer,
+    detailRenderer,
     getItemId,
     searchFields,
     className,
     emptyContent,
     isLoading = false,
+    colors,
 }: PivotViewerProps<TItem>) {
     // Refs
     const containerRef = useRef<HTMLDivElement>(null!);
@@ -311,8 +313,28 @@ export function PivotViewer<TItem extends object>({
         .filter(Boolean)
         .join(' ');
 
+    // Map provided color overrides to CSS variables understood by the component.
+    const cssVariables = useMemo(() => {
+        const vars: Record<string, string> = {};
+        if (!colors) return vars;
+        if (colors.primaryColor) vars['--primary-color'] = colors.primaryColor;
+        if (colors.primaryColorText) vars['--primary-color-text'] = colors.primaryColorText;
+        if (colors.primary500) vars['--primary-500'] = colors.primary500;
+        if (colors.surfaceGround) vars['--surface-ground'] = colors.surfaceGround;
+        if (colors.surfaceCard) vars['--surface-card'] = colors.surfaceCard;
+        if (colors.surfaceSection) vars['--surface-section'] = colors.surfaceSection;
+        if (colors.surfaceOverlay) vars['--surface-overlay'] = colors.surfaceOverlay;
+        if (colors.surfaceBorder) vars['--surface-border'] = colors.surfaceBorder;
+        if (colors.textColor) vars['--text-color'] = colors.textColor;
+        if (colors.textColorSecondary) vars['--text-color-secondary'] = colors.textColorSecondary;
+        if (colors.highlightBg) vars['--highlight-bg'] = colors.highlightBg;
+        if (colors.maskbg) vars['--maskbg'] = colors.maskbg;
+        if (colors.focusRing) vars['--focus-ring'] = colors.focusRing;
+        return vars;
+    }, [colors]);
+
     return (
-        <div className={viewerClassName}>
+        <div className={viewerClassName} style={cssVariables as React.CSSProperties}>
             <FilterPanelContainer
                 isOpen={filtersOpen && hasFilters}
                 search={search}
@@ -365,6 +387,7 @@ export function PivotViewer<TItem extends object>({
                     isZooming={isZooming}
                     viewMode={viewMode}
                     cardRenderer={cardRenderer}
+                    detailRenderer={detailRenderer}
                     resolveId={resolveId}
                     emptyContent={emptyContent}
                     dimensionFilter={dimensionFilter}

@@ -73,7 +73,7 @@ export const WithTypeSafeSearch: Story = {
         ];
         
         return (
-            <div className="storybook-wrapper" style={{ height: '600px' }}>
+            <div className="storybook-wrapper" style={{ height: '600px', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', alignItems: 'stretch', justifyContent: 'flex-start' }}>
                 <PivotViewer<Person>
                     data={sampleData}
                     dimensions={dimensions}
@@ -92,6 +92,42 @@ export const WithTypeSafeSearch: Story = {
                             <p>Department: {item.department}</p>
                             <p>{item.address.city}</p>
                         </div>
+                    )}
+                    // Example: override a couple of theme variables
+                    colors={{
+                        primaryColor: '#91BDF8',
+                        primary500: '#2E66BA',
+                    }}
+                    // Example: custom details renderer shown on card selection
+                    detailRenderer={(item, onClose) => (
+                        <aside className="pv-detail-panel">
+                            <header>
+                                <div>
+                                    <h2>{item.name}</h2>
+                                    <p>Department • {item.department}</p>
+                                </div>
+                                <button type="button" onClick={onClose} title="Close">×</button>
+                            </header>
+                            <div className="pv-detail-panel-content">
+                                <section>
+                                    <h3>Profile</h3>
+                                    <dl>
+                                        <div>
+                                            <dt>Age</dt>
+                                            <dd>{item.age}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>City</dt>
+                                            <dd>{item.address.city}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Street</dt>
+                                            <dd>{item.address.street}</dd>
+                                        </div>
+                                    </dl>
+                                </section>
+                            </div>
+                        </aside>
                     )}
                     getItemId={(item) => item.id}
                 />

@@ -79,11 +79,32 @@ export interface PivotViewerProps<TItem extends object> {
   filters?: PivotFilter<TItem>[];
   defaultDimensionKey?: string;
   cardRenderer?: (item: TItem) => ReactNode;
+  /** Optional renderer for the slide-in detail panel when a card is selected */
+  detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
   getItemId?: (item: TItem, index: number) => string | number;
   searchFields?: PropertyAccessor<TItem>[];
   className?: string;
   emptyContent?: ReactNode;
   isLoading?: boolean;
+  /**
+   * Optional color overrides mapped to PrimeReact-like CSS variables.
+   * If omitted, values are taken from the global theme (PrimeReact defaults).
+   */
+  colors?: Partial<{
+    primaryColor: string;
+    primaryColorText: string;
+    primary500: string;
+    surfaceGround: string;
+    surfaceCard: string;
+    surfaceSection: string;
+    surfaceOverlay: string;
+    surfaceBorder: string;
+    textColor: string;
+    textColorSecondary: string;
+    highlightBg: string;
+    maskbg: string;
+    focusRing: string;
+  }>;
 }
 
 export type FilterState = Record<string, Set<string>>;

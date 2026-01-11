@@ -68,7 +68,7 @@ export function usePivotEngine<TItem extends object>({
             return;
           }
         }
-      } catch (error) {
+      } catch {
         enableFallback();
         return;
       }

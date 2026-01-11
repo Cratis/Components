@@ -27,6 +27,8 @@ export interface PivotViewerMainProps<TItem extends object> {
   isZooming: boolean;
   viewMode: ViewMode;
   cardRenderer?: (item: TItem) => ReactNode;
+  /** Optional renderer for a custom details panel when a card is selected */
+  detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
   resolveId: (item: TItem, index: number) => ItemId;
   emptyContent?: ReactNode;
   dimensionFilter: PivotDimensionFilter;
@@ -59,6 +61,7 @@ export function PivotViewerMain<TItem extends object>({
   isZooming,
   viewMode,
   cardRenderer,
+  detailRenderer,
   resolveId,
   emptyContent,
   dimensionFilter,
@@ -197,10 +200,14 @@ export function PivotViewerMain<TItem extends object>({
             />
           )}
         </div>
-        <DetailPanel
-          selectedItem={selectedItem}
-          onClose={onCloseDetail}
-        />
+        {detailRenderer
+          ? (selectedItem ? detailRenderer(selectedItem, onCloseDetail) : null)
+          : (
+            <DetailPanel
+              selectedItem={selectedItem}
+              onClose={onCloseDetail}
+            />
+          )}
       </div>
 
       {viewMode === 'grouped' && grouping.groups.length > 0 && (
