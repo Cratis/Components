@@ -34,6 +34,7 @@ export function usePivotEngine<TItem extends object>({
   indexFields,
 }: UsePivotEngineOptions<TItem>): UsePivotEngineResult {
   const [ready, setReady] = useState(false);
+  const [workerAvailable, setWorkerAvailable] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const indexesRef = useRef<PivotIndexes | null>(null);
   const fallbackRef = useRef(false);
@@ -41,92 +42,125 @@ export function usePivotEngine<TItem extends object>({
   const pendingCallbacksRef = useRef<Map<string, (result: unknown) => void>>(new Map());
 
   useEffect(() => {
-    console.log('[PivotEngine] Creating worker');
-    const worker = new Worker(
-      new URL('../engine/pivot.worker.ts', import.meta.url),
-      { type: 'module' }
-    );
-
-    workerRef.current = worker;
-    console.log('[PivotEngine] Worker created, setting up message handlers');
-
-    worker.onmessage = (e: MessageEvent<WorkerOutMessage>) => {
-      const message = e.data;
-      console.log('[PivotEngine] Received message from worker:', message.type);
-
-      switch (message.type) {
-        case 'indexesReady':
-          console.log('[PivotEngine] Indexes ready');
-          setReady(true);
-          break;
-
-        case 'filterResult': {
-          const callback = pendingCallbacksRef.current.get('filter');
-          if (callback) {
-            console.log('[PivotEngine] Calling filter callback and deleting');
-            callback(message.result);
-            pendingCallbacksRef.current.delete('filter');
-          } else {
-            console.warn('[PivotEngine] No callback registered for filter result - ignoring duplicate message');
-          }
-          break;
-        }
-
-        case 'groupingResult': {
-          console.log('[PivotEngine] Received groupingResult:', message.result);
-          const callback = pendingCallbacksRef.current.get('grouping');
-          if (callback) {
-            console.log('[PivotEngine] Calling grouping callback and deleting');
-            callback(message.result);
-            pendingCallbacksRef.current.delete('grouping');
-          } else {
-            console.warn('[PivotEngine] No callback registered for grouping result - ignoring duplicate message');
-          }
-          break;
-        }
-
-        case 'sortResult': {
-          const callback = pendingCallbacksRef.current.get('sort');
-          if (callback) {
-            console.log('[PivotEngine] Calling sort callback and deleting');
-            callback(message.result);
-            pendingCallbacksRef.current.delete('sort');
-          } else {
-            console.warn('[PivotEngine] No callback registered for sort result - ignoring duplicate message');
-          }
-          break;
-        }
-      }
-    };
-
-    worker.onerror = (error) => {
-      console.error('[PivotEngine] Worker error:', error);
-      // enable synchronous fallback so UI can still function without worker
+    if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+      console.warn('[PivotEngine] Worker not supported in this environment, using main thread');
       fallbackRef.current = true;
-      workerRef.current = null;
-      // if we already built store/indexes, mark ready so UI can use fallback
-      if (storeRef.current) {
-        try {
-          indexesRef.current = buildIndexes(storeRef.current, indexFields);
-        } catch (e) {
-          console.error('[PivotEngine] Failed to build indexes in fallback:', e);
-          indexesRef.current = null;
-        }
-        setReady(true);
-      }
-    };
-
-    return () => {
-      worker.terminate();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!workerRef.current) {
-      console.warn('[PivotEngine] Worker not available in data effect');
+      setWorkerAvailable(false);
       return;
     }
 
+    const workerUrl = new URL('../engine/pivot.worker.js', import.meta.url);
+    let disposed = false;
+
+    const enableFallback = () => {
+      fallbackRef.current = true;
+      workerRef.current = null;
+      setWorkerAvailable(false);
+    };
+
+    const setupWorker = async () => {
+      try {
+        if (typeof fetch === 'function') {
+          const response = await fetch(workerUrl, { method: 'HEAD' });
+          const contentType = response.headers.get('content-type') ?? '';
+
+          if (!response.ok || !contentType.includes('javascript')) {
+            console.warn('[PivotEngine] Worker asset not reachable, using main thread');
+            enableFallback();
+            return;
+          }
+        }
+      } catch (error) {
+        console.warn('[PivotEngine] Worker preflight failed, using main thread', error);
+        enableFallback();
+        return;
+      }
+
+      if (disposed) {
+        return;
+      }
+
+      console.log('[PivotEngine] Creating worker');
+      const worker = new Worker(workerUrl, { type: 'module' });
+
+      workerRef.current = worker;
+      setWorkerAvailable(true);
+      console.log('[PivotEngine] Worker created, setting up message handlers');
+
+      worker.onmessage = (e: MessageEvent<WorkerOutMessage>) => {
+        const message = e.data;
+        console.log('[PivotEngine] Received message from worker:', message.type);
+
+        switch (message.type) {
+          case 'indexesReady':
+            console.log('[PivotEngine] Indexes ready');
+            setReady(true);
+            break;
+
+          case 'filterResult': {
+            const callback = pendingCallbacksRef.current.get('filter');
+            if (callback) {
+              console.log('[PivotEngine] Calling filter callback and deleting');
+              callback(message.result);
+              pendingCallbacksRef.current.delete('filter');
+            } else {
+              console.warn('[PivotEngine] No callback registered for filter result - ignoring duplicate message');
+            }
+            break;
+          }
+
+          case 'groupingResult': {
+            console.log('[PivotEngine] Received groupingResult:', message.result);
+            const callback = pendingCallbacksRef.current.get('grouping');
+            if (callback) {
+              console.log('[PivotEngine] Calling grouping callback and deleting');
+              callback(message.result);
+              pendingCallbacksRef.current.delete('grouping');
+            } else {
+              console.warn('[PivotEngine] No callback registered for grouping result - ignoring duplicate message');
+            }
+            break;
+          }
+
+          case 'sortResult': {
+            const callback = pendingCallbacksRef.current.get('sort');
+            if (callback) {
+              console.log('[PivotEngine] Calling sort callback and deleting');
+              callback(message.result);
+              pendingCallbacksRef.current.delete('sort');
+            } else {
+              console.warn('[PivotEngine] No callback registered for sort result - ignoring duplicate message');
+            }
+            break;
+          }
+        }
+      };
+
+      worker.onerror = (error) => {
+        console.error('[PivotEngine] Worker error:', error);
+        enableFallback();
+        if (storeRef.current) {
+          try {
+            indexesRef.current = buildIndexes(storeRef.current, indexFields);
+          } catch (e) {
+            console.error('[PivotEngine] Failed to build indexes in fallback:', e);
+            indexesRef.current = null;
+          }
+          setReady(true);
+        }
+      };
+    };
+
+    void setupWorker();
+
+    return () => {
+      disposed = true;
+      workerRef.current?.terminate();
+      workerRef.current = null;
+    };
+  }, [indexFields]);
+
+  useEffect(() => {
     console.log('[PivotEngine] Building indexes for', data.length, 'items');
     setReady(false);
 
@@ -134,7 +168,6 @@ export function usePivotEngine<TItem extends object>({
     storeRef.current = store;
     console.log('[PivotEngine] Store built with', store.items.length, 'items and', store.fields.size, 'fields');
 
-    // compute indexes locally for immediate fallback and cache
     try {
       indexesRef.current = buildIndexes(store, indexFields);
     } catch (e) {
@@ -142,8 +175,7 @@ export function usePivotEngine<TItem extends object>({
       indexesRef.current = null;
     }
 
-    if (workerRef.current) {
-      // Convert Map to array for serialization
+    if (workerRef.current && !fallbackRef.current) {
       const fieldsArray = Array.from(store.fields.entries());
       const serializableStore = {
         ...store,
@@ -159,10 +191,9 @@ export function usePivotEngine<TItem extends object>({
       console.log('[PivotEngine] Posting buildIndexes with', fieldsArray.length, 'fields');
       workerRef.current.postMessage(message);
     } else {
-      // no worker available, mark ready to allow fallback synchronous usage
       setReady(true);
     }
-  }, [data, fieldExtractors, indexFields]);
+  }, [data, fieldExtractors, indexFields, workerAvailable]);
 
   const applyFiltersCallback = useCallback(
     (filters: FilterSpec[]): Promise<FilterResult> => {
