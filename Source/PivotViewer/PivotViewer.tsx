@@ -292,9 +292,12 @@ export function PivotViewer<TItem extends object>({
     }, [ready, currentFilters, engineApplyFilters]);
 
     // Compute grouping
+    const lastGroupingRequest = useRef<{ viewMode: ViewMode; groupBy: GroupSpec; visibleIds: Uint32Array } | null>(null);
+    
     useEffect(() => {
         if (!ready || visibleIds.length === 0) {
             setGrouping({ groups: [] });
+            lastGroupingRequest.current = null;
             return;
         }
 
@@ -324,10 +327,25 @@ export function PivotViewer<TItem extends object>({
                     }]
                 });
             }
+            lastGroupingRequest.current = null;
             return;
         }
 
+        // Check if this is the same request as last time to prevent duplicate computations
+        const lastRequest = lastGroupingRequest.current;
+        if (lastRequest &&
+            lastRequest.viewMode === viewMode &&
+            lastRequest.groupBy.field === currentGroupBy.field &&
+            lastRequest.visibleIds === visibleIds) {
+            console.log('[PivotViewer] Skipping duplicate grouping request');
+            return;
+        }
+
+        lastGroupingRequest.current = { viewMode, groupBy: currentGroupBy, visibleIds };
+        
+        console.log('[PivotViewer] Computing grouping for', visibleIds.length, 'items');
         computeGrouping(visibleIds, currentGroupBy).then((result) => {
+            console.log('[PivotViewer] Grouping result received:', result.groups.length, 'groups');
             setGrouping(result);
         });
     }, [ready, visibleIds, currentGroupBy, viewMode, computeGrouping, sortIds, activeDimensionKey]);

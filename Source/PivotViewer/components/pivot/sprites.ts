@@ -255,9 +255,9 @@ export function updateCardContent<TItem extends object>(
   const colorsChanged = sprite.lastCardColors !== colors;
 
   // Ensure text objects exist before using them
-  if (!sprite.titleText) return;
-  if (!sprite.labelsText) return;
-  if (!sprite.valuesText) return;
+  if (!sprite.titleText || sprite.titleText.destroyed) return;
+  if (!sprite.labelsText || sprite.labelsText.destroyed) return;
+  if (!sprite.valuesText || sprite.valuesText.destroyed) return;
 
   if (sprite.lastTitle !== titleDisplay) {
     sprite.titleText.text = titleDisplay;
@@ -269,7 +269,7 @@ export function updateCardContent<TItem extends object>(
     sprite.lastLabels = labelsText;
   }
 
-  if (colorsChanged) {
+  if (colorsChanged && sprite.labelsText.style) {
     (sprite.labelsText.style as any).fill = colors.textSecondary as any;
   }
 
@@ -278,7 +278,7 @@ export function updateCardContent<TItem extends object>(
     sprite.lastValues = valuesText;
   }
 
-  if (colorsChanged) {
+  if (colorsChanged && sprite.valuesText.style) {
     (sprite.valuesText.style as any).fill = colors.text as any;
   }
 

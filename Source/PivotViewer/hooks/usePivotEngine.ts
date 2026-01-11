@@ -63,8 +63,11 @@ export function usePivotEngine<TItem extends object>({
         case 'filterResult': {
           const callback = pendingCallbacksRef.current.get('filter');
           if (callback) {
+            console.log('[PivotEngine] Calling filter callback and deleting');
             callback(message.result);
             pendingCallbacksRef.current.delete('filter');
+          } else {
+            console.warn('[PivotEngine] No callback registered for filter result - ignoring duplicate message');
           }
           break;
         }
@@ -73,11 +76,11 @@ export function usePivotEngine<TItem extends object>({
           console.log('[PivotEngine] Received groupingResult:', message.result);
           const callback = pendingCallbacksRef.current.get('grouping');
           if (callback) {
-            console.log('[PivotEngine] Calling grouping callback');
+            console.log('[PivotEngine] Calling grouping callback and deleting');
             callback(message.result);
             pendingCallbacksRef.current.delete('grouping');
           } else {
-            console.warn('[PivotEngine] No callback registered for grouping result!');
+            console.warn('[PivotEngine] No callback registered for grouping result - ignoring duplicate message');
           }
           break;
         }
@@ -85,8 +88,11 @@ export function usePivotEngine<TItem extends object>({
         case 'sortResult': {
           const callback = pendingCallbacksRef.current.get('sort');
           if (callback) {
+            console.log('[PivotEngine] Calling sort callback and deleting');
             callback(message.result);
             pendingCallbacksRef.current.delete('sort');
+          } else {
+            console.warn('[PivotEngine] No callback registered for sort result - ignoring duplicate message');
           }
           break;
         }
@@ -196,6 +202,13 @@ export function usePivotEngine<TItem extends object>({
   const computeGroupingCallback = useCallback(
     (visibleIds: Uint32Array, groupBy: GroupSpec): Promise<GroupingResult> => {
       console.log('[PivotEngine] computeGroupingCallback called with', visibleIds.length, 'visibleIds');
+      
+      // Check if there's already a pending grouping request
+      if (pendingCallbacksRef.current.has('grouping')) {
+        console.warn('[PivotEngine] Grouping already in progress, ignoring duplicate request');
+        return Promise.resolve({ groups: [] });
+      }
+      
       return new Promise((resolve) => {
         // synchronous fallback if worker unavailable
         if (!workerRef.current || fallbackRef.current) {

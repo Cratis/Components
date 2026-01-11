@@ -6,7 +6,7 @@ import * as PIXI from 'pixi.js';
 import type { ItemId, LayoutResult, GroupingResult } from '../engine/types';
 import type { ViewMode } from './Toolbar';
 import { createCssColorResolver, resolveCardColors } from './pivot/colorResolver';
-import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal, clearSpritePool } from './pivot/sprites';
+import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal, clearSpritePool, destroySprite } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
 import { updateBucketBackgrounds as updateBucketBackgroundsExternal, updateHighlight as updateHighlightExternal } from './pivot/buckets';
 import { startAnimationLoop as startAnimationLoopExternal, updatePositions as updatePositionsExternal } from './pivot/animation';
@@ -419,6 +419,25 @@ export function PivotCanvas<TItem extends object>({
       lastViewChangeTimeRef.current = Date.now();
       previousViewModeRef.current = viewMode;
       prevGroupingRef.current = grouping;
+      
+      // CRITICAL FIX: Clear all sprites when switching modes to prevent duplicates
+      console.log('[PivotCanvas] View mode or grouping changed - clearing all sprites');
+      for (const [id, sprite] of spritesRef.current) {
+        try {
+          if (sprite.container && sprite.container.parent) {
+            sprite.container.parent.removeChild(sprite.container);
+          }
+        } catch (e) {
+          void e;
+        }
+        try {
+          destroySprite(sprite);
+        } catch (e) {
+          void e;
+        }
+      }
+      spritesRef.current.clear();
+      console.log('[PivotCanvas] All sprites cleared');
     }
 
     // Update spacer dimensions to match scaled world size
