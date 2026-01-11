@@ -8,13 +8,14 @@ export const CARD_PADDING = 10;
 export const CARD_RADIUS = 12;
 export const CARD_GAP = 8; // Gap between cards (must match layout gap)
 
+// Fallbacks tuned to PrimeReact lara-dark-blue aesthetic; actual values resolved from CSS variables
 export const DEFAULT_COLORS = {
-  base: 0x1b2b2f,
-  mid: 0x234445,
-  gradient: 0x2f5b56,
-  border: 0x5ad1a0,
+  base: 0x0f2745,        // surface-b-ish deep blue
+  mid: 0x163359,         // surface-a-ish
+  gradient: 0x0b1e36,    // ground backdrop
+  border: 0x2e66ba,      // primary-500 for accents
   text: 0xffffff,
-  textSecondary: 0x8899aa,
+  textSecondary: 0xa8b2c2,
 };
 
 export type CardColors = typeof DEFAULT_COLORS;

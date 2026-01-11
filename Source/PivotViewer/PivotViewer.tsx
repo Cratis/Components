@@ -324,6 +324,11 @@ export function PivotViewer<TItem extends object>({
         .filter(Boolean)
         .join(' ');
 
+    // Deselect any selected card when switching between view modes
+    useEffect(() => {
+        setSelectedItem(null);
+    }, [viewMode]);
+
     // Map provided color overrides to CSS variables understood by the component.
     const cssVariables = useMemo(() => {
         const vars: Record<string, string> = {};

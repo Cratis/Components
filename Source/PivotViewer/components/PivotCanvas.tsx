@@ -411,6 +411,29 @@ export function PivotCanvas<TItem extends object>({
     appRef.current?.renderer?.render(appRef.current.stage);
   }, [grouping, layout, zoomLevel, viewMode, pixiReady]);
 
+  // Fade buckets background when switching view modes
+  useEffect(() => {
+    const gc = groupsContainerRef.current;
+    const app = appRef.current;
+    if (!gc || !app) return;
+    const target = viewMode === 'grouped' ? 1 : 0;
+    const start = typeof gc.alpha === 'number' ? gc.alpha : 1;
+    const duration = 200; // ms
+    if (Math.abs(start - target) < 0.01) {
+      gc.alpha = target;
+      return;
+    }
+    const t0 = performance.now();
+    const step = () => {
+      const u = Math.min(1, (performance.now() - t0) / duration);
+      const eased = u * (2 - u);
+      gc.alpha = start + (target - start) * eased;
+      app.renderer?.render(app.stage);
+      if (u < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [viewMode]);
+
   useEffect(() => {
     if (!rootRef.current || !parentContainerRef.current || !pixiReady) {
       return;

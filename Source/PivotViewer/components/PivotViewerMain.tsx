@@ -116,6 +116,11 @@ export function PivotViewerMain<TItem extends object>({
         }
       }
     }
+
+    // Clicked background: if a card is selected, close/deselect it
+    if (selectedItem) {
+      onCloseDetail();
+    }
   };
 
   const handleViewportMouseMove = (e: React.MouseEvent) => {

@@ -705,8 +705,8 @@
   background: var(--surface-section);
   border-top: 1px solid var(--surface-border);
   padding: 0.5rem 1.5rem;
-  padding-left: calc(1.5rem); /* Match groups container padding */
-  gap: 0.25rem; /* Match gap between groups */
+  /* padding-left set dynamically from JS to match canvas padding */
+  gap: 0; /* No extra gap to avoid skew */
   overflow-x: hidden; /* Disable independent scroll - synced via JS */
   flex-shrink: 0;
 }
@@ -770,6 +770,18 @@
   color: var(--text-color-secondary);
   margin-top: 0.15rem;
   font-variant-numeric: tabular-nums;
+}
+
+/* Fade axis labels when switching views */
+.pivot-viewer .pv-axis-labels {
+  transition: opacity 200ms ease;
+}
+.pivot-viewer.collection-mode .pv-axis-labels {
+  opacity: 0;
+  pointer-events: none;
+}
+.pivot-viewer.grouped-mode .pv-axis-labels {
+  opacity: 1;
 }
 
 .pv-groups.pv-groups-collection {

@@ -121,7 +121,7 @@ export function createCardSprite<TItem extends object>(
       cardHeight - CARD_GAP
   );
 
-  console.log('[sprites] Container created with id:', id, 'eventMode:', container.eventMode, 'hitArea:', container.hitArea);
+  // Container configured for pointer interactions; hitArea matches visible card.
 
   // Store context for event handlers
   (container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string; cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] }; resolveId: (item: TItem, index: number) => string | number } })._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
@@ -173,12 +173,10 @@ export function createCardSprite<TItem extends object>(
 
   container.on('click', (e: PIXI.FederatedPointerEvent) => {
     e.stopPropagation();
-    console.log('[sprites] Click handler fired for card id:', id);
     const ctx = (container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string } })._eventContext;
     const itemsArray = ctx.items;
     const numericId = typeof ctx.id === 'number' ? ctx.id : Number(ctx.id);
     const item = itemsArray[numericId];
-    console.log('[sprites] ctx.id:', ctx.id, 'numericId:', numericId, 'found:', Boolean(item));
     if (item) {
       ctx.onCardClick(item, e.nativeEvent as MouseEvent, ctx.id);
     }
@@ -241,7 +239,7 @@ export function updateCardContent<TItem extends object>(
 ) {
   if (!item) return;
 
-  console.log('[updateCardContent] sprite.itemId:', sprite.itemId, 'selectedId:', selectedId, 'match:', sprite.itemId === selectedId);
+  // Selection rendering depends on sprite.itemId matching selectedId
 
   const colors = cardColors;
   const cardData = cardRenderer(item);

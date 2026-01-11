@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { PivotGroup } from '../types';
-import { GROUP_SPACING } from '../constants';
+import { CANVAS_PADDING } from '../constants';
 
 export interface AxisLabelsProps<TItem extends object> {
   groups: PivotGroup<TItem>[];
@@ -31,8 +31,8 @@ export function AxisLabels<TItem extends object>({
       ref={containerRef}
       style={{
         pointerEvents: 'none',
-        gap: `${GROUP_SPACING * zoomLevel}px`,
-        paddingLeft: 0,
+        // Align labels start with grouped buckets using canvas padding scaled by zoom
+        paddingLeft: `${CANVAS_PADDING * zoomLevel}px`,
         paddingRight: 0,
         overflowX: 'hidden',
         whiteSpace: 'nowrap',
