@@ -11,3 +11,11 @@ export { useWheelZoom } from './useWheelZoom';
 export { useFilterPanelDrag } from './useFilterPanelDrag';
 export { useSelectedItem } from './useSelectedItem';
 export * from './usePivotEngine';
+export { useFieldExtractors } from './useFieldExtractors';
+export { useCurrentFilters, useCurrentGroupBy } from './useCurrentFilters';
+export { useCardSelection } from './useCardSelection';
+export { useDetailPanelClose } from './useDetailPanelClose';
+export { useScrollSync } from './useScrollSync';
+export { useAnimationModeTracking } from './useAnimationModeTracking';
+export { useViewModeScrollHandling } from './useViewModeScrollHandling';
+

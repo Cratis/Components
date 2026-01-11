@@ -3,22 +3,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PivotViewerProps } from './types';
-import type { FilterSpec, GroupSpec, FieldValue, GroupingResult, ItemId } from './engine/types';
+import type { GroupingResult } from './engine/types';
 import { usePivotEngine } from './hooks/usePivotEngine';
 import { computeLayout } from './engine/layout';
 import { useFilterState } from './hooks/useFilterState';
 import { useDimensionState } from './hooks/useDimensionState';
 import { useZoomState } from './hooks/useZoomState';
-import { handleCardSelection } from './utils/selection';
-import { animateZoomAndScroll, smoothScrollTo } from './utils/animations';
-import {
-    BASE_CARD_WIDTH,
-    BASE_CARD_HEIGHT,
-    CARDS_PER_COLUMN,
-    GROUP_SPACING,
-} from './constants';
-import { ZOOM_MAX, MIN_ZOOM_ON_SELECT, ZOOM_MULTIPLIER, DETAIL_PANEL_WIDTH } from './utils/constants';
-import { calculateCenterScrollPosition } from './utils/animations';
+import { BASE_CARD_WIDTH, BASE_CARD_HEIGHT, CARDS_PER_COLUMN, GROUP_SPACING } from './constants';
 import './PivotViewer.css';
 import { PivotViewerMain } from './components/PivotViewerMain';
 import { FilterPanelContainer } from './components/FilterPanelContainer';
@@ -26,6 +17,13 @@ import { ToolbarContainer } from './components/ToolbarContainer';
 import { usePanning, useWheelZoom, useFilterOptions } from './hooks';
 import { useContainerDimensions } from './hooks/useContainerDimensions';
 import type { ViewMode } from './components/Toolbar';
+import { useFieldExtractors } from './hooks/useFieldExtractors';
+import { useCurrentFilters, useCurrentGroupBy } from './hooks/useCurrentFilters';
+import { useCardSelection } from './hooks/useCardSelection';
+import { useDetailPanelClose } from './hooks/useDetailPanelClose';
+import { useScrollSync } from './hooks/useScrollSync';
+import { useAnimationModeTracking } from './hooks/useAnimationModeTracking';
+import { useViewModeScrollHandling } from './hooks/useViewModeScrollHandling';
 
 export function PivotViewer<TItem extends object>({
     data,
@@ -48,7 +46,6 @@ export function PivotViewer<TItem extends object>({
     // State
     const [search, setSearch] = useState('');
     const [viewMode, setViewMode] = useState<ViewMode>('collection');
-
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<TItem | null>(null);
     const [isZooming, setIsZooming] = useState(false);
@@ -78,14 +75,6 @@ export function PivotViewer<TItem extends object>({
         dimensionFilter,
         handleAxisLabelClick,
     } = useDimensionState(dimensions, defaultDimensionKey);
-
-    // Track what type of change triggered the update (for animation mode)
-    const prevFilterStateRef = useRef(filterState);
-    const prevRangeFilterStateRef = useRef(rangeFilterState);
-    const prevSearchRef = useRef(search);
-    const prevDimensionRef = useRef(activeDimensionKey);
-    const prevViewModeRef = useRef(viewMode);
-    const isFirstRenderRef = useRef(true);
 
     // Zoom and pan hooks
     const {
@@ -123,102 +112,8 @@ export function PivotViewer<TItem extends object>({
         return () => container.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Zoom reset removed to persist zoom level across view changes
-
-
-    // Track what type of change triggered the update for animation mode
-    useEffect(() => {
-        // Skip the first render
-        if (isFirstRenderRef.current) {
-            isFirstRenderRef.current = false;
-            return;
-        }
-
-        const filterChanged = prevFilterStateRef.current !== filterState;
-        const rangeChanged = prevRangeFilterStateRef.current !== rangeFilterState;
-        const searchChanged = prevSearchRef.current !== search;
-        const dimensionChanged = prevDimensionRef.current !== activeDimensionKey;
-        const viewModeChanged = prevViewModeRef.current !== viewMode;
-
-        // If filters or search changed, use filter animation (fade/scale)
-        // If dimension or view mode changed, use layout animation (fly)
-        if (filterChanged || rangeChanged || searchChanged) {
-            setAnimationMode('filter');
-        } else if (dimensionChanged || viewModeChanged) {
-            setAnimationMode('layout');
-        }
-
-        prevFilterStateRef.current = filterState;
-        prevRangeFilterStateRef.current = rangeFilterState;
-        prevSearchRef.current = search;
-        prevDimensionRef.current = activeDimensionKey;
-        prevViewModeRef.current = viewMode;
-    }, [filterState, rangeFilterState, search, activeDimensionKey, viewMode]);
-
-    // Sync axis labels scroll with container scroll
-    useEffect(() => {
-        const container = containerRef.current;
-        const axisLabels = axisLabelsRef.current;
-
-        if (!container || !axisLabels || viewMode !== 'grouped') return;
-
-        const handleScroll = () => {
-            axisLabels.scrollLeft = container.scrollLeft;
-        };
-
-        // Sync immediately
-        handleScroll();
-
-        container.addEventListener('scroll', handleScroll);
-        return () => container.removeEventListener('scroll', handleScroll);
-    }, [viewMode]);
-
     // Build field extractors for the columnar store
-    const fieldExtractors = useMemo(() => {
-        const extractors = new Map<string, (item: TItem) => FieldValue>();
-
-        for (const dim of dimensions) {
-            extractors.set(dim.key, (item) => {
-                const val = dim.getValue(item);
-                if (val instanceof Date) return val.getTime();
-                if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null) {
-                    return val;
-                }
-                return String(val);
-            });
-        }
-
-        if (filters) {
-            for (const filter of filters) {
-                extractors.set(filter.key, (item) => {
-                    const val = filter.getValue(item);
-                    if (val instanceof Date) return val.getTime();
-                    if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null) {
-                        return val;
-                    }
-                    return String(val);
-                });
-            }
-        }
-
-        return extractors;
-    }, [dimensions, filters]);
-
-    const indexFields = useMemo(() => {
-        const fields = new Set<string>();
-
-        for (const dim of dimensions) {
-            fields.add(dim.key);
-        }
-
-        if (filters) {
-            for (const filter of filters) {
-                fields.add(filter.key);
-            }
-        }
-
-        return Array.from(fields);
-    }, [dimensions, filters]);
+    const { fieldExtractors, indexFields } = useFieldExtractors(dimensions, filters);
 
     // Initialize the Web Worker engine
     const { ready, applyFilters: engineApplyFilters, computeGrouping, sortIds } = usePivotEngine({
@@ -228,59 +123,17 @@ export function PivotViewer<TItem extends object>({
     });
 
     // Build filter specs from UI state
-    const currentFilters = useMemo((): FilterSpec[] => {
-        const specs: FilterSpec[] = [];
+    const currentFilters = useCurrentFilters(
+        filters,
+        filterState,
+        rangeFilterState,
+        search,
+        searchFields,
+        dimensionFilter,
+        activeDimension,
+    );
 
-        // Search filter
-        const searchTerm = search.trim().toLowerCase();
-        if (searchTerm && searchFields && searchFields.length > 0) {
-            // TODO: Implement search in worker
-            // For now, search will be handled client-side after worker filtering
-        }
-
-        // Categorical filters
-        for (const [key, values] of Object.entries(filterState)) {
-            const valueSet = values as Set<string>;
-            if (valueSet.size > 0) {
-                specs.push({
-                    field: key,
-                    type: 'categorical',
-                    values: valueSet,
-                });
-            }
-        }
-
-        // Range filters
-        for (const [key, range] of Object.entries(rangeFilterState)) {
-            if (range && (range[0] !== null || range[1] !== null)) {
-                const min = range[0] ?? -Infinity;
-                const max = range[1] ?? Infinity;
-                specs.push({
-                    field: key,
-                    type: 'numeric',
-                    range: { min, max },
-                });
-            }
-        }
-
-        // Dimension filter (bucket filter)
-        if (dimensionFilter && activeDimension) {
-            specs.push({
-                field: activeDimension.key,
-                type: 'categorical',
-                values: new Set([dimensionFilter]),
-            });
-        }
-
-        return specs;
-    }, [filterState, rangeFilterState, search, searchFields, dimensionFilter, activeDimension]);
-
-    const currentGroupBy = useMemo((): GroupSpec => {
-        return {
-            field: activeDimensionKey || dimensions[0]?.key || '',
-            buckets: 10,
-        };
-    }, [activeDimensionKey, dimensions]);
+    const currentGroupBy = useCurrentGroupBy(activeDimensionKey, dimensions);
 
     // Apply filters
     useEffect(() => {
@@ -292,7 +145,7 @@ export function PivotViewer<TItem extends object>({
     }, [ready, currentFilters, engineApplyFilters]);
 
     // Compute grouping
-    const lastGroupingRequest = useRef<{ viewMode: ViewMode; groupBy: GroupSpec; visibleIds: Uint32Array } | null>(null);
+    const lastGroupingRequest = useRef<{ viewMode: ViewMode; groupBy: unknown; visibleIds: Uint32Array } | null>(null);
     
     useEffect(() => {
         if (!ready || visibleIds.length === 0) {
@@ -333,10 +186,12 @@ export function PivotViewer<TItem extends object>({
 
         // Check if this is the same request as last time to prevent duplicate computations
         const lastRequest = lastGroupingRequest.current;
-        if (lastRequest &&
+        if (
+            lastRequest &&
             lastRequest.viewMode === viewMode &&
-            lastRequest.groupBy.field === currentGroupBy.field &&
-            lastRequest.visibleIds === visibleIds) {
+            (lastRequest.groupBy as unknown as typeof currentGroupBy)?.field === currentGroupBy.field &&
+            lastRequest.visibleIds === visibleIds
+        ) {
             console.log('[PivotViewer] Skipping duplicate grouping request');
             return;
         }
@@ -374,7 +229,7 @@ export function PivotViewer<TItem extends object>({
         return result;
     }, [grouping, viewMode, zoomLevel, containerDimensions.width, containerDimensions.height]);
 
-    const resolveId = useCallback((item: TItem, index: number): ItemId => {
+    const resolveId = useCallback((item: TItem, index: number) => {
         if (getItemId) {
             const id = getItemId(item, index);
             return typeof id === 'number' ? id : index;
@@ -383,337 +238,61 @@ export function PivotViewer<TItem extends object>({
         return typeof id === 'number' ? id : index;
     }, [getItemId]);
 
-    // Scroll positioning when switching view modes or grouping changes
-    const lastProcessedViewMode = useRef(viewMode);
-    const lastProcessedGrouping = useRef(grouping);
+    // Track animation mode changes
+    useAnimationModeTracking(filterState, rangeFilterState, search, activeDimensionKey, viewMode, setAnimationMode);
 
-    useEffect(() => {
-        const viewModeChanged = lastProcessedViewMode.current !== viewMode;
-        const groupingChanged = lastProcessedGrouping.current !== grouping;
+    // Sync axis labels scroll with container scroll
+    useScrollSync(containerRef, axisLabelsRef, viewMode);
 
-        if (!viewModeChanged && !groupingChanged) return;
+    // Handle scroll positioning when switching view modes or grouping changes
+    useViewModeScrollHandling({
+        containerRef,
+        viewMode,
+        grouping,
+        layout,
+        selectedItem,
+        zoomLevel,
+        resolveId,
+        data,
+        setPreSelectionState,
+    });
 
-        lastProcessedViewMode.current = viewMode;
-        lastProcessedGrouping.current = grouping;
+    // Handle card selection (click)
+    const handleCardClick = useCardSelection({
+        data,
+        isPanning,
+        selectedItem,
+        zoomLevel,
+        viewMode,
+        layout,
+        containerDimensions,
+        scrollPosition,
+        preSelectionState,
+        grouping,
+        getItemId,
+        resolveId,
+        setZoomLevel,
+        setIsZooming,
+        setSelectedItem,
+        setPreSelectionState,
+    });
 
-        const container = containerRef.current;
-        if (!container) return;
-
-        // If we have a selected item, we want to keep it centered in the new layout
-        if (selectedItem) {
-            // Resolve ID
-            let itemId = resolveId(selectedItem, 0);
-
-            // Ensure ID type matches layout
-            if (typeof itemId === 'string' && !layout.positions.has(itemId)) {
-                const numId = Number(itemId);
-                if (!isNaN(numId) && layout.positions.has(numId)) itemId = numId;
-            } else if (typeof itemId === 'number' && !layout.positions.has(itemId)) {
-                const strId = String(itemId);
-                if (layout.positions.has(strId)) itemId = strId;
-            }
-
-            const position = layout.positions.get(itemId);
-            if (position) {
-                const cardPosition = {
-                    x: position.x,
-                    y: position.y,
-                    width: BASE_CARD_WIDTH,
-                    height: BASE_CARD_HEIGHT
-                };
-
-                const detailWidth = viewMode === 'collection' ? 0 : DETAIL_PANEL_WIDTH;
-
-                const { scrollLeft, scrollTop } = calculateCenterScrollPosition(
-                    container,
-                    cardPosition,
-                    zoomLevel,
-                    detailWidth,
-                    layout.totalHeight
-                );
-
-                container.scrollTo({ left: scrollLeft, top: scrollTop });
-
-                // Clear pre-selection state as we've moved to a new context
-                setPreSelectionState(null);
-            }
-        } else if (viewMode === 'grouped') {
-            // Default behavior for grouped view: scroll to bottom
-            // Use a small timeout to ensure the spacer has been resized
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-                // Sync scroll position state immediately to avoid stale values on first click
-                setScrollPosition({ x: container.scrollLeft, y: container.scrollTop });
-            }, 0);
-        }
-    }, [viewMode, grouping, layout, selectedItem, resolveId, zoomLevel]);
-
-    const handleCardClick = useCallback((item: TItem, e: MouseEvent, id?: number | string) => {
-        if (isPanning) return;
-
-        const container = containerRef.current;
-        if (!container) return;
-
-        // Use the passed ID (index) if available, otherwise fallback to resolveId
-        // Note: resolveId might be unreliable for looking up layout positions if IDs are strings
-        let itemId = (id !== undefined && id !== null) ? id : resolveId(item, 0);
-
-        // Ensure itemId matches layout keys type (number vs string)
-        // If layout has number keys and itemId is string, try converting
-        if (typeof itemId === 'string' && !layout.positions.has(itemId)) {
-            const numId = Number(itemId);
-            if (!isNaN(numId) && layout.positions.has(numId)) {
-                itemId = numId;
-            }
-        } else if (typeof itemId === 'number' && !layout.positions.has(itemId)) {
-            const strId = String(itemId);
-            if (layout.positions.has(strId)) {
-                itemId = strId;
-            }
-        }
-
-        const selectedId = selectedItem ? (data.indexOf(selectedItem) !== -1 ? data.indexOf(selectedItem) : resolveId(selectedItem, 0)) : null;
-
-        // Get card position from layout
-        const position = layout.positions.get(itemId);
-
-        const cardPosition = position ? {
-            x: position.x,
-            y: position.y,
-            width: BASE_CARD_WIDTH,
-            height: BASE_CARD_HEIGHT
-        } : null;
-
-        // Calculate target position for animation
-        let targetCardPosition: { x: number; y: number; width: number; height: number } | null = null;
-        let getCardPositionAtZoom: ((zoom: number) => { x: number; y: number; width: number; height: number } | null) | undefined = undefined;
-        let targetTotalHeight = layout.totalHeight;
-
-        if (viewMode === 'grouped' && cardPosition) {
-            // Calculate target zoom (logic duplicated from zoomAndCenterCard)
-            const targetZoom = Math.min(ZOOM_MAX, Math.max(MIN_ZOOM_ON_SELECT, zoomLevel * ZOOM_MULTIPLIER));
-
-            // Calculate target layout
-            const targetContainerWidth = containerDimensions.width / targetZoom;
-            // For grouped mode, use fixed container height to ensure stable layout during zoom
-            const targetContainerHeight = containerDimensions.height;
-
-            const targetLayout = computeLayout(grouping, {
-                viewMode,
-                cardWidth: BASE_CARD_WIDTH,
-                cardHeight: BASE_CARD_HEIGHT,
-                cardsPerColumn: CARDS_PER_COLUMN,
-                groupSpacing: GROUP_SPACING,
-                containerWidth: targetContainerWidth,
-                containerHeight: targetContainerHeight,
-            });
-
-            targetTotalHeight = targetLayout.totalHeight;
-
-            const targetPos = targetLayout.positions.get(itemId);
-            if (targetPos) {
-                targetCardPosition = {
-                    x: targetPos.x,
-                    y: targetPos.y,
-                    width: BASE_CARD_WIDTH,
-                    height: BASE_CARD_HEIGHT
-                };
-            }
-
-            // Provide callback for accurate position during animation
-            getCardPositionAtZoom = (zoom: number) => {
-                const currentContainerWidth = containerDimensions.width / zoom;
-                // For grouped mode, use fixed container height to ensure stable layout during zoom
-                const currentContainerHeight = containerDimensions.height;
-
-                const currentLayout = computeLayout(grouping, {
-                    viewMode,
-                    cardWidth: BASE_CARD_WIDTH,
-                    cardHeight: BASE_CARD_HEIGHT,
-                    cardsPerColumn: CARDS_PER_COLUMN,
-                    groupSpacing: GROUP_SPACING,
-                    containerWidth: currentContainerWidth,
-                    containerHeight: currentContainerHeight,
-                });
-
-                const pos = currentLayout.positions.get(itemId);
-                return pos ? { x: pos.x, y: pos.y, width: BASE_CARD_WIDTH, height: BASE_CARD_HEIGHT } : null;
-            };
-        }
-
-        // Callback to get layout size at a specific zoom level (for spacer updates)
-        const getLayoutSizeAtZoom = (zoom: number) => {
-            if (viewMode === 'collection') {
-                return { width: layout.totalWidth, height: layout.totalHeight };
-            }
-
-            const currentContainerWidth = containerDimensions.width / zoom;
-            // For grouped mode, use fixed container height to ensure stable layout during zoom
-            const currentContainerHeight = containerDimensions.height;
-
-            const currentLayout = computeLayout(grouping, {
-                viewMode,
-                cardWidth: BASE_CARD_WIDTH,
-                cardHeight: BASE_CARD_HEIGHT,
-                cardsPerColumn: CARDS_PER_COLUMN,
-                groupSpacing: GROUP_SPACING,
-                containerWidth: currentContainerWidth,
-                containerHeight: currentContainerHeight,
-            });
-
-            return { width: currentLayout.totalWidth, height: currentLayout.totalHeight };
-        };
-
-        handleCardSelection({
-            item,
-            itemId,
-            selectedItemId: selectedId,
-            container,
-            cardPosition,
-            targetCardPosition,
-            getCardPositionAtZoom,
-            getLayoutSizeAtZoom,
-            spacer: spacerRef.current,
-            preSelectionState,
-            startScrollPosition: { x: scrollPosition.x, y: scrollPosition.y },
-            setZoomLevel,
-            setIsZooming,
-            setSelectedItem,
-            setPreSelectionState,
-            viewMode,
-            zoomLevel,
-            totalHeight: targetTotalHeight,
-        });
-    }, [isPanning, selectedItem, zoomLevel, preSelectionState, viewMode, resolveId, setZoomLevel, layout, grouping, containerDimensions, scrollPosition]);
-
-    const closeDetail = useCallback(() => {
-        const container = containerRef.current;
-        if (!container || !selectedItem) {
-            setSelectedItem(null);
-            return;
-        }
-
-        // Try to find the index of the selected item in the data array
-        // This is more reliable than resolveId for layout lookup
-        const index = data.indexOf(selectedItem);
-        let itemId: string | number = index !== -1 ? index : resolveId(selectedItem, 0);
-
-        // Ensure itemId matches layout keys type (number vs string)
-        if (typeof itemId === 'string' && !layout.positions.has(itemId)) {
-            const numId = Number(itemId);
-            if (!isNaN(numId) && layout.positions.has(numId)) {
-                itemId = numId;
-            }
-        } else if (typeof itemId === 'number' && !layout.positions.has(itemId)) {
-            const strId = String(itemId);
-            if (layout.positions.has(strId)) {
-                itemId = strId;
-            }
-        }
-
-        // Get card position from layout
-        const position = layout.positions.get(itemId);
-        const cardPosition = position ? {
-            x: position.x,
-            y: position.y,
-            width: BASE_CARD_WIDTH,
-            height: BASE_CARD_HEIGHT
-        } : null;
-
-        if (!preSelectionState) {
-            setSelectedItem(null);
-            return;
-        }
-
-        // Collection mode: just scroll back
-        if (viewMode === 'collection') {
-            setSelectedItem(null);
-            smoothScrollTo(container, preSelectionState.scrollLeft, preSelectionState.scrollTop, true);
-            setPreSelectionState(null);
-            return;
-        }
-
-        // Grouped mode: animate zoom out if zoom changed
-        const zoomChanged = Math.abs(preSelectionState.zoom - zoomLevel) > 0.001;
-
-        if (!zoomChanged || !cardPosition) {
-            setSelectedItem(null);
-            smoothScrollTo(container, preSelectionState.scrollLeft, preSelectionState.scrollTop, true);
-            setPreSelectionState(null);
-            return;
-        }
-
-        // Calculate target position for animation (zooming out)
-        let targetCardPosition: { x: number; y: number; width: number; height: number } | null = null;
-        let getCardPositionAtZoom: ((zoom: number) => { x: number; y: number; width: number; height: number } | null) | undefined = undefined;
-
-        if (viewMode === 'grouped') {
-            const targetZoom = preSelectionState.zoom;
-
-            const targetContainerWidth = containerDimensions.width / targetZoom;
-            // For grouped mode, use fixed container height to ensure stable layout during zoom
-            const targetContainerHeight = containerDimensions.height;
-
-            const targetLayout = computeLayout(grouping, {
-                viewMode,
-                cardWidth: BASE_CARD_WIDTH,
-                cardHeight: BASE_CARD_HEIGHT,
-                cardsPerColumn: CARDS_PER_COLUMN,
-                groupSpacing: GROUP_SPACING,
-                containerWidth: targetContainerWidth,
-                containerHeight: targetContainerHeight,
-            });
-
-            const targetPos = targetLayout.positions.get(itemId);
-            if (targetPos) {
-                targetCardPosition = {
-                    x: targetPos.x,
-                    y: targetPos.y,
-                    width: BASE_CARD_WIDTH,
-                    height: BASE_CARD_HEIGHT
-                };
-            }
-
-            // Provide callback for accurate position during animation
-            getCardPositionAtZoom = (zoom: number) => {
-                const currentContainerWidth = containerDimensions.width / zoom;
-                // For grouped mode, use fixed container height to ensure stable layout during zoom
-                const currentContainerHeight = containerDimensions.height;
-
-                const currentLayout = computeLayout(grouping, {
-                    viewMode,
-                    cardWidth: BASE_CARD_WIDTH,
-                    cardHeight: BASE_CARD_HEIGHT,
-                    cardsPerColumn: CARDS_PER_COLUMN,
-                    groupSpacing: GROUP_SPACING,
-                    containerWidth: currentContainerWidth,
-                    containerHeight: currentContainerHeight,
-                });
-
-                const pos = currentLayout.positions.get(itemId);
-                return pos ? { x: pos.x, y: pos.y, width: BASE_CARD_WIDTH, height: BASE_CARD_HEIGHT } : null;
-            };
-        }
-
-        setIsZooming(true);
-
-        animateZoomAndScroll({
-            container,
-            cardPosition,
-            targetCardPosition,
-            getCardPositionAtZoom,
-            startZoom: zoomLevel,
-            targetZoom: preSelectionState.zoom,
-            targetScrollLeft: preSelectionState.scrollLeft,
-            targetScrollTop: preSelectionState.scrollTop,
-            onUpdate: setZoomLevel,
-            onComplete: () => {
-                setIsZooming(false);
-                setSelectedItem(null);
-                setPreSelectionState(null);
-            },
-        });
-    }, [preSelectionState, selectedItem, zoomLevel, viewMode, resolveId, setZoomLevel, layout, grouping, containerDimensions]);
+    // Handle detail panel close
+    const closeDetail = useDetailPanelClose({
+        selectedItem,
+        preSelectionState,
+        zoomLevel,
+        viewMode,
+        layout,
+        containerDimensions,
+        grouping,
+        data,
+        resolveId,
+        setZoomLevel,
+        setIsZooming,
+        setSelectedItem,
+        setPreSelectionState,
+    });
 
     // Use base card dimensions - zoom is applied as transform in canvas
     const cardWidth = BASE_CARD_WIDTH;
