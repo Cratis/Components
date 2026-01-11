@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import type { ItemId, LayoutResult, GroupingResult } from '../engine/types';
 import type { ViewMode } from './Toolbar';
@@ -52,8 +52,8 @@ export interface PivotCanvasProps<TItem extends object> {
   /** Is zooming animation in progress */
   isZooming?: boolean;
 
-  /** Card renderer function */
-  cardRenderer?: (item: TItem) => ReactNode;
+  /** Card renderer function - returns structured data for display */
+  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] };
 
   /** ID resolver */
   resolveId: (item: TItem, index: number) => string | number;
@@ -122,7 +122,6 @@ export function PivotCanvas<TItem extends object>({
   const prevScrollTopRef = useRef<number>(0);
   const prevScrollLeftRef = useRef<number>(0);
   const cardColorsRef = useRef<CardColors>(DEFAULT_COLORS);
-  void cardRenderer; // unused in Pixi renderer but keep prop compatibility
 
   const cssColorResolver = useMemo(() => createCssColorResolver(), []);
 
@@ -490,9 +489,10 @@ export function PivotCanvas<TItem extends object>({
         (e: MouseEvent) => (onPanStart)(e as unknown as React.MouseEvent),
         cardWidth,
         cardHeight,
-        cardColorsRef.current
+        cardColorsRef.current,
+        cardRenderer
       ),
-      updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
+      updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current, cardRenderer),
       isViewTransition: isViewTransitionRef.current,
       prevLayout: prevLayoutRef.current,
       prevScrollTop: prevScrollTopRef.current,
@@ -620,10 +620,10 @@ export function PivotCanvas<TItem extends object>({
           createCardSprite: (id: string | number, x: number, y: number) => createCardSpriteExternal(
             id, x, y, items as TItem[],
             (item, e, id) => (onCardClickRef.current)(item, e, id),
-            (e) => (onPanStartRef.current)(e as unknown as React.MouseEvent), // Pixi events to React events
-            cardWidth, cardHeight, cardColorsRef.current
+            (e) => (onPanStartRef.current)(e as unknown as React.MouseEvent),
+            cardWidth, cardHeight, cardColorsRef.current, cardRenderer
           ),
-          updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
+          updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current, cardRenderer),
           isViewTransition: isViewTransitionRef.current,
           viewMode,
           prevScrollTop: prevScrollTopRef.current,
@@ -662,14 +662,14 @@ export function PivotCanvas<TItem extends object>({
       id, x, y, items as TItem[],
       (item, e, id) => (onCardClickRef.current)(item, e, id),
       (e) => (onPanStartRef.current)(e as unknown as React.MouseEvent),
-      cardWidth, cardHeight, cardColorsRef.current
+      cardWidth, cardHeight, cardColorsRef.current, cardRenderer
     );
   }
   // Mark these helpers as used (they may be referenced externally or via callbacks)
   void createCardSprite;
 
   function updateCardContent(sprite: CardSprite, item: TItem) {
-    return updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current);
+    return updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current, cardRenderer);
   }
 
   function updatePositions(): boolean {

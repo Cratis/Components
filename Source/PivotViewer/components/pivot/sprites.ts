@@ -17,6 +17,7 @@ export function createCardSprite<TItem extends object>(
   cardWidth: number,
   cardHeight: number,
   cardColors: CardColors,
+  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] },
 ): CardSprite {
   if (spritePool.length > 0) {
     const sprite = spritePool.pop()!;
@@ -99,7 +100,7 @@ export function createCardSprite<TItem extends object>(
 
     // Update event context
     if (sprite.container) {
-      (sprite.container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string } })._eventContext = { items, onCardClick, id };
+      (sprite.container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string; cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] } } })._eventContext = { items, onCardClick, id, cardRenderer };
     }
 
     return sprite;
@@ -120,7 +121,7 @@ export function createCardSprite<TItem extends object>(
   );
 
   // Store context for event handlers
-  (container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string } })._eventContext = { items, onCardClick, id };
+  (container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string; cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] } } })._eventContext = { items, onCardClick, id, cardRenderer };
 
   const graphics = new PIXI.Graphics();
 
@@ -230,37 +231,15 @@ export function updateCardContent<TItem extends object>(
   cardWidth: number,
   cardHeight: number,
   cardColors: CardColors,
+  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] },
 ) {
   if (!item) return;
 
-  const event = item as unknown as Record<string, unknown>;
-  const eventType = String(event.type || event.name || event.title || 'Event');
-
-  const timeStr = event.occurred ? new Date(event.occurred as string | number | Date).toLocaleString('en-US', {
-    month: '2-digit',
-    day: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  }).replace(',', '') : '';
-
-  const correlation = event.correlationId || event.correlation || '';
-  const correlationShort = correlation ? String(correlation).substring(0, 12) + '...' : '';
-
-  const maxTitleLength = 20;
-  const titleDisplay = eventType.length > maxTitleLength
-    ? eventType.substring(0, maxTitleLength) + '...'
-    : eventType;
-
-  const maxTypeLength = 16;
-  const typeDisplay = eventType.length > maxTypeLength
-    ? eventType.substring(0, maxTypeLength) + '...'
-    : eventType;
-
   const colors = cardColors;
-  const labelsText = 'Type\nOccurred\nCorrelation';
-  const valuesText = `${typeDisplay}\n${timeStr}\n${correlationShort}`;
+  const cardData = cardRenderer(item);
+  const titleDisplay = cardData.title;
+  const labelsText = cardData.labels.join('\n');
+  const valuesText = cardData.values.join('\n');
   const colorsChanged = sprite.lastCardColors !== colors;
 
   // Ensure text objects exist before using them
