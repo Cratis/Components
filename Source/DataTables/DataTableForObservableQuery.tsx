@@ -12,7 +12,7 @@ import { ReactNode, useState } from 'react';
 /**
  * Props for the DataTableForQuery component
  */
-export interface DataTableForObservableQueryProps<TQuery extends IObservableQueryFor<TDataType>, TDataType, TArguments> {
+export interface DataTableForObservableQueryProps<TQuery extends IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object> {
     /**
      * Children to render
      */
@@ -66,13 +66,13 @@ const paging = new Paging(0, 20);
  * @param props Props for the component
  * @returns Function to render the DataTableForQuery component
  */
-export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<TDataType, TArguments>, TDataType, TArguments extends object>(props: DataTableForObservableQueryProps<TQuery, TDataType, TArguments>) => {
+export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForObservableQueryProps<TQuery, TDataType, TArguments>) => {
     const [filters, setFilters] = useState<DataTableFilterMeta>(props.defaultFilters ?? {});
     const [result, , setPage] = useObservableQueryWithPaging(props.query, paging, props.queryArguments);
 
     return (
         <DataTable
-            value={result.data}
+            value={result.data as unknown as object[]}
             lazy
             rows={paging.pageSize}
             totalRecords={result.paging.totalItems}

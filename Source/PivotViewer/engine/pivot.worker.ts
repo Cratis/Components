@@ -6,6 +6,7 @@ import type {
   PivotIndexes,
   WorkerInMessage,
   WorkerOutMessage,
+  Field,
 } from './types';
 import { buildIndexes, applyFilters, computeGrouping, sortIds } from './store';
 
@@ -21,8 +22,8 @@ self.onmessage = (e: MessageEvent<WorkerInMessage>) => {
       console.log('[Worker] Building indexes for', message.store.items.length, 'items');
       
       // Convert fields array back to Map
-      const fieldsArray = message.store.fields as [string, unknown][];
-      const fieldsMap = new Map<string, unknown>(fieldsArray);
+      const fieldsArray = message.store.fields as unknown as [string, Field][];
+      const fieldsMap = new Map<string, Field>(fieldsArray);
       
       store = {
         ...message.store,

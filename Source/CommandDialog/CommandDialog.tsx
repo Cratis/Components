@@ -54,10 +54,10 @@ export const useCommandDialogContext = <TCommand = unknown,>() => {
     return context as CommandDialogContextValue<TCommand>;
 };
 
-const CommandDialogFormContent = () => {
-    const command = useCommandInstance();
-    const { setCommandResult, setCommandValues, isValid, onBeforeExecute } = useCommandFormContext();
-    const { onSuccess: onConfirm, onCancel, confirmLabel, cancelLabel, confirmIcon, cancelIcon } = useCommandDialogContext();
+const CommandDialogFormContent = <TCommand extends { execute: () => Promise<ICommandResult<unknown>> }>() => {
+    const command = useCommandInstance<TCommand>();
+    const { setCommandResult, setCommandValues, isValid, onBeforeExecute } = useCommandFormContext<TCommand>();
+    const { onSuccess: onConfirm, onCancel, confirmLabel, cancelLabel, confirmIcon, cancelIcon } = useCommandDialogContext<TCommand>();
 
     const handleConfirm = async () => {
         if (onBeforeExecute) {

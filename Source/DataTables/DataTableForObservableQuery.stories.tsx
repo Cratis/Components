@@ -3,7 +3,7 @@
 
 import React from 'react';
 import * as Comp from './DataTableForObservableQuery';
-const Component: React.ComponentType<Record<string, never>> | undefined = (Comp as Record<string, unknown>).default as React.ComponentType<Record<string, never>> | undefined || (Object.values(Comp)[0] as React.ComponentType<Record<string, never>> | undefined);
+const Component: React.ComponentType<Record<string, never>> | undefined = (Comp as Record<string, unknown>).default as unknown as React.ComponentType<Record<string, never>> | undefined || (Object.values(Comp)[0] as unknown as React.ComponentType<Record<string, never>> | undefined);
 
 export default { title: 'DataTables/DataTableForObservableQuery', component: Component };
 

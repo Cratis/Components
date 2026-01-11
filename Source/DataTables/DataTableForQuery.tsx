@@ -12,7 +12,7 @@ import { ReactNode, useState } from 'react';
 /**
  * Props for the DataTableForQuery component
  */
-export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType>, TDataType, TArguments> {
+export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object> {
     /**
      * Children to render
      */
@@ -66,13 +66,13 @@ const paging = new Paging(0, 20);
  * @param props Props for the component
  * @returns Function to render the DataTableForQuery component
  */
-export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments>, TDataType, TArguments extends object>(props: DataTableForQueryProps<TQuery, TDataType, TArguments>) => {
+export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForQueryProps<TQuery, TDataType, TArguments>) => {
     const [filters, setFilters] = useState<DataTableFilterMeta>(props.defaultFilters ?? {});
     const [result, , , setPage] = useQueryWithPaging(props.query, paging, props.queryArguments);
 
     return (
         <DataTable
-            value={result.data as unknown}
+            value={result.data as unknown as object[]}
             lazy
             rows={paging.pageSize}
             totalRecords={result.paging.totalItems}

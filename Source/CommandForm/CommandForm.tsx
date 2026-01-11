@@ -5,6 +5,7 @@ import { CommandFormFields, ColumnInfo } from './CommandFormFields';
 import { Constructor } from '@cratis/fundamentals';
 import { useCommand, SetCommandValues } from '@cratis/arc.react/commands';
 import { ICommandResult } from '@cratis/arc/commands';
+import { Command } from '@cratis/arc/commands';
 import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
 import type { CommandFormFieldProps } from './CommandFormField';
 import { Panel } from 'primereact/panel';
@@ -149,7 +150,8 @@ const getCommandFormFields = <TCommand,>(props: { children?: React.ReactNode }):
 };
 
 // Helper function to extract property name from accessor function
-function getPropertyNameFromAccessor<T>(accessor: (obj: T) => unknown): string {
+function getPropertyNameFromAccessor<T = unknown>(accessor: ((obj: T) => unknown) | unknown): string {
+    if (typeof accessor !== 'function') return '';
     const fnStr = accessor.toString();
     const match = fnStr.match(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/);
     return match ? match[1] : '';
@@ -163,7 +165,7 @@ const CommandFormComponent = <TCommand extends object = object>(props: CommandFo
         if (!props.currentValues) return {};
 
         const tempCommand = new props.command();
-        const commandProperties = (tempCommand as Record<string, unknown>).properties || [];
+        const commandProperties = ((tempCommand as Record<string, unknown>).properties || []) as string[];
         const extracted: Partial<TCommand> = {};
 
         commandProperties.forEach((propertyName: string) => {
@@ -183,7 +185,10 @@ const CommandFormComponent = <TCommand extends object = object>(props: CommandFo
     }), [valuesFromCurrentValues, initialValuesFromFields, props.initialValues]);
 
     // useCommand returns [instance, setter] for the typed command. Provide generics so commandInstance is TCommand.
-    const [commandInstance, setCommandValues] = useCommand<TCommand>(props.command as Constructor<TCommand>, mergedInitialValues as Partial<TCommand>);
+    // Using type assertion through unknown to work around generic constraint mismatch
+    const useCommandResult = useCommand(props.command as unknown as Constructor<Command<Partial<TCommand>, object>>, mergedInitialValues);
+    const commandInstance = useCommandResult[0] as unknown as TCommand;
+    const setCommandValues = useCommandResult[1] as SetCommandValues<TCommand>;
     const [commandResult, setCommandResult] = useState<ICommandResult<unknown> | undefined>(undefined);
     const [fieldValidities, setFieldValidities] = useState<Record<string, boolean>>({});
     const [customFieldErrors, setCustomFieldErrors] = useState<Record<string, string>>({});

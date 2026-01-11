@@ -5,6 +5,7 @@ import { useCommandFormContext } from './CommandForm';
 import React from 'react';
 import { Tooltip } from 'primereact/tooltip';
 import type { CommandFormFieldProps } from './CommandFormField';
+import type { ICommandResult } from '@cratis/arc/commands';
 
 export interface ColumnInfo {
     fields: React.ReactElement<CommandFormFieldProps<unknown>>[];
@@ -32,7 +33,7 @@ const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<C
 
     // Get the property descriptor for this field from the command instance
     const propertyDescriptor = propertyName && (context.commandInstance as Record<string, unknown>)?.propertyDescriptors
-        ? (context.commandInstance as Record<string, unknown>).propertyDescriptors.find((pd: Record<string, unknown>) => pd.name === propertyName)
+        ? ((context.commandInstance as Record<string, unknown>).propertyDescriptors as Array<Record<string, unknown>>).find((pd: Record<string, unknown>) => pd.name === propertyName)
         : undefined;
 
     // Clone the field element with the current value and onChange handler
@@ -50,7 +51,7 @@ const CommandFormFieldWrapper = ({ field, index }: { field: React.ReactElement<C
 
                 // Call validate() on the command instance and store the result
                 if (context.commandInstance && typeof (context.commandInstance as Record<string, unknown>).validate === 'function') {
-                    const validationResult = (context.commandInstance as Record<string, unknown>).validate();
+                    const validationResult = ((context.commandInstance as Record<string, unknown>).validate as () => ICommandResult<unknown>)();
                     if (validationResult) {
                         context.setCommandResult(validationResult);
                     }

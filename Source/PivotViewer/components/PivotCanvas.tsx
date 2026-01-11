@@ -62,8 +62,8 @@ export interface PivotCanvasProps<TItem extends object> {
   onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void;
 
   /** Pan handlers */
-  onPanStart: (e: MouseEvent) => void;
-  onPanMove: (e: MouseEvent) => void;
+  onPanStart: (e: React.MouseEvent) => void;
+  onPanMove: (e: React.MouseEvent) => void;
   onPanEnd: () => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
 }
@@ -268,11 +268,11 @@ export function PivotCanvas<TItem extends object>({
         app.stage.on('pointerdown', (e) => {
           // Only handle if it reached the stage (background)
           // Sprites stop propagation, so this is safe
-          onPanStartRef.current(e.nativeEvent as unknown as MouseEvent);
+          onPanStartRef.current(e.nativeEvent as unknown as React.MouseEvent);
         });
 
         app.stage.on('globalpointermove', (e) => {
-          onPanMoveRef.current(e.nativeEvent as unknown as MouseEvent);
+          onPanMoveRef.current(e.nativeEvent as unknown as React.MouseEvent);
         });
 
         app.stage.on('globalpointerup', () => {
@@ -481,7 +481,7 @@ export function PivotCanvas<TItem extends object>({
         y,
         items as TItem[],
         (item: TItem, e: MouseEvent, id: string | number) => (onCardClickRef.current)(item, e, id),
-        (e: MouseEvent) => (onPanStart)(e),
+        (e: MouseEvent) => (onPanStart)(e as unknown as React.MouseEvent),
         cardWidth,
         cardHeight,
         cardColorsRef.current
@@ -613,7 +613,7 @@ export function PivotCanvas<TItem extends object>({
           createCardSprite: (id: string | number, x: number, y: number) => createCardSpriteExternal(
             id, x, y, items as TItem[],
             (item, e, id) => (onCardClickRef.current)(item, e, id),
-            (e) => (onPanStartRef.current)(e, true), // Explicitly mark as on-card for Pixi events
+            (e) => (onPanStartRef.current)(e as unknown as React.MouseEvent), // Pixi events to React events
             cardWidth, cardHeight, cardColorsRef.current
           ),
           updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
@@ -647,7 +647,7 @@ export function PivotCanvas<TItem extends object>({
     return createCardSpriteExternal(
       id, x, y, items as TItem[],
       (item, e, id) => (onCardClickRef.current)(item, e, id),
-      (e) => (onPanStartRef.current)(e, true),
+      (e) => (onPanStartRef.current)(e as unknown as React.MouseEvent),
       cardWidth, cardHeight, cardColorsRef.current
     );
   }

@@ -225,9 +225,9 @@ export function updateCardContent<TItem extends object>(
   if (!item) return;
 
   const event = item as unknown as Record<string, unknown>;
-  const eventType = event.type || event.name || event.title || 'Event';
+  const eventType = String(event.type || event.name || event.title || 'Event');
 
-  const timeStr = event.occurred ? new Date(event.occurred).toLocaleString('en-US', {
+  const timeStr = event.occurred ? new Date(event.occurred as string | number | Date).toLocaleString('en-US', {
     month: '2-digit',
     day: '2-digit',
     year: 'numeric',

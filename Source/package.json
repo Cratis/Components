@@ -70,6 +70,7 @@
         "prepare": "yarn g:build",
         "clean": "yarn g:clean",
         "build": "tsc -p tsconfig.json",
+        "compile": "tsc -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
