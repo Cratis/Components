@@ -225,7 +225,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
     // Sweep: actually destroy sprites that have been hidden longer than threshold
     try {
-        const SWEEP_MS = 500; // keep hidden sprites for 500ms before destruction
+        const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
         const now = Date.now();
         for (const [id, sprite] of sprites) {
             const lastHidden = (sprite as any).__lastHiddenAt as number | undefined;
