@@ -90,36 +90,33 @@ export const Default: Story = {
                         primaryColor: '#91BDF8',
                         primary500: '#2E66BA',
                     }}
-                    // Example: custom details renderer shown on card selection
+                    // Example: custom content inside the built-in detail drawer
                     detailRenderer={(item, onClose) => (
-                        <aside className="pv-detail-panel">
-                            <header>
+                        <section>
+                            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                                 <div>
-                                    <h2>{item.name}</h2>
-                                    <p>Department • {item.department}</p>
+                                    <h3 style={{ margin: 0 }}>{item.name}</h3>
+                                    <p style={{ margin: 0, opacity: 0.8 }}>Department • {item.department}</p>
                                 </div>
-                                <button type="button" onClick={onClose} title="Close">×</button>
+                                <button type="button" onClick={onClose} title="Close" className="p-button p-button-text">
+                                    Close
+                                </button>
                             </header>
-                            <div className="pv-detail-panel-content">
-                                <section>
-                                    <h3>Profile</h3>
-                                    <dl>
-                                        <div>
-                                            <dt>Age</dt>
-                                            <dd>{item.age}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>City</dt>
-                                            <dd>{item.address.city}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>Street</dt>
-                                            <dd>{item.address.street}</dd>
-                                        </div>
-                                    </dl>
-                                </section>
-                            </div>
-                        </aside>
+                            <dl style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.35rem 0.75rem' }}>
+                                <div>
+                                    <dt>Age</dt>
+                                    <dd>{item.age}</dd>
+                                </div>
+                                <div>
+                                    <dt>City</dt>
+                                    <dd>{item.address.city}</dd>
+                                </div>
+                                <div>
+                                    <dt>Street</dt>
+                                    <dd>{item.address.street}</dd>
+                                </div>
+                            </dl>
+                        </section>
                     )}
                     getItemId={(item) => item.id}
                 />

@@ -358,7 +358,6 @@ export function PivotCanvas<TItem extends object>({
         void e;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only initialize once - resizing handled by separate useEffect
 
   // Handle canvas resize

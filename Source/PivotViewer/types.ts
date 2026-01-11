@@ -79,7 +79,7 @@ export interface PivotViewerProps<TItem extends object> {
   filters?: PivotFilter<TItem>[];
   defaultDimensionKey?: string;
   cardRenderer?: (item: TItem) => ReactNode;
-  /** Optional renderer for the slide-in detail panel when a card is selected */
+  /** Optional renderer for the detail content area; the drawer shell (header/close/layout) stays component-owned */
   detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
   getItemId?: (item: TItem, index: number) => string | number;
   searchFields?: PropertyAccessor<TItem>[];

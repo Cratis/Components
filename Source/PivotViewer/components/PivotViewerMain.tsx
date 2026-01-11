@@ -9,6 +9,7 @@ import { Spinner } from './Spinner';
 import { PivotCanvas } from './PivotCanvas';
 import { AxisLabels } from './AxisLabels';
 import { DetailPanel } from './DetailPanel';
+import { normalizeIdToLayoutKey } from '../utils/idResolution';
 
 export interface PivotViewerMainProps<TItem extends object> {
   data: TItem[];
@@ -76,6 +77,14 @@ export function PivotViewerMain<TItem extends object>({
   axisLabelsRef,
   spacerRef,
 }: PivotViewerMainProps<TItem>) {
+  const selectedLayoutId: ItemId | null = selectedItem
+    ? (() => {
+        const index = data.indexOf(selectedItem);
+        const rawId = index !== -1 ? resolveId(selectedItem, index) : resolveId(selectedItem, 0);
+        return normalizeIdToLayoutKey(rawId, layout) as ItemId;
+      })()
+    : null;
+
   const handleViewportClick = (e: React.MouseEvent) => {
     if (isZooming || !containerRef.current) return;
 
@@ -186,7 +195,7 @@ export function PivotViewerMain<TItem extends object>({
               panY={scrollPosition.y}
               viewportWidth={containerDimensions.width}
               viewportHeight={containerDimensions.height}
-              selectedId={selectedItem ? resolveId(selectedItem, 0) : null}
+              selectedId={selectedLayoutId}
               hoveredGroupIndex={hoveredGroupIndex}
               isZooming={isZooming}
               cardRenderer={cardRenderer}
@@ -201,7 +210,13 @@ export function PivotViewerMain<TItem extends object>({
           )}
         </div>
         {detailRenderer
-          ? (selectedItem ? detailRenderer(selectedItem, onCloseDetail) : null)
+          ? (selectedItem ? (
+              <DetailPanel
+                selectedItem={selectedItem}
+                onClose={onCloseDetail}
+                contentRenderer={detailRenderer}
+              />
+            ) : null)
           : (
             <DetailPanel
               selectedItem={selectedItem}

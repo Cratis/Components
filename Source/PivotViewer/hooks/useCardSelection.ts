@@ -64,7 +64,8 @@ export function useCardSelection<TItem extends object>({
         const selectedId = selectedItem
             ? (() => {
                 const index = data.indexOf(selectedItem);
-                return index !== -1 ? index : resolveId(selectedItem, 0);
+                const rawSelectedId = index !== -1 ? resolveId(selectedItem, index) : resolveId(selectedItem, 0);
+                return normalizeIdToLayoutKey(rawSelectedId, layout);
             })()
             : null;
 

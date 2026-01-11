@@ -288,11 +288,9 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     try {
         const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
         const now = Date.now();
-        let destroyedCount = 0;
         for (const [id, sprite] of sprites) {
             const lastHidden = (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
             if (lastHidden && now - lastHidden > SWEEP_MS) {
-                destroyedCount++;
                 try {
                     // remove from parent if present
                     if (sprite.container && sprite.container.parent) sprite.container.parent.removeChild(sprite.container);
