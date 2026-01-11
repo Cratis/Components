@@ -74,11 +74,14 @@ export function useViewModeScrollHandling<TItem extends object>({
                 container.scrollTo({ left: scrollLeft, top: scrollTop });
                 setPreSelectionState(null);
             }
-        } else if (viewMode === 'grouped') {
-            // Default behavior for grouped view: scroll to bottom
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 0);
+            } else if (viewMode === 'grouped') {
+                // Default behavior for grouped view: scroll to bottom to see the cards
+                // which are laid out from bottom-to-top. Use layout.totalHeight which is
+                // the authoritative height in world units, converted back to pixels.
+                const scrollToHeight = layout.totalHeight * zoomLevel - container.clientHeight;
+                const targetScrollTop = Math.max(0, scrollToHeight);
+                container.scrollTop = targetScrollTop;
+                container.scrollLeft = 0;
         }
     }, [viewMode, grouping, layout, selectedItem, resolveId, zoomLevel, containerRef, data, setPreSelectionState]);
 }

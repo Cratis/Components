@@ -50,7 +50,7 @@ export function useFilteredData<TItem extends object>(
     });
   }, [data, filters, filterState, rangeFilterState, dimensionFilter, activeDimension, searchFields, searchTerm]);
 
-  const allGroupsForBuckets = useMemo(() => {
+  const allGroupsForGroupedMode = useMemo(() => {
     if (!activeDimension) {
       return [] as PivotGroup<TItem>[];
     }
@@ -64,12 +64,12 @@ export function useFilteredData<TItem extends object>(
     }
 
     if (dimensionFilter) {
-      const filteredGroup = allGroupsForBuckets.find((group) => group.key === dimensionFilter);
+      const filteredGroup = allGroupsForGroupedMode.find((group) => group.key === dimensionFilter);
       return filteredGroup ? [filteredGroup] : [];
     }
 
     return groupData(filteredData, activeDimension);
-  }, [filteredData, activeDimension, dimensionFilter, allGroupsForBuckets]);
+  }, [filteredData, activeDimension, dimensionFilter, allGroupsForGroupedMode]);
 
   const collectionGroup = useMemo(() => {
     if (filteredData.length === 0) {
@@ -114,7 +114,7 @@ export function useFilteredData<TItem extends object>(
 
   return {
     filteredData,
-    allGroupsForBuckets,
+    allGroupsForGroupedMode,
     groupedGroups,
     collectionGroup,
   };

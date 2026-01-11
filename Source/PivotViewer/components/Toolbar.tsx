@@ -108,7 +108,7 @@ export function Toolbar<TItem extends object>({
             className={viewMode === 'grouped' ? 'active' : ''}
             onClick={() => onViewModeChange('grouped')}
           >
-            Buckets
+            Grouped
           </button>
         </div>
         <label className="pv-dimension-select">

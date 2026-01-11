@@ -5,8 +5,8 @@ import * as PIXI from 'pixi.js';
 import type { CardColors } from './constants';
 import type { GroupingResult, LayoutResult } from '../../engine/types';
 
-export function updateBucketBackgrounds(
-  bucketsContainer: PIXI.Container | null,
+export function updateGroupBackgrounds(
+  groupsContainer: PIXI.Container | null,
   container: HTMLDivElement | null,
   grouping: GroupingResult,
   layout: LayoutResult,
@@ -14,7 +14,7 @@ export function updateBucketBackgrounds(
   cardColors: CardColors,
   viewMode: string,
 ) {
-  if (!bucketsContainer) return;
+  if (!groupsContainer) return;
 
   // keep parameter referenced to avoid unused param lint when callers pass zoomLevel
   void zoomLevel;
@@ -22,7 +22,7 @@ export function updateBucketBackgrounds(
   if (!container || grouping.groups.length === 0 || viewMode === 'collection') {
     // If we shouldn't show anything, hide all existing backgrounds
     // We keep the highlight if it exists
-    for (const child of bucketsContainer.children) {
+    for (const child of groupsContainer.children) {
       if ((child as unknown as { name?: string }).name !== 'highlight') {
         child.visible = false;
       }
@@ -42,7 +42,7 @@ export function updateBucketBackgrounds(
   const startY = -bufferWorld;
 
   // Get existing background graphics (excluding highlight)
-  const backgroundGraphics = bucketsContainer.children.filter(c => (c as unknown as { name?: string }).name !== 'highlight') as PIXI.Graphics[];
+  const backgroundGraphics = groupsContainer.children.filter(c => (c as unknown as { name?: string }).name !== 'highlight') as PIXI.Graphics[];
   let bgIndex = 0;
 
   // Instead of re-deriving bucket geometry from constants, compute bucket bounds
@@ -77,11 +77,11 @@ export function updateBucketBackgrounds(
       } else {
         bg = new PIXI.Graphics();
         // Insert before highlight if it exists, otherwise at end
-        const highlightIndex = bucketsContainer.children.findIndex(c => (c as unknown as { name?: string }).name === 'highlight');
+        const highlightIndex = groupsContainer.children.findIndex(c => (c as unknown as { name?: string }).name === 'highlight');
         if (highlightIndex >= 0) {
-          bucketsContainer.addChildAt(bg, highlightIndex);
+          groupsContainer.addChildAt(bg, highlightIndex);
         } else {
-          bucketsContainer.addChild(bg);
+          groupsContainer.addChild(bg);
         }
       }
 
@@ -100,7 +100,7 @@ export function updateBucketBackgrounds(
 }
 
 export function updateHighlight(
-  bucketsContainer: PIXI.Container | null,
+  groupsContainer: PIXI.Container | null,
   container: HTMLDivElement | null,
   grouping: GroupingResult,
   layout: LayoutResult,
@@ -108,16 +108,16 @@ export function updateHighlight(
   cardWidth: number,
   zoomLevel: number,
 ) {
-  if (!bucketsContainer || !container || grouping.groups.length === 0) return;
+  if (!groupsContainer || !container || grouping.groups.length === 0) return;
 
   const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
 
-  let highlight = bucketsContainer.children.find(child => (child as unknown as { name?: string }).name === 'highlight') as PIXI.Graphics;
+  let highlight = groupsContainer.children.find(child => (child as unknown as { name?: string }).name === 'highlight') as PIXI.Graphics;
 
   if (!highlight) {
     highlight = new PIXI.Graphics();
     (highlight as unknown as { name: string }).name = 'highlight';
-    bucketsContainer.addChild(highlight);
+    groupsContainer.addChild(highlight);
   }
 
   highlight.clear();

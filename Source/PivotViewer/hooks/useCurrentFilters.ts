@@ -49,7 +49,7 @@ export function useCurrentFilters<TItem extends object>(
             }
         }
 
-        // Dimension filter (bucket filter)
+        // Dimension filter (grouped filter)
         if (dimensionFilter && activeDimension) {
             specs.push({
                 field: activeDimension.key,

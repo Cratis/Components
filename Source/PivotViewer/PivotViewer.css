@@ -579,7 +579,7 @@
   cursor: grabbing;
 }
 
-/* Groups wrapper for bucket mode with axis labels */
+/* Groups wrapper for grouped mode with axis labels */
 .pv-groups-wrapper {
   display: flex;
   flex-direction: column;
@@ -594,7 +594,7 @@
   background: radial-gradient(circle at 25% 20%, var(--primary-500), var(--surface-ground));
 }
 
-.pv-groups-buckets {
+.pv-groups-grouped {
   flex: 1;
   padding-bottom: 0;
 }
@@ -612,21 +612,21 @@
   transition: background 180ms ease;
 }
 
-/* Bucket mode groups need to align cards to bottom and extend full height */
-.pv-group-bucket {
+/* Grouped mode groups need to align cards to bottom and extend full height */
+.pv-group-grouped {
   justify-content: flex-end;
   position: relative;
   min-height: 100%; /* Ensure full height for hover */
   width: var(--column-width); /* Fixed width even when empty */
 }
 
-/* Zebra striping for bucket mode - every other bucket gets a lighter background */
-.pv-group-bucket:nth-child(even)::before {
+/* Zebra striping for grouped mode - every other group gets a lighter background */
+.pv-group-grouped:nth-child(even)::before {
   background: rgba(255, 255, 255, 0.03);
 }
 
 /* Full-height hover highlight that extends to the top */
-.pv-group-bucket::before {
+.pv-group-grouped::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -637,14 +637,14 @@
   z-index: 0;
 }
 
-.pv-group-bucket:hover::before,
-.pv-group-bucket.highlighted::before {
+.pv-group-grouped:hover::before,
+.pv-group-grouped.highlighted::before {
   background: var(--surface-hover);
 }
 
 /* Zebra striping hover state - combine with stripe background */
-.pv-group-bucket:nth-child(even):hover::before,
-.pv-group-bucket:nth-child(even).highlighted::before {
+.pv-group-grouped:nth-child(even):hover::before,
+.pv-group-grouped:nth-child(even).highlighted::before {
   background: var(--surface-hover);
 }
 
@@ -680,25 +680,25 @@
   width: var(--column-width, auto);
 }
 
-.pv-cards-bucket {
+.pv-cards-grouped {
   /* Grid fills left-to-right with fixed columns */
   grid-template-columns: repeat(var(--cards-per-row, 5), 1fr);
   grid-auto-flow: row;
   width: var(--column-width);
 }
 
-.pv-cards-bucket .pv-card {
+.pv-cards-grouped .pv-card {
   /* Cards maintain their direction */
 }
 
-/* Empty placeholder cells in bucket grid */
+/* Empty placeholder cells in grouped grid */
 .pv-card-placeholder {
   visibility: hidden;
   width: var(--card-width);
   height: var(--card-height);
 }
 
-/* Axis labels at bottom of bucket view */
+/* Axis labels at bottom of grouped view */
 .pv-axis-labels {
   display: flex;
   align-items: stretch;
@@ -728,7 +728,7 @@
   font: inherit;
 }
 
-/* Zebra striping for axis labels - match the bucket columns */
+/* Zebra striping for axis labels - match the grouped columns */
 .pv-axis-label:nth-child(even) {
   background: rgba(255, 255, 255, 0.03);
 }

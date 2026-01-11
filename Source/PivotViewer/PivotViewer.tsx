@@ -319,7 +319,7 @@ export function PivotViewer<TItem extends object>({
         'pivot-viewer',
         className,
         hasFilters ? (filtersOpen ? 'filters-open' : 'filters-closed') : 'no-filters',
-        viewMode === 'grouped' ? 'bucket-mode' : 'collection-mode',
+        viewMode === 'grouped' ? 'grouped-mode' : 'collection-mode',
     ]
         .filter(Boolean)
         .join(' ');

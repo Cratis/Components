@@ -8,7 +8,7 @@ import type { ViewMode } from './Toolbar';
 import { createCssColorResolver, resolveCardColors } from './pivot/colorResolver';
 import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal, clearSpritePool } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
-import { updateBucketBackgrounds as updateBucketBackgroundsExternal, updateHighlight as updateHighlightExternal } from './pivot/buckets';
+import { updateGroupBackgrounds as updateGroupBackgroundsExternal, updateHighlight as updateHighlightExternal } from './pivot/groups';
 import { startAnimationLoop as startAnimationLoopExternal, updatePositions as updatePositionsExternal } from './pivot/animation';
 import { ANIMATION_SPEED, DEFAULT_COLORS, type CardSprite, type CardColors } from './pivot/constants';
 
@@ -106,7 +106,7 @@ export function PivotCanvas<TItem extends object>({
   const spacerRef = useRef<HTMLDivElement | null>(null);
   const appRef = useRef<PIXI.Application | null>(null);
   const rootRef = useRef<PIXI.Container | null>(null);
-  const bucketsContainerRef = useRef<PIXI.Container | null>(null);
+  const groupsContainerRef = useRef<PIXI.Container | null>(null);
   const spritesRef = useRef<Map<ItemId, CardSprite>>(new Map());
   const animationFrameRef = useRef<number>(0);
   const mountedRef = useRef(true);
@@ -119,6 +119,8 @@ export function PivotCanvas<TItem extends object>({
   const previousViewModeRef = useRef<ViewMode>(viewMode);
   const prevLayoutRef = useRef<LayoutResult | null>(null);
   const prevGroupingRef = useRef<GroupingResult | null>(null);
+  const prevScrollTopRef = useRef<number>(0);
+  const prevScrollLeftRef = useRef<number>(0);
   const cardColorsRef = useRef<CardColors>(DEFAULT_COLORS);
   void cardRenderer; // unused in Pixi renderer but keep prop compatibility
 
@@ -194,9 +196,9 @@ export function PivotCanvas<TItem extends object>({
 
         appRef.current = app;
 
-        const bucketsContainer = new PIXI.Container();
-        bucketsContainerRef.current = bucketsContainer;
-        app.stage.addChild(bucketsContainer);
+        const groupsContainer = new PIXI.Container();
+        groupsContainerRef.current = groupsContainer;
+        app.stage.addChild(groupsContainer);
 
         const root = new PIXI.Container();
         rootRef.current = root;
@@ -396,10 +398,10 @@ export function PivotCanvas<TItem extends object>({
     };
   }, [pixiReady, viewportWidth, viewportHeight]);
 
-  // Update bucket backgrounds only when layout/grouping changes
+  // Update group backgrounds only when layout/grouping changes
   useEffect(() => {
-    if (!bucketsContainerRef.current || !parentContainerRef.current || !pixiReady) return;
-    updateBucketBackgroundsExternal(bucketsContainerRef.current, parentContainerRef.current, grouping, layout, zoomLevel, cardColorsRef.current, viewMode);
+    if (!groupsContainerRef.current || !parentContainerRef.current || !pixiReady) return;
+    updateGroupBackgroundsExternal(groupsContainerRef.current, parentContainerRef.current, grouping, layout, zoomLevel, cardColorsRef.current, viewMode);
     needsRenderRef.current = true;
     appRef.current?.renderer?.render(appRef.current.stage);
   }, [grouping, layout, zoomLevel, viewMode, pixiReady]);
@@ -457,6 +459,9 @@ export function PivotCanvas<TItem extends object>({
 
     // Sync sprites into viewport and create/remove as needed
     // Provide wrappers for sprite creation and content update so helpers have required context
+    const currentScrollTop = parentContainerRef.current?.scrollTop || 0;
+    const currentScrollLeft = parentContainerRef.current?.scrollLeft || 0;
+    
     syncSpritesToViewport({
       root: rootRef.current,
       container: parentContainerRef.current,
@@ -485,9 +490,15 @@ export function PivotCanvas<TItem extends object>({
         cardColorsRef.current
       ),
       updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
-      isViewTransition: isViewTransitionRef.current || (Date.now() - lastViewChangeTimeRef.current < 1000),
+      isViewTransition: isViewTransitionRef.current,
       prevLayout: prevLayoutRef.current,
+      prevScrollTop: prevScrollTopRef.current,
+      prevScrollLeft: prevScrollLeftRef.current,
     });
+    
+    // Update previous scroll position for next frame
+    prevScrollTopRef.current = currentScrollTop;
+    prevScrollLeftRef.current = currentScrollLeft;
     needsRenderRef.current = true;
     
     // Force an immediate render after syncing sprites to ensure cards appear
@@ -513,7 +524,7 @@ export function PivotCanvas<TItem extends object>({
   }, [layout]);
 
   useEffect(() => {
-    if (!rootRef.current || !bucketsContainerRef.current) return;
+    if (!rootRef.current || !groupsContainerRef.current) return;
 
     // Camera transform: move world opposite to camera position. Prefer the
     // native container scroll positions where available (they are authoritative
@@ -521,14 +532,14 @@ export function PivotCanvas<TItem extends object>({
     const effectivePanX = parentContainerRef.current ? parentContainerRef.current.scrollLeft : panX;
     const effectivePanY = parentContainerRef.current ? parentContainerRef.current.scrollTop : panY;
 
-    // Apply zoom and position to root and buckets.
-    if (rootRef.current.scale && bucketsContainerRef.current.scale) {
+    // Apply zoom and position to root and groups.
+    if (rootRef.current.scale && groupsContainerRef.current.scale) {
       rootRef.current.scale.set(zoomLevel);
-      bucketsContainerRef.current.scale.set(zoomLevel);
+      groupsContainerRef.current.scale.set(zoomLevel);
     }
-    if (rootRef.current.position && bucketsContainerRef.current.position) {
+    if (rootRef.current.position && groupsContainerRef.current.position) {
       rootRef.current.position.set(-effectivePanX, -effectivePanY);
-      bucketsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
+      groupsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
     }
     appRef.current?.renderer?.render(appRef.current.stage);
   }, [zoomLevel, panX, panY]);
@@ -547,9 +558,9 @@ export function PivotCanvas<TItem extends object>({
     appRef.current?.renderer.render(appRef.current.stage);
   }, [hoveredGroupIndex, layout, grouping]);
 
-  // Note: animation loop and bucket background updates are delegated to
+  // Note: animation loop and group background updates are delegated to
   // external helpers (`startAnimationLoopExternal` and
-  // `updateBucketBackgroundsExternal`) and invoked where needed. We don't
+  // `updateGroupBackgroundsExternal`) and invoked where needed. We don't
   // expose local wrappers to avoid unused-function lint warnings.
 
   // Listen to native scroll events on the parent container so we update the
@@ -581,16 +592,16 @@ export function PivotCanvas<TItem extends object>({
         lastScroll.x = effectivePanX;
         lastScroll.y = effectivePanY;
 
-        if (rootRef.current && bucketsContainerRef.current) {
-          if (rootRef.current.scale && bucketsContainerRef.current.scale) {
+        if (rootRef.current && groupsContainerRef.current) {
+          if (rootRef.current.scale && groupsContainerRef.current.scale) {
             rootRef.current.scale.set(zoomLevel);
-            bucketsContainerRef.current.scale.set(zoomLevel);
+            groupsContainerRef.current.scale.set(zoomLevel);
           }
           const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
           void invScale;
-          if (rootRef.current.position && bucketsContainerRef.current.position) {
+          if (rootRef.current.position && groupsContainerRef.current.position) {
             rootRef.current.position.set(-effectivePanX, -effectivePanY);
-            bucketsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
+            groupsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
           }
         }
 
@@ -615,8 +626,14 @@ export function PivotCanvas<TItem extends object>({
             cardWidth, cardHeight, cardColorsRef.current
           ),
           updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
-          isViewTransition: isViewTransitionRef.current || (Date.now() - lastViewChangeTimeRef.current < 1000),
+          isViewTransition: isViewTransitionRef.current,
+          prevScrollTop: prevScrollTopRef.current,
+          prevScrollLeft: prevScrollLeftRef.current,
         });
+        
+        // Update previous scroll position for next frame
+        prevScrollTopRef.current = container.scrollTop || 0;
+        prevScrollLeftRef.current = container.scrollLeft || 0;
         needsRenderRef.current = true;
         app.renderer?.render(app.stage);
       } catch (e) {
@@ -672,7 +689,7 @@ export function PivotCanvas<TItem extends object>({
   }
 
   function updateHighlight() {
-    updateHighlightExternal(bucketsContainerRef.current, parentContainerRef.current, grouping, layout, hoveredGroupIndex, cardWidth, zoomLevel);
+    updateHighlightExternal(groupsContainerRef.current, parentContainerRef.current, grouping, layout, hoveredGroupIndex, cardWidth, zoomLevel);
   }
 
   void updateHighlight;
