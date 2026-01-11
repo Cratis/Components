@@ -24,7 +24,7 @@
 
 **DO NOT skip these steps - they are mandatory, not optional:**
 
-- **After creating each new file, IMMEDIATELY run `yarn compile`** before proceeding to the next file
+- **After creating each new file, IMMEDIATELY run `yarn compile` from the Source folder** before proceeding to the next file
   - Do NOT wait until the end of the task to validate
   - Fix all lint/TypeScript errors immediately as they appear
   - Never accumulate technical debt or defer error resolution

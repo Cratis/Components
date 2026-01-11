@@ -101,7 +101,7 @@ export function PivotCanvas<TItem extends object>({
   const parentContainerRef = containerRef;
   // Mark intentionally-unused destructured props as used to satisfy lint
   void _isZooming;
-  void _resolveId;
+  const resolveId = _resolveId;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const spacerRef = useRef<HTMLDivElement | null>(null);
   const appRef = useRef<PIXI.Application | null>(null);
@@ -490,7 +490,8 @@ export function PivotCanvas<TItem extends object>({
         cardWidth,
         cardHeight,
         cardColorsRef.current,
-        cardRenderer
+        cardRenderer,
+        resolveId
       ),
       updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current, cardRenderer),
       isViewTransition: isViewTransitionRef.current,
@@ -621,7 +622,7 @@ export function PivotCanvas<TItem extends object>({
             id, x, y, items as TItem[],
             (item, e, id) => (onCardClickRef.current)(item, e, id),
             (e) => (onPanStartRef.current)(e as unknown as React.MouseEvent),
-            cardWidth, cardHeight, cardColorsRef.current, cardRenderer
+            cardWidth, cardHeight, cardColorsRef.current, cardRenderer, resolveId
           ),
           updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current, cardRenderer),
           isViewTransition: isViewTransitionRef.current,
@@ -662,7 +663,7 @@ export function PivotCanvas<TItem extends object>({
       id, x, y, items as TItem[],
       (item, e, id) => (onCardClickRef.current)(item, e, id),
       (e) => (onPanStartRef.current)(e as unknown as React.MouseEvent),
-      cardWidth, cardHeight, cardColorsRef.current, cardRenderer
+      cardWidth, cardHeight, cardColorsRef.current, cardRenderer, resolveId
     );
   }
   // Mark these helpers as used (they may be referenced externally or via callbacks)

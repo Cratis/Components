@@ -79,8 +79,8 @@ export const Default: Story = {
                     ]}
                     cardRenderer={(item) => ({
                         title: item.name,
-                        labels: ['Age', 'Department', 'City'],
-                        values: [String(item.age), item.department, item.address.city],
+                        labels: ['Id', 'Age', 'Department', 'City'],
+                        values: [String(item.id),String(item.age), item.department, item.address.city],
                     })}
                     // Example: override a couple of theme variables
                     colors={{

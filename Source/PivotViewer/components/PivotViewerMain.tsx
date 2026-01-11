@@ -80,7 +80,8 @@ export function PivotViewerMain<TItem extends object>({
   const selectedLayoutId: ItemId | null = selectedItem
     ? (() => {
         const index = data.indexOf(selectedItem);
-        const rawId = index !== -1 ? resolveId(selectedItem, index) : resolveId(selectedItem, 0);
+        // Use array index as the canonical layout ID; it aligns with engine/store
+        const rawId = index !== -1 ? index : 0;
         return normalizeIdToLayoutKey(rawId, layout) as ItemId;
       })()
     : null;
