@@ -19,6 +19,29 @@
 - Always ensure that the code adheres to the project's coding standards.
 - Always ensure that the code is maintainable.
 
+## Development Workflow - CRITICAL
+
+**DO NOT skip these steps - they are mandatory, not optional:**
+
+- **After creating each new file, IMMEDIATELY run `yarn compile`** before proceeding to the next file
+  - Do NOT wait until the end of the task to validate
+  - Fix all lint/TypeScript errors immediately as they appear
+  - Never accumulate technical debt or defer error resolution
+- **Before adding parameters to interfaces/function signatures, review all usages:**
+  - Check if new parameters will be used in all call sites
+  - Remove unused imports immediately if they're not needed
+  - Validate that removing an import doesn't break other functionality
+- **When modifying imports, audit all occurrences:**
+  - If adding an import, verify it's actually used in the file
+  - If removing an import, verify it's not used elsewhere
+  - Check for multiple usage patterns of the same function/type
+- **Never use placeholder or temporary types** - use proper types from the start
+  - If the type is complex or unknown, use `unknown` with proper type guards
+  - Don't plan to "fix types later" - fix them immediately
+- **Review each file for lint compliance BEFORE moving on:**
+  - ESLint errors about unused variables or improper types are blocking issues
+  - Fixing them takes seconds now, but accumulates into hours if deferred
+
 ## Formatting
 
 - Honor the existing code style and conventions in the project.
