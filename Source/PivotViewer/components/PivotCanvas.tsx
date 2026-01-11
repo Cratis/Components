@@ -484,6 +484,7 @@ export function PivotCanvas<TItem extends object>({
       zoomLevel,
       viewportWidth,
       viewportHeight,
+      viewMode,
       createCardSprite: (id: string | number, x: number, y: number) => createCardSpriteExternal(
         id,
         x,
@@ -613,6 +614,7 @@ export function PivotCanvas<TItem extends object>({
 
         syncSpritesToViewport({
           root: rootRef.current,
+          groupsContainer: groupsContainerRef.current,
           container: parentContainerRef.current,
           sprites: spritesRef.current,
           layout,
@@ -633,6 +635,7 @@ export function PivotCanvas<TItem extends object>({
           ),
           updateCardContent: (sprite: CardSprite, item: TItem) => updateCardContentExternal(sprite, item, selectedId, cardWidth, cardHeight, cardColorsRef.current),
           isViewTransition: isViewTransitionRef.current,
+          viewMode,
           prevScrollTop: prevScrollTopRef.current,
           prevScrollLeft: prevScrollLeftRef.current,
         });

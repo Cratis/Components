@@ -9,6 +9,7 @@ import { destroySprite } from './sprites';
 
 export interface SyncParams<TItem> {
     root: PIXI.Container | null;
+    groupsContainer?: PIXI.Container | null;
     container: HTMLDivElement | null;
     sprites: Map<string | number, CardSprite>;
     layout: LayoutResult;
@@ -26,18 +27,52 @@ export interface SyncParams<TItem> {
     createCardSprite: (id: string | number, x: number, y: number) => CardSprite;
     updateCardContent: (sprite: CardSprite, item: TItem) => void;
     isViewTransition?: boolean;
+    viewMode: string;
     prevLayout?: LayoutResult | null;
     prevScrollTop?: number;
     prevScrollLeft?: number;
 }
 
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
-    const { root, container, sprites, layout, visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, prevLayout, prevScrollTop, prevScrollLeft } = params;
+    const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout, prevScrollTop, prevScrollLeft } = params;
     if (!root || !container) return;
 
-    // `visibleIds` comes from callers but this module iterates `layout.positions`.
-    // Keep a reference to avoid unused variable lint errors when callers include it.
-    void visibleIds;
+    void _visibleIds;
+
+    // Use the container's measured client size for the viewport dimensions
+    // (in pixels). The passed `viewportWidth`/`viewportHeight` can be stale
+    // when the browser/device zoom changes; `clientWidth/clientHeight` are
+    // authoritative for the actual visible pixel area.
+    const viewportPxWidth = container.clientWidth || viewportWidth;
+    const viewportPxHeight = container.clientHeight || viewportHeight;
+
+    const contentHeightPx = (layout.totalHeight || 0) * zoomLevel;
+    let offsetY = 0;
+
+    // If content fits vertically within the viewport, align relative to bottom.
+    // The spacer ensures container isn't scrollable in this case (scrollTop=0).
+    // The items are at large Y coordinates relative to layout.totalHeight.
+    // We want the bottom of the layout (totalHeight) to align with viewport bottom.
+    if (viewMode === 'grouped' && contentHeightPx < viewportPxHeight) {
+        // Calculate offset in pixels to shift the content down
+        offsetY = viewportPxHeight - contentHeightPx;
+    }
+
+    // Apply scaling and position to root container
+    if (root) {
+        root.scale.set(zoomLevel);
+        // Standard position: -panX, -panY
+        // Plus vertical alignment offset if zoomed out
+        root.position.set(-panX, offsetY - panY);
+    }
+    
+    // Apply synchronization to groups container if present
+    if (groupsContainer) {
+        groupsContainer.scale.set(zoomLevel);
+        groupsContainer.position.set(-panX, offsetY - panY);
+    }
+
+    // `visibleIds` comes from callers but this module iterates `layout.positions`
 
     // Apply pan delta to animating sprites to keep them visually stable during camera jumps
     if (isViewTransition && (panDeltaX || panDeltaY)) {
@@ -76,15 +111,13 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     // Convert pixel-based DOM measurements into world units so we compare like
     // with like. root.position is set using -pixels, so the mapping
     // from DOM scroll (pixels) to world units is: world = pixels / zoomLevel.
+    // OffsetY is already in pixels and doesn't need scaling in panWorldY calc
+    // because panWorldY is used for viewport buffering/culling, which is relative
+    // to the "camera" position in world space.
+    // The camera world Y = (scrollTop - offsetY) / zoomLevel.
+    const effectivePanYWithOffset = effectivePanY - offsetY;
     const panWorldX = effectivePanX * invScale;
-    const panWorldY = effectivePanY * invScale;
-
-    // Use the container's measured client size for the viewport dimensions
-    // (in pixels). The passed `viewportWidth`/`viewportHeight` can be stale
-    // when the browser/device zoom changes; `clientWidth/clientHeight` are
-    // authoritative for the actual visible pixel area.
-    const viewportPxWidth = container.clientWidth || viewportWidth;
-    const viewportPxHeight = container.clientHeight || viewportHeight;
+    const panWorldY = effectivePanYWithOffset * invScale;
 
     const viewportWorldWidth = viewportPxWidth * invScale;
     const viewportWorldHeight = viewportPxHeight * invScale;
