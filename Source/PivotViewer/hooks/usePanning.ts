@@ -72,8 +72,12 @@ export function usePanning(
     // Update container scroll directly so the visual camera follows the drag
     const container = containerRef.current;
     if (container) {
-      container.scrollLeft = Math.max(0, Math.round(newCameraX));
-      container.scrollTop = Math.max(0, Math.round(newCameraY));
+      // Constrain scroll position to prevent viewing beyond content bounds
+      const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+      const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+      
+      container.scrollLeft = Math.max(0, Math.min(maxScrollLeft, Math.round(newCameraX)));
+      container.scrollTop = Math.max(0, Math.min(maxScrollTop, Math.round(newCameraY)));
     }
 
     // Also notify parent about scroll change (keeps external state in sync)
@@ -135,8 +139,12 @@ export function usePanning(
           return;
         }
 
-        container.scrollLeft += vx;
-        container.scrollTop += vy;
+        // Constrain scroll position to prevent viewing beyond content bounds
+        const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
+        const maxScrollTop = Math.max(0, container.scrollHeight - container.clientHeight);
+        
+        container.scrollLeft = Math.max(0, Math.min(maxScrollLeft, container.scrollLeft + vx));
+        container.scrollTop = Math.max(0, Math.min(maxScrollTop, container.scrollTop + vy));
 
         // Decay
         vx *= 0.95;

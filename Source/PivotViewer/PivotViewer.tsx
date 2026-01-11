@@ -142,9 +142,20 @@ export function PivotViewer<TItem extends object>({
         if (!ready) return;
 
         engineApplyFilters(currentFilters).then((result) => {
+            // If the engine failed to return any IDs while no filters are active,
+            // fall back to showing the full dataset so the canvas never renders empty.
+            if (result.visibleIds.length === 0 && currentFilters.length === 0 && data.length > 0) {
+                const fallbackIds = new Uint32Array(data.length);
+                for (let i = 0; i < data.length; i++) {
+                    fallbackIds[i] = i;
+                }
+                setVisibleIds(fallbackIds);
+                return;
+            }
+
             setVisibleIds(result.visibleIds);
         });
-    }, [ready, currentFilters, engineApplyFilters]);
+    }, [ready, currentFilters, engineApplyFilters, data.length]);
 
     // Compute grouping
     const lastGroupingRequest = useRef<{ viewMode: ViewMode; groupBy: unknown; visibleIds: Uint32Array } | null>(null);

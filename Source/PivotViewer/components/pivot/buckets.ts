@@ -30,8 +30,16 @@ export function updateBucketBackgrounds(
     return;
   }
 
-  // Use layout's total height if available so backgrounds match sprite positions
-  const worldHeight = layout.totalHeight || container.clientHeight;
+  // Derive a world-space height that always covers the visible viewport even when zoomed out.
+  const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
+  const containerWorldHeight = Math.max(
+    (container.scrollHeight || container.clientHeight) * invScale,
+    container.clientHeight * invScale,
+  );
+  const baseWorldHeight = Math.max(layout.totalHeight || 0, containerWorldHeight);
+  const bufferWorld = Math.max(200, baseWorldHeight * 0.25);
+  const worldHeight = baseWorldHeight + bufferWorld * 2;
+  const startY = -bufferWorld;
 
   // Get existing background graphics (excluding highlight)
   const backgroundGraphics = bucketsContainer.children.filter(c => (c as unknown as { name?: string }).name !== 'highlight') as PIXI.Graphics[];
@@ -77,7 +85,7 @@ export function updateBucketBackgrounds(
         }
       }
 
-      bg.rect(minX, 0, width, worldHeight);
+      bg.rect(minX, startY, width, worldHeight);
       bg.fill(cardColors.base);
       bg.alpha = 0.15;
       bg.visible = true;
@@ -102,9 +110,7 @@ export function updateHighlight(
 ) {
   if (!bucketsContainer || !container || grouping.groups.length === 0) return;
 
-  // `zoomLevel` is part of the signature for future use; reference it
-  // to avoid unused-parameter lint errors when callers pass it.
-  void zoomLevel;
+  const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
 
   let highlight = bucketsContainer.children.find(child => (child as unknown as { name?: string }).name === 'highlight') as PIXI.Graphics;
 
@@ -144,8 +150,16 @@ export function updateHighlight(
     return;
   }
 
-  const worldHeight = layout.totalHeight || container.clientHeight;
-  highlight.rect(minX, 0, maxX - minX, worldHeight);
+  const containerWorldHeight = Math.max(
+    (container.scrollHeight || container.clientHeight) * invScale,
+    container.clientHeight * invScale,
+  );
+  const baseWorldHeight = Math.max(layout.totalHeight || 0, containerWorldHeight);
+  const bufferWorld = Math.max(200, baseWorldHeight * 0.25);
+  const worldHeight = baseWorldHeight + bufferWorld * 2;
+  const startY = -bufferWorld;
+
+  highlight.rect(minX, startY, maxX - minX, worldHeight);
   highlight.fill(0xffffff);
   highlight.alpha = 0.05;
   highlight.visible = true;

@@ -130,6 +130,21 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         }
     }
 
+    // During view transitions, if no cards are visible and we're not animating yet,
+    // force-add the first few cards from the layout to ensure content appears.
+    // This prevents a blank screen when switching modes, especially in packaged builds
+    // where scroll stabilization might be delayed.
+    if (isViewTransition && inViewportIds.length === 0 && layout.positions.size > 0) {
+        let count = 0;
+        for (const [id, position] of layout.positions) {
+            if (count < 5 && position) { // Add up to 5 cards
+                inViewportIds.push(id);
+                visibleSet.add(id);
+                count++;
+            }
+        }
+    }
+
     // Ensure last rows are present when the user scrolls near the bottom.
     // Compute slot/row information and force-insert IDs from the last few
     // rows to avoid missing tiles due to rounding/precision at zoom levels.
@@ -154,6 +169,21 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         void e;
     }
 
+    // Fallback: if no sprites are calculated as visible (e.g., due to rounding
+    // or scroll/zoom race conditions), force a handful of cards into view so
+    // the canvas never renders empty at certain zoom levels.
+    let injectedFallback = false;
+    if (inViewportIds.length === 0 && layout.positions.size > 0) {
+        injectedFallback = true;
+        let count = 0;
+        for (const [id] of layout.positions) {
+            inViewportIds.push(id);
+            visibleSet.add(id);
+            count++;
+            if (count >= 12) break;
+        }
+    }
+
     // If we detect a very large discrepancy between created sprites and the
     // computed in-viewport count, that's a signal our culling math may be
     // unstable (especially at non-100% zoom). In that case, skip hiding this
@@ -161,9 +191,11 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     // However, disable this safeguard during view transitions to ensure old sprites are cleaned up.
     // EXCEPT: During view transitions, if scroll position hasn't stabilized yet (e.g., switching to grouped
     // mode triggers a scroll-to-bottom), keep all sprites visible to prevent flickering
-    const scrollStabilized = Math.abs(panWorldY - (container.scrollTop * invScale)) < 10;
-    const aggressiveCull = (!isViewTransition && sprites.size > Math.max(120, Math.ceil(inViewportIds.length * 1.5))) || 
-                           (isViewTransition && !scrollStabilized);
+        const scrollStabilized = Math.abs(panWorldY - (container.scrollTop * invScale)) < 10;
+        const aggressiveCull = !injectedFallback && (
+            (!isViewTransition && sprites.size > Math.max(120, Math.ceil(inViewportIds.length * 1.5))) ||
+            (isViewTransition && !scrollStabilized)
+        );
 
     for (const [id, sprite] of sprites) {
         if (!visibleSet.has(id)) {
