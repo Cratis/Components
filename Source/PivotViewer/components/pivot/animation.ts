@@ -101,8 +101,11 @@ export function startAnimationLoop(
     }
   };
 
-  if (!isAnimatingRef.current) {
-    isAnimatingRef.current = true;
-    animate();
+  // Always restart animation when called to ensure animations continue
+  // Cancel any existing animation frame and start fresh
+  if (animationFrameRef.current) {
+    cancelAnimationFrame(animationFrameRef.current);
   }
+  isAnimatingRef.current = true;
+  animate();
 }

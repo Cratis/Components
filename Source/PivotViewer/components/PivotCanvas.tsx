@@ -420,25 +420,20 @@ export function PivotCanvas<TItem extends object>({
     // Check if this is a view mode change (not just pan/scroll)
     const viewModeChanged = previousViewModeRef.current !== viewMode;
     const groupingChanged = prevGroupingRef.current !== grouping;
+    const layoutChanged = prevLayoutRef.current !== layout;
 
-    if (viewModeChanged || groupingChanged) {
+    if (viewModeChanged || groupingChanged || layoutChanged) {
       isViewTransitionRef.current = true;
       lastViewChangeTimeRef.current = Date.now();
       previousViewModeRef.current = viewMode;
       prevGroupingRef.current = grouping;
       
-      // When switching modes, mark all sprites for cleanup by hiding them
-      // The normal sweep logic will remove them after SWEEP_MS delay
-      for (const sprite of spritesRef.current.values()) {
-        try {
-          if (sprite.container) {
-            sprite.container.visible = false;
-          }
-          (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt = Date.now();
-        } catch (e) {
-          void e;
-        }
-      }
+      // Don't hide sprites here - let visibility.ts handle the transition
+      // The syncSpritesToViewport function will properly animate sprites to new positions
+      // during view transitions (isViewTransitionRef.current = true), and visibility.ts
+      // will handle cleanup of sprites that no longer have positions in the layout.
+      // Previously, hiding sprites here caused sorting/transitions to not work because
+      // sprites were destroyed before they could animate.
     }
 
     // Update spacer dimensions to match scaled world size
@@ -530,6 +525,8 @@ export function PivotCanvas<TItem extends object>({
     prevLayoutRef.current = layout;
   }, [layout]);
 
+  // Duplicate camera position effect removed -- syncSpritesToViewport handles this with correct offsetY logic logic
+  /*
   useEffect(() => {
     if (!rootRef.current || !groupsContainerRef.current) return;
 
@@ -550,6 +547,7 @@ export function PivotCanvas<TItem extends object>({
     }
     appRef.current?.renderer?.render(appRef.current.stage);
   }, [zoomLevel, panX, panY]);
+  */
 
   useEffect(() => {
     if (!rootRef.current) return;
@@ -599,18 +597,9 @@ export function PivotCanvas<TItem extends object>({
         lastScroll.x = effectivePanX;
         lastScroll.y = effectivePanY;
 
-        if (rootRef.current && groupsContainerRef.current) {
-          if (rootRef.current.scale && groupsContainerRef.current.scale) {
-            rootRef.current.scale.set(zoomLevel);
-            groupsContainerRef.current.scale.set(zoomLevel);
-          }
-          const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
-          void invScale;
-          if (rootRef.current.position && groupsContainerRef.current.position) {
-            rootRef.current.position.set(-effectivePanX, -effectivePanY);
-            groupsContainerRef.current.position.set(-effectivePanX, -effectivePanY);
-          }
-        }
+        // Note: We delegate root/groups container positioning to syncSpritesToViewport
+        // because it encapsulates the logic for conditional vertical alignment (offsetY)
+        // in different view modes. Manually setting position here would overwrite that logic.
 
         syncSpritesToViewport({
           root: rootRef.current,

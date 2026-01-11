@@ -58,18 +58,23 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         offsetY = viewportPxHeight - contentHeightPx;
     }
 
+    // Use the container's actual scroll position for positioning, not the passed panX/panY
+    // which may be stale (from React state) compared to live DOM scroll values.
+    const actualScrollX = typeof container.scrollLeft === 'number' ? container.scrollLeft : (panX || 0);
+    const actualScrollY = typeof container.scrollTop === 'number' ? container.scrollTop : (panY || 0);
+
     // Apply scaling and position to root container
     if (root) {
         root.scale.set(zoomLevel);
-        // Standard position: -panX, -panY
+        // Standard position: -scrollX, -scrollY
         // Plus vertical alignment offset if zoomed out
-        root.position.set(-panX, offsetY - panY);
+        root.position.set(-actualScrollX, offsetY - actualScrollY);
     }
     
     // Apply synchronization to groups container if present
     if (groupsContainer) {
         groupsContainer.scale.set(zoomLevel);
-        groupsContainer.position.set(-panX, offsetY - panY);
+        groupsContainer.position.set(-actualScrollX, offsetY - actualScrollY);
     }
 
     // `visibleIds` comes from callers but this module iterates `layout.positions`
