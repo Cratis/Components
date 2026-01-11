@@ -37,9 +37,11 @@ export function updateGroupBackgrounds(
     container.clientHeight * invScale,
   );
   const baseWorldHeight = Math.max(layout.totalHeight || 0, containerWorldHeight);
-  const bufferWorld = Math.max(200, baseWorldHeight * 0.25);
-  const worldHeight = baseWorldHeight + bufferWorld * 2;
-  const startY = -bufferWorld;
+  // Use larger buffer and extend further above the viewport to ensure full coverage
+  // when zoomed out and cards are positioned at the bottom
+  const bufferWorld = Math.max(500, baseWorldHeight * 0.5, containerWorldHeight);
+  const worldHeight = baseWorldHeight + bufferWorld * 3;
+  const startY = -bufferWorld * 2;
 
   // Get existing background graphics (excluding highlight)
   const backgroundGraphics = groupsContainer.children.filter(c => (c as unknown as { name?: string }).name !== 'highlight') as PIXI.Graphics[];

@@ -194,20 +194,38 @@ export function calculateCenterScrollPosition(
 ): { scrollLeft: number; scrollTop: number } {
   const cardCenterX = cardPosition.x * zoomLevel + (cardPosition.width * zoomLevel) / 2;
   const cardCenterY = cardPosition.y * zoomLevel + (cardPosition.height * zoomLevel) / 2;
+  const cardBottomY = (cardPosition.y + cardPosition.height) * zoomLevel;
 
   const availableWidth = container.clientWidth - detailPanelWidth;
   const targetX = availableWidth / 2;
-  const targetY = container.clientHeight / 2;
+  
+  // For vertical centering, prefer putting the card center at viewport center.
+  // But ensure the card bottom stays visible (at least 20% from viewport bottom).
+  const viewportHeight = container.clientHeight;
+  const targetYCenter = viewportHeight / 2;
+  const targetYForBottom = viewportHeight * 0.7; // Card center should be at most 70% down
 
   const scrollLeft = Math.max(0, cardCenterX - targetX);
-  let scrollTop = Math.max(0, cardCenterY - targetY);
+  
+  // Calculate scroll needed to center the card
+  let scrollTopForCenter = cardCenterY - targetYCenter;
+  
+  // Calculate scroll that ensures card bottom is visible with some margin
+  const scrollTopForBottomVisible = cardBottomY - viewportHeight + 50; // 50px margin from bottom
+  
+  // If centering would push the card bottom out of view, use the bottom-visible scroll
+  let scrollTop = scrollTopForCenter;
+  if (scrollTopForCenter > scrollTopForBottomVisible + (cardPosition.height * zoomLevel / 2)) {
+    // Card is near bottom of content, adjust to keep it visible
+    scrollTop = Math.max(0, cardCenterY - targetYForBottom);
+  }
+  
+  scrollTop = Math.max(0, scrollTop);
 
   // If totalHeight is provided, clamp to valid scroll range
   if (totalHeight) {
     const contentHeight = totalHeight * zoomLevel;
-    const viewportHeight = container.clientHeight;
     const maxScrollTop = Math.max(0, contentHeight - viewportHeight);
-
     scrollTop = Math.min(scrollTop, maxScrollTop);
   }
 
