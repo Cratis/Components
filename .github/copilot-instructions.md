@@ -15,6 +15,7 @@
 - Never leave unused import statements in the code.
 - Always ensure that the code compiles without warnings.
   - Use yarn compile to verify.
+  - If its successful it doesn't output anything.
 - Always ensure that the code passes all tests.
 - Always ensure that the code adheres to the project's coding standards.
 - Always ensure that the code is maintainable.
