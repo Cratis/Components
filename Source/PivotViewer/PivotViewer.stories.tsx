@@ -1,8 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import { PivotViewer } from './PivotViewer';
 
 const meta: Meta<typeof PivotViewer> = {
@@ -34,21 +34,13 @@ const sampleData: Person[] = [
     { id: 3, name: 'Charlie Brown', age: 42, department: 'Engineering', address: { street: '789 Pine Rd', city: 'Seattle', zipCode: '98102' } },
     { id: 4, name: 'Diana Prince', age: 31, department: 'Sales', address: { street: '321 Elm St', city: 'San Francisco', zipCode: '94102' } },
     { id: 5, name: 'Edward Norton', age: 29, department: 'Engineering', address: { street: '654 Maple Dr', city: 'Portland', zipCode: '97202' } },
+    { id: 6, name: 'Fiona Lee', age: 33, department: 'Human Resources', address: { street: '852 Cedar St', city: 'Seattle', zipCode: '98103' } },
+    { id: 7, name: 'George Miller', age: 27, department: 'Support', address: { street: '147 Birch Ln', city: 'Portland', zipCode: '97204' } },
+    { id: 8, name: 'Hannah Davis', age: 45, department: 'Finance', address: { street: '963 Walnut Ave', city: 'San Francisco', zipCode: '94103' } },
+    { id: 9, name: 'Isaac Newton', age: 38, department: 'Research', address: { street: '753 Spruce Rd', city: 'Austin', zipCode: '73301' } },
 ];
 
 export const Default: Story = {
-    args: {
-        data: [],
-        dimensions: [],
-    },
-    render: (args) => (
-        <div className="storybook-wrapper" >
-            <PivotViewer {...args} data={[]} dimensions={[]} />
-        </div>
-    )
-};
-
-export const WithTypeSafeSearch: Story = {
     render: () => {
         const dimensions = [
             {
