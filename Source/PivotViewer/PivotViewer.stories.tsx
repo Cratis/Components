@@ -73,7 +73,7 @@ export const WithTypeSafeSearch: Story = {
         ];
         
         return (
-            <div className="storybook-wrapper" style={{ height: '600px', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', alignItems: 'stretch', justifyContent: 'flex-start' }}>
+            <div className="storybook-wrapper" style={{ height: 'calc(100vh - 2rem)', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', alignItems: 'stretch', justifyContent: 'flex-start' }}>
                 <PivotViewer<Person>
                     data={sampleData}
                     dimensions={dimensions}
