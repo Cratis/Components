@@ -11,11 +11,9 @@ export function updatePositions(sprites: Map<unknown, CardSprite>, isViewTransit
   const now = Date.now();
   const DURATION = 600; // ms
 
-  let animatingCount = 0;
   for (const sprite of sprites.values()) {
     // Handle explicit time-based animation (view transitions)
     if (sprite.animationStartTime !== undefined) {
-      animatingCount++;
       const elapsed = now - sprite.animationStartTime;
       const delay = sprite.animationDelay || 0;
 
@@ -66,7 +64,6 @@ export function updatePositions(sprites: Map<unknown, CardSprite>, isViewTransit
   }
 
   if (!isAnimating && isViewTransitionRef.current) {
-    console.log('[DEBUG] Animation loop complete, clearing isViewTransition. Animated sprites:', animatingCount);
     isViewTransitionRef.current = false;
   }
 

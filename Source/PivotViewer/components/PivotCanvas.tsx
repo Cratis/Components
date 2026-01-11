@@ -317,7 +317,6 @@ export function PivotCanvas<TItem extends object>({
     })();
 
     return () => {
-      console.log('[DEBUG] PivotCanvas cleanup running! Sprites before clear:', spritesRef.current.size);
       mountedRef.current = false;
       setPixiReady(false);
       cancelAnimationFrame(animationFrameRef.current);
@@ -330,7 +329,6 @@ export function PivotCanvas<TItem extends object>({
 
       // Clear local sprite references to prevent re-use of destroyed sprites
       spritesRef.current.clear();
-      console.log('[DEBUG] PivotCanvas cleanup finished, sprites cleared');
 
       // Clear sprite pool to avoid holding onto destroyed textures
       // clearSpritePool();

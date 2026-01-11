@@ -235,15 +235,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         (isViewTransition && !scrollStabilized)
     );
 
-    // Debug: log transition state
-    if (isViewTransition) {
-        console.log('[DEBUG] View transition active, sprites:', sprites.size, 'visibleSet:', visibleSet.size, 'layout positions:', layout.positions.size, 'prevLayout:', prevLayout ? 'yes' : 'no');
-    }
-    if (sprites.size === 0 && isViewTransition) {
-        console.log('[DEBUG] WARNING: No sprites during view transition!');
-        console.trace('[DEBUG] Stack trace for empty sprites:');
-    }
-
     for (const [id, sprite] of sprites) {
         if (!visibleSet.has(id)) {
             // If view transition is active, check if this sprite has a valid target in the new layout
@@ -256,7 +247,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
                     // Trigger animation if not already animating
                     if (sprite.animationStartTime === undefined) {
-                        console.log('[DEBUG] Starting animation for sprite', id, 'from', sprite.currentX, sprite.currentY, 'to', newPos.x, newPos.y);
                         sprite.startX = sprite.currentX;
                         sprite.startY = sprite.currentY;
                         sprite.animationStartTime = Date.now();
@@ -316,9 +306,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
                 }
                 sprites.delete(id);
             }
-        }
-        if (destroyedCount > 0) {
-            console.log('[DEBUG] Swept', destroyedCount, 'sprites, remaining:', sprites.size);
         }
     } catch (e) {
         void e;
@@ -391,12 +378,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
         // Check if target changed to trigger animation
         const targetChanged = sprite.targetX !== position.x || sprite.targetY !== position.y;
-        if (isViewTransition) {
-            console.log('[DEBUG] Sprite', id, 'targetChanged:', targetChanged, 
-                'currentTarget:', sprite.targetX, sprite.targetY, 
-                'newPosition:', position.x, position.y,
-                'current:', sprite.currentX, sprite.currentY);
-        }
         if (targetChanged) {
             if (isViewTransition) {
                 // Only set up animation if not already animating - don't reset animation
@@ -412,6 +393,8 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
                 // adjust to the new target)
                 sprite.targetX = position.x;
                 sprite.targetY = position.y;
+            } else {
+                sprite.targetX = position.x;
                 sprite.targetY = position.y;
                 delete sprite.animationStartTime;
                 delete sprite.animationDelay;
