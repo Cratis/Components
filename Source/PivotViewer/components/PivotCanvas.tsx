@@ -6,7 +6,7 @@ import * as PIXI from 'pixi.js';
 import type { ItemId, LayoutResult, GroupingResult } from '../engine/types';
 import type { ViewMode } from './Toolbar';
 import { createCssColorResolver, resolveCardColors } from './pivot/colorResolver';
-import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal, clearSpritePool } from './pivot/sprites';
+import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
 import { updateGroupBackgrounds as updateGroupBackgroundsExternal, updateHighlight as updateHighlightExternal } from './pivot/groups';
 import { startAnimationLoop as startAnimationLoopExternal, updatePositions as updatePositionsExternal } from './pivot/animation';
@@ -215,6 +215,7 @@ export function PivotCanvas<TItem extends object>({
         // the Pixi canvas remains stable while we move the Pixi world inside
         // it to represent camera pan.
         const overlayParent = parentContainerRef.current.parentElement ?? parentContainerRef.current;
+
         if (canvasEl) {
           if (canvasEl.parentElement) {
             canvasEl.parentElement.removeChild(canvasEl);
@@ -228,6 +229,8 @@ export function PivotCanvas<TItem extends object>({
           }
           overlayParent.appendChild(c);
           canvasRef.current = c;
+        } else {
+             console.error('PivotCanvas: Could not find canvas element from Pixi application');
         }
 
         // Position the canvas to overlay the scrollable container area.
@@ -324,8 +327,11 @@ export function PivotCanvas<TItem extends object>({
         rootRef.current = null;
       }
 
+      // Clear local sprite references to prevent re-use of destroyed sprites
+      spritesRef.current.clear();
+
       // Clear sprite pool to avoid holding onto destroyed textures
-      clearSpritePool();
+      // clearSpritePool();
 
       // Remove any event listeners we attached to the parent container
       try {
