@@ -42,6 +42,30 @@
 - Use string interpolation instead of string.Format or concatenation.
 - Favor primary constructors for all types.
 
+## TypeScript Type Safety
+
+- Never use `any` type - always use proper type annotations:
+  - Use `unknown` for values of unknown type that need runtime checking
+  - Use `Record<string, unknown>` for objects with unknown properties
+  - Use proper generic constraints like `<TCommand extends object = object>` instead of `= any`
+  - Use `React.ComponentType<Props>` for React component types
+  - Use `PIXI.TextStyle` or similar library types instead of casting to `any`
+- When type assertions are necessary, use `unknown` as an intermediate type:
+  - Prefer `value as unknown as TargetType` over `value as any`
+  - For objects with dynamic properties: `(obj as unknown as { prop: Type }).prop`
+- For generic React components:
+  - Use `unknown` as default generic parameter instead of `any`
+  - Example: `<TCommand = unknown>` not `<TCommand = any>`
+- For Storybook files:
+  - Use `React.ComponentType<Record<string, never>>` for components with no props
+  - Properly type story args instead of using `any`
+- For event handlers:
+  - Use proper event types: `React.MouseEvent`, `MouseEvent`, etc.
+  - Use `e.preventDefault?.()` instead of `(e as any).preventDefault?.()`
+- For library objects (PIXI, etc.):
+  - Use proper library types when available
+  - Use specific property types: `{ canvas?: HTMLCanvasElement }` instead of `any`
+
 ## Testing
 
 - Follow the following guides:
