@@ -110,6 +110,15 @@ export function createCardSprite<TItem extends object>(
   container.cursor = 'pointer';
   container.position.set(x, y);
 
+  // Define hit area to match the visible card size (excluding gaps)
+  // This ensures the entire card is clickable and avoids issues with text blocking hits
+  container.hitArea = new PIXI.Rectangle(
+      CARD_GAP / 2,
+      CARD_GAP / 2,
+      cardWidth - CARD_GAP,
+      cardHeight - CARD_GAP
+  );
+
   // Store context for event handlers
   (container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string } })._eventContext = { items, onCardClick, id };
 

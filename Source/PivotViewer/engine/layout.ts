@@ -93,7 +93,7 @@ function computeGroupedLayout(
   const COLUMNS_PER_BUCKET = 2;
   const bucketWidth = COLUMNS_PER_BUCKET * slotWidth;
 
-  let groupX = CANVAS_PADDING;
+  let groupX = 0;
   // Use container height for layout, or fallback to cardsPerColumn height
   const layoutHeight = spec.containerHeight || (cardsPerColumn * slotHeight);
   const bucketWidths: number[] = [];

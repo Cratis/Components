@@ -6,12 +6,12 @@ export const ZOOM_MIN = 0.1;
 export const ZOOM_MAX = 3;
 export const ZOOM_STEP = 0.05;
 
-// Layout constants
-export const GROUP_SPACING = 40;
-export const CARD_GAP = 8;
+// Layout constants - matched to main constants
+export const GROUP_SPACING = 20;
+export const CARD_GAP = 10;
 export const CARDS_PER_COLUMN = 5;
-export const BASE_CARD_WIDTH = 180;
-export const BASE_CARD_HEIGHT = 140;
+export const BASE_CARD_WIDTH = 200;
+export const BASE_CARD_HEIGHT = 176;
 export const DETAIL_PANEL_WIDTH = 380;
 
 // Animation constants
