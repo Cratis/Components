@@ -208,7 +208,7 @@ export function calculateCenterScrollPosition(
   const scrollLeft = Math.max(0, cardCenterX - targetX);
   
   // Calculate scroll needed to center the card
-  let scrollTopForCenter = cardCenterY - targetYCenter;
+  const scrollTopForCenter = cardCenterY - targetYCenter;
   
   // Calculate scroll that ensures card bottom is visible with some margin
   const scrollTopForBottomVisible = cardBottomY - viewportHeight + 50; // 50px margin from bottom

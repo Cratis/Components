@@ -79,21 +79,12 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
     // `visibleIds` comes from callers but this module iterates `layout.positions`
 
-    // Apply pan delta to animating sprites to keep them visually stable during camera jumps
-    if (isViewTransition && (panDeltaX || panDeltaY)) {
-        const dx = (panDeltaX || 0) / (zoomLevel || 1);
-        const dy = (panDeltaY || 0) / (zoomLevel || 1);
-
-        for (const sprite of sprites.values()) {
-            if (sprite.animationStartTime !== undefined) {
-                if (sprite.startX !== undefined) sprite.startX += dx;
-                if (sprite.startY !== undefined) sprite.startY += dy;
-                sprite.currentX += dx;
-                sprite.currentY += dy;
-                sprite.container?.position?.set(sprite.currentX, sprite.currentY);
-            }
-        }
-    }
+    // Note: Pan delta compensation is NOT applied during view transitions because:
+    // 1. The time-based animation system handles position changes smoothly
+    // 2. Applying pan delta during animation interferes with the interpolation
+    // 3. The scroll position changes are a natural part of the view mode switch
+    // This compensation is only useful for rapid scrolling/panning where sprites
+    // need to maintain visual stability, which isn't the case during view transitions.
 
     const visibleSet = new Set<string | number>();
 
@@ -244,6 +235,15 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         (isViewTransition && !scrollStabilized)
     );
 
+    // Debug: log transition state
+    if (isViewTransition) {
+        console.log('[DEBUG] View transition active, sprites:', sprites.size, 'visibleSet:', visibleSet.size, 'layout positions:', layout.positions.size, 'prevLayout:', prevLayout ? 'yes' : 'no');
+    }
+    if (sprites.size === 0 && isViewTransition) {
+        console.log('[DEBUG] WARNING: No sprites during view transition!');
+        console.trace('[DEBUG] Stack trace for empty sprites:');
+    }
+
     for (const [id, sprite] of sprites) {
         if (!visibleSet.has(id)) {
             // If view transition is active, check if this sprite has a valid target in the new layout
@@ -256,6 +256,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
                     // Trigger animation if not already animating
                     if (sprite.animationStartTime === undefined) {
+                        console.log('[DEBUG] Starting animation for sprite', id, 'from', sprite.currentX, sprite.currentY, 'to', newPos.x, newPos.y);
                         sprite.startX = sprite.currentX;
                         sprite.startY = sprite.currentY;
                         sprite.animationStartTime = Date.now();
@@ -297,9 +298,11 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     try {
         const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
         const now = Date.now();
+        let destroyedCount = 0;
         for (const [id, sprite] of sprites) {
             const lastHidden = (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
             if (lastHidden && now - lastHidden > SWEEP_MS) {
+                destroyedCount++;
                 try {
                     // remove from parent if present
                     if (sprite.container && sprite.container.parent) sprite.container.parent.removeChild(sprite.container);
@@ -313,6 +316,9 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
                 }
                 sprites.delete(id);
             }
+        }
+        if (destroyedCount > 0) {
+            console.log('[DEBUG] Swept', destroyedCount, 'sprites, remaining:', sprites.size);
         }
     } catch (e) {
         void e;
@@ -384,17 +390,28 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         }
 
         // Check if target changed to trigger animation
-        if (sprite.targetX !== position.x || sprite.targetY !== position.y) {
+        const targetChanged = sprite.targetX !== position.x || sprite.targetY !== position.y;
+        if (isViewTransition) {
+            console.log('[DEBUG] Sprite', id, 'targetChanged:', targetChanged, 
+                'currentTarget:', sprite.targetX, sprite.targetY, 
+                'newPosition:', position.x, position.y,
+                'current:', sprite.currentX, sprite.currentY);
+        }
+        if (targetChanged) {
             if (isViewTransition) {
-                sprite.startX = sprite.currentX;
-                sprite.startY = sprite.currentY;
+                // Only set up animation if not already animating - don't reset animation
+                // when targets change during layout recalculations
+                if (sprite.animationStartTime === undefined) {
+                    sprite.startX = sprite.currentX;
+                    sprite.startY = sprite.currentY;
+                    sprite.animationStartTime = Date.now();
+                    // Add random delay for "organic" fly effect
+                    sprite.animationDelay = Math.random() * 300;
+                }
+                // Always update target to the new position (animation will smoothly
+                // adjust to the new target)
                 sprite.targetX = position.x;
                 sprite.targetY = position.y;
-                sprite.animationStartTime = Date.now();
-                // Add random delay for "organic" fly effect
-                sprite.animationDelay = Math.random() * 300;
-            } else {
-                sprite.targetX = position.x;
                 sprite.targetY = position.y;
                 delete sprite.animationStartTime;
                 delete sprite.animationDelay;
