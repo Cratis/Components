@@ -19,6 +19,7 @@
 - Always ensure that the code passes all tests.
 - Always ensure that the code adheres to the project's coding standards.
 - Always ensure that the code is maintainable.
+- The user always keeps the Storybook running - **DO NOT try to stop it, suggest stopping it or start your own**
 
 ## Development Workflow - CRITICAL
 

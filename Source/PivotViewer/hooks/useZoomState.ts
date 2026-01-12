@@ -23,6 +23,10 @@ export function useZoomState(initialZoom = 1) {
     handleZoomChange(parseFloat(e.target.value));
   }, [handleZoomChange]);
 
+  const handleZoomReset = useCallback(() => {
+    handleZoomChange(1);
+  }, [handleZoomChange]);
+
   return {
     zoomLevel,
     setZoomLevel,
@@ -30,5 +34,6 @@ export function useZoomState(initialZoom = 1) {
     handleZoomIn,
     handleZoomOut,
     handleZoomSlider,
+    handleZoomReset,
   };
 }

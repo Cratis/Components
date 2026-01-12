@@ -85,6 +85,8 @@ export function PivotViewer<TItem extends object>({
         handleZoomIn,
         handleZoomOut,
         handleZoomSlider,
+        handleZoomReset,
+        handleZoomChange,
     } = useZoomState(1);
 
     const {
@@ -382,6 +384,8 @@ export function PivotViewer<TItem extends object>({
                     onZoomIn={handleZoomIn}
                     onZoomOut={handleZoomOut}
                     onZoomSlider={handleZoomSlider}
+                    onZoomReset={handleZoomReset}
+                    onZoomChange={handleZoomChange}
                     onDimensionChange={setActiveDimensionKey}
                     filterButtonRef={filterButtonRef}
                 />

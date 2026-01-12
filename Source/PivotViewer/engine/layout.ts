@@ -87,9 +87,8 @@ function computeGroupedLayout(
 
   const slotWidth = cardWidth + CARD_GAP;
   const slotHeight = cardHeight + CARD_GAP;
-  // Bottom margin of 0 - the CARD_GAP in slotHeight provides sufficient spacing
-  // between the bottom card and the footer label
-  const BOTTOM_MARGIN = 0;
+  // Bottom margin matches the canvas padding for visual consistency
+  const BOTTOM_MARGIN = CANVAS_PADDING;
 
   // Fixed bucket width: 2 columns of cards per bucket (always)
   const COLUMNS_PER_BUCKET = 2;

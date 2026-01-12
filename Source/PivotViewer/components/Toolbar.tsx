@@ -1,6 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { useState } from 'react';
 import type { PivotDimension } from '../types';
 import { ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from '../utils/utils';
 
@@ -20,6 +21,8 @@ export interface ToolbarProps<TItem extends object> {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onZoomSlider: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onZoomReset: () => void;
+  onZoomChange: (zoom: number) => void;
   onDimensionChange: (key: string) => void;
   filterButtonRef: React.RefObject<HTMLButtonElement | null>;
 }
@@ -38,10 +41,47 @@ export function Toolbar<TItem extends object>({
   onZoomIn,
   onZoomOut,
   onZoomSlider,
+  onZoomReset,
+  onZoomChange,
   onDimensionChange,
   filterButtonRef,
 }: ToolbarProps<TItem>) {
   const labelText = 'Sort by';
+  const [isEditingZoom, setIsEditingZoom] = useState(false);
+  const [zoomInputValue, setZoomInputValue] = useState('');
+
+  const handleZoomClick = () => {
+    setIsEditingZoom(true);
+    setZoomInputValue(String(Math.round(zoomLevel * 100)));
+  };
+
+  const handleZoomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || /^\d+$/.test(value)) {
+      setZoomInputValue(value);
+    }
+  };
+
+  const handleZoomInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      applyZoomInput();
+    } else if (e.key === 'Escape') {
+      setIsEditingZoom(false);
+    }
+  };
+
+  const handleZoomInputBlur = () => {
+    applyZoomInput();
+  };
+
+  const applyZoomInput = () => {
+    const numValue = parseInt(zoomInputValue, 10);
+    if (!isNaN(numValue)) {
+      const clampedValue = Math.max(10, Math.min(300, numValue));
+      onZoomChange(clampedValue / 100);
+    }
+    setIsEditingZoom(false);
+  };
 
   return (
     <header className="pv-toolbar">
@@ -85,7 +125,34 @@ export function Toolbar<TItem extends object>({
             onChange={onZoomSlider}
             title={`Zoom: ${Math.round(zoomLevel * 100)}%`}
           />
-          <span className="pv-zoom-level">{Math.round(zoomLevel * 100)}%</span>
+          {isEditingZoom ? (
+            <input
+              type="text"
+              className="pv-zoom-level-input"
+              value={zoomInputValue}
+              onChange={handleZoomInputChange}
+              onKeyDown={handleZoomInputKeyDown}
+              onBlur={handleZoomInputBlur}
+              autoFocus
+            />
+          ) : (
+            <span className="pv-zoom-level" onClick={handleZoomClick} title="Click to edit zoom level">
+              {Math.round(zoomLevel * 100)}%
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onZoomReset}
+            title="Reset zoom"
+            className="pv-zoom-reset"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M3 21v-5h5" />
+            </svg>
+          </button>
           <button
             type="button"
             onClick={onZoomIn}

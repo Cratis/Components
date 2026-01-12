@@ -16,5 +16,5 @@ export const DETAIL_PANEL_WIDTH = 380;
 
 // Animation constants
 export const ZOOM_ANIMATION_DURATION = 300;
-export const ZOOM_MULTIPLIER = 1.15;
+export const ZOOM_MULTIPLIER = 1.2;
 export const MIN_ZOOM_ON_SELECT = 1.2;

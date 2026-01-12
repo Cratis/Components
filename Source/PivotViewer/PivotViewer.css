@@ -530,6 +530,33 @@
   min-width: 3rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.4rem;
+  transition: background 120ms ease;
+}
+
+.pv-zoom-controls span:hover {
+  background: var(--surface-hover);
+}
+
+.pv-zoom-level-input {
+  width: 3rem;
+  font-size: 0.75rem;
+  text-align: center;
+  background: var(--surface-ground);
+  border: 1px solid var(--primary-color);
+  border-radius: 0.4rem;
+  color: var(--text-color);
+  padding: 0.25rem 0.5rem;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.pv-zoom-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pv-dimension-select {
