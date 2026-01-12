@@ -33,6 +33,17 @@ export interface CardClickHandlerParams<TItem> {
 }
 
 /**
+ * Compare two item IDs handling type coercion (string vs number)
+ */
+function isSameItemId(id1: string | number | null, id2: string | number | null): boolean {
+  if (id1 === null || id2 === null) return false;
+  // Strict equality
+  if (id1 === id2) return true;
+  // Compare as strings to handle number/string mismatches
+  return String(id1) === String(id2);
+}
+
+/**
  * Handle card click for selection with zoom and scroll animation
  */
 export function handleCardSelection<TItem>({
@@ -55,8 +66,8 @@ export function handleCardSelection<TItem>({
   setPreSelectionState,
   item,
 }: CardClickHandlerParams<TItem>): void {
-  // Clicking the same card - deselect
-  if (selectedItemId === itemId) {
+  // Clicking the same card - deselect (using type-coerced comparison)
+  if (isSameItemId(selectedItemId, itemId)) {
     deselectCard({
       container,
       cardPosition,

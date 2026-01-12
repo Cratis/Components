@@ -10,6 +10,7 @@ export interface AxisLabelsProps<TItem extends object> {
   dimensionFilter: string | null;
   hoveredGroup: string | null;
   zoomLevel: number;
+  visible: boolean;
   onHover: (key: string | null) => void;
   onClick: (key: string) => void;
   containerRef: React.RefObject<HTMLDivElement | null>;
@@ -21,16 +22,16 @@ export function AxisLabels<TItem extends object>({
   dimensionFilter,
   hoveredGroup,
   zoomLevel,
+  visible,
   onHover,
   onClick,
   containerRef,
 }: AxisLabelsProps<TItem>) {
   return (
     <div
-      className="pv-axis-labels"
+      className={`pv-axis-labels ${visible ? 'visible' : 'hidden'}`}
       ref={containerRef}
       style={{
-        pointerEvents: 'none',
         // Align labels start with grouped buckets using canvas padding scaled by zoom
         paddingLeft: `${(CANVAS_PADDING * zoomLevel)-(20*zoomLevel)}px`,
         overflowX: 'hidden',
@@ -45,14 +46,16 @@ export function AxisLabels<TItem extends object>({
         // Width is just the bucket width - spacing is handled by CSS gap
         const width = bucketWidth;
 
+        // When a dimension filter is active, mark non-selected groups as filtered-out
+        const isFilteredOut = dimensionFilter !== null && !isSelected;
+
         return (
           <button
             key={group.key}
             type="button"
-            className={`pv-axis-label ${hoveredGroup === group.key ? 'highlighted' : ''} ${isSelected ? 'selected' : ''}`}
+            className={`pv-axis-label ${hoveredGroup === group.key ? 'highlighted' : ''} ${isSelected ? 'selected' : ''} ${isFilteredOut ? 'filtered-out' : ''}`}
             style={{
               width,
-              pointerEvents: 'auto'
             }}
             onMouseEnter={() => onHover(group.key)}
             onMouseLeave={() => onHover(null)}

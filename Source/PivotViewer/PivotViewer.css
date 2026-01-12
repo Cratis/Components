@@ -745,6 +745,7 @@
   padding: 0.5rem 0;
   text-align: center;
   cursor: pointer;
+  /* Note: opacity transition added later in the file for filter effects */
   transition: background 180ms ease, border-color 180ms ease;
   flex: 0 0 auto;
   border-radius: 0.5rem;
@@ -798,16 +799,26 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Fade axis labels when switching views */
+/* Fade axis labels when switching views - matched to sprite animation duration (600ms) */
 .pivot-viewer .pv-axis-labels {
-  transition: opacity 200ms ease;
+  transition: opacity 600ms ease;
 }
-.pivot-viewer.collection-mode .pv-axis-labels {
+.pivot-viewer .pv-axis-labels.hidden {
   opacity: 0;
   pointer-events: none;
 }
-.pivot-viewer.grouped-mode .pv-axis-labels {
+.pivot-viewer .pv-axis-labels.visible {
   opacity: 1;
+  pointer-events: auto;
+}
+
+/* Fade individual axis labels when filtering groups */
+.pv-axis-label {
+  transition: opacity 600ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.pv-axis-label.filtered-out {
+  opacity: 0.3;
 }
 
 .pv-groups.pv-groups-collection {

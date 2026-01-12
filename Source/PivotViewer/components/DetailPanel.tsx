@@ -99,7 +99,12 @@ export function DetailPanel<TItem extends object>({
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
-          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+          transition={{
+            type: 'spring',
+            stiffness: 120,
+            damping: 20,
+            mass: 1,
+          }}
         >
           <header>
             <div>

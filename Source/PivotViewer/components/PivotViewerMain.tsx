@@ -216,13 +216,13 @@ export function PivotViewerMain<TItem extends object>({
           )}
         </div>
         {detailRenderer
-          ? (selectedItem ? (
+          ? (
               <DetailPanel
                 selectedItem={selectedItem}
                 onClose={onCloseDetail}
                 contentRenderer={detailRenderer}
               />
-            ) : null)
+            )
           : (
             <DetailPanel
               selectedItem={selectedItem}
@@ -231,27 +231,26 @@ export function PivotViewerMain<TItem extends object>({
           )}
       </div>
 
-      {viewMode === 'grouped' && grouping.groups.length > 0 && (
-        <AxisLabels
-            groups={grouping.groups.map((g) => ({
-            key: g.key,
-            value: g.value,
-            label: String(g.value),
-            items: [],
-            count: g.ids.length,
-          }))}
-          bucketWidths={layout.bucketWidths || []}
-          zoomLevel={zoomLevel}
-          dimensionFilter={dimensionFilter}
-          hoveredGroup={hoveredGroupIndex !== null ? String(grouping.groups[hoveredGroupIndex]?.value) : null}
-          onHover={(label) => {
-            const index = grouping.groups.findIndex(g => String(g.value) === label);
-            onGroupHover(index >= 0 ? index : null);
-          }}
-          onClick={onAxisLabelClick}
-          containerRef={axisLabelsRef}
-        />
-      )}
+      <AxisLabels
+        groups={grouping.groups.map((g) => ({
+          key: g.key,
+          value: g.value,
+          label: String(g.value),
+          items: [],
+          count: g.ids.length,
+        }))}
+        bucketWidths={layout.bucketWidths || []}
+        zoomLevel={zoomLevel}
+        dimensionFilter={dimensionFilter}
+        hoveredGroup={hoveredGroupIndex !== null ? String(grouping.groups[hoveredGroupIndex]?.value) : null}
+        visible={viewMode === 'grouped' && grouping.groups.length > 0}
+        onHover={(label) => {
+          const index = grouping.groups.findIndex(g => String(g.value) === label);
+          onGroupHover(index >= 0 ? index : null);
+        }}
+        onClick={onAxisLabelClick}
+        containerRef={axisLabelsRef}
+      />
     </div>
   );
 }
