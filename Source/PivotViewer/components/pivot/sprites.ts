@@ -17,7 +17,7 @@ export function createCardSprite<TItem extends object>(
   cardWidth: number,
   cardHeight: number,
   cardColors: CardColors,
-  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] },
+  cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] },
   resolveId: (item: TItem, index: number) => string | number,
 ): CardSprite {
   if (spritePool.length > 0) {
@@ -101,7 +101,7 @@ export function createCardSprite<TItem extends object>(
 
     // Update event context
     if (sprite.container) {
-      (sprite.container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string; cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] }; resolveId: (item: TItem, index: number) => string | number } })._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
+      (sprite.container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string; cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] }; resolveId: (item: TItem, index: number) => string | number } })._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
     }
 
     return sprite;
@@ -124,7 +124,7 @@ export function createCardSprite<TItem extends object>(
   // Container configured for pointer interactions; hitArea matches visible card.
 
   // Store context for event handlers
-  (container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string; cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] }; resolveId: (item: TItem, index: number) => string | number } })._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
+  (container as unknown as { _eventContext: { items: TItem[]; onCardClick: (item: TItem, e: MouseEvent, id: number | string) => void; id: number | string; cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] }; resolveId: (item: TItem, index: number) => string | number } })._eventContext = { items, onCardClick, id, cardRenderer, resolveId };
 
   const graphics = new PIXI.Graphics();
 
@@ -235,7 +235,7 @@ export function updateCardContent<TItem extends object>(
   cardWidth: number,
   cardHeight: number,
   cardColors: CardColors,
-  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] },
+  cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] },
 ) {
   if (!item) return;
 
@@ -244,8 +244,8 @@ export function updateCardContent<TItem extends object>(
   const colors = cardColors;
   const cardData = cardRenderer(item);
   const titleDisplay = cardData.title;
-  const labelsText = cardData.labels.join('\n');
-  const valuesText = cardData.values.join('\n');
+  const labelsText = (cardData.labels || []).join('\n');
+  const valuesText = (cardData.values || []).join('\n');
   const colorsChanged = sprite.lastCardColors !== colors;
 
   // Ensure text objects exist before using them

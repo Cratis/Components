@@ -53,7 +53,7 @@ export interface PivotCanvasProps<TItem extends object> {
   isZooming?: boolean;
 
   /** Card renderer function - returns structured data for display */
-  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] };
+  cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] };
 
   /** ID resolver */
   resolveId: (item: TItem, index: number) => string | number;

@@ -79,7 +79,7 @@ export interface PivotViewerProps<TItem extends object> {
   filters?: PivotFilter<TItem>[];
   defaultDimensionKey?: string;
   /** Renderer for card content; returns structured text data for display */
-  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] };
+  cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] };
   /** Optional renderer for the detail content area; the drawer shell (header/close/layout) stays component-owned */
   detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
   getItemId?: (item: TItem, index: number) => string | number;

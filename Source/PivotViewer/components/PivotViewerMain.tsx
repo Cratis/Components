@@ -27,7 +27,7 @@ export interface PivotViewerMainProps<TItem extends object> {
   hoveredGroupIndex: number | null;
   isZooming: boolean;
   viewMode: ViewMode;
-  cardRenderer: (item: TItem) => { title: string; labels: string[]; values: string[] };
+  cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] };
   /** Optional renderer for a custom details panel when a card is selected */
   detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
   resolveId: (item: TItem, index: number) => ItemId;
