@@ -688,7 +688,7 @@
 }
 
 .pv-cards-grouped .pv-card {
-  /* Cards maintain their direction */
+  transform: none;
 }
 
 /* Empty placeholder cells in grouped grid */
@@ -704,8 +704,7 @@
   align-items: stretch;
   background: var(--surface-section);
   border-top: 1px solid var(--surface-border);
-  padding: 0.5rem 1.5rem;
-  /* padding-left set dynamically from JS to match canvas padding */
+  padding: 0.5rem 0; /* padding-left set dynamically from JS; no right padding to prevent skew */
   gap: 0; /* No extra gap to avoid skew */
   overflow-x: hidden; /* Disable independent scroll - synced via JS */
   flex-shrink: 0;
@@ -796,7 +795,7 @@
 
 /* Pause flex reflow during zoom animation for smoother effect */
 .pv-groups.pv-zooming {
-  /* Disable transitions during zoom */
+  pointer-events: none;
 }
 
 /* CRITICAL: Freeze collection layout during zoom - prevent any reflow */

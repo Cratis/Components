@@ -69,6 +69,12 @@ export function useCardSelection<TItem extends object>({
             })()
             : null;
 
+        // If clicking the already-selected card, deselect it
+        if (selectedId === itemId && selectedItem) {
+            setSelectedItem(null);
+            return;
+        }
+
         // Get card position from layout
         const cardPosition = getCardPositionFromLayout(itemId, layout, BASE_CARD_WIDTH, BASE_CARD_HEIGHT);
 

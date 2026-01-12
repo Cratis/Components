@@ -32,8 +32,7 @@ export function AxisLabels<TItem extends object>({
       style={{
         pointerEvents: 'none',
         // Align labels start with grouped buckets using canvas padding scaled by zoom
-        paddingLeft: `${CANVAS_PADDING * zoomLevel}px`,
-        paddingRight: 0,
+        paddingLeft: `${(CANVAS_PADDING * zoomLevel)-(20*zoomLevel)}px`,
         overflowX: 'hidden',
         whiteSpace: 'nowrap',
       }}

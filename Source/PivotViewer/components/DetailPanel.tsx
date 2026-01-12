@@ -92,7 +92,7 @@ export function DetailPanel<TItem extends object>({
   const customContent = contentRenderer && selectedRecord ? contentRenderer(selectedRecord, onClose) : null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {selectedRecord && (
         <motion.aside
           className="pv-detail-panel"
