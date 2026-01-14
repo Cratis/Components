@@ -108,8 +108,11 @@ export const Canvas: React.FC<CanvasProps> = ({
         
         // Pinch-to-zoom (ctrlKey is true for pinch gestures on trackpad)
         if (e.ctrlKey) {
-            // Zoom towards mouse position
-            const delta = e.deltaY > 0 ? 0.95 : 1.05;
+            // Use smoother zoom calculation based on actual deltaY
+            // Trackpad pinch typically gives small deltaY values (-2 to 2)
+            // This creates a more proportional zoom response
+            const zoomIntensity = 0.008; // Adjust for smoother/faster zoom
+            const delta = Math.exp(-e.deltaY * zoomIntensity);
             const newZoom = Math.max(0.1, Math.min(5, currentZoom * delta));
             
             // Keep the point under cursor stationary
@@ -177,6 +180,24 @@ export const Canvas: React.FC<CanvasProps> = ({
         }
         connectingFromRef.current = null;
     }, []);
+
+    // Handle drag over for toolbox drag-and-drop
+    const handleDragOver = useCallback((e: DragEvent) => {
+        if (e.dataTransfer?.types.includes('application/x-event-modeling-tool')) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+    }, []);
+
+    // Handle drop for toolbox drag-and-drop
+    const handleDrop = useCallback((e: DragEvent) => {
+        e.preventDefault();
+        const tool = e.dataTransfer?.getData('application/x-event-modeling-tool') as ElementType;
+        if (tool && containerRef.current) {
+            const worldPos = screenToWorld(e.clientX, e.clientY);
+            onAddElementRef.current(tool, worldPos.x, worldPos.y);
+        }
+    }, [screenToWorld]);
 
     // Element pointer down - start dragging
     const handleElementPointerDown = useCallback((id: string, e: PIXI.FederatedPointerEvent) => {
@@ -322,6 +343,10 @@ export const Canvas: React.FC<CanvasProps> = ({
                 canvasEl.addEventListener('pointermove', handlePointerMove);
                 canvasEl.addEventListener('pointerup', handlePointerUp);
                 canvasEl.addEventListener('pointerleave', handlePointerUp);
+                
+                // Set up drag-and-drop listeners on the container for toolbox support
+                containerRef.current.addEventListener('dragover', handleDragOver);
+                containerRef.current.addEventListener('drop', handleDrop);
             }
 
             setPixiReady(true);
@@ -338,12 +363,16 @@ export const Canvas: React.FC<CanvasProps> = ({
                 canvasRef.current.removeEventListener('pointerup', handlePointerUp);
                 canvasRef.current.removeEventListener('pointerleave', handlePointerUp);
             }
+            if (containerRef.current) {
+                containerRef.current.removeEventListener('dragover', handleDragOver);
+                containerRef.current.removeEventListener('drop', handleDrop);
+            }
             if (appRef.current) {
                 appRef.current.destroy(true, { children: true });
                 appRef.current = null;
             }
         };
-    }, [handleWheel, handleCanvasPointerDown, handlePointerMove, handlePointerUp]);
+    }, [handleWheel, handleCanvasPointerDown, handlePointerMove, handlePointerUp, handleDragOver, handleDrop]);
 
     // Update world transform when zoom/pan changes
     useEffect(() => {
@@ -440,6 +469,12 @@ export const Canvas: React.FC<CanvasProps> = ({
         });
     }, [pixiReady, state.elements, handleElementPointerDown, handleEdgePointerDown, handleEdgePointerUp]);
 
+    // Create a stable getter function for elements that always returns fresh data
+    const getElementsMapRef = useRef<() => Map<string, ElementData>>(() => new Map());
+    useEffect(() => {
+        getElementsMapRef.current = () => new Map(stateRef.current.elements.map(el => [el.id, el]));
+    }, []);
+
     // Sync connectors to PIXI
     useEffect(() => {
         if (!pixiReady || !connectorsLayerRef.current) return;
@@ -460,11 +495,13 @@ export const Canvas: React.FC<CanvasProps> = ({
         state.connectors.forEach(connector => {
             const existing = connectorsRef.current.get(connector.id);
             if (existing) {
+                // Update the getElements function to always return fresh data
+                existing.getElements = getElementsMapRef.current;
                 updateConnectorGraphics(existing, elementsMap);
             } else {
                 const connGraphics = createConnectorGraphics(
                     connector,
-                    elementsMap,
+                    getElementsMapRef.current,
                     handleConnectorClick
                 );
                 connectorsRef.current.set(connector.id, connGraphics);

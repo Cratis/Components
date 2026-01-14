@@ -8,6 +8,8 @@ export interface ConnectorGraphics {
     id: string;
     graphics: PIXI.Graphics;
     connector: Connector;
+    getElements: () => Map<string, ElementData>;
+    isHovered: boolean;
 }
 
 const CONNECTOR_COLOR = 0x64748b;
@@ -17,7 +19,7 @@ const CONNECTOR_HOVER_WIDTH = 3;
 
 export function createConnectorGraphics(
     connector: Connector,
-    elements: Map<string, ElementData>,
+    getElements: () => Map<string, ElementData>,
     onClick: (id: string) => void
 ): ConnectorGraphics {
     const graphics = new PIXI.Graphics();
@@ -25,25 +27,33 @@ export function createConnectorGraphics(
     graphics.cursor = 'pointer';
     graphics.hitArea = new PIXI.Rectangle(0, 0, 0, 0); // Will be updated
 
-    drawConnector(graphics, connector, elements, false);
+    const connectorGraphics: ConnectorGraphics = {
+        id: connector.id,
+        graphics,
+        connector,
+        getElements,
+        isHovered: false,
+    };
+
+    drawConnector(graphics, connector, getElements(), false);
 
     graphics.on('click', () => {
         onClick(connector.id);
     });
 
     graphics.on('pointerover', () => {
-        drawConnector(graphics, connector, elements, true);
+        connectorGraphics.isHovered = true;
+        // Use fresh element data from getter
+        drawConnector(graphics, connector, connectorGraphics.getElements(), true);
     });
 
     graphics.on('pointerout', () => {
-        drawConnector(graphics, connector, elements, false);
+        connectorGraphics.isHovered = false;
+        // Use fresh element data from getter
+        drawConnector(graphics, connector, connectorGraphics.getElements(), false);
     });
 
-    return {
-        id: connector.id,
-        graphics,
-        connector,
-    };
+    return connectorGraphics;
 }
 
 function drawConnector(
@@ -204,5 +214,6 @@ export function updateConnectorGraphics(
     connectorGraphics: ConnectorGraphics,
     elements: Map<string, ElementData>
 ): void {
-    drawConnector(connectorGraphics.graphics, connectorGraphics.connector, elements, false);
+    // Preserve hover state when updating
+    drawConnector(connectorGraphics.graphics, connectorGraphics.connector, elements, connectorGraphics.isHovered);
 }
