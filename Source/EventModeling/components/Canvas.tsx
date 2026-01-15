@@ -507,7 +507,8 @@ export const Canvas: React.FC<CanvasProps> = ({
         state.connectors.forEach(connector => {
             const existing = connectorsRef.current.get(connector.id);
             if (existing) {
-                // Update the getElements function to always return fresh data
+                // Update the connector data and getElements function to always return fresh data
+                existing.connector = connector; // Update to latest connector data with potentially new edge sides
                 existing.getElements = getElementsMapRef.current;
                 updateConnectorGraphics(existing, elementsMap);
             } else {
