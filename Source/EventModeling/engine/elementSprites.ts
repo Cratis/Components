@@ -8,6 +8,7 @@ export interface ElementSprite {
     id: string;
     container: PIXI.Container;
     graphics: PIXI.Graphics;
+    selectionBorder?: PIXI.Graphics;
     labelText: PIXI.Text;
     descriptionText?: PIXI.Text;
     edgePoints: Map<EdgeSide, PIXI.Graphics>;
@@ -35,12 +36,38 @@ export function createElementSprite(
     // Set explicit hit area for interaction
     container.hitArea = new PIXI.Rectangle(0, 0, data.size.width, data.size.height);
 
+    // Create shadow layer
+    const shadowGraphics = new PIXI.Graphics();
+    shadowGraphics.alpha = 0.15;
+    container.addChild(shadowGraphics);
+
     const graphics = new PIXI.Graphics();
     const edgePoints = new Map<EdgeSide, PIXI.Graphics>();
+
+    // Create selection border (initially hidden)
+    const selectionBorder = new PIXI.Graphics();
+    selectionBorder.alpha = 0;
+    container.addChild(selectionBorder);
 
     // Get colors based on element type
     const elementColors = ELEMENT_COLORS[data.type];
     const backgroundColor = 'background' in elementColors ? elementColors.background : elementColors.fill;
+    
+    // Draw shadow
+    if (data.type === 'process') {
+        const centerX = data.size.width / 2;
+        const centerY = data.size.height / 2;
+        const radius = Math.min(data.size.width, data.size.height) / 2;
+        for (let i = 0; i < 3; i++) {
+            shadowGraphics.circle(centerX, centerY + 2 + i, radius + i);
+            shadowGraphics.fill({ color: 0x000000, alpha: 0.06 });
+        }
+    } else {
+        for (let i = 0; i < 4; i++) {
+            shadowGraphics.roundRect(i, 2 + i, data.size.width, data.size.height, BORDER_RADIUS);
+            shadowGraphics.fill({ color: 0x000000, alpha: 0.06 });
+        }
+    }
     
     // Draw with proper shapes (PIXI v8 requires fill with object format)
     if (data.type === 'process') {
@@ -118,6 +145,7 @@ export function createElementSprite(
         id: data.id,
         container,
         graphics,
+        selectionBorder,
         labelText,
         descriptionText,
         edgePoints,
@@ -286,4 +314,55 @@ export function hideEdgePoints(sprite: ElementSprite): void {
     sprite.edgePoints.forEach(edgePoint => {
         edgePoint.alpha = 0;
     });
+}
+
+export function setElementSelected(sprite: ElementSprite, selected: boolean): void {
+    if (!sprite.selectionBorder) return;
+    
+    if (selected) {
+        updateSelectionBorder(sprite);
+        sprite.selectionBorder.alpha = 1;
+    } else {
+        sprite.selectionBorder.alpha = 0;
+    }
+}
+
+function updateSelectionBorder(sprite: ElementSprite): void {
+    if (!sprite.selectionBorder) return;
+    
+    const selectionBorder = sprite.selectionBorder;
+    selectionBorder.clear();
+    
+    const borderWidth = 3;
+    const offset = -borderWidth;
+    
+    // Get primary color from CSS variable with fallback
+    const primaryColor = getComputedPrimaryColor();
+    
+    if (sprite.data.type === 'process') {
+        const centerX = sprite.data.size.width / 2;
+        const centerY = sprite.data.size.height / 2;
+        const radius = Math.min(sprite.data.size.width, sprite.data.size.height) / 2 + borderWidth;
+        
+        selectionBorder.circle(centerX, centerY, radius);
+        selectionBorder.stroke({ color: primaryColor, width: borderWidth });
+    } else {
+        selectionBorder.roundRect(
+            offset, 
+            offset, 
+            sprite.data.size.width + borderWidth * 2, 
+            sprite.data.size.height + borderWidth * 2, 
+            BORDER_RADIUS + borderWidth
+        );
+        selectionBorder.stroke({ color: primaryColor, width: borderWidth });
+    }
+}
+
+function getComputedPrimaryColor(): number {
+    // Get the primary color from CSS custom properties
+    const style = getComputedStyle(document.documentElement);
+    const primaryColorStr = style.getPropertyValue('--primary-color').trim() || '#3B82F6';
+    
+    // Convert hex color string to number
+    return parseInt(primaryColorStr.replace('#', ''), 16);
 }

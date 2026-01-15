@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
 import { EventModelingState, ElementType, ElementData, Connector, EdgeSide } from '../types';
-import { createElementSprite, updateElementSprite, showEdgePoints, hideEdgePoints, ElementSprite } from '../engine/elementSprites';
+import { createElementSprite, updateElementSprite, showEdgePoints, hideEdgePoints, setElementSelected, ElementSprite } from '../engine/elementSprites';
 import { createConnectorGraphics, updateConnectorGraphics, ConnectorGraphics } from '../engine/connectorGraphics';
 
 export interface CanvasProps {
@@ -19,6 +19,15 @@ export interface CanvasProps {
     onAddConnector: (connector: Connector) => void;
     onSelectElement: (id: string | undefined) => void;
     onSelectConnector: (id: string | undefined) => void;
+}
+
+// Helper to get background color from CSS custom properties
+function getComputedBackgroundColor(): number {
+    const style = getComputedStyle(document.documentElement);
+    const bgColorStr = style.getPropertyValue('--surface-ground').trim() || '#18181b'; // zinc-900 as fallback
+    
+    // Convert hex color string to number
+    return parseInt(bgColorStr.replace('#', ''), 16);
 }
 
 export const Canvas: React.FC<CanvasProps> = ({
@@ -288,9 +297,12 @@ export const Canvas: React.FC<CanvasProps> = ({
             
             const app = new PIXI.Application();
             
+            // Get background color from CSS variable (dark mode)
+            const bgColor = getComputedBackgroundColor();
+            
             try {
                 await app.init({
-                    background: 0xf8f9fa,
+                    background: bgColor,
                     antialias: true,
                     autoDensity: true,
                     resolution: window.devicePixelRatio || 1,
@@ -509,6 +521,15 @@ export const Canvas: React.FC<CanvasProps> = ({
             }
         });
     }, [pixiReady, state.connectors, state.elements, handleConnectorClick]);
+
+    // Update selection highlight
+    useEffect(() => {
+        if (!pixiReady) return;
+        
+        spritesRef.current.forEach((sprite, id) => {
+            setElementSelected(sprite, id === state.selectedElementId);
+        });
+    }, [pixiReady, state.selectedElementId]);
 
     return <div ref={containerRef} className="event-modeling-canvas-container" />;
 };
