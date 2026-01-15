@@ -73,3 +73,49 @@ export const DEFAULT_ELEMENT_SIZE = {
     readmodel: { width: 200, height: 100 },
     process: { width: 80, height: 80 },
 } as const;
+
+/**
+ * Calculate the optimal edge pair for a connector based on element positions.
+ * Returns the best matching edges for visual clarity.
+ */
+export function calculateOptimalEdges(
+    fromElement: ElementData,
+    toElement: ElementData
+): { fromSide: EdgeSide; toSide: EdgeSide } {
+    // Calculate center points
+    const fromCenter = {
+        x: fromElement.position.x + fromElement.size.width / 2,
+        y: fromElement.position.y + fromElement.size.height / 2,
+    };
+    const toCenter = {
+        x: toElement.position.x + toElement.size.width / 2,
+        y: toElement.position.y + toElement.size.height / 2,
+    };
+
+    // Calculate differences
+    const dx = toCenter.x - fromCenter.x;
+    const dy = toCenter.y - fromCenter.y;
+
+    // Determine primary direction based on which delta is larger
+    const isHorizontal = Math.abs(dx) > Math.abs(dy);
+
+    if (isHorizontal) {
+        // Horizontal connection is primary
+        if (dx > 0) {
+            // Target is to the right
+            return { fromSide: 'right', toSide: 'left' };
+        } else {
+            // Target is to the left
+            return { fromSide: 'left', toSide: 'right' };
+        }
+    } else {
+        // Vertical connection is primary
+        if (dy > 0) {
+            // Target is below
+            return { fromSide: 'bottom', toSide: 'top' };
+        } else {
+            // Target is above
+            return { fromSide: 'top', toSide: 'bottom' };
+        }
+    }
+}

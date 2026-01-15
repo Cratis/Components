@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState, useCallback } from 'react';
-import { EventModelingState, ElementData, Connector, ElementType, DEFAULT_ELEMENT_SIZE } from './types';
+import { EventModelingState, ElementData, Connector, ElementType, DEFAULT_ELEMENT_SIZE, calculateOptimalEdges } from './types';
 import { Toolbox } from './components/Toolbox';
 import { Canvas } from './components/Canvas';
 import { CanvasControls } from './components/CanvasControls';
@@ -66,11 +66,36 @@ export const EventModeling: React.FC<EventModelingProps> = ({
     }, [state, updateState]);
 
     const handleUpdateElement = useCallback((id: string, updates: Partial<ElementData>) => {
+        const updatedElements = state.elements.map(el =>
+            el.id === id ? { ...el, ...updates } : el
+        );
+
+        // If position changed, update affected connectors to use optimal edges
+        let updatedConnectors = state.connectors;
+        if (updates.position) {
+            updatedConnectors = state.connectors.map(connector => {
+                // Check if this connector involves the moved element
+                if (connector.from.elementId === id || connector.to.elementId === id) {
+                    const fromElement = updatedElements.find(el => el.id === connector.from.elementId);
+                    const toElement = updatedElements.find(el => el.id === connector.to.elementId);
+
+                    if (fromElement && toElement) {
+                        const optimalEdges = calculateOptimalEdges(fromElement, toElement);
+                        return {
+                            ...connector,
+                            from: { elementId: connector.from.elementId, side: optimalEdges.fromSide },
+                            to: { elementId: connector.to.elementId, side: optimalEdges.toSide },
+                        };
+                    }
+                }
+                return connector;
+            });
+        }
+
         updateState({
             ...state,
-            elements: state.elements.map(el =>
-                el.id === id ? { ...el, ...updates } : el
-            ),
+            elements: updatedElements,
+            connectors: updatedConnectors,
         });
     }, [state, updateState]);
 
@@ -91,12 +116,28 @@ export const EventModeling: React.FC<EventModelingProps> = ({
             return;
         }
 
-        // Prevent duplicate connectors
+        // Find the elements to calculate optimal edges
+        const fromElement = state.elements.find(el => el.id === connector.from.elementId);
+        const toElement = state.elements.find(el => el.id === connector.to.elementId);
+
+        if (!fromElement || !toElement) {
+            return;
+        }
+
+        // Calculate optimal edges based on positions
+        const optimalEdges = calculateOptimalEdges(fromElement, toElement);
+
+        // Create connector with optimal edges
+        const optimizedConnector: Connector = {
+            ...connector,
+            from: { elementId: connector.from.elementId, side: optimalEdges.fromSide },
+            to: { elementId: connector.to.elementId, side: optimalEdges.toSide },
+        };
+
+        // Prevent duplicate connectors (checking element IDs only, not sides since we auto-adjust)
         const isDuplicate = state.connectors.some(
-            c => c.from.elementId === connector.from.elementId &&
-                 c.from.side === connector.from.side &&
-                 c.to.elementId === connector.to.elementId &&
-                 c.to.side === connector.to.side
+            c => c.from.elementId === optimizedConnector.from.elementId &&
+                 c.to.elementId === optimizedConnector.to.elementId
         );
 
         if (isDuplicate) {
@@ -105,7 +146,7 @@ export const EventModeling: React.FC<EventModelingProps> = ({
 
         updateState({
             ...state,
-            connectors: [...state.connectors, connector],
+            connectors: [...state.connectors, optimizedConnector],
         });
     }, [state, updateState]);
 
