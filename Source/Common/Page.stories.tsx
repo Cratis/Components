@@ -2,9 +2,42 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React from 'react';
-import * as Comp from './Page';
-const Component: React.ComponentType<Record<string, never>> | undefined = (Comp as Record<string, unknown>).default as unknown as React.ComponentType<Record<string, never>> | undefined || (Object.values(Comp)[0] as unknown as React.ComponentType<Record<string, never>> | undefined);
+import { Meta, StoryObj } from '@storybook/react';
+import { Page } from './Page';
 
-export default { title: 'Common/Page', component: Component };
+const meta: Meta<typeof Page> = {
+    title: 'Common/Page',
+    component: Page,
+};
 
-export const Default = () => (Component ? <Component /> : <div>Unable to render component</div>);
+export default meta;
+type Story = StoryObj<typeof Page>;
+
+export const Default: Story = {
+    args: {
+        title: 'My Page Title',
+    },
+    render: (args) => (
+        <Page {...args}>
+            <div className="p-4">
+                <p>This is the page content area.</p>
+                <p>The Page component provides a consistent layout with a title and content area.</p>
+            </div>
+        </Page>
+    )
+};
+
+export const WithPanel: Story = {
+    args: {
+        title: 'Page with Panel',
+        panel: true,
+    },
+    render: (args) => (
+        <Page {...args}>
+            <div className="p-4">
+                <p>This page has the panel style applied.</p>
+                <p>The panel prop adds special styling to the content area.</p>
+            </div>
+        </Page>
+    )
+};

@@ -1,10 +1,115 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
-import * as Comp from './ReadModelView';
-const Component: React.ComponentType<Record<string, never>> | undefined = (Comp as Record<string, unknown>).default as unknown as React.ComponentType<Record<string, never>> | undefined || (Object.values(Comp)[0] as unknown as React.ComponentType<Record<string, never>> | undefined);
+import React, { useState } from 'react';
+import { Meta, StoryObj } from '@storybook/react';
+import { ReadModelView } from './ReadModelView';
+import { Version } from './types';
+import { Properties } from './Properties';
 
-export default { title: 'TimeMachine/ReadModelView', component: Component };
+const meta: Meta<typeof ReadModelView> = {
+    title: 'TimeMachine/ReadModelView',
+    component: ReadModelView,
+    parameters: {
+        layout: 'fullscreen',
+    },
+};
 
-export const Default = () => (Component ? <Component /> : <div>Unable to render component</div>);
+export default meta;
+type Story = StoryObj<typeof ReadModelView>;
+
+const sampleVersions: Version[] = [
+    {
+        id: 'v1',
+        label: 'v1 - Initial State',
+        content: (
+            <Properties 
+                data={{
+                    userId: 'user-001',
+                    username: 'john.doe',
+                    email: 'john.doe@example.com',
+                    role: 'user',
+                    isActive: false
+                }}
+            />
+        ),
+        events: []
+    },
+    {
+        id: 'v2',
+        label: 'v2 - User Activated',
+        content: (
+            <Properties 
+                data={{
+                    userId: 'user-001',
+                    username: 'john.doe',
+                    email: 'john.doe@example.com',
+                    role: 'user',
+                    isActive: true
+                }}
+            />
+        ),
+        events: [
+            {
+                id: 'e1',
+                type: 'UserActivated',
+                occurred: new Date('2024-02-10T09:00:00'),
+                content: { userId: 'user-001' }
+            }
+        ]
+    },
+    {
+        id: 'v3',
+        label: 'v3 - Role Changed',
+        content: (
+            <Properties 
+                data={{
+                    userId: 'user-001',
+                    username: 'john.doe',
+                    email: 'john.doe@example.com',
+                    role: 'admin',
+                    isActive: true
+                }}
+            />
+        ),
+        events: [
+            {
+                id: 'e2',
+                type: 'RoleChanged',
+                occurred: new Date('2024-02-10T10:00:00'),
+                content: { userId: 'user-001', oldRole: 'user', newRole: 'admin' }
+            }
+        ]
+    }
+];
+
+const ReadModelViewWrapper = ({ versions }: { versions: Version[] }) => {
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [isHoveringCard, setIsHoveringCard] = useState(false);
+
+    return (
+        <div style={{ height: '800px', background: '#0a0a0a', position: 'relative' }}>
+            <ReadModelView
+                versions={versions}
+                selectedIndex={selectedIndex}
+                hoveredIndex={hoveredIndex}
+                onVersionSelect={setSelectedIndex}
+                onHoveringCardChange={setIsHoveringCard}
+            />
+            <div style={{ position: 'absolute', bottom: 20, left: 20, color: 'white', background: 'rgba(0,0,0,0.7)', padding: '10px', borderRadius: '5px' }}>
+                <p>Selected Version: {selectedIndex + 1} of {versions.length}</p>
+                <p>Hovering Card: {String(isHoveringCard)}</p>
+                <p>Click on cards to select, scroll to navigate</p>
+            </div>
+        </div>
+    );
+};
+
+export const Default: Story = {
+    render: () => <ReadModelViewWrapper versions={sampleVersions} />
+};
+
+export const SingleVersion: Story = {
+    render: () => <ReadModelViewWrapper versions={[sampleVersions[0]]} />
+};

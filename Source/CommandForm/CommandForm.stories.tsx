@@ -15,6 +15,7 @@ import {
     SelectField 
 } from './fields';
 import { Button } from 'primereact/button';
+import { Command } from '@cratis/arc/commands';
 
 const meta: Meta<typeof CommandForm> = {
     title: 'CommandForm/CommandForm',
@@ -24,6 +25,12 @@ const meta: Meta<typeof CommandForm> = {
 export default meta;
 type Story = StoryObj<typeof CommandForm>;
 
+// Simple command for the default story
+class SimpleCommand extends Command {
+    name = '';
+    email = '';
+}
+
 const roleOptions = [
     { id: 'user', name: 'User' },
     { id: 'admin', name: 'Administrator' },
@@ -31,10 +38,26 @@ const roleOptions = [
 ];
 
 export const Default: Story = {
-    args: {},
-    render: (args) => (
-        <div className="storybook-wrapper">
-            <CommandForm {...args} />
+    render: () => (
+        <div className="p-8 w-[600px] mx-auto">
+            <h2 className="text-2xl font-bold mb-6">Simple Command Form</h2>
+            <CommandForm<SimpleCommand>
+                command={SimpleCommand}
+                initialValues={{
+                    name: '',
+                    email: '',
+                }}
+            >
+                <InputTextField<SimpleCommand> value={c => c.name} title="Name" placeholder="Enter your name" />
+                <ValidationMessage<SimpleCommand> value={c => c.name} />
+                
+                <InputTextField<SimpleCommand> value={c => c.email} title="Email" type="email" placeholder="Enter your email" />
+                <ValidationMessage<SimpleCommand> value={c => c.email} />
+
+                <div className="mt-4">
+                    <Button label="Submit" type="submit" />
+                </div>
+            </CommandForm>
         </div>
     )
 };
