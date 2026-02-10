@@ -5,7 +5,8 @@ import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { CommandDialog } from './CommandDialog';
 import { Command } from '@cratis/arc/commands';
-import { CommandFormField } from '../CommandForm/CommandFormField';
+import { PropertyDescriptor } from '@cratis/arc/reflection';
+import { InputTextField, NumberField } from '../CommandForm/fields';
 
 const meta: Meta<typeof CommandDialog> = {
     title: 'CommandDialog/CommandDialog',
@@ -16,9 +17,28 @@ export default meta;
 type Story = StoryObj<typeof CommandDialog>;
 
 class UpdateUserCommand extends Command<object> {
+    readonly route: string = '/api/users/update';
+    readonly propertyDescriptors: PropertyDescriptor[] = [
+        new PropertyDescriptor('name', String),
+        new PropertyDescriptor('email', String),
+        new PropertyDescriptor('age', Number),
+    ];
+
     name = '';
     email = '';
     age = 0;
+
+    constructor() {
+        super(Object, false);
+    }
+
+    get requestParameters(): string[] {
+        return [];
+    }
+
+    get properties(): string[] {
+        return ['name', 'email', 'age'];
+    }
 }
 
 const DialogWrapper = () => {
@@ -40,7 +60,7 @@ const DialogWrapper = () => {
                 </div>
             )}
             
-            <CommandDialog
+            <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
                 header="Update User Information"
@@ -52,11 +72,9 @@ const DialogWrapper = () => {
                 }}
                 onCancel={() => setVisible(false)}
             >
-                <CommandDialog.Fields>
-                    <CommandFormField name="name" label="Name" placeholder="Enter name" />
-                    <CommandFormField name="email" label="Email" placeholder="Enter email" />
-                    <CommandFormField name="age" label="Age" type="number" />
-                </CommandDialog.Fields>
+                <InputTextField<UpdateUserCommand> value={c => c.name} title="Name" placeholder="Enter name" />
+                <InputTextField<UpdateUserCommand> value={c => c.email} title="Email" placeholder="Enter email" type="email" />
+                <NumberField<UpdateUserCommand> value={c => c.age} title="Age" placeholder="Enter age" />
             </CommandDialog>
         </div>
     );

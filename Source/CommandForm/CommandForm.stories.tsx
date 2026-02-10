@@ -16,6 +16,7 @@ import {
 } from './fields';
 import { Button } from 'primereact/button';
 import { Command } from '@cratis/arc/commands';
+import { PropertyDescriptor } from '@cratis/arc/reflection';
 
 const meta: Meta<typeof CommandForm> = {
     title: 'CommandForm/CommandForm',
@@ -27,8 +28,26 @@ type Story = StoryObj<typeof CommandForm>;
 
 // Simple command for the default story
 class SimpleCommand extends Command {
+    readonly route: string = '/api/simple';
+    readonly propertyDescriptors: PropertyDescriptor[] = [
+        new PropertyDescriptor('name', String),
+        new PropertyDescriptor('email', String),
+    ];
+
     name = '';
     email = '';
+
+    constructor() {
+        super(Object, false);
+    }
+
+    get requestParameters(): string[] {
+        return [];
+    }
+
+    get properties(): string[] {
+        return ['name', 'email'];
+    }
 }
 
 const roleOptions = [
