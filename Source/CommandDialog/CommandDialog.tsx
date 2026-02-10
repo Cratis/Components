@@ -3,8 +3,8 @@
 
 import { ICommandResult } from '@cratis/arc/commands';
 import { Constructor } from '@cratis/fundamentals';
-import { Dialog } from 'primereact/dialog';
-import { Button } from 'primereact/button';
+import { DialogButtons } from '@cratis/arc.react/dialogs';
+import { Dialog } from '../Dialogs/Dialog';
 import React, { createContext, useContext } from 'react';
 import { CommandForm, useCommandFormContext, BeforeExecuteCallback } from '../CommandForm/CommandForm';
 import { useCommandInstance } from '../CommandForm/CommandForm';
@@ -54,35 +54,59 @@ export const useCommandDialogContext = <TCommand = unknown,>() => {
     return context as CommandDialogContextValue<TCommand>;
 };
 
-const CommandDialogFormContent = <TCommand extends { execute: () => Promise<ICommandResult<unknown>> }>() => {
-    const command = useCommandInstance<TCommand>();
-    const { setCommandResult, setCommandValues, isValid, onBeforeExecute } = useCommandFormContext<TCommand>();
-    const { onSuccess: onConfirm, onCancel, confirmLabel, cancelLabel, confirmIcon, cancelIcon } = useCommandDialogContext<TCommand>();
+const CommandDialogWrapper = <TCommand extends object>({ 
+    header, 
+    visible, 
+    width, 
+    confirmLabel, 
+    cancelLabel, 
+    onConfirm, 
+    onCancel,
+    onBeforeExecute,
+    children 
+}: { 
+    header: string; 
+    visible: boolean; 
+    width: string;
+    confirmLabel: string;
+    cancelLabel: string;
+    onConfirm: (result: ICommandResult<unknown>) => void | Promise<void>;
+    onCancel: () => void;
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+    children: React.ReactNode;
+}) => {
+    const { isValid, setCommandValues, setCommandResult } = useCommandFormContext<TCommand>();
+    const commandInstance = useCommandInstance<TCommand>();
 
     const handleConfirm = async () => {
         if (onBeforeExecute) {
-            const transformedValues = onBeforeExecute(command);
+            const transformedValues = onBeforeExecute(commandInstance);
             setCommandValues(transformedValues);
         }
-        const result = await command.execute();
+        const result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<unknown>> }).execute();
         if (result.isSuccess) {
             await onConfirm(result);
+            return true;
         } else {
             setCommandResult(result);
+            return false;
         }
-    };
-
-    const handleCancel = () => {
-        onCancel();
     };
 
     return (
-        <>
-            <div className="card flex flex-wrap justify-content-center gap-3 mt-8">
-                <Button label={confirmLabel} icon={confirmIcon} onClick={handleConfirm} disabled={!isValid} />
-                <Button label={cancelLabel} icon={cancelIcon} severity='secondary' onClick={handleCancel} />
-            </div>
-        </>
+        <Dialog
+            title={header}
+            visible={visible}
+            width={width}
+            onConfirm={handleConfirm}
+            onCancel={onCancel}
+            buttons={DialogButtons.OkCancel}
+            okLabel={confirmLabel}
+            cancelLabel={cancelLabel}
+            isValid={isValid}
+        >
+            {children}
+        </Dialog>
     );
 };
 
@@ -120,11 +144,8 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         onFieldChange,
         onBeforeExecute,
         children,
-        style = { width: '50vw' },
-        width
+        width = '50vw'
     } = props;
-
-    const dialogStyle = width ? { ...style, width } : style;
 
     const contextValue: CommandDialogContextValue<TCommand> = {
         onSuccess: onConfirm,
@@ -139,20 +160,22 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
     };
 
     return (
-        <Dialog
-            header={header}
-            visible={visible}
-            style={dialogStyle}
-            onHide={onCancel}
-            contentStyle={{ overflow: 'visible' }}
-        >
-            <CommandDialogContext.Provider value={contextValue}>
-                <CommandForm command={command} initialValues={initialValues} currentValues={currentValues} onFieldValidate={onFieldValidate} onFieldChange={onFieldChange} onBeforeExecute={onBeforeExecute}>
+        <CommandDialogContext.Provider value={contextValue}>
+            <CommandForm command={command} initialValues={initialValues} currentValues={currentValues} onFieldValidate={onFieldValidate} onFieldChange={onFieldChange} onBeforeExecute={onBeforeExecute}>
+                <CommandDialogWrapper
+                    header={header}
+                    visible={visible}
+                    width={width}
+                    confirmLabel={confirmLabel}
+                    cancelLabel={cancelLabel}
+                    onConfirm={onConfirm}
+                    onCancel={onCancel}
+                    onBeforeExecute={onBeforeExecute}
+                >
                     {children}
-                    <CommandDialogFormContent />
-                </CommandForm>
-            </CommandDialogContext.Provider>
-        </Dialog>
+                </CommandDialogWrapper>
+            </CommandForm>
+        </CommandDialogContext.Provider>
     );
 };
 

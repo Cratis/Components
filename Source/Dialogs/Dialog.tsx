@@ -7,20 +7,52 @@ import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react
 import { ReactNode } from 'react';
 
 export type CloseDialog = (result: DialogResult) => boolean | void | Promise<boolean> | Promise<void>;
+export type ConfirmCallback = () => boolean | void | Promise<boolean> | Promise<void>;
+export type CancelCallback = () => boolean | void | Promise<boolean> | Promise<void>;
 
 export interface DialogProps {
     title: string;
     visible?: boolean;
-    onClose: CloseDialog;
+    onClose?: CloseDialog;
+    onConfirm?: ConfirmCallback;
+    onCancel?: CancelCallback;
     buttons?: DialogButtons | ReactNode;
     children: ReactNode;
     width?: string;
     resizable?: boolean;
     isValid?: boolean;
+    okLabel?: string;
+    cancelLabel?: string;
+    yesLabel?: string;
+    noLabel?: string;
 }
 
-export const Dialog = ({ title, visible = true, onClose, buttons = DialogButtons.OkCancel, children, width = '450px', resizable = false, isValid }: DialogProps) => {
-    const { closeDialog } = useDialogContext();
+export const Dialog = ({ 
+    title, 
+    visible = true, 
+    onClose, 
+    onConfirm,
+    onCancel,
+    buttons = DialogButtons.OkCancel, 
+    children, 
+    width = '450px', 
+    resizable = false, 
+    isValid,
+    okLabel = 'Ok',
+    cancelLabel = 'Cancel',
+    yesLabel = 'Yes',
+    noLabel = 'No'
+}: DialogProps) => {
+    // Try to get dialog context, but allow it to be undefined for standalone usage
+    let contextCloseDialog: ((result: DialogResult) => void) | undefined;
+    try {
+        const context = useDialogContext();
+        contextCloseDialog = context?.closeDialog;
+    } catch {
+        // No context available - dialog is being used standalone
+        contextCloseDialog = undefined;
+    }
+    
     const isDialogValid = isValid !== false;
     const headerElement = (
         <div className="inline-flex align-items-center justify-content-center gap-2">
@@ -29,37 +61,53 @@ export const Dialog = ({ title, visible = true, onClose, buttons = DialogButtons
     );
 
     const handleClose = async (result: DialogResult) => {
-        const closeResult = await onClose(result);
+        // Use new onConfirm/onCancel callbacks if provided, otherwise fall back to onClose
+        let closeResult: boolean | void | Promise<boolean> | Promise<void> = true;
+        
+        if (result === DialogResult.Ok || result === DialogResult.Yes) {
+            if (onConfirm) {
+                closeResult = await onConfirm();
+            } else if (onClose) {
+                closeResult = await onClose(result);
+            }
+        } else {
+            if (onCancel) {
+                closeResult = await onCancel();
+            } else if (onClose) {
+                closeResult = await onClose(result);
+            }
+        }
+        
         if (closeResult !== false) {
-            closeDialog(result);
+            contextCloseDialog?.(result);
         }
     };
 
     const okFooter = (
         <>
-            <Button label="Ok" icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid} autoFocus />
+            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid} autoFocus />
         </>
     );
 
     const okCancelFooter = (
         <>
-            <Button label="Ok" icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid} autoFocus />
-            <Button label="Cancel" icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} />
+            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid} autoFocus />
+            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} />
         </>
     );
 
     const yesNoFooter = (
         <>
-            <Button label="Yes" icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid} autoFocus />
-            <Button label="No" icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} />
+            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid} autoFocus />
+            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} />
         </>
     );
 
     const yesNoCancelFooter = (
         <>
-            <Button label="Yes" icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid} autoFocus />
-            <Button label="No" icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} />
-            <Button label="Cancel" icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} />
+            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid} autoFocus />
+            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} />
+            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} />
         </>
     );
 
