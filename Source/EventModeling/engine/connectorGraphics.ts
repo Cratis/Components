@@ -144,8 +144,8 @@ function drawConnector(
         width: isHovered ? CONNECTOR_HOVER_WIDTH : CONNECTOR_WIDTH,
     });
 
-    // Draw arrowhead at the end
-    drawArrowhead(graphics, cp2x, cp2y, toPoint.x, toPoint.y, isHovered);
+    // Draw arrowhead at the end - pass all curve points for accurate tangent calculation
+    drawArrowhead(graphics, fromPoint.x, fromPoint.y, cp1x, cp1y, cp2x, cp2y, toPoint.x, toPoint.y, isHovered);
 
     // Update hit area for better click detection
     const minX = Math.min(fromPoint.x, toPoint.x) - 10;
@@ -157,17 +157,24 @@ function drawConnector(
 
 function drawArrowhead(
     graphics: PIXI.Graphics,
-    cpX: number,
-    cpY: number,
+    startX: number,
+    startY: number,
+    cp1x: number,
+    cp1y: number,
+    cp2x: number,
+    cp2y: number,
     endX: number,
     endY: number,
     isHovered: boolean
 ): void {
     const arrowSize = 10;
     
-    // Calculate direction from control point to end
-    const dx = endX - cpX;
-    const dy = endY - cpY;
+    // Calculate the tangent at the end of the Bezier curve (t = 1)
+    // For cubic Bezier: B'(t) = 3(1-t)²(P1-P0) + 6(1-t)t(P2-P1) + 3t²(P3-P2)
+    // At t = 1: B'(1) = 3(P3 - P2)
+    // This gives us the direction the curve is heading at the endpoint
+    const dx = 3 * (endX - cp2x);
+    const dy = 3 * (endY - cp2y);
     const length = Math.sqrt(dx * dx + dy * dy);
     
     if (length === 0) return;
