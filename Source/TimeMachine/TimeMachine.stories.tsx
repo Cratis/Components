@@ -21,6 +21,7 @@ type Story = StoryObj<typeof TimeMachine>;
 const sampleVersions: Version[] = [
     {
         id: 'v1',
+        timestamp: new Date('2024-02-10T08:00:00'),
         label: 'Version 1 - Initial State',
         content: (
             <Properties 
@@ -38,6 +39,7 @@ const sampleVersions: Version[] = [
     },
     {
         id: 'v2',
+        timestamp: new Date('2024-02-10T09:00:00'),
         label: 'Version 2 - User Activated',
         content: (
             <Properties 
@@ -53,7 +55,7 @@ const sampleVersions: Version[] = [
         ),
         events: [
             {
-                id: 'e1',
+                sequenceNumber: 1,
                 type: 'UserActivated',
                 occurred: new Date('2024-02-10T09:00:00'),
                 content: { userId: 'user-001', credits: 100 }
@@ -62,6 +64,7 @@ const sampleVersions: Version[] = [
     },
     {
         id: 'v3',
+        timestamp: new Date('2024-02-10T10:00:00'),
         label: 'Version 3 - Credits Added',
         content: (
             <Properties 
@@ -77,7 +80,7 @@ const sampleVersions: Version[] = [
         ),
         events: [
             {
-                id: 'e2',
+                sequenceNumber: 2,
                 type: 'CreditsAdded',
                 occurred: new Date('2024-02-10T10:00:00'),
                 content: { userId: 'user-001', amount: 400, newBalance: 500 }
@@ -86,6 +89,7 @@ const sampleVersions: Version[] = [
     },
     {
         id: 'v4',
+        timestamp: new Date('2024-02-10T11:00:00'),
         label: 'Version 4 - Promoted to Admin',
         content: (
             <Properties 
@@ -101,7 +105,7 @@ const sampleVersions: Version[] = [
         ),
         events: [
             {
-                id: 'e3',
+                sequenceNumber: 3,
                 type: 'RoleChanged',
                 occurred: new Date('2024-02-10T11:00:00'),
                 content: { userId: 'user-001', oldRole: 'user', newRole: 'admin' }

@@ -21,6 +21,7 @@ type Story = StoryObj<typeof ReadModelView>;
 const sampleVersions: Version[] = [
     {
         id: 'v1',
+        timestamp: new Date('2024-02-10T08:00:00'),
         label: 'v1 - Initial State',
         content: (
             <Properties 
@@ -37,6 +38,7 @@ const sampleVersions: Version[] = [
     },
     {
         id: 'v2',
+        timestamp: new Date('2024-02-10T09:00:00'),
         label: 'v2 - User Activated',
         content: (
             <Properties 
@@ -51,7 +53,7 @@ const sampleVersions: Version[] = [
         ),
         events: [
             {
-                id: 'e1',
+                sequenceNumber: 1,
                 type: 'UserActivated',
                 occurred: new Date('2024-02-10T09:00:00'),
                 content: { userId: 'user-001' }
@@ -60,6 +62,7 @@ const sampleVersions: Version[] = [
     },
     {
         id: 'v3',
+        timestamp: new Date('2024-02-10T10:00:00'),
         label: 'v3 - Role Changed',
         content: (
             <Properties 
@@ -74,7 +77,7 @@ const sampleVersions: Version[] = [
         ),
         events: [
             {
-                id: 'e2',
+                sequenceNumber: 2,
                 type: 'RoleChanged',
                 occurred: new Date('2024-02-10T10:00:00'),
                 content: { userId: 'user-001', oldRole: 'user', newRole: 'admin' }

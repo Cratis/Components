@@ -19,7 +19,7 @@ type Story = StoryObj<typeof EventsView>;
 
 const sampleEvents: Event[] = [
     {
-        id: '1',
+        sequenceNumber: 1,
         type: 'UserRegistered',
         occurred: new Date('2024-02-10T09:00:00'),
         content: {
@@ -30,7 +30,7 @@ const sampleEvents: Event[] = [
         }
     },
     {
-        id: '2',
+        sequenceNumber: 2,
         type: 'ProfileUpdated',
         occurred: new Date('2024-02-10T10:15:00'),
         content: {
@@ -41,7 +41,7 @@ const sampleEvents: Event[] = [
         }
     },
     {
-        id: '3',
+        sequenceNumber: 3,
         type: 'RoleChanged',
         occurred: new Date('2024-02-10T11:30:00'),
         content: {
@@ -51,7 +51,7 @@ const sampleEvents: Event[] = [
         }
     },
     {
-        id: '4',
+        sequenceNumber: 4,
         type: 'PasswordChanged',
         occurred: new Date('2024-02-10T12:45:00'),
         content: {
@@ -60,7 +60,7 @@ const sampleEvents: Event[] = [
         }
     },
     {
-        id: '5',
+        sequenceNumber: 5,
         type: 'EmailVerified',
         occurred: new Date('2024-02-10T13:00:00'),
         content: {
