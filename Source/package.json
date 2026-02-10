@@ -14,7 +14,6 @@
     "files": [
         "dist"
     ],
-    "type": "module",
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
     "types": "dist/esm/index.d.ts",
@@ -35,25 +34,35 @@
             "require": "./dist/cjs/CommandForm/index.js",
             "import": "./dist/esm/CommandForm/index.js"
         },
+        "./Common": {
+            "types": "./dist/esm/Common/index.d.ts",
+            "require": "./dist/cjs/Common/index.js",
+            "import": "./dist/esm/Common/index.js"
+        },
         "./DataPage": {
-            "types": "./dist/esm/DataPage/index.js",
+            "types": "./dist/esm/DataPage/index.d.ts",
             "require": "./dist/cjs/DataPage/index.js",
             "import": "./dist/esm/DataPage/index.js"
         },
-        "./dataTables": {
-            "types": "./dist/esm/dataTables/index.d.ts",
-            "require": "./dist/cjs/dataTables/index.js",
-            "import": "./dist/esm/dataTables/index.js"
+        "./DataTables": {
+            "types": "./dist/esm/DataTables/index.d.ts",
+            "require": "./dist/cjs/DataTables/index.js",
+            "import": "./dist/esm/DataTables/index.js"
         },
-        "./dialogs": {
-            "types": "./dist/esm/dialogs/index.d.ts",
-            "require": "./dist/cjs/dialogs/index.js",
-            "import": "./dist/esm/dialogs/index.js"
+        "./Dialogs": {
+            "types": "./dist/esm/Dialogs/index.d.ts",
+            "require": "./dist/cjs/Dialogs/index.js",
+            "import": "./dist/esm/Dialogs/index.js"
         },
-        "./DropDown": {
-            "types": "./dist/esm/DropDown/index.d.ts",
-            "require": "./dist/cjs/DropDown/index.js",
-            "import": "./dist/esm/DropDown/index.js"
+        "./Dropdown": {
+            "types": "./dist/esm/Dropdown/index.d.ts",
+            "require": "./dist/cjs/Dropdown/index.js",
+            "import": "./dist/esm/Dropdown/index.js"
+        },
+        "./EventModeling": {
+            "types": "./dist/esm/EventModeling/index.d.ts",
+            "require": "./dist/cjs/EventModeling/index.js",
+            "import": "./dist/esm/EventModeling/index.js"
         },
         "./PivotViewer": {
             "types": "./dist/esm/PivotViewer/index.d.ts",
@@ -77,7 +86,7 @@
         "test": "yarn g:test",
         "ci": "yarn g:ci",
         "up": "yarn g:up",
-        "storybook": "storybook dev -p 6006",
+        "dev": "storybook dev -p 6006",
         "build-storybook": "storybook build"
     },
     "devDependencies": {

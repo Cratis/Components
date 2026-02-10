@@ -4,6 +4,39 @@
 import typescript2 from 'rollup-plugin-typescript2';
 import commonjs from 'rollup-plugin-commonjs';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
+import { writeFileSync, mkdirSync } from 'fs';
+import { dirname, join } from 'path';
+
+/**
+ * Rollup plugin to generate package.json files in output directories
+ * This ensures proper module resolution for both CJS and ESM formats
+ */
+function generatePackageJson(cjsPath, esmPath) {
+    return {
+        name: 'generate-package-json',
+        buildEnd() {
+            // Create CJS package.json
+            const cjsDir = cjsPath;
+            mkdirSync(cjsDir, { recursive: true });
+            writeFileSync(
+                join(cjsDir, 'package.json'),
+                JSON.stringify({ type: 'commonjs' }, null, 2),
+                'utf-8'
+            );
+
+            // Create ESM package.json
+            const esmDir = esmPath;
+            mkdirSync(esmDir, { recursive: true });
+            writeFileSync(
+                join(esmDir, 'package.json'),
+                JSON.stringify({ type: 'module' }, null, 2),
+                'utf-8'
+            );
+
+            console.log('✓ Generated package.json files for CJS and ESM outputs');
+        }
+    };
+}
 
 export function rollup(cjsPath, esmPath, tsconfigPath, pkg) {
     return {
@@ -55,7 +88,8 @@ export function rollup(cjsPath, esmPath, tsconfigPath, pkg) {
                 tsconfigOverride: {
                     exclude: ["node_modules", "../node_modules", "for_*/**/*"]
                 }
-            })
+            }),
+            generatePackageJson(cjsPath, esmPath)
         ]
     };
 }

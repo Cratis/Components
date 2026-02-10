@@ -3,20 +3,24 @@
 
 import * as CommandDialog from './CommandDialog';
 import * as CommandForm from './CommandForm';
+import * as Common from './Common';
 import * as DataPage from './DataPage';
-import * as dataTables from './DataTables';
-import * as dialogs from './Dialogs';
+import * as DataTables from './DataTables';
+import * as Dialogs from './Dialogs';
 import * as Dropdown from './Dropdown';
+import * as EventModeling from './EventModeling';
 import * as PivotViewer from './PivotViewer';
 import * as TimeMachine from './TimeMachine';
 
 export {
     CommandDialog,
     CommandForm,
+    Common,
     DataPage,
-    dataTables,
-    dialogs,
+    DataTables,
+    Dialogs,
     Dropdown,
+    EventModeling,
     PivotViewer,
     TimeMachine,
 };
