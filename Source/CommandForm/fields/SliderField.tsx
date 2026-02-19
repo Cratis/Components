@@ -1,41 +1,34 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { Slider } from 'primereact/slider';
 import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '../asCommandFormField';
+import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
-interface RangeComponentProps extends WrappedFieldProps<number> {
+interface SliderFieldComponentProps extends WrappedFieldProps<number> {
     min?: number;
     max?: number;
     step?: number;
 }
 
-export const RangeField = asCommandFormField<RangeComponentProps>(
-    (props) => {
-        const min = props.min ?? 0;
-        const max = props.max ?? 100;
-        const step = props.step ?? 1;
-
-        return (
-            <div className="w-full flex items-center gap-4 p-3 border border-gray-300 rounded-md">
-                <input
-                    type="range"
-                    value={props.value}
-                    onChange={props.onChange}
-                    min={min}
-                    max={max}
-                    step={step}
-                    required={props.required}
-                    className="flex-1"
-                />
-                <span className="min-w-[3rem] text-right font-semibold">
-                    {props.value}
-                </span>
+export const SliderField = asCommandFormField<SliderFieldComponentProps>(
+    (props) => (
+        <div className="w-full">
+            <Slider
+                value={props.value}
+                onChange={(e) => props.onChange(e.value)}
+                min={props.min ?? 0}
+                max={props.max ?? 100}
+                step={props.step ?? 1}
+                className="w-full"
+            />
+            <div className="text-center mt-2">
+                <span className="font-semibold">{props.value}</span>
             </div>
-        );
-    },
+        </div>
+    ),
     {
         defaultValue: 0,
-        extractValue: (e: React.ChangeEvent<HTMLInputElement>) => parseFloat(e.target.value)
+        extractValue: (e: unknown) => (typeof e === 'number' ? e : 0)
     }
 );

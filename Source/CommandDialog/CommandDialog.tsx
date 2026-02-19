@@ -6,8 +6,14 @@ import { Constructor } from '@cratis/fundamentals';
 import { DialogButtons } from '@cratis/arc.react/dialogs';
 import { Dialog } from '../Dialogs/Dialog';
 import React, { createContext, useContext } from 'react';
-import { CommandForm, useCommandFormContext, BeforeExecuteCallback } from '../CommandForm/CommandForm';
-import { useCommandInstance } from '../CommandForm/CommandForm';
+import { 
+    CommandForm, 
+    useCommandFormContext, 
+    useCommandInstance
+} from '@cratis/arc.react/commands';
+
+// Local type definitions
+export type BeforeExecuteCallback<TCommand> = (values: TCommand) => TCommand;
 
 export type FieldValidator<TCommand> = (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => string | undefined;
 export type FieldChangeCallback<TCommand> = (command: TCommand, fieldName: string, oldValue: unknown, newValue: unknown) => void;
@@ -54,19 +60,19 @@ export const useCommandDialogContext = <TCommand = unknown,>() => {
     return context as CommandDialogContextValue<TCommand>;
 };
 
-const CommandDialogWrapper = <TCommand extends object>({ 
-    header, 
-    visible, 
-    width, 
-    confirmLabel, 
-    cancelLabel, 
-    onConfirm, 
+const CommandDialogWrapper = <TCommand extends object>({
+    header,
+    visible,
+    width,
+    confirmLabel,
+    cancelLabel,
+    onConfirm,
     onCancel,
     onBeforeExecute,
-    children 
-}: { 
-    header: string; 
-    visible: boolean; 
+    children
+}: {
+    header: string;
+    visible: boolean;
     width: string;
     confirmLabel: string;
     cancelLabel: string;
@@ -161,7 +167,13 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
 
     return (
         <CommandDialogContext.Provider value={contextValue}>
-            <CommandForm command={command} initialValues={initialValues} currentValues={currentValues} onFieldValidate={onFieldValidate} onFieldChange={onFieldChange} onBeforeExecute={onBeforeExecute}>
+            <CommandForm
+                command={command}
+                initialValues={initialValues}
+                currentValues={currentValues}
+                onFieldValidate={onFieldValidate}
+                onFieldChange={onFieldChange}
+                onBeforeExecute={onBeforeExecute}>
                 <CommandDialogWrapper
                     header={header}
                     visible={visible}

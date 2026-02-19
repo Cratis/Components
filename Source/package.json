@@ -34,6 +34,11 @@
             "require": "./dist/cjs/CommandForm/index.js",
             "import": "./dist/esm/CommandForm/index.js"
         },
+        "./CommandForm/fields": {
+            "types": "./dist/esm/CommandForm/fields/index.d.ts",
+            "require": "./dist/cjs/CommandForm/fields/index.js",
+            "import": "./dist/esm/CommandForm/fields/index.js"
+        },
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
             "require": "./dist/cjs/Common/index.js",
@@ -90,11 +95,11 @@
         "build-storybook": "storybook build"
     },
     "dependencies": {
-        "@cratis/arc": "^19.0.6",
-        "@cratis/arc.react": "^19.0.6",
-        "@cratis/arc.vite": "^19.0.6",
+        "@cratis/arc": "^19.3.3",
+        "@cratis/arc.react": "^19.3.3",
+        "@cratis/arc.vite": "^19.3.3",
         "allotment": "1.20.5",
-        "framer-motion": "12.34.0",
+        "framer-motion": "12.34.2",
         "pixi.js": "^8.16.0",
         "primeicons": "7.0.0",
         "primereact": "10.9.7",

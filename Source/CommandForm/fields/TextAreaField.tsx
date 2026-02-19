@@ -3,7 +3,7 @@
 
 import { InputTextarea } from 'primereact/inputtextarea';
 import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '../asCommandFormField';
+import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
 interface TextAreaFieldComponentProps extends WrappedFieldProps<string> {
     placeholder?: string;

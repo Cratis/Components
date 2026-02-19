@@ -3,7 +3,7 @@
 
 import { Checkbox } from 'primereact/checkbox';
 import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '../asCommandFormField';
+import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
 interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
     label?: string;

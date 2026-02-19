@@ -5,5 +5,5 @@ export * from './InputTextField';
 export * from './NumberField';
 export * from './CheckboxField';
 export * from './TextAreaField';
-export { SelectField } from './DropdownField';
-export { RangeField } from './SliderField';
+export * from './DropdownField';
+export * from './SliderField';

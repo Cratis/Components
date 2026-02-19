@@ -3,7 +3,7 @@
 
 import { InputNumber } from 'primereact/inputnumber';
 import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '../asCommandFormField';
+import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
 interface NumberFieldComponentProps extends WrappedFieldProps<number> {
     placeholder?: string;
