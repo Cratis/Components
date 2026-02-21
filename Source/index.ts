@@ -9,7 +9,10 @@ import * as DataTables from './DataTables';
 import * as Dialogs from './Dialogs';
 import * as Dropdown from './Dropdown';
 import * as EventModeling from './EventModeling';
+import * as ObjectContentEditor from './ObjectContentEditor';
+import * as ObjectNavigationalBar from './ObjectNavigationalBar';
 import * as PivotViewer from './PivotViewer';
+import * as SchemaEditor from './SchemaEditor';
 import * as TimeMachine from './TimeMachine';
 
 export {
@@ -21,6 +24,10 @@ export {
     Dialogs,
     Dropdown,
     EventModeling,
+    ObjectContentEditor,
+    ObjectNavigationalBar,
     PivotViewer,
+    SchemaEditor,
     TimeMachine,
 };
+
