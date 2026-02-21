@@ -117,15 +117,6 @@ const CommandDialogWrapper = <TCommand extends object>({
 };
 
 const CommandDialogFieldsWrapper = (props: { children: React.ReactNode }) => {
-    React.Children.forEach(props.children, child => {
-        if (React.isValidElement(child)) {
-            const component = child.type as React.ComponentType<unknown>;
-            if (component.displayName !== 'CommandFormField') {
-                throw new Error(`Only CommandFormField components are allowed as children of CommandDialog.Fields. Got: ${component.displayName || component.name || 'Unknown'}`);
-            }
-        }
-    });
-
     return (
         <CommandForm.Fields>
             {props.children}
