@@ -272,5 +272,5 @@ const statusBodyTemplate = (rowData) => {
 4. **Limit columns**: Too many columns hurt usability
 5. **Make important columns first**: Put key information on the left
 6. **Use appropriate widths**: Don't let long content break layout
-  7. **Filter strategically**: Add filters to commonly searched fields
+7. **Filter strategically**: Add filters to commonly searched fields
 8. **Sort by default**: Consider default sorting on key column

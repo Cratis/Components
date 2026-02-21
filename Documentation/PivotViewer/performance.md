@@ -12,6 +12,7 @@ Filtering and grouping operations run in a background Web Worker thread:
 - **Worker thread**: Processes data filtering and grouping
 
 Benefits:
+
 - UI remains responsive during heavy computations
 - No frame drops or stuttering
 - Smooth interactions even with 50,000+ items
@@ -20,7 +21,7 @@ Benefits:
 
 Data is stored in columnar format for efficient filtering:
 
-```
+```javascript
 Traditional (row-based):
 [{id: 1, name: 'A', price: 10}, {id: 2, name: 'B', price: 20}, ...]
 
@@ -33,6 +34,7 @@ Columnar:
 ```
 
 Benefits:
+
 - Faster filtering (only process relevant columns)
 - Better cache utilization
 - Lower memory overhead
@@ -52,6 +54,7 @@ Only visible cards are rendered to the DOM:
 Keep dimension and filter accessors simple:
 
 **Good:**
+
 ```typescript
 {
     key: 'status',
@@ -60,6 +63,7 @@ Keep dimension and filter accessors simple:
 ```
 
 **Avoid:**
+
 ```typescript
 {
     key: 'status',
@@ -127,6 +131,7 @@ For card images:
 Avoid creating new objects in render:
 
 **Avoid:**
+
 ```typescript
 <PivotViewer
     dimensions={[{ key: 'status', label: 'Status', accessor: i => i.status }]}
@@ -135,6 +140,7 @@ Avoid creating new objects in render:
 ```
 
 **Better:**
+
 ```typescript
 const dimensions = useMemo(() => [
     { key: 'status', label: 'Status', accessor: i => i.status }
@@ -154,7 +160,7 @@ Typical performance on modern hardware:
 | 50,000 items | < 2s         | < 200ms       | < 500ms          |
 | 100,000 items| < 5s         | < 500ms       | < 1s             |
 
-*Note: Performance varies based on data complexity and device*
+**Note:** Performance varies based on data complexity and device
 
 ## Monitoring Performance
 
@@ -168,7 +174,7 @@ Typical performance on modern hardware:
 
 The component logs warnings for performance issues:
 
-```
+```text
 PivotViewer: Large dataset detected (100,000 items).
 Consider implementing pagination or virtual scrolling.
 ```
@@ -210,7 +216,7 @@ PivotViewer stores:
 
 Approximate memory usage:
 
-```
+```text
 BaseMemory = DataSize × 3
 (original + columnar + filter indexes)
 

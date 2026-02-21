@@ -207,11 +207,13 @@ function RetryErrorBoundary({ children }) {
 ## What Errors Are Caught
 
 ErrorBoundary catches:
+
 - Rendering errors
 - Lifecycle method errors
 - Constructor errors
 
 ErrorBoundary does NOT catch:
+
 - Event handler errors (use try-catch)
 - Asynchronous errors (use try-catch or .catch())
 - Server-side rendering errors

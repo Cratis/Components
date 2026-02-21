@@ -15,6 +15,7 @@ Text data of any length.
 **Use for**: Names, descriptions, text fields, IDs
 
 **Common formats**:
+
 - `date`, `time`, `date-time` - Temporal data
 - `email` - Email addresses
 - `uri` - URLs and URIs
@@ -33,6 +34,7 @@ Numeric values, including decimals.
 **Use for**: Prices, measurements, percentages, coordinates
 
 **Validation options**:
+
 - `minimum` / `maximum` - Range constraints
 - `multipleOf` - Must be multiple of value
 
@@ -98,6 +100,7 @@ Nested objects with their own properties.
 **Use for**: Complex structured data, nested entities
 
 **Additional options**:
+
 - `properties` - Define nested properties
 - `required` - List of required property names
 - `additionalProperties` - Allow/disallow extra properties
@@ -116,6 +119,7 @@ Lists of items, all of the same type.
 **Use for**: Lists, collections, tags, multiple selections
 
 **Validation options**:
+
 - `items` - Schema for array elements
 - `minItems` / `maxItems` - Length constraints
 - `uniqueItems` - Require unique elements
@@ -155,6 +159,7 @@ Often combined with other types:
 ### Date and Time
 
 #### date
+
 Full date in ISO 8601 format: `YYYY-MM-DD`
 
 ```typescript
@@ -163,6 +168,7 @@ Full date in ISO 8601 format: `YYYY-MM-DD`
 ```
 
 #### time
+
 Time of day: `HH:MM:SS` or `HH:MM:SS.sss`
 
 ```typescript
@@ -171,6 +177,7 @@ Time of day: `HH:MM:SS` or `HH:MM:SS.sss`
 ```
 
 #### date-time
+
 Combined date and time with timezone: ISO 8601
 
 ```typescript
@@ -181,6 +188,7 @@ Combined date and time with timezone: ISO 8601
 ### Identifiers
 
 #### email
+
 Email address format
 
 ```typescript
@@ -189,6 +197,7 @@ Email address format
 ```
 
 #### uuid
+
 UUID/GUID identifier
 
 ```typescript
@@ -197,6 +206,7 @@ UUID/GUID identifier
 ```
 
 #### uri
+
 Uniform Resource Identifier
 
 ```typescript
@@ -205,6 +215,7 @@ Uniform Resource Identifier
 ```
 
 #### hostname
+
 DNS hostname
 
 ```typescript
@@ -215,6 +226,7 @@ DNS hostname
 ### Network
 
 #### ipv4
+
 IPv4 address
 
 ```typescript
@@ -223,6 +235,7 @@ IPv4 address
 ```
 
 #### ipv6
+
 IPv6 address
 
 ```typescript
@@ -233,6 +246,7 @@ IPv6 address
 ### Other
 
 #### json-pointer
+
 JSON Pointer reference
 
 ```typescript
@@ -241,6 +255,7 @@ JSON Pointer reference
 ```
 
 #### regex
+
 Regular expression pattern
 
 ```typescript

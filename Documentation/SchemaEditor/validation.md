@@ -77,6 +77,7 @@ Formats only apply to string types:
 ```
 
 SchemaEditor automatically:
+
 - Clears format when changing from string to another type
 - Enables format dropdown only for string types
 
@@ -154,6 +155,7 @@ Arrays should have `items` schema defined:
 ```
 
 SchemaEditor may:
+
 - Prompt for items schema when creating array type
 - Default to `{ type: 'string' }` for items
 - Show warning for array without items definition
@@ -180,6 +182,7 @@ For `number` and `integer` types:
 ```
 
 Validation checks:
+
 - `minimum` ≤ `maximum`
 - `multipleOf` > 0
 - `exclusiveMinimum` < `exclusiveMaximum`
@@ -200,6 +203,7 @@ For `string` type:
 ```
 
 Validation checks:
+
 - `minLength` ≥ 0
 - `maxLength` ≥ `minLength`
 - `pattern` is valid regex
@@ -221,6 +225,7 @@ For `array` type:
 ```
 
 Validation checks:
+
 - `minItems` ≥ 0
 - `maxItems` ≥ `minItems`
 - `items` schema is valid
@@ -251,19 +256,25 @@ As you edit, SchemaEditor validates:
 Types of validation feedback:
 
 ### Error (Red)
+
 Prevents saving, must be fixed:
+
 - Duplicate property name
 - Empty property name
 - Invalid schema structure
 
 ### Warning (Yellow)
+
 Can save but may cause issues:
+
 - Property name with special characters
 - Missing items schema for array
 - No properties defined for object
 
 ### Info (Blue)
+
 Helpful suggestions:
+
 - Recommended format for data type
 - Common patterns for validation
 - Best practices

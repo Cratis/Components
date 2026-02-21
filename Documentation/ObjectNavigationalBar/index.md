@@ -55,17 +55,20 @@ function MyNavigator() {
 ## Visual Display
 
 ### Empty Path (Root)
-```
+
+```text
 [←] Root
 ```
 
 ### One Level Deep
-```
+
+```text
 [←] Root > profile
 ```
 
 ### Multiple Levels
-```
+
+```text
 [←] Root > profile > address > city
 ```
 
@@ -74,6 +77,7 @@ function MyNavigator() {
 ### Back Button
 
 The back arrow button `[←]`:
+
 - Goes up one level
 - Disabled when at root
 - Calls `onNavigate` with `index = navigationPath.length - 1`
@@ -81,6 +85,7 @@ The back arrow button `[←]`:
 ### Breadcrumb Segments
 
 Each segment in the path:
+
 - Root is always shown
 - Intermediate segments are clickable and underlined
 - Current segment (last) is not underlined

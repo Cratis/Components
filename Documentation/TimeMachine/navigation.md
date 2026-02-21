@@ -6,7 +6,7 @@
 
 Click any point on the timeline to jump to that version:
 
-```
+```text
 ●━━━●━━━━━●━━━━━━━●
 v1  v2    v3      v4 (current)
 ```
@@ -43,7 +43,7 @@ Hover over timeline points to preview a version without selecting it. The previe
 
 Navigation arrows are available:
 
-```
+```text
 [← Previous]  Timeline  [Next →]
 ```
 
@@ -65,7 +65,7 @@ Navigation arrows are available:
 
 The view switcher shows current mode:
 
-```
+```text
 [Read Model] | Events
 ```
 

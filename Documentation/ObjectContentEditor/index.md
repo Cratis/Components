@@ -74,7 +74,7 @@ function MyObjectViewer() {
 
 Properties are rendered in a card format with icons indicating type:
 
-```
+```text
 📝 name: John Doe
 📧 email: john@example.com
 🔢 age: 30
@@ -112,7 +112,7 @@ Based on JSON schema format:
 
 The ObjectNavigationalBar shows current location:
 
-```
+```text
 Root > profile > address > city
 ```
 

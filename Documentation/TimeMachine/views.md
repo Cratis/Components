@@ -35,7 +35,7 @@ When hovering over a timeline point or transitioning between versions, changed p
 
 Click object or array properties to drill down:
 
-```
+```text
 Properties:
   name: "Product A"
   price: 89.99
@@ -44,7 +44,7 @@ Properties:
 
 Navigating into metadata:
 
-```
+```text
 metadata:
   created: "2024-01-01"
   updated: "2024-01-10"
@@ -57,13 +57,13 @@ Use breadcrumb navigation to return to parent level.
 
 Arrays show item count and are expandable:
 
-```
+```text
 tags: [Array of 3] →
 ```
 
 Expanded view shows array items:
 
-```
+```text
 tags:
   [0]: "electronics"
   [1]: "sale"
@@ -83,7 +83,7 @@ Shows all events across all versions in chronological order.
 
 ### Event List
 
-```
+```text
 Event Type          Timestamp
 ─────────────────  ──────────────
 ProductCreated     2024-01-01 10:00
@@ -96,7 +96,7 @@ StockUpdated       2024-01-12 16:45
 
 Click any event to expand its full payload:
 
-```
+```json
 PriceUpdated - 2024-01-05 14:30:00
 
 Event Data:
@@ -129,7 +129,7 @@ Events are displayed chronologically, making it easy to:
 
 Related events are grouped or linked:
 
-```
+```text
 ProductCreated
   └─ PriceSet
   └─ CategoryAssigned
@@ -140,7 +140,7 @@ ProductCreated
 
 Toggle between views using the switcher:
 
-```
+```text
 [📦 Read Model] | [📋 Events]
 ```
 
@@ -162,7 +162,7 @@ Toggle between views using the switcher:
 
 (If implemented) Compare two versions side-by-side:
 
-```
+```text
 Version 1 (2024-01-01)  |  Version 3 (2024-01-10)
 ─────────────────────── | ───────────────────────
 name: Product A         |  name: Product A

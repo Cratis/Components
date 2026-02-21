@@ -32,15 +32,19 @@ import { CommandDialog, DataPage, PivotViewer } from '@cratis/components';
 ## Component Categories
 
 ### Command Components
+
 Components for handling command execution and user interactions.
 
 ### Data Components
+
 Components for displaying and interacting with data from queries.
 
 ### Common Components
+
 Reusable UI elements for building consistent layouts.
 
 ### Specialized Components
+
 Advanced components for specific use cases like schema editing and time-based data exploration.
 
 ## Development

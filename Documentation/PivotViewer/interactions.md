@@ -38,7 +38,7 @@ Click the filter icon in the toolbar to open the filter panel.
 
 Check or uncheck values to include/exclude them:
 
-```
+```text
 Status:
 ☑ Todo
 ☑ In Progress
@@ -49,7 +49,7 @@ Status:
 
 Adjust sliders to set minimum and maximum values:
 
-```
+```text
 Price: [$0 ━━●━━━━━━━━ $1000]
 ```
 
@@ -57,7 +57,7 @@ Price: [$0 ━━●━━━━━━━━ $1000]
 
 Type in the search box to filter by text across specified fields:
 
-```
+```text
 Search: [react components____]
 ```
 
@@ -70,7 +70,7 @@ Search: [react components____]
 
 Click dimension labels (axis labels) at the top to change grouping:
 
-```
+```text
 [Status] | Priority | Assignee | Date
 ```
 

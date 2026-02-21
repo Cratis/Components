@@ -15,6 +15,7 @@ Click the "Add Property" button or row to create a new property:
 ```
 
 New properties default to:
+
 - Name: empty (must be filled)
 - Type: `string`
 - Format: none
@@ -30,6 +31,7 @@ Click the name cell to edit:
 4. Press Escape to cancel
 
 Property names must:
+
 - Be unique within the schema
 - Follow JavaScript identifier rules (alphanumeric, underscores)
 - Not be empty
@@ -68,11 +70,13 @@ Use the type dropdown to select:
 For `string` types, select a format to provide hints about expected value patterns:
 
 ### Date and Time Formats
+
 - `date` - Full date (2024-01-15)
 - `time` - Time of day (14:30:00)
 - `date-time` - Combined date and time (2024-01-15T14:30:00Z)
 
 ### Identifier Formats
+
 - `uuid` - UUID/GUID strings
 - `uri` - URIs and URLs
 - `email` - Email addresses
@@ -80,6 +84,7 @@ For `string` types, select a format to provide hints about expected value patter
 - `ipv4` / `ipv6` - IP addresses
 
 ### Other Formats
+
 - `json-pointer` - JSON pointer references
 - `regex` - Regular expression patterns
 
@@ -100,6 +105,7 @@ For `string` types, select a format to provide hints about expected value patter
 Click the checkbox in the Required column to mark a property as required or optional.
 
 Required properties:
+
 - Must be present in valid data
 - Are listed in the schema's `required` array
 - Show a checkmark in the table
@@ -120,6 +126,7 @@ Required properties:
 Click the delete button (trash icon) on any row to remove that property.
 
 A confirmation may appear for:
+
 - Properties marked as required
 - Properties with nested schemas
 - Properties used in dependencies
@@ -187,6 +194,7 @@ Disable editing to display schema structure without allowing changes:
 ```
 
 In read-only mode:
+
 - No add/delete buttons
 - Cells are not editable
 - Displays current schema structure

@@ -10,11 +10,13 @@ The DataTables module provides specialized table components for displaying data 
 ## When to Use
 
 Use DataTableForQuery when:
+
 - You have standard query results
 - You need server-side pagination
 - Data doesn't need real-time updates
 
 Use DataTableForObservableQuery when:
+
 - You need real-time data synchronization
 - Data changes frequently
 - You want automatic UI updates
