@@ -1,0 +1,6 @@
+- name: Overview
+  href: index.md
+- name: Menu Items
+  href: menu-items.md
+- name: Details Panel
+  href: details-panel.md

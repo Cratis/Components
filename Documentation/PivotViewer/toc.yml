@@ -1,0 +1,12 @@
+- name: Overview
+  href: index.md
+- name: Configuration
+  href: configuration.md
+- name: Dimensions and Filters
+  href: dimensions-and-filters.md
+- name: Renderers
+  href: renderers.md
+- name: Interactions
+  href: interactions.md
+- name: Performance
+  href: performance.md
