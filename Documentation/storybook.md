@@ -1,4 +1,4 @@
 ---
 storybook:
-  path: /Source
+  path: /Components/Source
 ---
