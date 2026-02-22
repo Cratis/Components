@@ -306,3 +306,4 @@ vite.*.js
 vite*.map
 
 .rollup.cache
+storybook-static

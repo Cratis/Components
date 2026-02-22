@@ -30,12 +30,14 @@ interface Person {
 class PersonsQuery extends QueryFor<Person, object> {
     readonly route = '/api/persons';
     readonly routeTemplate = '/api/persons';
-    readonly defaultValue: Person[] = [
-        { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin' },
-        { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'User' },
-        { id: 3, name: 'Charlie Brown', email: 'charlie@example.com', role: 'User' },
-        { id: 4, name: 'Diana Prince', email: 'diana@example.com', role: 'Manager' },
-    ];
+    readonly defaultValue: Person = { id: 0, name: '', email: '', role: '' };
+    readonly parameterDescriptors = [];
+    get requiredRequestParameters() {
+        return [];
+    }
+    constructor() {
+        super(Object, false);
+    }
 }
 
 const PersonDetails = ({ item }: { item: Person }) => {

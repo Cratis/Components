@@ -29,16 +29,14 @@ interface Task {
 class TasksQuery extends ObservableQueryFor<Task, object> {
     readonly route = '/api/tasks';
     readonly routeTemplate = '/api/tasks';
-    readonly defaultValue: Task[] = [
-        { id: 1, title: 'Implement login feature', status: 'in-progress', priority: 'high', assignee: 'Alice' },
-        { id: 2, title: 'Fix navigation bug', status: 'todo', priority: 'medium', assignee: 'Bob' },
-        { id: 3, title: 'Update documentation', status: 'done', priority: 'low', assignee: 'Charlie' },
-        { id: 4, title: 'Code review PR #123', status: 'todo', priority: 'high', assignee: 'Alice' },
-        { id: 5, title: 'Refactor user service', status: 'in-progress', priority: 'medium', assignee: 'Bob' },
-        { id: 6, title: 'Write unit tests', status: 'todo', priority: 'high', assignee: 'Charlie' },
-        { id: 7, title: 'Deploy to staging', status: 'done', priority: 'high', assignee: 'Alice' },
-        { id: 8, title: 'Update dependencies', status: 'todo', priority: 'low', assignee: 'Bob' },
-    ];
+    readonly defaultValue: Task = { id: 0, title: '', status: 'todo', priority: 'low', assignee: '' };
+    readonly parameterDescriptors = [];
+    get requiredRequestParameters() {
+        return [];
+    }
+    constructor() {
+        super(Object, false);
+    }
 }
 
 const getStatusColor = (status: string) => {

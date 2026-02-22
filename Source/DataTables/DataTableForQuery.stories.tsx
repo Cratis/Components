@@ -29,14 +29,14 @@ interface Product {
 class ProductsQuery extends QueryFor<Product, object> {
     readonly route = '/api/products';
     readonly routeTemplate = '/api/products';
-    readonly defaultValue: Product[] = [
-        { id: 1, name: 'Laptop', category: 'Electronics', price: 999.99, inStock: true },
-        { id: 2, name: 'Mouse', category: 'Electronics', price: 29.99, inStock: true },
-        { id: 3, name: 'Keyboard', category: 'Electronics', price: 79.99, inStock: false },
-        { id: 4, name: 'Monitor', category: 'Electronics', price: 299.99, inStock: true },
-        { id: 5, name: 'Desk Chair', category: 'Furniture', price: 199.99, inStock: true },
-        { id: 6, name: 'Desk Lamp', category: 'Furniture', price: 49.99, inStock: false },
-    ];
+    readonly defaultValue: Product = { id: 0, name: '', category: '', price: 0, inStock: false };
+    readonly parameterDescriptors = [];
+    get requiredRequestParameters() {
+        return [];
+    }
+    constructor() {
+        super(Object, false);
+    }
 }
 
 export const Default: Story = {

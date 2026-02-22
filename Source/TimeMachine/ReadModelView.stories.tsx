@@ -88,7 +88,7 @@ const sampleVersions: Version[] = [
 
 const ReadModelViewWrapper = ({ versions }: { versions: Version[] }) => {
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [hoveredIndex] = useState<number | null>(null);
     const [isHoveringCard, setIsHoveringCard] = useState(false);
 
     return (
