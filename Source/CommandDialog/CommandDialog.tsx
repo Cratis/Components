@@ -8,9 +8,12 @@ import { Dialog } from '../Dialogs/Dialog';
 import React, { createContext, useContext } from 'react';
 import { 
     CommandForm, 
+    CommandFormFieldWrapper,
     useCommandFormContext, 
     useCommandInstance
 } from '@cratis/arc.react/commands';
+
+type CommandFormProps = React.ComponentProps<typeof CommandForm>;
 
 // Local type definitions
 export type BeforeExecuteCallback<TCommand> = (values: TCommand) => TCommand;
@@ -36,6 +39,19 @@ export interface CommandDialogProps<TCommand, TResponse = object> {
     children?: React.ReactNode;
     style?: React.CSSProperties;
     width?: string;
+    showTitles?: boolean;
+    showErrors?: boolean;
+    validateOn?: CommandFormProps['validateOn'];
+    validateAllFieldsOnChange?: boolean;
+    validateOnInit?: boolean;
+    autoServerValidate?: boolean;
+    autoServerValidateThrottle?: number;
+    fieldContainerComponent?: CommandFormProps['fieldContainerComponent'];
+    fieldDecoratorComponent?: CommandFormProps['fieldDecoratorComponent'];
+    errorDisplayComponent?: CommandFormProps['errorDisplayComponent'];
+    tooltipComponent?: CommandFormProps['tooltipComponent'];
+    errorClassName?: string;
+    iconAddonClassName?: string;
 }
 
 interface CommandDialogContextValue<TCommand = unknown> {
@@ -81,8 +97,16 @@ const CommandDialogWrapper = <TCommand extends object>({
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     children: React.ReactNode;
 }) => {
-    const { isValid, setCommandValues, setCommandResult } = useCommandFormContext<TCommand>();
+    const { setCommandValues, setCommandResult, commandResult } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
+
+    // Compute real dialog validity from commandResult.
+    // fieldValidities in CommandForm is never populated by field renderers, so
+    // the context's isValid is always vacuously true. We derive validity from
+    // the actual validation result instead:
+    // - No result yet (before any validate call) → enabled (allow first submit)
+    // - commandResult.isValid → reflects actual validation state
+    const isDialogValid = !commandResult || commandResult.isValid;
 
     const handleConfirm = async () => {
         if (onBeforeExecute) {
@@ -99,6 +123,29 @@ const CommandDialogWrapper = <TCommand extends object>({
         }
     };
 
+    const processChildren = (nodes: React.ReactNode): React.ReactNode => {
+        return React.Children.map(nodes, (child) => {
+            if (!React.isValidElement(child)) return child;
+
+            const component = child.type as React.ComponentType<unknown>;
+            if (component.displayName === 'CommandFormField') {
+                type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
+                return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
+            }
+
+            const childProps = child.props as Record<string, unknown>;
+            if (childProps.children != null) {
+                return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+                    children: processChildren(childProps.children as React.ReactNode)
+                });
+            }
+
+            return child;
+        });
+    };
+
+    const processedChildren = processChildren(children);
+
     return (
         <Dialog
             title={header}
@@ -109,9 +156,11 @@ const CommandDialogWrapper = <TCommand extends object>({
             buttons={DialogButtons.OkCancel}
             okLabel={confirmLabel}
             cancelLabel={cancelLabel}
-            isValid={isValid}
+            isValid={isDialogValid}
         >
-            {children}
+            <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                {processedChildren}
+            </div>
         </Dialog>
     );
 };
@@ -141,7 +190,20 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         onFieldChange,
         onBeforeExecute,
         children,
-        width = '50vw'
+        width = '50vw',
+        showTitles,
+        showErrors,
+        validateOn,
+        validateAllFieldsOnChange,
+        validateOnInit,
+        autoServerValidate,
+        autoServerValidateThrottle,
+        fieldContainerComponent,
+        fieldDecoratorComponent,
+        errorDisplayComponent,
+        tooltipComponent,
+        errorClassName,
+        iconAddonClassName
     } = props;
 
     const contextValue: CommandDialogContextValue<TCommand> = {
@@ -164,7 +226,20 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 currentValues={currentValues}
                 onFieldValidate={onFieldValidate}
                 onFieldChange={onFieldChange}
-                onBeforeExecute={onBeforeExecute}>
+                onBeforeExecute={onBeforeExecute}
+                showTitles={showTitles}
+                showErrors={showErrors}
+                validateOn={validateOn}
+                validateAllFieldsOnChange={validateAllFieldsOnChange}
+                validateOnInit={validateOnInit}
+                autoServerValidate={autoServerValidate}
+                autoServerValidateThrottle={autoServerValidateThrottle}
+                fieldContainerComponent={fieldContainerComponent}
+                fieldDecoratorComponent={fieldDecoratorComponent}
+                errorDisplayComponent={errorDisplayComponent}
+                tooltipComponent={tooltipComponent}
+                errorClassName={errorClassName}
+                iconAddonClassName={iconAddonClassName}>
                 <CommandDialogWrapper
                     header={header}
                     visible={visible}
@@ -182,6 +257,12 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
     );
 };
 
+const CommandDialogColumnWrapper = ({ children }: { children: React.ReactNode }) => (
+    <CommandForm.Column>{children}</CommandForm.Column>
+);
+CommandDialogColumnWrapper.displayName = 'CommandFormColumn';
+
 CommandDialogComponent.Fields = CommandDialogFieldsWrapper;
+CommandDialogComponent.Column = CommandDialogColumnWrapper;
 
 export const CommandDialog = CommandDialogComponent;

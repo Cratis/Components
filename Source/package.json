@@ -95,11 +95,11 @@
         "build-storybook": "storybook build"
     },
     "dependencies": {
-        "@cratis/arc": "^19.3.3",
-        "@cratis/arc.react": "^19.3.3",
-        "@cratis/arc.vite": "^19.3.3",
+        "@cratis/arc": "^19.6.1",
+        "@cratis/arc.react": "^19.6.1",
+        "@cratis/arc.vite": "^19.6.1",
         "allotment": "1.20.5",
-        "framer-motion": "12.34.2",
+        "framer-motion": "12.34.3",
         "pixi.js": "^8.16.0",
         "primeicons": "7.0.0",
         "primereact": "10.9.7",
@@ -108,14 +108,14 @@
         "react-dom": "19.2.4",
         "react-icons": "5.5.0",
         "react-leaflet": "^5.0.0",
-        "react-router-dom": "7.13.0",
+        "react-router-dom": "7.13.1",
         "reflect-metadata": "0.2.2",
         "ts-deepmerge": "7.0.3",
         "tsyringe": "4.10.0",
         "usehooks-ts": "3.1.1"
     },
     "devDependencies": {
-        "storybook": "^10.2.8"
+        "storybook": "^10.2.12"
     },
     "peerDependencies": {
         "react": "^18.0.0 || ^19.0.0"
