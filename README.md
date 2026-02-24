@@ -2,7 +2,7 @@
 
 ## Packages
 
-[![NPM](https://img.shields.io/npm/v/@cratis/arc?label=@cratis/arc&logo=npm)](https://www.npmjs.com/package/@cratis/arc)
+[![NPM](https://img.shields.io/npm/v/@cratis/arc?label=@cratis/components&logo=npm)](https://www.npmjs.com/package/@cratis/components)
 
 ## Builds
 
