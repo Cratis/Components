@@ -6,6 +6,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import * as faIcons from 'react-icons/fa6';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
 import { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
+import { getValueAtPath } from './objectHelpers';
 
 export interface ObjectContentEditorProps {
     object: Json;
@@ -15,19 +16,6 @@ export interface ObjectContentEditorProps {
 
 export const ObjectContentEditor = ({ object, timestamp, schema }: ObjectContentEditorProps) => {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
-
-    const getValueAtPath = useCallback((data: Json, path: string[]): Json | null => {
-        let current: Json = data;
-        for (const segment of path) {
-            if (current === null || current === undefined) return null;
-            if (typeof current === 'object' && !Array.isArray(current) && current !== null) {
-                current = (current as { [key: string]: Json })[segment];
-            } else {
-                return null;
-            }
-        }
-        return current;
-    }, []);
 
     const navigateToProperty = useCallback((key: string) => {
         setNavigationPath([...navigationPath, key]);

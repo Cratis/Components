@@ -10,8 +10,9 @@ import { Tooltip } from 'primereact/tooltip';
 import * as faIcons from 'react-icons/fa6';
 import { NameCell } from './NameCell';
 import { TypeCell } from './TypeCell';
-import { JsonSchema, JsonSchemaProperty, NavigationItem } from '../types/JsonSchema';
+import { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
+import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
 import css from './SchemaEditor.module.css';
 import { MenuItem } from 'primereact/menuitem';
 
@@ -54,24 +55,6 @@ export const SchemaEditor = ({
             setCurrentPath([]);
         }
     }, [isEditMode]);
-
-    const validatePropertyName = useCallback((name: string, propertyId: string, allProperties: JsonSchemaProperty[]): string | undefined => {
-        if (!name || name.trim() === '') {
-            return 'Property name cannot be empty';
-        }
-
-        const validIdentifierPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-        if (!validIdentifierPattern.test(name)) {
-            return 'Property name must start with a letter or underscore and contain only letters, numbers, and underscores';
-        }
-
-        const duplicates = allProperties.filter(p => p.name === name && p.id !== propertyId);
-        if (duplicates.length > 0) {
-            return 'Property name must be unique';
-        }
-
-        return undefined;
-    }, []);
 
     const validateAllProperties = useCallback((properties: JsonSchemaProperty[]) => {
         const errors: Record<string, string> = {};
@@ -293,26 +276,7 @@ export const SchemaEditor = ({
         setIsEditMode(true);
     }, [currentSchema]);
 
-    const getBreadcrumbItems = () => {
-        const items: NavigationItem[] = [{ name: eventTypeName, path: [] }];
-
-        for (let i = 0; i < currentPath.length; i++) {
-            const segment = currentPath[i];
-            if (segment === '$items') {
-                items.push({
-                    name: '[items]',
-                    path: currentPath.slice(0, i + 1)
-                });
-            } else {
-                items.push({
-                    name: segment,
-                    path: currentPath.slice(0, i + 1)
-                });
-            }
-        }
-
-        return items;
-    };
+    const getBreadcrumbItems = () => buildBreadcrumbItems(eventTypeName, currentPath);
 
     const getCurrentDescription = useCallback(() => {
         let targetSchema: JsonSchema | JsonSchemaProperty = currentSchema;

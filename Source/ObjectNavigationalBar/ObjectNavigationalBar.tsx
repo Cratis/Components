@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 import { Button } from 'primereact/button';
 import * as faIcons from 'react-icons/fa6';
+import { buildNavigationBreadcrumbs } from './breadcrumbHelpers';
 
 export interface ObjectNavigationalBarProps {
     navigationPath: string[];
@@ -11,16 +12,7 @@ export interface ObjectNavigationalBarProps {
 }
 
 export function ObjectNavigationalBar({ navigationPath, onNavigate }: ObjectNavigationalBarProps) {
-    const breadcrumbItems = useMemo(() => {
-        const items: { name: string; index: number }[] = [{ name: 'Root', index: 0 }];
-        for (let i = 0; i < navigationPath.length; i++) {
-            items.push({
-                name: navigationPath[i],
-                index: i + 1
-            });
-        }
-        return items;
-    }, [navigationPath]);
+    const breadcrumbItems = useMemo(() => buildNavigationBreadcrumbs(navigationPath), [navigationPath]);
 
     return (
         <div className="px-4 py-2 mb-2 border-bottom-1 surface-border">
