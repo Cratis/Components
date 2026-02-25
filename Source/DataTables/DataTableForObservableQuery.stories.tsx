@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForObservableQuery } from './DataTableForObservableQuery';
 import { Column } from 'primereact/column';
-import { ObservableQueryFor } from '@cratis/arc/queries';
+import { ObservableQueryFor, QueryResult, ObservableQuerySubscription } from '@cratis/arc/queries';
 import { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
 
 const meta: Meta<typeof DataTableForObservableQuery> = {
@@ -25,17 +25,41 @@ interface Task {
     assignee: string;
 }
 
-// Mock observable query
+const mockTasks: Task[] = [
+    { id: 1, title: 'Design system architecture', status: 'done', priority: 'high', assignee: 'Alice' },
+    { id: 2, title: 'Implement authentication', status: 'in-progress', priority: 'high', assignee: 'Bob' },
+    { id: 3, title: 'Write unit tests', status: 'in-progress', priority: 'medium', assignee: 'Alice' },
+    { id: 4, title: 'Set up CI/CD pipeline', status: 'done', priority: 'medium', assignee: 'Charlie' },
+    { id: 5, title: 'Update documentation', status: 'todo', priority: 'low', assignee: 'Bob' },
+    { id: 6, title: 'Performance profiling', status: 'todo', priority: 'medium', assignee: 'Charlie' },
+    { id: 7, title: 'Security audit', status: 'todo', priority: 'high', assignee: 'Alice' },
+    { id: 8, title: 'Dependency updates', status: 'in-progress', priority: 'low', assignee: 'Bob' },
+];
+
+// Mock observable query — overrides subscribe() to deliver static data instead of opening a WebSocket
 class TasksQuery extends ObservableQueryFor<Task, object> {
     readonly route = '/api/tasks';
-    readonly routeTemplate = '/api/tasks';
-    readonly defaultValue: Task = { id: 0, title: '', status: 'todo', priority: 'low', assignee: '' };
+    readonly defaultValue: Task = [] as unknown as Task;
     readonly parameterDescriptors = [];
     get requiredRequestParameters() {
         return [];
     }
     constructor() {
         super(Object, false);
+    }
+    override subscribe(callback: (result: QueryResult<Task>) => void): ObservableQuerySubscription<Task> {
+        callback({
+            data: mockTasks,
+            paging: { totalItems: mockTasks.length, totalPages: 1, page: 0, size: mockTasks.length },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            hasExceptions: false,
+            validationResults: [],
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Task>);
+        return { unsubscribe: () => {} } as unknown as ObservableQuerySubscription<Task>;
     }
 }
 

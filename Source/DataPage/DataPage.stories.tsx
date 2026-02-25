@@ -5,7 +5,7 @@ import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataPage, MenuItem } from './DataPage';
 import { Column } from 'primereact/column';
-import { QueryFor } from '@cratis/arc/queries';
+import { QueryFor, QueryResult } from '@cratis/arc/queries';
 
 const meta: Meta<typeof DataPage> = {
     title: 'DataPage/DataPage',
@@ -26,17 +26,41 @@ interface Person {
     role: string;
 }
 
-// Mock query
+const mockPersons: Person[] = [
+    { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin' },
+    { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'Editor' },
+    { id: 3, name: 'Carol White', email: 'carol@example.com', role: 'Viewer' },
+    { id: 4, name: 'David Brown', email: 'david@example.com', role: 'Editor' },
+    { id: 5, name: 'Eve Davis', email: 'eve@example.com', role: 'Admin' },
+    { id: 6, name: 'Frank Miller', email: 'frank@example.com', role: 'Viewer' },
+    { id: 7, name: 'Grace Wilson', email: 'grace@example.com', role: 'Editor' },
+    { id: 8, name: 'Henry Taylor', email: 'henry@example.com', role: 'Viewer' },
+];
+
+// Mock query — overrides perform() to return static data instead of making HTTP calls
 class PersonsQuery extends QueryFor<Person, object> {
     readonly route = '/api/persons';
     readonly routeTemplate = '/api/persons';
-    readonly defaultValue: Person = { id: 0, name: '', email: '', role: '' };
+    readonly defaultValue: Person = [] as unknown as Person;
     readonly parameterDescriptors = [];
     get requiredRequestParameters() {
         return [];
     }
     constructor() {
-        super(Object, false);
+        super(Object, true);
+    }
+    override perform(): Promise<QueryResult<Person>> {
+        return Promise.resolve({
+            data: mockPersons,
+            paging: { totalItems: mockPersons.length, totalPages: 1, page: 0, size: mockPersons.length },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            hasExceptions: false,
+            validationResults: [],
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Person>);
     }
 }
 
