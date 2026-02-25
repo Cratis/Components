@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React from 'react';
+import { formatPropertyName } from './propertiesHelpers';
 
 interface PropertiesProps {
     data: Record<string, unknown>;
@@ -71,14 +72,6 @@ export const Properties: React.FC<PropertiesProps> = ({ data, className, align =
         }
 
         return <span>{String(value)}</span>;
-    };
-
-    const formatPropertyName = (key: string): string => {
-        // Convert camelCase to Title Case with spaces
-        return key
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^./, str => str.toUpperCase())
-            .trim();
     };
 
     return (
