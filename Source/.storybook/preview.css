@@ -1,6 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* 1. Tailwind (includes preflight reset) — must come first */
+@import "tailwindcss";
+/* 2. PrimeReact theme — must come AFTER Tailwind so it overrides the preflight reset */
+@import 'primereact/resources/themes/lara-dark-blue/theme.css';
+
+html, body {
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+  min-height: 100vh;
+  margin: 0;
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 24px;
+  font-weight: 400;
+}
 
 .storybook-wrapper {
   display: flex;
@@ -8,12 +20,66 @@
   justify-content: center;
   min-height: 100vh;
   padding: 1rem;
-  background-color: #f3f4f6; /* approx. Tailwind bg-gray-100 */
+  background-color: var(--surface-ground);
 }
 
-/* small helper to ensure Dialog widths appear nicely in Storybook */
-.p-dialog .p-dialog-content {
+/* Utility classes matching Chronicle Workbench */
+.highlight {
+  background-color: var(--highlight-bg);
+  color: var(--highlight-text-color);
+}
+
+.contentBackground {
+  background-color: var(--surface-0);
+}
+
+.panel {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--border-radius);
+  color: var(--text-color);
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* DataTable layout helpers */
+.p-datatable {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.p-datatable .p-datatable-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.p-datatable .p-datatable-table {
+  width: 100%;
+}
+
+/* Prevent menubar from collapsing to hamburger on small screens */
+.p-menubar .p-menubar-button {
+  display: none !important;
+}
+
+.p-menubar .p-menubar-root-list {
+  display: flex !important;
+  flex-direction: row !important;
+  position: static !important;
+  width: auto !important;
+  padding: 0 !important;
+}
+
+.p-menubar {
+  border: 1px solid var(--surface-border) !important;
 }

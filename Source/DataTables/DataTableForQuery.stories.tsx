@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForQuery } from './DataTableForQuery';
 import { Column } from 'primereact/column';
-import { QueryFor } from '@cratis/arc/queries';
+import { QueryFor, QueryResult } from '@cratis/arc/queries';
 import { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
 
 const meta: Meta<typeof DataTableForQuery> = {
@@ -25,17 +25,40 @@ interface Product {
     inStock: boolean;
 }
 
-// Mock query
+const mockProducts: Product[] = [
+    { id: 1, name: 'Wireless Headphones', category: 'Electronics', price: 79.99, inStock: true },
+    { id: 2, name: 'Mechanical Keyboard', category: 'Electronics', price: 129.99, inStock: true },
+    { id: 3, name: 'USB-C Hub', category: 'Electronics', price: 49.99, inStock: false },
+    { id: 4, name: 'Standing Desk Mat', category: 'Office', price: 34.99, inStock: true },
+    { id: 5, name: 'Monitor Stand', category: 'Office', price: 59.99, inStock: true },
+    { id: 6, name: 'Webcam HD', category: 'Electronics', price: 89.99, inStock: false },
+    { id: 7, name: 'Laptop Sleeve', category: 'Accessories', price: 24.99, inStock: true },
+    { id: 8, name: 'Cable Management Kit', category: 'Accessories', price: 14.99, inStock: true },
+];
+
+// Mock query — overrides perform() to return static data instead of making HTTP calls
 class ProductsQuery extends QueryFor<Product, object> {
     readonly route = '/api/products';
-    readonly routeTemplate = '/api/products';
-    readonly defaultValue: Product = { id: 0, name: '', category: '', price: 0, inStock: false };
+    readonly defaultValue: Product = [] as unknown as Product;
     readonly parameterDescriptors = [];
     get requiredRequestParameters() {
         return [];
     }
     constructor() {
-        super(Object, false);
+        super(Object, true);
+    }
+    override perform(): Promise<QueryResult<Product>> {
+        return Promise.resolve({
+            data: mockProducts,
+            paging: { totalItems: mockProducts.length, totalPages: 1, page: 0, size: mockProducts.length },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            hasExceptions: false,
+            validationResults: [],
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Product>);
     }
 }
 

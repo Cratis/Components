@@ -13,10 +13,12 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             onCancel={() => undefined}
             buttons={null}
         >
-            <ProgressSpinner />
-            <p className="m-0">
-                {props.message}
-            </p>
+            <div className="flex flex-col items-center justify-center gap-4 py-4">
+                <ProgressSpinner />
+                <p className="m-0 text-center">
+                    {props.message}
+                </p>
+            </div>
         </Dialog>
     );
 };
