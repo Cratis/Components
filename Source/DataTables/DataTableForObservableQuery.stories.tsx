@@ -59,7 +59,7 @@ class TasksQuery extends ObservableQueryFor<Task, object> {
             exceptionMessages: [],
             exceptionStackTrace: '',
         } as unknown as QueryResult<Task>);
-        return { unsubscribe: () => {} } as unknown as ObservableQuerySubscription<Task>;
+        return { unsubscribe: () => undefined } as unknown as ObservableQuerySubscription<Task>;
     }
 }
 
@@ -99,10 +99,10 @@ export const Default: Story = {
             >
                 <Column field="id" header="ID" sortable style={{ width: '10%' }} />
                 <Column field="title" header="Task Title" sortable style={{ width: '35%' }} />
-                <Column 
-                    field="status" 
-                    header="Status" 
-                    sortable 
+                <Column
+                    field="status"
+                    header="Status"
+                    sortable
                     style={{ width: '20%' }}
                     body={(rowData: Task) => (
                         <span className={getStatusColor(rowData.status)}>
@@ -110,10 +110,10 @@ export const Default: Story = {
                         </span>
                     )}
                 />
-                <Column 
-                    field="priority" 
-                    header="Priority" 
-                    sortable 
+                <Column
+                    field="priority"
+                    header="Priority"
+                    sortable
                     style={{ width: '15%' }}
                     body={(rowData: Task) => (
                         <span className={getPriorityColor(rowData.priority)}>
@@ -143,10 +143,10 @@ export const WithSelection: Story = {
                     <Column selectionMode="single" headerStyle={{ width: '3rem' }} />
                     <Column field="id" header="ID" sortable style={{ width: '10%' }} />
                     <Column field="title" header="Task Title" sortable style={{ width: '35%' }} />
-                    <Column 
-                        field="status" 
-                        header="Status" 
-                        sortable 
+                    <Column
+                        field="status"
+                        header="Status"
+                        sortable
                         style={{ width: '20%' }}
                         body={(rowData: Task) => (
                             <span className={getStatusColor(rowData.status)}>
@@ -156,7 +156,7 @@ export const WithSelection: Story = {
                     />
                     <Column field="assignee" header="Assignee" sortable style={{ width: '20%' }} />
                 </DataTableForObservableQuery>
-                
+
                 {selectedTask && (
                     <div className="mt-4 p-4 border rounded">
                         <h3 className="font-bold mb-2">Selected Task:</h3>
