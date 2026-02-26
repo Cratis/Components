@@ -97,16 +97,10 @@ const CommandDialogWrapper = <TCommand extends object>({
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     children: React.ReactNode;
 }) => {
-    const { setCommandValues, setCommandResult, commandResult } = useCommandFormContext<TCommand>();
+    const { setCommandValues, setCommandResult, isValid } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
 
-    // Compute real dialog validity from commandResult.
-    // fieldValidities in CommandForm is never populated by field renderers, so
-    // the context's isValid is always vacuously true. We derive validity from
-    // the actual validation result instead:
-    // - No result yet (before any validate call) → enabled (allow first submit)
-    // - commandResult.isValid → reflects actual validation state
-    const isDialogValid = !commandResult || commandResult.isValid;
+    const isDialogValid = isValid;
 
     const handleConfirm = async () => {
         if (onBeforeExecute) {
