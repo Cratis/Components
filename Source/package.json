@@ -95,9 +95,9 @@
         "build-storybook": "storybook build"
     },
     "dependencies": {
-        "@cratis/arc": "^19.6.1",
-        "@cratis/arc.react": "^19.6.1",
-        "@cratis/arc.vite": "^19.6.1",
+        "@cratis/arc": "^19.6.5",
+        "@cratis/arc.react": "^19.6.5",
+        "@cratis/arc.vite": "^19.6.5",
         "allotment": "1.20.5",
         "framer-motion": "12.34.3",
         "pixi.js": "^8.16.0",
