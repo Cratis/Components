@@ -1,42 +1,12 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* ── Toolbar container ───────────────────────────────────────────────────── */
-.toolbar {
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* ── Toolbar button ──────────────────────────────────────────────────────── */
-.toolbar-button {
-    color: var(--text-color-secondary);
-    background: transparent;
-    border: none;
-    transition: background 0.15s, color 0.15s;
-}
-
-.toolbar-button:hover {
-    background: var(--surface-100);
-    color: var(--text-color);
-}
-
-.toolbar-button--active {
-    background: var(--primary-color);
-    color: var(--primary-color-text);
-}
-
-.toolbar-button--active:hover {
-    background: var(--primary-color);
-    color: var(--primary-color-text);
-}
-
 /* ── Toolbar project name label ──────────────────────────────────────────── */
 .toolbar-project-name {
     padding: 0 8px;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-color);
+    color: #f3f4f6;
     white-space: nowrap;
 }
 
@@ -102,8 +72,9 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.5rem;
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
+    /* bg-gray-800 / border-white/10 — matches the Toolbar container Tailwind classes */
+    background: #1f2937;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     border-radius: 1rem;
     white-space: nowrap;

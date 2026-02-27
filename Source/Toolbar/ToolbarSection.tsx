@@ -3,6 +3,7 @@
 
 import { Children, ReactElement, ReactNode, isValidElement, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import './Toolbar.css';
 import type { ToolbarContextProps } from './ToolbarContext';
 
 /** Props for the {@link ToolbarSection} component. */

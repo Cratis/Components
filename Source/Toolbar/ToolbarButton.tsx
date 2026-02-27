@@ -27,7 +27,9 @@ export interface ToolbarButtonProps {
  * Uses the shared {@link Tooltip} component for consistent hover labels.
  */
 export const ToolbarButton = ({ icon, tooltip, active = false, onClick, tooltipPosition = 'right' }: ToolbarButtonProps) => {
-    const activeClass = active ? 'toolbar-button--active' : '';
+    const buttonStateClass = active
+        ? 'bg-blue-600 text-white'
+        : 'text-gray-400 hover:bg-gray-700 hover:text-gray-100';
 
     return (
         <Tooltip content={tooltip} position={tooltipPosition}>
@@ -35,7 +37,7 @@ export const ToolbarButton = ({ icon, tooltip, active = false, onClick, tooltipP
                 type='button'
                 aria-label={tooltip}
                 onClick={onClick}
-                className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors duration-150 ${buttonStateClass}`}
             >
                 <i className={`${icon} text-lg`} />
             </button>

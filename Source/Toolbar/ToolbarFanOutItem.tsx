@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import './Toolbar.css';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
 
@@ -63,7 +64,9 @@ export const ToolbarFanOutItem = ({
         };
     }, [isExpanded]);
 
-    const activeClass = isExpanded ? 'toolbar-button--active' : '';
+    const buttonStateClass = isExpanded
+        ? 'bg-blue-600 text-white'
+        : 'text-gray-400 hover:bg-gray-700 hover:text-gray-100';
     const panelVisibleClass = isExpanded ? 'toolbar-fanout-panel--visible' : '';
     const directionClass = `toolbar-fanout-panel--${fanOutDirection}`;
 
@@ -75,7 +78,7 @@ export const ToolbarFanOutItem = ({
                     aria-label={tooltip}
                     aria-expanded={isExpanded}
                     onClick={handleToggle}
-                    className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
+                    className={`w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors duration-150 ${buttonStateClass}`}
                 >
                     <i className={`${icon} text-lg`} />
                 </button>

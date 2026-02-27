@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { ReactNode } from 'react';
-import './Toolbar.css';
 
 /** Props for the {@link Toolbar} component. */
 export interface ToolbarProps {
@@ -19,9 +18,9 @@ export interface ToolbarProps {
  */
 export const Toolbar = ({ children, orientation = 'vertical' }: ToolbarProps) => (
     <div
-        className={`toolbar inline-flex ${
+        className={`inline-flex ${
             orientation === 'horizontal' ? 'flex-row' : 'flex-col'
-        } items-center gap-1 p-2 rounded-2xl`}
+        } items-center gap-1 p-2 rounded-2xl bg-gray-800 border border-white/10 shadow-md`}
     >
         {children}
     </div>
