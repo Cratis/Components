@@ -1,0 +1,10 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* ── Tooltip bubble ──────────────────────────────────────────────────────── */
+.tooltip-bubble {
+    background: var(--surface-100);
+    color: var(--text-color);
+    border: 1px solid var(--surface-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}

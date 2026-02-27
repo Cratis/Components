@@ -78,6 +78,11 @@
             "types": "./dist/esm/TimeMachine/index.d.ts",
             "require": "./dist/cjs/TimeMachine/index.js",
             "import": "./dist/esm/TimeMachine/index.js"
+        },
+        "./Toolbar": {
+            "types": "./dist/esm/Toolbar/index.d.ts",
+            "require": "./dist/cjs/Toolbar/index.js",
+            "import": "./dist/esm/Toolbar/index.js"
         }
     },
     "scripts": {

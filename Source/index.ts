@@ -13,6 +13,7 @@ import * as ObjectNavigationalBar from './ObjectNavigationalBar';
 import * as PivotViewer from './PivotViewer';
 import * as SchemaEditor from './SchemaEditor';
 import * as TimeMachine from './TimeMachine';
+import * as Toolbar from './Toolbar';
 
 export {
     CommandDialog,
@@ -27,5 +28,6 @@ export {
     PivotViewer,
     SchemaEditor,
     TimeMachine,
+    Toolbar,
 };
 
