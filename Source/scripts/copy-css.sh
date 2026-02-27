@@ -9,7 +9,8 @@ find . -name '*.css' \
   -not -path './node_modules/*' \
   -not -path './dist/*' \
   -not -path './.storybook/*' \
-  -not -name 'tailwind.css' | while read -r file; do
+  -not -name 'tailwind.css' \
+  -not -name 'tailwind-utilities.css' | while read -r file; do
   
   # Remove the leading './'
   relative_path="${file#./}"

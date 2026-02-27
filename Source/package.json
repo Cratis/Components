@@ -84,7 +84,7 @@
             "require": "./dist/cjs/Toolbar/index.js",
             "import": "./dist/esm/Toolbar/index.js"
         },
-        "./styles": "./dist/styles.css"
+        "./styles": "./dist/esm/tailwind-utilities.css"
     },
     "scripts": {
         "prepare": "yarn g:build",

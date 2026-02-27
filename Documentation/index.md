@@ -23,6 +23,18 @@ This library includes specialized components for:
 
 ## Getting Started
 
+### Importing Styles
+
+The library ships pre-compiled utility styles that must be imported once in your application entry point (e.g. `main.tsx`):
+
+```typescript
+import '@cratis/components/styles';
+```
+
+This is required because the components use Tailwind utility classes that are compiled into the package at build time. Without this import the layout, spacing, and sizing of components will not render correctly. The import works with any bundler (Vite, webpack, Rollup) regardless of whether your application uses Tailwind.
+
+### Importing Components
+
 All components are exported from the main package and can be imported as needed:
 
 ```typescript
