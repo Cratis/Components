@@ -1,0 +1,13 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/*
+ * Tailwind utility classes compiled at build time.
+ * This stylesheet is generated during the package build and contains only
+ * the utility classes that are actually used across all components.
+ * It intentionally excludes preflight/base resets — those are the consumer app's responsibility.
+ *
+ * Usage in your app:
+ *   import '@cratis/components/styles';
+ */
+@import "tailwindcss";
