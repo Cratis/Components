@@ -24,6 +24,8 @@
           href: Dialogs/toc.yml
         - name: Dropdown
           href: Dropdown/index.md
+        - name: Toolbar
+          href: Toolbar/toc.yml
     - name: Specialized Components
       items:
         - name: PivotViewer

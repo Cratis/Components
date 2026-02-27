@@ -44,6 +44,30 @@
   - ESLint errors about unused variables or improper types are blocking issues
   - Fixing them takes seconds now, but accumulates into hours if deferred
 
+## Adding a New Component Module
+
+When adding a new top-level component folder (e.g. `Source/MyComponent/`), ALL of the following steps are mandatory:
+
+1. **Create `Source/MyComponent/index.ts`** — export all public types and components.
+2. **Add a namespace import and re-export in `Source/index.ts`**:
+   ```typescript
+   import * as MyComponent from './MyComponent';
+   // ... add to the export block
+   export { ..., MyComponent };
+   ```
+3. **Add a subpath export entry in `Source/package.json`** under `"exports"`:
+   ```json
+   "./MyComponent": {
+       "types": "./dist/esm/MyComponent/index.d.ts",
+       "require": "./dist/cjs/MyComponent/index.js",
+       "import": "./dist/esm/MyComponent/index.js"
+   }
+   ```
+4. **Create `Documentation/MyComponent/index.md`** and `Documentation/MyComponent/toc.yml`.
+5. **Register in `Documentation/toc.yml`** under the appropriate category.
+
+> The `package.json` entry is required for consumers to import directly via `@cratis/components/MyComponent`.
+
 ## Formatting
 
 - Honor the existing code style and conventions in the project.
