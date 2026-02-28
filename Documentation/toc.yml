@@ -8,8 +8,8 @@
       items:
         - name: CommandDialog
           href: CommandDialog/toc.yml
-        - name: CommandForm
-          href: CommandForm/index.md
+        - name: CommandForm Field Types
+          href: CommandForm/toc.yml
     - name: Data Components
       items:
         - name: DataPage

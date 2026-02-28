@@ -16,33 +16,35 @@ CommandForm offers a complete set of form field components designed to work seam
 
 ## Available Field Components
 
-The CommandForm module exports specialized field components for different data types and use cases. These components are designed to be used within CommandDialog or other command execution contexts.
+The CommandForm module exports specialized field components built on [PrimeReact](https://primereact.org/) primitives. Each field wraps a PrimeReact component using `asCommandFormField`, providing automatic value binding, validation state, and integration with Cratis Arc commands.
+
+See the field type pages in this section for documentation on each available field component.
+
+## Type-Safe Binding
+
+All field components bind to a property on the command via a `value` accessor function. Pass the command type as a generic type parameter so the accessor is fully typed:
+
+```tsx
+// ✅ Correct: full type safety — 'c' is typed as MyCommand
+<InputTextField<MyCommand> value={c => c.title} />
+
+// ❌ Incorrect: missing type parameter — 'c' is 'unknown'
+<InputTextField value={c => c.title} />
+```
+
+The `value` prop accepts a function of the form `(instance: TCommand) => unknown`.
 
 ## Integration
 
-CommandForm fields are typically used as children of CommandDialog:
+CommandForm fields are used as children of `CommandDialog`:
 
-```typescript
+```tsx
 import { CommandDialog } from '@cratis/components';
-import { TextField, NumberField, BooleanField } from '@cratis/components/CommandForm';
+import { InputTextField, NumberField, CheckboxField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} /* ... */>
-    <TextField name="title" label="Title" />
-    <NumberField name="quantity" label="Quantity" />
-    <BooleanField name="active" label="Active" />
+<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+    <InputTextField<MyCommand> value={c => c.title} />
+    <NumberField<MyCommand> value={c => c.quantity} />
+    <CheckboxField<MyCommand> value={c => c.active} label="Active" />
 </CommandDialog>
 ```
-
-## Field Types
-
-The CommandForm module includes specialized components for:
-
-- Text input fields
-- Numeric input fields
-- Boolean checkboxes
-- Date and time pickers
-- Select dropdowns
-- Multi-select components
-- Complex object editors
-
-Each field component is designed to handle its specific data type and provide appropriate validation and user experience.
