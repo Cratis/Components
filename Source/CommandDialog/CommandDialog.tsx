@@ -159,14 +159,6 @@ const CommandDialogWrapper = <TCommand extends object>({
     );
 };
 
-const CommandDialogFieldsWrapper = (props: { children: React.ReactNode }) => {
-    return (
-        <CommandForm.Fields>
-            {props.children}
-        </CommandForm.Fields>
-    );
-};
-
 const CommandDialogComponent = <TCommand extends object = object, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
     const {
         command,
@@ -256,7 +248,6 @@ const CommandDialogColumnWrapper = ({ children }: { children: React.ReactNode })
 );
 CommandDialogColumnWrapper.displayName = 'CommandFormColumn';
 
-CommandDialogComponent.Fields = CommandDialogFieldsWrapper;
 CommandDialogComponent.Column = CommandDialogColumnWrapper;
 
 export const CommandDialog = CommandDialogComponent;
