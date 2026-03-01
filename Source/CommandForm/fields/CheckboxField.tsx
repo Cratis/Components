@@ -15,6 +15,7 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
             <Checkbox
                 checked={props.value}
                 onChange={props.onChange}
+                onBlur={props.onBlur}
                 invalid={props.invalid}
             />
             {props.label && <label className="ml-2">{props.label}</label>}

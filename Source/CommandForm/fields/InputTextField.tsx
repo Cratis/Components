@@ -16,6 +16,7 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
             type={props.type || 'text'}
             value={props.value}
             onChange={props.onChange}
+            onBlur={props.onBlur}
             invalid={props.invalid}
             placeholder={props.placeholder}
             className="w-full"

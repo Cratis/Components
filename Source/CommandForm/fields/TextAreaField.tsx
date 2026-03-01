@@ -16,6 +16,7 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
         <InputTextarea
             value={props.value}
             onChange={props.onChange}
+            onBlur={props.onBlur}
             invalid={props.invalid}
             placeholder={props.placeholder}
             rows={props.rows ?? 5}

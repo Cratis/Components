@@ -17,6 +17,7 @@ export const DropdownField = asCommandFormField<DropdownFieldComponentProps>(
         <Dropdown
             value={props.value}
             onChange={(e) => props.onChange(e.value)}
+            onBlur={props.onBlur}
             options={props.options}
             optionValue={props.optionValue}
             optionLabel={props.optionLabel}
