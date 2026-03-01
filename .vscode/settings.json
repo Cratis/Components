@@ -4,7 +4,9 @@
     "primeicons",
     "primereact",
     "trackpad",
-    "trackpads"
+    "trackpads",
+    "tsyringe",
+    "usehooks"
   ],
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "search.exclude": {

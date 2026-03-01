@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { CommandDialog } from './CommandDialog';
-import { Command, CommandValidator } from '@cratis/arc/commands';
+import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { InputTextField, NumberField, TextAreaField } from '../CommandForm/fields';
 import '@cratis/arc/validation';
@@ -27,6 +27,41 @@ class UpdateUserCommandValidator extends CommandValidator {
 }
 
 class UpdateUserCommand extends Command<object> {
+    readonly route: string = '/api/users/update';
+    readonly validation: CommandValidator = new UpdateUserCommandValidator();
+    readonly propertyDescriptors: PropertyDescriptor[] = [
+        new PropertyDescriptor('name', String),
+        new PropertyDescriptor('email', String),
+        new PropertyDescriptor('age', Number),
+    ];
+
+    name = '';
+    email = '';
+    age = 0;
+
+    constructor() {
+        super(Object, false);
+    }
+
+    get requestParameters(): string[] {
+        return [];
+    }
+
+    get properties(): string[] {
+        return ['name', 'email', 'age'];
+    }
+
+    override async validate(): Promise<CommandResult<object>> {
+        const errors = this.validation?.validate(this) ?? [];
+        if (errors.length > 0) {
+            return CommandResult.validationFailed(errors);
+        }
+        return CommandResult.empty;
+    }
+}
+
+/** Variant that keeps the original server-calling validate() for the WithServerValidation story. */
+class UpdateUserCommandWithServer extends Command<object> {
     readonly route: string = '/api/users/update';
     readonly validation: CommandValidator = new UpdateUserCommandValidator();
     readonly propertyDescriptors: PropertyDescriptor[] = [
@@ -93,20 +128,16 @@ const DialogWrapper = () => {
                 header="Update User Information (with Validation)"
                 confirmLabel="Save"
                 cancelLabel="Cancel"
+                autoServerValidate={false}
                 onConfirm={async (commandResult) => {
                     setResult(JSON.stringify(commandResult));
                     setVisible(false);
                 }}
                 onCancel={() => setVisible(false)}
-                onFieldChange={async (command) => {
-                    // Progressive validation - validate as fields change
-                    const validationResult = await command.validate();
-                    
-                    if (!validationResult.isValid) {
-                        setValidationErrors(validationResult.validationResults.map(v => v.message));
-                    } else {
-                        setValidationErrors([]);
-                    }
+                onFieldChange={(command) => {
+                    // Client-side only validation - validate as fields change
+                    const errors = command.validation?.validate(command) ?? [];
+                    setValidationErrors(errors.map(v => v.message));
                 }}
             >
                 <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder="Enter name (min 2 chars)" />
@@ -117,8 +148,77 @@ const DialogWrapper = () => {
     );
 };
 
+const ServerValidationWrapper = () => {
+    const [visible, setVisible] = useState(true);
+    const [result, setResult] = useState<string>('');
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+    return (
+        <div className="storybook-wrapper">
+            <button
+                className="p-button p-component mb-3"
+                onClick={() => {
+                    setVisible(true);
+                    setValidationErrors([]);
+                    setResult('');
+                }}
+            >
+                Open Dialog
+            </button>
+
+            {validationErrors.length > 0 && (
+                <div className="p-3 mt-3 bg-red-100 border-round">
+                    <strong>Validation Errors:</strong>
+                    <ul className="mt-2 mb-0">
+                        {validationErrors.map((error, index) => (
+                            <li key={index}>{error}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
+            {result && (
+                <div className="p-3 mt-3 bg-green-100 border-round">
+                    <strong>Command executed:</strong> {result}
+                </div>
+            )}
+
+            <CommandDialog<UpdateUserCommandWithServer>
+                command={UpdateUserCommandWithServer}
+                visible={visible}
+                header="Update User Information (with Server Validation)"
+                confirmLabel="Save"
+                cancelLabel="Cancel"
+                onConfirm={async (commandResult) => {
+                    setResult(JSON.stringify(commandResult));
+                    setVisible(false);
+                }}
+                onCancel={() => setVisible(false)}
+                onFieldChange={async (command) => {
+                    // Progressive validation - validate as fields change
+                    const validationResult = await command.validate();
+
+                    if (!validationResult.isValid) {
+                        setValidationErrors(validationResult.validationResults.map(v => v.message));
+                    } else {
+                        setValidationErrors([]);
+                    }
+                }}
+            >
+                <InputTextField value={(c: UpdateUserCommandWithServer) => c.name} title="Name" placeholder="Enter name (min 2 chars)" />
+                <InputTextField value={(c: UpdateUserCommandWithServer) => c.email} title="Email" placeholder="Enter email" type="email" />
+                <NumberField value={(c: UpdateUserCommandWithServer) => c.age} title="Age" placeholder="Enter age (18-120)" />
+            </CommandDialog>
+        </div>
+    );
+};
+
 export const Default: Story = {
     render: () => <DialogWrapper />,
+};
+
+export const WithServerValidation: Story = {
+    render: () => <ServerValidationWrapper />,
 };
 
 const EditUserWrapper = () => {
@@ -165,6 +265,7 @@ const EditUserWrapper = () => {
                 header={`Edit User: ${selectedUser?.name ?? ''}`}
                 confirmLabel="Save"
                 cancelLabel="Cancel"
+                autoServerValidate={false}
                 onConfirm={async () => {
                     setResult(`User "${selectedUser?.name}" updated successfully`);
                     setVisible(false);
@@ -211,6 +312,7 @@ const CustomValidationWrapper = () => {
                 header="Add User (with Custom Validation)"
                 confirmLabel="Save"
                 cancelLabel="Cancel"
+                autoServerValidate={false}
                 onConfirm={async () => {
                     setResult('User added successfully');
                     setVisible(false);
@@ -262,6 +364,7 @@ const ValidationOnBlurWrapper = () => {
                 confirmLabel="Save"
                 cancelLabel="Cancel"
                 validateOn="blur"
+                autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >
@@ -292,6 +395,7 @@ const ValidationOnChangeWrapper = () => {
                 confirmLabel="Save"
                 cancelLabel="Cancel"
                 validateOn="change"
+                autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >
@@ -322,6 +426,7 @@ const ValidateOnInitWrapper = () => {
                 confirmLabel="Save"
                 cancelLabel="Cancel"
                 validateOnInit={true}
+                autoServerValidate={false}
                 initialValues={{ name: 'A', email: 'invalid', age: 10 }}
                 onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
@@ -354,6 +459,7 @@ const ValidateAllFieldsWrapper = () => {
                 cancelLabel="Cancel"
                 validateOn="blur"
                 validateAllFieldsOnChange={true}
+                autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >
@@ -392,6 +498,7 @@ const BeforeExecuteWrapper = () => {
                 header="Before Execute Callback"
                 confirmLabel="Save"
                 cancelLabel="Cancel"
+                autoServerValidate={false}
                 initialValues={{ name: '', email: '', age: 18 }}
                 onBeforeExecute={(command) => {
                     command.name = command.name.trim().replace(/\s+/g, ' ');
@@ -430,6 +537,7 @@ const WithIconsWrapper = () => {
                 header="Fields with Icons"
                 confirmLabel="Save"
                 cancelLabel="Cancel"
+                autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >
@@ -500,6 +608,14 @@ class UpdateProfileCommand extends Command<object> {
     get properties(): string[] {
         return ['firstName', 'lastName', 'email', 'phone', 'bio'];
     }
+
+    override async validate(): Promise<CommandResult<object>> {
+        const errors = this.validation?.validate(this) ?? [];
+        if (errors.length > 0) {
+            return CommandResult.validationFailed(errors);
+        }
+        return CommandResult.empty;
+    }
 }
 
 const MultiColumnWrapper = () => {
@@ -517,6 +633,7 @@ const MultiColumnWrapper = () => {
                 confirmLabel="Save"
                 cancelLabel="Cancel"
                 width="70vw"
+                autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >
@@ -554,6 +671,7 @@ const MixedChildrenWrapper = () => {
                 header="Edit Profile (Mixed Children)"
                 confirmLabel="Save"
                 cancelLabel="Cancel"
+                autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >

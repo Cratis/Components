@@ -13,7 +13,7 @@ interface SliderFieldComponentProps extends WrappedFieldProps<number> {
 
 export const SliderField = asCommandFormField<SliderFieldComponentProps>(
     (props) => (
-        <div className="w-full">
+        <div className="w-full" onBlur={props.onBlur}>
             <Slider
                 value={props.value}
                 onChange={(e) => props.onChange(e.value)}

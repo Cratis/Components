@@ -17,6 +17,7 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
         <InputNumber
             value={props.value}
             onValueChange={(e) => props.onChange(e.value ?? 0)}
+            onBlur={props.onBlur}
             invalid={props.invalid}
             placeholder={props.placeholder}
             min={props.min}
