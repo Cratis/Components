@@ -7,6 +7,7 @@ import { CommandDialog } from './CommandDialog';
 import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { InputTextField, NumberField, TextAreaField } from '../CommandForm/fields';
+import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
 import '@cratis/arc/validation';
 
 const meta: Meta<typeof CommandDialog> = {
@@ -213,8 +214,58 @@ const ServerValidationWrapper = () => {
     );
 };
 
+const AwaitableWithResultWrapper = () => {
+    const [result, setResult] = useState<string>('');
+
+    const UpdateUserDialog = () => {
+        const { closeDialog } = useDialogContext<CommandResult<object>>();
+
+        return (
+            <CommandDialog<UpdateUserCommand>
+                command={UpdateUserCommand}
+                header="Update User Information (awaitable result)"
+                confirmLabel="Save"
+                cancelLabel="Cancel"
+                autoServerValidate={false}
+                onConfirm={async commandResult => closeDialog(DialogResult.Ok, commandResult)}
+                onCancel={() => closeDialog(DialogResult.Cancelled)}
+            >
+                <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder="Enter name (min 2 chars)" />
+                <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder="Enter email" type="email" />
+                <NumberField value={(c: UpdateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
+            </CommandDialog>
+        );
+    };
+
+    const [UpdateUserDialogComponent, showUpdateUserDialog] = useDialog<CommandResult<object>>(UpdateUserDialog);
+
+    return (
+        <div className="storybook-wrapper">
+            <button
+                className="p-button p-component mb-3"
+                onClick={async () => {
+                    const [dialogResult, commandResult] = await showUpdateUserDialog();
+                    if (dialogResult === DialogResult.Ok && commandResult) {
+                        setResult(JSON.stringify(commandResult));
+                    }
+                }}
+            >
+                Open Dialog
+            </button>
+
+            {result && (
+                <div className="p-3 mt-3 bg-green-100 border-round">
+                    <strong>Command executed:</strong> {result}
+                </div>
+            )}
+
+            <UpdateUserDialogComponent />
+        </div>
+    );
+};
+
 export const Default: Story = {
-    render: () => <DialogWrapper />,
+    render: () => <AwaitableWithResultWrapper />,
 };
 
 export const WithServerValidation: Story = {
