@@ -41,10 +41,11 @@ const CreateProjectDialog = () => {
     const { closeDialog } = useDialogContext<CommandResult<CreateProjectResponse>>();
 
     return (
-        <CommandDialog<CreateProject, CreateProjectResponse>
+        <CommandDialog<CreateProject>
             command={CreateProject}
-            header='Create project'
-            onConfirm={async result => closeDialog(DialogResult.Ok, result as CommandResult<CreateProjectResponse>)}
+            title='Create project'
+            okLabel='Create'
+            onConfirm={async () => closeDialog(DialogResult.Ok)}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         />
     );
@@ -77,28 +78,39 @@ function MyComponent() {
 ### Required Props
 
 - `command`: Constructor for the command type
-- `header`: Dialog title text
-- `onConfirm`: Callback function when command succeeds
-- `onCancel`: Callback function when dialog is cancelled
+- `title`: Dialog title text
 
 ### Optional Props
 
 - `visible`: Boolean controlling dialog visibility (defaults to `true`)
 - `initialValues`: Initial values for the command form
 - `currentValues`: Current values to populate the form
-- `confirmLabel`: Custom text for confirm button (default: "OK")
+- `onConfirm`: Confirm callback from `Dialog` (called only after successful command execution)
+- `onCancel`: Cancel callback from `Dialog`
+- `onClose`: Fallback close callback from `Dialog`
+- `okLabel`: Custom text for confirm button (default: "Ok")
 - `cancelLabel`: Custom text for cancel button (default: "Cancel")
-- `confirmIcon`: Icon for confirm button
-- `cancelIcon`: Icon for cancel button
+- `yesLabel`, `noLabel`: Labels for `YesNo` and `YesNoCancel` button modes
+- `buttons`: `DialogButtons` value or custom footer content
+- `resizable`: Whether dialog can be resized
+- `isValid`: Additional validity gate combined with command form validity
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution
 - `style`: Custom CSS styles
 - `width`: Dialog width
 
+## Callback Behavior
+
+- `onConfirm` is executed only after command execution succeeds.
+- If `onConfirm` returns `true`, the dialog closes; otherwise it stays open.
+- If `onConfirm` is not provided, `onClose(DialogResult.Ok)` is used.
+- `onCancel` follows the same behavior as `Dialog` (`true` closes).
+- `onClose` closes unless it returns `false`.
+
 ## Context
 
-`CommandDialog` is built on top of `CommandForm` and uses the command form context internally for values, validation, and execution state.
+`CommandDialog` is built on top of `CommandForm` and `Dialog`, and uses command form context internally for values, validation, and execution state.
 
 When used as an awaitable dialog, pair it with `useDialogContext<CommandResult<TResponse>>()` in a wrapping dialog component.
 

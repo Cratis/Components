@@ -60,9 +60,9 @@ const TestDialog = () => {
 
     return React.createElement(CommandDialog<TestCommand>, {
         command: TestCommand,
-        header: 'Update user',
-        onConfirm: async result => closeWithResult(DialogResult.Ok, result),
-        onCancel: () => closeWithResult(DialogResult.Cancelled),
+        title: 'Update user',
+        onConfirm: async () => closeWithResult(DialogResult.Ok, commandResult),
+        onCancel: async () => closeWithResult(DialogResult.Cancelled),
     });
 };
 

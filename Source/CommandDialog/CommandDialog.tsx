@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { ICommandResult } from '@cratis/arc/commands';
-import { DialogButtons } from '@cratis/arc.react/dialogs';
-import { Dialog } from '../Dialogs/Dialog';
+import { DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
+import { Dialog, type DialogProps } from '../Dialogs/Dialog';
 import React from 'react';
 import {
     CommandForm,
@@ -13,41 +13,48 @@ import {
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 
-export interface CommandDialogProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand>, 'children'> {
-    visible?: boolean;
-    header: string;
-    confirmLabel?: string;
-    cancelLabel?: string;
-    onConfirm: (result: ICommandResult<TResponse>) => void | Promise<void>;
-    onCancel: () => void;
+export interface CommandDialogProps<TCommand extends object>
+    extends Omit<CommandFormProps<TCommand>, 'children'>,
+        Omit<DialogProps, 'children'> {
     children?: React.ReactNode;
-    style?: React.CSSProperties;
-    width?: string;
 }
 
 const CommandDialogWrapper = <TCommand extends object>({
-    header,
+    title,
     visible,
     width,
-    confirmLabel,
+    style,
+    resizable,
+    buttons,
+    okLabel,
     cancelLabel,
+    yesLabel,
+    noLabel,
+    isValid,
+    onClose,
     onConfirm,
     onCancel,
     onBeforeExecute,
     children
 }: {
-    header: string;
+    title: string;
     visible?: boolean;
-    width: string;
-    confirmLabel: string;
-    cancelLabel: string;
-    onConfirm: (result: ICommandResult<unknown>) => void | Promise<void>;
-    onCancel: () => void;
+    width?: string;
+    style?: DialogProps['style'];
+    resizable?: boolean;
+    buttons?: DialogProps['buttons'];
+    okLabel?: string;
+    cancelLabel?: string;
+    yesLabel?: string;
+    noLabel?: string;
+    isValid?: boolean;
+    onClose?: DialogProps['onClose'];
+    onConfirm?: DialogProps['onConfirm'];
+    onCancel?: DialogProps['onCancel'];
     onBeforeExecute?: (values: TCommand) => TCommand;
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }) => {
-    const { setCommandValues, setCommandResult, isValid } = useCommandFormContext<TCommand>();
+    const { setCommandValues, setCommandResult, isValid: isCommandFormValid } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
 
     const handleConfirm = async () => {
@@ -55,14 +62,25 @@ const CommandDialogWrapper = <TCommand extends object>({
             const transformedValues = onBeforeExecute(commandInstance);
             setCommandValues(transformedValues);
         }
+
         const result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<unknown>> }).execute();
-        if (result.isSuccess) {
-            await onConfirm(result);
-            return false;
-        } else {
+
+        if (!result.isSuccess) {
             setCommandResult(result);
             return false;
         }
+
+        if (onConfirm) {
+            const closeResult = await onConfirm();
+            return closeResult === true;
+        }
+
+        if (onClose) {
+            const closeResult = await onClose(DialogResult.Ok);
+            return closeResult !== false;
+        }
+
+        return true;
     };
 
     const processChildren = (nodes: React.ReactNode): React.ReactNode => {
@@ -87,18 +105,24 @@ const CommandDialogWrapper = <TCommand extends object>({
     };
 
     const processedChildren = processChildren(children);
+    const isDialogValid = (isValid !== false) && isCommandFormValid;
 
     return (
         <Dialog
-            title={header}
+            title={title}
             visible={visible}
             width={width}
+            style={style}
+            resizable={resizable}
+            buttons={buttons}
+            onClose={onClose}
             onConfirm={handleConfirm}
             onCancel={onCancel}
-            buttons={DialogButtons.OkCancel}
-            okLabel={confirmLabel}
+            okLabel={okLabel}
             cancelLabel={cancelLabel}
-            isValid={isValid}
+            yesLabel={yesLabel}
+            noLabel={noLabel}
+            isValid={isDialogValid}
         >
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 {processedChildren}
@@ -107,27 +131,41 @@ const CommandDialogWrapper = <TCommand extends object>({
     );
 };
 
-const CommandDialogComponent = <TCommand extends object = object, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
+const CommandDialogComponent = <TCommand extends object = object>(props: CommandDialogProps<TCommand>) => {
     const {
+        title,
         visible,
-        header,
-        confirmLabel = 'Confirm',
-        cancelLabel = 'Cancel',
+        width,
+        style,
+        resizable,
+        buttons = DialogButtons.OkCancel,
+        okLabel,
+        cancelLabel,
+        yesLabel,
+        noLabel,
+        isValid,
+        onClose,
         onConfirm,
         onCancel,
         children,
-        width = '50vw',
         ...commandFormProps
     } = props;
 
     return (
         <CommandForm<TCommand> {...commandFormProps}>
             <CommandDialogWrapper<TCommand>
-                header={header}
+                title={title}
                 visible={visible}
                 width={width}
-                confirmLabel={confirmLabel}
+                style={style}
+                resizable={resizable}
+                buttons={buttons}
+                okLabel={okLabel}
                 cancelLabel={cancelLabel}
+                yesLabel={yesLabel}
+                noLabel={noLabel}
+                isValid={isValid}
+                onClose={onClose}
                 onConfirm={onConfirm}
                 onCancel={onCancel}
                 onBeforeExecute={commandFormProps.onBeforeExecute}

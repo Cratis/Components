@@ -4,7 +4,7 @@
 import { Dialog as PrimeDialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
-import { ReactNode } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 
 export type CloseDialog = (result: DialogResult) => boolean | void | Promise<boolean> | Promise<void>;
 export type ConfirmCallback = () => boolean | void | Promise<boolean> | Promise<void>;
@@ -19,6 +19,7 @@ export interface DialogProps {
     buttons?: DialogButtons | ReactNode;
     children: ReactNode;
     width?: string;
+    style?: CSSProperties;
     resizable?: boolean;
     isValid?: boolean;
     okLabel?: string;
@@ -36,6 +37,7 @@ export const Dialog = ({
     buttons = DialogButtons.OkCancel, 
     children, 
     width = '450px', 
+    style,
     resizable = false, 
     isValid,
     okLabel = 'Ok',
@@ -149,7 +151,7 @@ export const Dialog = ({
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onHide={typeof buttons === 'number' ? () => handleClose(DialogResult.Cancelled) : () => {}}
             visible={visible}
-            style={{ width }}
+            style={{ width, ...style }}
             resizable={resizable}
             closable={typeof buttons === 'number'}>
             {children}
