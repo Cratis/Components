@@ -11,7 +11,7 @@ export interface PageProps extends HTMLAttributes<HTMLDivElement> {
 
 export const Page = ({ title, children, panel, ...rest }: PageProps) => {
     return (
-        <div className='flex flex-col h-full' {...rest}>
+        <div className='flex flex-col h-full flex-1' {...rest}>
             <h1 className='text-3xl mt-3 mb-4'>{title}</h1>
             <main className={`overflow-hidden h-full flex flex-col flex-1 ${panel ? 'panel' : ''}`}>
                 {children}

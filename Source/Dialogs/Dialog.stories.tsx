@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { Dialog } from './Dialog';
-import { DialogButtons } from '@cratis/arc.react/dialogs';
+import { DialogButtons, DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 
@@ -20,19 +20,28 @@ export default meta;
 type Story = StoryObj<typeof Dialog>;
 
 const DialogWrapper = ({ buttons, title, children, isValid }: { buttons: DialogButtons; title: string; children: React.ReactNode; isValid?: boolean }) => {
-    const [visible, setVisible] = useState(false);
-    return (
-        <>
-            <Button label="Open Dialog" onClick={() => setVisible(true)} />
+    const ResultDialog = () => {
+        const { closeDialog } = useDialogContext();
+
+        return (
             <Dialog
                 title={title}
-                visible={visible}
                 buttons={buttons}
-                onClose={() => setVisible(false)}
+                onConfirm={() => closeDialog(DialogResult.Ok)}
+                onCancel={() => closeDialog(DialogResult.Cancelled)}
                 isValid={isValid}
             >
                 {children}
             </Dialog>
+        );
+    };
+
+    const [DialogComponent, showDialog] = useDialog(ResultDialog);
+
+    return (
+        <>
+            <Button label="Open Dialog" onClick={async () => await showDialog()} />
+            <DialogComponent />
         </>
     );
 };
@@ -71,16 +80,18 @@ export const Ok: Story = {
 
 export const WithForm: Story = {
     render: () => {
-        const [visible, setVisible] = useState(false);
-        const [name, setName] = useState('');
-        return (
-            <>
-                <Button label="Open Form Dialog" onClick={() => setVisible(true)} />
+        type NameResult = { name: string };
+
+        const AddNameDialog = () => {
+            const { closeDialog } = useDialogContext<NameResult>();
+            const [name, setName] = useState('');
+
+            return (
                 <Dialog
                     title="Edit Name"
-                    visible={visible}
                     buttons={DialogButtons.OkCancel}
-                    onClose={() => setVisible(false)}
+                    onConfirm={() => closeDialog(DialogResult.Ok, { name })}
+                    onCancel={() => closeDialog(DialogResult.Cancelled)}
                     isValid={name.trim().length > 0}
                 >
                     <div className="flex flex-column gap-2">
@@ -96,6 +107,25 @@ export const WithForm: Story = {
                         )}
                     </div>
                 </Dialog>
+            );
+        };
+
+        const [AddNameDialogComponent, showAddNameDialog] = useDialog<NameResult>(AddNameDialog);
+        const [result, setResult] = useState('');
+
+        return (
+            <>
+                <Button
+                    label="Open Form Dialog"
+                    onClick={async () => {
+                        const [dialogResult, value] = await showAddNameDialog();
+                        if (dialogResult === DialogResult.Ok && value) {
+                            setResult(value.name);
+                        }
+                    }}
+                />
+                {result && <p>Last saved name: {result}</p>}
+                <AddNameDialogComponent />
             </>
         );
     }
@@ -103,23 +133,52 @@ export const WithForm: Story = {
 
 export const CustomButtons: Story = {
     render: () => {
-        const [visible, setVisible] = useState(false);
-        return (
-            <>
-                <Button label="Open Custom Dialog" onClick={() => setVisible(true)} />
+        type ActionResult = { action: 'draft' | 'publish' };
+
+        const CustomActionsDialog = () => {
+            const { closeDialog } = useDialogContext<ActionResult>();
+
+            return (
                 <Dialog
                     title="Custom Actions"
-                    visible={visible}
                     buttons={
                         <>
-                            <Button label="Save Draft" icon="pi pi-save" severity="secondary" onClick={() => setVisible(false)} />
-                            <Button label="Publish" icon="pi pi-send" onClick={() => setVisible(false)} />
+                            <Button
+                                label="Save Draft"
+                                icon="pi pi-save"
+                                severity="secondary"
+                                onClick={() => closeDialog(DialogResult.Ok, { action: 'draft' })}
+                            />
+                            <Button
+                                label="Publish"
+                                icon="pi pi-send"
+                                onClick={() => closeDialog(DialogResult.Ok, { action: 'publish' })}
+                            />
                         </>
                     }
-                    onClose={() => setVisible(false)}
+                    onCancel={() => closeDialog(DialogResult.Cancelled)}
                 >
                     <p>Choose what to do with your changes.</p>
                 </Dialog>
+            );
+        };
+
+        const [CustomActionsDialogComponent, showCustomActionsDialog] = useDialog<ActionResult>(CustomActionsDialog);
+        const [result, setResult] = useState('');
+
+        return (
+            <>
+                <Button
+                    label="Open Custom Dialog"
+                    onClick={async () => {
+                        const [dialogResult, value] = await showCustomActionsDialog();
+                        if (dialogResult === DialogResult.Ok && value) {
+                            setResult(value.action);
+                        }
+                    }}
+                />
+                {result && <p>Last action: {result}</p>}
+                <CustomActionsDialogComponent />
             </>
         );
     }
