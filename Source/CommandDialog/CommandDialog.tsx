@@ -15,7 +15,7 @@ import {
 
 export interface CommandDialogProps<TCommand extends object, TResponse = object>
     extends Omit<CommandFormProps<TCommand>, 'children'> {
-    visible: boolean;
+    visible?: boolean;
     header: string;
     confirmLabel?: string;
     cancelLabel?: string;
@@ -38,7 +38,7 @@ const CommandDialogWrapper = <TCommand extends object>({
     children
 }: {
     header: string;
-    visible: boolean;
+    visible?: boolean;
     width: string;
     confirmLabel: string;
     cancelLabel: string;
@@ -58,7 +58,7 @@ const CommandDialogWrapper = <TCommand extends object>({
         const result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<unknown>> }).execute();
         if (result.isSuccess) {
             await onConfirm(result);
-            return true;
+            return false;
         } else {
             setCommandResult(result);
             return false;
