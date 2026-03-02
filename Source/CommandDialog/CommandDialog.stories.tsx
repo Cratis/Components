@@ -126,11 +126,11 @@ const ServerValidationWrapper = () => {
             <CommandDialog<UpdateUserCommandWithServer>
                 command={UpdateUserCommandWithServer}
                 visible={visible}
-                header="Update User Information (with Server Validation)"
-                confirmLabel="Save"
+                title="Update User Information (with Server Validation)"
+                okLabel="Save"
                 cancelLabel="Cancel"
-                onConfirm={async (commandResult) => {
-                    setResult(JSON.stringify(commandResult));
+                onConfirm={async () => {
+                    setResult('Command executed successfully');
                     setVisible(false);
                 }}
                 onCancel={() => setVisible(false)}
@@ -162,11 +162,11 @@ const AwaitableWithResultWrapper = () => {
         return (
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
-                header="Update User Information (awaitable result)"
-                confirmLabel="Save"
+                title="Update User Information (awaitable result)"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 autoServerValidate={false}
-                onConfirm={async commandResult => closeDialog(DialogResult.Ok, commandResult)}
+                onConfirm={async () => closeDialog(DialogResult.Ok)}
                 onCancel={() => closeDialog(DialogResult.Cancelled)}
             >
                 <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder="Enter name (min 2 chars)" />
@@ -252,8 +252,8 @@ const EditUserWrapper = () => {
                 key={selectedUser?.email ?? 'empty'}
                 initialValues={selectedUser}
                 visible={visible}
-                header={`Edit User: ${selectedUser?.name ?? ''}`}
-                confirmLabel="Save"
+                title={`Edit User: ${selectedUser?.name ?? ''}`}
+                okLabel="Save"
                 cancelLabel="Cancel"
                 autoServerValidate={false}
                 onConfirm={async () => {
@@ -299,8 +299,8 @@ const CustomValidationWrapper = () => {
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
-                header="Add User (with Custom Validation)"
-                confirmLabel="Save"
+                title="Add User (with Custom Validation)"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 autoServerValidate={false}
                 onConfirm={async () => {
@@ -350,8 +350,8 @@ const ValidationOnBlurWrapper = () => {
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
-                header="Validation on Blur"
-                confirmLabel="Save"
+                title="Validation on Blur"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 validateOn="blur"
                 autoServerValidate={false}
@@ -381,8 +381,8 @@ const ValidationOnChangeWrapper = () => {
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
-                header="Validation on Change"
-                confirmLabel="Save"
+                title="Validation on Change"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 validateOn="change"
                 autoServerValidate={false}
@@ -412,8 +412,8 @@ const ValidateOnInitWrapper = () => {
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
-                header="Validate on Initialization"
-                confirmLabel="Save"
+                title="Validate on Initialization"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 validateOnInit={true}
                 autoServerValidate={false}
@@ -444,8 +444,8 @@ const ValidateAllFieldsWrapper = () => {
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
-                header="Validate All Fields on Change"
-                confirmLabel="Save"
+                title="Validate All Fields on Change"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 validateOn="blur"
                 validateAllFieldsOnChange={true}
@@ -485,20 +485,18 @@ const BeforeExecuteWrapper = () => {
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
-                header="Before Execute Callback"
-                confirmLabel="Save"
+                title="Before Execute Callback"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 autoServerValidate={false}
                 initialValues={{ name: '', email: '', age: 18 }}
                 onBeforeExecute={(command) => {
                     command.name = command.name.trim().replace(/\s+/g, ' ');
                     command.email = command.email.toLowerCase().trim();
+                    setPreprocessedData(JSON.stringify(command, null, 2));
                     return command;
                 }}
-                onConfirm={async (result) => {
-                    setPreprocessedData(JSON.stringify(result, null, 2));
-                    setVisible(false);
-                }}
+                onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >
                 <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder='Try "  Extra   Spaces  "' />
@@ -524,8 +522,8 @@ const WithIconsWrapper = () => {
             <CommandDialog<UpdateUserCommand>
                 command={UpdateUserCommand}
                 visible={visible}
-                header="Fields with Icons"
-                confirmLabel="Save"
+                title="Fields with Icons"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}
@@ -619,8 +617,8 @@ const MultiColumnWrapper = () => {
             <CommandDialog<UpdateProfileCommand>
                 command={UpdateProfileCommand}
                 visible={visible}
-                header="Edit Profile"
-                confirmLabel="Save"
+                title="Edit Profile"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 width="70vw"
                 autoServerValidate={false}
@@ -658,8 +656,8 @@ const MixedChildrenWrapper = () => {
             <CommandDialog<UpdateProfileCommand>
                 command={UpdateProfileCommand}
                 visible={visible}
-                header="Edit Profile (Mixed Children)"
-                confirmLabel="Save"
+                title="Edit Profile (Mixed Children)"
+                okLabel="Save"
                 cancelLabel="Cancel"
                 autoServerValidate={false}
                 onConfirm={async () => setVisible(false)}

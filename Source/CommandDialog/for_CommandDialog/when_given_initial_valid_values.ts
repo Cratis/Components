@@ -47,9 +47,7 @@ describe('when CommandDialog is given initial valid values', () => {
             command: TestCommand as unknown as new () => object,
             initialValues: { name: 'John Doe' } as Partial<TestCommand>,
             visible: true,
-            header: 'Test Dialog',
-            onConfirm: () => {},
-            onCancel: () => {}
+            title: 'Test Dialog'
         });
         html = renderToStaticMarkup(element);
     });

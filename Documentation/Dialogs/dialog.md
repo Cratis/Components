@@ -68,6 +68,7 @@ const MyComponent = () => {
 - `onClose`: Fallback close callback
 - `buttons`: Predefined `DialogButtons` or custom footer content
 - `width`: Dialog width
+- `style`: Custom dialog style forwarded to PrimeReact `Dialog`
 - `resizable`: Enables resize
 - `isValid`: Enables or disables confirm actions
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels
@@ -75,4 +76,6 @@ const MyComponent = () => {
 ## Notes
 
 - Prefer `onConfirm` and `onCancel` over `onClose` for clear intent.
+- `onConfirm` and `onCancel` should return `true` to close when used.
+- `onClose` closes unless it returns `false`.
 - For typed, awaitable dialogs, let the dialog call `closeDialog(...)` from `useDialogContext<T>()`.
