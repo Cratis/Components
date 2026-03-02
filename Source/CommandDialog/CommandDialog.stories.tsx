@@ -88,67 +88,6 @@ class UpdateUserCommandWithServer extends Command<object> {
     }
 }
 
-const DialogWrapper = () => {
-    const [visible, setVisible] = useState(true);
-    const [result, setResult] = useState<string>('');
-    const [validationErrors, setValidationErrors] = useState<string[]>([]);
-
-    return (
-        <div className="storybook-wrapper">
-            <button
-                className="p-button p-component mb-3"
-                onClick={() => {
-                    setVisible(true);
-                    setValidationErrors([]);
-                    setResult('');
-                }}
-            >
-                Open Dialog
-            </button>
-
-            {validationErrors.length > 0 && (
-                <div className="p-3 mt-3 bg-red-100 border-round">
-                    <strong>Validation Errors:</strong>
-                    <ul className="mt-2 mb-0">
-                        {validationErrors.map((error, index) => (
-                            <li key={index}>{error}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-
-            {result && (
-                <div className="p-3 mt-3 bg-green-100 border-round">
-                    <strong>Command executed:</strong> {result}
-                </div>
-            )}
-
-            <CommandDialog<UpdateUserCommand>
-                command={UpdateUserCommand}
-                visible={visible}
-                header="Update User Information (with Validation)"
-                confirmLabel="Save"
-                cancelLabel="Cancel"
-                autoServerValidate={false}
-                onConfirm={async (commandResult) => {
-                    setResult(JSON.stringify(commandResult));
-                    setVisible(false);
-                }}
-                onCancel={() => setVisible(false)}
-                onFieldChange={(command) => {
-                    // Client-side only validation - validate as fields change
-                    const errors = command.validation?.validate(command) ?? [];
-                    setValidationErrors(errors.map(v => v.message));
-                }}
-            >
-                <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder="Enter name (min 2 chars)" />
-                <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder="Enter email" type="email" />
-                <NumberField value={(c: UpdateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
-            </CommandDialog>
-        </div>
-    );
-};
-
 const ServerValidationWrapper = () => {
     const [visible, setVisible] = useState(true);
     const [result, setResult] = useState<string>('');
