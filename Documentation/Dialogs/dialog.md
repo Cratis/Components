@@ -1,75 +1,78 @@
 # Dialog
 
-Base dialog component for creating custom dialogs.
+Base dialog component for creating typed dialogs that can be awaited.
 
-## Purpose
+## Recommended Pattern
 
-The Dialog component provides a customizable modal dialog foundation for building various types of dialogs.
+Use `useDialog<T>()` at the call site and `useDialogContext<T>()` inside the dialog component.
 
-## Key Features
+- The caller opens the dialog with `await` and receives `[dialogResult, value]`
+- The dialog closes itself through `closeDialog(...)`
+- The generic `T` is the value returned from the dialog
 
-- Customizable header and footer
-- Flexible button configuration
-- Modal and non-modal modes
-- Responsive sizing
-- Integration with PrimeReact Dialog
+This pattern gives strongly typed dialog results and a simple async flow.
 
-## Basic Usage
+## Example
 
 ```typescript
-import { Dialog } from '@cratis/components';
+import { useState } from 'react';
+import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
+import { Dialog } from '@cratis/components/Dialogs';
 
-function MyComponent() {
-    const [visible, setVisible] = useState(false);
+type Project = {
+    id: string;
+    name: string;
+};
+
+const AddProjectDialog = () => {
+    const { closeDialog } = useDialogContext<Project>();
+    const [name, setName] = useState('');
 
     return (
         <Dialog
-            title="My Dialog"
-            visible={visible}
-            onCancel={() => setVisible(false)}
-            buttons={null}
+            title='Add project'
+            isValid={name.trim().length > 0}
+            onConfirm={() => closeDialog(DialogResult.Ok, { id: crypto.randomUUID(), name })}
+            onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
-            <p>Dialog content goes here</p>
+            {/* Dialog content */}
         </Dialog>
     );
-}
+};
+
+const MyComponent = () => {
+    const [AddProjectDialogWrapper, showAddProjectDialog] = useDialog<Project>(AddProjectDialog);
+
+    const handleAddProject = async () => {
+        const [result, project] = await showAddProjectDialog();
+        if (result === DialogResult.Ok && project) {
+            // Use the typed result
+        }
+    };
+
+    return (
+        <>
+            <button onClick={handleAddProject}>Add project</button>
+            <AddProjectDialogWrapper />
+        </>
+    );
+};
 ```
 
 ## Props
 
 - `title`: Dialog header text
-- `visible`: Controls visibility
-- `onCancel`: Callback when dialog is closed
-- `buttons`: Button configuration (or null for no buttons)
+- `visible`: Controls visibility (defaults to `true`)
+- `onConfirm`: Callback for confirm actions
+- `onCancel`: Callback for cancel actions
+- `onClose`: Fallback close callback
+- `buttons`: Predefined `DialogButtons` or custom footer content
 - `width`: Dialog width
-- `style`: Custom CSS styles
+- `resizable`: Enables resize
+- `isValid`: Enables or disables confirm actions
+- `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels
 
-## With Custom Buttons
+## Notes
 
-```typescript
-const buttons = [
-    {
-        label: 'Save',
-        icon: 'pi pi-check',
-        onClick: handleSave
-    },
-    {
-        label: 'Cancel',
-        icon: 'pi pi-times',
-        onClick: () => setVisible(false)
-    }
-];
-
-<Dialog
-    title="Edit Item"
-    visible={visible}
-    onCancel={() => setVisible(false)}
-    buttons={buttons}
->
-    {/* Content */}
-</Dialog>
-```
-
-## Integration
-
-Integrates with PrimeReact Dialog component for consistent styling and behavior.
+- Prefer `onConfirm` and `onCancel` over `onClose` for clear intent.
+- For typed, awaitable dialogs, let the dialog call `closeDialog(...)` from `useDialogContext<T>()`.
