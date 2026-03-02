@@ -61,24 +61,27 @@ export const Dialog = ({
     );
 
     const handleClose = async (result: DialogResult) => {
-        // Use new onConfirm/onCancel callbacks if provided, otherwise fall back to onClose
-        let closeResult: boolean | void | Promise<boolean> | Promise<void> = true;
-        
+        let shouldCloseThroughContext = true;
+
         if (result === DialogResult.Ok || result === DialogResult.Yes) {
             if (onConfirm) {
-                closeResult = await onConfirm();
+                const closeResult = await onConfirm();
+                shouldCloseThroughContext = closeResult === true;
             } else if (onClose) {
-                closeResult = await onClose(result);
+                const closeResult = await onClose(result);
+                shouldCloseThroughContext = closeResult !== false;
             }
         } else {
             if (onCancel) {
-                closeResult = await onCancel();
+                const closeResult = await onCancel();
+                shouldCloseThroughContext = closeResult === true;
             } else if (onClose) {
-                closeResult = await onClose(result);
+                const closeResult = await onClose(result);
+                shouldCloseThroughContext = closeResult !== false;
             }
         }
-        
-        if (closeResult !== false) {
+
+        if (shouldCloseThroughContext) {
             contextCloseDialog?.(result);
         }
     };
