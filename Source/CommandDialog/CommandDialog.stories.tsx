@@ -129,8 +129,8 @@ const ServerValidationWrapper = () => {
                 title="Update User Information (with Server Validation)"
                 okLabel="Save"
                 cancelLabel="Cancel"
-                onConfirm={async (commandResult) => {
-                    setResult(JSON.stringify(commandResult));
+                onConfirm={async () => {
+                    setResult('Command executed successfully');
                     setVisible(false);
                 }}
                 onCancel={() => setVisible(false)}
@@ -493,12 +493,10 @@ const BeforeExecuteWrapper = () => {
                 onBeforeExecute={(command) => {
                     command.name = command.name.trim().replace(/\s+/g, ' ');
                     command.email = command.email.toLowerCase().trim();
+                    setPreprocessedData(JSON.stringify(command, null, 2));
                     return command;
                 }}
-                onConfirm={async (result) => {
-                    setPreprocessedData(JSON.stringify(result, null, 2));
-                    setVisible(false);
-                }}
+                onConfirm={async () => setVisible(false)}
                 onCancel={() => setVisible(false)}
             >
                 <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder='Try "  Extra   Spaces  "' />
