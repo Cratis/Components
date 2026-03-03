@@ -30,9 +30,9 @@ export function useWheelZoom(
       //   2 = DOM_DELTA_PAGE   (rare, treated same as pixel for safety)
       let factor: number;
       if (e.deltaMode === 1) {
-        factor = 0.05; // line-mode: each "line" gives a moderate zoom step
+        factor = 0.12; // line-mode: each "line" gives a noticeable zoom step
       } else {
-        factor = 0.003; // pixel-mode (trackpad pinch) and page-mode: small per-pixel step
+        factor = 0.01; // pixel-mode (trackpad pinch) and page-mode: fast zoom step
       }
       const delta = -e.deltaY * factor;
       const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomLevel + delta));

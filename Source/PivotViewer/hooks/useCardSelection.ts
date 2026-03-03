@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useCallback } from 'react';
+import type React from 'react';
 import { handleCardSelection } from '../utils/selection';
 import type { Layout } from '../utils/cardPosition';
 import type { ViewMode } from '../components/Toolbar';
@@ -20,6 +21,7 @@ interface UseCardSelectionParams<TItem extends object> {
     zoomLevel: number;
     viewMode: ViewMode;
     layout: Layout;
+    containerRef: React.RefObject<HTMLDivElement | null>;
     containerDimensions: { width: number; height: number };
     scrollPosition: { x: number; y: number };
     preSelectionState: { zoom: number; scrollLeft: number; scrollTop: number } | null;
@@ -39,6 +41,7 @@ export function useCardSelection<TItem extends object>({
     zoomLevel,
     viewMode,
     layout,
+    containerRef,
     containerDimensions,
     scrollPosition,
     preSelectionState,
@@ -53,8 +56,8 @@ export function useCardSelection<TItem extends object>({
     return useCallback((item: TItem, e: MouseEvent, id?: number | string) => {
         if (isPanning) return;
 
-        // Get container element from event target
-        const container = (e.target as Element)?.closest('.pv-main')?.parentElement as HTMLDivElement | null;
+        // Use the containerRef directly as the scrollable viewport
+        const container = containerRef.current;
         if (!container) return;
 
         // Resolve item ID
@@ -122,5 +125,5 @@ export function useCardSelection<TItem extends object>({
             zoomLevel,
             totalHeight: targetTotalHeight,
         });
-    }, [isPanning, selectedItem, zoomLevel, preSelectionState, viewMode, resolveId, setZoomLevel, layout, grouping, containerDimensions, scrollPosition, data, getItemId]);
+    }, [isPanning, selectedItem, zoomLevel, preSelectionState, viewMode, resolveId, setZoomLevel, layout, grouping, containerRef, containerDimensions, scrollPosition, data, getItemId]);
 }
