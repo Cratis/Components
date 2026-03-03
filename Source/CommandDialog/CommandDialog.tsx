@@ -4,7 +4,7 @@
 import { ICommandResult } from '@cratis/arc/commands';
 import { DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
 import { Dialog, type DialogProps } from '../Dialogs/Dialog';
-import React from 'react';
+import React, { useState } from 'react';
 import {
     CommandForm,
     CommandFormFieldWrapper,
@@ -56,6 +56,7 @@ const CommandDialogWrapper = <TCommand extends object>({
 }) => {
     const { setCommandValues, setCommandResult, isValid: isCommandFormValid } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
+    const [isBusy, setIsBusy] = useState(false);
 
     const handleConfirm = async () => {
         if (onBeforeExecute) {
@@ -63,7 +64,13 @@ const CommandDialogWrapper = <TCommand extends object>({
             setCommandValues(transformedValues);
         }
 
-        const result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<unknown>> }).execute();
+        setIsBusy(true);
+        let result: ICommandResult<unknown>;
+        try {
+            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<unknown>> }).execute();
+        } finally {
+            setIsBusy(false);
+        }
 
         if (!result.isSuccess) {
             setCommandResult(result);
@@ -123,6 +130,7 @@ const CommandDialogWrapper = <TCommand extends object>({
             yesLabel={yesLabel}
             noLabel={noLabel}
             isValid={isDialogValid}
+            isBusy={isBusy}
         >
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 {processedChildren}

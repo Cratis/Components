@@ -131,6 +131,45 @@ export const WithForm: Story = {
     }
 };
 
+const IsBusyWrapper = () => {
+    const [busy, setBusy] = useState(false);
+
+    const BusyDialog = () => {
+        const { closeDialog } = useDialogContext();
+
+        return (
+            <Dialog
+                title="Saving changes"
+                buttons={DialogButtons.OkCancel}
+                onConfirm={async () => {
+                    setBusy(true);
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    setBusy(false);
+                    closeDialog(DialogResult.Ok);
+                    return true;
+                }}
+                onCancel={() => closeDialog(DialogResult.Cancelled)}
+                isBusy={busy}
+            >
+                <p>Click Ok to simulate a 3-second save operation. All buttons become disabled and the primary button shows a spinner.</p>
+            </Dialog>
+        );
+    };
+
+    const [DialogComponent, showDialog] = useDialog(BusyDialog);
+
+    return (
+        <>
+            <Button label="Open Dialog" onClick={async () => await showDialog()} />
+            <DialogComponent />
+        </>
+    );
+};
+
+export const IsBusy: Story = {
+    render: () => <IsBusyWrapper />,
+};
+
 export const CustomButtons: Story = {
     render: () => {
         type ActionResult = { action: 'draft' | 'publish' };
