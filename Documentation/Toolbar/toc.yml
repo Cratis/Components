@@ -1,2 +1,18 @@
 - name: Overview
   href: index.md
+- name: Basic Usage
+  href: basic-usage.md
+- name: Orientation
+  href: orientation.md
+- name: Active State
+  href: active-state.md
+- name: Separators
+  href: sections.md
+- name: Context Switching
+  href: context-switching.md
+- name: Fan-Out Sub-Panel
+  href: fan-out.md
+- name: Multiple Groups
+  href: multiple-groups.md
+- name: Tooltip Position
+  href: tooltip-position.md

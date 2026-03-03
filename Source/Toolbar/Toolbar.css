@@ -77,6 +77,26 @@
     pointer-events: none;
 }
 
+/* ── Toolbar separator ───────────────────────────────────────────────────── */
+
+.toolbar-separator {
+    background: var(--surface-border);
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+/* Separator inside a vertical toolbar — renders as a horizontal rule */
+.toolbar-separator--in-vertical {
+    height: 1px;
+    margin: 0.125rem 0.25rem;
+}
+
+/* Separator inside a horizontal toolbar — renders as a vertical rule */
+.toolbar-separator--in-horizontal {
+    width: 1px;
+    margin: 0.25rem 0.125rem;
+}
+
 /* ── Toolbar fan-out item ────────────────────────────────────────────────── */
 
 /*

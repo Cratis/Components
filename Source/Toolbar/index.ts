@@ -9,5 +9,7 @@ export { ToolbarContext } from './ToolbarContext';
 export type { ToolbarContextProps } from './ToolbarContext';
 export { ToolbarSection } from './ToolbarSection';
 export type { ToolbarSectionProps } from './ToolbarSection';
+export { ToolbarSeparator } from './ToolbarSeparator';
+export type { ToolbarSeparatorProps } from './ToolbarSeparator';
 export { ToolbarFanOutItem } from './ToolbarFanOutItem';
 export type { ToolbarFanOutItemProps } from './ToolbarFanOutItem';
