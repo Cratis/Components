@@ -7,7 +7,7 @@ The `Toolbar` component provides a canvas-style icon toolbar with support for or
 | Component | Description |
 |---|---|
 | `Toolbar` | Container that groups toolbar buttons into a pill-shaped bar |
-| `ToolbarButton` | Icon button with a hover tooltip |
+| `ToolbarButton` | Button with optional icon and optional text, including hover tooltip |
 | `ToolbarSeparator` | Visual divider that separates groups of buttons |
 | `ToolbarSection` | Section within a toolbar that animates between named contexts |
 | `ToolbarContext` | Named context (set of buttons) inside a `ToolbarSection` |

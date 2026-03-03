@@ -31,6 +31,13 @@
     color: var(--primary-color-text);
 }
 
+.toolbar-button__text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
 /* ── Toolbar project name label ──────────────────────────────────────────── */
 .toolbar-project-name {
     padding: 0 8px;

@@ -15,3 +15,23 @@ function MyToolbar() {
     );
 }
 ```
+
+`ToolbarButton` supports either an icon, text, or both. For text-first controls such as zoom indicators, provide the `text` prop:
+
+```tsx
+import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components';
+
+function ZoomToolbar() {
+    const [zoom, setZoom] = useState(120);
+
+    return (
+        <Toolbar orientation='horizontal'>
+            <ToolbarButton icon='pi pi-minus' tooltip='Zoom out' onClick={() => setZoom(value => value - 10)} />
+            <ToolbarButton text={`${zoom}%`} tooltip='Reset zoom' onClick={() => setZoom(100)} />
+            <ToolbarButton icon='pi pi-plus' tooltip='Zoom in' onClick={() => setZoom(value => value + 10)} />
+            <ToolbarSeparator orientation='horizontal' />
+            <ToolbarButton icon='pi pi-question-circle' tooltip='Help' />
+        </Toolbar>
+    );
+}
+```
