@@ -22,6 +22,7 @@ export interface DialogProps {
     style?: CSSProperties;
     resizable?: boolean;
     isValid?: boolean;
+    isBusy?: boolean;
     okLabel?: string;
     cancelLabel?: string;
     yesLabel?: string;
@@ -40,6 +41,7 @@ export const Dialog = ({
     style,
     resizable = false, 
     isValid,
+    isBusy = false,
     okLabel = 'Ok',
     cancelLabel = 'Cancel',
     yesLabel = 'Yes',
@@ -90,29 +92,29 @@ export const Dialog = ({
 
     const okFooter = (
         <>
-            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid} autoFocus />
+            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
         </>
     );
 
     const okCancelFooter = (
         <>
-            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid} autoFocus />
-            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} />
+            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
+            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} disabled={isBusy} />
         </>
     );
 
     const yesNoFooter = (
         <>
-            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid} autoFocus />
-            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} />
+            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
+            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} disabled={isBusy} />
         </>
     );
 
     const yesNoCancelFooter = (
         <>
-            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid} autoFocus />
-            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} />
-            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} />
+            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
+            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} disabled={isBusy} />
+            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} disabled={isBusy} />
         </>
     );
 
