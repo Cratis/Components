@@ -278,6 +278,7 @@ export function PivotViewer<TItem extends object>({
         viewMode,
         layout,
         containerRef,
+        spacerRef,
         containerDimensions,
         scrollPosition,
         preSelectionState,

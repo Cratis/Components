@@ -22,6 +22,7 @@ interface UseCardSelectionParams<TItem extends object> {
     viewMode: ViewMode;
     layout: Layout;
     containerRef: React.RefObject<HTMLDivElement | null>;
+    spacerRef: React.RefObject<HTMLDivElement | null>;
     containerDimensions: { width: number; height: number };
     scrollPosition: { x: number; y: number };
     preSelectionState: { zoom: number; scrollLeft: number; scrollTop: number } | null;
@@ -42,6 +43,7 @@ export function useCardSelection<TItem extends object>({
     viewMode,
     layout,
     containerRef,
+    spacerRef,
     containerDimensions,
     scrollPosition,
     preSelectionState,
@@ -114,7 +116,7 @@ export function useCardSelection<TItem extends object>({
             targetCardPosition,
             getCardPositionAtZoom: callbacks.getCardPositionAtZoom,
             getLayoutSizeAtZoom: callbacks.getLayoutSizeAtZoom,
-            spacer: container.querySelector('.pv-spacer') as HTMLDivElement,
+            spacer: spacerRef.current,
             preSelectionState,
             startScrollPosition: { x: scrollPosition.x, y: scrollPosition.y },
             setZoomLevel,
@@ -125,5 +127,5 @@ export function useCardSelection<TItem extends object>({
             zoomLevel,
             totalHeight: targetTotalHeight,
         });
-    }, [isPanning, selectedItem, zoomLevel, preSelectionState, viewMode, resolveId, setZoomLevel, layout, grouping, containerRef, containerDimensions, scrollPosition, data, getItemId]);
+    }, [isPanning, selectedItem, zoomLevel, preSelectionState, viewMode, resolveId, setZoomLevel, layout, grouping, containerRef, spacerRef, containerDimensions, scrollPosition, data, getItemId]);
 }
