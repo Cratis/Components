@@ -101,13 +101,20 @@ export function handleCardSelection<TItem>({
 
   if (isFirstSelection) {
     if (viewMode === 'collection') {
-      // Collection mode: just smooth scroll to center, no zoom
+      // Collection mode: animate scroll to center the selected card (no zoom change)
       if (cardPosition) {
-        // In collection mode, we don't have a detail panel width offset because the panel is an overlay or separate
-        // But if we want to center it, we should consider if the detail panel pushes content
-        // For now, assume 0 offset as per original code
+        setIsZooming(true);
         const { scrollLeft, scrollTop } = calculateCenterScrollPosition(container, cardPosition, zoomLevel, 0, totalHeight);
-        smoothScrollTo(container, scrollLeft, scrollTop, true);
+        animateZoomAndScroll({
+          container,
+          cardPosition,
+          startZoom: zoomLevel,
+          targetZoom: zoomLevel,
+          targetScrollLeft: scrollLeft,
+          targetScrollTop: scrollTop,
+          onUpdate: setZoomLevel,
+          onComplete: () => setIsZooming(false),
+        });
       }
     } else {
       // Grouped mode: animate zoom and scroll
@@ -127,13 +134,21 @@ export function handleCardSelection<TItem>({
       });
     }
   } else {
-    // Subsequent selections: just center the new card
+    // Subsequent selections: animate the scroll to center the new card
     if (cardPosition) {
-      // In collection mode, we don't zoom, so we just center.
-      // In grouped mode, we might be zoomed in, so we center with offset.
+      setIsZooming(true);
       const detailWidth = viewMode === 'collection' ? 0 : DETAIL_PANEL_WIDTH;
       const { scrollLeft, scrollTop } = calculateCenterScrollPosition(container, cardPosition, zoomLevel, detailWidth, totalHeight);
-      smoothScrollTo(container, scrollLeft, scrollTop, true);
+      animateZoomAndScroll({
+        container,
+        cardPosition,
+        startZoom: zoomLevel,
+        targetZoom: zoomLevel,
+        targetScrollLeft: scrollLeft,
+        targetScrollTop: scrollTop,
+        onUpdate: setZoomLevel,
+        onComplete: () => setIsZooming(false),
+      });
     }
   }
 }

@@ -24,7 +24,17 @@ export function useWheelZoom(
       const scrollX = container.scrollLeft;
       const scrollY = container.scrollTop;
 
-      const delta = -e.deltaY * 0.01;
+      // Normalize delta based on deltaMode:
+      //   0 = DOM_DELTA_PIXEL  (trackpad pinch — deltaY is in pixels, small values)
+      //   1 = DOM_DELTA_LINE   (mouse wheel   — deltaY is in lines, typically 3)
+      //   2 = DOM_DELTA_PAGE   (rare, treated same as pixel for safety)
+      let factor: number;
+      if (e.deltaMode === 1) {
+        factor = 0.05; // line-mode: each "line" gives a moderate zoom step
+      } else {
+        factor = 0.003; // pixel-mode (trackpad pinch) and page-mode: small per-pixel step
+      }
+      const delta = -e.deltaY * factor;
       const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomLevel + delta));
       const zoomRatio = newZoom / zoomLevel;
 
