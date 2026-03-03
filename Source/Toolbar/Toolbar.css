@@ -31,6 +31,13 @@
     color: var(--primary-color-text);
 }
 
+.toolbar-button__text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+}
+
 /* ── Toolbar project name label ──────────────────────────────────────────── */
 .toolbar-project-name {
     padding: 0 8px;
@@ -75,6 +82,26 @@
 .toolbar-context--inactive {
     opacity: 0;
     pointer-events: none;
+}
+
+/* ── Toolbar separator ───────────────────────────────────────────────────── */
+
+.toolbar-separator {
+    background: var(--surface-border);
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+/* Separator inside a vertical toolbar — renders as a horizontal rule */
+.toolbar-separator--in-vertical {
+    height: 1px;
+    margin: 0.125rem 0.25rem;
+}
+
+/* Separator inside a horizontal toolbar — renders as a vertical rule */
+.toolbar-separator--in-horizontal {
+    width: 1px;
+    margin: 0.25rem 0.125rem;
 }
 
 /* ── Toolbar fan-out item ────────────────────────────────────────────────── */

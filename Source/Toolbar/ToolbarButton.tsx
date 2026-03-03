@@ -7,7 +7,10 @@ import type { TooltipPosition } from '../Common/Tooltip';
 /** Props for the {@link ToolbarButton} component. */
 export interface ToolbarButtonProps {
     /** The PrimeIcons CSS class to use as the icon (e.g. 'pi pi-home'). */
-    icon: string;
+    icon?: string;
+
+    /** Optional text to render inside the button (e.g. '120%'). */
+    text?: string;
 
     /** Tooltip text shown when the user hovers over the button. */
     tooltip: string;
@@ -26,8 +29,16 @@ export interface ToolbarButtonProps {
  * An icon button with a tooltip, intended to be placed inside a {@link Toolbar}.
  * Uses the shared {@link Tooltip} component for consistent hover labels.
  */
-export const ToolbarButton = ({ icon, tooltip, active = false, onClick, tooltipPosition = 'right' }: ToolbarButtonProps) => {
+export const ToolbarButton = ({ icon, text, tooltip, active = false, onClick, tooltipPosition = 'right' }: ToolbarButtonProps) => {
     const activeClass = active ? 'toolbar-button--active' : '';
+    const hasText = typeof text === 'string' && text.length > 0;
+    const hasIcon = typeof icon === 'string' && icon.length > 0;
+    const buttonContent = hasText
+        ? <span className='toolbar-button__text'>{text}</span>
+        : hasIcon
+            ? <i className={`${icon} text-lg`} />
+            : null;
+    const buttonSizeClass = hasText ? 'h-10 px-3 min-w-[4rem]' : 'w-10 h-10';
 
     return (
         <Tooltip content={tooltip} position={tooltipPosition}>
@@ -35,9 +46,9 @@ export const ToolbarButton = ({ icon, tooltip, active = false, onClick, tooltipP
                 type='button'
                 aria-label={tooltip}
                 onClick={onClick}
-                className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
+                className={`toolbar-button ${buttonSizeClass} flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
             >
-                <i className={`${icon} text-lg`} />
+                {buttonContent}
             </button>
         </Tooltip>
     );

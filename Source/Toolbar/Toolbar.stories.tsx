@@ -8,6 +8,7 @@ import { ToolbarButton } from './ToolbarButton';
 import { ToolbarContext } from './ToolbarContext';
 import { ToolbarFanOutItem } from './ToolbarFanOutItem';
 import { ToolbarSection } from './ToolbarSection';
+import { ToolbarSeparator } from './ToolbarSeparator';
 
 const meta: Meta<typeof Toolbar> = {
     title: 'Components/Toolbar',
@@ -151,6 +152,56 @@ export const WithContexts: Story = {
         };
 
         return <WithContextsDemo />;
+    },
+};
+
+/**
+ * Demonstrates {@link ToolbarSeparator} in a horizontal toolbar.
+ *
+ * The separator renders as a thin vertical line between groups of buttons,
+ * matching the style seen in canvas-based tools (e.g. Miro, Figma).
+ * When the toolbar is vertical the line is horizontal.
+ */
+export const WithSeparators: Story = {
+    render: () => (
+        <Toolbar orientation='horizontal'>
+            <ToolbarButton icon='pi pi-th-large' tooltip='Overview' tooltipPosition='bottom' />
+            <ToolbarSeparator orientation='horizontal' />
+            <ToolbarButton icon='pi pi-minus' tooltip='Zoom out' tooltipPosition='bottom' />
+            <ToolbarButton icon='pi pi-plus' tooltip='Zoom in' tooltipPosition='bottom' />
+            <ToolbarSeparator orientation='horizontal' />
+            <ToolbarButton icon='pi pi-question-circle' tooltip='Help' tooltipPosition='bottom' />
+        </Toolbar>
+    ),
+};
+
+/**
+ * Demonstrates a zoom-style horizontal toolbar where the center text button
+ * resets the zoom level to 100% when clicked.
+ */
+export const ZoomBar: Story = {
+    render: () => {
+        const ZoomBarDemo = () => {
+            const [zoom, setZoom] = useState<number>(120);
+
+            const zoomOut = () => setZoom(current => Math.max(50, current - 10));
+            const zoomIn = () => setZoom(current => Math.min(300, current + 10));
+            const resetZoom = () => setZoom(100);
+
+            return (
+                <Toolbar orientation='horizontal'>
+                    <ToolbarButton icon='pi pi-th-large' tooltip='Overview' tooltipPosition='bottom' />
+                    <ToolbarSeparator orientation='horizontal' />
+                    <ToolbarButton icon='pi pi-minus' tooltip='Zoom out' tooltipPosition='bottom' onClick={zoomOut} />
+                    <ToolbarButton text={`${zoom}%`} tooltip='Reset zoom' tooltipPosition='bottom' onClick={resetZoom} />
+                    <ToolbarButton icon='pi pi-plus' tooltip='Zoom in' tooltipPosition='bottom' onClick={zoomIn} />
+                    <ToolbarSeparator orientation='horizontal' />
+                    <ToolbarButton icon='pi pi-question-circle' tooltip='Help' tooltipPosition='bottom' />
+                </Toolbar>
+            );
+        };
+
+        return <ZoomBarDemo />;
     },
 };
 
