@@ -13,6 +13,7 @@ CommandDialog simplifies the process of presenting a command form to users withi
 - Field-level change tracking
 - Pre-execution transformation of values
 - Success and cancellation handling
+- Busy state management during command execution (buttons disabled, spinner shown)
 - Integration with Cratis Arc command system
 
 ## Recommended Usage Pattern
@@ -107,6 +108,14 @@ function MyComponent() {
 - If `onConfirm` is not provided, `onClose(DialogResult.Ok)` is used.
 - `onCancel` follows the same behavior as `Dialog` (`true` closes).
 - `onClose` closes unless it returns `false`.
+
+## Busy State
+
+`CommandDialog` automatically manages a busy state during command execution:
+
+- When the Ok/Yes button is clicked and command execution begins, all buttons are disabled and the primary button shows a loading spinner.
+- Once execution completes (success or failure), the buttons return to their normal state.
+- This prevents duplicate submissions and gives users clear visual feedback.
 
 ## Context
 

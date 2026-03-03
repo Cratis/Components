@@ -61,6 +61,46 @@ class UpdateUserCommand extends Command<object> {
     }
 }
 
+/** Command that simulates a 2-second server delay to demonstrate the busy state. */
+class DemoSlowUpdateUserCommand extends Command<object> {
+    readonly route: string = '/api/users/update';
+    readonly validation: CommandValidator = new UpdateUserCommandValidator();
+    readonly propertyDescriptors: PropertyDescriptor[] = [
+        new PropertyDescriptor('name', String),
+        new PropertyDescriptor('email', String),
+        new PropertyDescriptor('age', Number),
+    ];
+
+    name = '';
+    email = '';
+    age = 0;
+
+    constructor() {
+        super(Object, false);
+    }
+
+    get requestParameters(): string[] {
+        return [];
+    }
+
+    get properties(): string[] {
+        return ['name', 'email', 'age'];
+    }
+
+    override async validate(): Promise<CommandResult<object>> {
+        const errors = this.validation?.validate(this) ?? [];
+        if (errors.length > 0) {
+            return CommandResult.validationFailed(errors);
+        }
+        return CommandResult.empty;
+    }
+
+    override async execute(): Promise<CommandResult<object>> {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        return CommandResult.empty;
+    }
+}
+
 /** Variant that keeps the original server-calling validate() for the WithServerValidation story. */
 class UpdateUserCommandWithServer extends Command<object> {
     readonly route: string = '/api/users/update';
@@ -680,4 +720,51 @@ const MixedChildrenWrapper = () => {
 
 export const MixedChildren: Story = {
     render: () => <MixedChildrenWrapper />,
+};
+
+const WithBusyStateWrapper = () => {
+    const [visible, setVisible] = useState(true);
+    const [result, setResult] = useState<string>('');
+
+    return (
+        <div className="storybook-wrapper">
+            <button
+                className="p-button p-component mb-3"
+                onClick={() => {
+                    setResult('');
+                    setVisible(true);
+                }}
+            >
+                Open Dialog
+            </button>
+
+            {result && (
+                <div className="p-3 mt-3 bg-green-100 border-round">
+                    <strong>Saved:</strong> {result}
+                </div>
+            )}
+
+            <CommandDialog<DemoSlowUpdateUserCommand>
+                command={DemoSlowUpdateUserCommand}
+                visible={visible}
+                title="Save User (2s simulated delay)"
+                okLabel="Save"
+                cancelLabel="Cancel"
+                autoServerValidate={false}
+                onConfirm={async () => {
+                    setResult('User saved successfully');
+                    setVisible(false);
+                }}
+                onCancel={() => setVisible(false)}
+            >
+                <InputTextField value={(c: DemoSlowUpdateUserCommand) => c.name} title="Name" placeholder="Enter name (min 2 chars)" />
+                <InputTextField value={(c: DemoSlowUpdateUserCommand) => c.email} title="Email" placeholder="Enter email" type="email" />
+                <NumberField value={(c: DemoSlowUpdateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
+            </CommandDialog>
+        </div>
+    );
+};
+
+export const WithBusyState: Story = {
+    render: () => <WithBusyStateWrapper />,
 };

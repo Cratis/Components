@@ -71,6 +71,7 @@ const MyComponent = () => {
 - `style`: Custom dialog style forwarded to PrimeReact `Dialog`
 - `resizable`: Enables resize
 - `isValid`: Enables or disables confirm actions
+- `isBusy`: When `true`, disables all buttons and shows a loading spinner on the primary action button
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels
 
 ## Notes
