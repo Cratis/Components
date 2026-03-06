@@ -14,7 +14,11 @@ import {
     TextAreaField,
     CheckboxField,
     SliderField,
-    DropdownField
+    DropdownField,
+    CalendarField,
+    ColorPickerField,
+    MultiSelectField,
+    ChipsField
 } from './index';
 
 const meta: Meta = {
@@ -40,6 +44,10 @@ class FormFieldsCommand extends Command {
         new PropertyDescriptor('checkbox', Boolean),
         new PropertyDescriptor('slider', Number),
         new PropertyDescriptor('dropdown', String),
+        new PropertyDescriptor('calendarDate', Date),
+        new PropertyDescriptor('color', String),
+        new PropertyDescriptor('multiSelect', Array),
+        new PropertyDescriptor('chips', Array),
     ];
 
     textInput = '';
@@ -50,6 +58,10 @@ class FormFieldsCommand extends Command {
     checkbox = false;
     slider = 50;
     dropdown = '';
+    calendarDate: Date | null = null;
+    color = '';
+    multiSelect: Array<string | number> = [];
+    chips: string[] = [];
 
     constructor() {
         super(Object, false);
@@ -68,7 +80,11 @@ class FormFieldsCommand extends Command {
             'textArea',
             'checkbox',
             'slider',
-            'dropdown'
+            'dropdown',
+            'calendarDate',
+            'color',
+            'multiSelect',
+            'chips'
         ];
     }
 }
@@ -89,6 +105,13 @@ const dropdownOptions = [
     { id: 'option2', name: 'Option 2' },
     { id: 'option3', name: 'Option 3' },
     { id: 'option4', name: 'Option 4' }
+];
+
+const multiSelectOptions = [
+    { id: 'feature1', name: 'Feature 1' },
+    { id: 'feature2', name: 'Feature 2' },
+    { id: 'feature3', name: 'Feature 3' },
+    { id: 'feature4', name: 'Feature 4' }
 ];
 
 export const AllFields: Story = {
@@ -118,6 +141,10 @@ export const AllFields: Story = {
                         checkbox: false,
                         slider: 50,
                         dropdown: '',
+                        calendarDate: null,
+                        color: '10b981',
+                        multiSelect: ['feature1', 'feature3'],
+                        chips: ['alpha', 'beta'],
                     }}
                     onFieldChange={async (command, fieldName) => {
                         // Validate on field change
@@ -241,6 +268,66 @@ export const AllFields: Story = {
                                 {validationState.errors.dropdown}
                             </div>
                         )}
+                    </StorySection>
+
+                    <StoryDivider />
+
+                    <StorySection>
+                        <h3>Calendar</h3>
+
+                        <CalendarField<FormFieldsCommand>
+                            value={c => c.calendarDate}
+                            title="Calendar Field"
+                            description="PrimeReact Calendar component for selecting dates"
+                            placeholder="Select a date"
+                            showIcon
+                            dateFormat="mm/dd/yy"
+                        />
+                    </StorySection>
+
+                    <StoryDivider />
+
+                    <StorySection>
+                        <h3>Color Picker</h3>
+
+                        <ColorPickerField<FormFieldsCommand>
+                            value={c => c.color}
+                            title="Color Picker Field"
+                            description="PrimeReact ColorPicker for selecting hex colors"
+                        />
+                    </StorySection>
+
+                    <StoryDivider />
+
+                    <StorySection>
+                        <h3>MultiSelect</h3>
+
+                        <MultiSelectField<FormFieldsCommand>
+                            value={c => c.multiSelect}
+                            title="MultiSelect Field"
+                            description="PrimeReact MultiSelect for selecting multiple options"
+                            placeholder="Choose one or more features"
+                            options={multiSelectOptions}
+                            optionValue="id"
+                            optionLabel="name"
+                            display="chip"
+                            filter
+                            showClear
+                        />
+                    </StorySection>
+
+                    <StoryDivider />
+
+                    <StorySection>
+                        <h3>Chips</h3>
+
+                        <ChipsField<FormFieldsCommand>
+                            value={c => c.chips}
+                            title="Chips Field"
+                            description="PrimeReact Chips for entering multiple text values"
+                            placeholder="Add tags and press Enter"
+                            separator=","
+                        />
                     </StorySection>
 
                     <StoryDivider />
@@ -443,6 +530,100 @@ export const CheckboxFieldExample: Story = {
                     <CheckboxField<FormFieldsCommand>
                         value={c => c.checkbox}
                         label="I have read and agree to the terms"
+                    />
+                </CommandForm>
+            </StoryContainer>
+        );
+    }
+};
+
+export const CalendarFieldExample: Story = {
+    render: () => {
+        return (
+            <StoryContainer size="sm" asCard>
+                <h2>CalendarField</h2>
+                <p>PrimeReact Calendar for selecting date values.</p>
+
+                <CommandForm<FormFieldsCommand>
+                    command={FormFieldsCommand}
+                    initialValues={{ calendarDate: null }}
+                >
+                    <CalendarField<FormFieldsCommand>
+                        value={c => c.calendarDate}
+                        title="Start Date"
+                        placeholder="Pick a date"
+                        showIcon
+                    />
+                </CommandForm>
+            </StoryContainer>
+        );
+    }
+};
+
+export const ColorPickerFieldExample: Story = {
+    render: () => {
+        return (
+            <StoryContainer size="sm" asCard>
+                <h2>ColorPickerField</h2>
+                <p>PrimeReact ColorPicker for selecting hex colors.</p>
+
+                <CommandForm<FormFieldsCommand>
+                    command={FormFieldsCommand}
+                    initialValues={{ color: '0ea5e9' }}
+                >
+                    <ColorPickerField<FormFieldsCommand>
+                        value={c => c.color}
+                        title="Brand Color"
+                    />
+                </CommandForm>
+            </StoryContainer>
+        );
+    }
+};
+
+export const MultiSelectFieldExample: Story = {
+    render: () => {
+        return (
+            <StoryContainer size="sm" asCard>
+                <h2>MultiSelectField</h2>
+                <p>PrimeReact MultiSelect for selecting multiple options from a list.</p>
+
+                <CommandForm<FormFieldsCommand>
+                    command={FormFieldsCommand}
+                    initialValues={{ multiSelect: ['feature2'] }}
+                >
+                    <MultiSelectField<FormFieldsCommand>
+                        value={c => c.multiSelect}
+                        title="Features"
+                        placeholder="Select features"
+                        options={multiSelectOptions}
+                        optionValue="id"
+                        optionLabel="name"
+                        display="chip"
+                        filter
+                    />
+                </CommandForm>
+            </StoryContainer>
+        );
+    }
+};
+
+export const ChipsFieldExample: Story = {
+    render: () => {
+        return (
+            <StoryContainer size="sm" asCard>
+                <h2>ChipsField</h2>
+                <p>PrimeReact Chips for entering and managing multiple text values.</p>
+
+                <CommandForm<FormFieldsCommand>
+                    command={FormFieldsCommand}
+                    initialValues={{ chips: ['urgent'] }}
+                >
+                    <ChipsField<FormFieldsCommand>
+                        value={c => c.chips}
+                        title="Tags"
+                        placeholder="Type a tag and press Enter"
+                        addOnBlur
                     />
                 </CommandForm>
             </StoryContainer>

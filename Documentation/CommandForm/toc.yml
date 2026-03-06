@@ -1,11 +1,19 @@
 - name: Overview
   href: index.md
+- name: CalendarField
+  href: calendar-field.md
 - name: CheckboxField
   href: checkbox-field.md
+- name: ChipsField
+  href: chips-field.md
+- name: ColorPickerField
+  href: color-picker-field.md
 - name: DropdownField
   href: dropdown-field.md
 - name: InputTextField
   href: input-text-field.md
+- name: MultiSelectField
+  href: multi-select-field.md
 - name: NumberField
   href: number-field.md
 - name: SliderField

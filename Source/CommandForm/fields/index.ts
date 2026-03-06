@@ -7,3 +7,7 @@ export * from './CheckboxField';
 export * from './TextAreaField';
 export * from './DropdownField';
 export * from './SliderField';
+export * from './CalendarField';
+export * from './ColorPickerField';
+export * from './MultiSelectField';
+export * from './ChipsField';
