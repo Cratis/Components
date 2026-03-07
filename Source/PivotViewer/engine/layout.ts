@@ -87,8 +87,10 @@ function computeGroupedLayout(
 
   const slotWidth = cardWidth + CARD_GAP;
   const slotHeight = cardHeight + CARD_GAP;
-  // Bottom margin matches the canvas padding for visual consistency
-  const BOTTOM_MARGIN = CANVAS_PADDING;
+  // Bottom gap = BOTTOM_MARGIN + CARD_GAP - CANVAS_PADDING.
+  // To match the left/right edge padding within each bucket (CARD_GAP / 2 = 5px):
+  // BOTTOM_MARGIN = CANVAS_PADDING - CARD_GAP + (CARD_GAP / 2) = CANVAS_PADDING - CARD_GAP / 2
+  const BOTTOM_MARGIN = CANVAS_PADDING - CARD_GAP / 2;
 
   // Fixed bucket width: 2 columns of cards per bucket (always)
   const COLUMNS_PER_BUCKET = 2;
@@ -154,7 +156,7 @@ function computeGroupedLayout(
   return {
     positions,
     totalWidth: groupX + CANVAS_PADDING,
-    totalHeight: contentHeight + (CANVAS_PADDING * 2),
+    totalHeight: contentHeight,
     bucketWidths,
     groupXs,
   };
