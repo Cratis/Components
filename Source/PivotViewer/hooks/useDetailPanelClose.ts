@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useCallback } from 'react';
+import type React from 'react';
 import { animateZoomAndScroll, smoothScrollTo } from '../utils/animations';
 import type { Layout } from '../utils/cardPosition';
 import type { ViewMode } from '../components/Toolbar';
@@ -18,6 +19,7 @@ interface UseDetailPanelCloseParams<TItem extends object> {
     zoomLevel: number;
     viewMode: ViewMode;
     layout: Layout;
+    containerRef: React.RefObject<HTMLDivElement | null>;
     containerDimensions: { width: number; height: number };
     grouping: unknown;
     data: TItem[];
@@ -34,6 +36,7 @@ export function useDetailPanelClose<TItem extends object>({
     zoomLevel,
     viewMode,
     layout,
+    containerRef,
     containerDimensions,
     grouping,
     data,
@@ -44,8 +47,8 @@ export function useDetailPanelClose<TItem extends object>({
     setPreSelectionState,
 }: UseDetailPanelCloseParams<TItem>) {
     return useCallback(() => {
-        // Get container element
-        const container = document.querySelector('.pv-main')?.parentElement as HTMLDivElement | null;
+        // Use the containerRef directly as the scrollable viewport
+        const container = containerRef.current;
         if (!container || !selectedItem) {
             setSelectedItem(null);
             return;
@@ -116,5 +119,5 @@ export function useDetailPanelClose<TItem extends object>({
                 setPreSelectionState(null);
             },
         });
-    }, [preSelectionState, selectedItem, zoomLevel, viewMode, resolveId, setZoomLevel, layout, grouping, containerDimensions, data, setSelectedItem, setPreSelectionState, setIsZooming]);
+    }, [preSelectionState, selectedItem, zoomLevel, viewMode, resolveId, setZoomLevel, layout, grouping, containerRef, containerDimensions, data, setSelectedItem, setPreSelectionState, setIsZooming]);
 }

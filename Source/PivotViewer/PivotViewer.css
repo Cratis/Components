@@ -799,16 +799,22 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Fade axis labels when switching views - matched to sprite animation duration (600ms) */
+/* Fade and collapse axis labels when switching views */
 .pivot-viewer .pv-axis-labels {
-  transition: opacity 600ms ease;
+  transition: opacity 600ms ease, max-height 600ms ease, padding 600ms ease, border-color 600ms ease;
+  overflow: hidden;
 }
 .pivot-viewer .pv-axis-labels.hidden {
   opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top-color: transparent;
   pointer-events: none;
 }
 .pivot-viewer .pv-axis-labels.visible {
   opacity: 1;
+  max-height: 80px;
   pointer-events: auto;
 }
 
