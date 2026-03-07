@@ -11,16 +11,21 @@ interface ColorPickerFieldComponentProps extends WrappedFieldProps<string> {
 }
 
 export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProps>(
-    (props) => (
-        <ColorPicker
-            value={props.value}
-            onChange={(e: { value: unknown }) => props.onChange(typeof e.value === 'string' ? e.value : '')}
-            onBlur={props.onBlur}
-            inline={props.inline}
-            defaultColor={props.defaultColor}
-            className={props.invalid ? 'p-invalid' : undefined}
-        />
-    ),
+    (props) => {
+        const defaultColor = props.defaultColor ?? '000000';
+        const value = typeof props.value === 'string' && props.value.length > 0 ? props.value : defaultColor;
+
+        return (
+            <ColorPicker
+                value={value}
+                onChange={(e: { value: unknown }) => props.onChange(typeof e.value === 'string' ? e.value : '')}
+                onBlur={props.onBlur}
+                inline={props.inline}
+                defaultColor={defaultColor}
+                className={props.invalid ? 'p-invalid' : undefined}
+            />
+        );
+    },
     {
         defaultValue: '',
         extractValue: (e: unknown) => typeof e === 'string' ? e : ''

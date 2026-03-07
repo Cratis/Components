@@ -84,28 +84,26 @@ const sampleSchema: JsonSchema = {
     }
 };
 
-const InteractiveWrapper = () => {
-    const [schema, setSchema] = useState<JsonSchema>(JSON.parse(JSON.stringify(sampleSchema)));
-
-    return (
-        <div style={{ height: '600px', background: 'var(--surface-ground)' }}>
-            <SchemaEditor
-                schema={schema}
-                eventTypeName="User"
-                canEdit={true}
-                onChange={(newSchema) => {
-                    setSchema(newSchema);
-                    console.log('Schema changed:', newSchema);
-                }}
-                onSave={() => console.log('Save clicked', schema)}
-                onCancel={() => console.log('Cancel clicked')}
-            />
-        </div>
-    );
-};
-
 export const Interactive: Story = {
-    render: () => <InteractiveWrapper />,
+    render: () => {
+        const [schema, setSchema] = useState<JsonSchema>(JSON.parse(JSON.stringify(sampleSchema)));
+
+        return (
+            <div style={{ height: '600px', background: 'var(--surface-ground)' }}>
+                <SchemaEditor
+                    schema={schema}
+                    eventTypeName="User"
+                    canEdit={true}
+                    onChange={(newSchema) => {
+                        setSchema(newSchema);
+                        console.log('Schema changed:', newSchema);
+                    }}
+                    onSave={() => console.log('Save clicked', schema)}
+                    onCancel={() => console.log('Cancel clicked')}
+                />
+            </div>
+        );
+    },
 };
 
 export const ViewMode: Story = {
