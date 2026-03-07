@@ -5,6 +5,116 @@ import { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { PivotViewer } from './PivotViewer';
 
+// ---------------------------------------------------------------------------
+// Large-dataset generator
+// ---------------------------------------------------------------------------
+
+const FIRST_NAMES = [
+    'Alice', 'Bob', 'Charlie', 'Diana', 'Edward', 'Fiona', 'George', 'Hannah',
+    'Isaac', 'Julia', 'Kevin', 'Laura', 'Michael', 'Natalie', 'Oliver', 'Penelope',
+    'Quinn', 'Rachel', 'Samuel', 'Tara', 'Ursula', 'Victor', 'Wendy', 'Xavier',
+    'Yvonne', 'Zachary', 'Amelia', 'Benjamin', 'Clara', 'Daniel', 'Eleanor', 'Frank',
+    'Grace', 'Henry', 'Iris', 'James', 'Katherine', 'Leo', 'Mia', 'Noah',
+];
+
+const LAST_NAMES = [
+    'Johnson', 'Smith', 'Brown', 'Prince', 'Norton', 'Lee', 'Miller', 'Davis',
+    'Newton', 'Taylor', 'Anderson', 'Wilson', 'Moore', 'Jackson', 'Martin', 'White',
+    'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis', 'Walker',
+    'Hall', 'Allen', 'Young', 'King', 'Wright', 'Scott', 'Green', 'Baker',
+    'Adams', 'Nelson', 'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips',
+];
+
+const DEPARTMENTS = [
+    'Engineering', 'Product', 'Design', 'Marketing', 'Sales',
+    'Finance', 'Human Resources', 'Legal', 'Operations', 'Support',
+    'Research', 'Data Science', 'Security', 'Infrastructure', 'Customer Success',
+];
+
+const OFFICES = [
+    'Seattle', 'San Francisco', 'Austin', 'New York', 'Boston',
+    'Chicago', 'Denver', 'Los Angeles', 'Atlanta', 'London',
+    'Berlin', 'Amsterdam', 'Singapore', 'Tokyo', 'Sydney',
+];
+
+const SENIORITY_LEVELS = ['Intern', 'Junior', 'Mid-level', 'Senior', 'Staff', 'Principal', 'Director', 'VP'];
+
+const EMPLOYMENT_STATUSES = ['Active', 'On Leave', 'Contractor', 'Part-time'];
+
+const SKILL_TAGS = [
+    'TypeScript', 'Python', 'Go', 'Rust', 'Java', 'C#', 'React', 'Node.js',
+    'Kubernetes', 'AWS', 'Azure', 'GCP', 'ML/AI', 'Data Engineering', 'Security',
+    'Product Management', 'UX Design', 'DevOps', 'Agile', 'Communication',
+];
+
+function seededRng(seed: number) {
+    let s = seed;
+    return () => {
+        s = (s * 1664525 + 1013904223) & 0xffffffff;
+        return (s >>> 0) / 0xffffffff;
+    };
+}
+
+function pick<T>(rng: () => number, arr: T[]): T {
+    return arr[Math.floor(rng() * arr.length)];
+}
+
+interface Employee {
+    id: number;
+    name: string;
+    firstName: string;
+    lastName: string;
+    age: number;
+    department: string;
+    office: string;
+    seniority: string;
+    status: string;
+    salary: number;
+    yearsAtCompany: number;
+    skills: string[];
+    primarySkill: string;
+}
+
+function generateEmployees(count: number): Employee[] {
+    const rng = seededRng(42);
+    const employees: Employee[] = [];
+
+    for (let i = 0; i < count; i++) {
+        const firstName = pick(rng, FIRST_NAMES);
+        const lastName = pick(rng, LAST_NAMES);
+        const seniority = pick(rng, SENIORITY_LEVELS);
+        const seniorityIndex = SENIORITY_LEVELS.indexOf(seniority);
+
+        const age = 22 + Math.floor(rng() * 40);
+        const yearsAtCompany = Math.floor(rng() * Math.min(age - 20, 20));
+        const baseSalary = 60_000 + seniorityIndex * 25_000 + Math.floor(rng() * 30_000);
+
+        const numSkills = 1 + Math.floor(rng() * 4);
+        const shuffled = [...SKILL_TAGS].sort(() => rng() - 0.5);
+        const skills = shuffled.slice(0, numSkills);
+
+        employees.push({
+            id: i + 1,
+            name: `${firstName} ${lastName}`,
+            firstName,
+            lastName,
+            age,
+            department: pick(rng, DEPARTMENTS),
+            office: pick(rng, OFFICES),
+            seniority,
+            status: pick(rng, EMPLOYMENT_STATUSES),
+            salary: baseSalary,
+            yearsAtCompany,
+            skills,
+            primarySkill: skills[0],
+        });
+    }
+
+    return employees;
+}
+
+const largeDataset = generateEmployees(2_500);
+
 const meta: Meta<typeof PivotViewer> = {
     title: 'PivotViewer/PivotViewer',
     component: PivotViewer,
@@ -116,6 +226,149 @@ export const Default: Story = {
                         </section>
                     )}
                     getItemId={(item) => item.id}
+                />
+            </div>
+        );
+    },
+};
+
+export const LargeDataset: Story = {
+    name: 'Large Dataset (2 500 employees)',
+    render: () => {
+        const dimensions = [
+            {
+                key: 'department',
+                label: 'Department',
+                getValue: (item: Employee) => item.department,
+            },
+            {
+                key: 'office',
+                label: 'Office',
+                getValue: (item: Employee) => item.office,
+            },
+            {
+                key: 'seniority',
+                label: 'Seniority',
+                getValue: (item: Employee) => item.seniority,
+            },
+            {
+                key: 'status',
+                label: 'Status',
+                getValue: (item: Employee) => item.status,
+            },
+            {
+                key: 'primarySkill',
+                label: 'Primary Skill',
+                getValue: (item: Employee) => item.primarySkill,
+            },
+        ];
+
+        const filters = [
+            {
+                key: 'department',
+                label: 'Department',
+                getValue: (item: Employee) => item.department,
+                multi: true,
+            },
+            {
+                key: 'office',
+                label: 'Office',
+                getValue: (item: Employee) => item.office,
+                multi: true,
+            },
+            {
+                key: 'seniority',
+                label: 'Seniority',
+                getValue: (item: Employee) => item.seniority,
+                multi: true,
+            },
+            {
+                key: 'status',
+                label: 'Status',
+                getValue: (item: Employee) => item.status,
+                multi: true,
+            },
+            {
+                key: 'salary',
+                label: 'Salary',
+                getValue: (item: Employee) => item.salary,
+                type: 'number' as const,
+                buckets: 20,
+            },
+            {
+                key: 'age',
+                label: 'Age',
+                getValue: (item: Employee) => item.age,
+                type: 'number' as const,
+            },
+            {
+                key: 'yearsAtCompany',
+                label: 'Years at Company',
+                getValue: (item: Employee) => item.yearsAtCompany,
+                type: 'number' as const,
+            },
+        ];
+
+        return (
+            <div
+                className="storybook-wrapper"
+                style={{
+                    height: 'calc(100vh - 2rem)',
+                    minHeight: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    alignItems: 'stretch',
+                }}
+            >
+                <PivotViewer<Employee>
+                    data={largeDataset}
+                    dimensions={dimensions}
+                    filters={filters}
+                    defaultDimensionKey="department"
+                    searchFields={[
+                        (item) => item.name,
+                        (item) => item.department,
+                        (item) => item.office,
+                        (item) => item.seniority,
+                        (item) => item.primarySkill,
+                    ]}
+                    cardRenderer={(item) => ({
+                        title: item.name,
+                        labels: ['Dept', 'Office', 'Seniority', 'Salary'],
+                        values: [
+                            item.department,
+                            item.office,
+                            item.seniority,
+                            `$${item.salary.toLocaleString()}`,
+                        ],
+                    })}
+                    detailRenderer={(item, onClose) => (
+                        <section>
+                            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                                <div>
+                                    <h3 style={{ margin: 0 }}>{item.name}</h3>
+                                    <p style={{ margin: 0, opacity: 0.7 }}>{item.seniority} · {item.department}</p>
+                                </div>
+                                <button type="button" onClick={onClose} title="Close" className="p-button p-button-text">
+                                    Close
+                                </button>
+                            </header>
+                            <dl style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.35rem 0.75rem' }}>
+                                <dt>Office</dt><dd>{item.office}</dd>
+                                <dt>Age</dt><dd>{item.age}</dd>
+                                <dt>Status</dt><dd>{item.status}</dd>
+                                <dt>Salary</dt><dd>${item.salary.toLocaleString()}</dd>
+                                <dt>Tenure</dt><dd>{item.yearsAtCompany} yr{item.yearsAtCompany !== 1 ? 's' : ''}</dd>
+                                <dt>Skills</dt><dd>{item.skills.join(', ')}</dd>
+                            </dl>
+                        </section>
+                    )}
+                    getItemId={(item) => item.id}
+                    colors={{
+                        primaryColor: '#91BDF8',
+                        primary500: '#2E66BA',
+                    }}
                 />
             </div>
         );
