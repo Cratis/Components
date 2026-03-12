@@ -84,6 +84,11 @@
             "require": "./dist/cjs/Toolbar/index.js",
             "import": "./dist/esm/Toolbar/index.js"
         },
+        "./types": {
+            "types": "./dist/esm/types/index.d.ts",
+            "require": "./dist/cjs/types/index.js",
+            "import": "./dist/esm/types/index.js"
+        },
         "./styles": "./dist/esm/tailwind-utilities.css"
     },
     "scripts": {

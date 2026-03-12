@@ -14,6 +14,7 @@ import * as PivotViewer from './PivotViewer';
 import * as SchemaEditor from './SchemaEditor';
 import * as TimeMachine from './TimeMachine';
 import * as Toolbar from './Toolbar';
+import * as Types from './types';
 
 export {
     CommandDialog,
@@ -29,5 +30,6 @@ export {
     SchemaEditor,
     TimeMachine,
     Toolbar,
+    Types,
 };
 
