@@ -41,3 +41,31 @@ export const WithPanel: Story = {
         </Page>
     )
 };
+
+export const WithTitle: Story = {
+    args: {
+        title: 'Visible Page Title',
+        showTitle: true,
+    },
+    render: (args) => (
+        <Page {...args}>
+            <div className="p-4">
+                <p>The title is shown above because showTitle is true.</p>
+            </div>
+        </Page>
+    )
+};
+
+export const WithoutTitle: Story = {
+    args: {
+        title: 'Hidden Page Title',
+        showTitle: false,
+    },
+    render: (args) => (
+        <Page {...args}>
+            <div className="p-4">
+                <p>The title is hidden because showTitle is false (the default).</p>
+            </div>
+        </Page>
+    )
+};
