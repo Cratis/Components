@@ -2,20 +2,92 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Tooltip } from 'primereact/tooltip';
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import * as faIcons from 'react-icons/fa6';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
 import { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { getValueAtPath } from './objectHelpers';
+import { InputText } from 'primereact/inputtext';
+import { InputNumber } from 'primereact/inputnumber';
+import { Checkbox } from 'primereact/checkbox';
+import { Calendar } from 'primereact/calendar';
+import { InputTextarea } from 'primereact/inputtextarea';
 
 export interface ObjectContentEditorProps {
     object: Json;
     timestamp?: Date;
     schema: JsonSchema;
+    /**
+     * When true, renders editable input fields for each property respecting type/format
+     */
+    editMode?: boolean;
+    /**
+     * Called with the updated object after any field edit
+     */
+    onChange?: (object: Json) => void;
+    /**
+     * Called when the validation state changes
+     */
+    onValidationChange?: (hasErrors: boolean) => void;
 }
 
-export const ObjectContentEditor = ({ object, timestamp, schema }: ObjectContentEditorProps) => {
+export const ObjectContentEditor = ({ object, timestamp, schema, editMode = false, onChange, onValidationChange }: ObjectContentEditorProps) => {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+    const validateValue = useCallback((propertyName: string, value: Json, property: JsonSchemaProperty): string | undefined => {
+        if (editMode) {
+            if (value === null || value === undefined || value === '') {
+                return 'This field is required';
+            }
+        } else {
+            const isRequired = schema.required?.includes(propertyName);
+            if (isRequired && (value === null || value === undefined || value === '')) {
+                return 'This field is required';
+            }
+        }
+
+        if (property.type === 'string' && typeof value === 'string') {
+            if (property.format === 'email' && value && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+                return 'Invalid email format';
+            }
+            if (property.format === 'uri' && value && !value.match(/^https?:\/\/.+/)) {
+                return 'Invalid URI format';
+            }
+        }
+
+        if (property.type === 'number' || property.type === 'integer') {
+            if (value !== null && value !== undefined && value !== '' && isNaN(Number(value))) {
+                return 'Must be a valid number';
+            }
+        }
+
+        return undefined;
+    }, [schema, editMode]);
+
+    useEffect(() => {
+        if (!editMode || navigationPath.length > 0) return;
+
+        const errors: Record<string, string> = {};
+        const properties = schema.properties || {};
+
+        Object.entries(properties).forEach(([propertyName, property]) => {
+            const value = (object as Record<string, Json>)[propertyName];
+            const error = validateValue(propertyName, value, property as JsonSchemaProperty);
+            if (error) {
+                errors[propertyName] = error;
+            }
+        });
+
+        setValidationErrors(errors);
+    }, [object, schema, editMode, navigationPath, validateValue]);
+
+    useEffect(() => {
+        if (editMode && onValidationChange) {
+            const hasErrors = Object.keys(validationErrors).length > 0;
+            onValidationChange(hasErrors);
+        }
+    }, [validationErrors, editMode, onValidationChange]);
 
     const navigateToProperty = useCallback((key: string) => {
         setNavigationPath([...navigationPath, key]);
@@ -81,6 +153,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema }: ObjectContent
         textAlign: 'left',
         fontWeight: 500,
         width: '140px',
+        whiteSpace: 'nowrap',
     };
 
     const valueStyle: React.CSSProperties = {
@@ -90,10 +163,141 @@ export const ObjectContentEditor = ({ object, timestamp, schema }: ObjectContent
     };
 
     const infoIconStyle: React.CSSProperties = {
-        marginLeft: '6px',
-        fontSize: '12px',
-        color: 'rgba(100, 150, 255, 0.6)',
-        cursor: 'help',
+        fontSize: '0.875rem',
+        color: 'var(--text-color-secondary)',
+        flexShrink: 0,
+    };
+
+    const updateValue = useCallback((propertyName: string, newValue: Json) => {
+        if (!onChange) return;
+
+        const updatedObject = { ...(object as Record<string, Json>) };
+        updatedObject[propertyName] = newValue;
+        onChange(updatedObject);
+    }, [object, onChange]);
+
+    const renderEditField = (propertyName: string, property: JsonSchemaProperty, value: Json) => {
+        const error = validationErrors[propertyName];
+
+        const handleChange = (newValue: Json) => {
+            updateValue(propertyName, newValue);
+            const validationError = validateValue(propertyName, newValue, property);
+            setValidationErrors(prev => {
+                const newErrors = { ...prev };
+                if (validationError) {
+                    newErrors[propertyName] = validationError;
+                } else {
+                    delete newErrors[propertyName];
+                }
+                return newErrors;
+            });
+        };
+
+        const inputStyle = {
+            width: '100%',
+            ...(error ? { borderColor: 'var(--red-500)' } : {})
+        };
+
+        if (property.type === 'boolean') {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <Checkbox
+                        checked={Boolean(value)}
+                        onChange={(e) => handleChange(e.checked ?? false)}
+                    />
+                    {error && <small className="p-error">{error}</small>}
+                </div>
+            );
+        }
+
+        if (property.type === 'number' || property.type === 'integer') {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <InputNumber
+                        value={(value === null || value === undefined) ? null : Number(value)}
+                        onValueChange={(e) => handleChange(e.value ?? null)}
+                        mode="decimal"
+                        useGrouping={false}
+                        style={inputStyle}
+                    />
+                    {error && <small className="p-error">{error}</small>}
+                </div>
+            );
+        }
+
+        if (property.type === 'string' && property.format === 'date-time') {
+            const dateValue = value ? new Date(value as string) : null;
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <Calendar
+                        value={dateValue}
+                        onChange={(e) => handleChange(e.value instanceof Date ? e.value.toISOString() : null)}
+                        showTime
+                        showIcon
+                        style={inputStyle}
+                    />
+                    {error && <small className="p-error">{error}</small>}
+                </div>
+            );
+        }
+
+        if (property.type === 'string' && property.format === 'date') {
+            const dateValue = value ? new Date(value as string) : null;
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <Calendar
+                        value={dateValue}
+                        onChange={(e) => handleChange(e.value instanceof Date ? e.value.toISOString().split('T')[0] : null)}
+                        showIcon
+                        style={inputStyle}
+                    />
+                    {error && <small className="p-error">{error}</small>}
+                </div>
+            );
+        }
+
+        if (property.type === 'array') {
+            return (
+                <div className="flex align-items-center gap-2" style={{ color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+                    <span>Array editing not yet supported</span>
+                </div>
+            );
+        }
+
+        if (property.type === 'object') {
+            return (
+                <div className="flex align-items-center gap-2" style={{ color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+                    <span>Object editing not yet supported</span>
+                </div>
+            );
+        }
+
+        const isLongText = (value as string)?.length > 50;
+
+        if (isLongText) {
+            return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <InputTextarea
+                        value={String(value ?? '')}
+                        onChange={(e) => handleChange(e.target.value)}
+                        rows={3}
+                        style={inputStyle}
+                    />
+                    {error && <small className="p-error">{error}</small>}
+                </div>
+            );
+        }
+
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <InputText
+                    value={String(value ?? '')}
+                    onChange={(e) => handleChange(e.target.value)}
+                    style={inputStyle}
+                />
+                {error && <small className="p-error">{error}</small>}
+            </div>
+        );
     };
 
     const renderValue = (value: Json, propertyName: string) => {
@@ -184,22 +388,31 @@ export const ObjectContentEditor = ({ object, timestamp, schema }: ObjectContent
                         const value = (currentData as Record<string, Json>)[propertyName];
 
                         const isSchemaProperty = navigationPath.length === 0;
-                        const description = isSchemaProperty && typeof propertyDef === 'object' && propertyDef !== null && 'description' in propertyDef
-                            ? (propertyDef as JsonSchemaProperty).description
-                            : undefined;
+                        const property = isSchemaProperty && typeof propertyDef === 'object' && propertyDef !== null && 'type' in propertyDef
+                            ? (propertyDef as JsonSchemaProperty)
+                            : null;
+                        const description = property?.description;
 
                         return (
                             <tr key={propertyName} style={rowStyle}>
                                 <td style={labelStyle}>
-                                    {propertyName}
-                                    {description && (
-                                        <i
-                                            className="pi pi-info-circle property-info-icon"
-                                            style={infoIconStyle}
-                                            data-pr-tooltip={description} />
-                                    )}
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                        {propertyName}
+                                        {description && (
+                                            <faIcons.FaCircleInfo
+                                                className="property-info-icon"
+                                                style={infoIconStyle}
+                                                data-pr-tooltip={description}
+                                                data-pr-position="right" />
+                                        )}
+                                    </span>
                                 </td>
-                                <td style={valueStyle}>{renderValue(value as Json, propertyName)}</td>
+                                <td style={valueStyle}>
+                                    {editMode && property
+                                        ? renderEditField(propertyName, property, value)
+                                        : renderValue(value as Json, propertyName)
+                                    }
+                                </td>
                             </tr>
                         );
                     })}
@@ -210,7 +423,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema }: ObjectContent
 
     return (
         <div className="order-content" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <Tooltip target=".property-info-icon" />
+            <Tooltip target="[data-pr-tooltip]" />
             <ObjectNavigationalBar
                 navigationPath={navigationPath}
                 onNavigate={navigateToBreadcrumb}

@@ -66,13 +66,21 @@ export const Columns = ({ children }: ColumnProps) => {
 
     if (context.query.prototype instanceof QueryFor) {
         return (
-            <DataTableForQuery {...context} selection={context.selectedItem} onSelectionChange={context.onSelectionChanged}>
+            <DataTableForQuery
+                {...context}
+                selection={context.selectedItem}
+                onSelectionChange={context.onSelectionChanged}
+                clientFiltering={context.clientFiltering}>
                 {children}
             </DataTableForQuery>);
 
     } else {
         return (
-            <DataTableForObservableQuery {...context} selection={context.selectedItem} onSelectionChange={context.onSelectionChanged}>
+            <DataTableForObservableQuery
+                {...context}
+                selection={context.selectedItem}
+                onSelectionChange={context.onSelectionChanged}
+                clientFiltering={context.clientFiltering}>
                 {children}
             </DataTableForObservableQuery>);
     }
@@ -80,7 +88,7 @@ export const Columns = ({ children }: ColumnProps) => {
 
 export interface IDetailsComponentProps<TDataType> {
     item: TDataType;
-
+    onRefresh?: () => void;
 }
 
 interface IDataPageContext extends DataPageProps<any, any, any> {
@@ -148,6 +156,16 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
      * Default filters to use
      */
     defaultFilters?: DataTableFilterMeta;
+
+    /**
+     * When true, filtering is performed client-side only
+     */
+    clientFiltering?: boolean;
+
+    /**
+     * Callback triggered to signal data refresh
+     */
+    onRefresh?(): void;
 }
 
 /**
@@ -176,7 +194,7 @@ const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDat
                     </Allotment.Pane>
                     {props.detailsComponent && selectedItem &&
                         <Allotment.Pane preferredSize="450px">
-                            <props.detailsComponent item={selectedItem} />
+                            <props.detailsComponent item={selectedItem} onRefresh={props.onRefresh} />
                         </Allotment.Pane>
                     }
                 </Allotment>
