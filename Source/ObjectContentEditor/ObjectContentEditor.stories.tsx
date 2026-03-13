@@ -4,6 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ObjectContentEditor } from './ObjectContentEditor';
 import { JsonSchema, Json } from '../types/JsonSchema';
+import { useState } from 'react';
 
 const meta: Meta<typeof ObjectContentEditor> = {
     title: 'Components/ObjectContentEditor',
@@ -158,4 +159,75 @@ export const WithArray: Story = {
         object: arrayData,
         schema: arraySchema,
     },
+};
+
+const editableSchema: JsonSchema = {
+    type: 'object',
+    required: ['name', 'email'],
+    properties: {
+        name: { type: 'string', description: 'Full name' },
+        email: { type: 'string', format: 'email', description: 'Email address' },
+        age: { type: 'integer', description: 'Age in years' },
+        isActive: { type: 'boolean', description: 'Account is active' },
+        website: { type: 'string', format: 'uri', description: 'Personal website' },
+        birthDate: { type: 'string', format: 'date', description: 'Date of birth' },
+        notes: {
+            type: 'string',
+            description: 'Long-form notes about this person (rendered as textarea when value is long)'
+        }
+    }
+};
+
+const editableObject: Json = {
+    name: 'Jane Smith',
+    email: 'jane@example.com',
+    age: 28,
+    isActive: true,
+    website: 'https://example.com',
+    birthDate: '1996-03-15',
+    notes: 'This field is intentionally long to demonstrate the textarea input. It contains more than fifty characters.'
+};
+
+export const EditMode: Story = {
+    render: () => {
+        const [obj, setObj] = useState<Json>(editableObject);
+        return (
+            <ObjectContentEditor
+                object={obj}
+                schema={editableSchema}
+                editMode
+                onChange={setObj}
+            />
+        );
+    }
+};
+
+export const EditModeWithValidation: Story = {
+    render: () => {
+        const [obj, setObj] = useState<Json>({ ...editableObject as object, name: '', email: 'not-an-email' });
+        const [hasErrors, setHasErrors] = useState(false);
+        return (
+            <div className="p-4">
+                <ObjectContentEditor
+                    object={obj}
+                    schema={editableSchema}
+                    editMode
+                    onChange={setObj}
+                    onValidationChange={setHasErrors}
+                />
+                <div className="mt-4">
+                    <button
+                        className="p-button p-component"
+                        disabled={hasErrors}
+                        onClick={() => alert('Saved: ' + JSON.stringify(obj, null, 2))}
+                    >
+                        Save
+                    </button>
+                    {hasErrors && (
+                        <span className="p-error ml-3">Please fix validation errors before saving.</span>
+                    )}
+                </div>
+            </div>
+        );
+    }
 };

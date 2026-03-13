@@ -154,3 +154,69 @@ export const WithoutDetails: Story = {
         </div>
     )
 };
+
+export const WithClientFiltering: Story = {
+    render: () => (
+        <div style={{ height: '600px' }}>
+            <DataPage<PersonsQuery, Person, object>
+                title="Persons (Client-Side Filtering)"
+                query={PersonsQuery}
+                emptyMessage="No persons found"
+                dataKey="id"
+                clientFiltering
+                globalFilterFields={['name', 'email', 'role']}
+            >
+                <DataPage.Columns>
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Name" sortable filter filterPlaceholder="Search" style={{ width: '30%' }} />
+                    <Column field="email" header="Email" sortable filter filterPlaceholder="Search" style={{ width: '35%' }} />
+                    <Column field="role" header="Role" sortable filter filterPlaceholder="Search" style={{ width: '25%' }} />
+                </DataPage.Columns>
+            </DataPage>
+        </div>
+    )
+};
+
+const PersonDetailsWithRefresh = ({ item, onRefresh }: { item: Person; onRefresh?: () => void }) => {
+    return (
+        <div className="p-4">
+            <h2 className="text-2xl font-bold mb-4">Person Details</h2>
+            <div className="space-y-2 mb-4">
+                <div><strong>Name:</strong> {item.name}</div>
+                <div><strong>Email:</strong> {item.email}</div>
+                <div><strong>Role:</strong> {item.role}</div>
+            </div>
+            <button
+                className="p-button p-component"
+                onClick={() => {
+                    alert(`Saved changes for ${item.name}`);
+                    onRefresh?.();
+                }}
+            >
+                Save &amp; Refresh
+            </button>
+        </div>
+    );
+};
+
+export const WithOnRefresh: Story = {
+    render: () => (
+        <div style={{ height: '600px' }}>
+            <DataPage<PersonsQuery, Person, object>
+                title="Persons (With Refresh Callback)"
+                query={PersonsQuery}
+                emptyMessage="No persons found"
+                dataKey="id"
+                detailsComponent={PersonDetailsWithRefresh as React.FC<{ item: unknown }>}
+                onRefresh={() => alert('onRefresh triggered — reload your data here')}
+            >
+                <DataPage.Columns>
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
+                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
+                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                </DataPage.Columns>
+            </DataPage>
+        </div>
+    )
+};
