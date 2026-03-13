@@ -28,20 +28,31 @@ function MyPage() {
 }
 ```
 
+## Showing the Title
+
+By default the title is not rendered. Pass `showTitle` to opt in:
+
+```typescript
+<Page title="My Page" showTitle>
+    <div>Page content goes here</div>
+</Page>
+```
+
 ## With Panel Styling
 
 ```typescript
-<Page title="Dashboard" panel={true}>
+<Page title="Dashboard" panel>
     <div>Content with panel background</div>
 </Page>
 ```
 
 ## Props
 
-- `title`: Page title displayed at the top
-- `panel`: Apply panel styling to content area (default: false)
+- `title`: Page title string (always required, used e.g. for accessibility or document title even when not visible)
+- `showTitle`: Render the title as a visible heading (default: `false`)
+- `panel`: Apply panel styling to content area (default: `false`)
 - `children`: Page content
-- All standard HTML div attributes (className, style, etc.)
+- All standard HTML div attributes (`className`, `style`, etc.)
 
 ## Layout
 
