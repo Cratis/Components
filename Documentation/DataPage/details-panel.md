@@ -38,10 +38,12 @@ const ProductDetails = ({ item }) => (
 Your detail component receives:
 
 - `item`: The selected data item
+- `onRefresh`: Optional callback — called when a refresh should be signalled back to the page (e.g. after a mutation in the detail panel)
 
 ```typescript
-interface DetailComponentProps<TDataType> {
+interface IDetailsComponentProps<TDataType> {
     item: TDataType;
+    onRefresh?: () => void;
 }
 ```
 

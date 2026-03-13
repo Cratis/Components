@@ -68,41 +68,81 @@ function MyObjectViewer() {
 
 ### Optional Props
 
-- `timestamp`: Date to display as last modified time
+- `timestamp`: Date to display as a snapshot timestamp
+- `editMode`: When `true`, renders editable input fields for each property (default: `false`)
+- `onChange`: Called with the full updated object after any field edit — only relevant when `editMode` is `true`
+- `onValidationChange`: Called with `true` when any field has a validation error, `false` when all fields are valid — only called when `editMode` is `true`
 
-## Property Display
+## Edit Mode
 
-Properties are rendered in a card format with icons indicating type:
+When `editMode` is `true`, each property is rendered as an editable input field appropriate for its schema type and format.
 
-```text
-📝 name: John Doe
-📧 email: john@example.com
-🔢 age: 30
-📁 profile: [Object] →
-```
+### Input field types
 
-### Type-Specific Rendering
+| Schema type / format | Input rendered |
+|---|---|
+| `boolean` | Checkbox |
+| `number` / `integer` | Number input |
+| `string` / `date-time` | Date + time picker |
+| `string` / `date` | Date picker |
+| `string` (> 50 chars) | Textarea |
+| `string` (any other) | Text input |
+| `array` | Read-only (not yet editable) |
+| `object` | Read-only (not yet editable) |
 
-- **String**: Text icon, plain text display
-- **Number/Integer**: Number icon, numeric display
-- **Boolean**: Toggle icon, true/false
-- **Date/DateTime**: Calendar icon, formatted date
-- **Email**: Email icon, mailto link
-- **URI**: Link icon, clickable link
-- **UUID**: ID icon, monospace display
-- **Object**: Folder icon, clickable to navigate
-- **Array**: List icon, shows count, clickable to expand
+### Validation
 
-### Format-Aware Display
+Validation runs on every field change and whenever `object` or `schema` changes.
 
-Based on JSON schema format:
+- **In edit mode**: all fields are required — any empty value is flagged.
+- **In view mode**: only fields listed in `schema.required` are validated.
+- `string` fields with `format: 'email'` are validated against a basic email pattern.
+- `string` fields with `format: 'uri'` must start with `http://` or `https://`.
+- `number` / `integer` fields must be valid numbers.
+
+Validation errors are displayed inline beneath each field using PrimeReact's `p-error` style.
+
+### Edit Mode Example
 
 ```typescript
-{
-    email: { type: 'string', format: 'email' }        // → 📧 clickable email
-    website: { type: 'string', format: 'uri' }        // → 🔗 clickable link
-    created: { type: 'string', format: 'date-time' }  // → 📅 formatted date
-    id: { type: 'string', format: 'uuid' }            // → 🆔 monospace ID
+import { ObjectContentEditor } from '@cratis/components';
+import { useState } from 'react';
+
+function EditableProduct() {
+    const schema = {
+        type: 'object',
+        required: ['name', 'price'],
+        properties: {
+            name: { type: 'string' },
+            price: { type: 'number' },
+            inStock: { type: 'boolean' },
+            releaseDate: { type: 'string', format: 'date-time' },
+            website: { type: 'string', format: 'uri' }
+        }
+    };
+
+    const [product, setProduct] = useState({
+        name: 'Laptop Pro',
+        price: 1299.99,
+        inStock: true,
+        releaseDate: '2024-01-15T10:00:00Z',
+        website: 'https://example.com'
+    });
+
+    const [hasErrors, setHasErrors] = useState(false);
+
+    return (
+        <>
+            <ObjectContentEditor
+                object={product}
+                schema={schema}
+                editMode
+                onChange={setProduct}
+                onValidationChange={setHasErrors}
+            />
+            <button disabled={hasErrors}>Save</button>
+        </>
+    );
 }
 ```
 

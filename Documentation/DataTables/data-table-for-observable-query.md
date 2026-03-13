@@ -53,6 +53,7 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration
+- `clientFiltering`: Enable client-side filtering (default: `false`)
 - `children`: Column definitions
 
 ## Observable Behavior

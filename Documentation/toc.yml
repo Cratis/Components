@@ -38,3 +38,7 @@
           href: ObjectContentEditor/index.md
         - name: ObjectNavigationalBar
           href: ObjectNavigationalBar/index.md
+    - name: Types
+      items:
+        - name: Types
+          href: Types/toc.yml

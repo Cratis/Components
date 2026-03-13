@@ -65,12 +65,13 @@ function MyDataPage() {
 
 - `queryArguments`: Arguments to pass to the query
 - `dataKey`: Unique key field for data items
+- `selection`: Currently selected item
+- `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
-- `defaultFilters`: Initial filter state
-- `ClientFiltering`: Enable client-side filtering
-- `DetailsComponent`: Component to render in detail panel
-- `detailsTitle`: Title for the details panel
-- `initialSizes`: Initial sizes for split view panels
+- `defaultFilters`: Initial filter state (see [DataTableFilterMeta](https://primereact.org/datatable/))
+- `clientFiltering`: Enable client-side filtering (default: `false`)
+- `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
+- `detailsComponent`: Component to render in the resizable details panel when a row is selected
 
 ## Query Types
 
