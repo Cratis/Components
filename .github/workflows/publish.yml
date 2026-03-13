@@ -67,6 +67,10 @@ jobs:
         with:
           node-version: 23.x
           registry-url: 'https://registry.npmjs.org'
+          # Do not use registry-url here. It creates an .npmrc with a dummy
+          # _authToken placeholder (XXXXX-XXXXX-XXXXX-XXXXX) and exports
+          # NPM_CONFIG_USERCONFIG + NODE_AUTH_TOKEN, which prevents npm from
+          # performing the OIDC token exchange required for trusted publishing.
 
       - run: npm install -g npm@latest
 
@@ -87,8 +91,6 @@ jobs:
         run: |
           yarn build
           yarn publish-version ${{ needs.release.outputs.version }}
-        env:
-          NODE_AUTH_TOKEN: ''
 
       - name: Git reset (package.json files changed)
         run: |
