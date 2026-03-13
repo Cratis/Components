@@ -66,13 +66,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 23.x
-          registry-url: 'https://registry.npmjs.org'
-          # Do not use registry-url here. It creates an .npmrc with a dummy
-          # _authToken placeholder (XXXXX-XXXXX-XXXXX-XXXXX) and exports
-          # NPM_CONFIG_USERCONFIG + NODE_AUTH_TOKEN, which prevents npm from
-          # performing the OIDC token exchange required for trusted publishing.
+          # Do NOT set registry-url here. It writes an .npmrc with a placeholder
+          # _authToken (XXXXX-XXXXX-XXXXX-XXXXX) and exports NODE_AUTH_TOKEN +
+          # NPM_CONFIG_USERCONFIG that override npm's OIDC trusted-publishing
+          # exchange. npm defaults to registry.npmjs.org so no explicit URL is
+          # needed.
 
-      - run: npm install -g npm@latest
+      - name: Upgrade npm for trusted publishing (requires >= 11.5.1)
+        run: |
+          npm install -g npm@11
+          NPM_VER="$(npm --version)"
+          echo "Installed npm $NPM_VER"
+          node -e "
+            const v = '$NPM_VER'.split('.').map(Number);
+            if (v[0] < 11 || (v[0] === 11 && v[1] < 5) || (v[0] === 11 && v[1] === 5 && v[2] < 1)) {
+              console.error('npm >= 11.5.1 is required for trusted publishing, got $NPM_VER');
+              process.exit(1);
+            }
+          "
 
       - uses: actions/cache@v4
         id: yarn-cache
@@ -89,6 +100,8 @@ jobs:
 
       - name: Publish NPM packages
         run: |
+          echo "npm $(npm --version) | node $(node --version)"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL is $([ -n \"$ACTIONS_ID_TOKEN_REQUEST_URL\" ] && echo 'set' || echo 'NOT set')"
           yarn build
           yarn publish-version ${{ needs.release.outputs.version }}
 
