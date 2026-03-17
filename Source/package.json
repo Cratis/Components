@@ -110,7 +110,7 @@
         "@cratis/arc.react": "^19.6.9",
         "@cratis/arc.vite": "^19.6.9",
         "allotment": "1.20.5",
-        "framer-motion": "12.36.0",
+        "framer-motion": "12.37.0",
         "pixi.js": "^8.16.0",
         "primeicons": "7.0.0",
         "primereact": "10.9.7",
