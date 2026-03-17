@@ -191,7 +191,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     );
 
     const footer = (
-        <div className="flex flex-wrap justify-content-start gap-3">
+        <div className="flex align-items-center w-full gap-3">
             {!isFirstStep && (
                 <Button
                     label={previousLabel}
@@ -201,6 +201,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
                     outlined
                 />
             )}
+            <div className="flex-1" />
             {!isLastStep && (
                 <Button
                     label={nextLabel}
