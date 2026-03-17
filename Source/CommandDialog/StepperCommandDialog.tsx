@@ -98,7 +98,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     okLabel = 'Submit',
     nextLabel = 'Next',
     previousLabel = 'Previous',
-    orientation,
+    orientation = 'horizontal',
     headerPosition,
     linear = true,
     onChangeStep,
@@ -143,7 +143,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     const isDialogValid = isValid !== false && isCommandFormValid;
 
     // Pre-compute the command property names for each StepperPanel step.
-    // Used to determine whether a step has validation errors.
+    // Used to determine whether a step has validation errors for the indicator badge.
     const stepFieldNames = useMemo(
         () => React.Children.toArray(children).map((step) => {
             if (!React.isValidElement(step)) return [] as string[];
@@ -205,8 +205,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
         await handleClose(DialogResult.Ok);
     };
 
-    /** Recursively wraps CommandFormField nodes with the context-aware CommandFormFieldWrapper. */
-    const processFieldChildren = (nodes: React.ReactNode): React.ReactNode => {
+    const processChildren = (nodes: React.ReactNode): React.ReactNode => {
         return React.Children.map(nodes, (child) => {
             if (!React.isValidElement(child)) return child;
 
@@ -219,7 +218,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
             const childProps = child.props as Record<string, unknown>;
             if (childProps.children != null) {
                 return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-                    children: processFieldChildren(childProps.children as React.ReactNode)
+                    children: processChildren(childProps.children as React.ReactNode)
                 });
             }
 
@@ -228,41 +227,39 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     };
 
     /**
-     * Processes the top-level StepperPanel children:
-     * - Recursively wraps CommandFormField nodes inside each panel.
-     * - Adds `scd-step-invalid` to `pt.header.className` for steps that have field errors.
+     * Builds the passthrough `pt` object for PrimeStepper, injecting the
+     * `scd-step-invalid` class onto any step header that has field errors.
+     * Merges with any user-supplied `pt` prop.
      */
-    const processChildren = (nodes: React.ReactNode): React.ReactNode => {
-        return React.Children.map(nodes, (child, stepIndex) => {
-            if (!React.isValidElement(child)) return child;
+    const stepperPt = useMemo(() => {
+        type StepContext = { context: { index: number } };
+        type HeaderPtFn = (opts: StepContext) => Record<string, unknown>;
 
-            const component = child.type as React.ComponentType<unknown>;
-            const childProps = child.props as Record<string, unknown>;
+        const userPt = pt as Record<string, unknown> | undefined;
+        const userStepperPanelPt = userPt?.stepperpanel as Record<string, unknown> | undefined;
+        const userHeaderPt = userStepperPanelPt?.header;
 
-            if ((component as { displayName?: string }).displayName === 'StepperPanel') {
-                const processedContent = processFieldChildren(childProps.children as React.ReactNode);
-                const hasError = stepHasError(stepIndex);
-                const existingPt = childProps.pt as Record<string, unknown> | undefined;
-                const newPt = hasError
-                    ? {
-                        ...existingPt,
-                        header: {
-                            ...(existingPt?.header as Record<string, unknown> | undefined),
-                            className: 'scd-step-invalid'
-                        }
-                    }
-                    : existingPt;
-
-                return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-                    children: processedContent,
-                    pt: newPt
-                });
+        return {
+            ...userPt,
+            stepperpanel: {
+                ...userStepperPanelPt,
+                header: (opts: StepContext) => {
+                    const existing: Record<string, unknown> =
+                        typeof userHeaderPt === 'function'
+                            ? (userHeaderPt as HeaderPtFn)(opts)
+                            : (userHeaderPt as Record<string, unknown> | undefined) ?? {};
+                    const hasError =
+                        stepFieldNames[opts.context.index]?.some(fieldName => !!(getFieldError?.(fieldName))) ?? false;
+                    if (!hasError) return existing;
+                    const existingClass = existing.className as string | undefined;
+                    return {
+                        ...existing,
+                        className: existingClass ? `${existingClass} scd-step-invalid` : 'scd-step-invalid'
+                    };
+                }
             }
-
-            // Non-StepperPanel direct children: still process form fields inside them
-            return processFieldChildren(child as React.ReactNode);
-        });
-    };
+        };
+    }, [pt, stepFieldNames, getFieldError]);
 
     const headerElement = (
         <div className="inline-flex align-items-center justify-content-center gap-2">
@@ -288,7 +285,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
                     icon="pi pi-arrow-right"
                     iconPos="right"
                     onClick={() => setActiveStep(s => s + 1)}
-                    disabled={isBusy}
+                    disabled={isBusy || stepHasError(activeStep)}
                 />
             )}
             {isLastStep && isDialogValid && (
@@ -323,7 +320,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
                 onChangeStep={onChangeStep}
                 start={start}
                 end={end}
-                pt={pt}
+                pt={stepperPt as StepperProps['pt']}
                 ptOptions={ptOptions}
                 unstyled={unstyled}
             >
