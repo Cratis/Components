@@ -79,7 +79,7 @@ describe('when StepperCommandDialog has a single step', () => {
         html.should.include('>Submit<');
     });
 
-    it('should_show_cancel_button', () => {
-        html.should.include('>Cancel<');
+    it('should_not_show_cancel_button', () => {
+        html.should.not.include('>Cancel<');
     });
 });

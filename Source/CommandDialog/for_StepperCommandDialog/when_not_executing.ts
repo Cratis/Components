@@ -84,7 +84,7 @@ describe('when StepperCommandDialog is in its initial state', () => {
         html.should.not.include('>Submit<');
     });
 
-    it('should_show_cancel_button', () => {
-        html.should.include('>Cancel<');
+    it('should_not_show_cancel_button', () => {
+        html.should.not.include('>Cancel<');
     });
 });

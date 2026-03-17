@@ -4,7 +4,7 @@
 import { ICommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Dialog as PrimeDialog } from 'primereact/dialog';
-import { Stepper as PrimeStepper } from 'primereact/stepper';
+import { Stepper as PrimeStepper, type StepperProps } from 'primereact/stepper';
 import { Button } from 'primereact/button';
 import React, { useState } from 'react';
 import {
@@ -17,8 +17,17 @@ import {
 import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
 import { CSSProperties } from 'react';
 
+/**
+ * Stepper-specific customization props forwarded directly to PrimeReact Stepper.
+ * `activeStep` and `children` are managed internally and are excluded.
+ */
+type StepperCustomizationProps = Pick<StepperProps,
+    'orientation' | 'headerPosition' | 'linear' | 'onChangeStep' | 'start' | 'end' | 'pt' | 'ptOptions' | 'unstyled'
+>;
+
 export interface StepperCommandDialogProps<TCommand extends object>
-    extends Omit<CommandFormProps<TCommand>, 'children'> {
+    extends Omit<CommandFormProps<TCommand>, 'children'>,
+        StepperCustomizationProps {
     /** Dialog title text. */
     title: string;
     /** Controls dialog visibility. Defaults to `true`. */
@@ -35,12 +44,10 @@ export interface StepperCommandDialogProps<TCommand extends object>
     onClose?: CloseDialog;
     /** Confirm callback — called only after successful command execution. */
     onConfirm?: ConfirmCallback;
-    /** Cancel callback. */
+    /** Cancel callback — invoked when the dialog X button is clicked. */
     onCancel?: CancelCallback;
-    /** Label for the submit button on the last step. Defaults to `'Submit'`. */
+    /** Label for the submit button shown on the last step when valid. Defaults to `'Submit'`. */
     okLabel?: string;
-    /** Label for the cancel button. Defaults to `'Cancel'`. */
-    cancelLabel?: string;
     /** Label for the next step button. Defaults to `'Next'`. */
     nextLabel?: string;
     /** Label for the previous step button. Defaults to `'Previous'`. */
@@ -61,9 +68,17 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     onCancel,
     onBeforeExecute,
     okLabel = 'Submit',
-    cancelLabel = 'Cancel',
     nextLabel = 'Next',
     previousLabel = 'Previous',
+    orientation,
+    headerPosition,
+    linear = true,
+    onChangeStep,
+    start,
+    end,
+    pt,
+    ptOptions,
+    unstyled,
     children
 }: {
     title: string;
@@ -77,11 +92,10 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     onCancel?: CancelCallback;
     onBeforeExecute?: (values: TCommand) => TCommand;
     okLabel?: string;
-    cancelLabel?: string;
     nextLabel?: string;
     previousLabel?: string;
     children?: React.ReactNode;
-}) => {
+} & StepperCustomizationProps) => {
     const { setCommandValues, setCommandResult, isValid: isCommandFormValid } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
     const [isBusy, setIsBusy] = useState(false);
@@ -196,23 +210,16 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
                     disabled={isBusy}
                 />
             )}
-            {isLastStep && (
+            {isLastStep && isDialogValid && (
                 <Button
                     label={okLabel}
                     icon="pi pi-check"
                     onClick={handleSubmit}
-                    disabled={!isDialogValid || isBusy}
                     loading={isBusy}
+                    disabled={isBusy}
                     autoFocus
                 />
             )}
-            <Button
-                label={cancelLabel}
-                icon="pi pi-times"
-                outlined
-                onClick={() => handleClose(DialogResult.Cancelled)}
-                disabled={isBusy}
-            />
         </div>
     );
 
@@ -227,7 +234,18 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
             resizable={resizable}
             closable
         >
-            <PrimeStepper activeStep={activeStep} linear>
+            <PrimeStepper
+                activeStep={activeStep}
+                linear={linear}
+                orientation={orientation}
+                headerPosition={headerPosition}
+                onChangeStep={onChangeStep}
+                start={start}
+                end={end}
+                pt={pt}
+                ptOptions={ptOptions}
+                unstyled={unstyled}
+            >
                 {processChildren(children)}
             </PrimeStepper>
         </PrimeDialog>
@@ -248,9 +266,17 @@ const StepperCommandDialogComponent = <TCommand extends object = object>(
         onConfirm,
         onCancel,
         okLabel,
-        cancelLabel,
         nextLabel,
         previousLabel,
+        orientation,
+        headerPosition,
+        linear,
+        onChangeStep,
+        start,
+        end,
+        pt,
+        ptOptions,
+        unstyled,
         children,
         ...commandFormProps
     } = props;
@@ -269,9 +295,17 @@ const StepperCommandDialogComponent = <TCommand extends object = object>(
                 onCancel={onCancel}
                 onBeforeExecute={commandFormProps.onBeforeExecute}
                 okLabel={okLabel}
-                cancelLabel={cancelLabel}
                 nextLabel={nextLabel}
                 previousLabel={previousLabel}
+                orientation={orientation}
+                headerPosition={headerPosition}
+                linear={linear}
+                onChangeStep={onChangeStep}
+                start={start}
+                end={end}
+                pt={pt}
+                ptOptions={ptOptions}
+                unstyled={unstyled}
             >
                 {children}
             </StepperCommandDialogWrapper>

@@ -4,15 +4,17 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 
 ## Purpose
 
-`StepperCommandDialog` organizes a command form across multiple steps, guiding users through a wizard-like workflow. All steps gather into the same underlying command — the Submit button only becomes active when all fields across every step are valid.
+`StepperCommandDialog` organizes a command form across multiple steps, guiding users through a wizard-like workflow. All steps gather into the same underlying command — the Submit button only **appears** when all fields across every step are valid and the user has reached the last step.
 
 ## Key Features
 
 - Multi-step wizard navigation with Previous and Next buttons
 - All steps share a single command form — one command is submitted at the end
-- Submit button disabled until all form fields (across all steps) are valid
+- Submit button only appears on the last step when all fields are valid
 - Previous button hidden on the first step; Next button hidden on the last step
+- Cancel via the X button in the upper-right corner — no footer Cancel button
 - Busy state management during command execution
+- All PrimeReact `Stepper` customization props available directly (orientation, headerPosition, pt, etc.)
 - Supports any `CommandForm` field types inside each `StepperPanel`
 - Full integration with Cratis Arc command system
 
@@ -68,16 +70,15 @@ function MyComponent() {
 - `title`: Dialog title text
 - `children`: `StepperPanel` elements defining each step
 
-### Optional Props
+### Dialog Props
 
 - `visible`: Boolean controlling dialog visibility (defaults to `true`)
 - `initialValues`: Initial values for the command form
 - `currentValues`: Current values to populate the form
 - `onConfirm`: Confirm callback — called only after successful command execution
-- `onCancel`: Cancel callback
+- `onCancel`: Cancel callback — invoked when the X button is clicked
 - `onClose`: Fallback close callback
-- `okLabel`: Label for the submit button on the last step (default: `'Submit'`)
-- `cancelLabel`: Label for the cancel button (default: `'Cancel'`)
+- `okLabel`: Label for the submit button shown on the last step when valid (default: `'Submit'`)
 - `nextLabel`: Label for the next step button (default: `'Next'`)
 - `previousLabel`: Label for the previous step button (default: `'Previous'`)
 - `isValid`: Additional validity gate combined with command form validity
@@ -88,21 +89,36 @@ function MyComponent() {
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution
 
-## Navigation Buttons
+### Stepper Props
 
-| Step position | Buttons visible |
+All [PrimeReact Stepper](https://primereact.org/stepper/) customization props are available directly:
+
+- `orientation`: `'horizontal'` (default) or `'vertical'`
+- `headerPosition`: `'top'`, `'right'`, `'bottom'`, or `'left'`
+- `linear`: Whether steps must be completed in order (default: `true`)
+- `onChangeStep`: Callback when the active step changes
+- `start`: Custom content rendered before the stepper navigation
+- `end`: Custom content rendered after the stepper navigation
+- `pt`: PrimeReact PassThrough options for deep DOM customization
+- `ptOptions`: PassThrough configuration options
+- `unstyled`: Removes built-in component styles
+
+## Navigation and Submit
+
+| Step position | Footer content |
 |---|---|
-| First step | Next, Cancel |
-| Middle step | Previous, Next, Cancel |
-| Last step | Previous, Submit, Cancel |
+| First step | Next |
+| Middle step | Previous, Next |
+| Last step (invalid) | Previous |
+| Last step (valid) | Previous, Submit |
 
-The Submit button is disabled until all command form fields across **all** steps pass validation. This ensures the command is only submitted when fully valid.
+Cancel is always available via the X button in the dialog header. The Submit button is hidden until the user reaches the last step **and** all command form fields across every step pass validation.
 
 ## Busy State
 
 `StepperCommandDialog` automatically manages a busy state during command execution:
 
-- When Submit is clicked and command execution begins, all buttons are disabled and the Submit button shows a loading spinner.
+- When Submit is clicked, the Submit button shows a loading spinner and all navigation buttons are disabled.
 - Once execution completes (success or failure), the buttons return to their normal state.
 
 ## Step Structure
@@ -125,3 +141,4 @@ CommandForm fields placed inside a `StepperPanel` are automatically bound to the
 - `@cratis/arc.react/commands` for form handling
 - PrimeReact `Stepper` and `StepperPanel` components for the wizard UI
 - PrimeReact `Dialog` component for the modal wrapper
+

@@ -37,7 +37,7 @@ vi.mock('@cratis/arc.react/commands', () => ({
     CommandForm: (props: { children?: React.ReactNode }) =>
         React.createElement('div', null, props.children),
     useCommandFormContext: () => ({
-        isValid: false,
+        isValid: true,
         setCommandValues: () => {},
         setCommandResult: () => {},
     }),
@@ -50,7 +50,7 @@ class TestCommand {
     name: string = '';
 }
 
-describe('when StepperCommandDialog has invalid form values on a single step', () => {
+describe('when StepperCommandDialog has an external isValid=false gate on the last step', () => {
     let html: string;
 
     beforeEach(() => {
@@ -60,13 +60,14 @@ describe('when StepperCommandDialog has invalid form values on a single step', (
                 command: TestCommand as unknown as new () => object,
                 visible: true,
                 title: 'Test Dialog',
+                isValid: false,
             },
             React.createElement(StepperPanel, { header: 'Only Step' }, 'Content')
         );
         html = renderToStaticMarkup(element);
     });
 
-    it('should_have_submit_button_disabled', () => {
-        html.should.include('disabled');
+    it('should_not_show_submit_button_when_externally_invalid', () => {
+        html.should.not.include('>Submit<');
     });
 });
