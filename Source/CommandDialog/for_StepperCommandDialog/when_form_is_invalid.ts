@@ -40,6 +40,7 @@ vi.mock('@cratis/arc.react/commands', () => ({
         isValid: true,
         setCommandValues: () => {},
         setCommandResult: () => {},
+        getFieldError: () => undefined,
     }),
     useCommandInstance: () => ({}),
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>

@@ -218,6 +218,65 @@ export const ThreeSteps: Story = {
     },
 };
 
+export const WithValidationIndicators: Story = {
+    render: () => {
+        const [visible, setVisible] = useState(true);
+
+        return (
+            <div className="storybook-wrapper">
+                <p className="mb-3 text-sm text-color-secondary">
+                    <code>validateOnInit</code> triggers validation immediately — step indicators appear on
+                    any step whose fields are invalid right from the start.
+                </p>
+                <button
+                    className="p-button p-component mb-3"
+                    onClick={() => setVisible(true)}
+                >
+                    Open Dialog
+                </button>
+
+                <StepperCommandDialog<CreateProjectCommand>
+                    command={CreateProjectCommand}
+                    visible={visible}
+                    title="New Project"
+                    okLabel="Create"
+                    autoServerValidate={false}
+                    validateOnInit
+                    onConfirm={async () => setVisible(false)}
+                    onCancel={() => setVisible(false)}
+                >
+                    <StepperPanel header="Basic Info">
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.name}
+                            title="Project Name"
+                            placeholder="Enter project name (min 2 chars)"
+                        />
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.email}
+                            title="Contact Email"
+                            placeholder="Enter contact email"
+                            type="email"
+                        />
+                    </StepperPanel>
+                    <StepperPanel header="Details">
+                        <TextAreaField<CreateProjectCommand>
+                            value={c => c.description}
+                            title="Description"
+                            placeholder="Describe the project (min 10 chars)"
+                            rows={4}
+                        />
+                        <NumberField<CreateProjectCommand>
+                            value={c => c.budget}
+                            title="Budget"
+                            placeholder="Enter budget (must be > 0)"
+                        />
+                    </StepperPanel>
+                </StepperCommandDialog>
+            </div>
+        );
+    },
+};
+
 export const WithBusyState: Story = {
     render: () => {
         const [visible, setVisible] = useState(false);

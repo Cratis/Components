@@ -6,7 +6,7 @@ import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Dialog as PrimeDialog } from 'primereact/dialog';
 import { Stepper as PrimeStepper, type StepperProps } from 'primereact/stepper';
 import { Button } from 'primereact/button';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     CommandForm,
     CommandFormFieldWrapper,
@@ -16,6 +16,34 @@ import {
 } from '@cratis/arc.react/commands';
 import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
 import { CSSProperties } from 'react';
+import './StepperCommandDialog.css';
+
+/** Extracts the property name from an accessor function like `c => c.name`. */
+const getPropertyName = (accessor: ((obj: unknown) => unknown) | unknown): string => {
+    if (typeof accessor !== 'function') return '';
+    const fnStr = accessor.toString();
+    const match = fnStr.match(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/);
+    return match ? match[1] : '';
+};
+
+/** Recursively collects all CommandFormField property names from a React node tree. */
+const extractFieldNamesFromNode = (nodes: React.ReactNode): string[] => {
+    const names: string[] = [];
+    React.Children.forEach(nodes, (child) => {
+        if (!React.isValidElement(child)) return;
+        const component = child.type as React.ComponentType<unknown>;
+        if ((component as { displayName?: string }).displayName === 'CommandFormField') {
+            const fieldProps = child.props as { value?: (obj: unknown) => unknown };
+            const name = getPropertyName(fieldProps.value);
+            if (name) names.push(name);
+        }
+        const childProps = child.props as Record<string, unknown>;
+        if (childProps.children != null) {
+            names.push(...extractFieldNamesFromNode(childProps.children as React.ReactNode));
+        }
+    });
+    return names;
+};
 
 /**
  * Stepper-specific customization props forwarded directly to PrimeReact Stepper.
@@ -96,7 +124,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     previousLabel?: string;
     children?: React.ReactNode;
 } & StepperCustomizationProps) => {
-    const { setCommandValues, setCommandResult, isValid: isCommandFormValid } = useCommandFormContext<TCommand>();
+    const { setCommandValues, setCommandResult, isValid: isCommandFormValid, getFieldError } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
     const [isBusy, setIsBusy] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
@@ -113,6 +141,20 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     const isLastStep = activeStep === stepCount - 1;
     const isFirstStep = activeStep === 0;
     const isDialogValid = isValid !== false && isCommandFormValid;
+
+    // Pre-compute the command property names for each StepperPanel step.
+    // Used to determine whether a step has validation errors.
+    const stepFieldNames = useMemo(
+        () => React.Children.toArray(children).map((step) => {
+            if (!React.isValidElement(step)) return [] as string[];
+            const stepProps = step.props as Record<string, unknown>;
+            return extractFieldNamesFromNode(stepProps.children as React.ReactNode);
+        }),
+        [children]
+    );
+
+    const stepHasError = (stepIndex: number): boolean =>
+        stepFieldNames[stepIndex]?.some(fieldName => !!(getFieldError?.(fieldName))) ?? false;
 
     const handleClose = async (result: DialogResult) => {
         let shouldCloseThroughContext = true;
@@ -163,7 +205,8 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
         await handleClose(DialogResult.Ok);
     };
 
-    const processChildren = (nodes: React.ReactNode): React.ReactNode => {
+    /** Recursively wraps CommandFormField nodes with the context-aware CommandFormFieldWrapper. */
+    const processFieldChildren = (nodes: React.ReactNode): React.ReactNode => {
         return React.Children.map(nodes, (child) => {
             if (!React.isValidElement(child)) return child;
 
@@ -176,11 +219,48 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
             const childProps = child.props as Record<string, unknown>;
             if (childProps.children != null) {
                 return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-                    children: processChildren(childProps.children as React.ReactNode)
+                    children: processFieldChildren(childProps.children as React.ReactNode)
                 });
             }
 
             return child;
+        });
+    };
+
+    /**
+     * Processes the top-level StepperPanel children:
+     * - Recursively wraps CommandFormField nodes inside each panel.
+     * - Adds `scd-step-invalid` to `pt.header.className` for steps that have field errors.
+     */
+    const processChildren = (nodes: React.ReactNode): React.ReactNode => {
+        return React.Children.map(nodes, (child, stepIndex) => {
+            if (!React.isValidElement(child)) return child;
+
+            const component = child.type as React.ComponentType<unknown>;
+            const childProps = child.props as Record<string, unknown>;
+
+            if ((component as { displayName?: string }).displayName === 'StepperPanel') {
+                const processedContent = processFieldChildren(childProps.children as React.ReactNode);
+                const hasError = stepHasError(stepIndex);
+                const existingPt = childProps.pt as Record<string, unknown> | undefined;
+                const newPt = hasError
+                    ? {
+                        ...existingPt,
+                        header: {
+                            ...(existingPt?.header as Record<string, unknown> | undefined),
+                            className: 'scd-step-invalid'
+                        }
+                    }
+                    : existingPt;
+
+                return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+                    children: processedContent,
+                    pt: newPt
+                });
+            }
+
+            // Non-StepperPanel direct children: still process form fields inside them
+            return processFieldChildren(child as React.ReactNode);
         });
     };
 
