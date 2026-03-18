@@ -12,23 +12,36 @@ vi.mock('primereact/dialog', () => ({
         React.createElement('div', { 'data-testid': 'dialog' }, props.footer, props.children),
 }));
 
+// Simulate PrimeReact's Stepper: invoke pt.stepperpanel.number for each child and
+// attach the resulting backgroundColor as data-number-bg so specs can assert on it.
 vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'stepper' }, props.children),
+    Stepper: (props: { children?: React.ReactNode; pt?: Record<string, unknown>; activeStep?: number }) => {
+        type StepCtx = { context: { index: number } };
+        type NumberPtFn = (opts: StepCtx) => { style?: { backgroundColor?: string } };
+        const ptStepperpanel = (props.pt as Record<string, unknown> | undefined)?.stepperpanel as Record<string, unknown> | undefined;
+        const numberPtFn = ptStepperpanel?.number as NumberPtFn | undefined;
+        const children = React.Children.map(props.children, (child, index) => {
+            if (!React.isValidElement(child)) return child;
+            const result = typeof numberPtFn === 'function' ? numberPtFn({ context: { index } }) : {};
+            const bg = result?.style?.backgroundColor ?? '';
+            return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, { 'data-number-bg': bg });
+        });
+        return React.createElement('div', { 'data-testid': 'stepper' }, children);
+    },
 }));
 
 // Set displayName so the indicator code path in processChildren is triggered.
-// Expose pt.header.className as data-header-class so specs can assert on it.
+// Forward data-number-bg (injected by the Stepper mock above) so specs can assert on it.
 vi.mock('primereact/stepperpanel', () => {
     const MockStepperPanel = (props: {
         header?: string;
         children?: React.ReactNode;
-        pt?: { header?: { className?: string } };
+        'data-number-bg'?: string;
     }) =>
         React.createElement('div', {
             'data-testid': 'stepper-panel',
             'data-header': props.header,
-            'data-header-class': props.pt?.header?.className ?? '',
+            'data-number-bg': props['data-number-bg'] ?? '',
         }, props.children);
     MockStepperPanel.displayName = 'StepperPanel';
     return { StepperPanel: MockStepperPanel };
@@ -45,8 +58,7 @@ vi.mock('@cratis/arc.react/dialogs', () => ({
     useDialogContext: () => undefined,
 }));
 
-// isValid: true — only getFieldError drives the per-step indicator; keeps isValid
-// consistent with other test files to avoid mock-bleed issues (isolate: false).
+// isValid: true — only getFieldError drives the per-step indicator.
 vi.mock('@cratis/arc.react/commands', () => ({
     CommandForm: (props: { children?: React.ReactNode }) =>
         React.createElement('div', null, props.children),
@@ -97,13 +109,16 @@ describe('when a step contains a field with a validation error', () => {
     });
 
     it('should_mark_the_invalid_step_with_error_class', () => {
-        html.should.include('scd-step-invalid');
+        // Step 1 has a field error — its number circle should have the red error background
+        const step1Match = html.match(/data-header="Step 1"[^>]*data-number-bg="([^"]*)"/);
+        const step1Bg = step1Match?.[1] ?? '';
+        step1Bg.should.include('red');
     });
 
     it('should_not_mark_the_valid_step_with_error_class', () => {
-        // The second panel (Step 2) has no field errors — its data-header-class should be empty
-        const step2Match = html.match(/data-header="Step 2"[^>]*data-header-class="([^"]*)"/);
-        const step2Class = step2Match?.[1] ?? '';
-        step2Class.should.not.include('scd-step-invalid');
+        // Step 2 has no field errors — its number circle should not have the red error background
+        const step2Match = html.match(/data-header="Step 2"[^>]*data-number-bg="([^"]*)"/);
+        const step2Bg = step2Match?.[1] ?? '';
+        step2Bg.should.not.include('red');
     });
 });
