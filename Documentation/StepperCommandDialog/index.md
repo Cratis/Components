@@ -1,6 +1,6 @@
 # StepperCommandDialog
 
-The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, powered by the PrimeReact Stepper.
+The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of the [PrimeReact Stepper](https://primereact.org/stepper/).
 
 ## Purpose
 
@@ -16,7 +16,7 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 - Step number circles change color to indicate validation state (red = errors, green = visited and valid)
 - Non-active steps are visually dimmed to keep focus on the current step
 - Busy state management during command execution
-- All PrimeReact `Stepper` customization props available directly (orientation, headerPosition, pt, etc.)
+- All [PrimeReact Stepper](https://primereact.org/stepper/) customization props available directly (orientation, headerPosition, pt, etc.)
 - Supports any `CommandForm` field types inside each `StepperPanel`
 - Full integration with Cratis Arc command system
 
@@ -165,6 +165,9 @@ CommandForm fields placed inside a `StepperPanel` are automatically bound to the
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- PrimeReact `Stepper` and `StepperPanel` components for the wizard UI
+- [PrimeReact Stepper](https://primereact.org/stepper/) and `StepperPanel` components for the wizard UI
 - PrimeReact `Dialog` component for the modal wrapper
 
+## See Also
+
+- [Advanced Features](advanced-features.md) - Field validation, transformation, and change tracking across steps
