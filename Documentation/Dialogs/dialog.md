@@ -69,6 +69,7 @@ const MyComponent = () => {
 - `buttons`: Predefined `DialogButtons` or custom footer content
 - `width`: Dialog width
 - `style`: Custom dialog style forwarded to PrimeReact `Dialog`
+- `contentStyle`: Custom content area style forwarded to PrimeReact `Dialog`
 - `resizable`: Enables resize
 - `isValid`: Enables or disables confirm actions
 - `isBusy`: When `true`, disables all buttons and shows a loading spinner on the primary action button

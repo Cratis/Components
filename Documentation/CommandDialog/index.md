@@ -99,6 +99,7 @@ function MyComponent() {
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution
 - `style`: Custom CSS styles
+- `contentStyle`: Custom CSS styles for the dialog content area
 - `width`: Dialog width
 
 ## Callback Behavior

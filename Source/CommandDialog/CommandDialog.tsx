@@ -24,6 +24,7 @@ const CommandDialogWrapper = <TCommand extends object>({
     visible,
     width,
     style,
+    contentStyle,
     resizable,
     buttons,
     okLabel,
@@ -41,6 +42,7 @@ const CommandDialogWrapper = <TCommand extends object>({
     visible?: boolean;
     width?: string;
     style?: DialogProps['style'];
+    contentStyle?: DialogProps['contentStyle'];
     resizable?: boolean;
     buttons?: DialogProps['buttons'];
     okLabel?: string;
@@ -120,6 +122,7 @@ const CommandDialogWrapper = <TCommand extends object>({
             visible={visible}
             width={width}
             style={style}
+            contentStyle={contentStyle}
             resizable={resizable}
             buttons={buttons}
             onClose={onClose}
@@ -145,6 +148,7 @@ const CommandDialogComponent = <TCommand extends object = object>(props: Command
         visible,
         width,
         style,
+        contentStyle,
         resizable,
         buttons = DialogButtons.OkCancel,
         okLabel,
@@ -166,6 +170,7 @@ const CommandDialogComponent = <TCommand extends object = object>(props: Command
                 visible={visible}
                 width={width}
                 style={style}
+                contentStyle={contentStyle}
                 resizable={resizable}
                 buttons={buttons}
                 okLabel={okLabel}
