@@ -13,6 +13,8 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 - Submit button only appears on the last step when all fields are valid
 - Previous button hidden on the first step; Next button hidden on the last step
 - Cancel via the X button in the upper-right corner — no footer Cancel button
+- Step number circles change color to indicate validation state (red = errors, green = visited and valid)
+- Non-active steps are visually dimmed to keep focus on the current step
 - Busy state management during command execution
 - All PrimeReact `Stepper` customization props available directly (orientation, headerPosition, pt, etc.)
 - Supports any `CommandForm` field types inside each `StepperPanel`
@@ -102,6 +104,30 @@ All [PrimeReact Stepper](https://primereact.org/stepper/) customization props ar
 - `pt`: PrimeReact PassThrough options for deep DOM customization
 - `ptOptions`: PassThrough configuration options
 - `unstyled`: Removes built-in component styles
+
+## Validation Indicators
+
+The step number circles in the wizard navigation bar reflect the validation state of each step:
+
+| Circle color | Meaning |
+|---|---|
+| **Red** | The step contains at least one field with a validation error |
+| **Green** | The step has been visited (navigated through) and all its fields are valid |
+| **Default** (theme primary) | The step has not been visited yet |
+
+Steps that are not currently active are dimmed to keep visual focus on the current step.
+
+To show validation indicators immediately on open — before the user has touched any fields — pass the `validateOnInit` prop:
+
+```tsx
+<StepperCommandDialog
+    command={CreateProject}
+    validateOnInit
+    ...
+>
+```
+
+This is useful when the dialog opens with pre-populated values that may already be partially invalid.
 
 ## Navigation and Submit
 
