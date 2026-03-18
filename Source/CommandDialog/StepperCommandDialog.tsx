@@ -128,6 +128,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     const commandInstance = useCommandInstance<TCommand>();
     const [isBusy, setIsBusy] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
+    const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
 
     let contextCloseDialog: ((result: DialogResult) => void) | undefined;
     try {
@@ -227,39 +228,50 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     };
 
     /**
-     * Builds the passthrough `pt` object for PrimeStepper, injecting the
-     * `scd-step-invalid` class onto any step header that has field errors.
+     * Builds the passthrough `pt` object for PrimeStepper, injecting an inline
+     * style onto the step *number* span to colour it red (errors) or green (visited
+     * and valid). Targeting the number span — rather than the header `<li>` — means
+     * PrimeReact's default `p-stepper-header` class and all its layout/separator
+     * CSS are never disturbed.
      * Merges with any user-supplied `pt` prop.
      */
     const stepperPt = useMemo(() => {
         type StepContext = { context: { index: number } };
-        type HeaderPtFn = (opts: StepContext) => Record<string, unknown>;
+        type NumberPtFn = (opts: StepContext) => Record<string, unknown>;
 
         const userPt = pt as Record<string, unknown> | undefined;
         const userStepperPanelPt = userPt?.stepperpanel as Record<string, unknown> | undefined;
-        const userHeaderPt = userStepperPanelPt?.header;
+        const userNumberPt = userStepperPanelPt?.number;
 
         return {
             ...userPt,
             stepperpanel: {
                 ...userStepperPanelPt,
-                header: (opts: StepContext) => {
+                number: (opts: StepContext) => {
                     const existing: Record<string, unknown> =
-                        typeof userHeaderPt === 'function'
-                            ? (userHeaderPt as HeaderPtFn)(opts)
-                            : (userHeaderPt as Record<string, unknown> | undefined) ?? {};
-                    const hasError =
-                        stepFieldNames[opts.context.index]?.some(fieldName => !!(getFieldError?.(fieldName))) ?? false;
-                    if (!hasError) return existing;
-                    const existingClass = existing.className as string | undefined;
+                        typeof userNumberPt === 'function'
+                            ? (userNumberPt as NumberPtFn)(opts)
+                            : (userNumberPt as Record<string, unknown> | undefined) ?? {};
+                    const idx = opts.context.index;
+                    const hasError = stepFieldNames[idx]?.some(fieldName => !!(getFieldError?.(fieldName))) ?? false;
+                    const isVisited = visitedSteps.has(idx);
+
+                    const bgColor = hasError
+                        ? 'var(--red-500, #ef4444)'
+                        : isVisited
+                            ? 'var(--green-500, #22c55e)'
+                            : null;
+
+                    if (!bgColor) return existing;
+                    const existingStyle = existing.style as Record<string, unknown> | undefined;
                     return {
                         ...existing,
-                        className: existingClass ? `${existingClass} scd-step-invalid` : 'scd-step-invalid'
+                        style: { ...existingStyle, backgroundColor: bgColor, color: '#fff' }
                     };
                 }
             }
         };
-    }, [pt, stepFieldNames, getFieldError]);
+    }, [pt, stepFieldNames, getFieldError, visitedSteps]);
 
     const headerElement = (
         <div className="inline-flex align-items-center justify-content-center gap-2">
@@ -284,7 +296,10 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
                     label={nextLabel}
                     icon="pi pi-arrow-right"
                     iconPos="right"
-                    onClick={() => setActiveStep(s => s + 1)}
+                    onClick={() => {
+                        setVisitedSteps(prev => new Set(prev).add(activeStep));
+                        setActiveStep(s => s + 1);
+                    }}
                     disabled={isBusy || stepHasError(activeStep)}
                 />
             )}

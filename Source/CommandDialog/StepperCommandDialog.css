@@ -1,27 +1,14 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* ── Invalid step indicator ─────────────────────────────────────────────── */
-/* Adds a small warning badge to the step number circle when a step has errors */
+/* ── Step validation colors ─────────────────────────────────────────────── */
+/* The circle background colour for error/valid states is applied via inline
+   style on the number span through PrimeReact's passthrough API, so no CSS
+   class rules are needed here for those states.
 
-.scd-step-invalid .p-stepper-number {
-    position: relative;
-}
+   Non-active steps are dimmed using PrimeReact's own data-p-active attribute
+   so no extra passthrough class injection is required. */
 
-.scd-step-invalid .p-stepper-number::after {
-    content: '!';
-    position: absolute;
-    bottom: -4px;
-    right: -4px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background-color: var(--red-500, #ef4444);
-    color: white;
-    font-size: 9px;
-    font-weight: 700;
-    line-height: 14px;
-    text-align: center;
-    border: 2px solid var(--surface-0, #ffffff);
-    pointer-events: none;
+.p-stepper [data-pc-section="header"][data-p-active="false"] {
+    opacity: 0.5;
 }
