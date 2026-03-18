@@ -1,10 +1,10 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Dialog as PrimeDialog } from 'primereact/dialog';
+import { Dialog as PrimeDialog, type DialogProps as PrimeDialogProps } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
-import { CSSProperties, ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 export type CloseDialog = (result: DialogResult) => boolean | void | Promise<boolean> | Promise<void>;
 export type ConfirmCallback = () => boolean | void | Promise<boolean> | Promise<void>;
@@ -19,7 +19,8 @@ export interface DialogProps {
     buttons?: DialogButtons | ReactNode;
     children: ReactNode;
     width?: string;
-    style?: CSSProperties;
+    style?: PrimeDialogProps['style'];
+    contentStyle?: PrimeDialogProps['contentStyle'];
     resizable?: boolean;
     isValid?: boolean;
     isBusy?: boolean;
@@ -39,6 +40,7 @@ export const Dialog = ({
     children, 
     width = '450px', 
     style,
+    contentStyle,
     resizable = false, 
     isValid,
     isBusy = false,
@@ -154,6 +156,7 @@ export const Dialog = ({
             onHide={typeof buttons === 'number' ? () => handleClose(DialogResult.Cancelled) : () => {}}
             visible={visible}
             style={{ width, ...style }}
+            contentStyle={contentStyle}
             resizable={resizable}
             closable={typeof buttons === 'number'}>
             {children}

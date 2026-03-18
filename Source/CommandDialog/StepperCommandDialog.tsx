@@ -3,7 +3,7 @@
 
 import { ICommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
-import { Dialog as PrimeDialog } from 'primereact/dialog';
+import { Dialog as PrimeDialog, type DialogProps as PrimeDialogProps } from 'primereact/dialog';
 import { Stepper as PrimeStepper, type StepperProps } from 'primereact/stepper';
 import { Button } from 'primereact/button';
 import React, { useMemo, useState } from 'react';
@@ -15,7 +15,6 @@ import {
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
-import { CSSProperties } from 'react';
 import './StepperCommandDialog.css';
 
 /** Extracts the property name from an accessor function like `c => c.name`. */
@@ -63,7 +62,9 @@ export interface StepperCommandDialogProps<TCommand extends object>
     /** Dialog width. */
     width?: string;
     /** Custom CSS styles applied to the dialog. */
-    style?: CSSProperties;
+    style?: PrimeDialogProps['style'];
+    /** Custom CSS styles applied to the dialog content area. */
+    contentStyle?: PrimeDialogProps['contentStyle'];
     /** Whether the dialog can be resized. Defaults to `false`. */
     resizable?: boolean;
     /** Additional validity gate combined with command form validity. */
@@ -89,6 +90,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     visible = true,
     width = '600px',
     style,
+    contentStyle,
     resizable = false,
     isValid,
     onClose,
@@ -112,7 +114,8 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     title: string;
     visible?: boolean;
     width?: string;
-    style?: CSSProperties;
+    style?: PrimeDialogProps['style'];
+    contentStyle?: PrimeDialogProps['contentStyle'];
     resizable?: boolean;
     isValid?: boolean;
     onClose?: CloseDialog;
@@ -324,6 +327,7 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
             onHide={() => handleClose(DialogResult.Cancelled)}
             visible={visible}
             style={{ width, ...style }}
+            contentStyle={contentStyle}
             resizable={resizable}
             closable
         >
@@ -353,6 +357,7 @@ const StepperCommandDialogComponent = <TCommand extends object = object>(
         visible,
         width,
         style,
+        contentStyle,
         resizable,
         isValid,
         onClose,
@@ -381,6 +386,7 @@ const StepperCommandDialogComponent = <TCommand extends object = object>(
                 visible={visible}
                 width={width}
                 style={style}
+                contentStyle={contentStyle}
                 resizable={resizable}
                 isValid={isValid}
                 onClose={onClose}

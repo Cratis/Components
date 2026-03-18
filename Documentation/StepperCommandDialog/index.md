@@ -87,6 +87,7 @@ function MyComponent() {
 - `width`: Dialog width (default: `'600px'`)
 - `resizable`: Whether the dialog can be resized
 - `style`: Custom CSS styles
+- `contentStyle`: Custom CSS styles for the dialog content area
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution
