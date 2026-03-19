@@ -740,3 +740,112 @@ export const WithBusyState: Story = {
         );
     },
 };
+
+/** Demonstrates typed response handling with success and failure callbacks. */
+export const WithResponseTypeAndCallbacks: Story = {
+    render: () => {
+        const [visible, setVisible] = useState(true);
+        const [result, setResult] = useState<string>('');
+        const [error, setError] = useState<string>('');
+
+        type CreateUserResponse = {
+            userId: string;
+            username: string;
+            message: string;
+        };
+
+        class CreateUserCommand extends Command<CreateUserResponse> {
+            readonly route: string = '/api/users/create';
+            readonly validation: CommandValidator = new UpdateUserCommandValidator();
+            readonly propertyDescriptors: PropertyDescriptor[] = [
+                new PropertyDescriptor('name', String),
+                new PropertyDescriptor('email', String),
+                new PropertyDescriptor('age', Number),
+            ];
+
+            name = '';
+            email = '';
+            age = 0;
+
+            constructor() {
+                super(Object, false);
+            }
+
+            get requestParameters(): string[] {
+                return [];
+            }
+
+            get properties(): string[] {
+                return ['name', 'email', 'age'];
+            }
+
+            override async validate(): Promise<CommandResult<CreateUserResponse>> {
+                const errors = this.validation?.validate(this) ?? [];
+                if (errors.length > 0) {
+                    return CommandResult.validationFailed(errors) as CommandResult<CreateUserResponse>;
+                }
+                return CommandResult.empty as CommandResult<CreateUserResponse>;
+            }
+
+            override async execute(): Promise<CommandResult<CreateUserResponse>> {
+                // In real usage, the server would return a CommandResult with a typed response
+                // For this story, we just demonstrate the type safety
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return CommandResult.empty as CommandResult<CreateUserResponse>;
+            }
+        }
+
+        return (
+            <div className="storybook-wrapper">
+                <button
+                    className="p-button p-component mb-3"
+                    onClick={() => {
+                        setResult('');
+                        setError('');
+                        setVisible(true);
+                    }}
+                >
+                    Open Dialog
+                </button>
+
+                {result && (
+                    <div className="p-3 mt-3 bg-green-100 border-round">
+                        <strong>Success:</strong> {result}
+                    </div>
+                )}
+
+                {error && (
+                    <div className="p-3 mt-3 bg-red-100 border-round">
+                        <strong>Error:</strong> {error}
+                    </div>
+                )}
+
+                <CommandDialog<CreateUserCommand, CreateUserResponse>
+                    command={CreateUserCommand}
+                    visible={visible}
+                    title="Create User (with Response Type)"
+                    okLabel="Create"
+                    cancelLabel="Cancel"
+                    autoServerValidate={false}
+                    onSuccess={() => {
+                        // Response type is fully typed - in real usage the response would contain data from the server
+                        setResult(`User created successfully! Response type is fully typed.`);
+                        setVisible(false);
+                    }}
+                    onValidationFailure={(validationResults) => {
+                        const errors = validationResults.map(r => r.message).join(', ');
+                        setError(`Validation failed: ${errors}`);
+                    }}
+                    onFailed={(commandResult) => {
+                        setError(`Command failed: ${commandResult.exceptionMessages?.join(', ') || 'Unknown error'}`);
+                    }}
+                    onCancel={() => setVisible(false)}
+                >
+                    <InputTextField value={(c: CreateUserCommand) => c.name} title="Name" placeholder="Enter name (min 2 chars)" />
+                    <InputTextField value={(c: CreateUserCommand) => c.email} title="Email" placeholder="Enter email" type="email" />
+                    <NumberField value={(c: CreateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
+                </CommandDialog>
+            </div>
+        );
+    },
+};
