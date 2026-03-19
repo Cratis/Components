@@ -29,15 +29,25 @@ import { InputTextField, TextAreaField, NumberField } from '@cratis/components/C
 import { CommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
 
+type CreateProjectResponse = {
+    projectId: string;
+};
+
 const CreateProjectDialog = () => {
-    const { closeDialog } = useDialogContext<CommandResult<object>>();
+    const { closeDialog } = useDialogContext<CommandResult<CreateProjectResponse>>();
 
     return (
-        <StepperCommandDialog<CreateProject>
+        <StepperCommandDialog<CreateProject, CreateProjectResponse>
             command={CreateProject}
             title="Create New Project"
             okLabel="Create"
-            onConfirm={() => closeDialog(DialogResult.Ok)}
+            onSuccess={(response) => {
+                console.log('Project created:', response.projectId);
+                closeDialog(DialogResult.Ok);
+            }}
+            onValidationFailure={(errors) => {
+                console.error('Validation failed:', errors);
+            }}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
             <StepperPanel header="Basic Info">
@@ -77,6 +87,11 @@ function MyComponent() {
 - `visible`: Boolean controlling dialog visibility (defaults to `true`)
 - `initialValues`: Initial values for the command form
 - `currentValues`: Current values to populate the form
+- `onSuccess`: Callback invoked on successful command execution with the typed response
+- `onFailed`: Callback invoked when command execution fails with the full `CommandResult<TResponse>`
+- `onException`: Callback invoked when the command throws an exception with error messages and stack trace
+- `onUnauthorized`: Callback invoked when authorization fails
+- `onValidationFailure`: Callback invoked on validation errors with the validation results
 - `onConfirm`: Confirm callback — called only after successful command execution
 - `onCancel`: Cancel callback — invoked when the X button is clicked
 - `onClose`: Fallback close callback
@@ -105,6 +120,28 @@ All [PrimeReact Stepper](https://primereact.org/stepper/) customization props ar
 - `pt`: PrimeReact PassThrough options for deep DOM customization
 - `ptOptions`: PassThrough configuration options
 - `unstyled`: Removes built-in component styles
+
+## Callback Behavior
+
+### Result Callbacks
+
+`StepperCommandDialog` supports the following result callbacks that are invoked based on the command execution outcome:
+
+- `onSuccess(response: TResponse)`: Invoked when the command executes successfully. Receives the typed response.
+- `onFailed(commandResult: CommandResult<TResponse>)`: Invoked when command execution fails for any reason.
+- `onException(messages: string[], stackTrace: string)`: Invoked when the command throws an exception.
+- `onUnauthorized()`: Invoked when authorization fails.
+- `onValidationFailure(validationResults: ValidationResult[])`: Invoked on validation errors.
+
+Multiple callbacks may fire for the same execution. For example, both `onFailed` and `onValidationFailure` will be invoked for validation errors.
+
+### Dialog Callbacks
+
+- `onConfirm` is executed only after command execution succeeds.
+- If `onConfirm` returns `true`, the dialog closes; otherwise it stays open.
+- If `onConfirm` is not provided, `onClose(DialogResult.Ok)` is used.
+- `onCancel` follows the same behavior as `Dialog` (`true` closes).
+- `onClose` closes unless it returns `false`.
 
 ## Validation Indicators
 

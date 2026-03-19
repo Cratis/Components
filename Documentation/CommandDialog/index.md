@@ -42,11 +42,17 @@ const CreateProjectDialog = () => {
     const { closeDialog } = useDialogContext<CommandResult<CreateProjectResponse>>();
 
     return (
-        <CommandDialog<CreateProject>
+        <CommandDialog<CreateProject, CreateProjectResponse>
             command={CreateProject}
             title='Create project'
             okLabel='Create'
-            onConfirm={async () => closeDialog(DialogResult.Ok)}
+            onSuccess={(response) => {
+                console.log('Project created:', response.projectId);
+                closeDialog(DialogResult.Ok);
+            }}
+            onValidationFailure={(errors) => {
+                console.error('Validation failed:', errors);
+            }}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         />
     );
@@ -72,7 +78,7 @@ function MyComponent() {
 }
 ```
 
-> `CommandDialog` invokes `onConfirm` only when command execution succeeds.
+> `CommandDialog` invokes `onSuccess` when command execution succeeds, and other callbacks based on the command result.
 
 ## Props
 
@@ -86,6 +92,11 @@ function MyComponent() {
 - `visible`: Boolean controlling dialog visibility (defaults to `true`)
 - `initialValues`: Initial values for the command form
 - `currentValues`: Current values to populate the form
+- `onSuccess`: Callback invoked on successful command execution with the typed response
+- `onFailed`: Callback invoked when command execution fails with the full `CommandResult<TResponse>`
+- `onException`: Callback invoked when the command throws an exception with error messages and stack trace
+- `onUnauthorized`: Callback invoked when authorization fails
+- `onValidationFailure`: Callback invoked on validation errors with the validation results
 - `onConfirm`: Confirm callback from `Dialog` (called only after successful command execution)
 - `onCancel`: Cancel callback from `Dialog`
 - `onClose`: Fallback close callback from `Dialog`
@@ -103,6 +114,20 @@ function MyComponent() {
 - `width`: Dialog width
 
 ## Callback Behavior
+
+### Result Callbacks
+
+`CommandDialog` supports the following result callbacks that are invoked based on the command execution outcome:
+
+- `onSuccess(response: TResponse)`: Invoked when the command executes successfully. Receives the typed response.
+- `onFailed(commandResult: CommandResult<TResponse>)`: Invoked when command execution fails for any reason.
+- `onException(messages: string[], stackTrace: string)`: Invoked when the command throws an exception.
+- `onUnauthorized()`: Invoked when authorization fails.
+- `onValidationFailure(validationResults: ValidationResult[])`: Invoked on validation errors.
+
+Multiple callbacks may fire for the same execution. For example, both `onFailed` and `onValidationFailure` will be invoked for validation errors.
+
+### Dialog Callbacks
 
 - `onConfirm` is executed only after command execution succeeds.
 - If `onConfirm` returns `true`, the dialog closes; otherwise it stays open.
