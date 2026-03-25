@@ -2,6 +2,94 @@
 
 All advanced features described here apply to every step in the wizard, because all steps share a single underlying command instance.
 
+## Response Type Handling
+
+`StepperCommandDialog` supports typed command responses and provides callbacks for different execution outcomes:
+
+```typescript
+import { StepperCommandDialog } from '@cratis/components/CommandDialog';
+import { StepperPanel } from 'primereact/stepperpanel';
+import { ValidationResult } from '@cratis/arc/validation';
+
+type CreateProjectResponse = {
+    projectId: string;
+    message: string;
+};
+
+<StepperCommandDialog<CreateProject, CreateProjectResponse>
+    command={CreateProject}
+    title="Create Project"
+    onSuccess={(response) => {
+        // Handle successful creation - response is fully typed
+        console.log(`Project created with ID: ${response.projectId}`);
+        showNotification(response.message);
+        navigate(`/projects/${response.projectId}`);
+    }}
+    onFailed={(commandResult) => {
+        // Handle any failure - includes all failure details
+        console.error('Command failed:', commandResult);
+    }}
+    onException={(messages, stackTrace) => {
+        // Handle exceptions specifically
+        console.error('Exception occurred:', messages.join(', '));
+    }}
+    onUnauthorized={() => {
+        // Handle authorization failures
+        showNotification('You are not authorized to perform this action');
+    }}
+    onValidationFailure={(validationResults) => {
+        // Handle validation failures
+        const errors = validationResults.map(r => r.message).join(', ');
+        showNotification(`Validation failed: ${errors}`);
+    }}
+>
+    <StepperPanel header="Basic Info">
+        <InputTextField<CreateProject> value={c => c.name} title="Name" />
+    </StepperPanel>
+    <StepperPanel header="Details">
+        <TextAreaField<CreateProject> value={c => c.description} title="Description" />
+    </StepperPanel>
+</StepperCommandDialog>
+```
+
+### Callback Execution Order
+
+Multiple callbacks may fire for the same command execution:
+
+1. **onSuccess**: Only fires when `commandResult.isSuccess` is `true`
+2. **onFailed**: Fires for any failure (validation, exception, unauthorized, etc.)
+3. **onException**: Fires specifically when an exception occurs
+4. **onUnauthorized**: Fires specifically when authorization fails
+5. **onValidationFailure**: Fires specifically when validation fails
+
+For example, a validation failure will trigger both `onFailed` and `onValidationFailure`.
+
+### Response Type Inference
+
+The response type parameter is optional and defaults to `object`:
+
+```typescript
+// Explicit response type
+<StepperCommandDialog<CreateProject, CreateProjectResponse>
+    command={CreateProject}
+    onSuccess={(response) => {
+        // response is CreateProjectResponse
+    }}
+>
+    {/* steps */}
+</StepperCommandDialog>
+
+// Default object response type
+<StepperCommandDialog<CreateProject>
+    command={CreateProject}
+    onSuccess={(response) => {
+        // response is object
+    }}
+>
+    {/* steps */}
+</StepperCommandDialog>
+```
+
 ## Field Validation
 
 Provide custom validation logic for individual fields:

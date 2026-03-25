@@ -13,8 +13,8 @@ import {
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 
-export interface CommandDialogProps<TCommand extends object>
-    extends Omit<CommandFormProps<TCommand>, 'children'>,
+export interface CommandDialogProps<TCommand extends object, TResponse = object>
+    extends Omit<CommandFormProps<TCommand, TResponse>, 'children'>,
         Omit<DialogProps, 'children'> {
     children?: React.ReactNode;
 }
@@ -142,7 +142,7 @@ const CommandDialogWrapper = <TCommand extends object>({
     );
 };
 
-const CommandDialogComponent = <TCommand extends object = object>(props: CommandDialogProps<TCommand>) => {
+const CommandDialogComponent = <TCommand extends object = object, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
     const {
         title,
         visible,
@@ -164,7 +164,7 @@ const CommandDialogComponent = <TCommand extends object = object>(props: Command
     } = props;
 
     return (
-        <CommandForm<TCommand> {...commandFormProps}>
+        <CommandForm<TCommand, TResponse> {...commandFormProps}>
             <CommandDialogWrapper<TCommand>
                 title={title}
                 visible={visible}

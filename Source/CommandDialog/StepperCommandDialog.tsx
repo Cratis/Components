@@ -52,8 +52,8 @@ type StepperCustomizationProps = Pick<StepperProps,
     'orientation' | 'headerPosition' | 'linear' | 'onChangeStep' | 'start' | 'end' | 'pt' | 'ptOptions' | 'unstyled'
 >;
 
-export interface StepperCommandDialogProps<TCommand extends object>
-    extends Omit<CommandFormProps<TCommand>, 'children'>,
+export interface StepperCommandDialogProps<TCommand extends object, TResponse = object>
+    extends Omit<CommandFormProps<TCommand, TResponse>, 'children'>,
         StepperCustomizationProps {
     /** Dialog title text. */
     title: string;
@@ -349,8 +349,8 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     );
 };
 
-const StepperCommandDialogComponent = <TCommand extends object = object>(
-    props: StepperCommandDialogProps<TCommand>
+const StepperCommandDialogComponent = <TCommand extends object = object, TResponse = object>(
+    props: StepperCommandDialogProps<TCommand, TResponse>
 ) => {
     const {
         title,
@@ -380,7 +380,7 @@ const StepperCommandDialogComponent = <TCommand extends object = object>(
     } = props;
 
     return (
-        <CommandForm<TCommand> {...commandFormProps}>
+        <CommandForm<TCommand, TResponse> {...commandFormProps}>
             <StepperCommandDialogWrapper<TCommand>
                 title={title}
                 visible={visible}
