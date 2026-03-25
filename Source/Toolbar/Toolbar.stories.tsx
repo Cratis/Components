@@ -259,3 +259,62 @@ export const WithFanOut: Story = {
         return <WithFanOutDemo />;
     },
 };
+
+/**
+ * Demonstrates dragging toolbar buttons onto a canvas surface.
+ *
+ * Each button carries `data` that identifies the tool. Drag any button from the toolbar
+ * and drop it onto the canvas area to see the tool type that was dropped.
+ *
+ * The toolbar-level `draggable` prop makes every child button draggable automatically;
+ * individual buttons can still opt out by setting `draggable={false}`.
+ */
+export const DragAndDrop: Story = {
+    render: () => {
+        const DragAndDropDemo = () => {
+            const [dropped, setDropped] = useState<string | null>(null);
+            const [isDragOver, setIsDragOver] = useState(false);
+
+            return (
+                <div className='flex gap-6 items-start'>
+                    <Toolbar
+                        draggable
+                        onItemDragStart={(data) =>
+                            setDropped(`Dragging: ${(data as { tool: string }).tool}`)
+                        }
+                    >
+                        <ToolbarButton icon='pi pi-pencil' tooltip='Pencil' data={{ tool: 'pencil' }} />
+                        <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' data={{ tool: 'rectangle' }} />
+                        <ToolbarButton icon='pi pi-circle' tooltip='Circle' data={{ tool: 'circle' }} />
+                        <ToolbarButton icon='pi pi-minus' tooltip='Line' data={{ tool: 'line' }} />
+                    </Toolbar>
+
+                    <div
+                        onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }}
+                        onDragLeave={() => setIsDragOver(false)}
+                        onDrop={(event) => {
+                            event.preventDefault();
+                            setIsDragOver(false);
+                            const raw = event.dataTransfer.getData('application/json');
+                            const data = JSON.parse(raw) as { tool: string } | null;
+                            setDropped(data ? `Dropped: ${data.tool}` : 'Dropped: (no data)');
+                        }}
+                        className='flex items-center justify-center rounded-xl border-2 border-dashed transition-colors'
+                        style={{
+                            width: 240,
+                            height: 180,
+                            borderColor: isDragOver ? 'var(--primary-color)' : 'var(--surface-border)',
+                            background: isDragOver ? 'var(--highlight-bg)' : 'var(--surface-card)',
+                            color: 'var(--text-color-secondary)',
+                            fontSize: '0.875rem',
+                        }}
+                    >
+                        {dropped ?? 'Drop a tool here'}
+                    </div>
+                </div>
+            );
+        };
+
+        return <DragAndDropDemo />;
+    },
+};
