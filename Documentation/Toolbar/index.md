@@ -1,6 +1,6 @@
 # Toolbar
 
-The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, and fan-out sub-panels.
+The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, fan-out sub-panels, and drag & drop onto surfaces.
 
 ## Components
 

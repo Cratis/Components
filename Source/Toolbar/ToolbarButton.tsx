@@ -3,6 +3,7 @@
 
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
+import { useToolbarDragContext } from './ToolbarDragContext';
 
 /** Props for the {@link ToolbarButton} component. */
 export interface ToolbarButtonProps {
@@ -23,14 +24,44 @@ export interface ToolbarButtonProps {
 
     /** Position of the tooltip relative to the button (default: 'right'). */
     tooltipPosition?: TooltipPosition;
+
+    /**
+     * Whether this button can be dragged onto a surface.
+     * When omitted the value is inherited from the parent {@link Toolbar}'s `draggable` prop.
+     */
+    draggable?: boolean;
+
+    /**
+     * Optional data associated with this button for identification during drag &amp; drop.
+     * The value is passed to {@link onDragStart} and serialised onto the HTML5
+     * `DataTransfer` object as `application/json` so drop targets can read it.
+     */
+    data?: unknown;
+
+    /**
+     * Callback invoked when a drag operation starts on this button.
+     * Receives the button's {@link data} and the originating drag event.
+     */
+    onDragStart?: (data: unknown, event: React.DragEvent<HTMLButtonElement>) => void;
 }
 
 /**
  * An icon button with a tooltip, intended to be placed inside a {@link Toolbar}.
  * Uses the shared {@link Tooltip} component for consistent hover labels.
  */
-export const ToolbarButton = ({ icon, text, tooltip, active = false, onClick, tooltipPosition = 'right' }: ToolbarButtonProps) => {
+export const ToolbarButton = ({ icon, text, tooltip, active = false, onClick, tooltipPosition = 'right', draggable, data, onDragStart }: ToolbarButtonProps) => {
+    const dragContext = useToolbarDragContext();
+    const isDraggable = draggable ?? dragContext.draggable;
+
+    const handleDragStart = (event: React.DragEvent<HTMLButtonElement>) => {
+        event.dataTransfer.setData('application/json', JSON.stringify(data ?? null));
+        event.dataTransfer.effectAllowed = 'copy';
+        onDragStart?.(data, event);
+        dragContext.onItemDragStart?.(data, event);
+    };
+
     const activeClass = active ? 'toolbar-button--active' : '';
+    const draggableClass = isDraggable ? 'toolbar-button--draggable' : '';
     const hasText = typeof text === 'string' && text.length > 0;
     const hasIcon = typeof icon === 'string' && icon.length > 0;
     const buttonContent = hasText
@@ -46,7 +77,9 @@ export const ToolbarButton = ({ icon, text, tooltip, active = false, onClick, to
                 type='button'
                 aria-label={tooltip}
                 onClick={onClick}
-                className={`toolbar-button ${buttonSizeClass} flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
+                draggable={isDraggable}
+                onDragStart={isDraggable ? handleDragStart : undefined}
+                className={`toolbar-button ${buttonSizeClass} flex items-center justify-center rounded-lg cursor-pointer ${activeClass} ${draggableClass}`}
             >
                 {buttonContent}
             </button>
