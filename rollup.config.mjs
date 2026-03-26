@@ -4,8 +4,8 @@
 import typescript2 from 'rollup-plugin-typescript2';
 import commonjs from 'rollup-plugin-commonjs';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { dirname, join, resolve } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, statSync } from 'fs';
+import { dirname, extname, join, resolve } from 'path';
 
 /**
  * Rollup plugin that compiles the Tailwind entry CSS through PostCSS after the
@@ -84,6 +84,44 @@ function generatePackageJson(cjsPath, esmPath) {
     };
 }
 
+/**
+ * Resolve extensionless relative directory imports to index.ts explicitly.
+ * This keeps source imports idiomatic while avoiding resolver differences
+ * between environments during publish-time builds.
+ */
+function resolveRelativeDirectoryImportsToIndexTs() {
+    return {
+        name: 'resolve-relative-directory-imports-to-index-ts',
+        resolveId(source, importer) {
+            if (!importer || !source.startsWith('.')) {
+                return null;
+            }
+
+            // Only handle extensionless paths (e.g. './CommandForm').
+            if (extname(source)) {
+                return null;
+            }
+
+            const importerDirectory = dirname(importer);
+            const targetDirectory = resolve(importerDirectory, source);
+            if (!existsSync(targetDirectory)) {
+                return null;
+            }
+
+            if (!statSync(targetDirectory).isDirectory()) {
+                return null;
+            }
+
+            const indexTs = resolve(targetDirectory, 'index.ts');
+            if (existsSync(indexTs)) {
+                return indexTs;
+            }
+
+            return null;
+        }
+    };
+}
+
 export function rollup(cjsPath, esmPath, tsconfigPath, pkg) {
     const sourceDir = dirname(tsconfigPath);
     return {
@@ -120,6 +158,7 @@ export function rollup(cjsPath, esmPath, tsconfigPath, pkg) {
         ],
         plugins: [
             peerDepsExternal(),
+            resolveRelativeDirectoryImportsToIndexTs(),
             commonjs({
                 include: /node_modules/,
                 esmExternals: true,
