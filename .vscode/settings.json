@@ -8,11 +8,11 @@
     "tsyringe",
     "usehooks"
   ],
-  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "typescript.tsdk": "node_modules/typescript/lib",
   "search.exclude": {
     "**/.yarn": true,
     "**/.pnp.*": true
   },
-  "eslint.nodePath": ".yarn/sdks",
+  "eslint.nodePath": "node_modules",
   "typescript.enablePromptUseWorkspaceTsdk": true
 }
