@@ -19,7 +19,7 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
     children?: React.ReactNode;
 }
 
-const CommandDialogWrapper = <TCommand extends object>({
+const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     title,
     visible,
     width,
@@ -35,6 +35,9 @@ const CommandDialogWrapper = <TCommand extends object>({
     onClose,
     onConfirm,
     onCancel,
+    onSuccess,
+    onValidationFailure,
+    onFailed,
     onBeforeExecute,
     children
 }: {
@@ -53,6 +56,9 @@ const CommandDialogWrapper = <TCommand extends object>({
     onClose?: DialogProps['onClose'];
     onConfirm?: DialogProps['onConfirm'];
     onCancel?: DialogProps['onCancel'];
+    onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
+    onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
+    onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
     onBeforeExecute?: (values: TCommand) => TCommand;
     children?: React.ReactNode;
 }) => {
@@ -67,17 +73,24 @@ const CommandDialogWrapper = <TCommand extends object>({
         }
 
         setIsBusy(true);
-        let result: ICommandResult<unknown>;
+        let result: ICommandResult<TResponse>;
         try {
-            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<unknown>> }).execute();
+            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
         } finally {
             setIsBusy(false);
         }
 
         if (!result.isSuccess) {
+            if (!result.isValid) {
+                await onValidationFailure?.(result.validationResults);
+            } else {
+                await onFailed?.(result);
+            }
             setCommandResult(result);
             return false;
         }
+
+        await onSuccess?.(result.response as TResponse);
 
         if (onConfirm) {
             const closeResult = await onConfirm();
@@ -165,7 +178,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
 
     return (
         <CommandForm<TCommand, TResponse> {...commandFormProps}>
-            <CommandDialogWrapper<TCommand>
+            <CommandDialogWrapper<TCommand, TResponse>
                 title={title}
                 visible={visible}
                 width={width}
@@ -181,6 +194,9 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 onClose={onClose}
                 onConfirm={onConfirm}
                 onCancel={onCancel}
+                onSuccess={props.onSuccess}
+                onValidationFailure={props.onValidationFailure}
+                onFailed={props.onFailed}
                 onBeforeExecute={commandFormProps.onBeforeExecute}
             >
                 {children}

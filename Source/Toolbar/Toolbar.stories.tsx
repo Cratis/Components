@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import { useState, type DragEvent } from 'react';
 import { Toolbar } from './Toolbar';
 import { ToolbarButton } from './ToolbarButton';
 import { ToolbarContext } from './ToolbarContext';
@@ -290,10 +290,10 @@ export const DragAndDrop: Story = {
                     </Toolbar>
 
                     <div
-                        onDragOver={(event) => { event.preventDefault(); setIsDragOver(true); }}
+                        onDragOver={(event: DragEvent<HTMLDivElement>) => { event.preventDefault?.(); setIsDragOver(true); }}
                         onDragLeave={() => setIsDragOver(false)}
-                        onDrop={(event) => {
-                            event.preventDefault();
+                        onDrop={(event: DragEvent<HTMLDivElement>) => {
+                            event.preventDefault?.();
                             setIsDragOver(false);
                             const raw = event.dataTransfer.getData('application/json');
                             const data = JSON.parse(raw) as { tool: string } | null;

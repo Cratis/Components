@@ -85,7 +85,7 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     children?: React.ReactNode;
 }
 
-const StepperCommandDialogWrapper = <TCommand extends object>({
+const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object>({
     title,
     visible = true,
     width = '600px',
@@ -96,6 +96,9 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     onClose,
     onConfirm,
     onCancel,
+    onSuccess,
+    onValidationFailure,
+    onFailed,
     onBeforeExecute,
     okLabel = 'Submit',
     nextLabel = 'Next',
@@ -121,6 +124,9 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
     onClose?: CloseDialog;
     onConfirm?: ConfirmCallback;
     onCancel?: CancelCallback;
+    onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
+    onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
+    onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
     onBeforeExecute?: (values: TCommand) => TCommand;
     okLabel?: string;
     nextLabel?: string;
@@ -193,18 +199,25 @@ const StepperCommandDialogWrapper = <TCommand extends object>({
         }
 
         setIsBusy(true);
-        let result: ICommandResult<unknown>;
+        let result: ICommandResult<TResponse>;
 
         try {
-            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<unknown>> }).execute();
+            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
         } finally {
             setIsBusy(false);
         }
 
         if (!result.isSuccess) {
+            if (!result.isValid) {
+                await onValidationFailure?.(result.validationResults);
+            } else {
+                await onFailed?.(result);
+            }
             setCommandResult(result);
             return;
         }
+
+        await onSuccess?.(result.response as TResponse);
 
         await handleClose(DialogResult.Ok);
     };
@@ -381,7 +394,7 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
 
     return (
         <CommandForm<TCommand, TResponse> {...commandFormProps}>
-            <StepperCommandDialogWrapper<TCommand>
+            <StepperCommandDialogWrapper<TCommand, TResponse>
                 title={title}
                 visible={visible}
                 width={width}
@@ -392,6 +405,9 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
                 onClose={onClose}
                 onConfirm={onConfirm}
                 onCancel={onCancel}
+                onSuccess={props.onSuccess}
+                onValidationFailure={props.onValidationFailure}
+                onFailed={props.onFailed}
                 onBeforeExecute={commandFormProps.onBeforeExecute}
                 okLabel={okLabel}
                 nextLabel={nextLabel}
