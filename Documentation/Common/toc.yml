@@ -1,5 +1,7 @@
 - name: Overview
   href: index.md
+- name: Icon
+  href: icon.md
 - name: Page
   href: page.md
 - name: FormElement

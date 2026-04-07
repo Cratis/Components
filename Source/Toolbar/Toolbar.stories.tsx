@@ -22,6 +22,56 @@ export default meta;
 
 type Story = StoryObj<typeof Toolbar>;
 
+/**
+ * Demonstrates that any React node can be used as an icon on {@link ToolbarButton} and
+ * {@link ToolbarFanOutItem} — here using inline SVG elements in place of PrimeIcons CSS
+ * class strings.
+ *
+ * Existing string-based usage is unchanged; the `icon` prop now accepts `string | ReactNode`.
+ */
+export const WithReactNodeIcons: Story = {
+    render: () => {
+        const CircleIcon = () => (
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='currentColor' aria-hidden='true'>
+                <circle cx='12' cy='12' r='10' />
+            </svg>
+        );
+        const SquareIcon = () => (
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='currentColor' aria-hidden='true'>
+                <rect x='3' y='3' width='18' height='18' rx='2' />
+            </svg>
+        );
+        const StarIcon = () => (
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='currentColor' aria-hidden='true'>
+                <path d='M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' />
+            </svg>
+        );
+        const TriangleIcon = () => (
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='currentColor' aria-hidden='true'>
+                <path d='M12 2L2 22h20L12 2z' />
+            </svg>
+        );
+        const PentagonIcon = () => (
+            <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='currentColor' aria-hidden='true'>
+                <path d='M12 2l9.5 6.9-3.6 11.1H6.1L2.5 8.9 12 2z' />
+            </svg>
+        );
+
+        return (
+            <Toolbar>
+                <ToolbarButton icon={<CircleIcon />} tooltip='Circle' />
+                <ToolbarButton icon={<SquareIcon />} tooltip='Rectangle' />
+                <ToolbarFanOutItem icon={<StarIcon />} tooltip='More shapes'>
+                    <ToolbarButton icon={<TriangleIcon />} tooltip='Triangle' />
+                    <ToolbarButton icon={<PentagonIcon />} tooltip='Pentagon' />
+                </ToolbarFanOutItem>
+                {/* String-based icons still work unchanged */}
+                <ToolbarButton icon='pi pi-undo' tooltip='Undo' />
+            </Toolbar>
+        );
+    },
+};
+
 /** A single toolbar group with several drawing-tool buttons. */
 export const Default: Story = {
     render: () => (

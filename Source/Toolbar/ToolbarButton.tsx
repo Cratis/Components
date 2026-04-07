@@ -1,14 +1,16 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { IconDisplay } from '../Common/Icon';
+import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
 import { useToolbarDragContext } from './ToolbarDragContext';
 
 /** Props for the {@link ToolbarButton} component. */
 export interface ToolbarButtonProps {
-    /** The PrimeIcons CSS class to use as the icon (e.g. 'pi pi-home'). */
-    icon?: string;
+    /** The icon to display — either a PrimeIcons CSS class string (e.g. `'pi pi-home'`) or a React node. */
+    icon?: Icon;
 
     /** Optional text to render inside the button (e.g. '120%'). */
     text?: string;
@@ -63,11 +65,11 @@ export const ToolbarButton = ({ icon, text, tooltip, active = false, onClick, to
     const activeClass = active ? 'toolbar-button--active' : '';
     const draggableClass = isDraggable ? 'toolbar-button--draggable' : '';
     const hasText = typeof text === 'string' && text.length > 0;
-    const hasIcon = typeof icon === 'string' && icon.length > 0;
+    const resolvedIcon = icon !== undefined && icon !== null && (typeof icon !== 'string' || icon.length > 0) ? icon : null;
     const buttonContent = hasText
         ? <span className='toolbar-button__text'>{text}</span>
-        : hasIcon
-            ? <i className={`${icon} text-lg`} />
+        : resolvedIcon !== null
+            ? <IconDisplay icon={resolvedIcon} className='text-lg' />
             : null;
     const buttonSizeClass = hasText ? 'h-10 px-3 min-w-[4rem]' : 'w-10 h-10';
 

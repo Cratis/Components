@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export * from './ErrorBoundary';
+export * from './Icon';
 export * from './Page';
 export * from './FormElement';
 export * from './Tooltip';
