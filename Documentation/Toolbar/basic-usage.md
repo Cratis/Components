@@ -35,3 +35,21 @@ function ZoomToolbar() {
     );
 }
 ```
+
+## ReactNode Icons
+
+The `icon` prop accepts a `string | ReactNode`. In addition to PrimeIcons CSS class strings you can pass any React element — an SVG component, a third-party icon library component, or any other node:
+
+```tsx
+import { FaPencil } from 'react-icons/fa6';
+
+<Toolbar>
+    {/* String — PrimeIcons CSS class */}
+    <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+
+    {/* ReactNode — third-party icon component */}
+    <ToolbarButton icon={<FaPencil />} tooltip='Draw' />
+</Toolbar>
+```
+
+See [Icon](../../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.

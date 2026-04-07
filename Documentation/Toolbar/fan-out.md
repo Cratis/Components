@@ -20,3 +20,18 @@ By default the panel fans out to the right. Use `fanOutDirection='left'` when th
     ...
 </ToolbarFanOutItem>
 ```
+
+## ReactNode Icons
+
+Like `ToolbarButton`, the `icon` prop accepts a `string | ReactNode`. Pass any React element as the trigger icon:
+
+```tsx
+import { FaShapes } from 'react-icons/fa6';
+
+<ToolbarFanOutItem icon={<FaShapes />} tooltip='Shapes'>
+    <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
+    <ToolbarButton icon='pi pi-circle' tooltip='Circle' />
+</ToolbarFanOutItem>
+```
+
+See [Icon](../../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
