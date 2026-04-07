@@ -2,13 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import { IconDisplay } from '../Common/Icon';
+import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
 
 /** Props for the {@link ToolbarFanOutItem} component. */
 export interface ToolbarFanOutItemProps {
-    /** The PrimeIcons CSS class to use as the trigger icon (e.g. 'pi pi-home'). */
-    icon: string;
+    /** The icon to display on the trigger button — either a PrimeIcons CSS class string (e.g. `'pi pi-home'`) or a React node. */
+    icon: Icon;
 
     /** Tooltip text shown when hovering over the trigger button. */
     tooltip: string;
@@ -77,7 +79,7 @@ export const ToolbarFanOutItem = ({
                     onClick={handleToggle}
                     className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
                 >
-                    <i className={`${icon} text-lg`} />
+                    <IconDisplay icon={icon} className='text-lg' />
                 </button>
             </Tooltip>
             <div className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass}`}>
