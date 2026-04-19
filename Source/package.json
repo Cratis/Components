@@ -29,6 +29,11 @@
             "require": "./dist/cjs/CommandDialog/index.js",
             "import": "./dist/esm/CommandDialog/index.js"
         },
+        "./CommandStepper": {
+            "types": "./dist/esm/CommandStepper/index.d.ts",
+            "require": "./dist/cjs/CommandStepper/index.js",
+            "import": "./dist/esm/CommandStepper/index.js"
+        },
         "./CommandForm": {
             "types": "./dist/esm/CommandForm/index.d.ts",
             "require": "./dist/cjs/CommandForm/index.js",
