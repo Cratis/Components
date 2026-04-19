@@ -1,6 +1,6 @@
 # StepperCommandDialog
 
-The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of the [PrimeReact Stepper](https://primereact.org/stepper/).
+The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of `CommandStepper` and the [PrimeReact Stepper](https://primereact.org/stepper/).
 
 ## Purpose
 
@@ -209,3 +209,4 @@ CommandForm fields placed inside a `StepperPanel` are automatically bound to the
 ## See Also
 
 - [Advanced Features](advanced-features.md) - Field validation, transformation, and change tracking across steps
+- [CommandStepper](../CommandStepper/index.md) - Standalone stepper foundation component

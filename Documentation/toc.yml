@@ -8,6 +8,8 @@
       items:
         - name: CommandDialog
           href: CommandDialog/toc.yml
+        - name: CommandStepper
+          href: CommandStepper/toc.yml
         - name: StepperCommandDialog
           href: StepperCommandDialog/toc.yml
         - name: CommandForm Field Types
