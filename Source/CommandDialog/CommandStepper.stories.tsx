@@ -9,7 +9,6 @@ import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { InputTextField, NumberField, TextAreaField } from '../CommandForm/fields';
 import '@cratis/arc/validation';
-
 const meta: Meta<typeof CommandStepper> = {
     title: 'CommandDialog/CommandStepper',
     component: CommandStepper,
@@ -117,6 +116,129 @@ export const Default: Story = {
                         {result}
                     </div>
                 )}
+            </div>
+        );
+    },
+};
+
+export const InDialogFrame: Story = {
+    render: () => {
+        const [result, setResult] = useState('');
+
+        return (
+            <div className="command-stepper-stories-background">
+                <div className="command-stepper-stories-frame">
+                    <div className="command-stepper-stories-header">
+                        <h2>Create New Project</h2>
+                    </div>
+                    <div className="command-stepper-stories-content">
+                        <CommandStepper<CreateProjectCommand>
+                            command={CreateProjectCommand}
+                            autoServerValidate={false}
+                            validateOn="change"
+                            onSuccess={async () => setResult('Project created successfully')}
+                        >
+                            <StepperPanel header="Basic Info">
+                                <InputTextField<CreateProjectCommand>
+                                    value={c => c.name}
+                                    title="Project Name"
+                                    placeholder="Enter project name (min 2 chars)"
+                                />
+                                <InputTextField<CreateProjectCommand>
+                                    value={c => c.email}
+                                    title="Contact Email"
+                                    placeholder="Enter contact email"
+                                    type="email"
+                                />
+                            </StepperPanel>
+                            <StepperPanel header="Details">
+                                <TextAreaField<CreateProjectCommand>
+                                    value={c => c.description}
+                                    title="Description"
+                                    placeholder="Describe the project (min 10 chars)"
+                                    rows={4}
+                                />
+                                <NumberField<CreateProjectCommand>
+                                    value={c => c.budget}
+                                    title="Budget"
+                                    placeholder="Enter budget (must be > 0)"
+                                />
+                            </StepperPanel>
+                        </CommandStepper>
+                        {result && (
+                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--surface-border)' }}>
+                                {result}
+                            </div>
+                        )}
+                    </div>
+                    <div className="command-stepper-stories-footer">
+                        <button className="p-button p-button-secondary">Cancel</button>
+                        <button className="p-button p-button-primary">Create</button>
+                    </div>
+                </div>
+            </div>
+        );
+    },
+};
+
+export const InDialogFrameWithCenteredHeader: Story = {
+    render: () => {
+        const [result, setResult] = useState('');
+
+        return (
+            <div className="command-stepper-stories-background">
+                <div className="command-stepper-stories-frame">
+                    <div className="command-stepper-stories-header command-stepper-stories-header-centered">
+                        <div className="command-stepper-stories-logo">
+                            <div className="command-stepper-stories-logo-placeholder">LOGO</div>
+                            <p className="command-stepper-stories-subtitle">Complete Your Setup</p>
+                        </div>
+                    </div>
+                    <div className="command-stepper-stories-content">
+                        <CommandStepper<CreateProjectCommand>
+                            command={CreateProjectCommand}
+                            autoServerValidate={false}
+                            validateOn="change"
+                            validateOnInit
+                            nextLabel="Continue"
+                            previousLabel="Back"
+                            onSuccess={async () => setResult('Setup completed')}
+                        >
+                            <StepperPanel header="Organization">
+                                <InputTextField<CreateProjectCommand>
+                                    value={c => c.name}
+                                    title="Organization Name"
+                                    placeholder="Enter organization name"
+                                />
+                            </StepperPanel>
+                            <StepperPanel header="Contact">
+                                <InputTextField<CreateProjectCommand>
+                                    value={c => c.email}
+                                    title="Contact Email"
+                                    placeholder="Enter contact email"
+                                    type="email"
+                                />
+                            </StepperPanel>
+                            <StepperPanel header="Details">
+                                <TextAreaField<CreateProjectCommand>
+                                    value={c => c.description}
+                                    title="Description"
+                                    placeholder="Describe your organization"
+                                    rows={3}
+                                />
+                            </StepperPanel>
+                        </CommandStepper>
+                        {result && (
+                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--surface-border)' }}>
+                                {result}
+                            </div>
+                        )}
+                    </div>
+                    <div className="command-stepper-stories-footer">
+                        <button className="p-button p-button-secondary">Cancel</button>
+                        <button className="p-button p-button-primary">Complete</button>
+                    </div>
+                </div>
             </div>
         );
     },

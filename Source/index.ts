@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import * as CommandDialog from './CommandDialog';
+import * as CommandStepper from './CommandDialog';
 import * as CommandForm from './CommandForm';
 import * as Common from './Common';
 import * as DataPage from './DataPage';
@@ -18,6 +19,7 @@ import * as Types from './types';
 
 export {
     CommandDialog,
+    CommandStepper,
     CommandForm,
     Common,
     DataPage,
