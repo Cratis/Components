@@ -1,0 +1,24 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.p-stepper [data-pc-section="header"][data-p-active="false"] {
+    opacity: 0.5;
+}
+
+/* Make stepper and its panels fill available width */
+.cratis-command-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.cratis-command-stepper .p-stepper {
+    width: 100%;
+}
+
+.cratis-command-stepper .p-stepperpanel-content {
+    width: 100%;
+    box-sizing: border-box;
+}
+
