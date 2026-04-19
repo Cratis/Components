@@ -4,53 +4,16 @@
 import { ICommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Dialog as PrimeDialog, type DialogProps as PrimeDialogProps } from 'primereact/dialog';
-import { Stepper as PrimeStepper, type StepperProps } from 'primereact/stepper';
 import { Button } from 'primereact/button';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
     CommandForm,
-    CommandFormFieldWrapper,
     useCommandFormContext,
     useCommandInstance,
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
-import './StepperCommandDialog.css';
-
-/** Extracts the property name from an accessor function like `c => c.name`. */
-const getPropertyName = (accessor: ((obj: unknown) => unknown) | unknown): string => {
-    if (typeof accessor !== 'function') return '';
-    const fnStr = accessor.toString();
-    const match = fnStr.match(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/);
-    return match ? match[1] : '';
-};
-
-/** Recursively collects all CommandFormField property names from a React node tree. */
-const extractFieldNamesFromNode = (nodes: React.ReactNode): string[] => {
-    const names: string[] = [];
-    React.Children.forEach(nodes, (child) => {
-        if (!React.isValidElement(child)) return;
-        const component = child.type as React.ComponentType<unknown>;
-        if ((component as { displayName?: string }).displayName === 'CommandFormField') {
-            const fieldProps = child.props as { value?: (obj: unknown) => unknown };
-            const name = getPropertyName(fieldProps.value);
-            if (name) names.push(name);
-        }
-        const childProps = child.props as Record<string, unknown>;
-        if (childProps.children != null) {
-            names.push(...extractFieldNamesFromNode(childProps.children as React.ReactNode));
-        }
-    });
-    return names;
-};
-
-/**
- * Stepper-specific customization props forwarded directly to PrimeReact Stepper.
- * `activeStep` and `children` are managed internally and are excluded.
- */
-type StepperCustomizationProps = Pick<StepperProps,
-    'orientation' | 'headerPosition' | 'linear' | 'onChangeStep' | 'start' | 'end' | 'pt' | 'ptOptions' | 'unstyled'
->;
+import { CommandStepperContent, type StepperCustomizationProps } from './CommandStepper';
 
 export interface StepperCommandDialogProps<TCommand extends object, TResponse = object>
     extends Omit<CommandFormProps<TCommand, TResponse>, 'children'>,
@@ -138,6 +101,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     const [isBusy, setIsBusy] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
     const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
+    const [stepErrors, setStepErrors] = useState<boolean[]>([]);
 
     let contextCloseDialog: ((result: DialogResult) => void) | undefined;
     try {
@@ -151,20 +115,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     const isLastStep = activeStep === stepCount - 1;
     const isFirstStep = activeStep === 0;
     const isDialogValid = isValid !== false && isCommandFormValid;
-
-    // Pre-compute the command property names for each StepperPanel step.
-    // Used to determine whether a step has validation errors for the indicator badge.
-    const stepFieldNames = useMemo(
-        () => React.Children.toArray(children).map((step) => {
-            if (!React.isValidElement(step)) return [] as string[];
-            const stepProps = step.props as Record<string, unknown>;
-            return extractFieldNamesFromNode(stepProps.children as React.ReactNode);
-        }),
-        [children]
-    );
-
-    const stepHasError = (stepIndex: number): boolean =>
-        stepFieldNames[stepIndex]?.some(fieldName => !!(getFieldError?.(fieldName))) ?? false;
+    const isCurrentStepInvalid = stepErrors[activeStep] ?? false;
 
     const handleClose = async (result: DialogResult) => {
         let shouldCloseThroughContext = true;
@@ -222,73 +173,6 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         await handleClose(DialogResult.Ok);
     };
 
-    const processChildren = (nodes: React.ReactNode): React.ReactNode => {
-        return React.Children.map(nodes, (child) => {
-            if (!React.isValidElement(child)) return child;
-
-            const component = child.type as React.ComponentType<unknown>;
-            if (component.displayName === 'CommandFormField') {
-                type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
-                return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
-            }
-
-            const childProps = child.props as Record<string, unknown>;
-            if (childProps.children != null) {
-                return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-                    children: processChildren(childProps.children as React.ReactNode)
-                });
-            }
-
-            return child;
-        });
-    };
-
-    /**
-     * Builds the passthrough `pt` object for PrimeStepper, injecting an inline
-     * style onto the step *number* span to colour it red (errors) or green (visited
-     * and valid). Targeting the number span — rather than the header `<li>` — means
-     * PrimeReact's default `p-stepper-header` class and all its layout/separator
-     * CSS are never disturbed.
-     * Merges with any user-supplied `pt` prop.
-     */
-    const stepperPt = useMemo(() => {
-        type StepContext = { context: { index: number } };
-        type NumberPtFn = (opts: StepContext) => Record<string, unknown>;
-
-        const userPt = pt as Record<string, unknown> | undefined;
-        const userStepperPanelPt = userPt?.stepperpanel as Record<string, unknown> | undefined;
-        const userNumberPt = userStepperPanelPt?.number;
-
-        return {
-            ...userPt,
-            stepperpanel: {
-                ...userStepperPanelPt,
-                number: (opts: StepContext) => {
-                    const existing: Record<string, unknown> =
-                        typeof userNumberPt === 'function'
-                            ? (userNumberPt as NumberPtFn)(opts)
-                            : (userNumberPt as Record<string, unknown> | undefined) ?? {};
-                    const idx = opts.context.index;
-                    const hasError = stepFieldNames[idx]?.some(fieldName => !!(getFieldError?.(fieldName))) ?? false;
-                    const isVisited = visitedSteps.has(idx);
-
-                    const bgColor = hasError
-                        ? 'var(--red-500, #ef4444)'
-                        : isVisited
-                            ? 'var(--green-500, #22c55e)'
-                            : null;
-
-                    if (!bgColor) return existing;
-                    const existingStyle = existing.style as Record<string, unknown> | undefined;
-                    return {
-                        ...existing,
-                        style: { ...existingStyle, backgroundColor: bgColor, color: '#fff' }
-                    };
-                }
-            }
-        };
-    }, [pt, stepFieldNames, getFieldError, visitedSteps]);
-
     const headerElement = (
         <div className="inline-flex align-items-center justify-content-center gap-2">
             <span className="font-bold white-space-nowrap">{title}</span>
@@ -316,7 +200,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                         setVisitedSteps(prev => new Set(prev).add(activeStep));
                         setActiveStep(s => s + 1);
                     }}
-                    disabled={isBusy || stepHasError(activeStep)}
+                    disabled={isBusy || isCurrentStepInvalid}
                 />
             )}
             {isLastStep && isDialogValid && (
@@ -344,20 +228,27 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             resizable={resizable}
             closable
         >
-            <PrimeStepper
+            <CommandStepperContent
                 activeStep={activeStep}
+                visitedSteps={visitedSteps}
+                getFieldError={getFieldError}
+                onActiveStepChange={setActiveStep}
+                onVisitedStepsChange={setVisitedSteps}
+                onStepErrorsChange={setStepErrors}
+                showNavigation={false}
+                showSubmit={false}
                 linear={linear}
                 orientation={orientation}
                 headerPosition={headerPosition}
                 onChangeStep={onChangeStep}
                 start={start}
                 end={end}
-                pt={stepperPt as StepperProps['pt']}
+                pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}
             >
-                {processChildren(children)}
-            </PrimeStepper>
+                {children}
+            </CommandStepperContent>
         </PrimeDialog>
     );
 };
