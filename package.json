@@ -27,9 +27,9 @@
     "version": "0.0.0",
     "packageManager": "yarn@4.5.3",
     "devDependencies": {
-        "@cratis/arc": "^20.8.9",
-        "@cratis/arc.react": "^20.8.9",
-        "@cratis/arc.vite": "^20.8.9",
+        "@cratis/arc": "^20.8.11",
+        "@cratis/arc.react": "^20.8.11",
+        "@cratis/arc.vite": "^20.8.11",
         "@eslint/eslintrc": "^3.3.5",
         "@eslint/js": "^10.0.1",
         "@rollup/plugin-node-resolve": "^16.0.3",
@@ -37,8 +37,8 @@
         "@storybook/addon-storysource": "8.6.14",
         "@storybook/react": "^10.3.5",
         "@storybook/react-vite": "^10.3.5",
-        "@tailwindcss/postcss": "^4.2.3",
-        "@tailwindcss/vite": "^4.2.3",
+        "@tailwindcss/postcss": "^4.2.4",
+        "@tailwindcss/vite": "^4.2.4",
         "@tony.ganchev/eslint-plugin-header": "^3.4.3",
         "@types/chai": "^5.2.3",
         "@types/chai-as-promised": "^8.0.2",
@@ -52,7 +52,7 @@
         "@typescript-eslint/eslint-plugin": "^8.59.0",
         "@typescript-eslint/parser": "^8.59.0",
         "@vitejs/plugin-react": "^6.0.1",
-        "@vitest/coverage-v8": "^4.1.4",
+        "@vitest/coverage-v8": "^4.1.5",
         "autoprefixer": "^10.5.0",
         "chai": "^6.2.2",
         "chai-as-promised": "^8.0.2",
@@ -79,7 +79,7 @@
         "sinon": "^21.1.2",
         "sinon-chai": "^4.0.1",
         "storybook": "^10.3.5",
-        "tailwindcss": "^4.2.3",
+        "tailwindcss": "^4.2.4",
         "ts-node": "^10.9.2",
         "tsyringe": "4.10.0",
         "typescript": "^6.0.3",
@@ -87,6 +87,6 @@
         "vite": "^8.0.9",
         "vite-plugin-commonjs": "^0.10.4",
         "vite-tsconfig-paths": "^6.1.1",
-        "vitest": "^4.1.4"
+        "vitest": "^4.1.5"
     }
 }
