@@ -12,4 +12,5 @@ The `Toolbar` component provides a canvas-style icon toolbar with support for or
 | `ToolbarSection` | Section within a toolbar that animates between named contexts |
 | `ToolbarContext` | Named context (set of buttons) inside a `ToolbarSection` |
 | `ToolbarFanOutItem` | Button that slides out a horizontal sub-panel on click |
+| `ToolbarFolder` | Button that reveals a dynamically sized grid of buttons on click |
 
