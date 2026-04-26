@@ -7,6 +7,7 @@ import { Toolbar } from './Toolbar';
 import { ToolbarButton } from './ToolbarButton';
 import { ToolbarContext } from './ToolbarContext';
 import { ToolbarFanOutItem } from './ToolbarFanOutItem';
+import { ToolbarFolder } from './ToolbarFolder';
 import { ToolbarSection } from './ToolbarSection';
 import { ToolbarSeparator } from './ToolbarSeparator';
 
@@ -21,6 +22,29 @@ const meta: Meta<typeof Toolbar> = {
 export default meta;
 
 type Story = StoryObj<typeof Toolbar>;
+
+const folderIcons: string[] = [
+    'pi pi-exclamation-circle',
+    'pi pi-eye',
+    'pi pi-cog',
+    'pi pi-external-link',
+    'pi pi-clock',
+    'pi pi-globe',
+    'pi pi-bookmark',
+    'pi pi-send',
+    'pi pi-search',
+    'pi pi-car',
+    'pi pi-box',
+    'pi pi-bolt',
+    'pi pi-database',
+    'pi pi-cloud',
+    'pi pi-star',
+    'pi pi-heart',
+    'pi pi-map',
+    'pi pi-wifi',
+    'pi pi-lock',
+    'pi pi-bell',
+];
 
 /**
  * Demonstrates that any React node can be used as an icon on {@link ToolbarButton} and
@@ -308,6 +332,49 @@ export const WithFanOut: Story = {
 
         return <WithFanOutDemo />;
     },
+};
+
+/** Demonstrates a folder with a single nested button. */
+export const WithFolderOneButton: Story = {
+    render: () => (
+        <Toolbar>
+            <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+            <ToolbarFolder icon='pi pi-th-large' tooltip='Folder (1 item)'>
+                <ToolbarButton icon={folderIcons[0]} tooltip='Action 1' />
+            </ToolbarFolder>
+            <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
+        </Toolbar>
+    ),
+};
+
+/** Demonstrates a folder with four nested buttons in a balanced 2x2 grid. */
+export const WithFolderFourButtons: Story = {
+    render: () => (
+        <Toolbar>
+            <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+            <ToolbarFolder icon='pi pi-th-large' tooltip='Folder (4 items)'>
+                {folderIcons.slice(0, 4).map((icon, index) => (
+                    <ToolbarButton key={`folder-4-${index}`} icon={icon} tooltip={`Action ${index + 1}`} />
+                ))}
+            </ToolbarFolder>
+            <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
+        </Toolbar>
+    ),
+};
+
+/** Demonstrates a folder with twenty nested buttons and dynamic multi-row sizing. */
+export const WithFolderTwentyButtons: Story = {
+    render: () => (
+        <Toolbar>
+            <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+            <ToolbarFolder icon='pi pi-th-large' tooltip='Folder (20 items)'>
+                {folderIcons.slice(0, 20).map((icon, index) => (
+                    <ToolbarButton key={`folder-20-${index}`} icon={icon} tooltip={`Action ${index + 1}`} />
+                ))}
+            </ToolbarFolder>
+            <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
+        </Toolbar>
+    ),
 };
 
 /**

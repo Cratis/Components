@@ -13,3 +13,5 @@ export { ToolbarSeparator } from './ToolbarSeparator';
 export type { ToolbarSeparatorProps } from './ToolbarSeparator';
 export { ToolbarFanOutItem } from './ToolbarFanOutItem';
 export type { ToolbarFanOutItemProps } from './ToolbarFanOutItem';
+export { ToolbarFolder } from './ToolbarFolder';
+export type { ToolbarFolderProps } from './ToolbarFolder';
