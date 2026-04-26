@@ -34,6 +34,7 @@ export interface ToolbarSectionProps {
  */
 export const ToolbarSection = ({ activeContext, children, orientation = 'vertical' }: ToolbarSectionProps) => {
     const contextRefs = useRef<Record<string, HTMLDivElement | null>>({});
+    const resizeObserverRef = useRef<ResizeObserver | null>(null);
     const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
     const contexts = Children.toArray(children).filter(
@@ -64,6 +65,29 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
     // then update the explicit size so the CSS width/height transition kicks in.
     useEffect(() => {
         measureAndSetSize(effectiveContext);
+    }, [effectiveContext, measureAndSetSize]);
+
+    // Keep section dimensions in sync when the active context's content changes size after render.
+    useEffect(() => {
+        const activeContextElement = contextRefs.current[effectiveContext];
+        if (!activeContextElement || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
+        resizeObserverRef.current?.disconnect();
+        const observer = new ResizeObserver(() => {
+            measureAndSetSize(effectiveContext);
+        });
+
+        observer.observe(activeContextElement);
+        resizeObserverRef.current = observer;
+
+        return () => {
+            observer.disconnect();
+            if (resizeObserverRef.current === observer) {
+                resizeObserverRef.current = null;
+            }
+        };
     }, [effectiveContext, measureAndSetSize]);
 
     return (

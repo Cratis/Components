@@ -207,7 +207,7 @@
 }
 
 .toolbar-folder-panel--visible {
-    clip-path: inset(0 0 0 0 round 1rem);
+    clip-path: none;
     transform: translateY(-50%) scale(1);
     opacity: 1;
     pointer-events: auto;
