@@ -164,3 +164,51 @@
     opacity: 1;
     pointer-events: auto;
 }
+
+/* ── Toolbar folder ──────────────────────────────────────────────────────── */
+
+.toolbar-folder-item {
+    position: relative;
+}
+
+/*
+ * Folder panel is a floating grid that grows naturally with item count.
+ * The trigger stays in place while the panel animates in/out.
+ */
+.toolbar-folder-panel {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 0.75rem);
+    transform: translateY(-50%) scale(0.92);
+    transform-origin: left center;
+    display: grid;
+    grid-auto-rows: minmax(2.5rem, auto);
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 1rem;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0;
+    clip-path: inset(0 100% 0 0 round 1rem);
+    transition:
+        clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.2s ease;
+}
+
+.toolbar-folder-panel--left {
+    left: auto;
+    right: calc(100% + 0.75rem);
+    transform-origin: right center;
+    clip-path: inset(0 0 0 100% round 1rem);
+}
+
+.toolbar-folder-panel--visible {
+    clip-path: inset(0 0 0 0 round 1rem);
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}

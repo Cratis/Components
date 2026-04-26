@@ -12,6 +12,8 @@
   href: context-switching.md
 - name: Fan-Out Sub-Panel
   href: fan-out.md
+- name: Expandable Folder
+  href: folder.md
 - name: Drag & Drop
   href: drag-and-drop.md
 - name: Multiple Groups
