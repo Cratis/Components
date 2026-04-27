@@ -35,6 +35,7 @@ export interface ToolbarSectionProps {
 export const ToolbarSection = ({ activeContext, children, orientation = 'vertical' }: ToolbarSectionProps) => {
     const contextRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
+    const mutationObserverRef = useRef<MutationObserver | null>(null);
     const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
     const contexts = Children.toArray(children).filter(
@@ -51,7 +52,10 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
     const measureAndSetSize = useCallback((contextName: string) => {
         const ref = contextRefs.current[contextName];
         if (ref) {
-            setSize({ width: ref.offsetWidth, height: ref.offsetHeight });
+            setSize({
+                width: Math.max(ref.offsetWidth, ref.scrollWidth),
+                height: Math.max(ref.offsetHeight, ref.scrollHeight),
+            });
         }
     }, []);
 
@@ -74,7 +78,11 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
             return;
         }
 
+        measureAndSetSize(effectiveContext);
+
+        mutationObserverRef.current?.disconnect();
         resizeObserverRef.current?.disconnect();
+
         const observer = new ResizeObserver(() => {
             measureAndSetSize(effectiveContext);
         });
@@ -82,11 +90,26 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
         observer.observe(activeContextElement);
         resizeObserverRef.current = observer;
 
+        if (typeof MutationObserver !== 'undefined') {
+            const mutationObserver = new MutationObserver(() => {
+                measureAndSetSize(effectiveContext);
+            });
+            mutationObserver.observe(activeContextElement, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+            });
+            mutationObserverRef.current = mutationObserver;
+        }
+
         return () => {
             observer.disconnect();
             if (resizeObserverRef.current === observer) {
                 resizeObserverRef.current = null;
             }
+
+            mutationObserverRef.current?.disconnect();
+            mutationObserverRef.current = null;
         };
     }, [effectiveContext, measureAndSetSize]);
 
