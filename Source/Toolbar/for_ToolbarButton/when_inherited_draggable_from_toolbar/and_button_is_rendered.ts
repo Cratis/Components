@@ -20,7 +20,7 @@ describe('when ToolbarButton is inside a draggable Toolbar and is rendered', () 
             { draggable: true },
             React.createElement(ToolbarButton, {
                 icon: 'pi pi-pencil',
-                tooltip: 'Draw',
+                title: 'Draw',
                 data: { tool: 'pencil' },
             }),
         );

@@ -4,6 +4,27 @@
 import { Children, ReactElement, ReactNode, isValidElement, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import type { ToolbarContextProps } from './ToolbarContext';
+import { useToolbarSlot } from './ToolbarSlot';
+
+/** Width/height transition duration used by the section resize animation (ms). */
+const SECTION_TRANSITION_MS = 350;
+
+/**
+ * Renders the children of a single {@link ToolbarContext} together with any slot items
+ * that have been registered under the context's `slotName`.
+ *
+ * Extracted into its own component so that the `useToolbarSlot` hook can be called
+ * inside it — hooks cannot be called inside a callback or loop in the parent.
+ */
+const ContextRenderer = ({ children, slotName }: { children: ReactNode; slotName?: string }) => {
+    const slotItems = useToolbarSlot(slotName ?? '');
+    return (
+        <>
+            {children}
+            {slotName && slotItems.length > 0 && slotItems}
+        </>
+    );
+};
 
 /** Props for the {@link ToolbarSection} component. */
 export interface ToolbarSectionProps {
@@ -36,7 +57,10 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
     const contextRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
     const mutationObserverRef = useRef<MutationObserver | null>(null);
+    const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const previousContextRef = useRef<string | null>(null);
     const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const contexts = Children.toArray(children).filter(
         (child): child is ReactElement<ToolbarContextProps> =>
@@ -53,8 +77,8 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
         const ref = contextRefs.current[contextName];
         if (ref) {
             setSize({
-                width: Math.max(ref.offsetWidth, ref.scrollWidth),
-                height: Math.max(ref.offsetHeight, ref.scrollHeight),
+                width: ref.offsetWidth,
+                height: ref.offsetHeight,
             });
         }
     }, []);
@@ -64,6 +88,25 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
     useLayoutEffect(() => {
         measureAndSetSize(effectiveContext);
     }, []); // run only on mount
+
+    // Clip content only while the section is morphing between contexts so incoming
+    // buttons do not float outside the current bounds during growth.
+    useEffect(() => {
+        if (previousContextRef.current === null) {
+            previousContextRef.current = effectiveContext;
+            return;
+        }
+        if (previousContextRef.current === effectiveContext) return;
+
+        previousContextRef.current = effectiveContext;
+        setIsTransitioning(true);
+
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+        transitionTimeoutRef.current = setTimeout(() => {
+            setIsTransitioning(false);
+            transitionTimeoutRef.current = null;
+        }, SECTION_TRANSITION_MS);
+    }, [effectiveContext]);
 
     // After a context switch, let the browser paint the opacity transition first,
     // then update the explicit size so the CSS width/height transition kicks in.
@@ -113,13 +156,17 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
         };
     }, [effectiveContext, measureAndSetSize]);
 
+    useEffect(() => () => {
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+    }, []);
+
     return (
         <div
-            className='toolbar-section'
+            className={`toolbar-section ${isTransitioning ? 'toolbar-section--transitioning' : ''}`}
             style={size ? { width: size.width, height: size.height } : undefined}
         >
             {contexts.map((child) => {
-                const { name, children: contextChildren } = child.props as ToolbarContextProps;
+                const { name, children: contextChildren, slotName } = child.props as ToolbarContextProps;
                 const isActive = name === effectiveContext;
 
                 return (
@@ -130,7 +177,7 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
                             isActive ? 'toolbar-context--active' : 'toolbar-context--inactive'
                         }`}
                     >
-                        {contextChildren}
+                        <ContextRenderer slotName={slotName}>{contextChildren}</ContextRenderer>
                     </div>
                 );
             })}

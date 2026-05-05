@@ -9,6 +9,14 @@ export interface ToolbarContextProps {
     name: string;
     /** The toolbar items to render when this context is active. */
     children: ReactNode;
+    /**
+     * Optional slot name. When provided, any {@link ToolbarSlot} with a matching `slotName`
+     * within the nearest {@link ToolbarSlotProvider} will render its content inside this
+     * context alongside the declared children.
+     *
+     * Slot entries are appended after the context's own children and sorted by their `order` value.
+     */
+    slotName?: string;
 }
 
 /**

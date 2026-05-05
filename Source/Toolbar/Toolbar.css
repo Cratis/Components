@@ -60,15 +60,20 @@
 /*
  * The section is a fixed-size container that transitions smoothly between
  * the dimensions required by each context.
- * overflow is intentionally left as visible so that absolutely-positioned
+ * Overflow stays visible in the settled state so absolutely-positioned
  * children (e.g. fan-out panels) can extend beyond the section's bounds.
- * Inactive contexts are hidden via opacity/pointer-events, not overflow clipping.
+ * During a context resize transition, a temporary modifier clips incoming
+ * content so buttons do not float outside the current toolbar bounds.
  */
 .toolbar-section {
     position: relative;
     transition:
         width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
         height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar-section--transitioning {
+    overflow: hidden;
 }
 
 /*
@@ -211,4 +216,102 @@
     transform: translateY(-50%) scale(1);
     opacity: 1;
     pointer-events: auto;
+}
+
+/* List-mode folder panel — vertical stack instead of a grid */
+.toolbar-folder-panel--list {
+    display: flex;
+    flex-direction: column;
+    min-width: 10rem;
+}
+
+/* ── Toolbar button — list mode ──────────────────────────────────────────── */
+
+/*
+ * Inside a list-mode folder the button fills the available width and renders
+ * its icon and title label side by side, left-aligned.
+ */
+.toolbar-button--list {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+.toolbar-button__label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: inherit;
+    white-space: nowrap;
+}
+
+/* ── Toolbar group ───────────────────────────────────────────────────────── */
+
+/*
+ * When a Toolbar contains ToolbarGroup children it becomes a transparent
+ * layout wrapper — each group renders as its own pill.
+ */
+.toolbar:has(.toolbar-group) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    gap: 0.5rem;
+}
+
+/*
+ * Each ToolbarGroup is a self-contained pill that matches the visual style
+ * of a standalone Toolbar.
+ */
+.toolbar-group {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+
+/* ── Toolbar slot transition (ToolbarGroup slot content) ─────────────────── */
+
+/*
+ * Size-morphing container for slot content inside a ToolbarGroup.
+ * Mirrors the .toolbar-section transition parameters for visual consistency —
+ * the container resizes smoothly while content cross-fades.
+ */
+.toolbar-slot-section {
+    position: relative;
+    overflow: hidden;
+    transition:
+        width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes toolbar-slot-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes toolbar-slot-fade-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+/*
+ * Incoming slot content — fades in on mount.
+ * Duration matches the toolbar-context opacity transition (0.2s ease).
+ */
+.toolbar-slot-incoming {
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: toolbar-slot-fade-in 0.2s ease forwards;
+}
+
+/*
+ * Outgoing slot content — fades out, then React unmounts it after
+ * the animation completes.
+ */
+.toolbar-slot-outgoing {
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: toolbar-slot-fade-out 0.2s ease forwards;
+    pointer-events: none;
 }

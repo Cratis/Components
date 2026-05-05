@@ -5,12 +5,12 @@ Render multiple `Toolbar` instances to create separate groups, matching the styl
 ```tsx
 <div className='flex flex-col gap-2'>
     <Toolbar>
-        <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
-        <ToolbarButton icon='pi pi-pencil' tooltip='Draw' />
+        <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+        <ToolbarButton icon='pi pi-pencil' title='Draw' />
     </Toolbar>
     <Toolbar>
-        <ToolbarButton icon='pi pi-undo' tooltip='Undo' />
-        <ToolbarButton icon='pi pi-refresh' tooltip='Redo' />
+        <ToolbarButton icon='pi pi-undo' title='Undo' />
+        <ToolbarButton icon='pi pi-refresh' title='Redo' />
     </Toolbar>
 </div>
 ```

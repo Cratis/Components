@@ -6,12 +6,12 @@ The grid automatically balances rows and columns based on item count, keeping th
 
 ```tsx
 <Toolbar>
-    <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
-    <ToolbarFolder icon='pi pi-th-large' tooltip='More tools'>
-        <ToolbarButton icon='pi pi-exclamation-circle' tooltip='Info' />
-        <ToolbarButton icon='pi pi-eye' tooltip='Preview' />
-        <ToolbarButton icon='pi pi-cog' tooltip='Settings' />
-        <ToolbarButton icon='pi pi-external-link' tooltip='Open' />
+    <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+    <ToolbarFolder icon='pi pi-th-large' title='More tools'>
+        <ToolbarButton icon='pi pi-exclamation-circle' title='Info' />
+        <ToolbarButton icon='pi pi-eye' title='Preview' />
+        <ToolbarButton icon='pi pi-cog' title='Settings' />
+        <ToolbarButton icon='pi pi-external-link' title='Open' />
     </ToolbarFolder>
 </Toolbar>
 ```
@@ -19,7 +19,7 @@ The grid automatically balances rows and columns based on item count, keeping th
 By default the folder opens to the right. Use `folderDirection='left'` when the toolbar is positioned on the right side of the screen:
 
 ```tsx
-<ToolbarFolder icon='pi pi-th-large' tooltip='More tools' folderDirection='left'>
+<ToolbarFolder icon='pi pi-th-large' title='More tools' folderDirection='left'>
     ...
 </ToolbarFolder>
 ```
@@ -36,7 +36,7 @@ The folder automatically computes the number of columns based on the item count:
 Use `maxColumns` to customize the maximum column count:
 
 ```tsx
-<ToolbarFolder icon='pi pi-th-large' tooltip='More tools' maxColumns={4}>
+<ToolbarFolder icon='pi pi-th-large' title='More tools' maxColumns={4}>
     ...
 </ToolbarFolder>
 ```
@@ -48,10 +48,30 @@ Like `ToolbarButton`, the `icon` prop accepts a `string | ReactNode`. Pass any R
 ```tsx
 import { FaFolder } from 'react-icons/fa6';
 
-<ToolbarFolder icon={<FaFolder />} tooltip='More tools'>
-    <ToolbarButton icon='pi pi-cog' tooltip='Settings' />
-    <ToolbarButton icon='pi pi-external-link' tooltip='Open' />
+<ToolbarFolder icon={<FaFolder />} title='More tools'>
+    <ToolbarButton icon='pi pi-cog' title='Settings' />
+    <ToolbarButton icon='pi pi-external-link' title='Open' />
 </ToolbarFolder>
 ```
 
 See [Icon](../../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
+
+## List Mode
+
+Set `mode='list'` to change the folder's panel layout from a grid into a vertical list. In list mode, each button renders its icon and tooltip text side by side as a labeled row — no tooltip hover needed.
+
+```tsx
+<ToolbarFolder icon='pi pi-list' title='Tools' mode='list'>
+    <ToolbarButton icon='pi pi-pencil' title='Draw freehand' />
+    <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+    <ToolbarButton icon='pi pi-circle' title='Ellipse' />
+    <ToolbarButton icon='pi pi-minus' title='Straight line' />
+</ToolbarFolder>
+```
+
+The `maxColumns` prop is ignored in list mode — the panel always uses a single column.
+
+| Mode | Layout | Best for |
+|---|---|---|
+| `'grid'` (default) | Square grid, auto-sized columns | Icon-only tools where the icon is self-explanatory |
+| `'list'` | Single column, icon + label | Tools that need a readable name alongside the icon |

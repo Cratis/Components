@@ -13,9 +13,9 @@ Set `draggable` on the `Toolbar` to make every child `ToolbarButton` draggable. 
         console.log('Started dragging:', data);
     }}
 >
-    <ToolbarButton icon='pi pi-pencil' tooltip='Pencil' data={{ tool: 'pencil' }} />
-    <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' data={{ tool: 'rectangle' }} />
-    <ToolbarButton icon='pi pi-circle' tooltip='Circle' data={{ tool: 'circle' }} />
+    <ToolbarButton icon='pi pi-pencil' title='Pencil' data={{ tool: 'pencil' }} />
+    <ToolbarButton icon='pi pi-stop' title='Rectangle' data={{ tool: 'rectangle' }} />
+    <ToolbarButton icon='pi pi-circle' title='Circle' data={{ tool: 'circle' }} />
 </Toolbar>
 ```
 
@@ -27,14 +27,14 @@ Set `draggable` and an optional `onDragStart` callback directly on a `ToolbarBut
 <Toolbar>
     <ToolbarButton
         icon='pi pi-pencil'
-        tooltip='Pencil'
+        title='Pencil'
         draggable
         data={{ tool: 'pencil' }}
         onDragStart={(data, event) => {
             console.log('Pencil drag started', data);
         }}
     />
-    <ToolbarButton icon='pi pi-undo' tooltip='Undo' />
+    <ToolbarButton icon='pi pi-undo' title='Undo' />
 </Toolbar>
 ```
 
