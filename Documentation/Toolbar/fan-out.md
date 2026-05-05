@@ -4,11 +4,11 @@
 
 ```tsx
 <Toolbar>
-    <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+    <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
     <ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes'>
-        <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
-        <ToolbarButton icon='pi pi-circle' tooltip='Circle' />
-        <ToolbarButton icon='pi pi-minus' tooltip='Line' />
+        <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+        <ToolbarButton icon='pi pi-circle' title='Circle' />
+        <ToolbarButton icon='pi pi-minus' title='Line' />
     </ToolbarFanOutItem>
 </Toolbar>
 ```
@@ -29,8 +29,8 @@ Like `ToolbarButton`, the `icon` prop accepts a `string | ReactNode`. Pass any R
 import { FaShapes } from 'react-icons/fa6';
 
 <ToolbarFanOutItem icon={<FaShapes />} tooltip='Shapes'>
-    <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
-    <ToolbarButton icon='pi pi-circle' tooltip='Circle' />
+    <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+    <ToolbarButton icon='pi pi-circle' title='Circle' />
 </ToolbarFanOutItem>
 ```
 

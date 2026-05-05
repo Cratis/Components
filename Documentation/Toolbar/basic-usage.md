@@ -8,9 +8,9 @@ import { Toolbar, ToolbarButton } from '@cratis/components';
 function MyToolbar() {
     return (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
-            <ToolbarButton icon='pi pi-pencil' tooltip='Draw' />
-            <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
+            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+            <ToolbarButton icon='pi pi-pencil' title='Draw' />
+            <ToolbarButton icon='pi pi-stop' title='Rectangle' />
         </Toolbar>
     );
 }
@@ -26,11 +26,11 @@ function ZoomToolbar() {
 
     return (
         <Toolbar orientation='horizontal'>
-            <ToolbarButton icon='pi pi-minus' tooltip='Zoom out' onClick={() => setZoom(value => value - 10)} />
-            <ToolbarButton text={`${zoom}%`} tooltip='Reset zoom' onClick={() => setZoom(100)} />
-            <ToolbarButton icon='pi pi-plus' tooltip='Zoom in' onClick={() => setZoom(value => value + 10)} />
+            <ToolbarButton icon='pi pi-minus' title='Zoom out' onClick={() => setZoom(value => value - 10)} />
+            <ToolbarButton text={`${zoom}%`} title='Reset zoom' onClick={() => setZoom(100)} />
+            <ToolbarButton icon='pi pi-plus' title='Zoom in' onClick={() => setZoom(value => value + 10)} />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-question-circle' tooltip='Help' />
+            <ToolbarButton icon='pi pi-question-circle' title='Help' />
         </Toolbar>
     );
 }
@@ -45,10 +45,10 @@ import { FaPencil } from 'react-icons/fa6';
 
 <Toolbar>
     {/* String — PrimeIcons CSS class */}
-    <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+    <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
 
     {/* ReactNode — third-party icon component */}
-    <ToolbarButton icon={<FaPencil />} tooltip='Draw' />
+    <ToolbarButton icon={<FaPencil />} title='Draw' />
 </Toolbar>
 ```
 

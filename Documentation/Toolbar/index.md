@@ -13,4 +13,7 @@ The `Toolbar` component provides a canvas-style icon toolbar with support for or
 | `ToolbarContext` | Named context (set of buttons) inside a `ToolbarSection` |
 | `ToolbarFanOutItem` | Button that slides out a horizontal sub-panel on click |
 | `ToolbarFolder` | Button that reveals a dynamically sized grid of buttons on click |
+| `ToolbarGroup` | Formal logical sub-group of toolbar items with an automatic visual separator between adjacent groups |
+| `ToolbarSlotProvider` | Context provider that enables the slot system — wrap the application root or a feature boundary |
+| `ToolbarSlot` | Renders nothing itself; injects its `children` into the named slot at the given `order` position |
 

@@ -8,12 +8,12 @@ import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components';
 function ZoomToolbar() {
     return (
         <Toolbar orientation='horizontal'>
-            <ToolbarButton icon='pi pi-th-large' tooltip='Overview' tooltipPosition='bottom' />
+            <ToolbarButton icon='pi pi-th-large' title='Overview' tooltipPosition='bottom' />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-minus' tooltip='Zoom out' tooltipPosition='bottom' />
-            <ToolbarButton icon='pi pi-plus' tooltip='Zoom in' tooltipPosition='bottom' />
+            <ToolbarButton icon='pi pi-minus' title='Zoom out' tooltipPosition='bottom' />
+            <ToolbarButton icon='pi pi-plus' title='Zoom in' tooltipPosition='bottom' />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-question-circle' tooltip='Help' tooltipPosition='bottom' />
+            <ToolbarButton icon='pi pi-question-circle' title='Help' tooltipPosition='bottom' />
         </Toolbar>
     );
 }
@@ -27,8 +27,8 @@ In a vertical toolbar (the default) the separator is a horizontal rule:
 
 ```tsx
 <Toolbar>
-    <ToolbarButton icon='pi pi-pencil' tooltip='Draw' />
+    <ToolbarButton icon='pi pi-pencil' title='Draw' />
     <ToolbarSeparator />
-    <ToolbarButton icon='pi pi-undo' tooltip='Undo' />
+    <ToolbarButton icon='pi pi-undo' title='Undo' />
 </Toolbar>
 ```

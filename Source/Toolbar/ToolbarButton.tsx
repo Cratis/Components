@@ -6,6 +6,7 @@ import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
 import { useToolbarDragContext } from './ToolbarDragContext';
+import { useToolbarFolderMode } from './ToolbarFolderContext';
 
 /** Props for the {@link ToolbarButton} component. */
 export interface ToolbarButtonProps {
@@ -15,8 +16,8 @@ export interface ToolbarButtonProps {
     /** Optional text to render inside the button (e.g. '120%'). */
     text?: string;
 
-    /** Tooltip text shown when the user hovers over the button. */
-    tooltip: string;
+    /** Title text shown when the user hovers over the button. */
+    title: string;
 
     /** Whether the button is currently in the active/selected state. */
     active?: boolean;
@@ -51,8 +52,10 @@ export interface ToolbarButtonProps {
  * An icon button with a tooltip, intended to be placed inside a {@link Toolbar}.
  * Uses the shared {@link Tooltip} component for consistent hover labels.
  */
-export const ToolbarButton = ({ icon, text, tooltip, active = false, onClick, tooltipPosition = 'right', draggable, data, onDragStart }: ToolbarButtonProps) => {
+export const ToolbarButton = ({ icon, text, title, active = false, onClick, tooltipPosition = 'right', draggable, data, onDragStart }: ToolbarButtonProps) => {
     const dragContext = useToolbarDragContext();
+    const folderMode = useToolbarFolderMode();
+    const isListMode = folderMode === 'list';
     const isDraggable = draggable ?? dragContext.draggable;
 
     const handleDragStart = (event: React.DragEvent<HTMLButtonElement>) => {
@@ -66,18 +69,36 @@ export const ToolbarButton = ({ icon, text, tooltip, active = false, onClick, to
     const draggableClass = isDraggable ? 'toolbar-button--draggable' : '';
     const hasText = typeof text === 'string' && text.length > 0;
     const resolvedIcon = icon !== undefined && icon !== null && (typeof icon !== 'string' || icon.length > 0) ? icon : null;
+
+    // List mode: icon + title label rendered side by side (no floating tooltip needed).
+    if (isListMode) {
+        return (
+            <button
+                type='button'
+                aria-label={title}
+                onClick={onClick}
+                draggable={isDraggable}
+                onDragStart={isDraggable ? handleDragStart : undefined}
+                className={`toolbar-button toolbar-button--list h-10 px-3 w-full flex items-center justify-start gap-2 rounded-lg cursor-pointer ${activeClass} ${draggableClass}`}
+            >
+                {resolvedIcon !== null && <IconDisplay icon={resolvedIcon} className='text-lg flex-shrink-0' />}
+                <span className='toolbar-button__label'>{title}</span>
+            </button>
+        );
+    }
+
+    const buttonSizeClass = hasText ? 'h-10 px-3 min-w-[4rem]' : 'w-10 h-10';
     const buttonContent = hasText
         ? <span className='toolbar-button__text'>{text}</span>
         : resolvedIcon !== null
             ? <IconDisplay icon={resolvedIcon} className='text-lg' />
             : null;
-    const buttonSizeClass = hasText ? 'h-10 px-3 min-w-[4rem]' : 'w-10 h-10';
 
     return (
-        <Tooltip content={tooltip} position={tooltipPosition}>
+        <Tooltip content={title} position={tooltipPosition}>
             <button
                 type='button'
-                aria-label={tooltip}
+                aria-label={title}
                 onClick={onClick}
                 draggable={isDraggable}
                 onDragStart={isDraggable ? handleDragStart : undefined}

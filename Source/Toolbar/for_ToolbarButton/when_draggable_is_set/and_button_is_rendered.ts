@@ -16,7 +16,7 @@ describe('when ToolbarButton has draggable set and is rendered', () => {
     beforeEach(() => {
         const element = React.createElement(ToolbarButton, {
             icon: 'pi pi-pencil',
-            tooltip: 'Draw',
+            title: 'Draw',
             draggable: true,
             data: { tool: 'pencil' },
         });
