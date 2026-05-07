@@ -207,6 +207,10 @@ export const CommandStepperContent = ({
         onChangeStep?.(event);
         const index = (event as { index?: number }).index;
         if (typeof index === 'number') {
+            if (index > activeStep && isCurrentStepInvalid) {
+                return;
+            }
+
             if (index > activeStep) {
                 onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
             }
@@ -219,6 +223,10 @@ export const CommandStepperContent = ({
     };
 
     const handleNext = () => {
+        if (isCurrentStepInvalid) {
+            return;
+        }
+
         onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
         onActiveStepChange?.(Math.min(stepCount - 1, activeStep + 1));
     };
