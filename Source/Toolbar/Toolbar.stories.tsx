@@ -12,6 +12,7 @@ import { ToolbarGroup } from './ToolbarGroup';
 import { ToolbarSection } from './ToolbarSection';
 import { ToolbarSeparator } from './ToolbarSeparator';
 import { ToolbarSlot, ToolbarSlotProvider } from './ToolbarSlot';
+import { ToolbarLayout } from './ToolbarLayout';
 
 const meta: Meta<typeof Toolbar> = {
     title: 'Components/Toolbar',
@@ -717,3 +718,287 @@ export const WithMultipleSlotContributors: Story = {
         );
     },
 };
+
+    // ─── ToolbarLayout stories ────────────────────────────────────────────────────
+
+    /**
+     * Demonstrates {@link ToolbarLayout} rendering its fallback children when no slot
+     * content has been registered. The layout acts as a transparent container so the
+     * injected {@link ToolbarGroup} pills appear exactly as they would if placed
+     * directly inside the {@link Toolbar}.
+     */
+    export const LayoutWithDefaultContent: Story = {
+        render: () => (
+            <Toolbar>
+                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+                <ToolbarLayout name='feature-tools'>
+                    <ToolbarGroup>
+                        <ToolbarButton icon='pi pi-pencil' title='Draw (default)' />
+                        <ToolbarButton icon='pi pi-stop' title='Rectangle (default)' />
+                    </ToolbarGroup>
+                </ToolbarLayout>
+                <ToolbarButton icon='pi pi-undo' title='Undo' />
+            </Toolbar>
+        ),
+    };
+
+    /**
+     * Shows a feature injecting a complete toolbar layout — multiple groups and a
+     * separator — into a named {@link ToolbarLayout} region from anywhere in the tree.
+     * Toggle the "Feature mounted" switch to see the layout region swap between the
+     * default content and the injected content.
+     */
+    export const LayoutWithInjectedContent: Story = {
+        render: () => {
+            const LayoutWithInjectedContentDemo = () => {
+                const [featureMounted, setFeatureMounted] = useState(true);
+
+                const featureContent = useMemo(
+                    () => (
+                        <>
+                            <ToolbarGroup>
+                                <ToolbarButton icon='pi pi-star' title='Favorite' />
+                                <ToolbarButton icon='pi pi-heart' title='Like' />
+                            </ToolbarGroup>
+                            <ToolbarSeparator />
+                            <ToolbarGroup>
+                                <ToolbarButton icon='pi pi-bolt' title='Quick action' />
+                            </ToolbarGroup>
+                        </>
+                    ),
+                    []
+                );
+
+                return (
+                    <ToolbarSlotProvider>
+                        <div className='flex flex-col items-center gap-6'>
+                            <Toolbar orientation='horizontal'>
+                                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' tooltipPosition='bottom' />
+                                <ToolbarSeparator orientation='horizontal' />
+                                <ToolbarLayout name='feature-tools' orientation='horizontal'>
+                                    <ToolbarGroup orientation='horizontal'>
+                                        <ToolbarButton icon='pi pi-pencil' title='Draw (default)' tooltipPosition='bottom' />
+                                        <ToolbarButton icon='pi pi-stop' title='Rectangle (default)' tooltipPosition='bottom' />
+                                    </ToolbarGroup>
+                                </ToolbarLayout>
+                                <ToolbarSeparator orientation='horizontal' />
+                                <ToolbarButton icon='pi pi-undo' title='Undo' tooltipPosition='bottom' />
+                            </Toolbar>
+
+                            {featureMounted && (
+                                <ToolbarSlot slotName='feature-tools' order={0}>
+                                    {featureContent}
+                                </ToolbarSlot>
+                            )}
+
+                            <div className='flex flex-col items-center gap-2'>
+                                <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>
+                                    Feature mounted
+                                </span>
+                                <button
+                                    type='button'
+                                    onClick={() => setFeatureMounted(m => !m)}
+                                    className={`px-3 py-1 rounded text-sm transition-colors ${
+                                        featureMounted
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                    }`}
+                                >
+                                    {featureMounted ? 'Unmount feature' : 'Mount feature'}
+                                </button>
+                            </div>
+                        </div>
+                    </ToolbarSlotProvider>
+                );
+            };
+
+            return <LayoutWithInjectedContentDemo />;
+        },
+    };
+
+    /**
+     * Demonstrates two independent features each contributing to the same
+     * {@link ToolbarLayout} region. The `order` prop on each {@link ToolbarSlot} controls
+     * which contribution appears first — lower values appear before higher ones.
+     * Toggle each feature to see how the layout region adapts.
+     */
+    export const LayoutWithMultipleContributors: Story = {
+        render: () => {
+            const LayoutWithMultipleContributorsDemo = () => {
+                const [featureAMounted, setFeatureAMounted] = useState(true);
+                const [featureBMounted, setFeatureBMounted] = useState(true);
+
+                const featureAContent = useMemo(
+                    () => (
+                        <ToolbarGroup>
+                            <ToolbarButton icon='pi pi-star' title='Feature A — Favorite (order 10)' />
+                            <ToolbarButton icon='pi pi-heart' title='Feature A — Like (order 10)' />
+                        </ToolbarGroup>
+                    ),
+                    []
+                );
+
+                const featureBContent = useMemo(
+                    () => (
+                        <>
+                            <ToolbarSeparator />
+                            <ToolbarGroup>
+                                <ToolbarButton icon='pi pi-bolt' title='Feature B — Quick action (order 20)' />
+                                <ToolbarButton icon='pi pi-cog' title='Feature B — Settings (order 20)' />
+                            </ToolbarGroup>
+                        </>
+                    ),
+                    []
+                );
+
+                return (
+                    <ToolbarSlotProvider>
+                        <div className='flex flex-col items-center gap-6'>
+                            <Toolbar>
+                                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+                                <ToolbarLayout name='shared-region'>
+                                    <ToolbarGroup>
+                                        <ToolbarButton icon='pi pi-pencil' title='Draw (default)' />
+                                    </ToolbarGroup>
+                                </ToolbarLayout>
+                                <ToolbarButton icon='pi pi-undo' title='Undo' />
+                            </Toolbar>
+
+                            {featureAMounted && (
+                                <ToolbarSlot slotName='shared-region' order={10}>
+                                    {featureAContent}
+                                </ToolbarSlot>
+                            )}
+
+                            {featureBMounted && (
+                                <ToolbarSlot slotName='shared-region' order={20}>
+                                    {featureBContent}
+                                </ToolbarSlot>
+                            )}
+
+                            <div className='flex gap-6'>
+                                {[
+                                    { label: 'Feature A', mounted: featureAMounted, toggle: () => setFeatureAMounted(m => !m) },
+                                    { label: 'Feature B', mounted: featureBMounted, toggle: () => setFeatureBMounted(m => !m) },
+                                ].map(({ label, mounted, toggle }) => (
+                                    <div key={label} className='flex flex-col items-center gap-2'>
+                                        <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>{label}</span>
+                                        <button
+                                            type='button'
+                                            onClick={toggle}
+                                            className={`px-3 py-1 rounded text-sm transition-colors ${
+                                                mounted
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                            }`}
+                                        >
+                                            {mounted ? 'Unmount' : 'Mount'}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </ToolbarSlotProvider>
+                );
+            };
+
+            return <LayoutWithMultipleContributorsDemo />;
+        },
+    };
+
+    /**
+     * Shows how a {@link ToolbarLayout} with context-sensitive slot content mirrors
+     * the application's active mode. Each "mode" has its own feature component that
+     * mounts and unmounts a {@link ToolbarSlot} — the layout region swaps its full
+     * content automatically and independently from the rest of the toolbar.
+     */
+    export const LayoutWithContextSensitiveContent: Story = {
+        render: () => {
+            const LayoutWithContextSensitiveContentDemo = () => {
+                const [activeMode, setActiveMode] = useState<'draw' | 'text' | 'shape'>('draw');
+
+                const drawContent = useMemo(
+                    () => (
+                        <>
+                            <ToolbarGroup>
+                                <ToolbarButton icon='pi pi-pencil' title='Freehand' />
+                                <ToolbarButton icon='pi pi-minus' title='Line' />
+                            </ToolbarGroup>
+                            <ToolbarSeparator />
+                            <ToolbarGroup>
+                                <ToolbarButton icon='pi pi-eraser' title='Erase' />
+                            </ToolbarGroup>
+                        </>
+                    ),
+                    []
+                );
+
+                const textContent = useMemo(
+                    () => (
+                        <ToolbarGroup>
+                            <ToolbarButton icon='pi pi-align-left' title='Align left' />
+                            <ToolbarButton icon='pi pi-align-center' title='Center' />
+                            <ToolbarButton icon='pi pi-align-right' title='Align right' />
+                        </ToolbarGroup>
+                    ),
+                    []
+                );
+
+                const shapeContent = useMemo(
+                    () => (
+                        <>
+                            <ToolbarGroup>
+                                <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+                                <ToolbarButton icon='pi pi-circle' title='Circle' />
+                            </ToolbarGroup>
+                            <ToolbarSeparator />
+                            <ToolbarGroup>
+                                <ToolbarButton icon='pi pi-clone' title='Duplicate' />
+                            </ToolbarGroup>
+                        </>
+                    ),
+                    []
+                );
+
+                const modeContent = { draw: drawContent, text: textContent, shape: shapeContent };
+
+                return (
+                    <ToolbarSlotProvider>
+                        <div className='flex flex-col items-center gap-6'>
+                            <Toolbar>
+                                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+                                <ToolbarLayout name='mode-tools' />
+                                <ToolbarButton icon='pi pi-undo' title='Undo' />
+                            </Toolbar>
+
+                            <ToolbarSlot slotName='mode-tools' order={0}>
+                                {modeContent[activeMode]}
+                            </ToolbarSlot>
+
+                            <div className='flex flex-col items-center gap-2'>
+                                <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>Active mode</span>
+                                <div className='flex gap-2'>
+                                    {(['draw', 'text', 'shape'] as const).map(mode => (
+                                        <button
+                                            key={mode}
+                                            type='button'
+                                            onClick={() => setActiveMode(mode)}
+                                            className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
+                                                activeMode === mode
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                            }`}
+                                        >
+                                            {mode}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </ToolbarSlotProvider>
+                );
+            };
+
+            return <LayoutWithContextSensitiveContentDemo />;
+        },
+    };
