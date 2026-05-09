@@ -719,286 +719,284 @@ export const WithMultipleSlotContributors: Story = {
     },
 };
 
-    // ─── ToolbarLayout stories ────────────────────────────────────────────────────
+// ─── ToolbarLayout stories ────────────────────────────────────────────────────
 
-    /**
-     * Demonstrates {@link ToolbarLayout} rendering its fallback children when no slot
-     * content has been registered. The layout acts as a transparent container so the
-     * injected {@link ToolbarGroup} pills appear exactly as they would if placed
-     * directly inside the {@link Toolbar}.
-     */
-    export const LayoutWithDefaultContent: Story = {
-        render: () => (
-            <Toolbar>
-                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-                <ToolbarLayout name='feature-tools'>
+/**
+ * Shows `ToolbarLayout` as a shared region in an editor shell. Different
+ * editor modules can mount and unmount independently while the shell remains
+ * unchanged.
+ */
+export const LayoutForEditorModules: Story = {
+    render: () => {
+        const LayoutForEditorModulesDemo = () => {
+            const [assetToolsEnabled, setAssetToolsEnabled] = useState(true);
+            const [reviewToolsEnabled, setReviewToolsEnabled] = useState(true);
+
+            const assetTools = useMemo(
+                () => (
                     <ToolbarGroup>
-                        <ToolbarButton icon='pi pi-pencil' title='Draw (default)' />
-                        <ToolbarButton icon='pi pi-stop' title='Rectangle (default)' />
+                        <ToolbarButton icon='pi pi-image' title='Asset Browser' />
+                        <ToolbarButton icon='pi pi-upload' title='Upload Asset' />
                     </ToolbarGroup>
-                </ToolbarLayout>
-                <ToolbarButton icon='pi pi-undo' title='Undo' />
-            </Toolbar>
-        ),
-    };
+                ),
+                []
+            );
 
-    /**
-     * Shows a feature injecting a complete toolbar layout — multiple groups and a
-     * separator — into a named {@link ToolbarLayout} region from anywhere in the tree.
-     * Toggle the "Feature mounted" switch to see the layout region swap between the
-     * default content and the injected content.
-     */
-    export const LayoutWithInjectedContent: Story = {
-        render: () => {
-            const LayoutWithInjectedContentDemo = () => {
-                const [featureMounted, setFeatureMounted] = useState(true);
+            const reviewTools = useMemo(
+                () => (
+                    <>
+                        <ToolbarSeparator />
+                        <ToolbarGroup>
+                            <ToolbarButton icon='pi pi-comment' title='Comments' />
+                            <ToolbarButton icon='pi pi-check-square' title='Approval Checks' />
+                        </ToolbarGroup>
+                    </>
+                ),
+                []
+            );
 
-                const featureContent = useMemo(
-                    () => (
-                        <>
-                            <ToolbarGroup>
-                                <ToolbarButton icon='pi pi-star' title='Favorite' />
-                                <ToolbarButton icon='pi pi-heart' title='Like' />
-                            </ToolbarGroup>
-                            <ToolbarSeparator />
-                            <ToolbarGroup>
-                                <ToolbarButton icon='pi pi-bolt' title='Quick action' />
-                            </ToolbarGroup>
-                        </>
-                    ),
-                    []
-                );
+            return (
+                <ToolbarSlotProvider>
+                    <div className='flex flex-col items-center gap-6'>
+                        <Toolbar orientation='horizontal'>
+                            <ToolbarButton icon='pi pi-file-edit' title='Open Editor' tooltipPosition='bottom' />
+                            <ToolbarSeparator orientation='horizontal' />
+                            <ToolbarLayout name='editor-modules' orientation='horizontal'>
+                                <ToolbarGroup orientation='horizontal'>
+                                    <ToolbarButton icon='pi pi-save' title='Save' tooltipPosition='bottom' />
+                                    <ToolbarButton icon='pi pi-refresh' title='Reload' tooltipPosition='bottom' />
+                                </ToolbarGroup>
+                            </ToolbarLayout>
+                            <ToolbarSeparator orientation='horizontal' />
+                            <ToolbarButton icon='pi pi-cog' title='Settings' tooltipPosition='bottom' />
+                        </Toolbar>
 
-                return (
-                    <ToolbarSlotProvider>
-                        <div className='flex flex-col items-center gap-6'>
-                            <Toolbar orientation='horizontal'>
-                                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' tooltipPosition='bottom' />
-                                <ToolbarSeparator orientation='horizontal' />
-                                <ToolbarLayout name='feature-tools' orientation='horizontal'>
-                                    <ToolbarGroup orientation='horizontal'>
-                                        <ToolbarButton icon='pi pi-pencil' title='Draw (default)' tooltipPosition='bottom' />
-                                        <ToolbarButton icon='pi pi-stop' title='Rectangle (default)' tooltipPosition='bottom' />
-                                    </ToolbarGroup>
-                                </ToolbarLayout>
-                                <ToolbarSeparator orientation='horizontal' />
-                                <ToolbarButton icon='pi pi-undo' title='Undo' tooltipPosition='bottom' />
-                            </Toolbar>
+                        {assetToolsEnabled && (
+                            <ToolbarSlot slotName='editor-modules' order={10}>
+                                {assetTools}
+                            </ToolbarSlot>
+                        )}
 
-                            {featureMounted && (
-                                <ToolbarSlot slotName='feature-tools' order={0}>
-                                    {featureContent}
-                                </ToolbarSlot>
-                            )}
+                        {reviewToolsEnabled && (
+                            <ToolbarSlot slotName='editor-modules' order={20}>
+                                {reviewTools}
+                            </ToolbarSlot>
+                        )}
 
-                            <div className='flex flex-col items-center gap-2'>
-                                <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>
-                                    Feature mounted
-                                </span>
+                        <div className='flex gap-6'>
+                            {[
+                                { label: 'Asset tools', enabled: assetToolsEnabled, toggle: () => setAssetToolsEnabled(v => !v) },
+                                { label: 'Review tools', enabled: reviewToolsEnabled, toggle: () => setReviewToolsEnabled(v => !v) },
+                            ].map(({ label, enabled, toggle }) => (
+                                <div key={label} className='flex flex-col items-center gap-2'>
+                                    <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>{label}</span>
+                                    <button
+                                        type='button'
+                                        onClick={toggle}
+                                        className={`px-3 py-1 rounded text-sm transition-colors ${
+                                            enabled ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                        }`}
+                                    >
+                                        {enabled ? 'Disable' : 'Enable'}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </ToolbarSlotProvider>
+            );
+        };
+
+        return <LayoutForEditorModulesDemo />;
+    },
+};
+
+/**
+ * Demonstrates editor-specific toolbar layouts (Canvas, Text, Schema) with a
+ * smooth transition when switching editor type.
+ *
+ * The transition is driven by `ToolbarLayout` itself, so the story only swaps
+ * slot content and the toolbar handles fade/resize animation internally.
+ */
+export const LayoutWithSmoothEditorTransitions: Story = {
+    render: () => {
+        const LayoutWithSmoothEditorTransitionsDemo = () => {
+            const [activeEditor, setActiveEditor] = useState<'canvas' | 'text' | 'schema'>('canvas');
+
+            const canvasTools = useMemo(
+                () => (
+                    <ToolbarGroup orientation='horizontal'>
+                        <ToolbarButton icon='pi pi-pencil' title='Draw' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-stop' title='Rectangle' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-circle' title='Circle' tooltipPosition='bottom' />
+                    </ToolbarGroup>
+                ),
+                []
+            );
+
+            const textTools = useMemo(
+                () => (
+                    <ToolbarGroup orientation='horizontal'>
+                        <ToolbarButton icon='pi pi-align-left' title='Align Left' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-bold' title='Bold' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-underline' title='Underline' tooltipPosition='bottom' />
+                    </ToolbarGroup>
+                ),
+                []
+            );
+
+            const schemaTools = useMemo(
+                () => (
+                    <>
+                        <ToolbarGroup orientation='horizontal'>
+                            <ToolbarButton icon='pi pi-table' title='Add Table' tooltipPosition='bottom' />
+                            <ToolbarButton icon='pi pi-link' title='Relationship' tooltipPosition='bottom' />
+                        </ToolbarGroup>
+                        <ToolbarSeparator orientation='horizontal' />
+                        <ToolbarGroup orientation='horizontal'>
+                            <ToolbarButton icon='pi pi-check-square' title='Validate Schema' tooltipPosition='bottom' />
+                        </ToolbarGroup>
+                    </>
+                ),
+                []
+            );
+
+            const editorTools = {
+                canvas: canvasTools,
+                text: textTools,
+                schema: schemaTools,
+            };
+
+            return (
+                <ToolbarSlotProvider>
+                    <div className='flex flex-col items-center gap-6'>
+                        <Toolbar orientation='horizontal'>
+                            <ToolbarButton icon='pi pi-home' title='Workspace Home' tooltipPosition='bottom' />
+                            <ToolbarSeparator orientation='horizontal' />
+                            <ToolbarLayout name='active-editor-tools' orientation='horizontal'>
+                                <ToolbarGroup orientation='horizontal'>
+                                    <ToolbarButton icon='pi pi-folder-open' title='Open' tooltipPosition='bottom' />
+                                </ToolbarGroup>
+                            </ToolbarLayout>
+                            <ToolbarSeparator orientation='horizontal' />
+                            <ToolbarButton icon='pi pi-history' title='History' tooltipPosition='bottom' />
+                        </Toolbar>
+
+                        <ToolbarSlot slotName='active-editor-tools' order={0}>
+                            {editorTools[activeEditor]}
+                        </ToolbarSlot>
+
+                        <div className='flex flex-col items-center gap-3'>
+                            <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>Active editor</span>
+                            <div className='flex gap-2'>
+                                {(['canvas', 'text', 'schema'] as const).map(editor => (
+                                    <button
+                                        key={editor}
+                                        type='button'
+                                        onClick={() => setActiveEditor(editor)}
+                                        className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
+                                            activeEditor === editor
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                        }`}
+                                    >
+                                        {editor}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </ToolbarSlotProvider>
+            );
+        };
+
+        return <LayoutWithSmoothEditorTransitionsDemo />;
+    },
+};
+
+/**
+ * Shows app-level layout regions where one `ToolbarLayout` stays stable for
+ * global actions while another layout swaps by editor type.
+ */
+export const LayoutWithGlobalAndEditorRegions: Story = {
+    render: () => {
+        const LayoutWithGlobalAndEditorRegionsDemo = () => {
+            const [activeEditor, setActiveEditor] = useState<'page' | 'workflow'>('page');
+
+            const globalActions = useMemo(
+                () => (
+                    <ToolbarGroup orientation='horizontal'>
+                        <ToolbarButton icon='pi pi-save' title='Save Workspace' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-share-alt' title='Share' tooltipPosition='bottom' />
+                    </ToolbarGroup>
+                ),
+                []
+            );
+
+            const pageEditorTools = useMemo(
+                () => (
+                    <ToolbarGroup orientation='horizontal'>
+                        <ToolbarButton icon='pi pi-clone' title='Duplicate Block' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-palette' title='Theme' tooltipPosition='bottom' />
+                    </ToolbarGroup>
+                ),
+                []
+            );
+
+            const workflowEditorTools = useMemo(
+                () => (
+                    <ToolbarGroup orientation='horizontal'>
+                        <ToolbarButton icon='pi pi-sitemap' title='Add Node' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-play' title='Run Flow' tooltipPosition='bottom' />
+                        <ToolbarButton icon='pi pi-stopwatch' title='Debug Step' tooltipPosition='bottom' />
+                    </ToolbarGroup>
+                ),
+                []
+            );
+
+            const editorRegionTools = {
+                page: pageEditorTools,
+                workflow: workflowEditorTools,
+            };
+
+            return (
+                <ToolbarSlotProvider>
+                    <div className='flex flex-col items-center gap-6'>
+                        <Toolbar orientation='horizontal'>
+                            <ToolbarLayout name='global-region' orientation='horizontal' />
+                            <ToolbarSeparator orientation='horizontal' />
+                            <ToolbarLayout name='editor-region' orientation='horizontal' />
+                        </Toolbar>
+
+                        <ToolbarSlot slotName='global-region' order={0}>
+                            {globalActions}
+                        </ToolbarSlot>
+
+                        <ToolbarSlot slotName='editor-region' order={0}>
+                            {editorRegionTools[activeEditor]}
+                        </ToolbarSlot>
+
+                        <div className='flex gap-2'>
+                            {(['page', 'workflow'] as const).map(editor => (
                                 <button
+                                    key={editor}
                                     type='button'
-                                    onClick={() => setFeatureMounted(m => !m)}
-                                    className={`px-3 py-1 rounded text-sm transition-colors ${
-                                        featureMounted
+                                    onClick={() => setActiveEditor(editor)}
+                                    className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
+                                        activeEditor === editor
                                             ? 'bg-blue-600 text-white'
                                             : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
                                     }`}
                                 >
-                                    {featureMounted ? 'Unmount feature' : 'Mount feature'}
+                                    {editor} editor
                                 </button>
-                            </div>
+                            ))}
                         </div>
-                    </ToolbarSlotProvider>
-                );
-            };
+                    </div>
+                </ToolbarSlotProvider>
+            );
+        };
 
-            return <LayoutWithInjectedContentDemo />;
-        },
-    };
-
-    /**
-     * Demonstrates two independent features each contributing to the same
-     * {@link ToolbarLayout} region. The `order` prop on each {@link ToolbarSlot} controls
-     * which contribution appears first — lower values appear before higher ones.
-     * Toggle each feature to see how the layout region adapts.
-     */
-    export const LayoutWithMultipleContributors: Story = {
-        render: () => {
-            const LayoutWithMultipleContributorsDemo = () => {
-                const [featureAMounted, setFeatureAMounted] = useState(true);
-                const [featureBMounted, setFeatureBMounted] = useState(true);
-
-                const featureAContent = useMemo(
-                    () => (
-                        <ToolbarGroup>
-                            <ToolbarButton icon='pi pi-star' title='Feature A — Favorite (order 10)' />
-                            <ToolbarButton icon='pi pi-heart' title='Feature A — Like (order 10)' />
-                        </ToolbarGroup>
-                    ),
-                    []
-                );
-
-                const featureBContent = useMemo(
-                    () => (
-                        <>
-                            <ToolbarSeparator />
-                            <ToolbarGroup>
-                                <ToolbarButton icon='pi pi-bolt' title='Feature B — Quick action (order 20)' />
-                                <ToolbarButton icon='pi pi-cog' title='Feature B — Settings (order 20)' />
-                            </ToolbarGroup>
-                        </>
-                    ),
-                    []
-                );
-
-                return (
-                    <ToolbarSlotProvider>
-                        <div className='flex flex-col items-center gap-6'>
-                            <Toolbar>
-                                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-                                <ToolbarLayout name='shared-region'>
-                                    <ToolbarGroup>
-                                        <ToolbarButton icon='pi pi-pencil' title='Draw (default)' />
-                                    </ToolbarGroup>
-                                </ToolbarLayout>
-                                <ToolbarButton icon='pi pi-undo' title='Undo' />
-                            </Toolbar>
-
-                            {featureAMounted && (
-                                <ToolbarSlot slotName='shared-region' order={10}>
-                                    {featureAContent}
-                                </ToolbarSlot>
-                            )}
-
-                            {featureBMounted && (
-                                <ToolbarSlot slotName='shared-region' order={20}>
-                                    {featureBContent}
-                                </ToolbarSlot>
-                            )}
-
-                            <div className='flex gap-6'>
-                                {[
-                                    { label: 'Feature A', mounted: featureAMounted, toggle: () => setFeatureAMounted(m => !m) },
-                                    { label: 'Feature B', mounted: featureBMounted, toggle: () => setFeatureBMounted(m => !m) },
-                                ].map(({ label, mounted, toggle }) => (
-                                    <div key={label} className='flex flex-col items-center gap-2'>
-                                        <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>{label}</span>
-                                        <button
-                                            type='button'
-                                            onClick={toggle}
-                                            className={`px-3 py-1 rounded text-sm transition-colors ${
-                                                mounted
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
-                                            }`}
-                                        >
-                                            {mounted ? 'Unmount' : 'Mount'}
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </ToolbarSlotProvider>
-                );
-            };
-
-            return <LayoutWithMultipleContributorsDemo />;
-        },
-    };
-
-    /**
-     * Shows how a {@link ToolbarLayout} with context-sensitive slot content mirrors
-     * the application's active mode. Each "mode" has its own feature component that
-     * mounts and unmounts a {@link ToolbarSlot} — the layout region swaps its full
-     * content automatically and independently from the rest of the toolbar.
-     */
-    export const LayoutWithContextSensitiveContent: Story = {
-        render: () => {
-            const LayoutWithContextSensitiveContentDemo = () => {
-                const [activeMode, setActiveMode] = useState<'draw' | 'text' | 'shape'>('draw');
-
-                const drawContent = useMemo(
-                    () => (
-                        <>
-                            <ToolbarGroup>
-                                <ToolbarButton icon='pi pi-pencil' title='Freehand' />
-                                <ToolbarButton icon='pi pi-minus' title='Line' />
-                            </ToolbarGroup>
-                            <ToolbarSeparator />
-                            <ToolbarGroup>
-                                <ToolbarButton icon='pi pi-eraser' title='Erase' />
-                            </ToolbarGroup>
-                        </>
-                    ),
-                    []
-                );
-
-                const textContent = useMemo(
-                    () => (
-                        <ToolbarGroup>
-                            <ToolbarButton icon='pi pi-align-left' title='Align left' />
-                            <ToolbarButton icon='pi pi-align-center' title='Center' />
-                            <ToolbarButton icon='pi pi-align-right' title='Align right' />
-                        </ToolbarGroup>
-                    ),
-                    []
-                );
-
-                const shapeContent = useMemo(
-                    () => (
-                        <>
-                            <ToolbarGroup>
-                                <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                                <ToolbarButton icon='pi pi-circle' title='Circle' />
-                            </ToolbarGroup>
-                            <ToolbarSeparator />
-                            <ToolbarGroup>
-                                <ToolbarButton icon='pi pi-clone' title='Duplicate' />
-                            </ToolbarGroup>
-                        </>
-                    ),
-                    []
-                );
-
-                const modeContent = { draw: drawContent, text: textContent, shape: shapeContent };
-
-                return (
-                    <ToolbarSlotProvider>
-                        <div className='flex flex-col items-center gap-6'>
-                            <Toolbar>
-                                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-                                <ToolbarLayout name='mode-tools' />
-                                <ToolbarButton icon='pi pi-undo' title='Undo' />
-                            </Toolbar>
-
-                            <ToolbarSlot slotName='mode-tools' order={0}>
-                                {modeContent[activeMode]}
-                            </ToolbarSlot>
-
-                            <div className='flex flex-col items-center gap-2'>
-                                <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>Active mode</span>
-                                <div className='flex gap-2'>
-                                    {(['draw', 'text', 'shape'] as const).map(mode => (
-                                        <button
-                                            key={mode}
-                                            type='button'
-                                            onClick={() => setActiveMode(mode)}
-                                            className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
-                                                activeMode === mode
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
-                                            }`}
-                                        >
-                                            {mode}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </ToolbarSlotProvider>
-                );
-            };
-
-            return <LayoutWithContextSensitiveContentDemo />;
-        },
-    };
+        return <LayoutWithGlobalAndEditorRegionsDemo />;
+    },
+};
