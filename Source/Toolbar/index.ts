@@ -20,3 +20,5 @@ export type { ToolbarFolderProps } from './ToolbarFolder';
 export type { ToolbarFolderMode } from './ToolbarFolderContext';
 export { ToolbarSlot, ToolbarSlotProvider, useToolbarSlot } from './ToolbarSlot';
 export type { ToolbarSlotProps, ToolbarSlotProviderProps } from './ToolbarSlot';
+export { ToolbarLayout } from './ToolbarLayout';
+export type { ToolbarLayoutProps } from './ToolbarLayout';
