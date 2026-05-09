@@ -1,8 +1,94 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ReactNode } from 'react';
+import { Children, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useToolbarSlot } from './ToolbarSlot';
+
+/** How long the fade-out animation runs (ms). React unmounts exiting content after this. */
+const LAYOUT_TRANSITION_MS = 220;
+
+/**
+ * Renders toolbar layout content with a cross-fade and size-morph transition.
+ *
+ * - The container resizes smoothly to fit incoming layout content.
+ * - Outgoing content fades out while incoming content fades in.
+ */
+const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass: string }) => {
+    const [current, setCurrent] = useState<ReactNode[]>(items);
+    const [exiting, setExiting] = useState<ReactNode[]>([]);
+    const [exitRevision, setExitRevision] = useState(0);
+
+    const currentRef = useRef<ReactNode[]>(current);
+    currentRef.current = current;
+
+    const incomingRef = useRef<HTMLDivElement>(null);
+    const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const hasMountedRef = useRef(false);
+
+    const measureIncoming = useCallback(() => {
+        if (incomingRef.current) {
+            setSize({
+                width: incomingRef.current.offsetWidth,
+                height: incomingRef.current.offsetHeight,
+            });
+        }
+    }, []);
+
+    useLayoutEffect(() => {
+        measureIncoming();
+    }, []); // mount only
+
+    useEffect(() => {
+        if (items === currentRef.current) return;
+        const old = currentRef.current;
+
+        if (timerRef.current !== undefined) clearTimeout(timerRef.current);
+        setCurrent(items);
+
+        if (old.length > 0) {
+            setExiting(old);
+            setExitRevision(revision => revision + 1);
+            timerRef.current = setTimeout(() => setExiting([]), LAYOUT_TRANSITION_MS);
+        }
+    }, [items]);
+
+    useEffect(() => {
+        if (!hasMountedRef.current) {
+            hasMountedRef.current = true;
+            return;
+        }
+        measureIncoming();
+    }, [current, measureIncoming]);
+
+    useEffect(() => () => {
+        if (timerRef.current !== undefined) clearTimeout(timerRef.current);
+    }, []);
+
+    if (current.length === 0 && exiting.length === 0) return null;
+
+    return (
+        <div
+            className='toolbar-slot-section'
+            style={size ? { width: size.width, height: size.height } : undefined}
+        >
+            <div
+                ref={incomingRef}
+                className={`toolbar-slot-incoming inline-flex ${flexClass} items-center gap-1`}
+            >
+                {current}
+            </div>
+            {exiting.length > 0 && (
+                <div
+                    key={exitRevision}
+                    className={`toolbar-slot-outgoing inline-flex ${flexClass} items-center gap-1`}
+                >
+                    {exiting}
+                </div>
+            )}
+        </div>
+    );
+};
 
 /** Props for the {@link ToolbarLayout} component. */
 export interface ToolbarLayoutProps {
@@ -71,13 +157,14 @@ export interface ToolbarLayoutProps {
 export const ToolbarLayout = ({ name, children, orientation = 'vertical' }: ToolbarLayoutProps) => {
     const slotItems = useToolbarSlot(name);
     const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
+    const fallbackItems = useMemo(() => Children.toArray(children), [children]);
+    const items = slotItems.length > 0 ? slotItems : fallbackItems;
 
-    const content = slotItems.length > 0 ? slotItems : children;
-    if (content == null) return null;
+    if (items.length === 0) return null;
 
     return (
         <div className={`toolbar-layout inline-flex ${flexClass} items-center gap-1`}>
-            {content}
+            <LayoutTransition items={items} flexClass={flexClass} />
         </div>
     );
 };
