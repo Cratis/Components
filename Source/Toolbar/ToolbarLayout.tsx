@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Children, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Children, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useToolbarSlot } from './ToolbarSlot';
 
 /** How long the fade-out animation runs (ms). React unmounts exiting content after this. */
@@ -24,20 +24,22 @@ const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass:
     const incomingRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState<{ width: number; height: number } | null>(null);
     const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const hasMountedRef = useRef(false);
 
-    const measureIncoming = useCallback(() => {
-        if (incomingRef.current) {
-            setSize({
-                width: incomingRef.current.offsetWidth,
-                height: incomingRef.current.offsetHeight,
-            });
-        }
-    }, []);
+    // ResizeObserver keeps the container size in sync with the actual rendered
+    // content, including when nested ToolbarLayouts finish their own transitions.
+    // A one-shot offsetHeight read in useEffect misses those deferred size changes.
+    useEffect(() => {
+        const el = incomingRef.current;
+        if (!el) return;
 
-    useLayoutEffect(() => {
-        measureIncoming();
-    }, []); // mount only
+        const sync = () => setSize({ width: el.offsetWidth, height: el.offsetHeight });
+
+        const observer = new ResizeObserver(sync);
+        observer.observe(el);
+        sync(); // capture initial size immediately
+
+        return () => observer.disconnect();
+    }, []); // mount only — observer tracks all subsequent changes automatically
 
     useEffect(() => {
         if (items === currentRef.current) return;
@@ -53,24 +55,22 @@ const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass:
         }
     }, [items]);
 
-    useEffect(() => {
-        if (!hasMountedRef.current) {
-            hasMountedRef.current = true;
-            return;
-        }
-        measureIncoming();
-    }, [current, measureIncoming]);
-
     useEffect(() => () => {
         if (timerRef.current !== undefined) clearTimeout(timerRef.current);
     }, []);
 
     if (current.length === 0 && exiting.length === 0) return null;
 
+    // overflow:hidden is only needed while outgoing content is fading out so it
+    // doesn't bleed outside the container. Once the transition is complete the
+    // section must be overflow:visible so fan-out and folder panels (which are
+    // position:absolute children) can escape the slot section's bounds.
+    const isTransitioning = exiting.length > 0;
+
     return (
         <div
             className='toolbar-slot-section'
-            style={size ? { width: size.width, height: size.height } : undefined}
+            style={size ? { width: size.width, height: size.height, overflow: isTransitioning ? 'hidden' : 'visible' } : { overflow: 'visible' }}
         >
             <div
                 ref={incomingRef}
@@ -107,6 +107,7 @@ export interface ToolbarLayoutProps {
 
     /** Layout direction matching the parent {@link Toolbar} (default: `'vertical'`). */
     orientation?: 'vertical' | 'horizontal';
+
 }
 
 /**
