@@ -1,8 +1,5 @@
-:root {
-  color-scheme: dark;
-}
-
 .pivot-viewer {
+  color-scheme: dark;
   position: relative;
   /* CRITICAL: Don't set explicit height - let parent control it via container constraints */
   display: flex;

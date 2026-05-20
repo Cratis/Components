@@ -26,9 +26,9 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(15, 23, 42, 0.75);
-    color: #fff;
+    border: 1px solid var(--tm-border-subtle);
+    background: var(--tm-dark-surface);
+    color: var(--tm-text);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -77,8 +77,8 @@
 
 /* Event Card */
 .events-view-event-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--tm-surface);
+    border: 1px solid var(--tm-border);
     border-radius: 12px;
     padding: 1.5rem;
     backdrop-filter: blur(10px);
@@ -87,8 +87,8 @@
 }
 
 .events-view-event-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(100, 150, 255, 0.3);
+    background: var(--tm-surface-hover);
+    border-color: var(--tm-accent-border);
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
@@ -97,20 +97,20 @@
 .events-view-event-header {
     margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--tm-border);
 }
 
 .events-view-event-name {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #fff;
+    color: var(--tm-text);
     margin: 0 0 0.5rem 0;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
 }
 
 .events-view-event-timestamp {
     font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--tm-text-muted);
     font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
 }
 
@@ -135,8 +135,8 @@
     justify-content: center;
     width: 2.5rem;
     height: 2.5rem;
-    background: linear-gradient(135deg, rgba(100, 150, 255, 0.2), rgba(100, 150, 255, 0.1));
-    border: 2px solid rgba(100, 150, 255, 0.5);
+    background: linear-gradient(135deg, var(--tm-accent-bg), rgba(100, 150, 255, 0.1));
+    border: 2px solid var(--tm-accent-border);
     border-radius: 50%;
     position: relative;
     backdrop-filter: blur(5px);
@@ -144,22 +144,22 @@
 }
 
 .events-view-marker:hover {
-    background: linear-gradient(135deg, rgba(100, 150, 255, 0.4), rgba(100, 150, 255, 0.2));
-    border-color: rgba(100, 150, 255, 0.8);
+    background: linear-gradient(135deg, var(--tm-accent-bg-hover), var(--tm-accent-bg));
+    border-color: var(--tm-accent-border-hover);
     transform: scale(1.1);
 }
 
 .events-view-marker-dot {
     width: 0.75rem;
     height: 0.75rem;
-    background: rgba(100, 150, 255, 0.9);
+    background: var(--tm-accent);
     border-radius: 50%;
-    box-shadow: 0 0 10px rgba(100, 150, 255, 0.5);
+    box-shadow: 0 0 10px var(--tm-accent-glow);
 }
 
 /* PrimeReact Timeline connector styling */
 .events-view-timeline .p-timeline-event-connector {
-    background: linear-gradient(to bottom, rgba(100, 150, 255, 0.6), rgba(100, 150, 255, 0.4));
+    background: linear-gradient(to bottom, var(--tm-accent-border), var(--tm-accent-bg));
 }
 
 .events-view-timeline .p-timeline-event:last-child .p-timeline-event-connector {

@@ -33,7 +33,7 @@ export interface ColumnProps {
 }
 
 export const MenuItems = ({ children }: MenuItemsProps) => {
-    const context = React.useContext(DataPageContext);
+    const context = useDataPageContext();
 
     const isDisabled = useMemo(() => {
         return !context.selectedItem;
@@ -62,7 +62,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
 
 export const Columns = ({ children }: ColumnProps) => {
 
-    const context = React.useContext(DataPageContext);
+    const context = useDataPageContext();
 
     if (context.query.prototype instanceof QueryFor) {
         return (
@@ -96,7 +96,15 @@ interface IDataPageContext extends DataPageProps<any, any, any> {
     onSelectionChanged: (e: DataTableSelectionSingleChangeEvent<any>) => void;
 }
 
-const DataPageContext = React.createContext<IDataPageContext>(null as any);
+const DataPageContext = React.createContext<IDataPageContext | null>(null);
+
+function useDataPageContext(): IDataPageContext {
+    const context = React.useContext(DataPageContext);
+    if (!context) {
+        throw new Error('useDataPageContext must be used within a DataPage component');
+    }
+    return context;
+}
 
 /**
  * Props for the DataPage component

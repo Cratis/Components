@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { formatPropertyName } from './propertiesHelpers';
+import './Properties.css';
 
 interface PropertiesProps {
     data: Record<string, unknown>;
@@ -13,51 +14,28 @@ interface PropertiesProps {
 }
 
 export const Properties: React.FC<PropertiesProps> = ({ data, className, align = 'left' }) => {
-    const tableStyle: React.CSSProperties = {
-        width: '100%',
-        borderCollapse: 'collapse',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Mono", monospace',
-        fontSize: '13px',
-    };
-
-    const rowStyle: React.CSSProperties = {
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-    };
-
-    const labelStyle: React.CSSProperties = {
-        padding: '8px 12px',
-        color: 'rgba(255,255,255,0.6)',
-        textAlign: align,
-        fontWeight: 500,
-        width: '40%',
-    };
-
-    const valueStyle: React.CSSProperties = {
-        padding: '8px 12px',
-        color: '#fff',
-        textAlign: align,
-    };
+    const isRight = align === 'right';
 
     const renderValue = (value: unknown): React.ReactNode => {
         if (value === null || value === undefined) {
-            return <span style={{ color: 'rgba(255,255,255,0.4)' }}>null</span>;
+            return <span className="tm-properties-null">null</span>;
         }
 
         if (typeof value === 'boolean') {
-            return <span style={{ color: value ? '#4ade80' : '#f87171' }}>{value.toString()}</span>;
+            return <span className={value ? 'tm-properties-boolean-true' : 'tm-properties-boolean-false'}>{value.toString()}</span>;
         }
 
         if (typeof value === 'number') {
-            return <span style={{ color: '#fbbf24' }}>{value}</span>;
+            return <span className="tm-properties-number">{value}</span>;
         }
 
         if (value instanceof Date) {
-            return <span style={{ color: '#60a5fa' }}>{value.toLocaleString()}</span>;
+            return <span className="tm-properties-date">{value.toLocaleString()}</span>;
         }
 
         if (Array.isArray(value)) {
             return (
-                <span style={{ color: 'rgba(255,255,255,0.7)' }}>
+                <span className="tm-properties-complex">
                     Array[{value.length}]
                 </span>
             );
@@ -65,7 +43,7 @@ export const Properties: React.FC<PropertiesProps> = ({ data, className, align =
 
         if (typeof value === 'object') {
             return (
-                <span style={{ color: 'rgba(255,255,255,0.7)' }}>
+                <span className="tm-properties-complex">
                     {'{'}...{'}'}
                 </span>
             );
@@ -76,12 +54,12 @@ export const Properties: React.FC<PropertiesProps> = ({ data, className, align =
 
     return (
         <div className={className}>
-            <table style={tableStyle}>
+            <table className="tm-properties-table">
                 <tbody>
                     {data && Object.entries(data).map(([key, value], index) => (
-                        <tr key={`${key}-${index}`} style={rowStyle}>
-                            <td style={labelStyle}>{formatPropertyName(key)}</td>
-                            <td style={valueStyle}>{renderValue(value)}</td>
+                        <tr key={`${key}-${index}`} className="tm-properties-row">
+                            <td className={`tm-properties-label${isRight ? ' tm-properties-label--right' : ''}`}>{formatPropertyName(key)}</td>
+                            <td className={`tm-properties-value${isRight ? ' tm-properties-value--right' : ''}`}>{renderValue(value)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -89,3 +67,4 @@ export const Properties: React.FC<PropertiesProps> = ({ data, className, align =
         </div>
     );
 };
+
