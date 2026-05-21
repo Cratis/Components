@@ -69,11 +69,6 @@
             "require": "./dist/cjs/Dropdown/index.js",
             "import": "./dist/esm/Dropdown/index.js"
         },
-        "./EventModeling": {
-            "types": "./dist/esm/EventModeling/index.d.ts",
-            "require": "./dist/cjs/EventModeling/index.js",
-            "import": "./dist/esm/EventModeling/index.js"
-        },
         "./PivotViewer": {
             "types": "./dist/esm/PivotViewer/index.d.ts",
             "require": "./dist/cjs/PivotViewer/index.js",
@@ -116,9 +111,7 @@
         "pixi.js": "^8.17.1",
         "primeicons": "7.0.0",
         "primereact": "10.9.8",
-        "quill": "^2.0.3",
         "react-icons": "5.6.0",
-        "react-leaflet": "^5.0.0",
         "react-router-dom": "7.15.1",
         "ts-deepmerge": "7.0.3",
         "usehooks-ts": "3.1.1"

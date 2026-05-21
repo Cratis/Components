@@ -49,20 +49,21 @@ export const Dialog = ({
     yesLabel = 'Yes',
     noLabel = 'No'
 }: DialogProps) => {
-    // Try to get dialog context, but allow it to be undefined for standalone usage
+    // useDialogContext() is called unconditionally on every render — the try/catch only suppresses
+    // the exception when Dialog is used standalone (outside a provider). React's Rules of Hooks
+    // are not violated because the hook is always called; the try/catch never skips the call.
     let contextCloseDialog: ((result: DialogResult) => void) | undefined;
     try {
         const context = useDialogContext();
         contextCloseDialog = context?.closeDialog;
     } catch {
-        // No context available - dialog is being used standalone
         contextCloseDialog = undefined;
     }
     
     const isDialogValid = isValid !== false;
     const headerElement = (
-        <div className="inline-flex align-items-center justify-content-center gap-2">
-            <span className="font-bold white-space-nowrap">{title}</span>
+        <div className="inline-flex items-center justify-center gap-2">
+            <span className="font-bold whitespace-nowrap">{title}</span>
         </div>
     );
 
@@ -142,7 +143,7 @@ export const Dialog = ({
     };
 
     const footer = (
-        <div className="flex flex-wrap justify-content-start gap-3">
+        <div className="flex flex-wrap justify-start gap-3">
             {getFooterInterior()}
         </div>
     );

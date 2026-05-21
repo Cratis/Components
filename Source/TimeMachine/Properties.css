@@ -1,0 +1,57 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+.tm-properties-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+    font-size: 13px;
+}
+
+.tm-properties-row {
+    border-bottom: 1px solid var(--tm-border, rgba(255, 255, 255, 0.1));
+}
+
+.tm-properties-label {
+    padding: 8px 12px;
+    color: var(--tm-text-muted, rgba(255, 255, 255, 0.6));
+    font-weight: 500;
+    width: 40%;
+}
+
+.tm-properties-label--right {
+    text-align: right;
+}
+
+.tm-properties-value {
+    padding: 8px 12px;
+    color: var(--tm-text, rgba(255, 255, 255, 0.9));
+}
+
+.tm-properties-value--right {
+    text-align: right;
+}
+
+.tm-properties-null {
+    color: var(--tm-text-faint, rgba(255, 255, 255, 0.4));
+}
+
+.tm-properties-boolean-true {
+    color: #4ade80;
+}
+
+.tm-properties-boolean-false {
+    color: #f87171;
+}
+
+.tm-properties-number {
+    color: #fbbf24;
+}
+
+.tm-properties-date {
+    color: #60a5fa;
+}
+
+.tm-properties-complex {
+    color: var(--tm-text-dim, rgba(255, 255, 255, 0.7));
+}

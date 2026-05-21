@@ -144,12 +144,12 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
     };
 
     const rowStyle: React.CSSProperties = {
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        borderBottom: '1px solid var(--surface-border)',
     };
 
     const labelStyle: React.CSSProperties = {
         padding: '8px 12px',
-        color: 'rgba(255,255,255,0.6)',
+        color: 'var(--text-color-secondary)',
         textAlign: 'left',
         fontWeight: 500,
         width: '140px',
@@ -158,7 +158,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
     const valueStyle: React.CSSProperties = {
         padding: '8px 12px',
-        color: '#fff',
+        color: 'var(--text-color)',
         textAlign: 'left',
     };
 
@@ -258,7 +258,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         if (property.type === 'array') {
             return (
-                <div className="flex align-items-center gap-2" style={{ color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+                <div className="flex items-center gap-2" style={{ color: 'var(--text-color-secondary)', fontStyle: 'italic' }}>
                     <span>Array editing not yet supported</span>
                 </div>
             );
@@ -266,7 +266,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         if (property.type === 'object') {
             return (
-                <div className="flex align-items-center gap-2" style={{ color: 'rgba(255,255,255,0.6)', fontStyle: 'italic' }}>
+                <div className="flex items-center gap-2" style={{ color: 'var(--text-color-secondary)', fontStyle: 'italic' }}>
                     <span>Object editing not yet supported</span>
                 </div>
             );
@@ -306,7 +306,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         if (Array.isArray(value)) {
             return (
                 <div
-                    className="flex align-items-center gap-2 cursor-pointer"
+                    className="flex items-center gap-2 cursor-pointer"
                     onClick={() => navigateToProperty(propertyName)}
                     style={{ color: 'var(--primary-color)', display: 'flex', alignItems: 'center' }}
                 >
@@ -319,7 +319,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         if (typeof value === 'object') {
             return (
                 <div
-                    className="flex align-items-center gap-2 cursor-pointer"
+                    className="flex items-center gap-2 cursor-pointer"
                     onClick={() => navigateToProperty(propertyName)}
                     style={{ color: 'var(--primary-color)', display: 'flex', alignItems: 'center' }}
                 >
@@ -334,7 +334,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
     const renderTable = () => {
         if (Array.isArray(currentData)) {
-            if (currentData.length === 0) return <div style={{ padding: '12px', color: 'rgba(255,255,255,0.6)' }}>Empty array</div>;
+            if (currentData.length === 0) return <div style={{ padding: '12px', color: 'var(--text-color-secondary)' }}>Empty array</div>;
 
             const firstItem = currentData[0];
             if (typeof firstItem === 'object' && firstItem !== null && !Array.isArray(firstItem)) {
@@ -346,7 +346,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                             {currentData.map((item, index) => (
                                 <React.Fragment key={index}>
                                     {index > 0 && (
-                                        <tr style={{ height: '8px', background: 'rgba(255,255,255,0.05)' }}>
+                                        <tr style={{ height: '8px', background: 'var(--surface-hover)' }}>
                                             <td colSpan={2}></td>
                                         </tr>
                                     )}
@@ -433,10 +433,10 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                 <div style={{
                     marginTop: '20px',
                     padding: '12px',
-                    background: 'rgba(100, 150, 255, 0.1)',
+                    background: 'var(--highlight-bg)',
                     borderRadius: '8px',
                     fontSize: '12px',
-                    color: 'rgba(255,255,255,0.6)'
+                    color: 'var(--text-color-secondary)'
                 }}>
                     Snapshot captured: {timestamp.toLocaleString()}
                 </div>
