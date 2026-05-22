@@ -16,6 +16,10 @@
   href: multi-select-field.md
 - name: NumberField
   href: number-field.md
+- name: RadioButtonField
+  href: radio-button-field.md
+- name: RadioGroupField
+  href: radio-group-field.md
 - name: SliderField
   href: slider-field.md
 - name: TextAreaField
