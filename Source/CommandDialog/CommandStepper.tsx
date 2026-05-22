@@ -196,7 +196,7 @@ export const CommandStepperContent = ({
                     const existingStyle = existing.style as Record<string, unknown> | undefined;
                     return {
                         ...existing,
-                        style: { ...existingStyle, backgroundColor: bgColor, color: '#fff' }
+                        style: { ...existingStyle, backgroundColor: bgColor, color: 'var(--primary-color-text)' }
                     };
                 }
             }

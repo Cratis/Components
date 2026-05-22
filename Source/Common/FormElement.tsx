@@ -8,7 +8,7 @@ export interface FormElementProps {
 
 export const FormElement = (props: FormElementProps) => {
     return (
-        <div className="card flex flex-column md:flex-row gap-3">
+        <div className="flex flex-col md:flex-row gap-3">
             <div className="p-inputgroup flex-1">
                 <span className="p-inputgroup-addon">
                     {props.icon}

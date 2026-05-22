@@ -94,7 +94,7 @@ export const TypeCell = ({
             const isNavigable = itemType === 'object';
             return (
                 <div
-                    className="flex align-items-center gap-2 w-full"
+                    className="flex items-center gap-2 w-full"
                     style={{ height: '100%' }}
                     data-pr-tooltip={isNavigable ? 'Click to navigate to item definition' : undefined}
                     data-pr-position="top"
@@ -113,7 +113,7 @@ export const TypeCell = ({
         } else if (rowData.type === 'object') {
             return (
                 <div
-                    className="flex align-items-center gap-2 w-full"
+                    className="flex items-center gap-2 w-full"
                     style={{ height: '100%' }}
                     data-pr-tooltip="Click to navigate to object properties"
                     data-pr-position="top"
@@ -130,7 +130,7 @@ export const TypeCell = ({
     }
 
     return (
-        <div className="flex align-items-center gap-2 w-full" style={{ minHeight: '2.5rem' }}>
+        <div className="flex items-center gap-2 w-full" style={{ minHeight: '2.5rem' }}>
             <Dropdown
                 value={currentValue}
                 options={allTypeOptions}

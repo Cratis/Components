@@ -1,10 +1,30 @@
 /* Time Machine Container */
 .time-machine {
+  /* Color tokens — intentional dark space theme. Override to customize. */
+  --tm-bg-deep: #0a0a1a;
+  --tm-bg-deepest: #000005;
+  --tm-text: rgba(255, 255, 255, 0.9);
+  --tm-text-muted: rgba(255, 255, 255, 0.6);
+  --tm-text-dim: rgba(255, 255, 255, 0.7);
+  --tm-text-faint: rgba(255, 255, 255, 0.4);
+  --tm-surface: rgba(255, 255, 255, 0.05);
+  --tm-surface-hover: rgba(255, 255, 255, 0.08);
+  --tm-surface-active: rgba(255, 255, 255, 0.1);
+  --tm-border: rgba(255, 255, 255, 0.1);
+  --tm-border-subtle: rgba(255, 255, 255, 0.15);
+  --tm-accent: rgba(100, 150, 255, 1);
+  --tm-accent-bg: rgba(100, 150, 255, 0.2);
+  --tm-accent-bg-hover: rgba(100, 150, 255, 0.4);
+  --tm-accent-border: rgba(100, 150, 255, 0.3);
+  --tm-accent-border-hover: rgba(100, 150, 255, 0.8);
+  --tm-accent-glow: rgba(100, 150, 255, 0.3);
+  --tm-dark-surface: rgba(15, 23, 42, 0.75);
+
   position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  background: radial-gradient(ellipse at center, #0a0a1a 0%, #000005 100%);
+  background: radial-gradient(ellipse at center, var(--tm-bg-deep) 0%, var(--tm-bg-deepest) 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -16,11 +36,11 @@
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--tm-surface);
   padding: 6px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--tm-border);
   z-index: 100;
 }
 
@@ -30,7 +50,7 @@
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--tm-text-muted);
   font-size: 20px;
   cursor: pointer;
   display: flex;
@@ -40,14 +60,14 @@
 }
 
 .view-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  background: var(--tm-surface-active);
+  color: var(--tm-text);
 }
 
 .view-button.active {
-  background: rgba(100, 150, 255, 0.2);
-  color: rgba(100, 150, 255, 1);
-  box-shadow: 0 0 15px rgba(100, 150, 255, 0.3);
+  background: var(--tm-accent-bg);
+  color: var(--tm-accent);
+  box-shadow: 0 0 15px var(--tm-accent-glow);
 }
 
 .view-button i {
@@ -323,9 +343,9 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--tm-border-subtle);
   background: linear-gradient(180deg, rgba(120, 130, 220, 0.25) 0%, rgba(60, 70, 140, 0.25) 100%);
-  color: #fff;
+  color: var(--tm-text);
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -375,8 +395,8 @@
 }
 
 .snapshot-event {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--tm-surface);
+  border: 1px solid var(--tm-border);
   border-radius: 10px;
   padding: 1rem 1.25rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
@@ -398,7 +418,7 @@
 
 .snapshot-event-timestamp {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--tm-text-muted);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
 }
 
@@ -441,7 +461,7 @@
 .timeline-tick {
   width: calc(20px * var(--magnification, 1));
   height: calc(2px * var(--magnification, 1));
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--tm-text-faint);
   border-radius: 1px;
   transition:
     width 0.15s ease,
@@ -455,8 +475,8 @@
 }
 
 .timeline-entry.hovered .timeline-tick {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+  background: var(--tm-text);
+  box-shadow: 0 0 6px var(--tm-surface-active);
 }
 
 .timeline-label {
@@ -487,7 +507,7 @@
 
 .timeline-time {
   font-size: 10px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--tm-text-dim);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 

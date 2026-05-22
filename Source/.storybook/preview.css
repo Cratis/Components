@@ -1,7 +1,6 @@
 /* 1. Tailwind (includes preflight reset) — must come first */
 @import "tailwindcss";
-/* 2. PrimeReact theme — must come AFTER Tailwind so it overrides the preflight reset */
-@import 'primereact/resources/themes/lara-dark-blue/theme.css';
+/* 2. PrimeReact theme is injected dynamically by the Storybook theme decorator */
 
 html, body {
   background-color: var(--surface-ground);
