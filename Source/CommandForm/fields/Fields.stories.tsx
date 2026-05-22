@@ -18,7 +18,9 @@ import {
     CalendarField,
     ColorPickerField,
     MultiSelectField,
-    ChipsField
+    ChipsField,
+    RadioButtonField,
+    RadioGroupField
 } from './index';
 
 const meta: Meta = {
@@ -48,6 +50,8 @@ class FormFieldsCommand extends Command {
         new PropertyDescriptor('color', String),
         new PropertyDescriptor('multiSelect', Array),
         new PropertyDescriptor('chips', Array),
+        new PropertyDescriptor('radioButton', String),
+        new PropertyDescriptor('radioGroup', String),
     ];
 
     textInput = '';
@@ -62,6 +66,8 @@ class FormFieldsCommand extends Command {
     color = '';
     multiSelect: Array<string | number> = [];
     chips: string[] = [];
+    radioButton = '';
+    radioGroup = '';
 
     constructor() {
         super(Object, false);
@@ -84,7 +90,9 @@ class FormFieldsCommand extends Command {
             'calendarDate',
             'color',
             'multiSelect',
-            'chips'
+            'chips',
+            'radioButton',
+            'radioGroup'
         ];
     }
 }
@@ -145,6 +153,8 @@ export const AllFields: Story = {
                         color: '10b981',
                         multiSelect: ['feature1', 'feature3'],
                         chips: ['alpha', 'beta'],
+                        radioButton: '',
+                        radioGroup: '',
                     }}
                     onFieldChange={async (command, fieldName) => {
                         // Validate on field change
@@ -353,6 +363,43 @@ export const AllFields: Story = {
                         <CheckboxField<FormFieldsCommand>
                             value={c => c.checkbox}
                             label="I agree to the terms and conditions"
+                        />
+                    </StorySection>
+
+                    <StoryDivider />
+
+                    <StorySection>
+                        <h3>Radio Button</h3>
+
+                        <RadioButtonField<FormFieldsCommand>
+                            value={c => c.radioButton}
+                            buttonValue="option1"
+                            label="Option 1"
+                        />
+                        <RadioButtonField<FormFieldsCommand>
+                            value={c => c.radioButton}
+                            buttonValue="option2"
+                            label="Option 2"
+                        />
+                        <RadioButtonField<FormFieldsCommand>
+                            value={c => c.radioButton}
+                            buttonValue="option3"
+                            label="Option 3"
+                        />
+                    </StorySection>
+
+                    <StoryDivider />
+
+                    <StorySection>
+                        <h3>Radio Group</h3>
+
+                        <RadioGroupField<FormFieldsCommand>
+                            value={c => c.radioGroup}
+                            title="Radio Group Field"
+                            description="Radio buttons from an options array"
+                            options={dropdownOptions}
+                            optionValue="id"
+                            optionLabel="name"
                         />
                     </StorySection>
 
@@ -624,6 +671,80 @@ export const ChipsFieldExample: Story = {
                         title="Tags"
                         placeholder="Type a tag and press Enter"
                         addOnBlur
+                    />
+                </CommandForm>
+            </StoryContainer>
+        );
+    }
+};
+
+export const RadioButtonFieldExample: Story = {
+    render: () => {
+        return (
+            <StoryContainer size="sm" asCard>
+                <h2>RadioButtonField</h2>
+                <p>PrimeReact RadioButton for selecting a single value. Multiple RadioButtonFields bound to the same property form a radio group.</p>
+
+                <CommandForm<FormFieldsCommand>
+                    command={FormFieldsCommand}
+                    initialValues={{ radioButton: 'apple' }}
+                >
+                    <RadioButtonField<FormFieldsCommand>
+                        value={c => c.radioButton}
+                        buttonValue="apple"
+                        label="Apple"
+                    />
+                    <RadioButtonField<FormFieldsCommand>
+                        value={c => c.radioButton}
+                        buttonValue="banana"
+                        label="Banana"
+                    />
+                    <RadioButtonField<FormFieldsCommand>
+                        value={c => c.radioButton}
+                        buttonValue="cherry"
+                        label="Cherry"
+                    />
+                </CommandForm>
+            </StoryContainer>
+        );
+    }
+};
+
+export const RadioGroupFieldExample: Story = {
+    render: () => {
+        const options = [
+            { id: 'small', name: 'Small' },
+            { id: 'medium', name: 'Medium' },
+            { id: 'large', name: 'Large' },
+            { id: 'xl', name: 'Extra Large' },
+        ];
+
+        return (
+            <StoryContainer size="sm" asCard>
+                <h2>RadioGroupField</h2>
+                <p>PrimeReact RadioButton group rendered from an options array.</p>
+
+                <CommandForm<FormFieldsCommand>
+                    command={FormFieldsCommand}
+                    initialValues={{ radioGroup: 'medium' }}
+                >
+                    <RadioGroupField<FormFieldsCommand>
+                        value={c => c.radioGroup}
+                        title="T-Shirt Size"
+                        description="Select your preferred size"
+                        options={options}
+                        optionValue="id"
+                        optionLabel="name"
+                    />
+
+                    <RadioGroupField<FormFieldsCommand>
+                        value={c => c.radioGroup}
+                        title="T-Shirt Size (Horizontal)"
+                        description="Same options laid out horizontally"
+                        options={options}
+                        optionValue="id"
+                        optionLabel="name"
+                        layout="horizontal"
                     />
                 </CommandForm>
             </StoryContainer>
