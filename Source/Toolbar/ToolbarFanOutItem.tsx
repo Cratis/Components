@@ -19,7 +19,7 @@ export interface ToolbarFanOutItemProps {
     tooltipPosition?: TooltipPosition;
 
     /** Direction the panel fans out from the trigger button (default: 'right'). */
-    fanOutDirection?: 'right' | 'left';
+    fanOutDirection?: 'right' | 'left' | 'up' | 'down';
 
     /** The toolbar items to render inside the fan-out panel. */
     children: ReactNode;

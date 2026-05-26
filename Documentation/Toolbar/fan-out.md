@@ -21,6 +21,18 @@ By default the panel fans out to the right. Use `fanOutDirection='left'` when th
 </ToolbarFanOutItem>
 ```
 
+You can also fan out vertically:
+
+```tsx
+<ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes' fanOutDirection='up'>
+    ...
+</ToolbarFanOutItem>
+
+<ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes' fanOutDirection='down'>
+    ...
+</ToolbarFanOutItem>
+```
+
 ## ReactNode Icons
 
 Like `ToolbarButton`, the `icon` prop accepts a `string | ReactNode`. Pass any React element as the trigger icon:
