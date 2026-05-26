@@ -318,6 +318,26 @@ export const WithFanOut: Story = {
     },
 };
 
+/** Demonstrates a {@link ToolbarFanOutItem} that fans out downwards. */
+export const WithFanOutDown: Story = {
+    render: () => (
+        <Toolbar orientation='horizontal'>
+            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' tooltipPosition='bottom' />
+            <ToolbarFanOutItem
+                icon='pi pi-th-large'
+                tooltip='Shapes'
+                tooltipPosition='bottom'
+                fanOutDirection='down'
+            >
+                <ToolbarButton icon='pi pi-th-large' title='Shapes' tooltipPosition='bottom' />
+                <ToolbarButton icon='pi pi-exclamation-circle' title='Info' tooltipPosition='bottom' />
+                <ToolbarButton icon='pi pi-eye' title='Preview' tooltipPosition='bottom' />
+            </ToolbarFanOutItem>
+            <ToolbarButton icon='pi pi-stop' title='Rectangle' tooltipPosition='bottom' />
+        </Toolbar>
+    ),
+};
+
 /** Demonstrates a folder with a single nested button. */
 export const WithFolderOneButton: Story = {
     render: () => (

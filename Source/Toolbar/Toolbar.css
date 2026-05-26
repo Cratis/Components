@@ -163,6 +163,23 @@
     clip-path: inset(0 0 0 100% round 1rem);
 }
 
+.toolbar-fanout-panel--up {
+    top: auto;
+    right: auto;
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    clip-path: inset(100% 0 0 0 round 1rem);
+}
+
+.toolbar-fanout-panel--down {
+    top: calc(100% + 0.5rem);
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    clip-path: inset(0 0 100% 0 round 1rem);
+}
+
 /* Expanded state — fully visible, pointer events restored */
 .toolbar-fanout-panel--visible {
     clip-path: inset(0 0 0 0 round 1rem);
