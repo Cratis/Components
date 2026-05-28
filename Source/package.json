@@ -126,22 +126,19 @@
     },
     "dependencies": {
         "react-icons": "5.6.0",
-        "ts-deepmerge": "8.0.0",
-        "usehooks-ts": "3.1.1"
+        "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
+        "@cratis/arc.vite": "^20.3.1",
         "allotment": "1.20.5",
         "framer-motion": "12.40.0",
         "pixi.js": "^8.17.1",
         "primeicons": "7.0.0",
-        "primereact": "10.9.8",
-        "react-router-dom": "7.15.1",
-        "storybook": "^10.3.4"
+        "primereact": "10.9.8"
     },
     "peerDependencies": {
         "@cratis/arc": "^20.3.1",
         "@cratis/arc.react": "^20.3.1",
-        "@cratis/arc.vite": "^20.3.1",
         "allotment": "^1.20.0",
         "framer-motion": "^12.0.0",
         "pixi.js": "^8.0.0",
@@ -149,7 +146,6 @@
         "primereact": "^10.9.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
-        "react-router-dom": "^7.0.0",
         "reflect-metadata": "0.2.2",
         "tsyringe": "4.10.0"
     },

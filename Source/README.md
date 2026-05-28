@@ -23,15 +23,15 @@ The package provides dual CommonJS and ES Module builds with proper conditional 
 ## Installation
 
 ```bash
-npm install @cratis/components primereact primeicons react-router-dom
+npm install @cratis/components primereact primeicons
 # or
-yarn add @cratis/components primereact primeicons react-router-dom
+yarn add @cratis/components primereact primeicons
 ```
 
-`primereact`, `primeicons`, and `react-router-dom` are peer dependencies —
-installing them in your app ensures a single copy is shared with the wrappers
-in this package. The `@cratis/arc*` packages and `react`/`react-dom` are also
-peer dependencies; you typically already have them.
+`primereact` and `primeicons` are peer dependencies — installing them in your
+app ensures a single copy is shared with the wrappers in this package. The
+`@cratis/arc*` packages and `react`/`react-dom` are also peer dependencies;
+you typically already have them.
 
 The following are **optional** peer dependencies, only required if you use the
 component that depends on them:
