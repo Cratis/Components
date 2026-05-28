@@ -5,33 +5,62 @@ import { ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
 import { MenuItem as PrimeMenuItem } from 'primereact/menuitem';
-import { Menubar } from 'primereact/menubar';
+import { Menubar, type MenubarProps } from 'primereact/menubar';
 import { IObservableQueryFor, IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
-import { DataTableFilterMeta, DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
+import { DataTableFilterMeta, DataTableSelectionSingleChangeEvent, type DataTableProps as PrimeDataTableProps } from 'primereact/datatable';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
 import { Allotment } from 'allotment';
 import { Constructor } from '@cratis/fundamentals';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/**
+ * Props for {@link MenuItem}. Extends PrimeReact's `MenuItem` shape with one
+ * Cratis-specific flag.
+ */
 export interface MenuItemProps extends PrimeMenuItem {
+    /**
+     * When true, the menu item is disabled while no row is selected in the
+     * surrounding {@link DataPage}. Use it for context-sensitive actions like
+     * "Edit" or "Delete" that require a selection.
+     */
     disableOnUnselected?: boolean;
 }
 
+/**
+ * Declarative menu item for use inside `<DataPage.MenuItems>`. Renders nothing
+ * directly; the surrounding {@link MenuItems} component reads its props and
+ * forwards them to the action `Menubar`.
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const MenuItem = (_: MenuItemProps) => {
     return null;
 };
 
+/**
+ * Props for {@link MenuItems}.
+ */
 export interface MenuItemsProps {
+    /** One or more `<DataPage.MenuItem>` elements. */
     children: ReactNode;
 }
 
+/**
+ * Props for {@link Columns}.
+ */
 export interface ColumnProps {
+    /** PrimeReact `<Column>` elements describing each visible column. */
     children: ReactNode;
 }
 
+/**
+ * Renders an action `Menubar` at the top of a {@link DataPage}, populated from
+ * `<DataPage.MenuItem>` children. Each menu item's `disableOnUnselected` flag
+ * is automatically honored against the current row selection.
+ *
+ * Use as `<DataPage.MenuItems>` inside a `<DataPage>`.
+ */
 export const MenuItems = ({ children }: MenuItemsProps) => {
     const context = useDataPageContext();
 
@@ -56,10 +85,26 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
 
     return (
         <div className="px-4 py-2">
-            <Menubar aria-label="Actions" model={items} />
+            <Menubar
+                aria-label="Actions"
+                model={items}
+                className={context.menubarClassName}
+                pt={context.menubarPt}
+                ptOptions={context.menubarPtOptions}
+                unstyled={context.menubarUnstyled}
+            />
         </div>);
 };
 
+/**
+ * Renders the data table at the body of a {@link DataPage}. Automatically
+ * selects between {@link DataTableForQuery} (snapshot query) and
+ * {@link DataTableForObservableQuery} (real-time observable) based on the
+ * `query` type provided to the surrounding `<DataPage>`.
+ *
+ * Use as `<DataPage.Columns>` inside a `<DataPage>`, with PrimeReact `<Column>`
+ * children defining the table columns.
+ */
 export const Columns = ({ children }: ColumnProps) => {
 
     const context = useDataPageContext();
@@ -70,7 +115,11 @@ export const Columns = ({ children }: ColumnProps) => {
                 {...context}
                 selection={context.selectedItem}
                 onSelectionChange={context.onSelectionChanged}
-                clientFiltering={context.clientFiltering}>
+                clientFiltering={context.clientFiltering}
+                className={context.tableClassName}
+                pt={context.tablePt}
+                ptOptions={context.tablePtOptions}
+                unstyled={context.tableUnstyled}>
                 {children}
             </DataTableForQuery>);
 
@@ -80,14 +129,31 @@ export const Columns = ({ children }: ColumnProps) => {
                 {...context}
                 selection={context.selectedItem}
                 onSelectionChange={context.onSelectionChanged}
-                clientFiltering={context.clientFiltering}>
+                clientFiltering={context.clientFiltering}
+                className={context.tableClassName}
+                pt={context.tablePt}
+                ptOptions={context.tablePtOptions}
+                unstyled={context.tableUnstyled}>
                 {children}
             </DataTableForObservableQuery>);
     }
 };
 
+/**
+ * Props passed to the optional details component rendered on the right pane
+ * of a {@link DataPage} when a row is selected.
+ *
+ * @typeParam TDataType - The type of the selected item.
+ */
 export interface IDetailsComponentProps<TDataType> {
+    /** The currently-selected row. */
     item: TDataType;
+
+    /**
+     * Callback the details component can invoke to ask the surrounding page to
+     * refresh its data — for example after the details panel has performed a
+     * mutating action.
+     */
     onRefresh?: () => void;
 }
 
@@ -107,7 +173,11 @@ function useDataPageContext(): IDataPageContext {
 }
 
 /**
- * Props for the DataPage component
+ * Props for {@link DataPage}.
+ *
+ * @typeParam TQuery - The query class — either a snapshot `IQueryFor` or a real-time `IObservableQueryFor`.
+ * @typeParam TDataType - The row type returned by the query.
+ * @typeParam TArguments - The query's argument object type, or `object` if the query takes none.
  */
 export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>, TDataType, TArguments> {
     /**
@@ -174,12 +244,66 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
      * Callback triggered to signal data refresh
      */
     onRefresh?(): void;
+
+    /**
+     * Extra CSS class name forwarded to the inner DataTable root.
+     */
+    tableClassName?: string;
+
+    /** PrimeReact pass-through configuration applied to the inner DataTable. */
+    tablePt?: PrimeDataTableProps<any>['pt'];
+
+    /** PrimeReact pass-through options applied to the inner DataTable. */
+    tablePtOptions?: PrimeDataTableProps<any>['ptOptions'];
+
+    /** When true, disables every base PrimeReact style on the inner DataTable. */
+    tableUnstyled?: boolean;
+
+    /**
+     * Extra CSS class name forwarded to the action Menubar root.
+     */
+    menubarClassName?: string;
+
+    /** PrimeReact pass-through configuration applied to the action Menubar. */
+    menubarPt?: MenubarProps['pt'];
+
+    /** PrimeReact pass-through options applied to the action Menubar. */
+    menubarPtOptions?: MenubarProps['ptOptions'];
+
+    /** When true, disables every base PrimeReact style on the action Menubar. */
+    menubarUnstyled?: boolean;
 }
 
 /**
- * Represents a data driven page with a menu and custom defined columns for the data table.
- * @param props Props for the DataPage component
- * @returns Function to render the DataPage component
+ * A page primitive that combines an action menubar, a query-backed data table,
+ * and an optional details pane into one layout. Wraps Allotment for resizable
+ * split-pane behavior when a details component is supplied.
+ *
+ * Composition is declarative — use the static children:
+ *
+ * ```tsx
+ * <DataPage<AllAuthors, Author, never>
+ *     title="Authors" query={AllAuthors}
+ *     detailsComponent={AuthorDetails}>
+ *     <DataPage.MenuItems>
+ *         <DataPage.MenuItem icon={FaPlus} label="Add"     command={onAdd} />
+ *         <DataPage.MenuItem icon={FaPencil} label="Edit"  command={onEdit}
+ *                            disableOnUnselected />
+ *     </DataPage.MenuItems>
+ *     <DataPage.Columns>
+ *         <Column field="name"  header="Name" sortable />
+ *         <Column field="email" header="Email" />
+ *     </DataPage.Columns>
+ * </DataPage>
+ * ```
+ *
+ * Both `IQueryFor` (snapshot) and `IObservableQueryFor` (real-time) queries are
+ * supported automatically — the inner table type is selected at runtime.
+ *
+ * @typeParam TQuery - The query class.
+ * @typeParam TDataType - The row type returned by the query.
+ * @typeParam TArguments - The query's argument object type.
+ * @param props - {@link DataPageProps}.
  */
 const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
