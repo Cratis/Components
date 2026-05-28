@@ -1,0 +1,16 @@
+- name: Overview
+  href: index.md
+- name: Getting Started
+  href: getting-started.md
+- name: Path A — PrimeReact-themed
+  href: themed.md
+- name: Path B — Custom palette
+  href: custom-palette.md
+- name: Path C — Fully unstyled
+  href: unstyled.md
+- name: Cratis token reference
+  href: cratis-tokens.md
+- name: Pass-through (pt) cheat sheet
+  href: pass-through.md
+- name: Mixing paths
+  href: mixing-paths.md

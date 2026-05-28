@@ -172,6 +172,8 @@
             - name: High Scroll Sensitivity
               href: storybook.md?story=timemachine-timemachine--high-scroll-sensitivity
       href: storybook.md?story=timemachine-eventsview--default
+- name: Styling
+  href: Styling/toc.yml
 - name: Components
   items:
     - name: Command Components
