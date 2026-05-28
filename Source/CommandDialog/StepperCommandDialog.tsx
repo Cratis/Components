@@ -15,6 +15,18 @@ import {
 import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
 import { CommandStepperContent, type StepperCustomizationProps } from './CommandStepper';
 
+/**
+ * Props for {@link StepperCommandDialog}. Combines the command-form props,
+ * the stepper customization props (`orientation`, `headerPosition`, `linear`,
+ * `pt`, …), and dialog-specific props for the outer modal.
+ *
+ * The Stepper customization props (`pt`/`ptOptions`/`unstyled`) target the
+ * inner Stepper. To customize the outer Dialog use `dialogPt`, `dialogPtOptions`,
+ * `dialogUnstyled`, and `dialogClassName`.
+ *
+ * @typeParam TCommand - The command record type.
+ * @typeParam TResponse - The response payload type returned by a successful command.
+ */
 export interface StepperCommandDialogProps<TCommand extends object, TResponse = object>
     extends Omit<CommandFormProps<TCommand, TResponse>, 'children'>,
         StepperCustomizationProps {
@@ -44,6 +56,17 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     nextLabel?: string;
     /** Label for the previous step button. Defaults to `'Previous'`. */
     previousLabel?: string;
+    /**
+     * Extra CSS class name forwarded to the underlying PrimeReact Dialog root.
+     * Use the inherited `pt`/`ptOptions`/`unstyled` props to customize the Stepper.
+     */
+    dialogClassName?: string;
+    /** PrimeReact pass-through configuration applied to the outer Dialog. */
+    dialogPt?: PrimeDialogProps['pt'];
+    /** PrimeReact pass-through options applied to the outer Dialog. */
+    dialogPtOptions?: PrimeDialogProps['ptOptions'];
+    /** When true, disables every base PrimeReact style on the outer Dialog. */
+    dialogUnstyled?: boolean;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
 }
@@ -75,6 +98,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     pt,
     ptOptions,
     unstyled,
+    dialogClassName,
+    dialogPt,
+    dialogPtOptions,
+    dialogUnstyled,
     children
 }: {
     title: string;
@@ -94,6 +121,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     okLabel?: string;
     nextLabel?: string;
     previousLabel?: string;
+    dialogClassName?: string;
+    dialogPt?: PrimeDialogProps['pt'];
+    dialogPtOptions?: PrimeDialogProps['ptOptions'];
+    dialogUnstyled?: boolean;
     children?: React.ReactNode;
 } & StepperCustomizationProps) => {
     const { setCommandValues, setCommandResult, isValid: isCommandFormValid, getFieldError } = useCommandFormContext<TCommand>();
@@ -230,6 +261,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             contentStyle={contentStyle}
             resizable={resizable}
             closable
+            className={dialogClassName}
+            pt={dialogPt}
+            ptOptions={dialogPtOptions}
+            unstyled={dialogUnstyled}
         >
             <CommandStepperContent
                 activeStep={activeStep}
@@ -256,6 +291,33 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     );
 };
 
+/**
+ * A multi-step wizard dialog backed by a single Cratis command. Wraps PrimeReact's
+ * `Stepper` inside a Cratis `Dialog`, tracks per-step visit state, surfaces
+ * inline error indicators on steps with invalid fields, and executes the bound
+ * command when the user submits the last step.
+ *
+ * Use it when one command needs to be split into named stages that the user can
+ * navigate forward and backward through. For single-stage commands, use
+ * {@link CommandDialog} instead.
+ *
+ * ```tsx
+ * <StepperCommandDialog<RegisterOrder> command={RegisterOrder}
+ *                                       title="New order"
+ *                                       onSuccess={onCreated}>
+ *     <StepperPanel header="Customer">
+ *         <InputTextField value={c => c.customerName} title="Name" />
+ *     </StepperPanel>
+ *     <StepperPanel header="Items">
+ *         <ChipsField value={c => c.items} title="Items" />
+ *     </StepperPanel>
+ * </StepperCommandDialog>
+ * ```
+ *
+ * @typeParam TCommand - The command record type. Defaults to `object`.
+ * @typeParam TResponse - The success payload type. Defaults to `object`.
+ * @param props - {@link StepperCommandDialogProps}.
+ */
 const StepperCommandDialogComponent = <TCommand extends object = object, TResponse = object>(
     props: StepperCommandDialogProps<TCommand, TResponse>
 ) => {
@@ -282,6 +344,10 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
         pt,
         ptOptions,
         unstyled,
+        dialogClassName,
+        dialogPt,
+        dialogPtOptions,
+        dialogUnstyled,
         children,
         ...commandFormProps
     } = props;
@@ -315,6 +381,10 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
                 pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}
+                dialogClassName={dialogClassName}
+                dialogPt={dialogPt}
+                dialogPtOptions={dialogPtOptions}
+                dialogUnstyled={dialogUnstyled}
             >
                 {children}
             </StepperCommandDialogWrapper>
