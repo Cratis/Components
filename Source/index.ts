@@ -35,3 +35,13 @@ export {
     Types,
 };
 
+// Re-export the primary setup surface from the root so the recommended
+// `import { CratisComponentsProvider } from '@cratis/components'` works
+// without consumers having to know about the `Common` subpath.
+export {
+    CratisComponentsProvider,
+    cratisDefaults,
+    mergeCratisComponentsConfig,
+    type CratisComponentsConfig,
+    type CratisComponentsProviderProps,
+} from './Common/CratisComponentsProvider';
