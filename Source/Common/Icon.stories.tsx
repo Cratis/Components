@@ -61,7 +61,7 @@ export const StringVsReactNode: Story = {
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
             <div style={{ textAlign: 'center' }}>
                 <IconDisplay icon='pi pi-home' className='text-2xl' />
-                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--text-color-secondary)' }}>
+                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
                     string (CSS class)
                 </p>
             </div>
@@ -80,7 +80,7 @@ export const StringVsReactNode: Story = {
                         </svg>
                     }
                 />
-                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--text-color-secondary)' }}>
+                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
                     ReactNode (SVG)
                 </p>
             </div>

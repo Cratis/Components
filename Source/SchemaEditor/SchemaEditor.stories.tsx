@@ -89,7 +89,7 @@ export const Interactive: Story = {
         const [schema, setSchema] = useState<JsonSchema>(JSON.parse(JSON.stringify(sampleSchema)));
 
         return (
-            <div style={{ height: '600px', background: 'var(--surface-ground)' }}>
+            <div style={{ height: '600px', background: 'var(--cratis-surface-ground)' }}>
                 <SchemaEditor
                     schema={schema}
                     eventTypeName="User"

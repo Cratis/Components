@@ -3,32 +3,32 @@
 
 /* ── Toolbar container ───────────────────────────────────────────────────── */
 .toolbar {
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
+    background: var(--cratis-surface-card);
+    border: 1px solid var(--cratis-surface-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Toolbar button ──────────────────────────────────────────────────────── */
 .toolbar-button {
-    color: var(--text-color-secondary);
+    color: var(--cratis-text-color-secondary);
     background: transparent;
     border: none;
     transition: background 0.15s, color 0.15s;
 }
 
 .toolbar-button:hover {
-    background: var(--surface-100);
-    color: var(--text-color);
+    background: var(--cratis-surface-100);
+    color: var(--cratis-text-color);
 }
 
 .toolbar-button--active {
-    background: var(--primary-color);
-    color: var(--primary-color-text);
+    background: var(--cratis-primary-color);
+    color: var(--cratis-primary-color-text);
 }
 
 .toolbar-button--active:hover {
-    background: var(--primary-color);
-    color: var(--primary-color-text);
+    background: var(--cratis-primary-color);
+    color: var(--cratis-primary-color-text);
 }
 
 .toolbar-button--draggable {
@@ -51,7 +51,7 @@
     padding: 0 8px;
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-color);
+    color: var(--cratis-text-color);
     white-space: nowrap;
 }
 
@@ -100,7 +100,7 @@
 /* ── Toolbar separator ───────────────────────────────────────────────────── */
 
 .toolbar-separator {
-    background: var(--surface-border);
+    background: var(--cratis-surface-border);
     flex-shrink: 0;
     align-self: stretch;
 }
@@ -142,8 +142,8 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.5rem;
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
+    background: var(--cratis-surface-card);
+    border: 1px solid var(--cratis-surface-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     border-radius: 1rem;
     white-space: nowrap;
@@ -207,8 +207,8 @@
     grid-auto-rows: minmax(2.5rem, auto);
     gap: 0.25rem;
     padding: 0.5rem;
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
+    background: var(--cratis-surface-card);
+    border: 1px solid var(--cratis-surface-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     border-radius: 1rem;
     z-index: 10;
@@ -279,8 +279,8 @@
  * of a standalone Toolbar.
  */
 .toolbar-group {
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
+    background: var(--cratis-surface-card);
+    border: 1px solid var(--cratis-surface-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 

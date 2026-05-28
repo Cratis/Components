@@ -192,7 +192,7 @@ export const AllFields: Story = {
                             description="Standard text input field with validation"
                         />
                         {validationState.errors.textInput && (
-                            <div style={{ color: 'var(--red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
                                 {validationState.errors.textInput}
                             </div>
                         )}
@@ -205,7 +205,7 @@ export const AllFields: Story = {
                             description="Email input with email validation"
                         />
                         {validationState.errors.emailInput && (
-                            <div style={{ color: 'var(--red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
                                 {validationState.errors.emailInput}
                             </div>
                         )}
@@ -218,7 +218,7 @@ export const AllFields: Story = {
                             description="Password input field (min 6 characters)"
                         />
                         {validationState.errors.passwordInput && (
-                            <div style={{ color: 'var(--red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
                                 {validationState.errors.passwordInput}
                             </div>
                         )}
@@ -239,7 +239,7 @@ export const AllFields: Story = {
                             step={1}
                         />
                         {validationState.errors.numberInput && (
-                            <div style={{ color: 'var(--red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
                                 {validationState.errors.numberInput}
                             </div>
                         )}
@@ -274,7 +274,7 @@ export const AllFields: Story = {
                             optionLabel="name"
                         />
                         {validationState.errors.dropdown && (
-                            <div style={{ color: 'var(--red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
                                 {validationState.errors.dropdown}
                             </div>
                         )}
@@ -414,7 +414,7 @@ export const AllFields: Story = {
                             Submit Form
                         </button>
                         {!validationState.canSubmit && Object.keys(validationState.errors).length > 0 && (
-                            <span style={{ color: 'var(--orange-500)', fontSize: '0.875rem' }}>
+                            <span style={{ color: 'var(--cratis-orange-500)', fontSize: '0.875rem' }}>
                                 Please fix validation errors
                             </span>
                         )}

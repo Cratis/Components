@@ -31,7 +31,7 @@ export const NameCell = ({ rowData, isEditMode, onUpdate, validationError }: Nam
                 {rowData.description && (
                     <faIcons.FaCircleInfo
                         className="schema-description-tooltip"
-                        style={{ color: 'var(--text-color-secondary)', fontSize: '0.875rem' }}
+                        style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.875rem' }}
                         data-pr-tooltip={rowData.description}
                         data-pr-position="right"
                     />

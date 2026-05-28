@@ -112,7 +112,7 @@ export const Default: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--surface-border)' }}>
+                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -166,7 +166,7 @@ export const InDialogFrame: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--surface-border)' }}>
+                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
@@ -229,7 +229,7 @@ export const InDialogFrameWithCenteredHeader: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--surface-border)' }}>
+                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
@@ -289,7 +289,7 @@ export const WithValidationIndicators: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--surface-border)' }}>
+                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}

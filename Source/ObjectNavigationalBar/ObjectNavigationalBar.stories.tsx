@@ -30,7 +30,7 @@ export const Interactive: Story = {
         };
 
         return (
-            <div style={{ padding: '1rem', background: 'var(--surface-ground)', minHeight: '200px' }}>
+            <div style={{ padding: '1rem', background: 'var(--cratis-surface-ground)', minHeight: '200px' }}>
                 <h3>Current Path: {navigationPath.length > 0 ? navigationPath.join(' > ') : 'Root'}</h3>
                 <ObjectNavigationalBar
                     navigationPath={navigationPath}

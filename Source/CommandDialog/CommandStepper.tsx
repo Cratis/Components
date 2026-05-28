@@ -187,16 +187,16 @@ export const CommandStepperContent = ({
                     const isVisited = visitedSteps.has(idx);
 
                     const bgColor = hasError
-                        ? 'var(--red-500, #ef4444)'
+                        ? 'var(--cratis-red-500, #ef4444)'
                         : isVisited
-                            ? 'var(--green-500, #22c55e)'
+                            ? 'var(--cratis-green-500, #22c55e)'
                             : null;
 
                     if (!bgColor) return existing;
                     const existingStyle = existing.style as Record<string, unknown> | undefined;
                     return {
                         ...existing,
-                        style: { ...existingStyle, backgroundColor: bgColor, color: 'var(--primary-color-text)' }
+                        style: { ...existingStyle, backgroundColor: bgColor, color: 'var(--cratis-primary-color-text)' }
                     };
                 }
             }
