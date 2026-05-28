@@ -1,0 +1,65 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/*
+ * Cratis Components — CSS variable tokens.
+ *
+ * Every internal component references the --cratis-* variables defined here
+ * instead of PrimeReact theme variables directly. Each token defaults to the
+ * matching PrimeReact CSS variable, so when a consumer loads any PrimeReact
+ * theme the components are fully themed out of the box.
+ *
+ * To take full control of the look and feel (with or without PrimeReact's
+ * unstyled / pt mechanism, Tailwind, or your own CSS), override the relevant
+ * --cratis-* tokens on :root (or any ancestor element):
+ *
+ *   :root {
+ *       --cratis-surface-card: #1f2937;
+ *       --cratis-text-color:   #f3f4f6;
+ *   }
+ *
+ * Tokens are intentionally fallback-free — if neither a PrimeReact theme nor
+ * a consumer override is present, the variable resolves to nothing and the
+ * affected rule no-ops. That keeps the library theme-agnostic without
+ * imposing a default palette on consumers.
+ */
+
+:root {
+    /* Surfaces */
+    --cratis-surface-0:        var(--surface-0);
+    --cratis-surface-100:      var(--surface-100);
+    --cratis-surface-ground:   var(--surface-ground);
+    --cratis-surface-section:  var(--surface-section);
+    --cratis-surface-card:     var(--surface-card);
+    --cratis-surface-overlay:  var(--surface-overlay);
+    --cratis-surface-hover:    var(--surface-hover);
+    --cratis-surface-border:   var(--surface-border);
+
+    /* Text */
+    --cratis-text-color:           var(--text-color);
+    --cratis-text-color-secondary: var(--text-color-secondary);
+
+    /* Primary brand */
+    --cratis-primary-color:      var(--primary-color);
+    --cratis-primary-color-text: var(--primary-color-text);
+    --cratis-primary-300:        var(--primary-300);
+    --cratis-primary-400:        var(--primary-400);
+    --cratis-primary-500:        var(--primary-500);
+    --cratis-primary-600:        var(--primary-600);
+
+    /* Highlight / selection */
+    --cratis-highlight-bg:         var(--highlight-bg);
+    --cratis-highlight-text-color: var(--highlight-text-color);
+
+    /* Semantic accents */
+    --cratis-green-500:  var(--green-500);
+    --cratis-orange-500: var(--orange-500);
+    --cratis-red-500:    var(--red-500);
+
+    /* Geometry */
+    --cratis-border-radius: var(--border-radius);
+
+    /* Effects */
+    --cratis-focus-ring: var(--focus-ring);
+    --cratis-maskbg:     var(--maskbg);
+}
