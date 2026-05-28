@@ -95,8 +95,8 @@ much control you want, and the other layers stay invisible.
 
 > **Tip — see each path live:** every Storybook story includes a **Styling**
 > toolbar (paintbrush icon) that flips between the five modes corresponding to
-> the three paths below: *Lara Dark Blue*, *Lara Light Blue*, *Cratis-themed
-> (custom tokens)*, *Unstyled (bare structure)*, and *Unstyled + Tailwind pt*.
+> the three paths below: *Lara Dark Blue*, *Lara Light Blue*, *Themed with
+> custom palette*, *Unstyled (bare structure)*, and *Unstyled + Tailwind pt*.
 > Open any story (`yarn dev`) and switch modes to see the same component under
 > each setup.
 
@@ -105,8 +105,23 @@ much control you want, and the other layers stay invisible.
 | Path | When | Effort | What you write |
 |---|---|---|---|
 | **A. PrimeReact-themed** | You want it to look good immediately and tweak from there. | Lowest | One CSS import + provider |
-| **B. Cratis-themed (no PrimeReact theme)** | You want a custom look but don't want to fight a third-party theme. | Low | Override `--cratis-*` tokens |
+| **B. Themed with custom palette** | You want PrimeReact's chrome but in your own colors. | Low | A PrimeReact theme + a small CSS override block |
 | **C. Fully unstyled** | You're integrating into a tightly-controlled design system. | Highest | A `pt` preset (in CSS or Tailwind) |
+
+> **Why a PrimeReact theme is still in Paths A and B**
+>
+> In PrimeReact 10, every widget's *structural* CSS (padding, borders, dialog
+> frame, focus rings, button shapes) ships **inside the theme file**. There is
+> no separate "primitives" stylesheet. So a consumer who doesn't load any
+> PrimeReact theme also has no structural CSS — components render as their
+> raw HTML primitives.
+>
+> The `--cratis-*` token layer is therefore an **additive Cratis-scoped tint**
+> for surfaces *our* wrappers own (validation error text, the FormElement
+> addon, breadcrumb borders, etc.). It is not, by itself, enough to skin
+> PrimeReact widgets. Use Path B if you want a custom palette on top of
+> PrimeReact's chrome, and Path C if you want to ditch PrimeReact's chrome
+> entirely.
 
 All three paths use the same one-line setup and remain switchable later — you
 won't repaint yourself into a corner.
@@ -139,9 +154,9 @@ setup.
 
 ### Path A — PrimeReact-themed (fastest start)
 
-Load any PrimeReact theme stylesheet alongside Cratis Components. The
-`--cratis-*` tokens cascade to PrimeReact's matching theme variables, so every
-component picks the theme up automatically.
+Load any PrimeReact theme stylesheet alongside Cratis Components. PrimeReact's
+own widgets paint themselves from the theme, and the `--cratis-*` tokens cascade
+to the matching theme variables so Cratis-scoped surfaces follow along.
 
 ```tsx
 // 1. Theme first, then Cratis styles so any --cratis-* override wins.
@@ -197,64 +212,68 @@ happy with one of the prebuilt PrimeReact themes.
 
 ---
 
-### Path B — Cratis-themed (no PrimeReact theme)
+### Path B — Themed with custom palette
 
-Skip the PrimeReact theme stylesheet and define the look in one place by
-overriding `--cratis-*` tokens on `:root` (or any ancestor scope). The
-components render with structural defaults from the bundled stylesheet and
-pull every color, border, and surface from your tokens.
+Keep a PrimeReact theme as your **structural baseline** (so every widget gets
+its padding, dialog frame, button shape, focus ring, etc.) and override the
+PrimeReact CSS variables on `:root` to repaint the whole UI in your own
+colors. The `--cratis-*` tokens follow along through tokens.css's cascade, so
+Cratis-scoped surfaces stay in sync — and you can override the Cratis tokens
+independently if you want Cratis surfaces to differ from PrimeReact widgets.
 
 #### With plain CSS
 
 ```css
-/* tokens.override.css — imported once, anywhere after @cratis/components/styles */
+/* palette.override.css — imported once, after @cratis/components/styles */
 :root {
-    /* Surfaces */
-    --cratis-surface-0:        #0f172a;
-    --cratis-surface-100:      #1e293b;
-    --cratis-surface-ground:   #020617;
-    --cratis-surface-section:  #0f172a;
-    --cratis-surface-card:     #1e293b;
-    --cratis-surface-overlay:  #1e293b;
-    --cratis-surface-hover:    #334155;
-    --cratis-surface-border:   #334155;
+    /* PrimeReact variables — these are what PrimeReact widgets read. */
+    --surface-0:        #1e293b;
+    --surface-100:      #1e293b;
+    --surface-ground:   #020617;
+    --surface-section:  #0f172a;
+    --surface-card:     #1e293b;
+    --surface-overlay:  #1e293b;
+    --surface-hover:    #334155;
+    --surface-border:   #334155;
 
-    /* Text */
-    --cratis-text-color:           #f8fafc;
-    --cratis-text-color-secondary: #94a3b8;
+    --text-color:           #f8fafc;
+    --text-color-secondary: #94a3b8;
 
-    /* Brand */
-    --cratis-primary-color:      #38bdf8;
-    --cratis-primary-color-text: #0b1220;
-    --cratis-primary-500:        #38bdf8;
-    --cratis-primary-600:        #0ea5e9;
+    --primary-color:      #38bdf8;
+    --primary-color-text: #0b1220;
 
-    /* Selection / accents */
-    --cratis-highlight-bg:         #1e40af;
-    --cratis-highlight-text-color: #ffffff;
-    --cratis-red-500:              #ef4444;
-    --cratis-green-500:            #22c55e;
-    --cratis-orange-500:           #f97316;
+    --highlight-bg:         #1e40af;
+    --highlight-text-color: #ffffff;
 
-    /* Geometry */
-    --cratis-border-radius: 10px;
+    --border-radius: 10px;
+
+    /* --cratis-* tokens default to var(--surface-*) etc. via tokens.css, so
+       the overrides above flow through automatically. Set these explicitly
+       only if you want Cratis-scoped surfaces tinted differently. */
+    --cratis-red-500:   #ef4444;
+    --cratis-green-500: #22c55e;
 }
 ```
 
 ```tsx
+// 1. PrimeReact theme provides the structure.
+import 'primereact/resources/themes/lara-dark-blue/theme.css';
+import 'primeicons/primeicons.css';
 import '@cratis/components/styles';
-import './tokens.override.css';   // <-- after, so it wins
+// 2. Your palette overrides — must come after the theme so they win.
+import './palette.override.css';
 ```
 
 #### Scoped (dark-on-light, light-on-dark, etc.)
 
-Tokens cascade, so any ancestor scope works:
+PrimeReact variables cascade like any other CSS variable, so an ancestor
+scope works:
 
 ```css
 .dark-zone {
-    --cratis-surface-card:   #0b1220;
-    --cratis-text-color:     #f8fafc;
-    --cratis-primary-color:  #60a5fa;
+    --surface-card: #0b1220;
+    --text-color:   #f8fafc;
+    --primary-color: #60a5fa;
 }
 ```
 
@@ -266,31 +285,46 @@ Tokens cascade, so any ancestor scope works:
 
 #### With Tailwind CSS
 
-Tailwind's `@layer base` is the idiomatic spot — write tokens once and
+Tailwind's `@layer base` is the idiomatic spot — declare the palette once and
 Tailwind handles cascade and dark mode:
 
 ```css
 /* app.css */
 @import "tailwindcss";
+@import "primereact/resources/themes/lara-dark-blue/theme.css";
 @import "@cratis/components/styles";
 
 @layer base {
     :root {
-        --cratis-surface-card:   theme('colors.slate.800');
-        --cratis-surface-border: theme('colors.slate.700');
-        --cratis-text-color:     theme('colors.slate.50');
-        --cratis-primary-color:  theme('colors.sky.400');
-        --cratis-red-500:        theme('colors.red.500');
+        --surface-card:   theme('colors.slate.800');
+        --surface-border: theme('colors.slate.700');
+        --text-color:     theme('colors.slate.50');
+        --primary-color:  theme('colors.sky.400');
+        --cratis-red-500: theme('colors.red.500');
     }
 
     .dark {
-        --cratis-surface-card:   theme('colors.slate.900');
-        --cratis-text-color:     theme('colors.slate.100');
+        --surface-card: theme('colors.slate.900');
+        --text-color:   theme('colors.slate.100');
     }
 }
 ```
 
-#### Complete token reference
+#### What `--cratis-*` tokens are for
+
+PrimeReact widgets read PrimeReact's own variables (`--surface-card`,
+`--text-color`, `--primary-color`, …) directly. Cratis wrappers add some
+surfaces of their own (inline validation error text, the FormElement addon
+background, the breadcrumb bottom border, etc.) — those use a parallel set
+of `--cratis-*` tokens that default to the PrimeReact value via the cascade
+defined in `tokens.css`.
+
+The upshot:
+
+- Override **PrimeReact variables** to repaint the whole UI (PrimeReact widgets + Cratis surfaces).
+- Override **`--cratis-*` tokens** when you specifically want Cratis surfaces to differ from PrimeReact widgets.
+
+#### `--cratis-*` token reference (Cratis-scoped surfaces)
 
 | Group | Tokens |
 |---|---|
@@ -302,13 +336,13 @@ Tailwind handles cascade and dark mode:
 | Geometry | `--cratis-border-radius` |
 | Effects | `--cratis-focus-ring`, `--cratis-maskbg` |
 
-Tokens default to PrimeReact's matching theme variables, so Path A and Path B
-mix cleanly — load a PrimeReact theme to get a baseline, then override the
-specific tokens you want to change.
+Each defaults to the PrimeReact variable with the same name minus the
+`--cratis-` prefix (e.g. `--cratis-surface-card` → `var(--surface-card)`).
 
-**Choose Path B when:** you want a custom look, you're shipping multiple
-themes (light/dark/brand variants), or you don't want a PrimeReact theme in
-your bundle.
+**Choose Path B when:** you want a custom look without writing a PrimeReact
+theme from scratch, you're shipping multiple palette variants (light/dark/
+brand), or you want Cratis-scoped surfaces tinted differently from PrimeReact
+widgets.
 
 ---
 
@@ -461,9 +495,10 @@ The paths compose, so you don't have to pick one for the whole app:
       </CratisComponentsProvider>
   </CratisComponentsProvider>
   ```
-- **Dark mode** — use Path B tokens scoped to `.dark` and toggle the class on
-  the root element. Every internal component (including those used in Path C)
-  follows automatically because they all read from the same tokens.
+- **Dark mode** — use Path B's palette overrides scoped to `.dark` (override
+  `--surface-card`, `--text-color`, `--primary-color`, etc., plus any
+  `--cratis-*` tokens you want to diverge) and toggle the class on the root
+  element. PrimeReact widgets and Cratis surfaces both follow the cascade.
 
 ### Per-component `pt` cheat sheet
 

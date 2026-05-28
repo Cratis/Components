@@ -17,35 +17,57 @@
  * loaded PrimeReact theme can drive --cratis-* through tokens.css.
  */
 
-/* Path B — Cratis-themed (no PrimeReact theme): slate surfaces, sky brand. */
+/*
+ * Path B — Themed with custom palette. A PrimeReact theme (Lara Dark Blue in
+ * Storybook) supplies the structural chrome. This block then overrides
+ * PrimeReact's own variables so every widget repaints in slate/sky, with the
+ * --cratis-* siblings updated in parallel so Cratis-scoped surfaces follow
+ * suit.
+ *
+ * In a consumer app the same pattern would live in the consumer's own CSS,
+ * applied either on :root or scoped to a region.
+ */
 body.cratis-themed {
-    --cratis-surface-0:        #1e293b;
-    --cratis-surface-100:      #1e293b;
-    --cratis-surface-ground:   #020617;
-    --cratis-surface-section:  #0f172a;
-    --cratis-surface-card:     #1e293b;
-    --cratis-surface-overlay:  #1e293b;
-    --cratis-surface-hover:    #334155;
-    --cratis-surface-border:   #334155;
+    /* PrimeReact theme variables — these are what PrimeReact widgets read. */
+    --surface-0:        #1e293b;
+    --surface-100:      #1e293b;
+    --surface-ground:   #020617;
+    --surface-section:  #0f172a;
+    --surface-card:     #1e293b;
+    --surface-overlay:  #1e293b;
+    --surface-hover:    #334155;
+    --surface-border:   #334155;
 
-    --cratis-text-color:           #f8fafc;
-    --cratis-text-color-secondary: #94a3b8;
+    --text-color:           #f8fafc;
+    --text-color-secondary: #94a3b8;
 
+    --primary-color:      #38bdf8;
+    --primary-color-text: #0b1220;
+    --primary-300:        #7dd3fc;
+    --primary-400:        #38bdf8;
+    --primary-500:        #0ea5e9;
+    --primary-600:        #0284c7;
+
+    --highlight-bg:         #1e40af;
+    --highlight-text-color: #ffffff;
+
+    --green-500:  #22c55e;
+    --orange-500: #f97316;
+    --red-500:    #ef4444;
+
+    --border-radius: 10px;
+
+    /* --cratis-* tokens default to var(--surface-*) etc. via tokens.css, so
+     * the overrides above flow through automatically. The explicit settings
+     * below let a consumer tint Cratis-scoped surfaces (validation errors,
+     * the FormElement addon, breadcrumb borders) independently if they want
+     * to make Cratis surfaces visually distinct from PrimeReact widgets. */
     --cratis-primary-color:      #38bdf8;
     --cratis-primary-color-text: #0b1220;
-    --cratis-primary-300:        #7dd3fc;
-    --cratis-primary-400:        #38bdf8;
-    --cratis-primary-500:        #0ea5e9;
-    --cratis-primary-600:        #0284c7;
-
-    --cratis-highlight-bg:         #1e40af;
-    --cratis-highlight-text-color: #ffffff;
-
-    --cratis-green-500:  #22c55e;
-    --cratis-orange-500: #f97316;
-    --cratis-red-500:    #ef4444;
-
-    --cratis-border-radius: 10px;
+    --cratis-red-500:            #ef4444;
+    --cratis-green-500:          #22c55e;
+    --cratis-orange-500:         #f97316;
+    --cratis-border-radius:      10px;
 }
 
 /*

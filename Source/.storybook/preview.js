@@ -28,8 +28,12 @@ const STYLING_MODES = {
         providerValue: {},
     },
     'cratis-themed': {
-        title: 'Path B — Cratis-themed (custom tokens)',
-        themeUrl: null,
+        title: 'Path B — Themed with custom palette',
+        // Path B = a PrimeReact theme provides the structural chrome, then the
+        // body class overrides PrimeReact's own --surface-* / --text-color /
+        // --primary-color variables (and the --cratis-* siblings) to retint
+        // every widget with a Cratis-flavored slate + sky palette.
+        themeUrl: darkThemeUrl,
         bodyClass: 'cratis-themed',
         providerValue: {},
     },
