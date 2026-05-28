@@ -120,6 +120,10 @@ Styling is designed to stay out of the way: pick the path that matches how much 
 - [Pass-through (pt) cheat sheet](Styling/pass-through.md)
 - [Mixing paths](Styling/mixing-paths.md)
 
+## Upgrading from an earlier release
+
+See the [Migration guide](migration.md) for the required install changes (PrimeReact and PrimeIcons are now peer dependencies), the visual differences to be aware of, and a tour of the new optional capabilities (Cratis Components Provider, `--cratis-*` tokens, full `pt` forwarding).
+
 ## Development
 
 The components are built using:
