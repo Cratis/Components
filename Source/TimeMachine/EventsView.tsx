@@ -7,10 +7,25 @@ import type { Event } from './types';
 import { Properties } from './Properties';
 import './EventsView.css';
 
+/**
+ * Props for {@link EventsView}.
+ */
 interface EventsViewProps {
+    /** The events to display, in chronological order. */
     events: Event[];
 }
 
+/**
+ * Vertical timeline visualization of an ordered list of Cratis events.
+ * Renders each event on alternating sides of a central spine with its
+ * properties shown in a popup, and tracks scroll boundaries so up/down
+ * arrows appear only when there's content to scroll to.
+ *
+ * Used inside {@link TimeMachine} to show the events that produced a given
+ * read-model version, but can be reused for any event timeline UI.
+ *
+ * @param props - {@link EventsViewProps}.
+ */
 export const EventsView: React.FC<EventsViewProps> = ({ events }) => {
     // Use test data if no events provided
     const displayEvents = events.length > 0 ? events : [];

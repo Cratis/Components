@@ -5,14 +5,43 @@ import React, { useState } from 'react';
 import type { Version } from './types';
 import { Properties } from './Properties';
 
+/**
+ * Props for {@link ReadModelView}.
+ */
 interface ReadModelViewProps {
+    /** Ordered list of read-model versions to display. */
     versions: Version[];
+
+    /** Index of the currently-selected (committed) version. */
     selectedIndex: number;
+
+    /**
+     * Index of the currently-hovered version, or `null` when nothing is hovered.
+     * Used to preview a version without committing the selection.
+     */
     hoveredIndex: number | null;
+
+    /** Invoked when the user clicks a version card to select it. */
     onVersionSelect: (index: number) => void;
+
+    /**
+     * Invoked when the hover state over any card changes — true on enter,
+     * false on leave. Lets the parent coordinate the surrounding chrome with
+     * the hover state.
+     */
     onHoveringCardChange: (isHovering: boolean) => void;
 }
 
+/**
+ * Visual representation of a read-model's version history as a row of
+ * flippable "window" cards. Each card shows the read-model state at that
+ * version on its front face and can be flipped to reveal additional metadata.
+ *
+ * Selection and hover are externally controlled so the parent {@link TimeMachine}
+ * can synchronize the read-model view with the events timeline.
+ *
+ * @param props - {@link ReadModelViewProps}.
+ */
 export const ReadModelView: React.FC<ReadModelViewProps> = ({
     versions,
     selectedIndex,

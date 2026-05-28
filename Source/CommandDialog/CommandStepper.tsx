@@ -389,6 +389,36 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     );
 };
 
+/**
+ * A multi-step wizard backed by a single Cratis command — the embedded
+ * counterpart of {@link StepperCommandDialog} that lives directly inside
+ * a page rather than inside a modal dialog.
+ *
+ * Wraps PrimeReact's `Stepper` with a `CommandForm` and a built-in
+ * previous / next / submit footer. Steps with field errors are visually
+ * marked so the user can see which step needs attention without clicking
+ * through every page.
+ *
+ * Use this when a complex form fills a page region (a panel, a route);
+ * use {@link StepperCommandDialog} when the same wizard should appear in
+ * a modal dialog.
+ *
+ * ```tsx
+ * <CommandStepper<RegisterAuthor> command={RegisterAuthor}
+ *                                 onSuccess={onCreated}>
+ *     <StepperPanel header="Basics">
+ *         <InputTextField value={c => c.name} title="Name" />
+ *     </StepperPanel>
+ *     <StepperPanel header="Contact">
+ *         <InputTextField value={c => c.email} title="Email" />
+ *     </StepperPanel>
+ * </CommandStepper>
+ * ```
+ *
+ * @typeParam TCommand - The command record type. Defaults to `object`.
+ * @typeParam TResponse - The success payload type. Defaults to `object`.
+ * @param props - {@link CommandStepperProps}.
+ */
 export const CommandStepper = <TCommand extends object = object, TResponse = object>(
     props: CommandStepperProps<TCommand, TResponse>
 ) => {
