@@ -7,5 +7,9 @@
 }
 
 .navigableRow:hover {
-    background-color: var(--surface-hover) !important;
+    background-color: var(--cratis-surface-hover) !important;
+}
+
+.bottomBorder {
+    border-bottom: 1px solid var(--cratis-surface-border);
 }

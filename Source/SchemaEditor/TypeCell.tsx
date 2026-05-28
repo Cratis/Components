@@ -104,7 +104,7 @@ export const TypeCell = ({
                         <>
                             <div style={{ flex: 1 }} />
                             <span style={{ display: 'flex', alignItems: 'center' }}>
-                                <faIcons.FaArrowRight style={{ fontSize: '1rem', color: 'var(--primary-color)' }} />
+                                <faIcons.FaArrowRight style={{ fontSize: '1rem', color: 'var(--cratis-primary-color)' }} />
                             </span>
                         </>
                     )}
@@ -121,7 +121,7 @@ export const TypeCell = ({
                     <span>Object</span>
                     <div style={{ flex: 1 }} />
                     <span style={{ display: 'flex', alignItems: 'center' }}>
-                        <faIcons.FaArrowRight style={{ fontSize: '1rem', color: 'var(--primary-color)' }} />
+                        <faIcons.FaArrowRight style={{ fontSize: '1rem', color: 'var(--cratis-primary-color)' }} />
                     </span>
                 </div>
             );
@@ -152,7 +152,8 @@ export const TypeCell = ({
                 {rowData.type === 'array' && rowData.items?.type === 'object' && rowData.name && (
                     <Button
                         icon={<faIcons.FaArrowRight />}
-                        className="p-button-text p-button-sm"
+                        text
+                        size="small"
                         onClick={() => onNavigateToArrayItems(rowData.name!)}
                         tooltip="Navigate to item definition"
                         tooltipOptions={{ position: 'top' }}
@@ -161,7 +162,8 @@ export const TypeCell = ({
                 {rowData.type === 'object' && rowData.name && (
                     <Button
                         icon={<faIcons.FaArrowRight />}
-                        className="p-button-text p-button-sm"
+                        text
+                        size="small"
                         onClick={() => onNavigateToProperty(rowData.name!)}
                         tooltip="Navigate to object properties"
                         tooltipOptions={{ position: 'top' }}
@@ -170,7 +172,9 @@ export const TypeCell = ({
                 {rowData.name && (
                     <Button
                         icon={<faIcons.FaTrash />}
-                        className="p-button-text p-button-danger p-button-sm"
+                        text
+                        severity="danger"
+                        size="small"
                         onClick={() => onRemoveProperty(rowData.name!)}
                         tooltip="Delete property"
                         tooltipOptions={{ position: 'top' }}

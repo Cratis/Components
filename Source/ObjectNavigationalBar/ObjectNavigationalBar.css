@@ -1,0 +1,6 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-object-navigational-bar {
+    border-bottom: 1px solid var(--cratis-surface-border);
+}
