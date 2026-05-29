@@ -1,6 +1,8 @@
 # Cratis token reference
 
-The `--cratis-*` CSS variable layer is the Cratis-scoped tint surface every Cratis wrapper reads from. Each token defaults to a matching PrimeReact theme variable via `tokens.css`, so loading a PrimeReact theme automatically gives every Cratis surface the right color without any further work.
+The `--cratis-*` CSS variable layer is the Cratis-scoped tint surface every Cratis wrapper reads from. Each token resolves the **PrimeReact v11 design token first** (`@primeuix/themes`, e.g. `--p-content-border-color`), falling back to the **legacy v10 theme variable** (e.g. `--surface-border`) via `tokens.css`. Loading any PrimeReact theme — v10 *or* v11 — therefore gives every Cratis surface the right color without any further work, and the same build keeps working across a PrimeReact 10 → 11 upgrade.
+
+This indirection is deliberate: it is the single seam that insulates your code (and your consumers' `--cratis-*` overrides) from PrimeReact's token system changing underneath you.
 
 You override `--cratis-*` tokens when you want **just** Cratis-scoped surfaces (validation error text, FormElement addon, breadcrumb borders, …) tinted independently of PrimeReact widgets. To repaint PrimeReact widgets themselves, override the PrimeReact variables directly — see [the custom palette setup](custom-palette.md).
 
@@ -22,7 +24,7 @@ Just the token declarations, with no Tailwind utilities. Use this if you bring y
 
 ## Token catalogue
 
-Each token defaults to the PrimeReact variable with the same name minus the `--cratis-` prefix (e.g. `--cratis-surface-card` → `var(--surface-card)`). Set the token to override that default.
+Each token resolves the PrimeReact v11 design token first, then the v10 legacy variable (e.g. `--cratis-surface-border` → `var(--p-content-border-color, var(--surface-border))`). v11 is not a 1:1 rename of v10 — where v11's vocabulary has no direct equivalent for a v10 concept (`surface-ground`, `surface-section`, `surface-overlay`, the composite `focus-ring`), the closest durable v11 semantic token is used (see the inline notes in `tokens.css`). Set the `--cratis-*` token to override regardless of which PrimeReact version is loaded.
 
 ### Surfaces
 
@@ -135,22 +137,23 @@ Tailwind's `@layer base` is the idiomatic spot — declare tokens once and let T
 
 ## Relationship to PrimeReact variables
 
-The Cratis token layer is **additive** on top of PrimeReact's theme system, not a replacement for it. The cascade in `tokens.css` looks like:
+The Cratis token layer is **additive** on top of PrimeReact's theme system, not a replacement for it. The cascade in `tokens.css` resolves the v11 token first, then the v10 legacy variable:
 
 ```css
 :root {
-    --cratis-surface-card: var(--surface-card);
-    --cratis-text-color:   var(--text-color);
+    /* v11 (@primeuix/themes) first, v10 legacy fallback */
+    --cratis-surface-card: var(--p-content-background, var(--surface-card));
+    --cratis-text-color:   var(--p-text-color, var(--text-color));
     /* … */
 }
 ```
 
 That means:
 
-- Override `--surface-card` (PrimeReact) → both PrimeReact widgets *and* Cratis surfaces follow.
-- Override `--cratis-surface-card` (Cratis) → only Cratis surfaces follow; PrimeReact widgets keep their existing color.
+- Repaint PrimeReact itself — on **v11** customize the preset (`definePreset` / `--p-*` tokens), on **v10** override the legacy `--surface-*` / `--text-color` variables — and both PrimeReact widgets *and* Cratis surfaces follow.
+- Override `--cratis-surface-card` (Cratis) → only Cratis surfaces follow; PrimeReact widgets keep their existing color, on either version.
 
-Use the PrimeReact variable when you want a whole-UI repaint. Use the Cratis token when you want a Cratis-specific accent that differs from PrimeReact widgets.
+Use the PrimeReact token when you want a whole-UI repaint. Use the Cratis token when you want a Cratis-specific accent that differs from PrimeReact widgets.
 
 ## See also
 
