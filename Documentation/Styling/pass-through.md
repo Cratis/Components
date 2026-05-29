@@ -135,4 +135,4 @@ To replace a slot's preset entirely on a single instance, opt out of merging:
 ## See also
 
 - [CratisComponentsProvider](../Common/cratis-components-provider.md) — global `pt` / `unstyled` setup
-- [Path C — Fully unstyled](unstyled.md) — full pt-preset walk-through
+- [Use fully unstyled mode](unstyled.md) — full `pt` preset walk-through

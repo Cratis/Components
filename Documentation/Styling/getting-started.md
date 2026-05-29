@@ -1,6 +1,6 @@
 # Getting Started
 
-Every styling path shares the same one-line setup. The differences come from what you load **on top** of this baseline.
+Every styling option shares the same one-line setup. The differences come from what you load **on top** of this baseline.
 
 ## Install
 
@@ -50,11 +50,11 @@ With nothing else, you've imported:
 - The `--cratis-*` token layer (so Cratis-scoped surfaces have a stable variable surface to read from)
 - The provider that hosts `pt` / `unstyled` / locale / overlay z-index settings
 
-That's enough for the wrappers to render structurally, but PrimeReact widgets need **either** a theme (Path A or B) or `unstyled: true` + a `pt` preset (Path C) to look like anything other than raw browser primitives. Pick your path:
+That's enough for the wrappers to render structurally, but PrimeReact widgets need **either** a theme or `unstyled: true` + a `pt` preset to look like anything other than raw browser primitives. Choose the setup that matches how much visual control you need:
 
-- [Path A — PrimeReact-themed](themed.md) — load a theme stylesheet and start tweaking
-- [Path B — Custom palette](custom-palette.md) — same theme, your colors
-- [Path C — Fully unstyled](unstyled.md) — bring everything yourself
+- [Use a PrimeReact theme](themed.md) — load a theme stylesheet and start tweaking
+- [Use a custom palette on top of a PrimeReact theme](custom-palette.md) — keep the theme's structure and supply your colors
+- [Use fully unstyled mode](unstyled.md) — disable PrimeReact styling and bring every visual yourself
 
 ## Using `PrimeReactProvider` directly
 

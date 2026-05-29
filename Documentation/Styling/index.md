@@ -1,24 +1,24 @@
 # Styling
 
-Cratis Components is built on top of PrimeReact and stays out of your way when it comes to styling. You can ship the look that PrimeReact gives you out of the box, repaint the whole UI in your own palette, or take complete control and bring your own visuals from scratch — all without forking the library or fighting it.
+Cratis Components is built on top of PrimeReact and stays out of your way when it comes to styling. You can use the look that PrimeReact gives you out of the box, keep PrimeReact's structure while applying your own palette, or take complete control and provide every visual yourself — all without forking the library or fighting it.
 
-There are three documented paths. They are not mutually exclusive: every component still exposes the same building blocks, so you can mix them per-component or per-region of your app.
+There are three supported styling options. They are not mutually exclusive: every component still exposes the same building blocks, so you can combine them per-component or per-region of your app.
 
-## TL;DR — pick a path
+## TL;DR — choose a styling setup
 
-| Path | When | Effort | What you write |
+| Setup | When | Effort | What you write |
 |---|---|---|---|
-| [**A. PrimeReact-themed**](themed.md) | You want it to look good immediately and tweak from there. | Lowest | One CSS import + provider |
-| [**B. Custom palette**](custom-palette.md) | You want PrimeReact's chrome but in your own colors. | Low | A PrimeReact theme + a small CSS override block |
-| [**C. Fully unstyled**](unstyled.md) | You're integrating into a tightly-controlled design system. | Highest | A `pt` preset (in CSS or Tailwind) |
+| [**Use a PrimeReact theme**](themed.md) | You want components to look good immediately and tweak from there. | Lowest | Theme CSS import + provider |
+| [**Use a custom palette on top of a PrimeReact theme**](custom-palette.md) | You want PrimeReact's structure but your own colors. | Low | A PrimeReact theme + CSS variable overrides |
+| [**Use fully unstyled mode**](unstyled.md) | You're integrating into a tightly controlled design system. | Highest | `unstyled: true` + a `pt` preset in CSS or Tailwind |
 
-All three paths use the same one-line setup described in [Getting Started](getting-started.md). They remain switchable later — you won't repaint yourself into a corner.
+All three setups use the same one-line setup described in [Getting Started](getting-started.md). You can change direction later because the same provider, tokens, and `pt` hooks stay available.
 
-## Why a PrimeReact theme is still in Paths A and B
+## Why the first two options still load a PrimeReact theme
 
 In PrimeReact 10 every widget's *structural* CSS — padding, borders, dialog frame, focus rings, button shapes — ships **inside the theme file**. There is no separate primitives stylesheet. So a setup without any PrimeReact theme has no widget chrome at all and components render as the raw HTML primitives the browser supplies by default.
 
-The `--cratis-*` token layer is an additive Cratis-scoped tint for surfaces the wrappers in this package own — validation error text, the FormElement addon background, breadcrumb borders — and **is not, by itself, sufficient to skin PrimeReact widgets**. Use Path B if you want a custom palette on top of PrimeReact's chrome, and Path C if you want to ditch PrimeReact's chrome entirely.
+The `--cratis-*` token layer is an additive Cratis-scoped tint for surfaces the wrappers in this package own — validation error text, the FormElement addon background, breadcrumb borders — and **is not, by itself, sufficient to skin PrimeReact widgets**. Override PrimeReact's variables when you want the whole UI in your palette. Use `unstyled: true` and a `pt` preset when you want to replace PrimeReact's visuals entirely.
 
 ## Mental model
 
@@ -32,11 +32,11 @@ The [Cratis token reference](cratis-tokens.md) lists every token and the surface
 
 ## See also
 
-- [Getting Started](getting-started.md) — the one-line setup every path shares
-- [Path A — PrimeReact-themed](themed.md)
-- [Path B — Custom palette](custom-palette.md)
-- [Path C — Fully unstyled](unstyled.md)
+- [Getting Started](getting-started.md) — the one-line setup every option shares
+- [Use a PrimeReact theme](themed.md)
+- [Use a custom palette on top of a PrimeReact theme](custom-palette.md)
+- [Use fully unstyled mode](unstyled.md)
 - [Cratis token reference](cratis-tokens.md)
 - [Pass-through (pt) cheat sheet](pass-through.md)
-- [Mixing paths](mixing-paths.md)
+- [Combining styling setups](mixing-paths.md)
 - [CratisComponentsProvider](../Common/cratis-components-provider.md)

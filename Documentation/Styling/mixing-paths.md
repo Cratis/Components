@@ -1,6 +1,6 @@
-# Mixing paths
+# Combining styling setups
 
-The three paths compose. You don't have to pick one for the whole app — every Cratis wrapper still exposes the same building blocks, so you can mix them per-component or per-region.
+The three styling options compose. You don't have to choose one for the whole app — every Cratis wrapper still exposes the same building blocks, so you can combine them per-component or per-region.
 
 ## Themed app with one unstyled island
 
@@ -123,9 +123,9 @@ If you want PrimeReact widgets in the region to follow too, override the PrimeRe
 }
 ```
 
-## Per-component themed override inside unstyled mode
+## Per-component visual override inside unstyled mode
 
-When you're on Path C globally, single components can still pull in classes from a separate stylesheet via the `className` prop or per-instance `pt`:
+When you're using fully unstyled mode globally, single components can still pull in classes from a separate stylesheet via the `className` prop or per-instance `pt`:
 
 ```tsx
 import './custom-table.css';
@@ -151,8 +151,8 @@ import './custom-table.css';
 
 ## See also
 
-- [Path A — PrimeReact-themed](themed.md)
-- [Path B — Custom palette](custom-palette.md)
-- [Path C — Fully unstyled](unstyled.md)
+- [Use a PrimeReact theme](themed.md)
+- [Use a custom palette on top of a PrimeReact theme](custom-palette.md)
+- [Use fully unstyled mode](unstyled.md)
 - [Pass-through cheat sheet](pass-through.md)
 - [CratisComponentsProvider](../Common/cratis-components-provider.md)

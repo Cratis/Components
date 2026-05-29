@@ -1,6 +1,6 @@
-# Path A — PrimeReact-themed (fastest start)
+# Use a PrimeReact theme
 
-You want components to look reasonable out of the box and only intervene when needed. Pick this path for prototypes, internal tools, or any app where one of the prebuilt PrimeReact themes is good enough.
+You want components to look reasonable out of the box and only intervene when needed. Use this setup for prototypes, internal tools, or any app where one of the prebuilt PrimeReact themes is a good fit.
 
 ## Setup
 
@@ -96,9 +96,9 @@ When CSS overrides aren't enough — for example, when you need to attach a clas
 
 `pt`, `ptOptions`, and `unstyled` are typed from the underlying PrimeReact component, so your IDE autocompletes the available slot names.
 
-## When to switch paths
+## When to choose another setup
 
-You'll outgrow Path A when:
+This setup stops being a good fit when:
 
-- The PrimeReact theme is "almost" but not your brand — switch to [Path B](custom-palette.md) and override the PrimeReact variables on `:root`.
-- You're integrating into a design system that defines its own button, dialog, and input visuals — switch to [Path C](unstyled.md) and bring everything yourself.
+- The PrimeReact theme is "almost" but not your brand — use [a custom palette on top of a PrimeReact theme](custom-palette.md) and override the PrimeReact variables on `:root`.
+- You're integrating into a design system that defines its own button, dialog, and input visuals — use [fully unstyled mode](unstyled.md) and bring every visual yourself.

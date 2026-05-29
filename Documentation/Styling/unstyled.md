@@ -1,8 +1,8 @@
-# Path C — Fully unstyled (you own every visual)
+# Use fully unstyled mode
 
 You're integrating Cratis Components into a design system that defines its own button, dialog, and input visuals. You want zero PrimeReact CSS in the final bundle.
 
-This path disables every PrimeReact base style at the provider and supplies visuals through PrimeReact's `pt` (pass-through) mechanism, your own CSS, or both. Components render structurally only — they become a blank canvas you paint.
+This setup disables every PrimeReact base style at the provider and supplies visuals through PrimeReact's `pt` (pass-through) mechanism, your own CSS, or both. Components render structurally only until your `pt` preset and CSS provide the actual UI.
 
 ## Setup
 
@@ -20,7 +20,7 @@ export const App = () => (
 
 `unstyled: true` removes every PrimeReact base style. The `pt` preset is what fills the visual vacuum. Without one, components render as raw HTML elements with browser defaults.
 
-The two sub-paths below show the same preset in two different styling languages. Pick whichever your design system uses.
+The two examples below show the same preset in two different styling languages. Pick whichever your design system uses.
 
 ## With plain CSS
 
@@ -260,9 +260,9 @@ Per-instance `pt` is **merged** with the global preset by default (`ptOptions.me
 
 `ObjectContentEditor`, `ObjectNavigationalBar`, and `SchemaEditor` accept only `className` on the root — restyle their internals via the **global** `pt` preset set on `CratisComponentsProvider`. See [Pass-through cheat sheet](pass-through.md) for the full per-component reference.
 
-## What `--cratis-*` tokens give you in this path
+## What `--cratis-*` tokens give you in fully unstyled mode
 
-In Path C the `pt` preset carries every visual, so you don't strictly need any `--cratis-*` token. However, a few Cratis surfaces are styled with token-driven CSS (FormElement addon, ObjectNavigationalBar bottom border, inline validation errors) — overriding the relevant tokens lets you tint those surfaces consistently with your preset:
+In fully unstyled mode the `pt` preset carries every PrimeReact visual, so you don't strictly need any `--cratis-*` token. However, a few Cratis surfaces are styled with token-driven CSS (FormElement addon, ObjectNavigationalBar bottom border, inline validation errors) — overriding the relevant tokens lets you tint those surfaces consistently with your preset:
 
 ```css
 :root {

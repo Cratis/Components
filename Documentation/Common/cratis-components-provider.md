@@ -106,6 +106,6 @@ const merged = mergeCratisComponentsConfig({ unstyled: true, pt: myPt });
 
 ## See also
 
-- [Styling Overview](../Styling/index.md) — three styling paths and where the provider fits
+- [Styling Overview](../Styling/index.md) — the supported styling options and where the provider fits
 - [Pass-through cheat sheet](../Styling/pass-through.md) — what `pt` reaches in each Cratis wrapper
-- [Path C — Fully unstyled](../Styling/unstyled.md) — full `pt` preset walk-through
+- [Use fully unstyled mode](../Styling/unstyled.md) — full `pt` preset walk-through

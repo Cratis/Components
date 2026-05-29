@@ -18,7 +18,7 @@ This library includes specialized components for:
 - Integrates seamlessly with Cratis Arc framework
 - Uses PrimeReact components for consistent UI/UX
 - Supports both queries and observable queries
-- Three documented [styling paths](Styling/index.md) — themed, custom palette, fully unstyled
+- Three supported [styling options](Styling/index.md) — use a PrimeReact theme, apply your own palette, or run fully unstyled
 - Full PrimeReact `pt` (pass-through) forwarding on every wrapper for per-slot styling
 - Comprehensive Storybook documentation
 - Accessibility-focused design
@@ -64,13 +64,13 @@ export const App = () => (
 );
 ```
 
-### Pick a styling path
+### Choose how styling works
 
-The components render structurally as soon as the provider is mounted. To give them a visual identity, pick one of the three documented paths:
+The components render structurally as soon as the provider is mounted. To give them a visual identity, choose the setup that matches how much control you need:
 
-- [**Path A — PrimeReact-themed**](Styling/themed.md) — load a PrimeReact theme; tweak with CSS or `className` as needed.
-- [**Path B — Custom palette**](Styling/custom-palette.md) — keep a PrimeReact theme as the structural baseline; repaint with CSS variables on `:root`.
-- [**Path C — Fully unstyled**](Styling/unstyled.md) — disable PrimeReact's base styles; bring everything yourself via a `pt` preset (in CSS or Tailwind).
+- [**Use a PrimeReact theme**](Styling/themed.md) — load a theme stylesheet and tweak with CSS or `className` as needed.
+- [**Use a custom palette on top of a PrimeReact theme**](Styling/custom-palette.md) — keep the theme's structure and repaint with CSS variables on `:root`.
+- [**Use fully unstyled mode**](Styling/unstyled.md) — disable PrimeReact's base styles and provide the visuals through a `pt` preset in CSS or Tailwind.
 
 See the [Styling overview](Styling/index.md) for the full mental model.
 
@@ -110,15 +110,15 @@ Advanced components for specific use cases — `PivotViewer`, `TimeMachine`, `Sc
 
 ## Styling
 
-Styling is designed to stay out of the way: pick the path that matches how much control you want, and the other layers stay invisible. See the dedicated [Styling section](Styling/index.md) for:
+Styling is designed to stay out of the way: choose the setup that matches how much control you want, and the other layers stay invisible. See the dedicated [Styling section](Styling/index.md) for:
 
-- [Getting Started](Styling/getting-started.md) — the one-line setup every path shares
-- [Path A — PrimeReact-themed](Styling/themed.md)
-- [Path B — Custom palette](Styling/custom-palette.md)
-- [Path C — Fully unstyled](Styling/unstyled.md)
+- [Getting Started](Styling/getting-started.md) — the one-line setup every option shares
+- [Use a PrimeReact theme](Styling/themed.md)
+- [Use a custom palette on top of a PrimeReact theme](Styling/custom-palette.md)
+- [Use fully unstyled mode](Styling/unstyled.md)
 - [Cratis token reference](Styling/cratis-tokens.md)
 - [Pass-through (pt) cheat sheet](Styling/pass-through.md)
-- [Mixing paths](Styling/mixing-paths.md)
+- [Combining styling setups](Styling/mixing-paths.md)
 
 ## Upgrading from an earlier release
 

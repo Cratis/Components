@@ -1,6 +1,6 @@
 # Migration guide — upgrading from earlier `@cratis/components`
 
-This release is the first to expose the three styling paths described in the [Styling section](Styling/index.md) and the first to ship `CratisComponentsProvider`, the `--cratis-*` token layer, and full `pt` / `unstyled` forwarding on every wrapper. It is also the release that moves PrimeReact and friends from runtime `dependencies` to `peerDependencies`, which is the dominant breaking signal.
+This release is the first to document the supported styling setups described in the [Styling section](Styling/index.md): use a PrimeReact theme, keep the theme structure but apply your own palette, or run fully unstyled with a `pt` preset. It is also the first release to ship `CratisComponentsProvider`, the `--cratis-*` token layer, and full `pt` / `unstyled` forwarding on every wrapper. The dominant breaking signal is that PrimeReact and friends move from runtime `dependencies` to `peerDependencies`.
 
 This page tells you what to change in your app, what to be aware of visually, and what new capabilities you can opt in to once the upgrade lands.
 
@@ -91,7 +91,7 @@ This release renders the addon with structural CSS using the [`--cratis-*` token
 .cratis-form-element__addon     // leading icon slot
 ```
 
-The shape and intent are identical. The exact background, border, and radius now come from `--cratis-surface-100`, `--cratis-surface-border`, and `--cratis-border-radius` rather than from the loaded PrimeReact theme. In Paths [A](Styling/themed.md) and [B](Styling/custom-palette.md) the values still cascade from the PrimeReact theme by default, so the visual is essentially the same. In Path C (unstyled) the addon **still renders** instead of disappearing — a strict improvement.
+The shape and intent are identical. The exact background, border, and radius now come from `--cratis-surface-100`, `--cratis-surface-border`, and `--cratis-border-radius` rather than from the loaded PrimeReact theme. When you [use a PrimeReact theme](Styling/themed.md) or [apply a custom palette on top of one](Styling/custom-palette.md), the values still cascade from the PrimeReact theme by default, so the visual is essentially the same. In [fully unstyled mode](Styling/unstyled.md) the addon **still renders** instead of disappearing — a strict improvement.
 
 If you were relying on the exact PrimeReact `p-inputgroup-addon` look, the [FormElement reference](Common/form-element.md#styling) shows how to override the tokens or attach your own class via `pt` to restore it.
 
@@ -132,7 +132,7 @@ The library no longer uses these hard-coded PrimeReact class names internally:
 | `border-bottom-1 surface-border` | See [section above](#objectnavigationalbar-and-schemaeditor-bottom-border-now-actually-renders). |
 | `p-inputgroup` / `p-inputgroup-addon` | See [section above](#formelement-addon-is-now-cratis-bespoke). |
 
-When a PrimeReact theme is loaded (Paths A and B), the Button `text` / `size` / `severity` props produce the same styling as the old class hooks — there's no visible change.
+When a PrimeReact theme is loaded, the Button `text` / `size` / `severity` props produce the same styling as the old class hooks — there's no visible change.
 
 ## Subpath import changes
 
@@ -299,11 +299,11 @@ Wrappers that compose more than one PrimeReact widget expose explicit per-slot p
 
 ### `--cratis-*` token layer
 
-A scoped Cratis token layer is now part of every install. Tokens default to the PrimeReact theme variable with the same name minus the `--cratis-` prefix, so Paths A and B continue to look the way they always did. Override `--cratis-*` only when you want a Cratis-scoped surface tinted independently of the surrounding PrimeReact widgets — see [Cratis token reference](Styling/cratis-tokens.md).
+A scoped Cratis token layer is now part of every install. Tokens default to the PrimeReact theme variable with the same name minus the `--cratis-` prefix, so theme-based setups continue to look the way they always did. Override `--cratis-*` only when you want a Cratis-scoped surface tinted independently of the surrounding PrimeReact widgets — see [Cratis token reference](Styling/cratis-tokens.md).
 
 ### Storybook styling toolbar
 
-`yarn dev` from `Source/` opens Storybook with a five-mode **Styling** toolbar (paintbrush icon) that flips between the three documented paths — useful for previewing how each path looks before committing to one in your app.
+`yarn dev` from `Source/` opens Storybook with a five-mode **Styling** toolbar (paintbrush icon) that demonstrates the supported styling setups — useful for previewing how each one looks before committing to it in your app.
 
 ## Migration recipes — before / after
 
@@ -386,7 +386,7 @@ export const App = () => (
 ### Switch to a fully-unstyled design system
 
 ```tsx
-// Before — there was no path here. You either lived with PrimeReact theming
+// Before — there was no supported setup for this. You either lived with PrimeReact theming
 // or wrote a custom PrimeReact theme.
 
 // After — flip the provider into unstyled mode and supply a pt preset.
@@ -395,7 +395,7 @@ export const App = () => (
 </CratisComponentsProvider>
 ```
 
-See [Path C — Fully unstyled](Styling/unstyled.md) for complete worked examples in both plain CSS and TailwindCSS.
+See [Use fully unstyled mode](Styling/unstyled.md) for complete worked examples in both plain CSS and TailwindCSS.
 
 ## Troubleshooting
 
@@ -413,12 +413,12 @@ Same root cause — the install is telling you which peer is missing. The requir
 
 ### Sparse / missing visuals after upgrade
 
-You've already loaded a PrimeReact theme (you're not in Path C). Most likely one of:
+You've already loaded a PrimeReact theme (you're not using fully unstyled mode). Most likely one of:
 
 - You're using `FormElement` and the addon now looks slightly different — see [FormElement addon is now Cratis-bespoke](#formelement-addon-is-now-cratis-bespoke).
 - You're seeing the bottom border under `ObjectNavigationalBar` or `SchemaEditor`'s menubar where you didn't see it before — see [the section on that](#objectnavigationalbar-and-schemaeditor-bottom-border-now-actually-renders).
 
-If components look fully unstyled (no padding, no borders, no dialog frame), you forgot to load a PrimeReact theme. See [Path A — PrimeReact-themed](Styling/themed.md).
+If components look fully unstyled (no padding, no borders, no dialog frame), you forgot to load a PrimeReact theme. See [Use a PrimeReact theme](Styling/themed.md).
 
 ### "Module not found: '@cratis/components/EventModeling'"
 
@@ -430,7 +430,7 @@ Pre-existing issue in the Storybook + lightningcss + Vite pipeline, not introduc
 
 ## See also
 
-- [Styling Overview](Styling/index.md) — three styling paths and the mental model
+- [Styling Overview](Styling/index.md) — the theme, custom-palette, and fully unstyled setup options
 - [CratisComponentsProvider](Common/cratis-components-provider.md) — provider configuration
 - [Cratis token reference](Styling/cratis-tokens.md) — `--cratis-*` token catalogue
 - [Pass-through cheat sheet](Styling/pass-through.md) — per-component `pt` surface

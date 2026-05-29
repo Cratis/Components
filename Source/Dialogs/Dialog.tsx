@@ -190,7 +190,7 @@ export interface DialogProps {
  *
  * Pass `pt`, `ptOptions`, `unstyled`, or `className` to forward straight to
  * the underlying PrimeReact Dialog. See the [Styling section](../../Documentation/Styling/index.md)
- * for the three documented styling paths and the
+ * for the supported styling options and the
  * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md)
  * for available slots.
  *

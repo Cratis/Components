@@ -17,4 +17,4 @@ The Common module provides reusable UI components and the styling setup primitiv
 - [Page](page.md) - Page layout component
 - [FormElement](form-element.md) - Form field icon-addon wrapper
 - [ErrorBoundary](error-boundary.md) - Error boundary component
-- [Styling Overview](../Styling/index.md) — three styling paths and how Common fits in
+- [Styling Overview](../Styling/index.md) — the supported styling options and how Common fits in

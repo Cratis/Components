@@ -89,25 +89,25 @@ Stylesheets:
 ## Styling
 
 This package ships primarily for its functionality and Arc integrations.
-Styling is designed to stay out of the way: pick the path that matches how
+Styling is designed to stay out of the way: choose the setup that matches how
 much control you want, and the other layers stay invisible.
 
-> **Tip — see each path live:** every Storybook story includes a **Styling**
-> toolbar (paintbrush icon) that flips between the five modes corresponding to
-> the three paths below: *Lara Dark Blue*, *Lara Light Blue*, *Themed with
+> **Tip — see each setup live:** every Storybook story includes a **Styling**
+> toolbar (paintbrush icon) that flips between five modes that demonstrate
+> the three setups below: *Lara Dark Blue*, *Lara Light Blue*, *Themed with
 > custom palette*, *Unstyled (bare structure)*, and *Unstyled + Tailwind pt*.
 > Open any story (`yarn dev`) and switch modes to see the same component under
 > each setup.
 
-### TL;DR — pick a path
+### TL;DR — choose a styling setup
 
-| Path | When | Effort | What you write |
+| Setup | When | Effort | What you write |
 |---|---|---|---|
-| **A. PrimeReact-themed** | You want it to look good immediately and tweak from there. | Lowest | One CSS import + provider |
-| **B. Themed with custom palette** | You want PrimeReact's chrome but in your own colors. | Low | A PrimeReact theme + a small CSS override block |
-| **C. Fully unstyled** | You're integrating into a tightly-controlled design system. | Highest | A `pt` preset (in CSS or Tailwind) |
+| **Use a PrimeReact theme** | You want components to look good immediately and tweak from there. | Lowest | Theme CSS import + provider |
+| **Use a custom palette on top of a PrimeReact theme** | You want PrimeReact's structure but your own colors. | Low | A PrimeReact theme + CSS variable overrides |
+| **Use fully unstyled mode** | You're integrating into a tightly controlled design system. | Highest | `unstyled: true` + a `pt` preset in CSS or Tailwind |
 
-> **Why a PrimeReact theme is still in Paths A and B**
+> **Why the first two options still load a PrimeReact theme**
 >
 > In PrimeReact 10, every widget's *structural* CSS (padding, borders, dialog
 > frame, focus rings, button shapes) ships **inside the theme file**. There is
@@ -118,14 +118,14 @@ much control you want, and the other layers stay invisible.
 > The `--cratis-*` token layer is therefore an **additive Cratis-scoped tint**
 > for surfaces *our* wrappers own (validation error text, the FormElement
 > addon, breadcrumb borders, etc.). It is not, by itself, enough to skin
-> PrimeReact widgets. Use Path B if you want a custom palette on top of
-> PrimeReact's chrome, and Path C if you want to ditch PrimeReact's chrome
-> entirely.
+> PrimeReact widgets. Override PrimeReact's variables when you want the whole
+> UI in your palette. Use `unstyled: true` and a `pt` preset when you want to
+> replace PrimeReact's visuals entirely.
 
-All three paths use the same one-line setup and remain switchable later — you
-won't repaint yourself into a corner.
+All three setups use the same one-line setup. You can change direction later
+because the same provider, tokens, and `pt` hooks stay available.
 
-### One-line setup (every path)
+### One-line setup (every styling option)
 
 ```tsx
 import '@cratis/components/styles';
@@ -146,12 +146,12 @@ export const App = () => (
   `PrimeReactProvider` so Cratis has one place to layer in defaults. Drop in
   raw `PrimeReactProvider` if you'd rather.
 
-The three paths below differ only in **what else** you load on top of this
+The three setups below differ only in **what else** you load on top of this
 setup.
 
 ---
 
-### Path A — PrimeReact-themed (fastest start)
+### Use a PrimeReact theme
 
 Load any PrimeReact theme stylesheet alongside Cratis Components. PrimeReact's
 own widgets paint themselves from the theme, and the `--cratis-*` tokens cascade
@@ -206,12 +206,12 @@ Pass Tailwind utility classes through the wrapper's `className` prop:
 </Dialog>
 ```
 
-**Choose Path A when:** you're prototyping, building internal tools, or are
+**Use this setup when:** you're prototyping, building internal tools, or are
 happy with one of the prebuilt PrimeReact themes.
 
 ---
 
-### Path B — Themed with custom palette
+### Use a custom palette on top of a PrimeReact theme
 
 Keep a PrimeReact theme as your **structural baseline** (so every widget gets
 its padding, dialog frame, button shape, focus ring, etc.) and override the
@@ -338,14 +338,14 @@ The upshot:
 Each defaults to the PrimeReact variable with the same name minus the
 `--cratis-` prefix (e.g. `--cratis-surface-card` → `var(--surface-card)`).
 
-**Choose Path B when:** you want a custom look without writing a PrimeReact
+**Use this setup when:** you want a custom look without writing a PrimeReact
 theme from scratch, you're shipping multiple palette variants (light/dark/
 brand), or you want Cratis-scoped surfaces tinted differently from PrimeReact
 widgets.
 
 ---
 
-### Path C — Fully unstyled (you own every visual)
+### Use fully unstyled mode
 
 Turn off every PrimeReact base style at the provider and supply visuals
 through PrimeReact's `pt` (pass-through) mechanism, your own CSS, or both.
@@ -470,14 +470,14 @@ per-instance overrides target the inner slot directly:
 `className` on the root — restyle their internals via the **global** `pt`
 preset.
 
-**Choose Path C when:** you have a design system to honor, you're matching a
+**Use this setup when:** you have a design system to honor, you're matching a
 brand kit, or you want zero PrimeReact CSS in the final bundle.
 
 ---
 
-### Mixing paths
+### Combining styling setups
 
-The paths compose, so you don't have to pick one for the whole app:
+The styling options compose, so you don't have to choose one for the whole app:
 
 - **Themed with one unstyled component** — keep the PrimeReact theme and pass
   `unstyled` per-component to opt that one widget out:
@@ -494,7 +494,7 @@ The paths compose, so you don't have to pick one for the whole app:
       </CratisComponentsProvider>
   </CratisComponentsProvider>
   ```
-- **Dark mode** — use Path B's palette overrides scoped to `.dark` (override
+- **Dark mode** — scope the palette overrides to `.dark` (override
   `--surface-card`, `--text-color`, `--primary-color`, etc., plus any
   `--cratis-*` tokens you want to diverge) and toggle the class on the root
   element. PrimeReact widgets and Cratis surfaces both follow the cascade.

@@ -1,8 +1,8 @@
 # Cratis token reference
 
-The `--cratis-*` CSS variable layer is the Cratis-scoped tint surface every Cratis wrapper reads from. Each token defaults to a matching PrimeReact theme variable via `tokens.css`, so loading a PrimeReact theme (Paths [A](themed.md) and [B](custom-palette.md)) automatically gives every Cratis surface the right color without any further work.
+The `--cratis-*` CSS variable layer is the Cratis-scoped tint surface every Cratis wrapper reads from. Each token defaults to a matching PrimeReact theme variable via `tokens.css`, so loading a PrimeReact theme automatically gives every Cratis surface the right color without any further work.
 
-You override `--cratis-*` tokens when you want **just** Cratis-scoped surfaces (validation error text, FormElement addon, breadcrumb borders, …) tinted independently of PrimeReact widgets. To repaint PrimeReact widgets themselves, override the PrimeReact variables directly — see [Path B](custom-palette.md).
+You override `--cratis-*` tokens when you want **just** Cratis-scoped surfaces (validation error text, FormElement addon, breadcrumb borders, …) tinted independently of PrimeReact widgets. To repaint PrimeReact widgets themselves, override the PrimeReact variables directly — see [the custom palette setup](custom-palette.md).
 
 ## Loading the tokens
 
@@ -150,9 +150,9 @@ That means:
 - Override `--surface-card` (PrimeReact) → both PrimeReact widgets *and* Cratis surfaces follow.
 - Override `--cratis-surface-card` (Cratis) → only Cratis surfaces follow; PrimeReact widgets keep their existing color.
 
-Use the PrimeReact variable when you want a whole-UI repaint (Path B). Use the Cratis token when you want a Cratis-specific accent that differs from PrimeReact widgets.
+Use the PrimeReact variable when you want a whole-UI repaint. Use the Cratis token when you want a Cratis-specific accent that differs from PrimeReact widgets.
 
 ## See also
 
-- [Path B — Custom palette](custom-palette.md) — for whole-UI repainting with PrimeReact variables
+- [Use a custom palette on top of a PrimeReact theme](custom-palette.md) — for whole-UI repainting with PrimeReact variables
 - [Pass-through cheat sheet](pass-through.md) — for per-slot styling beyond what tokens reach

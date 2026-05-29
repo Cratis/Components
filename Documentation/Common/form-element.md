@@ -117,7 +117,7 @@ For per-instance restyling, wrap the FormElement with your own class and target 
 </div>
 ```
 
-For full styling control under `unstyled` mode (Path C), the addon classes are stable: `cratis-form-element` on the row and `cratis-form-element__addon` on the leading slot.
+For full styling control under `unstyled` mode, the addon classes are stable: `cratis-form-element` on the row and `cratis-form-element__addon` on the leading slot.
 
 ## When to use FormElement vs CommandForm fields
 
@@ -126,6 +126,6 @@ For full styling control under `unstyled` mode (Path C), the addon classes are s
 
 ## See Also
 
-- [Styling Overview](../Styling/index.md) — three styling paths and where FormElement fits
+- [Styling Overview](../Styling/index.md) — the supported styling options and where FormElement fits
 - [Cratis token reference](../Styling/cratis-tokens.md) — every token and the surfaces it tints
 - [CommandForm Field Types](../CommandForm/index.md) — command-bound field wrappers

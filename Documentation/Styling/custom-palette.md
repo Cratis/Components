@@ -1,8 +1,8 @@
-# Path B — Themed with custom palette
+# Use a custom palette on top of a PrimeReact theme
 
 You want PrimeReact's chrome — its dialog frames, button shapes, focus rings, input borders — but in your own colors. You don't want to write a PrimeReact theme from scratch.
 
-This path keeps a PrimeReact theme as the **structural baseline** and overrides PrimeReact's own CSS variables on `:root` to repaint the whole UI. The `--cratis-*` tokens follow along through `tokens.css`'s cascade, so Cratis-scoped surfaces stay in sync. You can also override the Cratis tokens independently when you want Cratis surfaces to differ from PrimeReact widgets.
+This setup keeps a PrimeReact theme as the **structural baseline** and overrides PrimeReact's own CSS variables on `:root` to repaint the whole UI. The `--cratis-*` tokens follow along through `tokens.css`'s cascade, so Cratis-scoped surfaces stay in sync. You can also override the Cratis tokens independently when you want Cratis surfaces to differ from PrimeReact widgets.
 
 ## Setup
 
@@ -132,7 +132,7 @@ Put each palette behind a class on the root element and toggle the class with yo
 document.documentElement.classList.add('theme-dark');
 ```
 
-## What `--cratis-*` tokens are for in this path
+## What `--cratis-*` tokens are for in this setup
 
 Two override surfaces are available, with different reach:
 
@@ -141,8 +141,8 @@ Two override surfaces are available, with different reach:
 
 See [Cratis token reference](cratis-tokens.md) for the full Cratis token list, and [Pass-through cheat sheet](pass-through.md) when you want even tighter per-component control.
 
-## When to switch paths
+## When to use fully unstyled mode
 
-You'll outgrow Path B when:
+This setup stops being a good fit when:
 
-- You need to restyle the structural chrome itself — for example, a non-rectangular Dialog frame, a completely different Button shape, or a design system with a custom focus-ring system. Switch to [Path C](unstyled.md) and bring the visuals yourself.
+- You need to restyle the structural chrome itself — for example, a non-rectangular Dialog frame, a completely different Button shape, or a design system with a custom focus-ring system. Use [fully unstyled mode](unstyled.md) and bring the visuals yourself.
