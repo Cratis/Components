@@ -38,8 +38,10 @@ interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
 }
 
 /**
- * A tag/chip input field for use inside a `CommandForm`. Binds to a
- * `string[]` property on the command — each entered token becomes a chip.
+ * A tag/chip input field bound to a `string[]` property on a Cratis Arc
+ * command. Each entered token becomes a chip; `separator` splits pasted
+ * input into multiple chips at once. See {@link InputTextField} for the
+ * full `value={c => c.prop}` binding model.
  *
  * ```tsx
  * <ChipsField value={c => c.tags} title="Tags" separator="," />

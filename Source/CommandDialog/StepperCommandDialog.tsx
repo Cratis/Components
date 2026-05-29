@@ -292,30 +292,89 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
 };
 
 /**
- * A multi-step wizard dialog backed by a single Cratis command. Wraps PrimeReact's
- * `Stepper` inside a Cratis `Dialog`, tracks per-step visit state, surfaces
- * inline error indicators on steps with invalid fields, and executes the bound
- * command when the user submits the last step.
+ * A multi-step wizard dialog backed by a single Cratis Arc command. Wraps
+ * PrimeReact's `Stepper` inside a Cratis {@link Dialog}, tracks per-step
+ * visit state, surfaces inline error indicators on steps with invalid
+ * fields, and executes the bound command when the user submits the last
+ * step. Use it when one command has enough fields that they should be
+ * broken into named stages; for single-stage commands, use
+ * {@link CommandDialog}.
  *
- * Use it when one command needs to be split into named stages that the user can
- * navigate forward and backward through. For single-stage commands, use
- * {@link CommandDialog} instead.
+ * ## What `TCommand` is
+ *
+ * `TCommand` is the auto-generated TypeScript class produced by the Arc
+ * proxy generator from a C# `[Command]` record. The wizard fields all bind
+ * to properties on this single command — the multi-step UI is purely a
+ * presentation grouping of one command's fields, not multiple commands.
+ *
+ * ## What's unique vs. {@link CommandDialog}
+ *
+ * - **Progressive disclosure**: fields are grouped into `<StepperPanel>`
+ *   children and the user advances through them with explicit Previous /
+ *   Next buttons before reaching Submit on the last step.
+ * - **Per-step error indicators**: the step number circle paints red when
+ *   any field inside that step has a validation error and the step has
+ *   been visited, so a long wizard doesn't hide a single-field error on
+ *   page 1 behind page 4. The CratisStepper handles this by reading
+ *   `getFieldError` from the form context and inspecting which fields
+ *   belong to which step.
+ * - **Visited tracking**: only visited steps show error indicators; an
+ *   un-visited step is never marked red just because its fields are blank.
+ * - **Linear mode (default)**: the user must complete a step before
+ *   advancing. Set `linear={false}` to allow free navigation.
+ * - **Submit only fires on the last step**: the command runs through Arc's
+ *   command pipeline only when the user clicks the final Submit button —
+ *   not on every Next click. Failure paths
+ *   (`onValidationFailure` / `onFailed`) work exactly like
+ *   {@link CommandDialog}: dialog stays open, errors surface back to the
+ *   form.
+ *
+ * ## Typed dialog host usage
+ *
+ * Same pattern as {@link CommandDialog} — combine with
+ * `useDialog<CommandResult<TResponse>>()` from `@cratis/arc.react/dialogs`
+ * to get a fully-typed result at the call site:
  *
  * ```tsx
- * <StepperCommandDialog<RegisterOrder> command={RegisterOrder}
- *                                       title="New order"
- *                                       onSuccess={onCreated}>
- *     <StepperPanel header="Customer">
- *         <InputTextField value={c => c.customerName} title="Name" />
- *     </StepperPanel>
- *     <StepperPanel header="Items">
- *         <ChipsField value={c => c.items} title="Items" />
- *     </StepperPanel>
- * </StepperCommandDialog>
+ * import { useDialog, DialogResult } from '@cratis/arc.react/dialogs';
+ * import { StepperCommandDialog } from '@cratis/components/CommandDialog';
+ * import { StepperPanel } from 'primereact/stepperpanel';
+ * import { RegisterOrder } from './RegisterOrder';   // proxy from C#
+ *
+ * const RegisterOrderDialog = () => {
+ *     const { closeDialog } = useDialogContext<CommandResult<RegisterOrderResponse>>();
+ *     return (
+ *         <StepperCommandDialog<RegisterOrder, RegisterOrderResponse>
+ *             command={RegisterOrder}
+ *             title="New order"
+ *             onSuccess={() => closeDialog(DialogResult.Ok)}
+ *             onCancel={() => closeDialog(DialogResult.Cancelled)}>
+ *             <StepperPanel header="Customer">
+ *                 <InputTextField value={c => c.customerName} title="Name" />
+ *                 <InputTextField value={c => c.email} title="Email" />
+ *             </StepperPanel>
+ *             <StepperPanel header="Items">
+ *                 <ChipsField value={c => c.items} title="Items" />
+ *                 <NumberField value={c => c.quantity} title="Quantity" min={1} />
+ *             </StepperPanel>
+ *             <StepperPanel header="Confirm">
+ *                 <CheckboxField value={c => c.confirmed} label="I confirm the order" />
+ *             </StepperPanel>
+ *         </StepperCommandDialog>
+ *     );
+ * };
  * ```
  *
- * @typeParam TCommand - The command record type. Defaults to `object`.
- * @typeParam TResponse - The success payload type. Defaults to `object`.
+ * ## Styling
+ *
+ * The inherited `pt` / `ptOptions` / `unstyled` props target the inner
+ * **Stepper**. Use `dialogPt` / `dialogPtOptions` / `dialogUnstyled` /
+ * `dialogClassName` to style the outer **Dialog** independently. See the
+ * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md)
+ * for the slot reference.
+ *
+ * @typeParam TCommand - The command class (proxy generated from C# `[Command]`).
+ * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
  * @param props - {@link StepperCommandDialogProps}.
  */
 const StepperCommandDialogComponent = <TCommand extends object = object, TResponse = object>(

@@ -125,27 +125,74 @@ export interface DialogProps {
 }
 
 /**
- * Cratis wrapper around PrimeReact's `Dialog` that provides:
+ * Cratis wrapper around PrimeReact's `Dialog` that adds the surface every Arc
+ * app needs on top of PrimeReact's bare modal:
  *
- * - A typed footer-button enum (`DialogButtons.Ok` / `OkCancel` / `YesNo` /
- *   `YesNoCancel`) with localizable labels.
- * - A confirm/cancel callback contract (`onConfirm`, `onCancel`, `onClose`)
- *   where returning `false` keeps the dialog open — useful for surfacing
- *   inline command failures.
- * - A busy state that disables actions and shows a loading indicator on the
- *   confirm button while a command runs.
- * - Pass-through of `pt`, `ptOptions`, `unstyled`, and `className` to the
- *   underlying PrimeReact Dialog so consumers can fully restyle it.
- * - Automatic integration with `@cratis/arc.react`'s `DialogContext` when
- *   used inside a `<DialogHost>` — the dialog closes through the host on
- *   confirm/cancel without manual wiring.
+ * - **Typed footer-button enum** (`DialogButtons.Ok` / `OkCancel` / `YesNo` /
+ *   `YesNoCancel`) with localizable labels. Pass `null` for a footer-less
+ *   dialog with your own buttons, or a `ReactNode` to fully render the
+ *   footer yourself.
+ * - **Confirm/cancel callback contract** (`onConfirm`, `onCancel`, `onClose`)
+ *   where returning `false` (sync or via promise) keeps the dialog open.
+ *   This is the contract used to surface inline command failures: when a
+ *   command's `execute()` returns `IsSuccess: false`, the dialog stays open
+ *   and the form re-renders with field-level errors.
+ * - **Busy state** (`isBusy`) that disables every action and shows a loading
+ *   spinner on the confirm button. Command-executing wrappers
+ *   ({@link CommandDialog}, {@link StepperCommandDialog}) flip this
+ *   automatically while a command runs.
+ * - **Validity gate** (`isValid`) that disables the confirm button without
+ *   disabling the cancel button. Used by command-executing wrappers to
+ *   block submission while form validation fails.
+ *
+ * ## Arc dialog host integration
+ *
+ * When mounted inside a `<DialogHost>` from `@cratis/arc.react/dialogs`, the
+ * Dialog automatically discovers the host through `useDialogContext()` and
+ * closes through it on confirm/cancel — no manual `closeDialog` wiring at
+ * the call site. The typical pattern at the host's request site:
  *
  * ```tsx
- * <Dialog title="Delete project?" buttons={DialogButtons.YesNo}
- *         onConfirm={() => deleteProject(id)}>
- *     This action cannot be undone.
- * </Dialog>
+ * import { useDialog, DialogResult } from '@cratis/arc.react/dialogs';
+ *
+ * const [DeleteProjectDialog, showDeleteProjectDialog] = useDialog(DeleteProject);
+ *
+ * const onDeleteClick = async () => {
+ *     const [result] = await showDeleteProjectDialog();
+ *     if (result === DialogResult.Yes) {
+ *         // user confirmed
+ *     }
+ * };
  * ```
+ *
+ * Inside the dialog component itself the close path goes through
+ * `useDialogContext()`:
+ *
+ * ```tsx
+ * import { Dialog, DialogButtons, DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
+ *
+ * export const DeleteProject = () => {
+ *     const { closeDialog } = useDialogContext();
+ *     return (
+ *         <Dialog title="Delete project?" buttons={DialogButtons.YesNo}
+ *                 onConfirm={() => closeDialog(DialogResult.Yes)}
+ *                 onCancel={() => closeDialog(DialogResult.No)}>
+ *             This action cannot be undone.
+ *         </Dialog>
+ *     );
+ * };
+ * ```
+ *
+ * The Dialog also works **outside** a host — the `useDialogContext()` call is
+ * wrapped in a try/catch so standalone use does not throw.
+ *
+ * ## Styling
+ *
+ * Pass `pt`, `ptOptions`, `unstyled`, or `className` to forward straight to
+ * the underlying PrimeReact Dialog. See the [Styling section](../../Documentation/Styling/index.md)
+ * for the three documented styling paths and the
+ * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md)
+ * for available slots.
  *
  * @param props - {@link DialogProps}.
  */

@@ -32,8 +32,9 @@ interface SliderFieldComponentProps extends WrappedFieldProps<number> {
 }
 
 /**
- * A horizontal slider field for use inside a `CommandForm`. Binds to a number
- * property and shows the current value below the track.
+ * A horizontal slider field bound to a `number` property on a Cratis Arc
+ * command. The current value is rendered below the track for feedback. See
+ * {@link InputTextField} for the full `value={c => c.prop}` binding model.
  *
  * ```tsx
  * <SliderField value={c => c.volume} title="Volume" min={0} max={100} />

@@ -31,13 +31,37 @@ interface InputTextComponentProps extends WrappedFieldProps<string> {
 }
 
 /**
- * A single-line text field for use inside a `CommandForm`. Binds to a string
- * property on the command via the `value` accessor (`value={c => c.name}`)
- * and forwards user input through the form context.
+ * A single-line text field for use inside a Cratis Arc `CommandForm` (or any
+ * of its dialog-hosted variants like {@link CommandDialog},
+ * {@link StepperCommandDialog}, {@link CommandStepper}).
  *
- * Supports all the input types PrimeReact's `InputText` does (`text`, `email`,
- * `password`, `url`, `tel`, `date`, etc.) and forwards `pt` / `ptOptions` /
- * `unstyled` for full restyling control.
+ * ## How it binds to the command
+ *
+ * The `value` prop is an accessor function — `value={c => c.name}` — where
+ * `c` is the typed command instance. The `asCommandFormField` HOC from
+ * `@cratis/arc.react/commands` reads the accessor, subscribes the field to
+ * that property on the form context, and threads validation state back to
+ * the input. You never read or write the command instance directly; the
+ * field handles it.
+ *
+ * The accessor pattern means the *binding* is fully typechecked end-to-end
+ * — if the command's `name` property is a `string`, the field's value type
+ * is inferred as `string` and TypeScript catches any mismatch.
+ *
+ * ## What's unique vs. PrimeReact's `InputText`
+ *
+ * - Bound to a single command property, no manual `onChange`/`setState`.
+ * - Validation state (`invalid` border) is driven automatically from the
+ *   `CommandResult.validationResults` returned by the backend's `Handle()`.
+ * - All HTML input `type`s PrimeReact supports (`text`, `email`,
+ *   `password`, `url`, `tel`, `date`, `datetime-local`, `time`, `color`,
+ *   `search`) work the same way.
+ *
+ * ## Styling
+ *
+ * Forwards `pt` / `ptOptions` / `unstyled` / `className` to the underlying
+ * `InputText`. The default `w-full` class is preserved when consumer
+ * `className` is supplied. See [pass-through cheat sheet](../../../Documentation/Styling/pass-through.md).
  *
  * ```tsx
  * <InputTextField value={c => c.email}

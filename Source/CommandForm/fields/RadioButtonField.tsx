@@ -32,11 +32,14 @@ interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | numb
 }
 
 /**
- * A single radio button bound to a command property. Multiple
- * {@link RadioButtonField} instances with the same `value` accessor and
- * distinct `buttonValue` props together form a mutually-exclusive group.
- * For most cases prefer {@link RadioGroupField} which manages the group as
- * a single field.
+ * A single radio button bound to a `string` or `number` property on a
+ * Cratis Arc command. Multiple {@link RadioButtonField} instances with the
+ * same `value` accessor and distinct `buttonValue` props together form a
+ * mutually-exclusive group — useful when the radios need to be laid out
+ * non-contiguously in the form. For the common case where the radios sit
+ * in one place, prefer {@link RadioGroupField} which manages the group as
+ * a single field. See {@link InputTextField} for the full
+ * `value={c => c.prop}` binding model.
  */
 export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProps>(
     (props) => (

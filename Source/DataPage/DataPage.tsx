@@ -275,19 +275,65 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
 }
 
 /**
- * A page primitive that combines an action menubar, a query-backed data table,
- * and an optional details pane into one layout. Wraps Allotment for resizable
- * split-pane behavior when a details component is supplied.
+ * A page primitive that combines an action menubar, a query-backed data
+ * table, and an optional details pane into one layout. Designed as the
+ * default rendering for "list view" pages in an Arc app.
  *
- * Composition is declarative — use the static children:
+ * ## What `TQuery` is
+ *
+ * `TQuery` is the auto-generated TypeScript class produced by the Arc proxy
+ * generator from a C# read model query. Two flavors are accepted and
+ * **selected automatically at runtime** based on the class hierarchy:
+ *
+ * - **`IQueryFor<TDataType, TArguments>`** — a snapshot query. Re-fetched
+ *   when `queryArguments` change or when the page is mounted. Rendered
+ *   through {@link DataTableForQuery} internally.
+ * - **`IObservableQueryFor<TDataType, TArguments>`** — a real-time
+ *   subscription. Connects to the backend over WebSocket and re-renders
+ *   automatically whenever the underlying read model changes server-side.
+ *   Rendered through {@link DataTableForObservableQuery} internally.
+ *
+ * You don't pick which inner table to use — `DataPage` inspects the
+ * prototype chain (`context.query.prototype instanceof QueryFor`) and
+ * mounts the correct one.
+ *
+ * ## Declarative composition
+ *
+ * Three children build up the page:
+ *
+ * - **`<DataPage.MenuItems>`** wraps `<DataPage.MenuItem>` elements that
+ *   become the action `Menubar` at the top. Each item declares its `icon`,
+ *   `label`, and `command` (an `onClick` handler). Items can be marked
+ *   `disableOnUnselected` so they automatically grey out until the user
+ *   picks a row — useful for Edit / Delete actions that need a target.
+ *
+ * - **`<DataPage.Columns>`** wraps PrimeReact `<Column>` elements that
+ *   describe the visible columns. The columns themselves are
+ *   PrimeReact's — anything supported by their `DataTable` `<Column>` is
+ *   supported here (sorting, filtering, custom body templates, …).
+ *
+ * - **`detailsComponent`** (optional) is a React component rendered in a
+ *   right-hand pane via Allotment when a row is selected. It receives the
+ *   selected item as `item` and an `onRefresh` callback the parent can
+ *   invoke to ask the page to refetch.
+ *
+ * ## Selection lifecycle
+ *
+ * `DataPage` keeps the current selection in local state and threads it to
+ * the inner table, the menubar (`disableOnUnselected` items follow it),
+ * and the optional details pane. The `onSelectionChange` prop is invoked
+ * after every change if the consumer also needs to react to it.
  *
  * ```tsx
  * <DataPage<AllAuthors, Author, never>
- *     title="Authors" query={AllAuthors}
+ *     title="Authors"
+ *     query={AllAuthors}                          // proxy from C#
  *     detailsComponent={AuthorDetails}>
  *     <DataPage.MenuItems>
- *         <DataPage.MenuItem icon={FaPlus} label="Add"     command={onAdd} />
- *         <DataPage.MenuItem icon={FaPencil} label="Edit"  command={onEdit}
+ *         <DataPage.MenuItem icon={FaPlus}   label="Add"    command={onAdd} />
+ *         <DataPage.MenuItem icon={FaPencil} label="Edit"   command={onEdit}
+ *                            disableOnUnselected />
+ *         <DataPage.MenuItem icon={FaTrash}  label="Delete" command={onDelete}
  *                            disableOnUnselected />
  *     </DataPage.MenuItems>
  *     <DataPage.Columns>
@@ -297,10 +343,15 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
  * </DataPage>
  * ```
  *
- * Both `IQueryFor` (snapshot) and `IObservableQueryFor` (real-time) queries are
- * supported automatically — the inner table type is selected at runtime.
+ * ## Styling
  *
- * @typeParam TQuery - The query class.
+ * The inner DataTable and Menubar each have their own per-slot props:
+ * `tablePt` / `tableUnstyled` / `tableClassName` for the table;
+ * `menubarPt` / `menubarUnstyled` / `menubarClassName` for the action
+ * menubar. See the [pass-through cheat sheet](../../Documentation/Styling/pass-through.md)
+ * for the full slot reference.
+ *
+ * @typeParam TQuery - The query class (proxy generated from a C# read model query).
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataPageProps}.

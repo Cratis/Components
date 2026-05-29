@@ -47,9 +47,10 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
 }
 
 /**
- * A multi-select dropdown field for use inside a `CommandForm`. Binds to an
- * array of strings or numbers on the command. Use for "pick any subset of
- * these" controls with optional filtering inside the panel.
+ * A multi-select dropdown field bound to an `Array<string | number>`
+ * property on a Cratis Arc command. Use for "pick any subset of these"
+ * controls with optional in-panel filtering. See {@link InputTextField}
+ * for the full `value={c => c.prop}` binding model.
  *
  * ```tsx
  * <MultiSelectField value={c => c.tagIds}

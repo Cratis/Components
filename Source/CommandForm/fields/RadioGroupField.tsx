@@ -31,9 +31,11 @@ interface RadioGroupFieldComponentProps extends WrappedFieldProps<string | numbe
 }
 
 /**
- * A radio-button group field for use inside a `CommandForm`. Binds to a
- * string or numeric property on the command. Use for small mutually-exclusive
- * choice sets; for larger sets, prefer {@link DropdownField}.
+ * A radio-button group field bound to a `string` or `number` property on a
+ * Cratis Arc command. Use for small mutually-exclusive choice sets where
+ * all options should be visible at once; for larger sets, prefer
+ * {@link DropdownField}. See {@link InputTextField} for the full
+ * `value={c => c.prop}` binding model.
  *
  * ```tsx
  * <RadioGroupField value={c => c.priority}

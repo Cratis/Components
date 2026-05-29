@@ -44,8 +44,10 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
 }
 
 /**
- * A date (or date-time) picker field for use inside a `CommandForm`. Binds to
- * a `Date | null` property on the command.
+ * A date (or date-time) picker field bound to a `Date | null` property on a
+ * Cratis Arc command. Set `showTime` to add a time selector alongside the
+ * date. See {@link InputTextField} for the full `value={c => c.prop}`
+ * binding model.
  *
  * ```tsx
  * <CalendarField value={c => c.dueDate}

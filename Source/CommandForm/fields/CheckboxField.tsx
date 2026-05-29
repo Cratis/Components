@@ -26,8 +26,9 @@ interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
 }
 
 /**
- * A single boolean checkbox field for use inside a `CommandForm`. Binds to
- * a boolean property on the command.
+ * A single boolean checkbox field bound to a `boolean` property on a Cratis
+ * Arc command. See {@link InputTextField} for the full `value={c => c.prop}`
+ * binding model.
  *
  * ```tsx
  * <CheckboxField value={c => c.acceptedTerms} label="I agree to the terms" />

@@ -35,9 +35,10 @@ interface NumberFieldComponentProps extends WrappedFieldProps<number> {
 }
 
 /**
- * A numeric input field for use inside a `CommandForm`. Binds to a number
- * property on the command. Defaults to integer mode without grouping; pass
- * a `step` to enable spinner increments.
+ * A numeric input field bound to a `number` property on a Cratis Arc
+ * command. Defaults to integer mode without thousands grouping; pass `step`
+ * to enable spinner increments and `min` / `max` to clamp the range. See
+ * {@link InputTextField} for the full `value={c => c.prop}` binding model.
  *
  * ```tsx
  * <NumberField value={c => c.quantity} title="Quantity" min={0} step={1} />

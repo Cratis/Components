@@ -93,18 +93,62 @@ export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArg
 const paging = new Paging(0, 20);
 
 /**
- * A paged data table bound to a snapshot Cratis query (`IQueryFor`). Issues
- * the query through `useQueryWithPaging`, renders results in a PrimeReact
- * `DataTable`, and shows a `Paginator` when the result set exceeds one page.
+ * A paged data table bound to a snapshot Cratis Arc query
+ * (`IQueryFor<TDataType, TArguments>`). Subscribes via
+ * `useQueryWithPaging` from `@cratis/arc.react/queries`, renders the result
+ * page in a PrimeReact `DataTable`, and shows a `Paginator` when the result
+ * set exceeds one page.
  *
- * For queries that should update in real time as the read model changes, use
- * {@link DataTableForObservableQuery} instead. For a higher-level page layout
- * that combines this table with a menubar and details pane, use {@link DataPage}.
+ * ## What `TQuery` is
  *
- * Children should be PrimeReact `<Column>` elements describing the visible
- * columns.
+ * `TQuery` is the auto-generated TypeScript class produced by the Arc proxy
+ * generator from a C# read model's static query method. `dotnet build`
+ * writes a `.ts` file per query with the right return type and a `use()`
+ * hook; importing the class is all the connection-to-the-backend you need.
  *
- * @typeParam TQuery - The query class.
+ * ## What's unique
+ *
+ * - **Lazy paging**: the table runs in PrimeReact's `lazy` mode by default
+ *   so the server returns one page at a time. The Paginator's
+ *   `onPageChange` calls back into the Arc hook to fetch the next page.
+ * - **Client-side filtering toggle**: pass `clientFiltering` to keep the
+ *   page-fetched rows in the browser and filter locally — useful for
+ *   small result sets where you want PrimeReact's filter UI but don't want
+ *   to round-trip every keystroke.
+ * - **Default filter state**: `defaultFilters` seeds the table's filter
+ *   meta on first render so saved or URL-encoded filter state can be
+ *   rehydrated.
+ *
+ * Use {@link DataTableForObservableQuery} for queries that should update in
+ * real time as the underlying read model changes server-side. Use
+ * {@link DataPage} for a higher-level layout that combines this table with
+ * a menubar, selection, and a details pane.
+ *
+ * ## Children
+ *
+ * Children are PrimeReact `<Column>` elements describing the visible
+ * columns — sorting, filtering, custom body templates, everything
+ * PrimeReact's `<Column>` supports.
+ *
+ * ```tsx
+ * import { DataTableForQuery } from '@cratis/components/DataTables';
+ * import { Column } from 'primereact/column';
+ * import { AllAuthors } from './AllAuthors';     // proxy from C#
+ *
+ * <DataTableForQuery query={AllAuthors} emptyMessage="No authors">
+ *     <Column field="name"  header="Name" sortable />
+ *     <Column field="email" header="Email" />
+ * </DataTableForQuery>
+ * ```
+ *
+ * ## Styling
+ *
+ * Forward `pt` / `ptOptions` / `unstyled` / `className` to the underlying
+ * PrimeReact DataTable. Use `paginatorPt` / `paginatorPtOptions` /
+ * `paginatorUnstyled` to style the inner Paginator independently. See
+ * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md).
+ *
+ * @typeParam TQuery - The query class (proxy generated from C# `IQueryFor`).
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataTableForQueryProps}.

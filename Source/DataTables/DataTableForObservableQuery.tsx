@@ -93,19 +93,65 @@ export interface DataTableForObservableQueryProps<TQuery extends IObservableQuer
 const paging = new Paging(0, 20);
 
 /**
- * A paged data table bound to a Cratis observable query (`IObservableQueryFor`).
- * Subscribes via `useObservableQueryWithPaging`, so the table re-renders
- * automatically as the underlying read model changes server-side. The table
- * height is observed and matched to its container to keep scrollable content
- * sized correctly inside flex layouts.
+ * A paged data table bound to a Cratis Arc **observable** query
+ * (`IObservableQueryFor<TDataType, TArguments>`). Subscribes via
+ * `useObservableQueryWithPaging` from `@cratis/arc.react/queries`, which
+ * opens a WebSocket connection to the backend and re-renders the table
+ * automatically whenever the underlying read model changes server-side.
  *
- * Use {@link DataTableForQuery} instead for snapshot queries that don't need
- * live updates. For a higher-level page layout, use {@link DataPage}.
+ * ## What `TQuery` is
  *
- * Children should be PrimeReact `<Column>` elements describing the visible
- * columns.
+ * `TQuery` is the auto-generated TypeScript class produced by the Arc proxy
+ * generator from a C# read model's static observable query method (one
+ * that returns `ISubject<TDataType>` on the backend). The proxy hooks the
+ * WebSocket subscription up; you only deal with the resulting React data.
  *
- * @typeParam TQuery - The observable query class.
+ * ## What's unique
+ *
+ * - **Real-time updates**: server-side projection writes flow into the
+ *   table within the same render cycle, with no manual polling or refresh
+ *   button. The connection re-subscribes automatically when
+ *   `queryArguments` change.
+ * - **Resize-aware scrollable height**: the wrapper observes its container
+ *   via `ResizeObserver` and adjusts the inner DataTable height to fit,
+ *   so the table behaves correctly inside flex layouts (it never overflows
+ *   beyond its parent or shrinks below 200px).
+ * - **Lazy paging + optional client filtering**: same modes as
+ *   {@link DataTableForQuery}, but the page is re-issued through the
+ *   observable subscription when the user pages.
+ *
+ * Use {@link DataTableForQuery} for snapshot queries that don't need live
+ * updates. Use {@link DataPage} for a higher-level layout that combines
+ * this table with a menubar, selection, and a details pane.
+ *
+ * ## Children
+ *
+ * Children are PrimeReact `<Column>` elements — same as
+ * {@link DataTableForQuery}.
+ *
+ * ```tsx
+ * import { DataTableForObservableQuery } from '@cratis/components/DataTables';
+ * import { Column } from 'primereact/column';
+ * import { ActiveSessions } from './ActiveSessions';   // proxy from C#
+ *
+ * <DataTableForObservableQuery
+ *     query={ActiveSessions}
+ *     emptyMessage="No active sessions">
+ *     <Column field="userName"  header="User" />
+ *     <Column field="startedAt" header="Started" />
+ * </DataTableForObservableQuery>
+ * ```
+ *
+ * Rows appear and disappear in this table as users log in / log out
+ * server-side — no manual refresh required.
+ *
+ * ## Styling
+ *
+ * Identical to {@link DataTableForQuery}: `pt` / `ptOptions` / `unstyled` /
+ * `className` target the inner DataTable; `paginatorPt` and friends target
+ * the inner Paginator. See [pass-through cheat sheet](../../Documentation/Styling/pass-through.md).
+ *
+ * @typeParam TQuery - The observable query class (proxy generated from C# `IObservableQueryFor`).
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataTableForObservableQueryProps}.

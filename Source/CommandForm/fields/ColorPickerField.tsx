@@ -29,8 +29,10 @@ interface ColorPickerFieldComponentProps extends WrappedFieldProps<string> {
 }
 
 /**
- * A color picker field for use inside a `CommandForm`. Binds to a string
- * property holding a hex color value (e.g. `"60a5fa"`).
+ * A color picker field bound to a `string` property on a Cratis Arc command,
+ * holding a hex color value without the leading `#` (e.g. `"60a5fa"`). Set
+ * `inline` to render the picker inline rather than as a popover. See
+ * {@link InputTextField} for the full `value={c => c.prop}` binding model.
  *
  * ```tsx
  * <ColorPickerField value={c => c.accentColor} title="Accent" inline />

@@ -35,8 +35,11 @@ interface DropdownFieldComponentProps extends WrappedFieldProps<string | number>
 }
 
 /**
- * A single-select dropdown field for use inside a `CommandForm`. Binds to
- * a string or numeric property on the command.
+ * A single-select dropdown field bound to a `string` or `number` property
+ * on a Cratis Arc command. The `options` array supplies the choices;
+ * `optionValue` and `optionLabel` declare which property on each option
+ * holds the bound value and which one holds the visible label. See
+ * {@link InputTextField} for the full `value={c => c.prop}` binding model.
  *
  * ```tsx
  * <DropdownField value={c => c.country}

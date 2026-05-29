@@ -32,9 +32,11 @@ interface TextAreaFieldComponentProps extends WrappedFieldProps<string> {
 }
 
 /**
- * A multi-line text field for use inside a `CommandForm`. Binds to a string
- * property on the command via the `value` accessor. Use for descriptions,
- * notes, or any free-form text longer than a single line.
+ * A multi-line text field bound to a `string` property on a Cratis Arc
+ * command. Use for descriptions, notes, or any free-form text longer than
+ * a single line. See {@link InputTextField} for the full
+ * `value={c => c.prop}` binding model that every field in this folder
+ * follows.
  *
  * ```tsx
  * <TextAreaField value={c => c.description} title="Description" rows={4} />
