@@ -179,7 +179,7 @@ function useDataPageContext(): IDataPageContext {
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type, or `object` if the query takes none.
  */
-export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>, TDataType, TArguments> {
+export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>, TDataType extends object, TArguments> {
     /**
      * The title of the page
      */
@@ -251,10 +251,10 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     tableClassName?: string;
 
     /** PrimeReact pass-through configuration applied to the inner DataTable. */
-    tablePt?: PrimeDataTableProps<any>['pt'];
+    tablePt?: PrimeDataTableProps<TDataType[]>['pt'];
 
     /** PrimeReact pass-through options applied to the inner DataTable. */
-    tablePtOptions?: PrimeDataTableProps<any>['ptOptions'];
+    tablePtOptions?: PrimeDataTableProps<TDataType[]>['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the inner DataTable. */
     tableUnstyled?: boolean;
@@ -356,7 +356,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataPageProps}.
  */
-const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
+const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
 
     const selectionChanged = (e: DataTableSelectionSingleChangeEvent<any>) => {
