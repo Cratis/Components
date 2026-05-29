@@ -206,6 +206,11 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         flexShrink: 0,
     };
 
+    const fieldErrorStyle: React.CSSProperties = {
+        color: 'var(--cratis-red-500)',
+        fontSize: '0.75rem',
+    };
+
     const updateValue = useCallback((propertyName: string, newValue: Json) => {
         if (!onChange) return;
 
@@ -243,7 +248,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         checked={Boolean(value)}
                         onChange={(e) => handleChange(e.checked ?? false)}
                     />
-                    {error && <small style={{ color: 'var(--cratis-red-500)', fontSize: '0.75rem' }}>{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -258,7 +263,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         useGrouping={false}
                         style={inputStyle}
                     />
-                    {error && <small style={{ color: 'var(--cratis-red-500)', fontSize: '0.75rem' }}>{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -274,7 +279,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         showIcon
                         style={inputStyle}
                     />
-                    {error && <small style={{ color: 'var(--cratis-red-500)', fontSize: '0.75rem' }}>{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -289,7 +294,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         showIcon
                         style={inputStyle}
                     />
-                    {error && <small style={{ color: 'var(--cratis-red-500)', fontSize: '0.75rem' }}>{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -321,7 +326,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         rows={3}
                         style={inputStyle}
                     />
-                    {error && <small style={{ color: 'var(--cratis-red-500)', fontSize: '0.75rem' }}>{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -333,7 +338,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                     onChange={(e) => handleChange(e.target.value)}
                     style={inputStyle}
                 />
-                {error && <small style={{ color: 'var(--cratis-red-500)', fontSize: '0.75rem' }}>{error}</small>}
+                {error && <small style={fieldErrorStyle}>{error}</small>}
             </div>
         );
     };
