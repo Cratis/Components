@@ -38,8 +38,7 @@ component that depends on them:
 
 | Component | Optional peer |
 |---|---|
-| `PivotViewer` | `pixi.js` |
-| `CommandStepper`, animated panels | `framer-motion` |
+| `PivotViewer` | `pixi.js` (canvas) and `framer-motion` (animated panels) |
 | `DataPage` resizable layout | `allotment` |
 
 Install them only when you reach for the corresponding component.
@@ -504,14 +503,14 @@ The paths compose, so you don't have to pick one for the whole app:
 
 Three patterns, depending on how much PrimeReact a wrapper composes:
 
-1. **Single-widget wrappers** — `Dialog`, every `CommandForm` field, the
-   underlying `DataTable`/`Paginator` exposed by `DataTableForQuery` /
-   `DataTableForObservableQuery`, and `Dropdown` forward `pt`, `ptOptions`,
-   `unstyled`, and `className` straight to their inner PrimeReact component.
+1. **Single-widget wrappers** — `Dialog`, every `CommandForm` field,
+   `EventsView`, and `Dropdown` forward `pt`, `ptOptions`, `unstyled`, and
+   `className` straight to their inner PrimeReact component.
 2. **Multi-slot composites** — `StepperCommandDialog` (`pt` for Stepper,
    `dialogPt` for Dialog), `DataPage` (`tablePt` for DataTable, `menubarPt`
-   for Menubar) — each slot has `*PtOptions`, `*Unstyled`, and `*ClassName`
-   siblings.
+   for Menubar), and `DataTableForQuery` / `DataTableForObservableQuery`
+   (`pt` for DataTable, `paginatorPt` for Paginator) — each slot has
+   `*PtOptions`, `*Unstyled`, and (where applicable) `*ClassName` siblings.
 3. **Large composites** — `ObjectContentEditor`, `ObjectNavigationalBar`,
    `SchemaEditor` expose `className` only; restyle internals via the global
    `pt` preset.

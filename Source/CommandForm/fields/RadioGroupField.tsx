@@ -49,7 +49,7 @@ interface RadioGroupFieldComponentProps extends WrappedFieldProps<string | numbe
 export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>(
     (props) => {
         const layout = props.layout ?? 'vertical';
-        const layoutClasses = layout === 'horizontal' ? 'flex-row gap-4 flex-wrap' : 'flex-column gap-2';
+        const layoutClasses = layout === 'horizontal' ? 'flex-row gap-4 flex-wrap' : 'flex-col gap-2';
         const containerClassName = props.className
             ? `flex ${layoutClasses} ${props.className}`
             : `flex ${layoutClasses}`;
@@ -59,7 +59,7 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                     const optValue = option[props.optionValue] as string | number;
                     const optLabel = option[props.optionLabel] as string;
                     return (
-                        <div key={String(optValue)} className="flex align-items-center">
+                        <div key={String(optValue)} className="flex items-center">
                             <RadioButton
                                 value={optValue}
                                 checked={props.value === optValue}

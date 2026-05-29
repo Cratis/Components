@@ -94,7 +94,7 @@ export const WithForm: Story = {
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
                     isValid={name.trim().length > 0}
                 >
-                    <div className="flex flex-column gap-2">
+                    <div className="flex flex-col gap-2">
                         <label htmlFor="name">Name</label>
                         <InputText
                             id="name"

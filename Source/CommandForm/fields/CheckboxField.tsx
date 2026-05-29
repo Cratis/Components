@@ -36,7 +36,7 @@ interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
  */
 export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
     (props) => (
-        <div className="flex align-items-center">
+        <div className="flex items-center">
             <Checkbox
                 checked={props.value}
                 onChange={props.onChange}

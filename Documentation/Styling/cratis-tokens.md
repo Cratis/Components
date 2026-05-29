@@ -30,9 +30,9 @@ Each token defaults to the PrimeReact variable with the same name minus the `--c
 |---|---|
 | `--cratis-surface-0`      | Reserved for any Cratis-scoped surface that maps to PrimeReact's `--surface-0`. |
 | `--cratis-surface-100`    | `FormElement` addon background. |
-| `--cratis-surface-ground` | Reserved for any Cratis-scoped surface that maps to PrimeReact's `--surface-ground`. |
-| `--cratis-surface-section` | Reserved for any Cratis-scoped surface that maps to PrimeReact's `--surface-section`. |
-| `--cratis-surface-card`   | Backgrounds of the `ObjectContentEditor` snapshot card and similar panels. |
+| `--cratis-surface-ground` | `PivotViewer` canvas and panel backgrounds. |
+| `--cratis-surface-section` | `PivotViewer` panel section backgrounds. |
+| `--cratis-surface-card`   | Backgrounds of the `ObjectContentEditor` snapshot card and similar panels; `PivotViewer` card gradients. |
 | `--cratis-surface-overlay` | Overlay backgrounds inside Cratis wrappers. |
 | `--cratis-surface-hover`  | Hover state on row alternation inside `ObjectContentEditor`. |
 | `--cratis-surface-border` | `FormElement` addon border, `ObjectNavigationalBar` bottom border, `SchemaEditor` bottom border, table/paginator borders inside `DataTableForQuery` / `DataTableForObservableQuery`. |
@@ -50,10 +50,10 @@ Each token defaults to the PrimeReact variable with the same name minus the `--c
 |---|---|
 | `--cratis-primary-color`      | `ObjectContentEditor` navigation links into nested objects/arrays, default brand accent. |
 | `--cratis-primary-color-text` | Foreground used on top of `--cratis-primary-color` backgrounds (e.g. CommandStepper step number color). |
-| `--cratis-primary-300`        | Reserved for lighter brand variants. |
-| `--cratis-primary-400`        | Reserved for lighter brand variants. |
-| `--cratis-primary-500`        | Reserved for brand mid-tones. |
-| `--cratis-primary-600`        | Reserved for brand darker variants. |
+| `--cratis-primary-300`        | `PivotViewer` loading spinner ring. |
+| `--cratis-primary-400`        | `PivotViewer` loading spinner ring. |
+| `--cratis-primary-500`        | `PivotViewer` loading spinner ring and card gradient. |
+| `--cratis-primary-600`        | `PivotViewer` loading spinner ring. |
 
 ### Selection / highlight
 
@@ -80,8 +80,8 @@ Each token defaults to the PrimeReact variable with the same name minus the `--c
 
 | Token | Cratis surfaces tinted by it |
 |---|---|
-| `--cratis-focus-ring` | Reserved for Cratis-managed focus rings. |
-| `--cratis-maskbg`     | Reserved for any Cratis-managed modal mask. |
+| `--cratis-focus-ring` | Focus-ring box-shadow on interactive `PivotViewer` elements. |
+| `--cratis-maskbg`     | `PivotViewer` modal mask background. |
 
 ## Overriding tokens
 

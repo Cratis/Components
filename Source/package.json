@@ -12,7 +12,9 @@
         "access": "public"
     },
     "files": [
-        "dist"
+        "dist",
+        "!dist/**/*.stories.*",
+        "!dist/**/given.*"
     ],
     "main": "dist/cjs/index.js",
     "module": "dist/esm/index.js",
@@ -43,9 +45,9 @@
             "import": "./dist/esm/CommandForm/index.js"
         },
         "./CommandForm/fields": {
-            "types": "./dist/esm/CommandForm/fields/index.d.ts",
-            "require": "./dist/cjs/CommandForm/fields/index.js",
-            "import": "./dist/esm/CommandForm/fields/index.js"
+            "types": "./dist/esm/CommandForm/index.d.ts",
+            "require": "./dist/cjs/CommandForm/index.js",
+            "import": "./dist/esm/CommandForm/index.js"
         },
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
@@ -139,6 +141,7 @@
     "peerDependencies": {
         "@cratis/arc": "^20.3.1",
         "@cratis/arc.react": "^20.3.1",
+        "@cratis/fundamentals": "^7.10.3",
         "allotment": "^1.20.0",
         "framer-motion": "^12.0.0",
         "pixi.js": "^8.0.0",

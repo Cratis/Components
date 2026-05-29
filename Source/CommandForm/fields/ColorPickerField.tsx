@@ -42,6 +42,10 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
     (props) => {
         const defaultColor = props.defaultColor ?? '000000';
         const value = typeof props.value === 'string' && props.value.length > 0 ? props.value : defaultColor;
+        // PrimeReact's ColorPicker is the one form component that exposes no `invalid` prop,
+        // so we apply the `p-invalid` state class directly. This is the exact class the
+        // `invalid` prop emits on the other fields, so the rendered DOM stays consistent —
+        // it picks up a theme's invalid styling and harmlessly no-ops in unstyled mode.
         const invalidClass = props.invalid ? 'p-invalid' : undefined;
         const className = [invalidClass, props.className].filter(Boolean).join(' ') || undefined;
 

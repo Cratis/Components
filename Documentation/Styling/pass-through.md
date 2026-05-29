@@ -24,6 +24,7 @@ The wrapper renders exactly one PrimeReact widget and forwards `pt` / `ptOptions
 | `ChipsField`        | `primereact/chips` Chips            | PrimeReact Chips `pt` |
 | `MultiSelectField`  | `primereact/multiselect` MultiSelect | PrimeReact MultiSelect `pt` |
 | `ColorPickerField`  | `primereact/colorpicker` ColorPicker | PrimeReact ColorPicker `pt` |
+| `EventsView`        | `primereact/timeline` Timeline      | PrimeReact Timeline `pt` |
 
 Example:
 

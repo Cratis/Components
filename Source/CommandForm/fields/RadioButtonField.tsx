@@ -43,7 +43,7 @@ interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | numb
  */
 export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProps>(
     (props) => (
-        <div className="flex align-items-center">
+        <div className="flex items-center">
             <RadioButton
                 value={props.buttonValue}
                 checked={props.value === props.buttonValue}

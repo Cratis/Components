@@ -16,8 +16,7 @@ The optional peers (`pixi.js`, `framer-motion`, `allotment`) are only required w
 
 | Component | Optional peer |
 |---|---|
-| `PivotViewer` | `pixi.js` |
-| `CommandStepper`, animated panels | `framer-motion` |
+| `PivotViewer` | `pixi.js` (canvas) and `framer-motion` (animated panels) |
 | `DataPage` resizable layout | `allotment` |
 
 ## Wire the provider

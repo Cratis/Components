@@ -20,8 +20,7 @@ If you do these three things, your app will install and render correctly after t
 
    | Component | Optional peer |
    |---|---|
-   | `PivotViewer` | `pixi.js` |
-   | `CommandStepper` / animated panels | `framer-motion` |
+   | `PivotViewer` | `pixi.js` (canvas) and `framer-motion` (animated panels) |
    | `DataPage` resizable layout | `allotment` |
 
 3. **Skim the [Visual changes](#visual-changes) section below** to spot anywhere the new rendering would surprise you.
@@ -50,7 +49,7 @@ This change avoids the duplicate-installation pitfall: consumers who already had
 }
 ```
 
-The `@cratis/arc*` packages, `react`, and `react-dom` are also peer dependencies, but you almost certainly already have them.
+The `@cratis/arc*` packages, `@cratis/fundamentals`, `react`, and `react-dom` are also peer dependencies, but you almost certainly already have them (`@cratis/fundamentals` comes in transitively with `@cratis/arc`).
 
 ### 2. The optional dependencies are now optional peer dependencies
 
@@ -58,25 +57,28 @@ The `@cratis/arc*` packages, `react`, and `react-dom` are also peer dependencies
 
 | You use… | …so add to your install |
 |---|---|
-| `PivotViewer` | `pixi.js` |
-| `CommandStepper` / animated panels | `framer-motion` |
+| `PivotViewer` | `pixi.js` and `framer-motion` |
 | `DataPage` with resizable layout | `allotment` |
 
-If you don't use these components, you don't need to do anything.
+If you don't use these components, you don't need to do anything — provided your bundler tree-shakes. `PivotViewer` and `DataPage` are re-exported from the package root (`@cratis/components`) and statically import their optional peers, so a modern bundler (Vite, Rollup, esbuild, webpack 5) drops them when unused — the package marks its JS side-effect-free apart from CSS. If you import from the root with a bundler that does **not** tree-shake, install the optional peers too, or import the components you use from their subpaths (`@cratis/components/Dialogs`, `@cratis/components/CommandForm`, …) so the heavy components are never pulled into the graph.
 
-### 3. `react-router-dom` is no longer a dependency
+### 3. `react-router-dom` and `usehooks-ts` are no longer dependencies
 
-It was listed as a runtime dependency but never imported by anything inside `@cratis/components`. If your app uses it directly (which is very likely), you should already have it in your own `package.json` — nothing changes for you.
+Both were listed as runtime dependencies but never imported by anything inside `@cratis/components`, so they have been dropped. If your app uses `react-router-dom` directly (very likely), you should already have it in your own `package.json` — nothing changes for you.
 
-If you were somehow relying on the transitive copy from `@cratis/components`, add it to your own deps:
+If you were somehow relying on the transitive copy of either, add it to your own deps:
 
 ```bash
 yarn add react-router-dom
 ```
 
+### 4. `@cratis/arc.vite` is no longer a peer dependency
+
+It was only ever used by the package's own dev `vite.config.ts`, so it moved to `devDependencies`. If you previously installed it solely to satisfy the peer requirement, you can drop it — nothing in the shipped library imports it.
+
 ## Visual changes
 
-The styling work removes a few couplings to PrimeReact theme internals. These changes are intentional and almost always invisible, but there are two places where pixel-perfect rendering may shift.
+The styling work removes a few couplings to PrimeReact theme internals. These changes are intentional and almost always invisible, but there are a handful of places where rendering may shift.
 
 ### `FormElement` addon is now Cratis-bespoke
 
@@ -110,6 +112,14 @@ This is arguably a bug fix — the original code was always meant to draw the bo
 }
 ```
 
+### `RadioGroupField` vertical layout now stacks correctly
+
+`RadioGroupField` defaults to `layout="vertical"`, which is meant to stack the options in a column. Earlier releases expressed that with `flex-column` / `align-items-center` — again **PrimeFlex** class names the library never shipped — so the classes no-op'd and the options laid out in a **row** instead. The horizontal layout used valid Tailwind classes and worked correctly.
+
+This release uses the library's own Tailwind utilities (`flex-col` / `items-center`), so a default (vertical) `RadioGroupField` now renders as a true vertical stack, and the control/label of every `CheckboxField`, `RadioButtonField`, and `RadioGroupField` option is vertically centered.
+
+This is a bug fix — vertical was always the intended default — but if you had compensated for the broken row layout (for example by setting `layout="vertical"` and relying on the row rendering, or by adding your own wrapping styles), revisit those call sites after upgrading. To keep the old row layout, set `layout="horizontal"` explicitly.
+
 ### Other PrimeReact class hooks removed
 
 The library no longer uses these hard-coded PrimeReact class names internally:
@@ -135,6 +145,10 @@ Any consumer who tried `import { CommandStepper } from '@cratis/components/Comma
 ### `@cratis/components/EventModeling` was never real — it's now removed from the docs
 
 Earlier README listed `@cratis/components/EventModeling` in the available subpath exports. The path did not exist in the package's `exports` map and never did. If you tried to import from it, the import always failed. The README has been corrected.
+
+### `@cratis/components/CommandForm/fields` now resolves under CommonJS
+
+This subpath's CJS target was never emitted by the build, so `require('@cratis/components/CommandForm/fields')` failed (ESM `import` worked). Because the subpath is equivalent to `@cratis/components/CommandForm` — which already re-exports every field — its `exports` entry now points at that same barrel, so both `import` and `require` resolve. Existing imports from either path keep working unchanged.
 
 ### New subpath exports
 
