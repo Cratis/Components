@@ -196,7 +196,6 @@ export interface DialogProps {
  *
  * @param props - {@link DialogProps}.
  */
-
 export const Dialog = ({
     title,
     visible = true,
