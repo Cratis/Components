@@ -1,0 +1,62 @@
+---
+title: Components
+description: The React component library for Cratis — command dialogs, forms, and data tables that consume Arc's generated proxies.
+---
+
+import { CardGrid } from '@astrojs/starlight/components';
+import SimpleCard from '@components/SimpleCard.astro';
+import TopicHero from '@components/TopicHero.astro';
+
+<TopicHero icon="laptop" eyebrow="Components" title="React components wired to your proxies">
+Command dialogs, forms, and data tables that consume [Arc's](/arc/) generated proxies — so a screen is a few lines, not a few files. Built on PrimeReact, fully typed, and styled the way you choose. [Get started →](/components/getting-started/) · [Why Components? →](/components/why-components/)
+</TopicHero>
+
+## Start here
+
+<CardGrid>
+  <SimpleCard title="Getting started" icon="rocket" link="/components/getting-started/">
+    Install the package, mount the provider, and render your first proxy-driven screen.
+  </SimpleCard>
+  <SimpleCard title="Why Components" icon="approve-check" link="/components/why-components/">
+    What the library buys you over wiring PrimeReact to your proxies by hand.
+  </SimpleCard>
+  <SimpleCard title="Styling" icon="seti:folder" link="/components/styling/">
+    Three paths — a PrimeReact theme, your own palette, or fully unstyled with a `pt` preset.
+  </SimpleCard>
+</CardGrid>
+
+## Recipes
+
+<CardGrid>
+  <SimpleCard title="Build a form" icon="open-book" link="/components/building-a-form/">
+    Collect input and execute a command with `CommandDialog` and the `CommandForm` fields.
+  </SimpleCard>
+  <SimpleCard title="Display data" icon="seti:db" link="/components/displaying-data/">
+    Render a query or observable query with `DataPage` and the data-table wrappers.
+  </SimpleCard>
+  <SimpleCard title="Multi-step form" icon="list-format" link="/components/multi-step-form/">
+    Gather information across named stages with `StepperCommandDialog`.
+  </SimpleCard>
+  <SimpleCard title="A list screen with actions" icon="puzzle" link="/components/list-screen-with-actions/">
+    A full screen: list rows, add and edit through dialogs, and react to selection.
+  </SimpleCard>
+</CardGrid>
+
+## Key components
+
+<CardGrid>
+  <SimpleCard title="CommandDialog" icon="seti:react" link="/components/commanddialog/">
+    Instantiates, validates, and executes a generated command, with the footer handled for you.
+  </SimpleCard>
+  <SimpleCard title="DataPage" icon="laptop" link="/components/datapage/">
+    A resizable page that lists query data with toolbar actions and detail panels.
+  </SimpleCard>
+  <SimpleCard title="CommandForm fields" icon="approve-check" link="/components/commandform/">
+    Typed input fields bound to command properties — text, number, dropdown, date, and more.
+  </SimpleCard>
+  <SimpleCard title="Dialogs" icon="open-book" link="/components/dialogs/">
+    Data-collection dialogs that return values without executing a command.
+  </SimpleCard>
+</CardGrid>
+
+Components renders [Arc's](/arc/) proxies over [Chronicle](/chronicle/) read models — see [Why Cratis](/why-cratis/) for the full stack.
