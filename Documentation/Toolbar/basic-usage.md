@@ -52,4 +52,4 @@ import { FaPencil } from 'react-icons/fa6';
 </Toolbar>
 ```
 
-See [Icon](../../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
+See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
