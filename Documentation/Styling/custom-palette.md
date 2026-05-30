@@ -4,6 +4,8 @@ You want PrimeReact's chrome — its dialog frames, button shapes, focus rings, 
 
 This setup keeps a PrimeReact theme as the **structural baseline** and overrides PrimeReact's own CSS variables on `:root` to repaint the whole UI. The `--cratis-*` tokens follow along through `tokens.css`'s cascade, so Cratis-scoped surfaces stay in sync. You can also override the Cratis tokens independently when you want Cratis surfaces to differ from PrimeReact widgets.
 
+> **PrimeReact version note.** The examples below override PrimeReact **v10** theme variables (`--surface-*`, `--primary-color`, …). On **PrimeReact v11**, customize the palette through `@primeuix/themes` instead — define a preset with `definePreset` (or override the `--p-*` design tokens). Either way you don't touch the `--cratis-*` layer: it resolves the v11 design token first and falls back to the v10 variable, so Cratis-scoped surfaces follow your palette on both majors.
+
 ## Setup
 
 ```tsx

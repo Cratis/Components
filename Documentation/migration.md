@@ -299,7 +299,18 @@ Wrappers that compose more than one PrimeReact widget expose explicit per-slot p
 
 ### `--cratis-*` token layer
 
-A scoped Cratis token layer is now part of every install. Tokens default to the PrimeReact theme variable with the same name minus the `--cratis-` prefix, so theme-based setups continue to look the way they always did. Override `--cratis-*` only when you want a Cratis-scoped surface tinted independently of the surrounding PrimeReact widgets — see [Cratis token reference](Styling/cratis-tokens.md).
+A scoped Cratis token layer is now part of every install. Each token resolves the PrimeReact v11 design token (`@primeuix/themes`) first and falls back to the matching v10 theme variable, so theme-based setups continue to look the way they always did on either PrimeReact major. Override `--cratis-*` only when you want a Cratis-scoped surface tinted independently of the surrounding PrimeReact widgets — see [Cratis token reference](Styling/cratis-tokens.md).
+
+### PrimeReact 10 and 11 — one build, both majors
+
+The `--cratis-*` token layer is version-spanning by design. Every token is declared as `var(--p-<v11-token>, var(--<v10-variable>))`, so:
+
+- On **PrimeReact 10**, the `--p-*` design tokens are undefined and the legacy `--surface-*` / `--primary-*` / `--text-color` values win.
+- On **PrimeReact 11**, the `@primeuix/themes` `--p-*` tokens resolve and win.
+
+The same build of `@cratis/components` is therefore themed correctly on both majors, and a PrimeReact 10 → 11 upgrade in your app needs **no change** to how Cratis components pick up your theme. PrimeReact 11 is not a rename of 10 — it uses a different token vocabulary — so where v11 has no direct equivalent for a v10 concept (`surface-ground` / `surface-section` / `surface-overlay`, the composite `focus-ring`), the closest durable v11 semantic token is used; the inline notes in `tokens.css` record each mapping.
+
+> **Scope:** this makes the **theming** surface forward-compatible — the most pervasive part of a PrimeReact upgrade. It does **not** make the library fully PrimeReact 11-compatible: v11 also changes component prop APIs and `pt` slot names, so per-slot `pt` presets will need revisiting when the `primereact` peer range is widened to allow v11. That work is tracked separately; the `primereact` peer is still `^10.9.0` today.
 
 ### Storybook styling toolbar
 
