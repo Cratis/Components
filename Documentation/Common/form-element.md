@@ -1,165 +1,131 @@
 # FormElement
 
-Wrapper component for form inputs with label and validation display.
+Lightweight wrapper that places an icon addon to the left of a form input, styled with the `--cratis-*` token layer. Use it to give input fields a leading icon without pulling in PrimeReact's `InputGroup` chrome.
 
 ## Purpose
 
-FormElement provides consistent styling and structure for form input fields with labels and validation messages.
+FormElement is a structural primitive — it lays out an icon addon and a child input side by side, with rounded-on-the-left chrome around the addon. It does **not** render labels, required indicators, or validation messages — those concerns live on the underlying input itself or on the surrounding command form.
 
 ## Key Features
 
-- Label positioning
-- Validation error display
-- Required field indication
-- Consistent spacing
-- Integration with form validation
+- Icon addon styled from `--cratis-*` tokens (background, border, radius).
+- Independent of PrimeReact's `p-inputgroup` / `p-inputgroup-addon` classes — works the same with or without a PrimeReact theme loaded.
+- Accepts any React node as the icon (PrimeIcons class, `<svg>`, third-party icon component, …).
+
+## Props
+
+| Prop | Type | Description |
+|---|---|---|
+| `icon` | `React.ReactNode` | Icon node displayed inside the leading addon. Can be any React node — a PrimeIcons `<i className="pi pi-…" />`, an `<svg>`, or a `react-icons` component. |
+| `children` | `React.ReactNode` | The form input rendered to the right of the icon addon (typically an `InputText`, `Dropdown`, etc.). |
 
 ## Basic Usage
 
-```typescript
+```tsx
 import { FormElement } from '@cratis/components';
 import { InputText } from 'primereact/inputtext';
 
 function MyForm() {
     return (
-        <FormElement label="Name" required={true} error="Name is required">
+        <FormElement icon={<i className="pi pi-user" />}>
             <InputText value={name} onChange={(e) => setName(e.target.value)} />
         </FormElement>
     );
 }
 ```
 
-## Props
-
-- `label`: Label text for the field
-- `required`: Show required indicator (default: false)
-- `error`: Validation error message to display
-- `children`: The form input component
-
 ## Examples
 
-### Text Input
+### Email field with envelope icon
 
-```typescript
-<FormElement label="Email" required>
-    <InputText 
+```tsx
+<FormElement icon={<i className="pi pi-envelope" />}>
+    <InputText
         type="email"
-        value={email} 
-        onChange={(e) => setEmail(e.target.value)} 
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
     />
 </FormElement>
 ```
 
-### With Validation Error
+### Search field with react-icons
 
-```typescript
-<FormElement 
-    label="Password" 
-    required 
-    error={passwordError}
->
-    <InputText 
-        type="password"
-        value={password} 
-        onChange={(e) => setPassword(e.target.value)} 
+```tsx
+import { FaMagnifyingGlass } from 'react-icons/fa6';
+
+<FormElement icon={<FaMagnifyingGlass />}>
+    <InputText
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search…"
     />
 </FormElement>
 ```
 
-### Dropdown
+### Dropdown with category icon
 
-```typescript
-<FormElement label="Country" required>
-    <Dropdown 
-        value={country}
-        options={countries}
-        onChange={(e) => setCountry(e.value)}
+```tsx
+import { FaLayerGroup } from 'react-icons/fa6';
+
+<FormElement icon={<FaLayerGroup />}>
+    <Dropdown
+        value={category}
+        options={categories}
+        onChange={(e) => setCategory(e.value)}
+        optionLabel="name"
+        optionValue="id"
     />
 </FormElement>
 ```
 
-### Checkbox
+## Styling
 
-```typescript
-<FormElement label="Agree to Terms">
-    <Checkbox 
-        checked={agreed}
-        onChange={(e) => setAgreed(e.checked)}
-    />
-</FormElement>
-```
+The addon's background, border, and radius are driven by the [`--cratis-*` token layer](../Styling/cratis-tokens.md):
 
-### Text Area
+| Token | Surface |
+|---|---|
+| `--cratis-surface-100` | Addon background. |
+| `--cratis-surface-border` | Addon border. |
+| `--cratis-text-color-secondary` | Icon color. |
+| `--cratis-border-radius` | Rounded-on-the-left corner radius. |
 
-```typescript
-<FormElement label="Description">
-    <InputTextarea 
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        rows={5}
-    />
-</FormElement>
-```
+Override the tokens to retint the addon without forking the component:
 
-## Complete Form Example
-
-```typescript
-function UserForm() {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        role: null
-    });
-    const [errors, setErrors] = useState({});
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <FormElement 
-                label="Full Name" 
-                required 
-                error={errors.name}
-            >
-                <InputText 
-                    value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                />
-            </FormElement>
-
-            <FormElement 
-                label="Email Address" 
-                required 
-                error={errors.email}
-            >
-                <InputText 
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                />
-            </FormElement>
-
-            <FormElement 
-                label="Role" 
-                required 
-                error={errors.role}
-            >
-                <Dropdown 
-                    value={formData.role}
-                    options={roleOptions}
-                    onChange={(e) => handleChange('role', e.value)}
-                />
-            </FormElement>
-
-            <Button type="submit" label="Save" />
-        </form>
-    );
+```css
+:root {
+    --cratis-surface-100:   #1e293b;
+    --cratis-surface-border: #334155;
+    --cratis-border-radius:  10px;
 }
 ```
 
-## Best Practices
+For per-instance restyling, wrap the FormElement with your own class and target it in CSS:
 
-1. Always use FormElement for consistent form layouts
-2. Show required indicators on mandatory fields
-3. Display validation errors clearly
-4. Keep labels concise
-5. Group related fields together
-6. Use appropriate input types for data
+```css
+.brand-form-element .cratis-form-element__addon {
+    background: var(--brand-accent);
+    color: var(--brand-on-accent);
+}
+```
+
+```tsx
+<div className="brand-form-element">
+    <FormElement icon={<i className="pi pi-shield" />}>
+        <InputText … />
+    </FormElement>
+</div>
+```
+
+For full styling control under `unstyled` mode, the addon classes are stable: `cratis-form-element` on the row and `cratis-form-element__addon` on the leading slot.
+
+## When to use FormElement vs CommandForm fields
+
+- Use **`FormElement`** for ad-hoc forms outside of a `CommandForm`, when you want the icon-addon visual on top of any input you control.
+- Use **CommandForm fields** (`InputTextField`, `NumberField`, `DropdownField`, …) inside a `CommandForm` or `CommandDialog` — they bind to a command property, surface validation state, and render the appropriate input type.
+
+## See Also
+
+- [Styling Overview](../Styling/index.md) — the supported styling options and where FormElement fits
+- [Cratis token reference](../Styling/cratis-tokens.md) — every token and the surfaces it tints
+- [CommandForm Field Types](../CommandForm/index.md) — command-bound field wrappers

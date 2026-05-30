@@ -11,9 +11,7 @@ const config: StorybookConfig = {
     '!../dist/**',
     '!../storybook-static/**'
   ],
-  addons: [
-    '@storybook/addon-storysource'
-  ],
+  addons: [],
   framework: {
     name: '@storybook/react-vite',
     options: {}

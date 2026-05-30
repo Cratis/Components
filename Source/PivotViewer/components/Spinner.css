@@ -21,48 +21,48 @@
 }
 
 .pv-spinner-ring:nth-child(1) {
-  border-top-color: var(--primary-300);
+  border-top-color: var(--cratis-primary-300);
   animation: spinner-rotate 1.5s linear infinite;
 }
 
 .pv-spinner-ring:nth-child(2) {
-  border-right-color: var(--primary-400);
+  border-right-color: var(--cratis-primary-400);
   animation: spinner-rotate 1.5s linear infinite;
   animation-delay: -0.1875s;
 }
 
 .pv-spinner-ring:nth-child(3) {
-  border-bottom-color: var(--primary-500);
+  border-bottom-color: var(--cratis-primary-500);
   animation: spinner-rotate 1.5s linear infinite;
   animation-delay: -0.375s;
 }
 
 .pv-spinner-ring:nth-child(4) {
-  border-left-color: var(--primary-600);
+  border-left-color: var(--cratis-primary-600);
   animation: spinner-rotate 1.5s linear infinite;
   animation-delay: -0.5625s;
 }
 
 .pv-spinner-ring:nth-child(5) {
-  border-top-color: var(--primary-400);
+  border-top-color: var(--cratis-primary-400);
   animation: spinner-rotate 1.5s linear infinite reverse;
   animation-delay: -0.75s;
 }
 
 .pv-spinner-ring:nth-child(6) {
-  border-right-color: var(--primary-500);
+  border-right-color: var(--cratis-primary-500);
   animation: spinner-rotate 1.5s linear infinite reverse;
   animation-delay: -0.9375s;
 }
 
 .pv-spinner-ring:nth-child(7) {
-  border-bottom-color: var(--primary-300);
+  border-bottom-color: var(--cratis-primary-300);
   animation: spinner-rotate 1.5s linear infinite reverse;
   animation-delay: -1.125s;
 }
 
 .pv-spinner-ring:nth-child(8) {
-  border-left-color: var(--primary-600);
+  border-left-color: var(--cratis-primary-600);
   animation: spinner-rotate 1.5s linear infinite reverse;
   animation-delay: -1.3125s;
 }

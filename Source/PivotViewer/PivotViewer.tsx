@@ -25,6 +25,25 @@ import { useScrollSync } from './hooks/useScrollSync';
 import { useAnimationModeTracking } from './hooks/useAnimationModeTracking';
 import { useViewModeScrollHandling } from './hooks/useViewModeScrollHandling';
 
+/**
+ * A faceted, zoomable card-grid visualization inspired by Microsoft's PivotViewer.
+ * Renders a large set of items as cards that can be grouped by any of a set of
+ * declared dimensions, filtered through faceted panels, searched by text, and
+ * zoomed/panned around freely. A detail pane shows the selected card's full
+ * information.
+ *
+ * Backed by PIXI.js for high-performance rendering, so it gracefully handles
+ * thousands of items. Consumers supply their own `cardRenderer` and
+ * `detailRenderer` to control card and detail content; the component handles
+ * grouping, filtering, panning, zooming, and selection internally.
+ *
+ * Use this for exploratory data analysis UIs over large collections (catalogs,
+ * inventories, telemetry samples). For tabular display, use {@link DataPage}
+ * or {@link DataTableForQuery}.
+ *
+ * @typeParam TItem - The item type contained in {@link PivotViewerProps.data}.
+ * @param props - {@link PivotViewerProps}.
+ */
 export function PivotViewer<TItem extends object>({
     data,
     dimensions,

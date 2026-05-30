@@ -3,8 +3,8 @@
 
 /* ── Tooltip bubble ──────────────────────────────────────────────────────── */
 .tooltip-bubble {
-    background: var(--surface-100);
-    color: var(--text-color);
-    border: 1px solid var(--surface-border);
+    background: var(--cratis-surface-100);
+    color: var(--cratis-text-color);
+    border: 1px solid var(--cratis-surface-border);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }

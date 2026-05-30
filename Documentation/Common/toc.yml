@@ -1,5 +1,7 @@
 - name: Overview
   href: index.md
+- name: CratisComponentsProvider
+  href: cratis-components-provider.md
 - name: Icon
   href: icon.md
 - name: Page

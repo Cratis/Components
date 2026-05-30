@@ -13,25 +13,63 @@ import { Checkbox } from 'primereact/checkbox';
 import { Calendar } from 'primereact/calendar';
 import { InputTextarea } from 'primereact/inputtextarea';
 
+/**
+ * Props for {@link ObjectContentEditor}.
+ */
 export interface ObjectContentEditorProps {
+    /** The JSON value to display or edit. */
     object: Json;
+
+    /** Optional snapshot timestamp displayed at the bottom of the editor. */
     timestamp?: Date;
-    schema: JsonSchema;
+
     /**
-     * When true, renders editable input fields for each property respecting type/format
+     * JSON Schema describing the structure of {@link object}. Drives field
+     * detection, label rendering, required-field markers, and per-field input
+     * type selection in edit mode.
+     */
+    schema: JsonSchema;
+
+    /**
+     * When true, renders editable input fields for each property respecting
+     * the JSON Schema's `type` and `format` annotations. Defaults to read-only.
      */
     editMode?: boolean;
+
     /**
-     * Called with the updated object after any field edit
+     * Invoked with the updated object after any field edit. Required to
+     * actually persist user changes when {@link editMode} is true.
      */
     onChange?: (object: Json) => void;
+
     /**
-     * Called when the validation state changes
+     * Invoked whenever the validation state of the editor changes (true when
+     * one or more fields fail their schema check). Useful for disabling a
+     * surrounding Save button while errors are present.
      */
     onValidationChange?: (hasErrors: boolean) => void;
+
+    /**
+     * Extra CSS class names appended to the editor root, combined with the
+     * default `order-content` class. For fine-grained styling of the internal
+     * PrimeReact inputs, use a global `pt` preset on `CratisComponentsProvider`.
+     */
+    className?: string;
 }
 
-export const ObjectContentEditor = ({ object, timestamp, schema, editMode = false, onChange, onValidationChange }: ObjectContentEditorProps) => {
+/**
+ * Renders a structured view (or editor) of any JSON object whose shape is
+ * described by a JSON Schema. In view mode it lays out properties as a labeled
+ * table with breadcrumb-style navigation into nested objects and arrays. In
+ * edit mode it switches to the appropriate input type for each property
+ * (`InputText`, `InputNumber`, `Checkbox`, `Calendar`, `InputTextarea`).
+ *
+ * The component composes many PrimeReact widgets internally; for fine-grained
+ * pass-through styling use a global `pt` preset on `CratisComponentsProvider`.
+ *
+ * @param props - {@link ObjectContentEditorProps}.
+ */
+export const ObjectContentEditor = ({ object, timestamp, schema, editMode = false, onChange, onValidationChange, className }: ObjectContentEditorProps) => {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -144,12 +182,12 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
     };
 
     const rowStyle: React.CSSProperties = {
-        borderBottom: '1px solid var(--surface-border)',
+        borderBottom: '1px solid var(--cratis-surface-border)',
     };
 
     const labelStyle: React.CSSProperties = {
         padding: '8px 12px',
-        color: 'var(--text-color-secondary)',
+        color: 'var(--cratis-text-color-secondary)',
         textAlign: 'left',
         fontWeight: 500,
         width: '140px',
@@ -158,14 +196,19 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
     const valueStyle: React.CSSProperties = {
         padding: '8px 12px',
-        color: 'var(--text-color)',
+        color: 'var(--cratis-text-color)',
         textAlign: 'left',
     };
 
     const infoIconStyle: React.CSSProperties = {
         fontSize: '0.875rem',
-        color: 'var(--text-color-secondary)',
+        color: 'var(--cratis-text-color-secondary)',
         flexShrink: 0,
+    };
+
+    const fieldErrorStyle: React.CSSProperties = {
+        color: 'var(--cratis-red-500)',
+        fontSize: '0.75rem',
     };
 
     const updateValue = useCallback((propertyName: string, newValue: Json) => {
@@ -195,7 +238,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         const inputStyle = {
             width: '100%',
-            ...(error ? { borderColor: 'var(--red-500)' } : {})
+            ...(error ? { borderColor: 'var(--cratis-red-500)' } : {})
         };
 
         if (property.type === 'boolean') {
@@ -205,7 +248,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         checked={Boolean(value)}
                         onChange={(e) => handleChange(e.checked ?? false)}
                     />
-                    {error && <small className="p-error">{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -220,7 +263,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         useGrouping={false}
                         style={inputStyle}
                     />
-                    {error && <small className="p-error">{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -236,7 +279,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         showIcon
                         style={inputStyle}
                     />
-                    {error && <small className="p-error">{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -251,14 +294,14 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         showIcon
                         style={inputStyle}
                     />
-                    {error && <small className="p-error">{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
 
         if (property.type === 'array') {
             return (
-                <div className="flex items-center gap-2" style={{ color: 'var(--text-color-secondary)', fontStyle: 'italic' }}>
+                <div className="flex items-center gap-2" style={{ color: 'var(--cratis-text-color-secondary)', fontStyle: 'italic' }}>
                     <span>Array editing not yet supported</span>
                 </div>
             );
@@ -266,7 +309,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         if (property.type === 'object') {
             return (
-                <div className="flex items-center gap-2" style={{ color: 'var(--text-color-secondary)', fontStyle: 'italic' }}>
+                <div className="flex items-center gap-2" style={{ color: 'var(--cratis-text-color-secondary)', fontStyle: 'italic' }}>
                     <span>Object editing not yet supported</span>
                 </div>
             );
@@ -283,7 +326,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                         rows={3}
                         style={inputStyle}
                     />
-                    {error && <small className="p-error">{error}</small>}
+                    {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
         }
@@ -295,7 +338,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                     onChange={(e) => handleChange(e.target.value)}
                     style={inputStyle}
                 />
-                {error && <small className="p-error">{error}</small>}
+                {error && <small style={fieldErrorStyle}>{error}</small>}
             </div>
         );
     };
@@ -308,7 +351,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                 <div
                     className="flex items-center gap-2 cursor-pointer"
                     onClick={() => navigateToProperty(propertyName)}
-                    style={{ color: 'var(--primary-color)', display: 'flex', alignItems: 'center' }}
+                    style={{ color: 'var(--cratis-primary-color)', display: 'flex', alignItems: 'center' }}
                 >
                     <span>Array[{value.length}]</span>
                     <faIcons.FaArrowRight style={{ fontSize: '0.875rem', display: 'inline-flex' }} />
@@ -321,7 +364,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                 <div
                     className="flex items-center gap-2 cursor-pointer"
                     onClick={() => navigateToProperty(propertyName)}
-                    style={{ color: 'var(--primary-color)', display: 'flex', alignItems: 'center' }}
+                    style={{ color: 'var(--cratis-primary-color)', display: 'flex', alignItems: 'center' }}
                 >
                     <span>Object</span>
                     <faIcons.FaArrowRight style={{ fontSize: '0.875rem', display: 'inline-flex' }} />
@@ -334,7 +377,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
     const renderTable = () => {
         if (Array.isArray(currentData)) {
-            if (currentData.length === 0) return <div style={{ padding: '12px', color: 'var(--text-color-secondary)' }}>Empty array</div>;
+            if (currentData.length === 0) return <div style={{ padding: '12px', color: 'var(--cratis-text-color-secondary)' }}>Empty array</div>;
 
             const firstItem = currentData[0];
             if (typeof firstItem === 'object' && firstItem !== null && !Array.isArray(firstItem)) {
@@ -346,7 +389,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                             {currentData.map((item, index) => (
                                 <React.Fragment key={index}>
                                     {index > 0 && (
-                                        <tr style={{ height: '8px', background: 'var(--surface-hover)' }}>
+                                        <tr style={{ height: '8px', background: 'var(--cratis-surface-hover)' }}>
                                             <td colSpan={2}></td>
                                         </tr>
                                     )}
@@ -422,7 +465,7 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
     };
 
     return (
-        <div className="order-content" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className={className ? `order-content ${className}` : 'order-content'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <Tooltip target="[data-pr-tooltip]" />
             <ObjectNavigationalBar
                 navigationPath={navigationPath}
@@ -433,10 +476,10 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                 <div style={{
                     marginTop: '20px',
                     padding: '12px',
-                    background: 'var(--highlight-bg)',
+                    background: 'var(--cratis-highlight-bg)',
                     borderRadius: '8px',
                     fontSize: '12px',
-                    color: 'var(--text-color-secondary)'
+                    color: 'var(--cratis-text-color-secondary)'
                 }}>
                     Snapshot captured: {timestamp.toLocaleString()}
                 </div>

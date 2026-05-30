@@ -187,16 +187,16 @@ export const CommandStepperContent = ({
                     const isVisited = visitedSteps.has(idx);
 
                     const bgColor = hasError
-                        ? 'var(--red-500, #ef4444)'
+                        ? 'var(--cratis-red-500, #ef4444)'
                         : isVisited
-                            ? 'var(--green-500, #22c55e)'
+                            ? 'var(--cratis-green-500, #22c55e)'
                             : null;
 
                     if (!bgColor) return existing;
                     const existingStyle = existing.style as Record<string, unknown> | undefined;
                     return {
                         ...existing,
-                        style: { ...existingStyle, backgroundColor: bgColor, color: 'var(--primary-color-text)' }
+                        style: { ...existingStyle, backgroundColor: bgColor, color: 'var(--cratis-primary-color-text)' }
                     };
                 }
             }
@@ -389,6 +389,66 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     );
 };
 
+/**
+ * A multi-step wizard backed by a single Cratis Arc command — the embedded,
+ * non-modal counterpart of {@link StepperCommandDialog}. Renders directly
+ * inside a page region (a panel, a route, a wizard view) rather than inside
+ * a modal dialog. Use this when the wizard *is* the page; use
+ * {@link StepperCommandDialog} when the same wizard should appear over the
+ * current page in a modal.
+ *
+ * ## Mechanics
+ *
+ * - Wraps PrimeReact's `Stepper` inside an Arc `CommandForm` so each
+ *   `<StepperPanel>` becomes a logical grouping of fields that all bind to
+ *   the same single command.
+ * - Provides a built-in Previous / Next / Submit footer. The Submit button
+ *   only appears on the last step and only when the form passes its
+ *   validity gate.
+ * - Steps with field errors are visually marked (red step indicator) so
+ *   the user can see at a glance which step needs attention — useful in
+ *   wizards long enough that a missed-required-field on page 1 would
+ *   otherwise be hidden behind page 4.
+ * - On final Submit, the bound command runs through Arc's command pipeline.
+ *   Failure paths (`onValidationFailure` / `onFailed`) keep the wizard
+ *   open and re-surface field errors automatically.
+ *
+ * ## What `TCommand` is
+ *
+ * `TCommand` is the auto-generated TypeScript class produced by the Arc
+ * proxy generator from a C# `[Command]` record. The wizard's UI is a
+ * presentation grouping of one command's fields — every panel binds to
+ * properties on the same single command instance.
+ *
+ * ## What's unique vs. {@link StepperCommandDialog}
+ *
+ * Mechanically identical, but lives inline on a page instead of inside a
+ * modal Dialog. There is no `dialogPt` / `dialogUnstyled` prop because
+ * there is no outer dialog — `pt` / `ptOptions` / `unstyled` target the
+ * Stepper directly.
+ *
+ * ```tsx
+ * import { CommandStepper } from '@cratis/components/CommandStepper';
+ * import { StepperPanel } from 'primereact/stepperpanel';
+ * import { RegisterAuthor } from './RegisterAuthor';   // proxy from C#
+ *
+ * export const RegisterAuthorPage = () => (
+ *     <CommandStepper<RegisterAuthor> command={RegisterAuthor}
+ *                                     onSuccess={() => navigate('/authors')}>
+ *         <StepperPanel header="Basics">
+ *             <InputTextField value={c => c.name} title="Name" />
+ *         </StepperPanel>
+ *         <StepperPanel header="Contact">
+ *             <InputTextField value={c => c.email} title="Email" />
+ *         </StepperPanel>
+ *     </CommandStepper>
+ * );
+ * ```
+ *
+ * @typeParam TCommand - The command class (proxy generated from C# `[Command]`).
+ * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
+ * @param props - {@link CommandStepperProps}.
+ */
 export const CommandStepper = <TCommand extends object = object, TResponse = object>(
     props: CommandStepperProps<TCommand, TResponse>
 ) => {

@@ -1,0 +1,83 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/*
+ * Cratis Components — CSS variable tokens.
+ *
+ * Every internal component references the --cratis-* variables defined here
+ * instead of PrimeReact's theme variables directly. This indirection is the
+ * single seam that lets the library span PrimeReact major versions: each token
+ * resolves the PrimeReact v11 design token first, falling back to the legacy
+ * v10 theme variable, so the same build works whether the consumer is on
+ * PrimeReact 10 or 11 during the upgrade window.
+ *
+ *   --cratis-surface-border: var(--p-content-border-color, var(--surface-border));
+ *                                  ^ PrimeReact v11 (@primeuix/themes)  ^ v10 legacy
+ *
+ * - Consumer on v11: the --p-* token resolves and wins.
+ * - Consumer on v10: --p-* is undefined, so the legacy --surface-* value wins.
+ *
+ * v11 is not a rename of v10 — it is a different token vocabulary (a primitive
+ * palette plus semantic content/surface/text/primary/highlight tokens). Where
+ * v11 has no 1:1 equivalent for a v10 concept (surface-ground / surface-section
+ * / surface-overlay / the composite focus-ring), the closest durable v11
+ * semantic token is used and noted inline; consumers can always override.
+ *
+ * To take full control of the look and feel (with or without PrimeReact's
+ * unstyled / pt mechanism, Tailwind, or your own CSS), override the relevant
+ * --cratis-* tokens on :root (or any ancestor element):
+ *
+ *   :root {
+ *       --cratis-surface-card: #1f2937;
+ *       --cratis-text-color:   #f3f4f6;
+ *   }
+ *
+ * Tokens are intentionally fallback-free at the end of the chain — if neither a
+ * PrimeReact theme (v10 or v11) nor a consumer override is present, the variable
+ * resolves to nothing and the affected rule no-ops. That keeps the library
+ * theme-agnostic without imposing a default palette on consumers.
+ */
+
+:root {
+    /* Surfaces */
+    --cratis-surface-0:        var(--p-surface-0, var(--surface-0));
+    --cratis-surface-100:      var(--p-surface-100, var(--surface-100));
+    /* v11 has no page-canvas/section token — map to the neutral content surface;
+     * separation in v11 comes from borders (content-border-color), not fills. */
+    --cratis-surface-ground:   var(--p-content-background, var(--surface-ground));
+    --cratis-surface-section:  var(--p-content-hover-background, var(--surface-section));
+    --cratis-surface-card:     var(--p-content-background, var(--surface-card));
+    /* v11 splits overlay backgrounds by type — use the modal surface as the general overlay. */
+    --cratis-surface-overlay:  var(--p-overlay-modal-background, var(--surface-overlay));
+    --cratis-surface-hover:    var(--p-content-hover-background, var(--surface-hover));
+    --cratis-surface-border:   var(--p-content-border-color, var(--surface-border));
+
+    /* Text */
+    --cratis-text-color:           var(--p-text-color, var(--text-color));
+    --cratis-text-color-secondary: var(--p-text-muted-color, var(--text-color-secondary));
+
+    /* Primary brand */
+    --cratis-primary-color:      var(--p-primary-color, var(--primary-color));
+    --cratis-primary-color-text: var(--p-primary-contrast-color, var(--primary-color-text));
+    --cratis-primary-300:        var(--p-primary-300, var(--primary-300));
+    --cratis-primary-400:        var(--p-primary-400, var(--primary-400));
+    --cratis-primary-500:        var(--p-primary-500, var(--primary-500));
+    --cratis-primary-600:        var(--p-primary-600, var(--primary-600));
+
+    /* Highlight / selection */
+    --cratis-highlight-bg:         var(--p-highlight-background, var(--highlight-bg));
+    --cratis-highlight-text-color: var(--p-highlight-color, var(--highlight-text-color));
+
+    /* Semantic accents (primitive palette) */
+    --cratis-green-500:  var(--p-green-500, var(--green-500));
+    --cratis-orange-500: var(--p-orange-500, var(--orange-500));
+    --cratis-red-500:    var(--p-red-500, var(--red-500));
+
+    /* Geometry */
+    --cratis-border-radius: var(--p-content-border-radius, var(--border-radius));
+
+    /* Effects */
+    /* v11 decomposes the focus ring; --p-focus-ring-shadow is the box-shadow form. */
+    --cratis-focus-ring: var(--p-focus-ring-shadow, var(--focus-ring));
+    --cratis-maskbg:     var(--p-mask-background, var(--maskbg));
+}

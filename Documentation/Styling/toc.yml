@@ -1,0 +1,16 @@
+- name: Overview
+  href: index.md
+- name: Getting Started
+  href: getting-started.md
+- name: Use a PrimeReact theme
+  href: themed.md
+- name: Use a custom palette on top of a PrimeReact theme
+  href: custom-palette.md
+- name: Use fully unstyled mode
+  href: unstyled.md
+- name: Cratis token reference
+  href: cratis-tokens.md
+- name: Pass-through (pt) cheat sheet
+  href: pass-through.md
+- name: Combining styling setups
+  href: mixing-paths.md

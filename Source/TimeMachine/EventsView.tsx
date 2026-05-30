@@ -2,16 +2,43 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Timeline } from 'primereact/timeline';
+import { Timeline, type TimelineProps } from 'primereact/timeline';
 import type { Event } from './types';
 import { Properties } from './Properties';
 import './EventsView.css';
 
+/**
+ * Props for {@link EventsView}.
+ */
 interface EventsViewProps {
+    /** The events to display, in chronological order. */
     events: Event[];
+
+    /** Extra CSS class name forwarded to the underlying Timeline, alongside the component's own. */
+    className?: string;
+
+    /** PrimeReact pass-through configuration applied to the underlying Timeline. */
+    pt?: TimelineProps['pt'];
+
+    /** PrimeReact pass-through options applied to the underlying Timeline. */
+    ptOptions?: TimelineProps['ptOptions'];
+
+    /** When true, disables every base PrimeReact style on the underlying Timeline. */
+    unstyled?: boolean;
 }
 
-export const EventsView: React.FC<EventsViewProps> = ({ events }) => {
+/**
+ * Vertical timeline visualization of an ordered list of Cratis events.
+ * Renders each event on alternating sides of a central spine with its
+ * properties shown in a popup, and tracks scroll boundaries so up/down
+ * arrows appear only when there's content to scroll to.
+ *
+ * Used inside {@link TimeMachine} to show the events that produced a given
+ * read-model version, but can be reused for any event timeline UI.
+ *
+ * @param props - {@link EventsViewProps}.
+ */
+export const EventsView: React.FC<EventsViewProps> = ({ events, className, pt, ptOptions, unstyled }) => {
     // Use test data if no events provided
     const displayEvents = events.length > 0 ? events : [];
     const containerRef = useRef<HTMLDivElement>(null);
@@ -100,7 +127,10 @@ export const EventsView: React.FC<EventsViewProps> = ({ events }) => {
                 align="alternate"
                 content={customContent}
                 marker={customMarker}
-                className="events-view-timeline"
+                className={className ? `events-view-timeline ${className}` : 'events-view-timeline'}
+                pt={pt}
+                ptOptions={ptOptions}
+                unstyled={unstyled}
             />
             {canScrollDown && (
                 <div className="events-view-scroll-button-wrapper events-view-scroll-button-wrapper--bottom">

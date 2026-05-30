@@ -16,32 +16,83 @@ import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
 import css from './SchemaEditor.module.css';
 import { MenuItem } from 'primereact/menuitem';
 
+/**
+ * Props for {@link SchemaEditor}.
+ */
 export interface SchemaEditorProps {
+    /** The JSON Schema being viewed or edited. */
     schema: JsonSchema;
+
+    /** Optional event-type label displayed in the editor header. */
     eventTypeName?: string;
+
+    /** When false, the Edit action is hidden; defaults to `true`. */
     canEdit?: boolean;
+
+    /**
+     * When {@link canEdit} is false, this string is shown as a tooltip on the
+     * disabled Edit menu item to explain why editing is unavailable.
+     */
     canNotEditReason?: string;
+
+    /** Invoked with the updated schema after any structural change. */
     onChange?: (schema: JsonSchema) => void;
+
+    /** Invoked when the user activates the Save action. */
     onSave?: () => void;
+
+    /** Invoked when the user activates the Cancel action. */
     onCancel?: () => void;
+
+    /** Initial edit-mode state; defaults to `false` (read-only). */
     editMode?: boolean;
+
+    /** When true, hides the Save menu item even while in edit mode. */
     saveDisabled?: boolean;
+
+    /** When true, hides the Cancel menu item even while in edit mode. */
     cancelDisabled?: boolean;
+
+    /**
+     * Override the list of selectable type formats per JSON Schema type. Each
+     * entry contributes options to the type-format dropdown shown in edit
+     * mode. Defaults to {@link DEFAULT_TYPE_FORMATS}.
+     */
     typeFormats?: TypeFormat[];
+
+    /**
+     * Extra CSS class names appended to the editor root. Combined with the
+     * default `schema-editor` class. For fine-grained styling of internal
+     * PrimeReact components, use a global `pt` preset on `CratisComponentsProvider`.
+     */
+    className?: string;
 }
 
-export const SchemaEditor = ({ 
-    schema, 
-    eventTypeName = '', 
-    canEdit = true, 
-    canNotEditReason, 
-    onChange, 
-    onSave, 
-    onCancel, 
-    editMode, 
-    saveDisabled = false, 
+/**
+ * A breadcrumb-navigated editor for JSON Schemas. Lets users browse nested
+ * `object` and `array` property definitions, add or remove properties, change
+ * types and formats, and validate naming rules in place. Designed to drive
+ * UIs around event payload schemas and similar structural documents.
+ *
+ * The editor composes a PrimeReact `DataTable`, `Menubar`, and several form
+ * widgets internally; for restyling, use a global `pt` preset on
+ * `CratisComponentsProvider`.
+ *
+ * @param props - {@link SchemaEditorProps}.
+ */
+export const SchemaEditor = ({
+    schema,
+    eventTypeName = '',
+    canEdit = true,
+    canNotEditReason,
+    onChange,
+    onSave,
+    onCancel,
+    editMode,
+    saveDisabled = false,
     cancelDisabled = false,
-    typeFormats = DEFAULT_TYPE_FORMATS
+    typeFormats = DEFAULT_TYPE_FORMATS,
+    className
 }: SchemaEditorProps) => {
     const [currentPath, setCurrentPath] = useState<string[]>([]);
     const [properties, setProperties] = useState<JsonSchemaProperty[]>([]);
@@ -339,7 +390,7 @@ export const SchemaEditor = ({
     const currentDescription = getCurrentDescription();
 
     return (
-        <div className="schema-editor" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div className={className ? `schema-editor ${className}` : 'schema-editor'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="px-4 py-4">
                 <Tooltip target="[data-pr-tooltip]" />
                 <div className="schema-editor-menubar">
@@ -347,17 +398,18 @@ export const SchemaEditor = ({
                 </div>
             </div>
 
-            <div className="px-4 py-2 border-bottom-1 surface-border">
+            <div className={`px-4 py-2 ${css.bottomBorder}`}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Button
                         icon={<faIcons.FaArrowLeft />}
-                        className="p-button-text p-button-sm"
+                        text
+                        size="small"
                         onClick={navigateBack}
                         disabled={isAtRoot}
                         tooltip="Navigate back"
                         tooltipOptions={{ position: 'top' }}
                     />
-                    <div style={{ fontSize: '0.9rem', color: 'var(--text-color-secondary)', cursor: 'pointer' }}>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--cratis-text-color-secondary)', cursor: 'pointer' }}>
                         {breadcrumbItems.map((item, index) => (
                             <span key={index}>
                                 {index > 0 && <span className="mx-2">&gt;</span>}
@@ -372,7 +424,7 @@ export const SchemaEditor = ({
                     </div>
                 </div>
                 {currentDescription && (
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-color-secondary)', marginTop: '0.5rem', marginLeft: '2.5rem', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--cratis-text-color-secondary)', marginTop: '0.5rem', marginLeft: '2.5rem', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <faIcons.FaCircleInfo />
                         <span>{currentDescription}</span>
                     </div>
@@ -407,7 +459,7 @@ export const SchemaEditor = ({
                     }}
                     pt={{
                         root: { style: { border: 'none' } },
-                        tbody: { style: { borderTop: '1px solid var(--surface-border)' } }
+                        tbody: { style: { borderTop: '1px solid var(--cratis-surface-border)' } }
                     }}
                 >
                     <Column

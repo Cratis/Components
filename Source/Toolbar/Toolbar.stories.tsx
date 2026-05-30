@@ -424,9 +424,9 @@ export const DragAndDrop: Story = {
                         style={{
                             width: 240,
                             height: 180,
-                            borderColor: isDragOver ? 'var(--primary-color)' : 'var(--surface-border)',
-                            background: isDragOver ? 'var(--highlight-bg)' : 'var(--surface-card)',
-                            color: 'var(--text-color-secondary)',
+                            borderColor: isDragOver ? 'var(--cratis-primary-color)' : 'var(--cratis-surface-border)',
+                            background: isDragOver ? 'var(--cratis-highlight-bg)' : 'var(--cratis-surface-card)',
+                            color: 'var(--cratis-text-color-secondary)',
                             fontSize: '0.875rem',
                         }}
                     >
@@ -501,7 +501,7 @@ export const FolderGridVsList: Story = {
     render: () => (
         <div className='flex gap-8 items-start'>
             <div className='flex flex-col items-center gap-2'>
-                <span style={{ color: 'var(--text-color-secondary)', fontSize: '0.75rem' }}>Grid (default)</span>
+                <span style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.75rem' }}>Grid (default)</span>
                 <Toolbar>
                     <ToolbarFolder icon='pi pi-th-large' title='Tools' mode='grid'>
                         <ToolbarButton icon='pi pi-pencil' title='Draw' />
@@ -514,7 +514,7 @@ export const FolderGridVsList: Story = {
                 </Toolbar>
             </div>
             <div className='flex flex-col items-center gap-2'>
-                <span style={{ color: 'var(--text-color-secondary)', fontSize: '0.75rem' }}>List</span>
+                <span style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.75rem' }}>List</span>
                 <Toolbar>
                     <ToolbarFolder icon='pi pi-list' title='Tools' mode='list'>
                         <ToolbarButton icon='pi pi-pencil' title='Draw freehand' />
@@ -647,7 +647,7 @@ export const WithSlotInContext: Story = {
 
                         <div className='flex flex-col gap-4 items-center'>
                             <div className='flex flex-col gap-2 items-center'>
-                                <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>Context</span>
+                                <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Context</span>
                                 <div className='flex gap-2'>
                                     {(['drawing', 'text'] as const).map(ctx => (
                                         <button
@@ -667,7 +667,7 @@ export const WithSlotInContext: Story = {
                             </div>
 
                             <div className='flex flex-col gap-2 items-center'>
-                                <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>Slot content (drawing-extras)</span>
+                                <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Slot content (drawing-extras)</span>
                                 <div className='flex gap-2'>
                                     {(['none', 'favorite', 'bookmark'] as const).map(s => (
                                         <button
@@ -725,9 +725,9 @@ export const WithMultipleSlotContributors: Story = {
 
                     <div
                         className='flex flex-col gap-1 p-4 rounded-lg border text-sm'
-                        style={{ borderColor: 'var(--surface-border)', background: 'var(--surface-ground)', color: 'var(--text-color-secondary)' }}
+                        style={{ borderColor: 'var(--cratis-surface-border)', background: 'var(--cratis-surface-ground)', color: 'var(--cratis-text-color-secondary)' }}
                     >
-                        <strong style={{ color: 'var(--text-color)' }}>Three independent contributors</strong>
+                        <strong style={{ color: 'var(--cratis-text-color)' }}>Three independent contributors</strong>
                         <p>Rendered order: B (5) → A (10) → C (20)</p>
                         <ButtonA />
                         <ButtonB />
@@ -809,7 +809,7 @@ export const LayoutForEditorModules: Story = {
                                 { label: 'Review tools', enabled: reviewToolsEnabled, toggle: () => setReviewToolsEnabled(v => !v) },
                             ].map(({ label, enabled, toggle }) => (
                                 <div key={label} className='flex flex-col items-center gap-2'>
-                                    <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>{label}</span>
+                                    <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>{label}</span>
                                     <button
                                         type='button'
                                         onClick={toggle}
@@ -907,7 +907,7 @@ export const LayoutWithSmoothEditorTransitions: Story = {
                         </ToolbarSlot>
 
                         <div className='flex flex-col items-center gap-3'>
-                            <span className='text-xs' style={{ color: 'var(--text-color-secondary)' }}>Active editor</span>
+                            <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Active editor</span>
                             <div className='flex gap-2'>
                                 {(['canvas', 'text', 'schema'] as const).map(editor => (
                                     <button
