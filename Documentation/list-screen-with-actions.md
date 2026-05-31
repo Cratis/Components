@@ -14,8 +14,9 @@ sidebar:
 - **Row actions** open edit/remove command dialogs for the selected item.
 
 ```tsx
-import { DataPage } from '@cratis/components/DataPage';
-import { useDialog, DialogResult } from '@cratis/arc.react/dialogs';
+import { DataPage, MenuItem } from '@cratis/components/DataPage';
+import { Column } from 'primereact/column';
+import { useDialog } from '@cratis/arc.react/dialogs';
 import { AllAuthors } from './Author';        // observable query proxy
 import { AddAuthor } from './AddAuthor';       // CommandDialog from the form recipe
 
@@ -24,11 +25,17 @@ export const Authors = () => {
 
     return (
         <>
-            <button onClick={() => showAddAuthor()}>Add author</button>
-            <DataPage<typeof AllAuthors>
+            <DataPage
+                title="Authors"
                 query={AllAuthors}
-                // selection + a resizable detail panel come built in
-            />
+                emptyMessage="No authors yet">
+                <DataPage.MenuItems>
+                    <MenuItem label="Add author" icon="pi pi-plus" command={() => showAddAuthor()} />
+                </DataPage.MenuItems>
+                <DataPage.Columns>
+                    <Column field="name" header="Name" sortable />
+                </DataPage.Columns>
+            </DataPage>
             <AddAuthorDialog />
         </>
     );

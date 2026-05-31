@@ -12,12 +12,12 @@ sidebar:
 If your query is observable, `DataTableForObservableQuery` subscribes for you and re-renders as new data arrives — no polling, no manual subscription:
 
 ```tsx
-import { DataTableForObservableQuery } from '@cratis/components';
+import { DataTableForObservableQuery } from '@cratis/components/DataTables';
 import { Column } from 'primereact/column';
 import { AllAuthors } from './Author';   // generated observable query proxy
 
 export const Authors = () => (
-    <DataTableForObservableQuery query={AllAuthors}>
+    <DataTableForObservableQuery query={AllAuthors} emptyMessage="No authors yet">
         <Column field="name" header="Name" sortable />
         <Column field="id" header="Id" />
     </DataTableForObservableQuery>
