@@ -43,9 +43,7 @@ We'll point it at `AllAuthorsWithBooks` — the read model from the [Arc tutoria
                    title="Authors"
                    query={AllAuthorsWithBooks}
                    emptyMessage="No authors yet"
-                   DetailsComponent={AuthorDetails}
-                   detailsTitle={item => item.name}
-                   initialSizes={[60, 40]}>
+                   detailsComponent={AuthorDetails}>
                    <DataPage.MenuItems>
                        <MenuItem label="Add author" icon="pi pi-plus" command={() => showAddAuthor()} />
                        <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={() => {/* open RenameAuthor */}} />

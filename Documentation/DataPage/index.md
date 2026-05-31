@@ -17,41 +17,66 @@ DataPage combines a page header, data table, menu bar, and optional detail view 
 
 ## Basic Usage
 
-```typescript
-import { DataPage, MenuItem, MenuItems, Columns } from '@cratis/components';
-import { Column } from 'primereact/column';
-import { MyQuery } from './queries';
+Declare the columns and menu actions with the compound `DataPage.Columns` and `DataPage.MenuItems` children, imported alongside `DataPage` from `@cratis/components/DataPage`:
 
-function MyDataPage() {
+```tsx
+import { DataPage, MenuItem } from '@cratis/components/DataPage';
+import { Column } from 'primereact/column';
+import { AllAuthors } from './queries';   // generated query proxy
+
+function Authors() {
     return (
         <DataPage
-            title="My Data"
-            query={MyQuery}
-            emptyMessage="No data found"
-        >
-            <MenuItems>
-                <MenuItem 
-                    label="Create" 
-                    icon="pi pi-plus"
-                    command={() => handleCreate()}
-                />
-                <MenuItem 
-                    label="Edit" 
-                    icon="pi pi-pencil"
-                    disableOnUnselected={true}
-                    command={() => handleEdit()}
-                />
-            </MenuItems>
-            
-            <Columns>
-                <Column field="name" header="Name" />
-                <Column field="description" header="Description" />
-                <Column field="createdAt" header="Created" />
-            </Columns>
+            title="Authors"
+            query={AllAuthors}
+            emptyMessage="No authors found">
+            <DataPage.MenuItems>
+                <MenuItem label="Add" icon="pi pi-plus" command={() => handleAdd()} />
+                <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={() => handleEdit()} />
+            </DataPage.MenuItems>
+            <DataPage.Columns>
+                <Column field="name" header="Name" sortable />
+                <Column field="id" header="Id" />
+            </DataPage.Columns>
         </DataPage>
     );
 }
 ```
+
+`disableOnUnselected` greys the menu item out until a row is selected — wire your edit and remove actions to it so they only fire on a selection.
+
+## List-and-detail with a details panel
+
+Pass a `detailsComponent` and `DataPage` adds a resizable split: the table on the left, your component on the right, shown only when a row is selected. The component receives the selected row as `item` (the `IDetailsComponentProps<T>` contract):
+
+```tsx
+import { DataPage } from '@cratis/components/DataPage';
+import { Column } from 'primereact/column';
+import { AllAuthorsWithBooks } from './queries';
+
+const AuthorDetails = ({ item }) => (
+    <div className="p-4">
+        <h2>{item.name}</h2>
+        <ul>{item.books.map(b => <li key={String(b.id)}>{b.title}</li>)}</ul>
+    </div>
+);
+
+function Authors() {
+    return (
+        <DataPage
+            title="Authors"
+            query={AllAuthorsWithBooks}
+            emptyMessage="No authors yet"
+            detailsComponent={AuthorDetails}>
+            <DataPage.Columns>
+                <Column field="name" header="Name" sortable />
+            </DataPage.Columns>
+        </DataPage>
+    );
+}
+```
+
+Selection is managed for you; to drive it yourself, pass `selection` and `onSelectionChange`.
 
 ## Props
 
