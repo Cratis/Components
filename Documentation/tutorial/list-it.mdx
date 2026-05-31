@@ -1,0 +1,51 @@
+---
+title: "1. List the authors"
+description: Put the library's authors on screen with a data table that binds to the AllAuthors query and updates itself when the read model changes.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+A library screen starts with a list. We have an `AllAuthors` query from the backend, generated into a typed proxy — so the first job is to get its results onto the screen in a table. And because that query is **observable**, we'll get something for free that usually takes real work: the table will stay current on its own.
+
+<Steps>
+
+1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with PrimeReact's `Column` — `field` matches a property on the read model, typed against the generated `Author`:
+
+   ```tsx title="Authors.tsx"
+   import { Page } from '@cratis/components/Common';
+   import { DataTableForObservableQuery } from '@cratis/components/DataTables';
+   import { Column } from 'primereact/column';
+   import { AllAuthors } from './Authors/Author';   // generated observable query proxy
+
+   export const Authors = () => (
+       <Page title="Authors" panel>
+           <DataTableForObservableQuery query={AllAuthors} emptyMessage="No authors yet">
+               <Column field="name" header="Name" sortable />
+           </DataTableForObservableQuery>
+       </Page>
+   );
+   ```
+
+</Steps>
+
+That's the whole screen. The `Page` wrapper gives you the titled, panelled chrome the rest of the app uses; the table does the rest.
+
+## What you didn't write
+
+Notice everything that's *absent*. There's no `fetch`, no `useEffect`, no loading flag, no `useState` holding the rows, and — the part that matters most — **no subscription code**. `DataTableForObservableQuery` opened the observable for you. The moment something else in the app registers a new author, the backend pushes the new read-model value down, and this table re-renders with the extra row. You'll see that happen for real in the next chapter, when we add the form.
+
+<Aside type="note" title="Live, because the query is observable">
+The liveness comes from the query being observable on the C# side (it returns `collection.Observe()`). If you only need the data once — to summarize or render custom markup — use `DataTableForQuery` instead, or call `AllAuthors.use()` to get the values directly. Same proxy, different consumption.
+</Aside>
+
+## Type safety reaches the column
+
+`field="name"` is a string, but it isn't a guess — it lines up with the `name` property on the generated `Author` read model. If you'd rather not hand-type field names at all, the [Displaying data](/components/displaying-data/) guide shows the typed `Columns` helpers. Either way, the table can't drift from the backend: change the read model in C#, rebuild, and the mismatch shows up.
+
+## What you built
+
+- A library screen that lists every author in a table,
+- bound to the `AllAuthors` query with **no subscription or fetch code**,
+- that will update itself the instant the data behind it changes.
+
+A read-only list isn't a back office, though — a librarian needs to *add* authors. Next we'll give the screen a command. [Let's act on the list →](./act-on-it)

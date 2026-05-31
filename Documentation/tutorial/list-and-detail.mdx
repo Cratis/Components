@@ -1,0 +1,88 @@
+---
+title: "3. List and detail"
+description: Swap the plain table for DataPage to get selection, menu actions, and a resizable detail panel that shows the selected author's books — then look back at the screen you built.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Our screen lists authors and acts on them, but the actions hang off a lone button, and there's nowhere to *see* an author — their books, in particular. The everyday shape for this is a table on the left, details on the right, with a toolbar that knows whether a row is selected. Writing that layout by hand is fiddly; `DataPage` hands it to you whole.
+
+We'll point it at `AllAuthorsWithBooks` — the read model from the [Arc tutorial](/arc/tutorial/books-and-relationships/) where each author already carries their books — so the detail panel has something to show.
+
+<Steps>
+
+1. **Describe the detail panel.** It's an ordinary component that receives the selected `item`. Because each `AuthorWithBooks` carries its `books`, listing them is a `map` — no second query:
+
+   ```tsx title="AuthorDetails.tsx"
+   export const AuthorDetails = ({ item }) => (
+       <div className="p-4">
+           <h2>{item.name}</h2>
+           <h3>Books</h3>
+           <ul>
+               {item.books.map(book => <li key={String(book.id)}>{book.title}</li>)}
+           </ul>
+       </div>
+   );
+   ```
+
+2. **Assemble the page.** `DataPage` takes the query, the columns, the menu actions, and the detail component. Selection, the resizable split, and hiding the panel when nothing is selected all come built in:
+
+   ```tsx title="Authors.tsx"
+   import { DataPage, MenuItem } from '@cratis/components/DataPage';
+   import { Column } from 'primereact/column';
+   import { useDialog } from '@cratis/arc.react/dialogs';
+   import { AllAuthorsWithBooks } from './Authors/AuthorWithBooks';   // generated proxy
+   import { AddAuthor } from './AddAuthor';
+   import { AuthorDetails } from './AuthorDetails';
+
+   export const Authors = () => {
+       const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
+       return (
+           <>
+               <DataPage
+                   title="Authors"
+                   query={AllAuthorsWithBooks}
+                   emptyMessage="No authors yet"
+                   DetailsComponent={AuthorDetails}
+                   detailsTitle={item => item.name}
+                   initialSizes={[60, 40]}>
+                   <DataPage.MenuItems>
+                       <MenuItem label="Add author" icon="pi pi-plus" command={() => showAddAuthor()} />
+                       <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={() => {/* open RenameAuthor */}} />
+                   </DataPage.MenuItems>
+                   <DataPage.Columns>
+                       <Column field="name" header="Name" sortable />
+                   </DataPage.Columns>
+               </DataPage>
+               <AddAuthorDialog />
+           </>
+       );
+   };
+   ```
+
+</Steps>
+
+Select an author and their books appear on the right. Drag the divider to resize. The **Edit** item is disabled until a row is selected — `disableOnUnselected` wires that to selection for you.
+
+<Aside type="tip" title="One read model per screen">
+The detail panel reads `books` straight off the row because `AllAuthorsWithBooks` was *built for this screen* — author plus books, in one shape. Resist the urge to make one giant read model serve every view. A list query, a detail query, and a dashboard query can each read their own purpose-built model; they're cheap to add and they never fight each other. See [Read Models](/chronicle/read-models/).
+</Aside>
+
+## Look back at what you built
+
+Three chapters ago we had a generated query and no screen. Now we have a real library back office:
+
+- **Chapter 1** — a live table from `AllAuthors`, bound to an observable query with no fetch or subscription code.
+- **Chapter 2** — add, rename, and remove through `CommandDialog` + `useDialog`, with the table updating itself the instant a command lands.
+- **Chapter 3** — a `DataPage` list-and-detail layout: selection, menu actions, and a resizable panel showing each author's books.
+
+The pattern under all of it is the same one Components exists to give you: **point a component at a generated proxy, and the wiring is already done.** A query becomes a live table; a command becomes a validated form; a read model becomes a detail panel — and every one of them stays type-checked against the C# it came from.
+
+## Where to go next
+
+- **[Building a form](/components/building-a-form/)** and **[Displaying data](/components/displaying-data/)** — the two halves in full, including every field type and table option.
+- **[A list screen with actions](/components/list-screen-with-actions/)** — the same screen as a quick recipe to copy.
+- **[Choosing a component](/components/choosing-a-component/)** — a decision guide from "what's on the screen" to the right component.
+- **[Build a full-stack feature](/build-a-full-app/)** — the backend and this front end, assembled end to end.
+
+You've built a screen, and you have the pattern for every other one. That's Components doing its job — go build the rest of your app.

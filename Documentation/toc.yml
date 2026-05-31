@@ -2,8 +2,14 @@
   href: index.md
 - name: Why Components
   href: why-components.md
+- name: Coming from PrimeReact
+  href: coming-from-primereact.md
 - name: Getting started
   href: getting-started.mdx
+- name: Tutorial
+  href: tutorial/toc.yml
+- name: Choosing a component
+  href: choosing-a-component.md
 - name: Styling
   href: Styling/toc.yml
 - name: Building a form
