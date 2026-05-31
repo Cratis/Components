@@ -3,7 +3,7 @@
 - name: Why Components
   href: why-components.md
 - name: Getting started
-  href: getting-started.md
+  href: getting-started.mdx
 - name: Styling
   href: Styling/toc.yml
 - name: Building a form
