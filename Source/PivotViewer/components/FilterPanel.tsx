@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { FilterPanel as StandaloneFilterPanel } from '../../Filter/FilterPanel';
+import { FilterEditor } from '../../Filter/FilterEditor';
 import type { FilterDefinition } from '../../Filter/types';
 import type { PivotFilter, PivotFilterOption, PivotPrimitive } from '../types';
 import type { FilterState, RangeFilterState } from '../utils/utils';
@@ -55,7 +56,6 @@ export function FilterPanel<TItem extends object>({
     })),
     numericRange,
     buckets: filter.buckets,
-    renderEditor: filter.renderEditor,
   }));
 
   return (
@@ -74,7 +74,15 @@ export function FilterPanel<TItem extends object>({
       onFilterClear={onFilterClear}
       onRangeChange={onRangeChange}
       onExpandedFilterChange={onExpandedFilterChange}
-    />
+    >
+      {filterOptions
+        .filter(({ filter }) => filter.renderEditor !== undefined)
+        .map(({ filter }) => (
+          <FilterEditor key={filter.key} filterKey={filter.key}>
+            {(editorProps) => filter.renderEditor!(editorProps)}
+          </FilterEditor>
+        ))}
+    </StandaloneFilterPanel>
   );
 }
 

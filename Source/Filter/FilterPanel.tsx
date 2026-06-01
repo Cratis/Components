@@ -1,15 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useRef, useState } from 'react';
+import { Children, isValidElement, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import type {
   FilterDefinition,
+  FilterEditorProps,
   FilterValues,
   RangeValues,
   CustomFilterValues,
 } from './types';
+import { FilterEditor } from './FilterEditor';
 import { RangeHistogramFilter } from './RangeHistogramFilter';
 import './FilterPanel.css';
 
@@ -22,7 +25,7 @@ export interface FilterPanelProps {
   filterValues: FilterValues;
   /** Current numeric range selections, keyed by FilterDefinition.key. */
   rangeValues: RangeValues;
-  /** Current values for filters using renderEditor, keyed by FilterDefinition.key. */
+  /** Current values for filters using a custom `<FilterEditor>` child, keyed by FilterDefinition.key. */
   customValues?: CustomFilterValues;
   /** Current search text shown in the search box. */
   search?: string;
@@ -46,6 +49,37 @@ export interface FilterPanelProps {
   onExpandedFilterChange: (key: string | null) => void;
   /** Called when a custom-editor value changes. */
   onCustomValueChange?: (filterKey: string, value: unknown) => void;
+  /**
+   * `<FilterEditor>` elements that provide custom UI for specific filter groups.
+   *
+   * ```tsx
+   * <FilterPanel filters={filters} {...stateProps}>
+   *   <FilterEditor filterKey="rating">
+   *     {({ value, onChange }) => <MyPicker value={value} onChange={onChange} />}
+   *   </FilterEditor>
+   * </FilterPanel>
+   * ```
+   */
+  children?: ReactNode;
+}
+
+/** Build a map of filterKey → render function from any <FilterEditor> children. */
+function buildEditorMap(
+  children: ReactNode | undefined
+): Record<string, (props: FilterEditorProps) => ReactNode> {
+  const map: Record<string, (props: FilterEditorProps) => ReactNode> = {};
+  Children.forEach(children, (child) => {
+    if (isValidElement(child) && child.type === FilterEditor) {
+      const { filterKey, children: renderFn } = child.props as {
+        filterKey: string;
+        children: (props: FilterEditorProps) => ReactNode;
+      };
+      if (filterKey && typeof renderFn === 'function') {
+        map[filterKey] = renderFn;
+      }
+    }
+  });
+  return map;
 }
 
 function renderOptionCount(count: number | undefined): string | number {
@@ -69,9 +103,12 @@ export function FilterPanel({
   onRangeChange,
   onExpandedFilterChange,
   onCustomValueChange,
+  children,
 }: FilterPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+
+  const editorMap = buildEditorMap(children);
 
   // Calculate position when opening
   useEffect(() => {
@@ -144,7 +181,8 @@ export function FilterPanel({
                 const customValue = customValues?.[filter.key];
                 const isExpanded = expandedFilterKey === filter.key;
                 const isNumeric = filter.type === 'number';
-                const isCustom = filter.type === 'custom' || filter.renderEditor !== undefined;
+                const editorRender = editorMap[filter.key];
+                const isCustom = filter.type === 'custom' || editorRender !== undefined;
 
                 return (
                   <div key={filter.key} className={`pv-filter ${isExpanded ? 'expanded' : ''}`}>
@@ -168,8 +206,8 @@ export function FilterPanel({
                       </span>
                     </button>
                     <div className={`pv-filter-content ${isExpanded ? 'expanded' : ''}`}>
-                      {isCustom && filter.renderEditor ? (
-                        filter.renderEditor({
+                      {isCustom && editorRender ? (
+                        editorRender({
                           value: customValue,
                           onChange: (value) => onCustomValueChange?.(filter.key, value),
                         })

@@ -1,8 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ReactNode } from 'react';
-
 export type FilterValue = string | number | boolean | Date | null | undefined;
 
 export interface FilterOption {
@@ -20,7 +18,10 @@ export interface FilterEditorProps {
 export interface FilterDefinition {
   key: string;
   label: string;
-  /** Filter type. Defaults to 'string'. Use 'number' for range/histogram. Use 'custom' with renderEditor for fully custom UI. */
+  /**
+   * Filter type. Defaults to 'string'. Use 'number' for range/histogram.
+   * Use 'custom' when providing a `<FilterEditor>` child inside `<FilterPanel>` for fully custom UI.
+   */
   type?: 'string' | 'number' | 'date' | 'custom';
   /** Allow selecting multiple options (checkbox behaviour). Defaults to false (radio behaviour). */
   multi?: boolean;
@@ -30,8 +31,6 @@ export interface FilterDefinition {
   numericRange?: { min: number; max: number; values: FilterValue[] };
   /** Number of histogram buckets. Defaults to 20. */
   buckets?: number;
-  /** Custom editor renderer. Used for 'custom' type, or to override any other type. */
-  renderEditor?: (props: FilterEditorProps) => ReactNode;
 }
 
 /** Selected string/option values for each filter, keyed by FilterDefinition.key. */

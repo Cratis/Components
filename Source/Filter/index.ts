@@ -3,6 +3,8 @@
 
 export { FilterPanel } from './FilterPanel';
 export type { FilterPanelProps } from './FilterPanel';
+export { FilterEditor } from './FilterEditor';
+export type { FilterEditorSlotProps } from './FilterEditor';
 export { RangeHistogramFilter } from './RangeHistogramFilter';
 export type { RangeHistogramFilterProps } from './RangeHistogramFilter';
 export { useFilterState } from './useFilterState';

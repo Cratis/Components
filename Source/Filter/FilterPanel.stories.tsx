@@ -4,6 +4,7 @@
 import React, { useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FilterPanel } from './FilterPanel';
+import { FilterEditor } from './FilterEditor';
 import { useFilterState } from './useFilterState';
 import type { FilterDefinition } from './types';
 
@@ -388,17 +389,11 @@ export const CustomEditor: Story = {
                 key: 'rating',
                 label: 'Rating',
                 type: 'custom',
-                renderEditor: ({ value, onChange }) => (
-                    <RatingEditor value={value} onChange={onChange} />
-                ),
             },
             {
                 key: 'createdAt',
                 label: 'Created Date',
                 type: 'custom',
-                renderEditor: ({ value, onChange }) => (
-                    <DateRangeEditor value={value} onChange={onChange} />
-                ),
             },
         ];
 
@@ -414,7 +409,7 @@ export const CustomEditor: Story = {
                 <div>
                     <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Custom Filter Editors</h2>
                     <p style={{ margin: 0, opacity: 0.6, fontSize: '0.9rem' }}>
-                        Provide a <code style={{ fontFamily: 'monospace', fontSize: '0.8em', opacity: 0.8 }}>renderEditor</code> on any filter to replace the default UI with your own component.
+                        Declare a <code style={{ fontFamily: 'monospace', fontSize: '0.8em', opacity: 0.8 }}>&lt;FilterEditor&gt;</code> child inside <code style={{ fontFamily: 'monospace', fontSize: '0.8em', opacity: 0.8 }}>&lt;FilterPanel&gt;</code> to provide a custom editor for any filter group.
                     </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -447,7 +442,18 @@ export const CustomEditor: Story = {
                     onRangeChange={handleRangeChange}
                     onExpandedFilterChange={setExpandedFilterKey}
                     onCustomValueChange={handleCustomValueChange}
-                />
+                >
+                    <FilterEditor filterKey="rating">
+                        {({ value, onChange }) => (
+                            <RatingEditor value={value} onChange={onChange} />
+                        )}
+                    </FilterEditor>
+                    <FilterEditor filterKey="createdAt">
+                        {({ value, onChange }) => (
+                            <DateRangeEditor value={value} onChange={onChange} />
+                        )}
+                    </FilterEditor>
+                </FilterPanel>
             </div>
         );
     },
@@ -508,9 +514,6 @@ export const MixedFilters: Story = {
                 key: 'hired',
                 label: 'Hire Date',
                 type: 'custom',
-                renderEditor: ({ value, onChange }) => (
-                    <DateRangeEditor value={value} onChange={onChange} />
-                ),
             },
         ];
 
@@ -561,7 +564,13 @@ export const MixedFilters: Story = {
                     onRangeChange={handleRangeChange}
                     onExpandedFilterChange={setExpandedFilterKey}
                     onCustomValueChange={handleCustomValueChange}
-                />
+                >
+                    <FilterEditor filterKey="hired">
+                        {({ value, onChange }) => (
+                            <DateRangeEditor value={value} onChange={onChange} />
+                        )}
+                    </FilterEditor>
+                </FilterPanel>
             </div>
         );
     },
