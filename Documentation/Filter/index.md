@@ -1,16 +1,18 @@
 # FilterPanel
 
-The `FilterPanel` component provides a standalone, reusable filter UI that can be placed next to any data view. It renders as a positioned dropdown anchored below a trigger button and supports single-select, multi-select, numeric range (with histogram), and fully custom filter editors.
+The `FilterPanel` component provides a standalone, reusable filter UI that can be placed next to any data view. It renders as a positioned dropdown anchored below a trigger button and supports single-select, multi-select, numeric range (with histogram), and fully custom filter editors declared as children.
 
 ## Components and Exports
 
 | Export | Description |
 |---|---|
 | `FilterPanel` | Main dropdown panel component |
+| `FilterEditor` | Slot component — declares a custom editor for a specific filter group |
 | `RangeHistogramFilter` | Standalone numeric range slider with histogram bars |
 | `useFilterState` | State management hook — tracks selections, ranges, and custom values |
 | `FilterDefinition` | Type describing a single filter group |
-| `FilterEditorProps` | Props passed to a custom `renderEditor` function |
+| `FilterEditorProps` | Props passed to a `FilterEditor` render-prop child (`{ value, onChange }`) |
+| `FilterEditorSlotProps` | Props for the `FilterEditor` component itself |
 | `FilterValues` | `Record<string, Set<string>>` — selected option keys per filter |
 | `RangeValues` | `Record<string, [number, number] \| null>` — selected ranges per filter |
 | `CustomFilterValues` | `Record<string, unknown>` — values for custom editor filters |
@@ -124,17 +126,27 @@ Renders a `RangeHistogramFilter` — a draggable range slider overlaid on a hist
 
 ### Custom editor (`type: 'custom'`)
 
-Provide a `renderEditor` function to replace the default UI entirely. The value is stored in `customValues` keyed by the filter's `key`.
+Declare `type: 'custom'` in the `FilterDefinition`, then place a matching `<FilterEditor>` child inside `<FilterPanel>`. The value is stored in `customValues` keyed by the filter's `key`.
 
 ```tsx
-{
-    key: 'rating',
-    label: 'Rating',
-    type: 'custom',
-    renderEditor: ({ value, onChange }) => (
-        <MyStarRatingWidget value={value as number} onChange={onChange} />
-    ),
-}
+// 1. Declare the filter group (no editor function here)
+const filters: FilterDefinition[] = [
+    { key: 'rating', label: 'Rating', type: 'custom' },
+];
+
+// 2. Attach the editor declaratively as a child of FilterPanel
+<FilterPanel
+    filters={filters}
+    customValues={customValues}
+    onCustomValueChange={handleCustomValueChange}
+    {...otherProps}
+>
+    <FilterEditor filterKey="rating">
+        {({ value, onChange }) => (
+            <MyStarRatingWidget value={value as number} onChange={onChange} />
+        )}
+    </FilterEditor>
+</FilterPanel>
 ```
 
 Pass `customValues` and `onCustomValueChange` to `FilterPanel` when using custom editors:
@@ -146,7 +158,11 @@ const { customValues, handleCustomValueChange, ...rest } = useFilterState(filter
     {...rest}
     customValues={customValues}
     onCustomValueChange={handleCustomValueChange}
-/>
+>
+    <FilterEditor filterKey="rating">
+        {({ value, onChange }) => <MyStarRatingWidget value={value as number} onChange={onChange} />}
+    </FilterEditor>
+</FilterPanel>
 ```
 
 ## `FilterPanel` Props
@@ -169,6 +185,16 @@ const { customValues, handleCustomValueChange, ...rest } = useFilterState(filter
 | `onRangeChange` | `(filterKey, range) => void` | ✓ | Called when a numeric range changes |
 | `onExpandedFilterChange` | `(key \| null) => void` | ✓ | Called when the expanded group changes |
 | `onCustomValueChange` | `(filterKey, value) => void` | — | Called when a custom editor value changes |
+| `children` | `ReactNode` | — | `<FilterEditor>` slot elements for custom filter groups |
+
+## `FilterEditor` Props
+
+`FilterEditor` is a declarative slot component. It renders nothing itself — `FilterPanel` discovers it from `children` and slots the editor into the correct filter group.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `filterKey` | `string` | ✓ | Must match the `key` of the corresponding `FilterDefinition` |
+| `children` | `(props: FilterEditorProps) => ReactNode` | ✓ | Render prop receiving `{ value, onChange }` |
 
 ## `useFilterState` Hook
 
@@ -191,7 +217,11 @@ const state = useFilterState(filters);
     onRangeChange={state.handleRangeChange}
     onExpandedFilterChange={state.setExpandedFilterKey}
     onCustomValueChange={state.handleCustomValueChange}
-/>
+>
+    <FilterEditor filterKey="myCustomFilter">
+        {({ value, onChange }) => <MyEditor value={value} onChange={onChange} />}
+    </FilterEditor>
+</FilterPanel>
 ```
 
 The hook re-syncs state when the `filters` array reference changes — existing selections are preserved for filter keys that are still present.
@@ -214,12 +244,12 @@ The hook re-syncs state when the `filters` array reference changes — existing 
 The Filter module is available at its own subpath — you do not need to import from the root package:
 
 ```tsx
-import { FilterPanel, useFilterState } from '@cratis/components/Filter';
+import { FilterPanel, FilterEditor, useFilterState } from '@cratis/components/Filter';
 import type { FilterDefinition } from '@cratis/components/Filter';
 ```
 
 It is also re-exported from the package root:
 
 ```tsx
-import { FilterPanel, useFilterState } from '@cratis/components';
+import { FilterPanel, FilterEditor, useFilterState } from '@cratis/components';
 ```
