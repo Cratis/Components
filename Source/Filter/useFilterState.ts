@@ -3,26 +3,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import type { FilterDefinition, FilterValues, RangeValues, CustomFilterValues } from './types';
-
-function buildFilterValues(filters: FilterDefinition[] | undefined): FilterValues {
-  const state: FilterValues = {};
-  filters?.forEach((filter) => {
-    if (!filter.type || filter.type === 'string' || filter.type === 'date') {
-      state[filter.key] = new Set<string>();
-    }
-  });
-  return state;
-}
-
-function buildRangeValues(filters: FilterDefinition[] | undefined): RangeValues {
-  const state: RangeValues = {};
-  filters?.forEach((filter) => {
-    if (filter.type === 'number') {
-      state[filter.key] = null;
-    }
-  });
-  return state;
-}
+import { buildFilterValues, buildRangeValues } from './utils';
 
 export interface UseFilterStateResult {
   filterValues: FilterValues;

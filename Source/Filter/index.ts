@@ -7,6 +7,7 @@ export { RangeHistogramFilter } from './RangeHistogramFilter';
 export type { RangeHistogramFilterProps } from './RangeHistogramFilter';
 export { useFilterState } from './useFilterState';
 export type { UseFilterStateResult } from './useFilterState';
+export { buildFilterValues, buildRangeValues } from './utils';
 export type {
   FilterValue,
   FilterOption,
