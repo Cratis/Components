@@ -22,6 +22,7 @@ const config: StorybookConfig = {
   async viteFinal(existingConfig: ViteConfig) {
     const cfg: ViteConfig = { ...existingConfig };
     cfg.server = { ...(cfg.server || {}), open: false } as unknown;
+    cfg.build = { ...(cfg.build || {}), cssMinify: false };
     return cfg;
   }
 };

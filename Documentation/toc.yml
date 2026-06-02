@@ -128,6 +128,22 @@
             - name: Simple Schema
               href: storybook.md?story=components-schemaeditor--simple-schema
       href: storybook.md?story=components-objectcontenteditor--default
+    - name: Filter
+      items:
+        - name: FilterPanel
+          href: storybook.md?story=filter-filterpanel--single-select-filter
+          items:
+            - name: Single-select string filter
+              href: storybook.md?story=filter-filterpanel--single-select-filter
+            - name: Multi-select string filter
+              href: storybook.md?story=filter-filterpanel--multi-select-filter
+            - name: Numeric range filter (histogram)
+              href: storybook.md?story=filter-filterpanel--numeric-range-filter
+            - name: Custom filter editor
+              href: storybook.md?story=filter-filterpanel--custom-editor
+            - name: Mixed filter types
+              href: storybook.md?story=filter-filterpanel--mixed-filters
+      href: storybook.md?story=filter-filterpanel--single-select-filter
     - name: PivotViewer
       items:
         - name: Default
@@ -202,6 +218,8 @@
           href: Dialogs/toc.yml
         - name: Dropdown
           href: Dropdown/index.md
+        - name: FilterPanel
+          href: Filter/toc.yml
         - name: Toolbar
           href: Toolbar/toc.yml
     - name: Specialized Components

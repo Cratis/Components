@@ -1,0 +1,412 @@
+/* -----------------------------------------------------------------------
+ * Standalone FilterPanel styles.
+ *
+ * These styles are shared by the standalone FilterPanel component and the
+ * PivotViewer which embeds it. All class names use the .pv-filter-* prefix
+ * so they can coexist with PivotViewer's other .pv-* rules.
+ * ----------------------------------------------------------------------- */
+
+.pv-filter-panel {
+  position: fixed;
+  width: min(280px, calc(100% - 2rem));
+  max-height: calc(100vh - 6.5rem);
+  background: linear-gradient(180deg, var(--cratis-surface-card), var(--cratis-surface-ground));
+  border: 1px solid var(--cratis-surface-border);
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+}
+
+.pv-filter-panel.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.pv-filter-panel.minimized {
+  max-height: none;
+}
+
+.pv-filter-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  cursor: grab;
+  background: var(--cratis-surface-section);
+  border-bottom: 1px solid var(--cratis-surface-border);
+  flex-shrink: 0;
+}
+
+.pv-filter-panel.dragging .pv-filter-panel-header {
+  cursor: grabbing;
+}
+
+.pv-filter-panel-header h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cratis-text-color);
+  flex: 1;
+  pointer-events: none;
+}
+
+.pv-minimize-btn,
+.pv-close-btn {
+  appearance: none;
+  border: none;
+  border-radius: 0.4rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cratis-highlight-bg);
+  color: var(--cratis-text-color);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.pv-minimize-btn:hover,
+.pv-close-btn:hover {
+  background: var(--cratis-surface-hover);
+}
+
+.pv-close-btn {
+  font-size: 1.2rem;
+}
+
+.pv-filter-panel-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  padding: 0 1.25rem;
+  transition: max-height 150ms ease-out, opacity 100ms ease-out, padding 150ms ease-out;
+}
+
+.pv-filter-panel-content.expanded {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 600px;
+  opacity: 1;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.pv-search {
+  padding-bottom: 1rem;
+}
+
+.pv-search input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--cratis-surface-border);
+  background: var(--cratis-surface-ground);
+  color: inherit;
+  font-size: 0.95rem;
+  box-shadow: inset 0 1px 0 var(--cratis-surface-border);
+}
+
+.pv-search input:focus {
+  outline: none;
+  border-color: var(--cratis-primary-color);
+  box-shadow: var(--cratis-focus-ring);
+}
+
+.pv-filter-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.pv-filter {
+  background: var(--cratis-surface-overlay);
+  border: 1px solid var(--cratis-surface-border);
+  border-radius: 0.85rem;
+  padding: 0.75rem 0.85rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.pv-filter.expanded {
+  border-color: var(--cratis-primary-color);
+  box-shadow: 0 15px 38px rgba(0, 0, 0, 0.3);
+}
+
+.pv-filter-trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pv-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pv-filter-trigger-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pv-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: var(--cratis-highlight-bg);
+  color: var(--cratis-text-color);
+  font-size: 0.7rem;
+}
+
+.pv-filter-chevron {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-right: 2px solid var(--cratis-text-color);
+  border-bottom: 2px solid var(--cratis-text-color);
+  transform: rotate(45deg);
+  transition: transform 180ms ease;
+}
+
+.pv-filter.expanded .pv-filter-chevron {
+  transform: rotate(225deg);
+}
+
+.pv-filter-content {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 1px solid transparent;
+  transition: max-height 120ms ease-out, opacity 80ms ease-out, margin-top 120ms ease-out, padding-top 120ms ease-out, border-color 120ms ease-out;
+}
+
+.pv-filter-content.expanded {
+  max-height: 350px;
+  opacity: 1;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top-color: var(--cratis-surface-border);
+  overflow-y: auto;
+}
+
+.pv-filter-content ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.pv-filter-content li label {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.45rem 0.5rem;
+  border-radius: 0.55rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.pv-filter-content li label:hover {
+  background: var(--cratis-surface-hover);
+}
+
+.pv-filter-content input[type='checkbox'],
+.pv-filter-content input[type='radio'] {
+  accent-color: var(--cratis-primary-color);
+}
+
+.pv-filter-content li label span {
+  font-size: 0.85rem;
+}
+
+.pv-filter-clear {
+  margin-top: 0.75rem;
+  appearance: none;
+  border: none;
+  border-radius: 0.55rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--cratis-highlight-bg);
+  color: var(--cratis-text-color);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.pv-option-count {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  color: var(--cratis-text-color-secondary);
+  font-size: 0.75rem;
+}
+
+/* Filter Dropdown (anchor-positioned panel) */
+.pv-filter-dropdown {
+  position: fixed;
+  width: min(320px, calc(100vw - 2rem));
+  max-height: calc(100vh - 8rem);
+  background: linear-gradient(180deg, var(--cratis-surface-card), var(--cratis-surface-ground));
+  border: 1px solid var(--cratis-surface-border);
+  border-radius: 0.85rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  will-change: opacity, transform;
+  contain: layout;
+}
+
+.pv-filter-dropdown-content {
+  padding: 1rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Range Histogram Filter */
+.pv-range-histogram {
+  padding: 0.5rem 0;
+}
+
+.pv-histogram-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 80px;
+  padding: 0 2px;
+  margin-bottom: 0.5rem;
+}
+
+.pv-histogram-bar {
+  flex: 1;
+  min-width: 8px;
+  background: var(--cratis-highlight-bg);
+  border: none;
+  border-radius: 2px 2px 0 0;
+  cursor: pointer;
+  transition: background 160ms ease, transform 120ms ease;
+  padding: 0;
+}
+
+.pv-histogram-bar:hover {
+  background: var(--cratis-surface-hover);
+  transform: scaleY(1.02);
+}
+
+.pv-histogram-bar.in-range {
+  background: var(--cratis-primary-color);
+}
+
+.pv-histogram-bar.partial {
+  background: var(--cratis-highlight-bg);
+}
+
+.pv-range-slider {
+  position: relative;
+  height: 24px;
+  margin: 0.5rem 0;
+}
+
+.pv-range-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--cratis-surface-border);
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.pv-range-selection {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  background: var(--cratis-primary-color);
+  border-radius: 2px;
+  transform: translateY(-50%);
+  cursor: grab;
+}
+
+.pv-range-selection:active {
+  cursor: grabbing;
+}
+
+.pv-range-handle {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background: var(--cratis-primary-color);
+  border: 2px solid var(--cratis-text-color);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: ew-resize;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.pv-range-handle:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 4px 12px var(--cratis-primary-color);
+}
+
+.pv-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--cratis-text-color-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.pv-range-clear {
+  margin-top: 0.75rem;
+  appearance: none;
+  border: none;
+  border-radius: 0.55rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--cratis-highlight-bg);
+  color: var(--cratis-text-color);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  width: 100%;
+}
+
+.pv-range-clear:hover {
+  background: var(--cratis-surface-hover);
+}
+
+@media (max-width: 900px) {
+  .pv-filter-panel {
+    width: calc(100% - 2.5rem);
+    left: 1.25rem;
+    right: 1.25rem;
+  }
+}
