@@ -31,6 +31,10 @@ export interface FilterDefinition {
   numericRange?: { min: number; max: number; values: FilterValue[] };
   /** Number of histogram buckets. Defaults to 20. */
   buckets?: number;
+  /** Show an inline search box that filters the displayed options for this group. */
+  searchable?: boolean;
+  /** Placeholder shown in the inline search box. Defaults to 'Search…'. */
+  searchPlaceholder?: string;
 }
 
 /** Selected string/option values for each filter, keyed by FilterDefinition.key. */

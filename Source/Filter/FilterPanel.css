@@ -119,6 +119,26 @@
   box-shadow: var(--cratis-focus-ring);
 }
 
+.pv-filter-group-search {
+  padding: 0 0 0.5rem 0;
+}
+
+.pv-filter-group-search input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--cratis-surface-border);
+  background: var(--cratis-surface-ground);
+  color: inherit;
+  font-size: 0.85rem;
+}
+
+.pv-filter-group-search input:focus {
+  outline: none;
+  border-color: var(--cratis-primary-color);
+  box-shadow: var(--cratis-focus-ring);
+}
+
 .pv-filter-groups {
   display: flex;
   flex-direction: column;

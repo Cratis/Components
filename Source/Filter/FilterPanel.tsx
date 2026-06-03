@@ -86,6 +86,68 @@ function renderOptionCount(count: number | undefined): string | number {
   return typeof count === 'number' ? count : '';
 }
 
+interface OptionListProps {
+  filter: FilterDefinition;
+  selections: Set<string>;
+  onFilterToggle: (filterKey: string, optionKey: string, multi: boolean) => void;
+  onFilterClear: (filterKey: string) => void;
+}
+
+function OptionList({ filter, selections, onFilterToggle, onFilterClear }: OptionListProps) {
+  const [groupSearch, setGroupSearch] = useState('');
+  const allOptions = filter.options ?? [];
+  const normalized = groupSearch.trim().toLowerCase();
+  const visibleOptions = filter.searchable && normalized.length > 0
+    ? allOptions.filter(option => option.label.toLowerCase().includes(normalized))
+    : allOptions;
+
+  return (
+    <>
+      {filter.searchable && (
+        <div className="pv-filter-group-search">
+          <input
+            type="search"
+            placeholder={filter.searchPlaceholder ?? 'Search…'}
+            value={groupSearch}
+            onChange={(event) => setGroupSearch(event.target.value)}
+          />
+        </div>
+      )}
+      <ul>
+        {visibleOptions.map((option) => {
+          const optionKey = option.key;
+          const checked = selections.has(optionKey);
+          return (
+            <li key={option.key}>
+              <label>
+                <input
+                  type={filter.multi ? 'checkbox' : 'radio'}
+                  name={`filter-${filter.key}`}
+                  checked={checked}
+                  onChange={() =>
+                    onFilterToggle(filter.key, optionKey, filter.multi ?? false)
+                  }
+                />
+                <span>{option.label}</span>
+                <span className="pv-option-count">{renderOptionCount(option.count)}</span>
+              </label>
+            </li>
+          );
+        })}
+      </ul>
+      {selections.size > 0 && (
+        <button
+          type="button"
+          className="pv-filter-clear"
+          onClick={() => onFilterClear(filter.key)}
+        >
+          Clear
+        </button>
+      )}
+    </>
+  );
+}
+
 export function FilterPanel({
   isOpen,
   filters,
@@ -226,39 +288,12 @@ export function FilterPanel({
                           formatValue={formatRangeValue}
                         />
                       ) : (
-                        <>
-                          <ul>
-                            {(filter.options ?? []).map((option) => {
-                              const optionKey = option.key;
-                              const checked = selections.has(optionKey);
-                              return (
-                                <li key={option.key}>
-                                  <label>
-                                    <input
-                                      type={filter.multi ? 'checkbox' : 'radio'}
-                                      name={`filter-${filter.key}`}
-                                      checked={checked}
-                                      onChange={() =>
-                                        onFilterToggle(filter.key, optionKey, filter.multi ?? false)
-                                      }
-                                    />
-                                    <span>{option.label}</span>
-                                    <span className="pv-option-count">{renderOptionCount(option.count)}</span>
-                                  </label>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          {selections.size > 0 && (
-                            <button
-                              type="button"
-                              className="pv-filter-clear"
-                              onClick={() => onFilterClear(filter.key)}
-                            >
-                              Clear
-                            </button>
-                          )}
-                        </>
+                        <OptionList
+                          filter={filter}
+                          selections={selections}
+                          onFilterToggle={onFilterToggle}
+                          onFilterClear={onFilterClear}
+                        />
                       )}
                     </div>
                   </div>
