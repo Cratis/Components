@@ -11,6 +11,11 @@ export interface RangeHistogramFilterProps {
   buckets?: number;
   selectedRange: [number, number] | null;
   onChange: (range: [number, number] | null) => void;
+  /**
+   * Optional formatter for endpoint labels and bar tooltips. Defaults to a numeric formatter.
+   * Use this to display ms timestamps as dates, currency, etc.
+   */
+  formatValue?: (value: number) => string;
 }
 
 interface HistogramBucket {
@@ -20,6 +25,11 @@ interface HistogramBucket {
   maxCount: number;
 }
 
+const defaultFormatValue = (value: number) => {
+  if (Number.isInteger(value)) return value.toString();
+  return value.toFixed(1);
+};
+
 export function RangeHistogramFilter({
   values,
   min,
@@ -27,6 +37,7 @@ export function RangeHistogramFilter({
   buckets = 20,
   selectedRange,
   onChange,
+  formatValue = defaultFormatValue,
 }: RangeHistogramFilterProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState<'left' | 'right' | 'range' | null>(null);
@@ -154,11 +165,6 @@ export function RangeHistogramFilter({
 
   const leftPos = getPositionFromValue(currentRange[0]);
   const rightPos = getPositionFromValue(currentRange[1]);
-
-  const formatValue = (value: number) => {
-    if (Number.isInteger(value)) return value.toString();
-    return value.toFixed(1);
-  };
 
   return (
     <div className="pv-range-histogram" ref={containerRef}>
