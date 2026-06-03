@@ -180,9 +180,13 @@ export function FilterPanel({
                 const rangeSelection = rangeValues[filter.key];
                 const customValue = customValues?.[filter.key];
                 const isExpanded = expandedFilterKey === filter.key;
-                const isNumeric = filter.type === 'number';
+                const isDate = filter.type === 'date';
+                const isNumeric = filter.type === 'number' || isDate;
                 const editorRender = editorMap[filter.key];
                 const isCustom = filter.type === 'custom' || editorRender !== undefined;
+                const formatRangeValue = isDate
+                  ? (value: number) => new Date(value).toLocaleString()
+                  : undefined;
 
                 return (
                   <div key={filter.key} className={`pv-filter ${isExpanded ? 'expanded' : ''}`}>
@@ -219,6 +223,7 @@ export function FilterPanel({
                           buckets={filter.buckets ?? 20}
                           selectedRange={rangeSelection ?? null}
                           onChange={(range) => onRangeChange(filter.key, range)}
+                          formatValue={formatRangeValue}
                         />
                       ) : (
                         <>
