@@ -254,20 +254,21 @@ See [Pass-through cheat sheet](Styling/pass-through.md) for every wrapper's avai
 If you only use a few components, prefer subpath imports so unused parts of the package tree-shake out:
 
 ```ts
-// Before — pulls in everything
+// Before — the package root re-exports every component as a namespace,
+// so importing from it pulls the whole package into your bundle
+import { Dialogs, DataPage, CommandForm } from '@cratis/components';
+
+// used as Dialogs.Dialog, DataPage.DataPage, CommandForm.InputTextField
+```
+
+```ts
+// After — per-component subpaths let the bundler drop everything you don't use
 import { Dialog } from '@cratis/components/Dialogs';
 import { DataPage } from '@cratis/components/DataPage';
 import { InputTextField } from '@cratis/components/CommandForm';
 ```
 
-```ts
-// After — tree-shaking-friendly
-import { Dialog } from '@cratis/components/Dialogs';
-import { DataPage } from '@cratis/components/DataPage';
-import { InputTextField } from '@cratis/components/CommandForm/fields';
-```
-
-The root import (`@cratis/components`) still works and is fine when you use most of the package.
+The root import is convenient when you use most of the package, but it defeats tree-shaking — reach for the subpaths in code that pulls in only a handful of components.
 
 ## New optional capabilities
 
