@@ -288,7 +288,7 @@ export const NumericRangeFilter: Story = {
 function RatingEditor({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {
     const rating = typeof value === 'number' ? value : 0;
     return (
-        <div style={{ padding: '0.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ padding: '0.5rem 0' }}>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -314,15 +314,6 @@ function RatingEditor({ value, onChange }: { value: unknown; onChange: (v: unkno
                     </button>
                 ))}
             </div>
-            {rating > 0 && (
-                <button
-                    type="button"
-                    className="pv-filter-clear"
-                    onClick={() => onChange(0)}
-                >
-                    Clear
-                </button>
-            )}
         </div>
     );
 }
@@ -330,7 +321,7 @@ function RatingEditor({ value, onChange }: { value: unknown; onChange: (v: unkno
 function DateRangeEditor({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {
     const range = value as { from?: string; to?: string } | undefined;
     return (
-        <div style={{ padding: '0.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ padding: '0.5rem 0' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.75rem', opacity: 0.7 }}>
                     From
@@ -365,15 +356,6 @@ function DateRangeEditor({ value, onChange }: { value: unknown; onChange: (v: un
                     />
                 </label>
             </div>
-            {(range?.from || range?.to) && (
-                <button
-                    type="button"
-                    className="pv-filter-clear"
-                    onClick={() => onChange(undefined)}
-                >
-                    Clear
-                </button>
-            )}
         </div>
     );
 }

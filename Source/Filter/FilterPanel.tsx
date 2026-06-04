@@ -90,10 +90,9 @@ interface OptionListProps {
   filter: FilterDefinition;
   selections: Set<string>;
   onFilterToggle: (filterKey: string, optionKey: string, multi: boolean) => void;
-  onFilterClear: (filterKey: string) => void;
 }
 
-function OptionList({ filter, selections, onFilterToggle, onFilterClear }: OptionListProps) {
+function OptionList({ filter, selections, onFilterToggle }: Omit<OptionListProps, 'onFilterClear'>) {
   const [groupSearch, setGroupSearch] = useState('');
   const allOptions = filter.options ?? [];
   const normalized = groupSearch.trim().toLowerCase();
@@ -135,15 +134,6 @@ function OptionList({ filter, selections, onFilterToggle, onFilterClear }: Optio
           );
         })}
       </ul>
-      {selections.size > 0 && (
-        <button
-          type="button"
-          className="pv-filter-clear"
-          onClick={() => onFilterClear(filter.key)}
-        >
-          Clear
-        </button>
-      )}
     </>
   );
 }
@@ -260,13 +250,55 @@ export function FilterPanel({
                       <span className="pv-filter-label">{filter.label}</span>
                       <span className="pv-filter-trigger-meta">
                         {!isNumeric && !isCustom && selections.size > 0 && (
-                          <span className="pv-filter-count">{selections.size}</span>
+                          <>
+                            <span className="pv-filter-count">{selections.size}</span>
+                            <button
+                              type="button"
+                              className="pv-filter-clear-header"
+                              title="Clear filter"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onFilterClear(filter.key);
+                              }}
+                              aria-label="Clear filter"
+                            >
+                              ×
+                            </button>
+                          </>
                         )}
                         {isNumeric && rangeSelection && (
-                          <span className="pv-filter-count">Range</span>
+                          <>
+                            <span className="pv-filter-count">Range</span>
+                            <button
+                              type="button"
+                              className="pv-filter-clear-header"
+                              title="Clear range"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onRangeChange(filter.key, null);
+                              }}
+                              aria-label="Clear range"
+                            >
+                              ×
+                            </button>
+                          </>
                         )}
                         {isCustom && customValue !== undefined && customValue !== null && (
-                          <span className="pv-filter-count">•</span>
+                          <>
+                            <span className="pv-filter-count">•</span>
+                            <button
+                              type="button"
+                              className="pv-filter-clear-header"
+                              title="Clear filter"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onCustomValueChange?.(filter.key, undefined);
+                              }}
+                              aria-label="Clear filter"
+                            >
+                              ×
+                            </button>
+                          </>
                         )}
                         <span className="pv-filter-chevron" />
                       </span>
@@ -292,7 +324,6 @@ export function FilterPanel({
                           filter={filter}
                           selections={selections}
                           onFilterToggle={onFilterToggle}
-                          onFilterClear={onFilterClear}
                         />
                       )}
                     </div>
