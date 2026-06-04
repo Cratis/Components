@@ -10,6 +10,7 @@ export const noPrimereactDialog = {
         docs: {
             description: 'Disallow importing Dialog from primereact/dialog; use the Cratis Components dialog wrappers.',
             recommended: true,
+            url: 'https://github.com/Cratis/Components/blob/main/ESLint/README.md',
         },
         schema: [{
             type: 'object',

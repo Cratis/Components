@@ -1,8 +1,11 @@
+import { createRequire } from 'node:module';
 import { noPrimereactDialog } from './lib/noPrimereactDialog.js';
 import { noRootBarrelImport } from './lib/noRootBarrelImport.js';
 
+const { version } = createRequire(import.meta.url)('./package.json');
+
 export const plugin = {
-    meta: { name: '@cratis/components.eslint' },
+    meta: { name: '@cratis/components.eslint', version },
     rules: {
         'no-primereact-dialog': noPrimereactDialog,
         'no-root-barrel-import': noRootBarrelImport,

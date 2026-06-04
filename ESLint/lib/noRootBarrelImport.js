@@ -11,6 +11,7 @@ export const noRootBarrelImport = {
         docs: {
             description: 'Disallow importing from the @cratis/components root barrel; use a subpath export.',
             recommended: true,
+            url: 'https://github.com/Cratis/Components/blob/main/ESLint/README.md',
         },
         schema: [{
             type: 'object',
