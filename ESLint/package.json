@@ -1,0 +1,39 @@
+{
+    "name": "@cratis/components.eslint",
+    "version": "0.0.0",
+    "description": "Cratis Components ESLint rules: import from subpaths, not the root barrel, and use the Cratis dialog wrappers instead of primereact/dialog. Compose on top of @cratis/eslint-config.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "keywords": [
+        "eslint",
+        "eslintplugin",
+        "eslint-plugin",
+        "cratis",
+        "components"
+    ],
+    "files": [
+        "index.js",
+        "recommended.js",
+        "lib",
+        "README.md"
+    ],
+    "exports": {
+        "./package.json": "./package.json",
+        ".": "./index.js"
+    },
+    "scripts": {
+        "test": "yarn g:test",
+        "ci": "yarn g:test"
+    },
+    "peerDependencies": {
+        "eslint": ">=9"
+    }
+}
