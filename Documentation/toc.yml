@@ -12,6 +12,8 @@
   href: choosing-a-component.md
 - name: Styling
   href: Styling/toc.yml
+- name: Storybook
+  href: storybook.mdx
 - name: Building a form
   href: building-a-form.md
 - name: Displaying data
