@@ -9,11 +9,6 @@ import lightThemeUrl from 'primereact/resources/themes/lara-light-blue/theme.css
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import { tailwindPtPreset } from './pt-preset';
 
-/**
- * Each toolbar entry maps to one of the three documented styling paths in
- * Source/README.md. Stories don't need to change — every mode renders the
- * same component tree under a different provider/theme/token combination.
- */
 const STYLING_MODES = {
     'lara-dark': {
         title: 'Path A — Lara Dark Blue',
@@ -29,10 +24,6 @@ const STYLING_MODES = {
     },
     'cratis-themed': {
         title: 'Path B — Themed with custom palette',
-        // Path B = a PrimeReact theme provides the structural chrome, then the
-        // body class overrides PrimeReact's own --surface-* / --text-color /
-        // --primary-color variables (and the --cratis-* siblings) to retint
-        // every widget with a Cratis-flavored slate + sky palette.
         themeUrl: darkThemeUrl,
         bodyClass: 'cratis-themed',
         providerValue: {},
@@ -74,7 +65,9 @@ export const globalTypes = {
 function applyThemeLink(href) {
     let link = document.getElementById('primereact-theme');
     if (href === null) {
-        if (link) link.remove();
+        if (link) {
+            link.remove();
+        }
         return;
     }
     if (!link) {
@@ -83,12 +76,18 @@ function applyThemeLink(href) {
         link.rel = 'stylesheet';
         document.head.appendChild(link);
     }
-    if (link.href !== href) link.href = href;
+    // Changed: use getAttribute instead of .href property to avoid triggering HMR
+    const currentHref = link.getAttribute('href');
+    if (currentHref !== href) {
+        link.setAttribute('href', href);
+    }
 }
 
 function applyBodyClass(className) {
     document.body.classList.remove(...ALL_BODY_CLASSES);
-    if (className) document.body.classList.add(className);
+    if (className) {
+        document.body.classList.add(className);
+    }
 }
 
 export const decorators = [
@@ -119,3 +118,5 @@ export const parameters = {
         ],
     },
 };
+
+
