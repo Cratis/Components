@@ -198,6 +198,33 @@
   font-size: 0.7rem;
 }
 
+.pv-filter-clear-header {
+  appearance: none;
+  border: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--cratis-highlight-bg);
+  color: var(--cratis-text-color);
+  font-size: 1.2rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 160ms ease, transform 120ms ease;
+  padding: 0;
+}
+
+.pv-filter-clear-header:hover {
+  background: var(--cratis-surface-hover);
+  transform: scale(1.1);
+}
+
+.pv-filter-clear-header:active {
+  transform: scale(0.95);
+}
+
 .pv-filter-chevron {
   width: 0.65rem;
   height: 0.65rem;

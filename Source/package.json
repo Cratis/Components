@@ -128,8 +128,8 @@
         "test": "yarn g:test",
         "ci": "yarn g:ci",
         "up": "yarn g:up",
-        "dev": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
+        "dev": "npx storybook dev -p 6006",
+        "build-storybook": "npx storybook build"
     },
     "dependencies": {
         "allotment": "1.20.5",

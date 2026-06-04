@@ -2,6 +2,12 @@
 
 The `FilterPanel` component provides a standalone, reusable filter UI that can be placed next to any data view. It renders as a positioned dropdown anchored below a trigger button and supports single-select, multi-select, numeric range (with histogram), and fully custom filter editors declared as children.
 
+## Key Features
+
+- **Automatic Clear Buttons**: When a filter has active selections, a round clear button (×) appears in the filter header next to the count badge, making it easy to reset individual filters.
+- **Flexible Filter Types**: Supports string/option filters (single or multi-select), numeric range filters with histograms, and fully custom editors.
+- **Integrated State Management**: Use the `useFilterState` hook to manage all filter state in one place.
+
 ## Components and Exports
 
 | Export | Description |
@@ -164,6 +170,22 @@ const { customValues, handleCustomValueChange, ...rest } = useFilterState(filter
     </FilterEditor>
 </FilterPanel>
 ```
+
+## Clearing Filters
+
+Each filter group automatically displays a round clear button (×) in its header when it has active selections:
+
+- **String/option filters**: The clear button appears next to the selection count badge (e.g., "3 selected")
+- **Numeric range filters**: The clear button appears next to the "Range" indicator
+- **Custom filters**: The clear button appears when the filter has a value (non-null, non-undefined)
+
+The clear button includes a tooltip describing its action and can be clicked without expanding the filter. When clicked:
+
+- For string/option filters, all selections are cleared via `onFilterClear(filterKey)`
+- For range filters, the range is reset to `null` via `onRangeChange(filterKey, null)`
+- For custom filters, the value is set to `undefined` via `onCustomValueChange(filterKey, undefined)`
+
+Custom filter editors should not implement their own clear buttons; the header clear button handles this automatically.
 
 ## `FilterPanel` Props
 

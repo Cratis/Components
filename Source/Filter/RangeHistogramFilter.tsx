@@ -159,10 +159,6 @@ export function RangeHistogramFilter({
     onChange([bucket.start, bucket.end]);
   };
 
-  const handleClear = () => {
-    onChange(null);
-  };
-
   const leftPos = getPositionFromValue(currentRange[0]);
   const rightPos = getPositionFromValue(currentRange[1]);
 
@@ -215,12 +211,6 @@ export function RangeHistogramFilter({
         <span className="pv-range-value">{formatValue(currentRange[0])}</span>
         <span className="pv-range-value">{formatValue(currentRange[1])}</span>
       </div>
-
-      {selectedRange && (
-        <button type="button" className="pv-range-clear" onClick={handleClear}>
-          Clear Range
-        </button>
-      )}
     </div>
   );
 }
