@@ -5,7 +5,7 @@ import { noRootBarrelImport } from './lib/noRootBarrelImport.js';
 const { version } = createRequire(import.meta.url)('./package.json');
 
 export const plugin = {
-    meta: { name: '@cratis/components.eslint', version },
+    meta: { name: '@cratis/eslint-plugin-components', version },
     rules: {
         'no-primereact-dialog': noPrimereactDialog,
         'no-root-barrel-import': noRootBarrelImport,
@@ -16,7 +16,7 @@ export const plugin = {
 // (`@cratis/eslint-config`) in a consuming project:
 //
 //   import cratis from '@cratis/eslint-config';
-//   import components from '@cratis/components.eslint';
+//   import components from '@cratis/eslint-plugin-components';
 //   export default [...cratis.configs.consumer, ...components.configs.recommended];
 const recommended = [
     {

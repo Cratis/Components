@@ -1,4 +1,4 @@
-# @cratis/components.eslint
+# @cratis/eslint-plugin-components
 
 ESLint rules for projects that consume Cratis Components. Compose these on top of the
 Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cratis/eslint-config).
@@ -13,7 +13,7 @@ Both cover `import` and re-`export … from` forms.
 ## Install
 
 ```sh
-yarn add -D @cratis/components.eslint @cratis/eslint-config eslint
+yarn add -D @cratis/eslint-plugin-components @cratis/eslint-config eslint
 ```
 
 ## Use
@@ -21,7 +21,7 @@ yarn add -D @cratis/components.eslint @cratis/eslint-config eslint
 ```js
 // eslint.config.mjs
 import cratis from '@cratis/eslint-config';
-import components from '@cratis/components.eslint';
+import components from '@cratis/eslint-plugin-components';
 
 export default [
     ...cratis.configs.consumer,
