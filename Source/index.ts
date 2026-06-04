@@ -9,6 +9,7 @@ import * as DataPage from './DataPage';
 import * as DataTables from './DataTables';
 import * as Dialogs from './Dialogs';
 import * as Dropdown from './Dropdown';
+import * as Filter from './Filter';
 import * as ObjectContentEditor from './ObjectContentEditor';
 import * as ObjectNavigationalBar from './ObjectNavigationalBar';
 import * as PivotViewer from './PivotViewer';
@@ -26,6 +27,7 @@ export {
     DataTables,
     Dialogs,
     Dropdown,
+    Filter,
     ObjectContentEditor,
     ObjectNavigationalBar,
     PivotViewer,

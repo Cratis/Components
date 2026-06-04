@@ -36,6 +36,8 @@
   href: DataTables/toc.yml
 - name: Dialogs
   href: Dialogs/toc.yml
+- name: Filter
+  href: Filter/toc.yml
 - name: Dropdown
   href: Dropdown/index.md
 - name: Toolbar

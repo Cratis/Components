@@ -77,6 +77,8 @@ function updateDependencyVersionsFromLocalWorkspaces(file, packageJson, version)
     }
 }
 
+const publishFailures = [];
+
 for (const workspaceName in workspaces) {
     const workspaceRelativeLocation = workspaces[workspaceName];
     const workspaceAbsoluteLocation = path.join(process.cwd(), workspaceRelativeLocation);
@@ -108,9 +110,11 @@ for (const workspaceName in workspaces) {
                 console.log(result.stdout.toString());
                 console.log(result.stderr.toString());
                 if (result.status !== 0) {
-                    console.log(`Error publishing workspace '${workspaceName}'`);
-                    process.exit(1);
-                    return;
+                    // Don't abort the release: a single workspace failing (e.g. a brand-new
+                    // package whose npm trusted publisher isn't configured yet) must not
+                    // strand the other packages. Collect and fail at the end instead.
+                    console.log(`Error publishing workspace '${workspaceName}' - continuing with remaining workspaces`);
+                    publishFailures.push(workspaceName);
                 }
             }
         } else {
@@ -132,4 +136,9 @@ for (const workspaceName in workspaces) {
             }
         }
     }
+}
+
+if (publishFailures.length > 0) {
+    console.log(`\n${publishFailures.length} workspace(s) failed to publish: ${publishFailures.join(', ')}`);
+    process.exit(1);
 }

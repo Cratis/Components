@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
+import type { FilterEditorProps } from '../Filter/types';
 
 export type PivotPrimitive = string | number | boolean | Date | null | undefined;
 
@@ -68,9 +69,11 @@ export interface PivotFilter<TItem extends object> {
   options?: PivotFilterOption[];
   sort?: (a: PivotFilterOption, b: PivotFilterOption) => number;
   /** For numeric filters, enables range picker with histogram */
-  type?: 'string' | 'number' | 'date';
+  type?: 'string' | 'number' | 'date' | 'custom';
   /** Number of buckets for the histogram in range filters */
   buckets?: number;
+  /** Custom filter editor renderer. When provided, replaces the default filter UI for this filter. */
+  renderEditor?: (props: FilterEditorProps) => ReactNode;
 }
 
 export interface PivotViewerProps<TItem extends object> {

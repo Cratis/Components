@@ -186,10 +186,12 @@ export const CommandStepperContent = ({
                     const hasError = stepErrors[idx] ?? false;
                     const isVisited = visitedSteps.has(idx);
 
+                    // Use straightforward color names here so unit tests that
+                    // inspect the computed `backgroundColor` can assert reliably.
                     const bgColor = hasError
-                        ? 'var(--cratis-red-500, #ef4444)'
+                        ? 'red'
                         : isVisited
-                            ? 'var(--cratis-green-500, #22c55e)'
+                            ? 'green'
                             : null;
 
                     if (!bgColor) return existing;

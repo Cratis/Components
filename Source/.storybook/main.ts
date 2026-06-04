@@ -22,10 +22,7 @@ const config: StorybookConfig = {
   async viteFinal(existingConfig: ViteConfig) {
     const cfg: ViteConfig = { ...existingConfig };
     cfg.server = { ...(cfg.server || {}), open: false } as unknown;
-    // Use esbuild (lenient) to minify CSS instead of Vite's default lightningcss,
-    // which rejects stylesheets that begin with a `//` comment ("Invalid empty
-    // selector") and broke `storybook build`. esbuild matches the prior behavior.
-    cfg.build = { ...(cfg.build || {}), cssMinify: 'esbuild' } as unknown;
+    cfg.build = { ...(cfg.build || {}), cssMinify: false };
     return cfg;
   }
 };
