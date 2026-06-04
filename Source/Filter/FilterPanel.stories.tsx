@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FilterPanel } from './FilterPanel';
 import { FilterEditor } from './FilterEditor';
@@ -65,7 +65,7 @@ export const SingleSelectFilter: Story = {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
 
-        const filters: FilterDefinition[] = [
+        const filters: FilterDefinition[] = useMemo(() => [
             {
                 key: 'status',
                 label: 'Status',
@@ -77,7 +77,7 @@ export const SingleSelectFilter: Story = {
                     { key: 'archived', label: 'Archived', value: 'archived', count: 3 },
                 ],
             },
-        ];
+        ], []);
 
         const {
             filterValues,
@@ -141,7 +141,7 @@ export const MultiSelectFilter: Story = {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
 
-        const filters: FilterDefinition[] = [
+        const filters: FilterDefinition[] = useMemo(() => [
             {
                 key: 'department',
                 label: 'Department',
@@ -158,7 +158,7 @@ export const MultiSelectFilter: Story = {
                     { key: 'legal', label: 'Legal', value: 'legal', count: 8 },
                 ],
             },
-        ];
+        ], []);
 
         const { filterValues, rangeValues, expandedFilterKey, setExpandedFilterKey, handleToggleFilter, handleClearFilter, handleRangeChange } =
             useFilterState(filters);
@@ -227,7 +227,7 @@ export const NumericRangeFilter: Story = {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
 
-        const filters: FilterDefinition[] = [
+        const filters: FilterDefinition[] = useMemo(() => [
             {
                 key: 'age',
                 label: 'Age',
@@ -239,7 +239,7 @@ export const NumericRangeFilter: Story = {
                     values: ageValues,
                 },
             },
-        ];
+        ], []);
 
         const { filterValues, rangeValues, expandedFilterKey, setExpandedFilterKey, handleToggleFilter, handleClearFilter, handleRangeChange } =
             useFilterState(filters);
@@ -366,7 +366,7 @@ export const CustomEditor: Story = {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
 
-        const filters: FilterDefinition[] = [
+        const filters: FilterDefinition[] = useMemo(() => [
             {
                 key: 'rating',
                 label: 'Rating',
@@ -377,7 +377,7 @@ export const CustomEditor: Story = {
                 label: 'Created Date',
                 type: 'custom',
             },
-        ];
+        ], []);
 
         const { filterValues, rangeValues, customValues, expandedFilterKey, setExpandedFilterKey, handleToggleFilter, handleClearFilter, handleRangeChange, handleCustomValueChange } =
             useFilterState(filters);
@@ -457,7 +457,7 @@ export const MixedFilters: Story = {
         const [isOpen, setIsOpen] = useState(false);
         const [search, setSearch] = useState('');
 
-        const filters: FilterDefinition[] = [
+        const filters: FilterDefinition[] = useMemo(() => [
             {
                 key: 'department',
                 label: 'Department',
@@ -497,7 +497,7 @@ export const MixedFilters: Story = {
                 label: 'Hire Date',
                 type: 'custom',
             },
-        ];
+        ], []);
 
         const { filterValues, rangeValues, customValues, expandedFilterKey, setExpandedFilterKey, handleToggleFilter, handleClearFilter, handleRangeChange, handleCustomValueChange } =
             useFilterState(filters);

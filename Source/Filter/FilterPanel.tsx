@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Children, isValidElement, useEffect, useRef, useState } from 'react';
+import { Children, isValidElement, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -160,7 +160,7 @@ export function FilterPanel({
   const panelRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
-  const editorMap = buildEditorMap(children);
+  const editorMap = useMemo(() => buildEditorMap(children), [children]);
 
   // Calculate position when opening
   useEffect(() => {
@@ -171,7 +171,7 @@ export function FilterPanel({
         left: rect.left,
       });
     }
-  }, [isOpen, anchorRef]);
+  }, [isOpen]);
 
   // Handle click outside to close
   useEffect(() => {

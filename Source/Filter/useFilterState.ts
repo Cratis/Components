@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FilterDefinition, FilterValues, RangeValues, CustomFilterValues } from './types';
 import { buildFilterValues, buildRangeValues } from './utils';
 
@@ -32,8 +32,19 @@ export function useFilterState(filters: FilterDefinition[] | undefined): UseFilt
     filters?.[0]?.key ?? null
   );
 
-  // Sync state when the filter definitions change
+  // Serialize filter keys to avoid infinite loops from reference changes
+  const filterKeys = useMemo(
+    () => filters?.map(f => f.key).join(',') ?? '',
+    [filters]
+  );
+  const prevFilterKeysRef = useRef<string>(filterKeys);
+
+  // Sync state when the filter definitions change (only when keys actually change)
   useEffect(() => {
+    // Only update if the filter keys have actually changed
+    if (filterKeys === prevFilterKeysRef.current) return;
+    prevFilterKeysRef.current = filterKeys;
+
     setFilterValues((prev) => {
       const next = buildFilterValues(filters);
       if (!filters) return next;
@@ -55,7 +66,7 @@ export function useFilterState(filters: FilterDefinition[] | undefined): UseFilt
       });
       return next;
     });
-  }, [filters]);
+  }, [filterKeys, filters]);
 
   useEffect(() => {
     if (!filters?.length) {
@@ -66,7 +77,7 @@ export function useFilterState(filters: FilterDefinition[] | undefined): UseFilt
       if (current && filters.some((f) => f.key === current)) return current;
       return filters[0]?.key ?? null;
     });
-  }, [filters]);
+  }, [filterKeys, filters]);
 
   const handleToggleFilter = useCallback((filterKey: string, optionKey: string, multi: boolean) => {
     setFilterValues((prev) => {
