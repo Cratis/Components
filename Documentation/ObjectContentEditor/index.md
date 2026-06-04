@@ -20,7 +20,7 @@ ObjectContentEditor provides a structured view of JSON objects with breadcrumb n
 ## Quick Start
 
 ```typescript
-import { ObjectContentEditor } from '@cratis/components';
+import { ObjectContentEditor } from '@cratis/components/ObjectContentEditor';
 import { JsonSchema } from '@cratis/components/types';
 
 function MyObjectViewer() {
@@ -105,7 +105,7 @@ Validation errors are displayed inline beneath each field using PrimeReact's `p-
 ### Edit Mode Example
 
 ```typescript
-import { ObjectContentEditor } from '@cratis/components';
+import { ObjectContentEditor } from '@cratis/components/ObjectContentEditor';
 import { useState } from 'react';
 
 function EditableProduct() {
@@ -194,7 +194,7 @@ Click back arrow or breadcrumb
 ## Complete Example
 
 ```typescript
-import { ObjectContentEditor } from '@cratis/components';
+import { ObjectContentEditor } from '@cratis/components/ObjectContentEditor';
 
 function ProductViewer() {
     const product = {

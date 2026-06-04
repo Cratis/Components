@@ -10,7 +10,7 @@ Dimensions define how items can be grouped.
 {
     key: string;           // Unique identifier
     label: string;         // Display name
-    accessor: (item) => value;  // Function to extract grouping value
+    getValue: (item) => value;  // Function to extract grouping value
 }
 ```
 
@@ -21,22 +21,22 @@ const dimensions = [
     {
         key: 'status',
         label: 'Status',
-        accessor: (item) => item.status
+        getValue: (item) => item.status
     },
     {
         key: 'priority',
         label: 'Priority',
-        accessor: (item) => item.priority
+        getValue: (item) => item.priority
     },
     {
         key: 'assignee',
         label: 'Assigned To',
-        accessor: (item) => item.assignedTo
+        getValue: (item) => item.assignedTo
     },
     {
         key: 'date',
         label: 'Created Date',
-        accessor: (item) => {
+        getValue: (item) => {
             const date = new Date(item.createdAt);
             return `${date.getFullYear()}-${date.getMonth() + 1}`;
         }
@@ -60,8 +60,8 @@ Filters allow users to narrow down the dataset.
 {
     key: 'category',
     label: 'Category',
-    type: 'categorical',
-    accessor: (item) => item.category
+    type: 'string',
+    getValue: (item) => item.category
 }
 ```
 
@@ -71,10 +71,9 @@ Filters allow users to narrow down the dataset.
 {
     key: 'price',
     label: 'Price',
-    type: 'range',
-    accessor: (item) => item.price,
-    min: 0,
-    max: 1000
+    type: 'number',
+    getValue: (item) => item.price,
+    buckets: 20
 }
 ```
 
@@ -86,8 +85,8 @@ For properties that return arrays:
 {
     key: 'tags',
     label: 'Tags',
-    type: 'categorical',
-    accessor: (item) => item.tags  // Returns array of strings
+    type: 'string',
+    getValue: (item) => item.tags  // Returns array of strings
 }
 ```
 
@@ -109,17 +108,17 @@ const dimensions = [
     {
         key: 'status',
         label: 'Status',
-        accessor: (item: Task) => item.status
+        getValue: (item: Task) => item.status
     },
     {
         key: 'assignee',
         label: 'Assignee',
-        accessor: (item: Task) => item.assignee
+        getValue: (item: Task) => item.assignee
     },
     {
         key: 'priority-level',
         label: 'Priority Level',
-        accessor: (item: Task) => {
+        getValue: (item: Task) => {
             if (item.priority >= 8) return 'High';
             if (item.priority >= 5) return 'Medium';
             return 'Low';
@@ -131,36 +130,34 @@ const filters = [
     {
         key: 'status',
         label: 'Status',
-        type: 'categorical',
-        accessor: (item: Task) => item.status
+        type: 'string',
+        getValue: (item: Task) => item.status
     },
     {
         key: 'priority',
         label: 'Priority',
-        type: 'range',
-        accessor: (item: Task) => item.priority,
-        min: 0,
-        max: 10
+        type: 'number',
+        getValue: (item: Task) => item.priority,
+        buckets: 10
     },
     {
         key: 'estimatedHours',
         label: 'Estimated Hours',
-        type: 'range',
-        accessor: (item: Task) => item.estimatedHours,
-        min: 0,
-        max: 40
+        type: 'number',
+        getValue: (item: Task) => item.estimatedHours,
+        buckets: 20
     },
     {
         key: 'tags',
         label: 'Tags',
-        type: 'categorical',
-        accessor: (item: Task) => item.tags
+        type: 'string',
+        getValue: (item: Task) => item.tags
     },
     {
         key: 'assignee',
         label: 'Assigned To',
-        type: 'categorical',
-        accessor: (item: Task) => item.assignee
+        type: 'string',
+        getValue: (item: Task) => item.assignee
     }
 ];
 ```
@@ -173,7 +170,7 @@ Create dimensions based on computed values:
 {
     key: 'age-group',
     label: 'Age Group',
-    accessor: (item) => {
+    getValue: (item) => {
         const age = item.age;
         if (age < 18) return 'Under 18';
         if (age < 35) return '18-34';
@@ -189,12 +186,12 @@ Create dimensions based on computed values:
 {
     key: 'year',
     label: 'Year',
-    accessor: (item) => new Date(item.createdAt).getFullYear()
+    getValue: (item) => new Date(item.createdAt).getFullYear()
 },
 {
     key: 'month',
     label: 'Month',
-    accessor: (item) => {
+    getValue: (item) => {
         const date = new Date(item.createdAt);
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     }
@@ -202,7 +199,7 @@ Create dimensions based on computed values:
 {
     key: 'quarter',
     label: 'Quarter',
-    accessor: (item) => {
+    getValue: (item) => {
         const date = new Date(item.createdAt);
         const quarter = Math.floor(date.getMonth() / 3) + 1;
         return `Q${quarter} ${date.getFullYear()}`;

@@ -39,10 +39,10 @@ The `value` prop accepts a function of the form `(instance: TCommand) => unknown
 CommandForm fields are used as children of `CommandDialog`:
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { InputTextField, NumberField, CheckboxField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <InputTextField<MyCommand> value={c => c.title} />
     <NumberField<MyCommand> value={c => c.quantity} />
     <CheckboxField<MyCommand> value={c => c.active} label="Active" />

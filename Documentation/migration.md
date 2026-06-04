@@ -255,7 +255,9 @@ If you only use a few components, prefer subpath imports so unused parts of the 
 
 ```ts
 // Before — pulls in everything
-import { Dialog, DataPage, InputTextField } from '@cratis/components';
+import { Dialog } from '@cratis/components/Dialogs';
+import { DataPage } from '@cratis/components/DataPage';
+import { InputTextField } from '@cratis/components/CommandForm';
 ```
 
 ```ts

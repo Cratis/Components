@@ -17,7 +17,7 @@ Dropdown provides a select component that correctly appears above dialogs and ot
 ## Quick Start
 
 ```typescript
-import { Dropdown } from '@cratis/components';
+import { Dropdown } from '@cratis/components/Dropdown';
 
 function MyForm() {
     const [selectedCity, setSelectedCity] = useState(null);
@@ -233,7 +233,7 @@ Integrate with form validation:
 ## Complete Form Example
 
 ```typescript
-import { Dropdown } from '@cratis/components';
+import { Dropdown } from '@cratis/components/Dropdown';
 import { useState } from 'react';
 
 interface FormData {

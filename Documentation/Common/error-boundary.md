@@ -12,12 +12,11 @@ ErrorBoundary catches JavaScript errors in component trees and displays a fallba
 - Displays user-friendly error message
 - Prevents application crash
 - Can be nested at different levels
-- Optional custom fallback UI
 
 ## Basic Usage
 
 ```typescript
-import { ErrorBoundary } from '@cratis/components';
+import { ErrorBoundary } from '@cratis/components/Common';
 
 function App() {
     return (
@@ -28,26 +27,9 @@ function App() {
 }
 ```
 
-## With Custom Fallback
-
-```typescript
-const CustomError = ({ error }) => (
-    <div className="error-container">
-        <h2>Oops! Something went wrong.</h2>
-        <p>{error.message}</p>
-        <button onClick={() => window.location.reload()}>Reload</button>
-    </div>
-);
-
-<ErrorBoundary fallback={CustomError}>
-    <MyComponent />
-</ErrorBoundary>
-```
-
 ## Props
 
 - `children`: Components to protect with error boundary
-- `fallback`: Custom error display component (optional)
 
 ## Error Information
 
@@ -100,40 +82,11 @@ function Dashboard() {
 ```typescript
 function DataTable() {
     return (
-        <ErrorBoundary fallback={TableError}>
+        <ErrorBoundary>
             <ComplexTable data={data} />
         </ErrorBoundary>
     );
 }
-```
-
-## Advanced Example
-
-```typescript
-const ErrorFallback = ({ error, errorInfo, reset }) => (
-    <div className="error-boundary-fallback">
-        <div className="error-icon">
-            <i className="pi pi-exclamation-triangle" />
-        </div>
-        
-        <h2>Something went wrong</h2>
-        
-        <details className="error-details">
-            <summary>Error Details</summary>
-            <pre>{error.message}</pre>
-            <pre>{errorInfo.componentStack}</pre>
-        </details>
-        
-        <div className="error-actions">
-            <button onClick={reset}>Try Again</button>
-            <button onClick={() => window.location.href = '/'}>Go Home</button>
-        </div>
-    </div>
-);
-
-<ErrorBoundary fallback={ErrorFallback}>
-    <App />
-</ErrorBoundary>
 ```
 
 ## Error Logging
@@ -173,35 +126,16 @@ function RetryErrorBoundary({ children }) {
         setRetryCount(count => count + 1);
     };
     
+    // Bump `retryCount` to remount the boundary and re-render its children.
     return (
-        <ErrorBoundary 
-            key={retryCount}
-            fallback={({ error }) => (
-                <div>
-                    <p>Error: {error.message}</p>
-                    <button onClick={handleRetry}>Retry</button>
-                </div>
-            )}
-        >
-            {children}
-        </ErrorBoundary>
+        <div>
+            <button onClick={handleRetry}>Retry</button>
+            <ErrorBoundary key={retryCount}>
+                {children}
+            </ErrorBoundary>
+        </div>
     );
 }
-```
-
-### Fallback Content
-
-```typescript
-<ErrorBoundary 
-    fallback={() => (
-        <div className="fallback-content">
-            <h3>This section is temporarily unavailable</h3>
-            <p>Please try refreshing the page or check back later.</p>
-        </div>
-    )}
->
-    <OptionalFeature />
-</ErrorBoundary>
 ```
 
 ## What Errors Are Caught

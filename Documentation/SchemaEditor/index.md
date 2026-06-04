@@ -20,7 +20,7 @@ SchemaEditor allows users to define data structures by adding properties, specif
 ## Quick Start
 
 ```typescript
-import { SchemaEditor } from '@cratis/components';
+import { SchemaEditor } from '@cratis/components/SchemaEditor';
 import { JsonSchema } from '@cratis/components/types';
 
 function MySchemaEditor() {

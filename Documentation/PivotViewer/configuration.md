@@ -14,7 +14,7 @@
 ### Optional Props
 
 - `defaultDimensionKey`: Initial dimension to group by
-- `searchFields`: Array of field names to include in text search
+- `searchFields`: Array of accessor functions returning the values to include in text search
 - `className`: CSS class for the container
 - `emptyContent`: React node to show when no data matches filters
 - `isLoading`: Show loading state
@@ -31,14 +31,14 @@
     cardRenderer={renderCard}
     detailRenderer={renderDetails}
     getItemId={(item) => item.id}
-    searchFields={['title', 'description', 'assignee']}
+    searchFields={[item => item.title, item => item.description, item => item.assignee]}
     className="my-pivot-viewer"
     emptyContent={<div>No items match your filters</div>}
     isLoading={isLoadingData}
     colors={{
-        primary: '#4CAF50',
-        background: '#1a1a1a',
-        surface: '#2d2d2d'
+        primaryColor: '#4CAF50',
+        surfaceGround: '#1a1a1a',
+        surfaceCard: '#2d2d2d'
     }}
 />
 ```
@@ -49,11 +49,11 @@ Customize the color scheme:
 
 ```typescript
 const customColors = {
-    primary: '#0066cc',        // Primary accent color
-    background: '#ffffff',     // Main background
-    surface: '#f5f5f5',       // Card backgrounds
-    text: '#333333',          // Text color
-    border: '#e0e0e0'         // Border color
+    primaryColor: '#0066cc',     // Primary accent color
+    surfaceGround: '#ffffff',    // Main background
+    surfaceCard: '#f5f5f5',      // Card backgrounds
+    textColor: '#333333',        // Text color
+    surfaceBorder: '#e0e0e0'     // Border color
 };
 
 <PivotViewer
@@ -103,11 +103,11 @@ Customize the message when filters return no results:
 
 ## Search Configuration
 
-Specify which fields should be searchable:
+Specify which fields should be searchable by passing accessor functions:
 
 ```typescript
 <PivotViewer
-    searchFields={['title', 'description', 'tags', 'author']}
+    searchFields={[item => item.title, item => item.description, item => item.tags, item => item.author]}
     // ... other props
 />
 ```

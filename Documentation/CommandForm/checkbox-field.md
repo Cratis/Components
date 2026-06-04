@@ -5,10 +5,10 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { CheckboxField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <CheckboxField<MyCommand> value={c => c.isActive} label="Active" />
     <CheckboxField<MyCommand> value={c => c.newsletter} label="Send me newsletter updates" />
 </CommandDialog>

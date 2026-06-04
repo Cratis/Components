@@ -84,7 +84,7 @@ The "table left, details right, toolbar on top" layout — split panes, selectio
 
 ```tsx
 // Components
-<DataPage title="Authors" query={AllAuthorsWithBooks} DetailsComponent={AuthorDetails} detailsTitle={a => a.name}>
+<DataPage title="Authors" query={AllAuthorsWithBooks} detailsComponent={AuthorDetails}>
     <DataPage.MenuItems>
         <MenuItem label="Add author" icon="pi pi-plus" command={() => showAddAuthor()} />
         <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={openEdit} />
@@ -104,7 +104,7 @@ Selection, the resizable split, and disabling menu items until a row is selected
 | `Dialog` + footer `Button`s + a fetch | `CommandDialog command={...}` |
 | `InputText` + `useState` + manual validation | `InputTextField value={i => i.field}` — typed to the command |
 | `DataTable value={...}` + `useEffect` fetch | `DataTableForObservableQuery query={...}` (live) or `DataTableForQuery` |
-| Split panes + selection + detail wiring | `DataPage` with `DetailsComponent` |
+| Split panes + selection + detail wiring | `DataPage` with `detailsComponent` |
 | A multi-step wizard you build yourself | `StepperCommandDialog` |
 | A PrimeReact theme | the same theme, plus `--cratis-*` tokens for repainting |
 

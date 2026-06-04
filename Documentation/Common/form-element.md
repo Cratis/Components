@@ -22,7 +22,7 @@ FormElement is a structural primitive — it lays out an icon addon and a child 
 ## Basic Usage
 
 ```tsx
-import { FormElement } from '@cratis/components';
+import { FormElement } from '@cratis/components/Common';
 import { InputText } from 'primereact/inputtext';
 
 function MyForm() {

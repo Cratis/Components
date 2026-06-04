@@ -12,7 +12,8 @@ sidebar:
 `StepperCommandDialog` is `CommandDialog` with stages. You group fields into `StepperPanel`s; it handles next/back navigation, per-step validation, and runs the command when the last step is confirmed:
 
 ```tsx
-import { StepperCommandDialog, StepperPanel } from '@cratis/components/StepperCommandDialog';
+import { StepperCommandDialog } from '@cratis/components/CommandDialog';
+import { StepperPanel } from 'primereact/stepperpanel';
 import { InputTextField, DropdownField } from '@cratis/components/CommandForm';
 import { RegisterMember } from './RegisterMember';   // generated proxy
 

@@ -2,55 +2,31 @@
 
 ## Card Renderer
 
-The card renderer determines how each item appears in the collection view.
+The card renderer determines how each item appears in the collection view. It returns structured text data — `{ title, labels?, values? }` — and `PivotViewer` lays it out into the card. The `labels` and `values` arrays are paired positionally.
 
 ### Basic Card
 
 ```typescript
-const cardRenderer = (item: Product) => (
-    <div className="product-card">
-        <img src={item.imageUrl} alt={item.name} />
-        <h3>{item.name}</h3>
-        <p className="price">${item.price}</p>
-    </div>
-);
+const cardRenderer = (item: Product) => ({
+    title: item.name,
+    labels: ['Price'],
+    values: [`$${item.price}`]
+});
 ```
 
 ### Rich Card Example
 
 ```typescript
-const taskCardRenderer = (item: Task) => (
-    <div className="task-card">
-        <div className="task-header">
-            <span className={`priority priority-${item.priority}`}>
-                P{item.priority}
-            </span>
-            <span className={`status status-${item.status}`}>
-                {item.status}
-            </span>
-        </div>
-        
-        <h4 className="task-title">{item.title}</h4>
-        
-        <div className="task-meta">
-            <div className="assignee">
-                <img src={item.assigneeAvatar} alt={item.assignee} className="avatar" />
-                <span>{item.assignee}</span>
-            </div>
-            
-            <div className="tags">
-                {item.tags.map(tag => (
-                    <span key={tag} className="tag">{tag}</span>
-                ))}
-            </div>
-        </div>
-        
-        <div className="task-footer">
-            <span className="estimate">{item.estimatedHours}h</span>
-            <span className="due-date">{formatDate(item.dueDate)}</span>
-        </div>
-    </div>
-);
+const taskCardRenderer = (item: Task) => ({
+    title: item.title,
+    labels: ['Priority', 'Status', 'Assignee', 'Estimate'],
+    values: [
+        `P${item.priority}`,
+        item.status,
+        item.assignee,
+        `${item.estimatedHours}h`
+    ]
+});
 ```
 
 ## Detail Renderer
@@ -201,28 +177,26 @@ const interactiveDetailRenderer = (item: Task) => {
 
 ## Conditional Rendering
 
-Adapt cards based on item properties:
+Adapt the structured card data based on item properties:
 
 ```typescript
 const adaptiveCardRenderer = (item: Task) => {
     const isOverdue = new Date(item.dueDate) < new Date();
     const isHighPriority = item.priority >= 8;
-    
-    return (
-        <div className={`task-card ${isOverdue ? 'overdue' : ''} ${isHighPriority ? 'high-priority' : ''}`}>
-            {isOverdue && (
-                <div className="overdue-badge">Overdue</div>
-            )}
-            
-            {isHighPriority && (
-                <div className="urgent-indicator">!</div>
-            )}
-            
-            <h4>{item.title}</h4>
-            
-            {/* ... rest of card ... */}
-        </div>
-    );
+
+    const labels: string[] = ['Status'];
+    const values: string[] = [item.status];
+
+    if (isOverdue) {
+        labels.push('Flag');
+        values.push('Overdue');
+    }
+    if (isHighPriority) {
+        labels.push('Priority');
+        values.push('High');
+    }
+
+    return { title: item.title, labels, values };
 };
 ```
 

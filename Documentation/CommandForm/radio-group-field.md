@@ -5,7 +5,7 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { RadioGroupField } from '@cratis/components/CommandForm';
 
 const sizeOptions = [
@@ -14,7 +14,7 @@ const sizeOptions = [
     { id: 'large', label: 'Large' },
 ];
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <RadioGroupField<MyCommand>
         value={c => c.size}
         options={sizeOptions}

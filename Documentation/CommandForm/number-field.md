@@ -5,10 +5,10 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { NumberField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <NumberField<MyCommand> value={c => c.quantity} min={1} max={100} />
     <NumberField<MyCommand> value={c => c.price} min={0} step={0.01} placeholder="0.00" />
 </CommandDialog>

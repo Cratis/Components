@@ -20,24 +20,31 @@ TimeMachine allows users to navigate through different versions of data, viewing
 ## Quick Start
 
 ```typescript
-import { TimeMachine } from '@cratis/components';
+import { TimeMachine } from '@cratis/components/TimeMachine';
 
 interface Version {
+    id: string;
     timestamp: Date;
-    readModel: object;
-    events: Array<{
+    label: string;
+    content: React.ReactNode;
+    events?: Array<{
+        sequenceNumber: number;
         type: string;
-        timestamp: Date;
-        data: object;
+        occurred: Date;
+        content: Record<string, unknown>;
     }>;
 }
 
 function MyTimeMachine() {
     const versions: Version[] = [
         {
+            id: 'v1',
             timestamp: new Date('2024-01-01'),
-            readModel: { name: 'Initial', status: 'draft' },
-            events: [{ type: 'Created', timestamp: new Date('2024-01-01'), data: {} }]
+            label: 'Initial',
+            content: <div>Name: Initial — Status: draft</div>,
+            events: [
+                { sequenceNumber: 0, type: 'Created', occurred: new Date('2024-01-01'), content: {} }
+            ]
         }
     ];
 

@@ -18,7 +18,7 @@ DataTableForQuery provides a data table specifically designed for `IQueryFor` qu
 ## Basic Usage
 
 ```typescript
-import { DataTableForQuery } from '@cratis/components';
+import { DataTableForQuery } from '@cratis/components/DataTables';
 import { Column } from 'primereact/column';
 import { MyQuery } from './queries';
 

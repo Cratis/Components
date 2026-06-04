@@ -5,7 +5,7 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { MultiSelectField } from '@cratis/components/CommandForm';
 
 const categoryOptions = [
@@ -14,7 +14,7 @@ const categoryOptions = [
     { id: 'engineering', label: 'Engineering' },
 ];
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <MultiSelectField<MyCommand>
         value={c => c.categories}
         options={categoryOptions}

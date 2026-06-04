@@ -3,7 +3,7 @@
 `ToolbarSeparator` renders a thin visual divider between groups of buttons. Unlike `ToolbarSection`, it has no behavioral logic — it simply draws a line perpendicular to the toolbar orientation. In a horizontal toolbar the separator is a vertical rule; in a vertical toolbar it is a horizontal rule.
 
 ```tsx
-import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components';
+import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components/Toolbar';
 
 function ZoomToolbar() {
     return (

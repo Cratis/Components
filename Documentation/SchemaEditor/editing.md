@@ -189,7 +189,7 @@ Disable editing to display schema structure without allowing changes:
 <SchemaEditor
     schema={schema}
     onChange={setSchema}
-    readOnly={true}
+    canEdit={false}
 />
 ```
 

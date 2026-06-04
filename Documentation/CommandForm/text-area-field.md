@@ -5,10 +5,10 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { TextAreaField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <TextAreaField<MyCommand> value={c => c.description} placeholder="Enter a description" rows={4} />
     <TextAreaField<MyCommand> value={c => c.notes} rows={3} />
 </CommandDialog>
