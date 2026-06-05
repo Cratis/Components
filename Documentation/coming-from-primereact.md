@@ -1,20 +1,20 @@
 ---
-title: Coming from PrimeReact
-description: You already know PrimeReact. Here's how the forms and tables you'd hand-wire map onto Cratis Components — concept by concept, side by side — and what changes.
+title: PrimeReact and Components
+description: You already know PrimeReact. Here's how forms and tables map onto Cratis Components — concept by concept, side by side — and what changes.
 ---
 
-Cratis Components isn't a different component kit — it's built **on** PrimeReact. Your theme, your `Column`, your `Button`, your icons all still apply. What changes is the *wiring*: instead of binding a form to component state by hand and fetching a query in a `useEffect`, you point a component at an Arc-generated proxy and the binding is done for you. This page maps the PrimeReact code you'd write today onto its Components equivalent, so the shift is short.
+Cratis Components isn't a different component kit — it's built **on** PrimeReact. Your theme, your `Column`, your `Button`, your icons all still apply. What changes is the *wiring*: instead of keeping form state and query subscriptions in the screen, you point a component at an Arc-generated proxy and let the component own that integration. This page maps familiar PrimeReact code onto its Components equivalent.
 
 ## The one-paragraph version
 
-In a PrimeReact app you build a screen and connect it to your backend yourself: instantiate a request, track loading, render the dialog footer, bind each input, call your API, subscribe to updates. Components knows how to do all of that against your generated command and query proxies — so a form or a table is a few declarative lines, and it's type-checked against the C# it came from. You keep PrimeReact; you drop the glue.
+In a PrimeReact app, the screen often owns request creation, loading state, dialog footer actions, field binding, API calls, and live updates. Components centralizes that wiring around generated command and query proxies — so a form or a table is declarative, and it's type-checked against the C# it came from. You keep PrimeReact while reducing screen-specific integration code.
 
 ## A command form
 
 You have a dialog with a field and a save button. By hand, that's local state, a loading flag, a fetch, and footer buttons:
 
 ```tsx
-// PrimeReact, by hand
+// PrimeReact, local state
 const [name, setName] = useState('');
 const [saving, setSaving] = useState(false);
 
@@ -51,10 +51,10 @@ With Components, the command *is* the form — instantiation, the footer, the ex
 
 ## A data table
 
-By hand, a table means fetching on mount, holding rows in state, and — if you want live data — wiring up a subscription:
+With plain PrimeReact, a table typically fetches on mount, holds rows in state, and — if you want live data — subscribes to updates:
 
 ```tsx
-// PrimeReact, by hand
+// PrimeReact, local state
 const [authors, setAuthors] = useState([]);
 
 useEffect(() => {
@@ -80,7 +80,7 @@ The `Column` is the same PrimeReact component you already use. Only the data bin
 
 ## A list-and-detail page
 
-The "table left, details right, toolbar on top" layout — split panes, selection state, showing the panel only when a row is picked — is a lot of plumbing by hand. `DataPage` is that layout as one component:
+The "table left, details right, toolbar on top" layout has several moving parts: split panes, selection state, and a detail panel that appears only when a row is picked. `DataPage` is that layout as one component:
 
 ```tsx
 // Components
@@ -99,7 +99,7 @@ Selection, the resizable split, and disabling menu items until a row is selected
 
 ## How the pieces map
 
-| You know (PrimeReact, by hand) | In Components |
+| You know (PrimeReact) | In Components |
 |---|---|
 | `Dialog` + footer `Button`s + a fetch | `CommandDialog command={...}` |
 | `InputText` + `useState` + manual validation | `InputTextField value={i => i.field}` — typed to the command |

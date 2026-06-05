@@ -19,7 +19,7 @@ tf 04 rmo Authors.Author ->> 03
 tf 05 ui  Authors.AuthorsTable ->> 04
 ```
 
-You won't wire those `ui` blocks to the backend by hand. Concretely, each generated proxy maps to one Components widget — a query becomes a live table, a command becomes a dialog:
+You won't wire those `ui` blocks directly to the backend. Concretely, each generated proxy maps to one Components widget — a query becomes a live table, a command becomes a dialog:
 
 ```mermaid
 flowchart LR

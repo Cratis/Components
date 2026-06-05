@@ -5,7 +5,7 @@ description: Swap the plain table for DataPage to get selection, menu actions, a
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Our screen lists authors and acts on them, but the actions hang off a lone button, and there's nowhere to *see* an author — their books, in particular. The everyday shape for this is a table on the left, details on the right, with a toolbar that knows whether a row is selected. Writing that layout by hand is fiddly; `DataPage` hands it to you whole.
+Our screen lists authors and acts on them, but the actions hang off a lone button, and there's nowhere to *see* an author — their books, in particular. The everyday shape for this is a table on the left, details on the right, with a toolbar that knows whether a row is selected. That layout has enough moving pieces to deserve a component; `DataPage` hands it to you whole.
 
 We'll point it at `AllAuthorsWithBooks` — the read model from the [Arc tutorial](/arc/tutorial/books-and-relationships/) where each author already carries their books — so the detail panel has something to show.
 

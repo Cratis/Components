@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-You *could* build your UI straight on PrimeReact (or any component kit) and wire each form and table to your [Arc](/arc/) backend by hand — instantiate the command, manage loading and error state, render the footer buttons, bind each field, call the query, handle the observable subscription. Components does that wiring for you.
+You can build your UI straight on PrimeReact (or any component kit) and keep each form and table connected to your [Arc](/arc/) backend with screen-local state and effects — instantiate the command, manage loading and error state, render the footer buttons, bind each field, call the query, handle the observable subscription. Components centralizes that wiring.
 
 It's a set of React components built on **PrimeReact** that know how to talk to **Arc's generated proxies**. The result: a command form or a live data table is a few declarative lines instead of a few files of glue.
 
@@ -14,7 +14,7 @@ It's a set of React components built on **PrimeReact** that know how to talk to 
 | Without Components | With Components |
 |---|---|
 | Instantiate a command, track `isExecuting`, disable the button, render OK/Cancel | `<CommandDialog command={...}>` does all of it |
-| Bind each input to command state and validate by hand | `<InputTextField value={i => i.name} />` — typed to the command |
+| Bind each input to command state and validate locally | `<InputTextField value={i => i.name} />` — typed to the command |
 | Fetch a query, subscribe to the observable, re-render on change | `<DataTableForObservableQuery>` / `query.use()` |
 | Hand-roll list pages with detail panels | `<DataPage>` |
 

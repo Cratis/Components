@@ -57,8 +57,8 @@ The table lists authors; now a librarian needs to *change* the list. Every chang
 
 Run it and add an author. The new row appears in the table **immediately** — and you wrote nothing to make that happen. There's no "reload the list after saving," because there's nothing to reload: the command appended an event, the projection updated the read model, and the observable table you built in chapter 1 re-rendered on its own. The write side and the read side meet at the read model, and the screen just follows.
 
-<Aside type="tip" title="Validation comes along for free">
-The rules you put on the command in the backend (a non-empty name, a unique name) are extracted into the generated proxy. `CommandDialog` runs them, disables **Add** until the form is valid, and shows the server's rejection message against the field — none of which you wrote here.
+<Aside type="tip" title="Validation flows through">
+The rules you put on the command in the backend (a non-empty name, a unique name) are extracted into the generated proxy. `CommandDialog` runs them, disables **Add** until the form is valid, and shows the server's rejection message against the field without duplicate frontend validation code.
 </Aside>
 
 ## Rename and remove are just more commands

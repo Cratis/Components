@@ -9,7 +9,7 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 
 You've built an Arc backend — a `RegisterAuthor` command, an `AllAuthors` query — and `dotnet build` has generated the typed proxies for both. Now you need a screen: a form to add an author, a table that lists them and refreshes itself when one's added.
 
-You *could* build that straight on PrimeReact — instantiate the command, track its executing state, disable the button while it runs, render OK/Cancel, bind every field, call the query, subscribe to its observable, re-render on change. That's a few files of glue for one screen. `@cratis/components` already knows how to do all of it against your generated proxies, so the same screen is a few declarative lines. Let's wire it up.
+You can build that straight on PrimeReact — instantiate the command, track its executing state, disable the button while it runs, render OK/Cancel, bind every field, call the query, subscribe to its observable, re-render on change. `@cratis/components` centralizes that integration around your generated proxies, so the same screen is a few declarative lines. Let's wire it up.
 
 ## Prerequisites
 
@@ -80,7 +80,7 @@ export const AddAuthor = () => (
 );
 ```
 
-No `isExecuting` flag, no button wiring, no validation written by hand — and because `RegisterAuthor` is generated from your C#, `i => i.name` is type-checked against the real command. Rename the property in C#, rebuild, and this line stops compiling until you fix it. That's the few-lines-not-few-files promise, with the type safety to back it.
+No `isExecuting` flag, no button wiring, no duplicate validation logic — and because `RegisterAuthor` is generated from your C#, `i => i.name` is type-checked against the real command. Rename the property in C#, rebuild, and this line stops compiling until you fix it.
 
 ## Choose how it looks
 
