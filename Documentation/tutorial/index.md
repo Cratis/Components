@@ -7,6 +7,20 @@ In the [Arc tutorial](/arc/tutorial/) you built a library backend: a `RegisterAu
 
 Here's the thing to hold onto as we go: **you won't write the wiring between the screen and the backend.** No `fetch`, no loading flags, no "refresh the list after saving," no hand-bound form fields. Components already knows how to render a command as a form and a query as a live table — so each screen is a few declarative lines, type-checked against the C# it came from. We'll build it up in three short chapters, stopping at each step to see what just happened.
 
+Here's the slice your screens plug into, as an **[event model](/event-modeling/)** (read left to right). **Components builds the two `ui` blocks** — the dialog that issues the `RegisterAuthor` command and the live table that reads the `Author` read model; the `cmd`, `evt`, and `rmo` in between are the backend you built in the [Arc tutorial](/arc/tutorial/):
+
+```mermaid
+eventmodeling
+
+tf 01 ui  Authors.AddAuthorDialog
+tf 02 cmd Authors.RegisterAuthor { id: uuid, name: string }
+tf 03 evt Authors.AuthorRegistered { name: string }
+tf 04 rmo Authors.Author ->> 03
+tf 05 ui  Authors.AuthorsTable ->> 04
+```
+
+You won't wire those `ui` blocks to the backend by hand. Concretely, each generated proxy maps to one Components widget — a query becomes a live table, a command becomes a dialog:
+
 ```mermaid
 flowchart LR
     subgraph Backend["Arc proxies (generated)"]
@@ -18,6 +32,8 @@ flowchart LR
     T --> S["the library screen"]
     D --> S
 ```
+
+So the event model tells you *what* each screen does, and this tells you *how* it's built: each screen is a few declarative lines, type-checked against the C# it came from.
 
 ## What you'll build
 
