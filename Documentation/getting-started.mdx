@@ -11,9 +11,10 @@ You've built an Arc backend — a `RegisterAuthor` command, an `AllAuthors` quer
 
 You *could* build that straight on PrimeReact — instantiate the command, track its executing state, disable the button while it runs, render OK/Cancel, bind every field, call the query, subscribe to its observable, re-render on change. That's a few files of glue for one screen. `@cratis/components` already knows how to do all of it against your generated proxies, so the same screen is a few declarative lines. Let's wire it up.
 
-<Aside type="note" title="What you need first">
-A frontend that already reaches your Arc backend through generated proxies — the [Arc frontend get-started](/arc/frontend/getting-started/) sets that up. Components renders forms and tables *on top* of those proxies; if you scaffolded with `dotnet new cratis`, it's already installed and you're here to understand the pieces.
-</Aside>
+## Prerequisites
+
+- **A React app** — a Vite + React frontend (the `dotnet new cratis` template scaffolds one).
+- **An Arc frontend that reaches your backend through generated proxies** — the [Arc frontend get-started](/arc/frontend/getting-started/) sets that up. Components renders forms and tables *on top* of those proxies. If you scaffolded with `dotnet new cratis`, the package is already installed and you're here to understand the pieces.
 
 ## Install and wire it up
 
