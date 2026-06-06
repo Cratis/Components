@@ -22,7 +22,7 @@ import { ColorPickerField } from '@cratis/components/CommandForm';
 |------|------|---------|-------------|
 | `value` | `(instance: TCommand) => unknown` | - | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
 | `inline` | `boolean` | `false` | Renders the picker inline instead of using an overlay. |
-| `defaultColor` | `string` | `ff0000` | Fallback color shown by PrimeReact when the bound value is empty. |
+| `defaultColor` | `string` | `000000` | Fallback color used when the bound value is empty. |
 
 ## Behavior
 

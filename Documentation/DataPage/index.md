@@ -22,6 +22,7 @@ Declare the columns and menu actions with the compound `DataPage.Columns` and `D
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
 import { Column } from 'primereact/column';
+import { FaPlus, FaPencil } from 'react-icons/fa';
 import { AllAuthors } from './queries';   // generated query proxy
 
 function Authors() {
@@ -31,8 +32,8 @@ function Authors() {
             query={AllAuthors}
             emptyMessage="No authors found">
             <DataPage.MenuItems>
-                <MenuItem label="Add" icon="pi pi-plus" command={() => handleAdd()} />
-                <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={() => handleEdit()} />
+                <MenuItem label="Add" icon={FaPlus} command={() => handleAdd()} />
+                <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={() => handleEdit()} />
             </DataPage.MenuItems>
             <DataPage.Columns>
                 <Column field="name" header="Name" sortable />
