@@ -6,13 +6,13 @@
 
 - `data`: Array of items to display
 - `dimensions`: Array of dimension configurations for grouping
-- `filters`: Array of filter configurations
 - `cardRenderer`: Function to render card view for an item
-- `detailRenderer`: Function to render detail view for an item
-- `getItemId`: Function to extract unique ID from an item
 
 ### Optional Props
 
+- `filters`: Array of filter configurations
+- `detailRenderer`: Function to render detail view for an item
+- `getItemId`: Function to extract unique ID from an item
 - `defaultDimensionKey`: Initial dimension to group by
 - `searchFields`: Array of accessor functions returning the values to include in text search
 - `className`: CSS class for the container
