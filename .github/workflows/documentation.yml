@@ -1,6 +1,12 @@
 name: Trigger documentation build
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
+  workflow_dispatch:
+
   push:
     branches: ["main"]
     paths:
@@ -8,8 +14,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   trigger:
@@ -19,6 +23,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PAT_DOCUMENTATION }}
-          repository: cratis/documentation
+          repository: Cratis/Documentation
           event-type: build-docs
-
