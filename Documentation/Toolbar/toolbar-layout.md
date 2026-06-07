@@ -18,7 +18,7 @@ The key capability: any component in the React tree can inject a complete toolba
 Wrap the toolbar and the contributing components in a `ToolbarSlotProvider`. Give `ToolbarLayout` a `name` prop that external components match in their `ToolbarSlot`:
 
 ```tsx
-import { ToolbarSlotProvider, ToolbarSlot } from '@cratis/components';
+import { ToolbarSlotProvider, ToolbarSlot } from '@cratis/components/Toolbar';
 
 export const AppShell = () => (
     <ToolbarSlotProvider>

@@ -1,0 +1,8 @@
+- name: Overview
+  href: index.md
+- name: 1. List the authors
+  href: list-it.mdx
+- name: 2. Act on the list
+  href: act-on-it.mdx
+- name: 3. List and detail
+  href: list-and-detail.mdx

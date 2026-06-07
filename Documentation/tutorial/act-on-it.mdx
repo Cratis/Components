@@ -1,0 +1,90 @@
+---
+title: "2. Act on the list"
+description: Add, rename, and remove authors with typed command dialogs — and watch the live table update itself the moment a command lands.
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+The table lists authors; now a librarian needs to *change* the list. Every change is an Arc command — `RegisterAuthor`, `RenameAuthor`, `RemoveAuthor` — and Components turns each one into a form-with-a-button without you binding a single field. Let's start with adding.
+
+## Add an author
+
+<Steps>
+
+1. **Build the dialog from the command.** `CommandDialog` takes the generated command, renders the fields you list plus the OK/Cancel footer, validates, and executes on confirm. The field accessor `i => i.name` is typed against `RegisterAuthor`:
+
+   ```tsx title="AddAuthor.tsx"
+   import { CommandDialog } from '@cratis/components/CommandDialog';
+   import { InputTextField } from '@cratis/components/CommandForm';
+   import { DialogProps, DialogResult } from '@cratis/arc.react/dialogs';
+   import { RegisterAuthor } from './Authors/RegisterAuthor';   // generated proxy
+
+   export const AddAuthor = ({ closeDialog }: DialogProps) => (
+       <CommandDialog<RegisterAuthor>
+           command={RegisterAuthor}
+           title="Add author"
+           okLabel="Add"
+           onConfirm={() => closeDialog(DialogResult.Ok)}>
+           <InputTextField<RegisterAuthor> value={i => i.name} title="Name" placeholder="Jane Austen" />
+       </CommandDialog>
+   );
+   ```
+
+2. **Open it from the screen.** `useDialog` gives you a wrapper element to render and a function to show it. Drop a toolbar button next to the table from chapter 1:
+
+   ```tsx title="Authors.tsx"
+   import { Button } from 'primereact/button';
+   import { useDialog } from '@cratis/arc.react/dialogs';
+   import { AddAuthor } from './AddAuthor';
+
+   export const Authors = () => {
+       const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
+       return (
+           <Page title="Authors" panel>
+               <Button label="Add author" icon="pi pi-plus" onClick={() => showAddAuthor()} />
+               <DataTableForObservableQuery query={AllAuthors} emptyMessage="No authors yet">
+                   <Column field="name" header="Name" sortable />
+               </DataTableForObservableQuery>
+               <AddAuthorDialog />
+           </Page>
+       );
+   };
+   ```
+
+</Steps>
+
+## The payoff: it updates itself
+
+Run it and add an author. The new row appears in the table **immediately** — and you wrote nothing to make that happen. There's no "reload the list after saving," because there's nothing to reload: the command appended an event, the projection updated the read model, and the observable table you built in chapter 1 re-rendered on its own. The write side and the read side meet at the read model, and the screen just follows.
+
+<Aside type="tip" title="Validation flows through">
+The rules you put on the command in the backend (a non-empty name, a unique name) are extracted into the generated proxy. `CommandDialog` runs them, disables **Add** until the form is valid, and shows the server's rejection message against the field without duplicate frontend validation code.
+</Aside>
+
+## Rename and remove are just more commands
+
+Editing isn't a different mechanism — it's another command. `RenameAuthor` opens the same way, but it needs to know *which* author. Pass the selected author's id (and current name) as `initialValues`, so the command is valid from the start:
+
+```tsx title="RenameAuthor.tsx"
+<CommandDialog<RenameAuthor>
+    command={RenameAuthor}
+    title="Rename author"
+    okLabel="Save"
+    initialValues={{ id: author.id, name: author.name }}>
+    <InputTextField<RenameAuthor> value={i => i.name} title="Name" />
+</CommandDialog>
+```
+
+<Aside type="note" title="initialValues, not onBeforeExecute">
+The author's `id` must be present for the command to be valid, so it goes in `initialValues`. Values you compute at execution time and that don't gate validity (a generated `Guid`, say) can go in `onBeforeExecute` — but a required id set there arrives too late, and the confirm button would never enable.
+</Aside>
+
+Removing is a `RemoveAuthor` command with nothing but the id — often a confirm dialog rather than a form. The table updates itself after every one of these, the same way it did for adding.
+
+## What you built
+
+- An **Add author** dialog generated from the `RegisterAuthor` command, opened with `useDialog`,
+- a table that **updates live** the moment the command lands — no refresh code,
+- and the pattern for rename and remove: model the change as a command, open it in a dialog, let the list follow.
+
+These actions hang off a toolbar button, but a real list screen lets you *select* a row and act on it — and often shows that row's details beside the list. That's exactly what `DataPage` is for. [Let's build the list-and-detail screen →](./list-and-detail)

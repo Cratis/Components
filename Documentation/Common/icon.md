@@ -50,15 +50,15 @@ function MyToolbar() {
     return (
         <Toolbar>
             {/* String — existing usage unchanged */}
-            <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
 
             {/* ReactNode — third-party icon component */}
-            <ToolbarButton icon={<FaPencil />} tooltip='Draw' />
+            <ToolbarButton icon={<FaPencil />} title='Draw' />
 
             {/* ReactNode — fan-out trigger */}
             <ToolbarFanOutItem icon={<FaShapes />} tooltip='Shapes'>
-                <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
-                <ToolbarButton icon='pi pi-circle' tooltip='Circle' />
+                <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+                <ToolbarButton icon='pi pi-circle' title='Circle' />
             </ToolbarFanOutItem>
         </Toolbar>
     );

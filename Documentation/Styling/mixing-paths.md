@@ -9,7 +9,8 @@ Keep the PrimeReact theme as your global baseline and opt one specific component
 ```tsx
 import 'primereact/resources/themes/lara-dark-blue/theme.css';
 import '@cratis/components/styles';
-import { CratisComponentsProvider, Dialog } from '@cratis/components';
+import { CratisComponentsProvider } from '@cratis/components';
+import { Dialog } from '@cratis/components/Dialogs';
 
 const brandDialogPt = {
     root:    { className: 'rounded-3xl bg-violet-900 text-violet-50' },

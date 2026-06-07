@@ -54,7 +54,7 @@ import { FaFolder } from 'react-icons/fa6';
 </ToolbarFolder>
 ```
 
-See [Icon](../../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
+See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
 
 ## List Mode
 

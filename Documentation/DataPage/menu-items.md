@@ -6,17 +6,21 @@ The `MenuItems` component defines the action menu for a DataPage.
 
 ## Basic Usage
 
-```typescript
+```tsx
+import { DataPage, MenuItem } from '@cratis/components/DataPage';
+import { Column } from 'primereact/column';
+import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa';
+
 <DataPage title="Products" query={ProductsQuery} emptyMessage="No products">
-    <MenuItems>
-        <MenuItem label="Create Product" icon="pi pi-plus" command={handleCreate} />
-        <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={handleEdit} />
-        <MenuItem label="Delete" icon="pi pi-trash" disableOnUnselected command={handleDelete} />
-    </MenuItems>
-    
-    <Columns>
+    <DataPage.MenuItems>
+        <MenuItem label="Create Product" icon={FaPlus} command={handleCreate} />
+        <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={handleEdit} />
+        <MenuItem label="Delete" icon={FaTrash} disableOnUnselected command={handleDelete} />
+    </DataPage.MenuItems>
+
+    <DataPage.Columns>
         {/* ... columns */}
-    </Columns>
+    </DataPage.Columns>
 </DataPage>
 ```
 
@@ -29,7 +33,7 @@ The `MenuItems` component defines the action menu for a DataPage.
 
 ### Optional Props
 
-- `icon`: Icon component or CSS class
+- `icon`: Icon **component type** (e.g. a `react-icons` icon like `FaPlus`) — DataPage renders it as `<Icon />`, so pass the component reference, not a CSS-class string or a JSX element
 - `disableOnUnselected`: Disable when no row is selected (default: false)
 - All PrimeReact MenuItem props are supported
 
@@ -37,65 +41,66 @@ The `MenuItems` component defines the action menu for a DataPage.
 
 Use `disableOnUnselected` to disable actions that require a selection:
 
-```typescript
-<MenuItems>
+```tsx
+import { FaPlus, FaPencil, FaTrash, FaArchive } from 'react-icons/fa';
+
+<DataPage.MenuItems>
     {/* Always enabled */}
-    <MenuItem 
-        label="Create New" 
-        icon="pi pi-plus"
+    <MenuItem
+        label="Create New"
+        icon={FaPlus}
         command={() => setShowCreateDialog(true)}
     />
-    
+
     {/* Disabled when no selection */}
-    <MenuItem 
-        label="Edit Selected" 
-        icon="pi pi-pencil"
+    <MenuItem
+        label="Edit Selected"
+        icon={FaPencil}
         disableOnUnselected={true}
         command={() => setShowEditDialog(true)}
     />
-    
-    <MenuItem 
-        label="Delete Selected" 
-        icon="pi pi-trash"
+
+    <MenuItem
+        label="Delete Selected"
+        icon={FaTrash}
         disableOnUnselected={true}
         command={() => handleDelete()}
     />
-    
+
     {/* Conditional actions */}
-    <MenuItem 
-        label="Archive" 
-        icon="pi pi-archive"
+    <MenuItem
+        label="Archive"
+        icon={FaArchive}
         disableOnUnselected={true}
         command={() => handleArchive()}
     />
-</MenuItems>
+</DataPage.MenuItems>
 ```
 
 ## Icons
 
-### PrimeReact Icons
+The `icon` prop takes a **component type** — DataPage renders it internally as `<Icon />`. Pass the
+component reference (for example, an icon from [`react-icons`](https://react-icons.github.io/react-icons/)),
+not a string CSS class and not an already-rendered JSX element.
 
-```typescript
-<MenuItem label="Save" icon="pi pi-save" command={handleSave} />
-<MenuItem label="Download" icon="pi pi-download" command={handleDownload} />
-<MenuItem label="Upload" icon="pi pi-upload" command={handleUpload} />
+```tsx
+import { FaSave, FaDownload, FaUpload } from 'react-icons/fa';
+
+<MenuItem label="Save" icon={FaSave} command={handleSave} />
+<MenuItem label="Download" icon={FaDownload} command={handleDownload} />
+<MenuItem label="Upload" icon={FaUpload} command={handleUpload} />
 ```
 
-### React Icons
-
-```typescript
-import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-
-<MenuItem label="Create" icon={<FaPlus />} command={handleCreate} />
-<MenuItem label="Edit" icon={<FaEdit />} command={handleEdit} />
-<MenuItem label="Delete" icon={<FaTrash />} command={handleDelete} />
-```
+:::caution
+Don't pass `icon="pi pi-save"` (a PrimeIcons CSS class) or `icon={<FaSave />}` (a JSX element).
+DataPage instantiates the icon itself, so the prop must be the component type: `icon={FaSave}`.
+:::
 
 ## Accessing Selected Item
 
 The selected item is available through the DataPage context:
 
-```typescript
+```tsx
 const handleEdit = () => {
     // Access selected item from parent component state
     if (selectedItem) {
@@ -109,40 +114,44 @@ const handleEdit = () => {
 
 Use PrimeReact MenuItem features for separators:
 
-```typescript
-<MenuItems>
-    <MenuItem label="New" icon="pi pi-plus" command={handleNew} />
+```tsx
+import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa';
+
+<DataPage.MenuItems>
+    <MenuItem label="New" icon={FaPlus} command={handleNew} />
     <MenuItem separator />
-    <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={handleEdit} />
-    <MenuItem label="Delete" icon="pi pi-trash" disableOnUnselected command={handleDelete} />
+    <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={handleEdit} />
+    <MenuItem label="Delete" icon={FaTrash} disableOnUnselected command={handleDelete} />
     <MenuItem separator />
-    <MenuItem label="Export" icon="pi pi-file-export" command={handleExport} />
-</MenuItems>
+    <MenuItem label="Export" icon={FaFileExport} command={handleExport} />
+</DataPage.MenuItems>
 ```
 
 ## Dropdown Menus
 
 Create nested menu structures:
 
-```typescript
-<MenuItems>
-    <MenuItem label="File" icon="pi pi-file">
-        <MenuItem label="New" icon="pi pi-plus" command={handleNew} />
-        <MenuItem label="Open" icon="pi pi-folder-open" command={handleOpen} />
+```tsx
+import { FaFile, FaPlus, FaFolderOpen, FaPencil, FaCopy, FaClipboard } from 'react-icons/fa';
+
+<DataPage.MenuItems>
+    <MenuItem label="File" icon={FaFile}>
+        <MenuItem label="New" icon={FaPlus} command={handleNew} />
+        <MenuItem label="Open" icon={FaFolderOpen} command={handleOpen} />
     </MenuItem>
-    
-    <MenuItem label="Edit" icon="pi pi-pencil">
-        <MenuItem label="Copy" icon="pi pi-copy" command={handleCopy} />
-        <MenuItem label="Paste" icon="pi pi-clipboard" command={handlePaste} />
+
+    <MenuItem label="Edit" icon={FaPencil}>
+        <MenuItem label="Copy" icon={FaCopy} command={handleCopy} />
+        <MenuItem label="Paste" icon={FaClipboard} command={handlePaste} />
     </MenuItem>
-</MenuItems>
+</DataPage.MenuItems>
 ```
 
 ## Action Handlers
 
 ### Simple Actions
 
-```typescript
+```tsx
 const handleCreate = () => {
     setShowCreateDialog(true);
 };
@@ -150,10 +159,10 @@ const handleCreate = () => {
 
 ### Actions with Selected Item
 
-```typescript
+```tsx
 const handleEdit = () => {
     if (!selectedItem) return;
-    
+
     setEditItem(selectedItem);
     setShowEditDialog(true);
 };
@@ -161,10 +170,10 @@ const handleEdit = () => {
 
 ### Confirmation Dialogs
 
-```typescript
+```tsx
 const handleDelete = () => {
     if (!selectedItem) return;
-    
+
     setDeleteItem(selectedItem);
     setShowConfirmDialog(true);
 };
@@ -172,10 +181,10 @@ const handleDelete = () => {
 
 ### Async Actions
 
-```typescript
+```tsx
 const handleArchive = async () => {
     if (!selectedItem) return;
-    
+
     try {
         await archiveItem(selectedItem.id);
         // Refresh data

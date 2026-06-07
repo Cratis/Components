@@ -18,7 +18,7 @@ DataTableForObservableQuery displays data from observable queries that automatic
 ## Basic Usage
 
 ```typescript
-import { DataTableForObservableQuery } from '@cratis/components';
+import { DataTableForObservableQuery } from '@cratis/components/DataTables';
 import { Column } from 'primereact/column';
 import { MyObservableQuery } from './queries';
 

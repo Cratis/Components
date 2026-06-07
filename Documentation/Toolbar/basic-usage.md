@@ -3,7 +3,7 @@
 Place `ToolbarButton` elements inside a `Toolbar`:
 
 ```tsx
-import { Toolbar, ToolbarButton } from '@cratis/components';
+import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
 
 function MyToolbar() {
     return (
@@ -19,7 +19,7 @@ function MyToolbar() {
 `ToolbarButton` supports either an icon, text, or both. For text-first controls such as zoom indicators, provide the `text` prop:
 
 ```tsx
-import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components';
+import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components/Toolbar';
 
 function ZoomToolbar() {
     const [zoom, setZoom] = useState(120);
@@ -52,4 +52,4 @@ import { FaPencil } from 'react-icons/fa6';
 </Toolbar>
 ```
 
-See [Icon](../../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
+See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.

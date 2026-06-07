@@ -46,4 +46,4 @@ import { FaShapes } from 'react-icons/fa6';
 </ToolbarFanOutItem>
 ```
 
-See [Icon](../../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.
+See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` component.

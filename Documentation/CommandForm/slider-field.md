@@ -5,10 +5,10 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { SliderField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <SliderField<MyCommand> value={c => c.volume} min={0} max={100} step={5} />
     <SliderField<MyCommand> value={c => c.experience} min={0} max={50} />
 </CommandDialog>

@@ -17,7 +17,7 @@ The Page component provides a consistent layout structure with a title and conte
 ## Basic Usage
 
 ```typescript
-import { Page } from '@cratis/components';
+import { Page } from '@cratis/components/Common';
 
 function MyPage() {
     return (

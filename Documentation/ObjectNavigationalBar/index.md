@@ -18,7 +18,7 @@ ObjectNavigationalBar displays the current navigation path and allows users to j
 ## Quick Start
 
 ```typescript
-import { ObjectNavigationalBar } from '@cratis/components';
+import { ObjectNavigationalBar } from '@cratis/components/ObjectNavigationalBar';
 
 function MyNavigator() {
     const [path, setPath] = useState<string[]>(['profile', 'address']);
@@ -106,7 +106,7 @@ city (index: 3)  ← current location
 ## Complete Example
 
 ```typescript
-import { ObjectNavigationalBar } from '@cratis/components';
+import { ObjectNavigationalBar } from '@cratis/components/ObjectNavigationalBar';
 import { useState } from 'react';
 
 interface DataNode {

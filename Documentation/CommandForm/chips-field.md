@@ -5,10 +5,10 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { ChipsField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <ChipsField<MyCommand>
         value={c => c.tags}
         placeholder="Add tags and press Enter"

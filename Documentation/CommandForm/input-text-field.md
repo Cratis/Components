@@ -5,10 +5,10 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { InputTextField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <InputTextField<MyCommand> value={c => c.username} placeholder="Enter username" />
     <InputTextField<MyCommand> value={c => c.email} type="email" placeholder="Enter email" />
     <InputTextField<MyCommand> value={c => c.password} type="password" />

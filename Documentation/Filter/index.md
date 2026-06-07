@@ -257,7 +257,7 @@ The hook re-syncs state when the `filters` array reference changes — existing 
 | `values` | `FilterValue[]` | ✓ | Raw data values used to compute the histogram |
 | `min` | `number` | ✓ | Lower bound of the full range |
 | `max` | `number` | ✓ | Upper bound of the full range |
-| `buckets` | `number` | ✓ | Number of histogram bars |
+| `buckets` | `number` | | Number of histogram bars (default `20`) |
 | `selectedRange` | `[number, number] \| null` | ✓ | Currently selected range, or `null` for none |
 | `onChange` | `(range: [number, number] \| null) => void` | ✓ | Called when the range changes |
 
@@ -270,8 +270,10 @@ import { FilterPanel, FilterEditor, useFilterState } from '@cratis/components/Fi
 import type { FilterDefinition } from '@cratis/components/Filter';
 ```
 
-It is also re-exported from the package root:
+From the package root, the module is available under the `Filter` namespace:
 
 ```tsx
-import { FilterPanel, FilterEditor, useFilterState } from '@cratis/components';
+import { Filter } from '@cratis/components';
+
+// Use as Filter.FilterPanel, Filter.FilterEditor, Filter.useFilterState
 ```

@@ -4,7 +4,7 @@
 
 ### Required Props
 
-- `versions`: Array of version objects containing timestamp, readModel, and events
+- `versions`: Array of version objects containing id, timestamp, label, content, and events
 
 ### Optional Props
 
@@ -18,12 +18,15 @@ Each version in the `versions` array should have:
 
 ```typescript
 {
+    id: string;                // Unique identifier for this version
     timestamp: Date;           // When this version was created
-    readModel: object;         // The state of the read model at this time
+    label: string;             // Display label for the version
+    content: React.ReactNode;  // Rendered content shown for this version
     events?: Array<{           // Events that led to this version
+        sequenceNumber: number; // Sequence number of the event
         type: string;          // Event type name
-        timestamp: Date;       // When the event occurred
-        data: object;          // Event payload
+        occurred: Date;        // When the event occurred
+        content: Record<string, unknown>; // Event payload
     }>;
 }
 ```
@@ -33,19 +36,16 @@ Each version in the `versions` array should have:
 ```typescript
 const versions = [
     {
+        id: 'v1',
         timestamp: new Date('2024-01-01T10:00:00'),
-        readModel: {
-            id: 'product-1',
-            name: 'Product A',
-            price: 99.99,
-            status: 'draft',
-            category: 'Electronics'
-        },
+        label: 'Created',
+        content: <div>Product A — $99.99 — draft</div>,
         events: [
             {
+                sequenceNumber: 0,
                 type: 'ProductCreated',
-                timestamp: new Date('2024-01-01T10:00:00'),
-                data: {
+                occurred: new Date('2024-01-01T10:00:00'),
+                content: {
                     name: 'Product A',
                     category: 'Electronics'
                 }
@@ -53,19 +53,16 @@ const versions = [
         ]
     },
     {
+        id: 'v2',
         timestamp: new Date('2024-01-05T14:30:00'),
-        readModel: {
-            id: 'product-1',
-            name: 'Product A',
-            price: 89.99,  // Changed
-            status: 'draft',
-            category: 'Electronics'
-        },
+        label: 'Price updated',
+        content: <div>Product A — $89.99 — draft</div>,
         events: [
             {
+                sequenceNumber: 1,
                 type: 'PriceUpdated',
-                timestamp: new Date('2024-01-05T14:30:00'),
-                data: {
+                occurred: new Date('2024-01-05T14:30:00'),
+                content: {
                     oldPrice: 99.99,
                     newPrice: 89.99
                 }
@@ -73,19 +70,16 @@ const versions = [
         ]
     },
     {
+        id: 'v3',
         timestamp: new Date('2024-01-10T09:15:00'),
-        readModel: {
-            id: 'product-1',
-            name: 'Product A',
-            price: 89.99,
-            status: 'active',  // Changed
-            category: 'Electronics'
-        },
+        label: 'Published',
+        content: <div>Product A — $89.99 — active</div>,
         events: [
             {
+                sequenceNumber: 2,
                 type: 'ProductPublished',
-                timestamp: new Date('2024-01-10T09:15:00'),
-                data: {
+                occurred: new Date('2024-01-10T09:15:00'),
+                content: {
                     status: 'active'
                 }
             }

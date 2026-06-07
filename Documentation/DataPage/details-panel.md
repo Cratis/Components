@@ -6,7 +6,7 @@ The details panel displays detailed information about the selected row in a resi
 
 ## Enabling Details Panel
 
-Provide a `DetailsComponent` prop to enable the details panel:
+Provide a `detailsComponent` prop to enable the details panel:
 
 ```typescript
 const ProductDetails = ({ item }) => (
@@ -26,8 +26,7 @@ const ProductDetails = ({ item }) => (
     title="Products"
     query={ProductsQuery}
     emptyMessage="No products"
-    DetailsComponent={ProductDetails}
-    detailsTitle="Product Details"
+    detailsComponent={ProductDetails}
 >
     {/* MenuItems and Columns */}
 </DataPage>
@@ -102,31 +101,14 @@ const OrderDetails = ({ item }) => {
 
 ## Panel Layout
 
-Control the initial size split between the table and details:
+Wire the details component into the page:
 
 ```typescript
 <DataPage
     title="Orders"
     query={OrdersQuery}
     emptyMessage="No orders"
-    DetailsComponent={OrderDetails}
-    detailsTitle="Order Details"
-    initialSizes={[60, 40]}  // Table: 60%, Details: 40%
->
-    {/* ... */}
-</DataPage>
-```
-
-## Custom Details Title
-
-Set a custom title for the details panel:
-
-```typescript
-<DataPage
-    DetailsComponent={ProductDetails}
-    detailsTitle="Product Information"
-    // Or use a function for dynamic titles
-    detailsTitle={(item) => `Product: ${item.name}`}
+    detailsComponent={OrderDetails}
 >
     {/* ... */}
 </DataPage>
@@ -173,32 +155,6 @@ The details panel is resizable by default using Allotment. Users can drag the di
 ### Disable Resizing
 
 To disable resizing, you would need to wrap the DataPage or use custom layout.
-
-### Remember Size
-
-Store the user's preferred size:
-
-```typescript
-const [sizes, setSizes] = useState([60, 40]);
-
-useEffect(() => {
-    const saved = localStorage.getItem('dataPanelSizes');
-    if (saved) {
-        setSizes(JSON.parse(saved));
-    }
-}, []);
-
-const handleSizeChange = (newSizes) => {
-    setSizes(newSizes);
-    localStorage.setItem('dataPanelSizes', JSON.stringify(newSizes));
-};
-
-<DataPage
-    initialSizes={sizes}
-    // Note: You may need to handle this through Allotment's onChange
-    // ... other props
-/>
-```
 
 ## No Selection State
 

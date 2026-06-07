@@ -5,10 +5,10 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { RadioButtonField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <RadioButtonField<MyCommand> value={c => c.size} buttonValue="small" label="Small" />
     <RadioButtonField<MyCommand> value={c => c.size} buttonValue="medium" label="Medium" />
     <RadioButtonField<MyCommand> value={c => c.size} buttonValue="large" label="Large" />

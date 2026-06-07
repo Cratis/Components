@@ -58,7 +58,7 @@ Keep dimension and filter accessors simple:
 ```typescript
 {
     key: 'status',
-    accessor: (item) => item.status
+    getValue: (item) => item.status
 }
 ```
 
@@ -67,7 +67,7 @@ Keep dimension and filter accessors simple:
 ```typescript
 {
     key: 'status',
-    accessor: (item) => {
+    getValue: (item) => {
         // Complex computation on every filter
         return expensiveCalculation(item.data, item.metadata, item.relationships);
     }
@@ -76,18 +76,19 @@ Keep dimension and filter accessors simple:
 
 ### Memoize Renderers
 
-Use React.memo for card and detail renderers:
+The `cardRenderer` returns lightweight structured data (`{ title, labels?, values? }`), so keep it cheap. For the heavier `detailRenderer`, wrap the component in `React.memo`:
 
 ```typescript
-const TaskCard = React.memo(({ item }: { item: Task }) => (
-    <div className="task-card">
+const TaskDetails = React.memo(({ item }: { item: Task }) => (
+    <div className="task-details">
         <h4>{item.title}</h4>
         <p>{item.description}</p>
     </div>
 ));
 
 <PivotViewer
-    cardRenderer={(item) => <TaskCard item={item} />}
+    cardRenderer={(item) => ({ title: item.title, values: [item.description] })}
+    detailRenderer={(item) => <TaskDetails item={item} />}
     // ...
 />
 ```
@@ -134,7 +135,7 @@ Avoid creating new objects in render:
 
 ```typescript
 <PivotViewer
-    dimensions={[{ key: 'status', label: 'Status', accessor: i => i.status }]}
+    dimensions={[{ key: 'status', label: 'Status', getValue: i => i.status }]}
     // ... creates new array on every render
 />
 ```
@@ -143,7 +144,7 @@ Avoid creating new objects in render:
 
 ```typescript
 const dimensions = useMemo(() => [
-    { key: 'status', label: 'Status', accessor: i => i.status }
+    { key: 'status', label: 'Status', getValue: i => i.status }
 ], []);
 
 <PivotViewer dimensions={dimensions} />

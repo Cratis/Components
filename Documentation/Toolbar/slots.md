@@ -7,7 +7,7 @@ The slot system lets any component in the React tree inject toolbar items into a
 Wrap the relevant part of the tree in a `ToolbarSlotProvider`, give a `ToolbarGroup` a `slotName`, and use `ToolbarSlot` anywhere inside the provider to inject items:
 
 ```tsx
-import { ToolbarSlotProvider, ToolbarSlot } from '@cratis/components';
+import { ToolbarSlotProvider, ToolbarSlot } from '@cratis/components/Toolbar';
 
 export const MyCanvas = () => (
     <ToolbarSlotProvider>
@@ -131,7 +131,7 @@ Any number of independent components can register into the same slot. They are r
 If you need to read slot items directly (for example when building a custom slot host), call `useToolbarSlot`:
 
 ```tsx
-import { useToolbarSlot } from '@cratis/components';
+import { useToolbarSlot } from '@cratis/components/Toolbar';
 
 const MyCustomHost = ({ slotName }: { slotName: string }) => {
     const slotItems = useToolbarSlot(slotName);

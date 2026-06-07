@@ -5,7 +5,7 @@
 ## Usage
 
 ```tsx
-import { CommandDialog } from '@cratis/components';
+import { CommandDialog } from '@cratis/components/CommandDialog';
 import { DropdownField } from '@cratis/components/CommandForm';
 
 const statusOptions = [
@@ -13,7 +13,7 @@ const statusOptions = [
     { label: 'Inactive', value: 'inactive' },
 ];
 
-<CommandDialog command={MyCommand} visible={visible} onHide={() => setVisible(false)}>
+<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <DropdownField<MyCommand>
         value={c => c.status}
         options={statusOptions}

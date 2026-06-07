@@ -20,7 +20,7 @@ PivotViewer enables users to explore and analyze collections of data items throu
 ## Quick Start
 
 ```typescript
-import { PivotViewer } from '@cratis/components';
+import { PivotViewer } from '@cratis/components/PivotViewer';
 
 interface Product {
     id: string;
@@ -31,11 +31,11 @@ interface Product {
 
 function ProductViewer() {
     const dimensions = [
-        { key: 'category', label: 'Category', accessor: (item: Product) => item.category }
+        { key: 'category', label: 'Category', getValue: (item: Product) => item.category }
     ];
 
     const filters = [
-        { key: 'category', label: 'Category', type: 'categorical', accessor: (item: Product) => item.category }
+        { key: 'category', label: 'Category', type: 'string', getValue: (item: Product) => item.category }
     ];
 
     return (
@@ -44,10 +44,10 @@ function ProductViewer() {
             dimensions={dimensions}
             filters={filters}
             defaultDimensionKey="category"
-            cardRenderer={(item) => <ProductCard product={item} />}
+            cardRenderer={(item) => ({ title: item.name, labels: ['Category'], values: [item.category] })}
             detailRenderer={(item) => <ProductDetails product={item} />}
             getItemId={(item) => item.id}
-            searchFields={['name', 'category']}
+            searchFields={[item => item.name, item => item.category]}
         />
     );
 }
