@@ -1,6 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { addons } from 'storybook/preview-api';
 import React from 'react';
 import 'primeicons/primeicons.css';
 import './preview.css';
@@ -46,13 +47,12 @@ const ALL_BODY_CLASSES = Object.values(STYLING_MODES)
     .map(mode => mode.bodyClass)
     .filter(Boolean);
 
-// Tracks the theme pushed from the embedding docs site via postMessage.
+// Tracks the theme relayed from manager.js via the Storybook channel.
 // null means "not embedded — use the toolbar selection".
 let _docsSiteTheme = null;
 
-window.addEventListener('message', (event) => {
-    if (event.data?.type !== 'STORYBOOK_THEME_CHANGE') return;
-    _docsSiteTheme = event.data.theme === 'light' ? 'lara-light' : 'lara-dark';
+addons.getChannel().on('STORYBOOK_THEME_CHANGE', ({ theme }) => {
+    _docsSiteTheme = theme === 'light' ? 'lara-light' : 'lara-dark';
     const mode = STYLING_MODES[_docsSiteTheme];
     if (mode) {
         applyThemeLink(mode.themeUrl);
