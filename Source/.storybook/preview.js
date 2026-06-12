@@ -46,6 +46,20 @@ const ALL_BODY_CLASSES = Object.values(STYLING_MODES)
     .map(mode => mode.bodyClass)
     .filter(Boolean);
 
+// Tracks the theme pushed from the embedding docs site via postMessage.
+// null means "not embedded — use the toolbar selection".
+let _docsSiteTheme = null;
+
+window.addEventListener('message', (event) => {
+    if (event.data?.type !== 'STORYBOOK_THEME_CHANGE') return;
+    _docsSiteTheme = event.data.theme === 'light' ? 'lara-light' : 'lara-dark';
+    const mode = STYLING_MODES[_docsSiteTheme];
+    if (mode) {
+        applyThemeLink(mode.themeUrl);
+        applyBodyClass(mode.bodyClass);
+    }
+});
+
 export const globalTypes = {
     theme: {
         name: 'Styling',
@@ -92,7 +106,8 @@ function applyBodyClass(className) {
 
 export const decorators = [
     (Story, context) => {
-        const mode = STYLING_MODES[context.globals.theme] ?? STYLING_MODES['lara-dark'];
+        const themeKey = _docsSiteTheme ?? context.globals.theme ?? 'lara-dark';
+        const mode = STYLING_MODES[themeKey] ?? STYLING_MODES['lara-dark'];
 
         applyThemeLink(mode.themeUrl);
         applyBodyClass(mode.bodyClass);
