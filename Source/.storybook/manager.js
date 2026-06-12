@@ -9,6 +9,11 @@ let currentTheme = urlParams.get('docsSiteTheme') ?? 'dark';
 
 addons.setConfig({
     theme: currentTheme === 'light' ? themes.light : themes.dark,
+    navSize: 300,
+    bottomPanelHeight: 300,
+    panelPosition: 'bottom',
+    showToolbar: true,
+    showTabs: true,
 });
 
 // Relay the current theme to the preview canvas whenever a story renders,
