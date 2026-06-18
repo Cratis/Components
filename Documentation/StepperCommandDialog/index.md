@@ -4,13 +4,13 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 
 ## Purpose
 
-`StepperCommandDialog` organizes a command form across multiple steps, guiding users through a wizard-like workflow. All steps gather into the same underlying command — the Submit button only **appears** when all fields across every step are valid and the user has reached the last step.
+`StepperCommandDialog` organizes a command form across multiple steps, guiding users through a wizard-like workflow. All steps gather into the same underlying command — the Submit button only **appears** when the command form is valid and the user has reached the last step, unless `isValid` is provided to override that validity.
 
 ## Key Features
 
 - Multi-step wizard navigation with Previous and Next buttons
 - All steps share a single command form — one command is submitted at the end
-- Submit button only appears on the last step when all fields are valid
+- Submit button only appears on the last step when the dialog is valid
 - Previous button hidden on the first step; Next button hidden on the last step
 - Cancel via the X button in the upper-right corner — no footer Cancel button
 - Step number circles change color to indicate validation state (red = errors, green = visited and valid)
@@ -98,7 +98,7 @@ function MyComponent() {
 - `okLabel`: Label for the submit button shown on the last step when valid (default: `'Submit'`)
 - `nextLabel`: Label for the next step button (default: `'Next'`)
 - `previousLabel`: Label for the previous step button (default: `'Previous'`)
-- `isValid`: Additional validity gate combined with command form validity
+- `isValid`: Overrides command form validity when provided; omit it to use command form validity
 - `width`: Dialog width (default: `'600px'`)
 - `resizable`: Whether the dialog can be resized
 - `style`: Custom CSS styles

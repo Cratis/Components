@@ -4,8 +4,10 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
-import { StepperCommandDialog } from '../StepperCommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+
+const { commandFormValidity } = vi.hoisted(() => ({
+    commandFormValidity: { isValid: true }
+}));
 
 vi.mock('primereact/dialog', () => ({
     Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
@@ -13,14 +15,31 @@ vi.mock('primereact/dialog', () => ({
 }));
 
 vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode }) =>
-        React.createElement('div', null, props.children),
+    Stepper: (props: { children?: React.ReactNode; pt?: Record<string, unknown>; activeStep?: number }) => {
+        type StepCtx = { context: { index: number } };
+        type NumberPtFn = (opts: StepCtx) => { style?: { backgroundColor?: string } };
+        const ptStepperpanel = (props.pt as Record<string, unknown> | undefined)?.stepperpanel as Record<string, unknown> | undefined;
+        const numberPtFn = ptStepperpanel?.number as NumberPtFn | undefined;
+        const children = React.Children.map(props.children, (child, index) => {
+            if (!React.isValidElement(child)) return child;
+            const result = typeof numberPtFn === 'function' ? numberPtFn({ context: { index } }) : {};
+            const bg = result?.style?.backgroundColor ?? '';
+            return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, { 'data-number-bg': bg });
+        });
+        return React.createElement('div', { 'data-testid': 'stepper', 'data-active-step': props.activeStep }, children);
+    },
 }));
 
-vi.mock('primereact/stepperpanel', () => ({
-    StepperPanel: (props: { header?: string; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-header': props.header }, props.children),
-}));
+vi.mock('primereact/stepperpanel', () => {
+    const MockStepperPanel = (props: { header?: string; children?: React.ReactNode; 'data-number-bg'?: string }) =>
+        React.createElement('div', {
+            'data-testid': 'stepper-panel',
+            'data-header': props.header,
+            'data-number-bg': props['data-number-bg'] ?? '',
+        }, props.children);
+    MockStepperPanel.displayName = 'StepperPanel';
+    return { StepperPanel: MockStepperPanel };
+});
 
 vi.mock('primereact/button', () => ({
     Button: (props: { label?: string; disabled?: boolean; loading?: boolean }) =>
@@ -37,10 +56,11 @@ vi.mock('@cratis/arc.react/commands', () => ({
     CommandForm: (props: { children?: React.ReactNode }) =>
         React.createElement('div', null, props.children),
     useCommandFormContext: () => ({
-        isValid: true,
+        isValid: commandFormValidity.isValid,
         setCommandValues: () => {},
         setCommandResult: () => {},
-        getFieldError: () => undefined,
+        getFieldError: (fieldName: string) =>
+            fieldName === 'name' ? 'Name is required' : undefined,
     }),
     useCommandInstance: () => ({}),
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
@@ -51,10 +71,24 @@ class TestCommand {
     name: string = '';
 }
 
+let StepperCommandDialog: typeof import('../StepperCommandDialog').StepperCommandDialog;
+let StepperPanel: typeof import('primereact/stepperpanel').StepperPanel;
+
+beforeEach(async () => {
+    vi.resetModules();
+    StepperCommandDialog = (await import('../StepperCommandDialog')).StepperCommandDialog;
+    StepperPanel = (await import('primereact/stepperpanel')).StepperPanel;
+});
+
+afterEach(() => {
+    commandFormValidity.isValid = true;
+});
+
 describe('when StepperCommandDialog has an external isValid=false gate on the last step', () => {
     let html: string;
 
     beforeEach(() => {
+        commandFormValidity.isValid = true;
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {
@@ -70,5 +104,50 @@ describe('when StepperCommandDialog has an external isValid=false gate on the la
 
     it('should_not_show_submit_button_when_externally_invalid', () => {
         html.should.not.include('>Submit<');
+    });
+});
+
+describe('when StepperCommandDialog has an invalid command form on the last step', () => {
+    let html: string;
+
+    beforeEach(() => {
+        commandFormValidity.isValid = false;
+        const element = React.createElement(
+            StepperCommandDialog<TestCommand>,
+            {
+                command: TestCommand as unknown as new () => object,
+                visible: true,
+                title: 'Test Dialog',
+            },
+            React.createElement(StepperPanel, { header: 'Only Step' }, 'Content')
+        );
+        html = renderToStaticMarkup(element);
+    });
+
+    it('should_not_show_submit_button_when_isValid_is_not_provided', () => {
+        html.should.not.include('>Submit<');
+    });
+});
+
+describe('when StepperCommandDialog has isValid=true and an invalid command form on the last step', () => {
+    let html: string;
+
+    beforeEach(() => {
+        commandFormValidity.isValid = false;
+        const element = React.createElement(
+            StepperCommandDialog<TestCommand>,
+            {
+                command: TestCommand as unknown as new () => object,
+                visible: true,
+                title: 'Test Dialog',
+                isValid: true,
+            },
+            React.createElement(StepperPanel, { header: 'Only Step' }, 'Content')
+        );
+        html = renderToStaticMarkup(element);
+    });
+
+    it('should_show_submit_button_when_externally_valid', () => {
+        html.should.include('>Submit<');
     });
 });

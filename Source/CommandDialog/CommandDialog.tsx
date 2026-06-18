@@ -149,7 +149,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     };
 
     const processedChildren = processChildren(children);
-    const isDialogValid = (isValid !== false) && isCommandFormValid;
+    const isDialogValid = isValid ?? isCommandFormValid;
 
     return (
         <Dialog
