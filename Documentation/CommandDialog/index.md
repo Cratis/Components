@@ -105,7 +105,7 @@ function MyComponent() {
 - `yesLabel`, `noLabel`: Labels for `YesNo` and `YesNoCancel` button modes
 - `buttons`: `DialogButtons` value or custom footer content
 - `resizable`: Whether dialog can be resized
-- `isValid`: Overrides command form validity when provided; omit it to use command form validity
+- `isValid`: Additional validity gate combined with command form validity
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution

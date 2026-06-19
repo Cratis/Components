@@ -38,6 +38,8 @@ vi.mock('@cratis/arc.react/commands', () => ({
         isValid: commandFormValidity.isValid,
         setCommandValues,
         setCommandResult: () => {},
+        getFieldError: (fieldName: string) =>
+            fieldName === 'name' ? 'Name is required' : undefined,
     }),
     useCommandInstance: () => ({
         execute: executeCommand,
@@ -50,7 +52,7 @@ class TestCommand {
     name: string = '';
 }
 
-describe('when CommandDialog validity is controlled', () => {
+describe('when CommandDialog validity is gated', () => {
     let CommandDialog: typeof import('../CommandDialog').CommandDialog;
 
     beforeEach(async () => {
@@ -85,7 +87,7 @@ describe('when CommandDialog validity is controlled', () => {
         executeCommand.should.not.have.been.called;
     });
 
-    it('should_allow_isValid_true_to_override_invalid_command_form_state_and_execute', () => {
+    it('should_not_allow_isValid_true_to_override_invalid_command_form_state', () => {
         commandFormValidity.isValid = false;
 
         const html = renderDialog({
@@ -93,9 +95,9 @@ describe('when CommandDialog validity is controlled', () => {
             onBeforeExecute: () => ({ name: 'External value' })
         });
 
-        getOkButton(html).should.not.include('disabled');
-        setCommandValues.should.have.been.calledOnceWith({ name: 'External value' });
-        executeCommand.should.have.been.calledOnce;
+        getOkButton(html).should.include('disabled');
+        setCommandValues.should.not.have.been.called;
+        executeCommand.should.not.have.been.called;
     });
 
     it('should_allow_isValid_false_to_disable_an_internally_valid_form', () => {
@@ -105,5 +107,27 @@ describe('when CommandDialog validity is controlled', () => {
 
         getOkButton(html).should.include('disabled');
         executeCommand.should.not.have.been.called;
+    });
+
+    it('should_execute_when_command_form_is_valid_and_isValid_is_not_provided', () => {
+        commandFormValidity.isValid = true;
+
+        const html = renderDialog();
+
+        getOkButton(html).should.not.include('disabled');
+        executeCommand.should.have.been.calledOnce;
+    });
+
+    it('should_execute_when_command_form_is_valid_and_isValid_is_true', () => {
+        commandFormValidity.isValid = true;
+
+        const html = renderDialog({
+            isValid: true,
+            onBeforeExecute: () => ({ name: 'External value' })
+        });
+
+        getOkButton(html).should.not.include('disabled');
+        setCommandValues.should.have.been.calledOnceWith({ name: 'External value' });
+        executeCommand.should.have.been.calledOnce;
     });
 });

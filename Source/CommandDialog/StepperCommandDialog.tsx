@@ -42,7 +42,7 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     contentStyle?: PrimeDialogProps['contentStyle'];
     /** Whether the dialog can be resized. Defaults to `false`. */
     resizable?: boolean;
-    /** Overrides command form validity when provided. */
+    /** Additional validity gate combined with command form validity. */
     isValid?: boolean;
     /** Fallback close callback. */
     onClose?: CloseDialog;
@@ -148,7 +148,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     const stepCount = React.Children.count(children);
     const isLastStep = activeStep === stepCount - 1;
     const isFirstStep = activeStep === 0;
-    const isDialogValid = isValid ?? isCommandFormValid;
+    const isDialogValid = isValid !== false && isCommandFormValid;
     const isCurrentStepInvalid = stepErrors[activeStep] ?? false;
 
     const handleClose = async (result: DialogResult) => {

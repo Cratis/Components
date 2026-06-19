@@ -155,7 +155,30 @@ describe('when StepperCommandDialog has isValid=true and an invalid command form
         html = renderToStaticMarkup(element);
     });
 
-    it('should_show_submit_button_and_execute_when_externally_valid', () => {
+    it('should_not_show_submit_button_when_command_form_is_invalid', () => {
+        html.should.not.include('>Submit<');
+        executeCommand.should.not.have.been.called;
+    });
+});
+
+describe('when StepperCommandDialog has a valid command form on the last step', () => {
+    let html: string;
+
+    beforeEach(() => {
+        commandFormValidity.isValid = true;
+        const element = React.createElement(
+            StepperCommandDialog<TestCommand>,
+            {
+                command: TestCommand as unknown as new () => object,
+                visible: true,
+                title: 'Test Dialog',
+            },
+            React.createElement(StepperPanel, { header: 'Only Step' }, 'Content')
+        );
+        html = renderToStaticMarkup(element);
+    });
+
+    it('should_show_submit_button_and_execute', () => {
         html.should.include('>Submit<');
         executeCommand.should.have.been.calledOnce;
     });
