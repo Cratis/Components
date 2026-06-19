@@ -115,6 +115,20 @@ const transformBeforeExecute = (values) => {
 />
 ```
 
+## Custom Inputs
+
+When dialog content is not built from `CommandForm` fields, keep the command instance synchronized with the custom input values. `CommandDialog` still uses command-form validity as the source of truth, and `isValid` is only an additional external gate.
+
+Prefer `currentValues` for externally managed values so client validation sees the same command values that will be submitted. `onBeforeExecute` can still perform final transformations, but values populated only in `onBeforeExecute` are not visible to client validation before the confirm button is clicked:
+
+```typescript
+<CommandDialog
+    command={UpdateProject}
+    currentValues={projectDraft}
+    isValid={projectDraft.name.trim().length > 0}
+/>
+```
+
 ## Field Change Tracking
 
 React to field value changes:
