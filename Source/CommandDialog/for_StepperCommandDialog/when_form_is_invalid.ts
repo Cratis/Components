@@ -5,8 +5,9 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 
-const { commandFormValidity } = vi.hoisted(() => ({
-    commandFormValidity: { isValid: true }
+const { commandFormValidity, executeCommand } = vi.hoisted(() => ({
+    commandFormValidity: { isValid: true },
+    executeCommand: vi.fn(async () => ({ isSuccess: true, isValid: true, validationResults: [] }))
 }));
 
 vi.mock('primereact/dialog', () => ({
@@ -42,8 +43,12 @@ vi.mock('primereact/stepperpanel', () => {
 });
 
 vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean; loading?: boolean }) =>
-        React.createElement('button', { disabled: props.disabled, 'data-loading': props.loading }, props.label),
+    Button: (props: { icon?: string; label?: string; onClick?: () => Promise<void> | void; disabled?: boolean; loading?: boolean }) => {
+        if (props.icon === 'pi pi-check' && props.onClick && props.disabled !== true) {
+            void props.onClick();
+        }
+        return React.createElement('button', { disabled: props.disabled, 'data-loading': props.loading }, props.label);
+    },
 }));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
@@ -62,7 +67,7 @@ vi.mock('@cratis/arc.react/commands', () => ({
         getFieldError: (fieldName: string) =>
             fieldName === 'name' ? 'Name is required' : undefined,
     }),
-    useCommandInstance: () => ({}),
+    useCommandInstance: () => ({ execute: executeCommand }),
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
         React.createElement('div', null, props.field),
 }));
@@ -75,6 +80,7 @@ let StepperCommandDialog: typeof import('../StepperCommandDialog').StepperComman
 let StepperPanel: typeof import('primereact/stepperpanel').StepperPanel;
 
 beforeEach(async () => {
+    executeCommand.mockClear();
     vi.resetModules();
     StepperCommandDialog = (await import('../StepperCommandDialog')).StepperCommandDialog;
     StepperPanel = (await import('primereact/stepperpanel')).StepperPanel;
@@ -104,6 +110,7 @@ describe('when StepperCommandDialog has an external isValid=false gate on the la
 
     it('should_not_show_submit_button_when_externally_invalid', () => {
         html.should.not.include('>Submit<');
+        executeCommand.should.not.have.been.called;
     });
 });
 
@@ -126,6 +133,7 @@ describe('when StepperCommandDialog has an invalid command form on the last step
 
     it('should_not_show_submit_button_when_isValid_is_not_provided', () => {
         html.should.not.include('>Submit<');
+        executeCommand.should.not.have.been.called;
     });
 });
 
@@ -147,7 +155,8 @@ describe('when StepperCommandDialog has isValid=true and an invalid command form
         html = renderToStaticMarkup(element);
     });
 
-    it('should_show_submit_button_when_externally_valid', () => {
+    it('should_show_submit_button_and_execute_when_externally_valid', () => {
         html.should.include('>Submit<');
+        executeCommand.should.have.been.calledOnce;
     });
 });

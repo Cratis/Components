@@ -115,6 +115,21 @@ const transformBeforeExecute = (values) => {
 />
 ```
 
+## External Validity and Custom Inputs
+
+When dialog content is not built from `CommandForm` fields, pass `isValid` to control whether the confirm action is available. If `isValid` is omitted, `CommandDialog` uses the internal command-form validity. If it is provided, that value is authoritative for button availability.
+
+`isValid` does not bypass command execution validation. Client and server validation still run when the command executes, so keep command values synchronized with `currentValues`, `setCommandValues`, or a final `onBeforeExecute` transformation:
+
+```typescript
+<CommandDialog
+    command={UpdateProject}
+    currentValues={projectDraft}
+    isValid={projectDraft.name.trim().length > 0}
+    onBeforeExecute={() => projectDraft}
+/>
+```
+
 ## Field Change Tracking
 
 React to field value changes:

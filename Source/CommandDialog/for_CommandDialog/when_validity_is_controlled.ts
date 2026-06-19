@@ -5,8 +5,10 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 
-const { commandFormValidity } = vi.hoisted(() => ({
-    commandFormValidity: { isValid: false }
+const { commandFormValidity, executeCommand, setCommandValues } = vi.hoisted(() => ({
+    commandFormValidity: { isValid: false },
+    executeCommand: vi.fn(async () => ({ isSuccess: true, isValid: true, validationResults: [] })),
+    setCommandValues: vi.fn()
 }));
 
 vi.mock('primereact/dialog', () => ({
@@ -16,8 +18,8 @@ vi.mock('primereact/dialog', () => ({
 
 vi.mock('primereact/button', () => ({
     Button: (props: { icon?: string; label?: string; onClick?: () => Promise<void> | void; disabled?: boolean }) => {
-        if (props.icon === 'pi pi-check' && props.onClick) {
-            props.onClick();
+        if (props.icon === 'pi pi-check' && props.onClick && props.disabled !== true) {
+            void props.onClick();
         }
         return React.createElement('button', { disabled: props.disabled }, props.label);
     },
@@ -34,11 +36,11 @@ vi.mock('@cratis/arc.react/commands', () => ({
         React.createElement('div', null, props.children),
     useCommandFormContext: () => ({
         isValid: commandFormValidity.isValid,
-        setCommandValues: () => {},
+        setCommandValues,
         setCommandResult: () => {},
     }),
     useCommandInstance: () => ({
-        execute: async () => ({ isSuccess: true, isValid: true, validationResults: [] }),
+        execute: executeCommand,
     }),
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
         React.createElement('div', null, props.field),
@@ -52,11 +54,14 @@ describe('when CommandDialog validity is controlled', () => {
     let CommandDialog: typeof import('../CommandDialog').CommandDialog;
 
     beforeEach(async () => {
+        commandFormValidity.isValid = false;
+        executeCommand.mockClear();
+        setCommandValues.mockClear();
         vi.resetModules();
         CommandDialog = (await import('../CommandDialog')).CommandDialog;
     });
 
-    const renderDialog = (props?: { isValid?: boolean }) => renderToStaticMarkup(
+    const renderDialog = (props?: { isValid?: boolean; onBeforeExecute?: (values: TestCommand) => TestCommand }) => renderToStaticMarkup(
         React.createElement(CommandDialog, {
             command: TestCommand as unknown as new () => object,
             visible: true,
@@ -77,14 +82,20 @@ describe('when CommandDialog validity is controlled', () => {
         const html = renderDialog();
 
         getOkButton(html).should.include('disabled');
+        executeCommand.should.not.have.been.called;
     });
 
-    it('should_allow_isValid_true_to_override_invalid_command_form_state', () => {
+    it('should_allow_isValid_true_to_override_invalid_command_form_state_and_execute', () => {
         commandFormValidity.isValid = false;
 
-        const html = renderDialog({ isValid: true });
+        const html = renderDialog({
+            isValid: true,
+            onBeforeExecute: () => ({ name: 'External value' })
+        });
 
         getOkButton(html).should.not.include('disabled');
+        setCommandValues.should.have.been.calledOnceWith({ name: 'External value' });
+        executeCommand.should.have.been.calledOnce;
     });
 
     it('should_allow_isValid_false_to_disable_an_internally_valid_form', () => {
@@ -93,5 +104,6 @@ describe('when CommandDialog validity is controlled', () => {
         const html = renderDialog({ isValid: false });
 
         getOkButton(html).should.include('disabled');
+        executeCommand.should.not.have.been.called;
     });
 });

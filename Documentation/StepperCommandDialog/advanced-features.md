@@ -130,6 +130,23 @@ const transformBeforeExecute = (values) => {
 >
 ```
 
+## External Validity and Custom Inputs
+
+When steps contain custom controls instead of `CommandForm` fields, pass `isValid` to control whether the final Submit action is available. If `isValid` is omitted, `StepperCommandDialog` uses the internal command-form validity. If it is provided, that value is authoritative for Submit availability.
+
+`isValid` does not bypass command execution validation. Client and server validation still run when the command executes, so keep command values synchronized with `currentValues`, `setCommandValues`, or a final `onBeforeExecute` transformation:
+
+```typescript
+<StepperCommandDialog
+    command={UpdateProject}
+    currentValues={projectDraft}
+    isValid={projectDraft.stepsComplete}
+    onBeforeExecute={() => projectDraft}
+>
+    {/* steps */}
+</StepperCommandDialog>
+```
+
 ## Field Change Tracking
 
 React to field value changes across any step:
