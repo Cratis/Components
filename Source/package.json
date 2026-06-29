@@ -141,7 +141,7 @@
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "^20.47.1"
+        "@cratis/arc.vite": "^20.48.0"
     },
     "peerDependencies": {
         "@cratis/arc": "^20.3.1",
