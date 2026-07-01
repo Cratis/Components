@@ -46,7 +46,7 @@
         "@types/node": "^26.0.1",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
-        "@types/sinon": "^21.0.1",
+        "@types/sinon": "^22.0.0",
         "@types/sinon-chai": "^4.0.0",
         "@typescript-eslint/eslint-plugin": "^8.62.1",
         "@typescript-eslint/parser": "^8.62.1",
@@ -82,7 +82,7 @@
         "tsyringe": "4.10.0",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.62.1",
-        "vite": "^8.1.0",
+        "vite": "^8.1.2",
         "vite-plugin-commonjs": "^0.10.4",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.9"
