@@ -4,6 +4,7 @@
 export * from './CratisComponentsProvider';
 export * from './ErrorBoundary';
 export * from './Icon';
+export * from './normalizeIconClass';
 export * from './Page';
 export * from './FormElement';
 export * from './Tooltip';
