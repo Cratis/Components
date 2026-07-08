@@ -1,6 +1,8 @@
 import { createRequire } from 'node:module';
 import { noPrimereactDialog } from './lib/noPrimereactDialog.js';
 import { noRootBarrelImport } from './lib/noRootBarrelImport.js';
+import { onbeforeexecuteMustReturn } from './lib/onbeforeexecuteMustReturn.js';
+import { noHooksInViewModel } from './lib/noHooksInViewModel.js';
 
 const { version } = createRequire(import.meta.url)('./package.json');
 
@@ -13,6 +15,8 @@ const plugin = {
     rules: {
         'no-primereact-dialog': noPrimereactDialog,
         'no-root-barrel-import': noRootBarrelImport,
+        'onbeforeexecute-must-return': onbeforeexecuteMustReturn,
+        'no-hooks-in-view-model': noHooksInViewModel,
     },
     configs: {},
 };
@@ -31,6 +35,8 @@ Object.assign(plugin.configs, {
             rules: {
                 '@cratis/components/no-primereact-dialog': 'error',
                 '@cratis/components/no-root-barrel-import': 'error',
+                '@cratis/components/onbeforeexecute-must-return': 'error',
+                '@cratis/components/no-hooks-in-view-model': 'error',
             },
         },
     ],
@@ -38,4 +44,4 @@ Object.assign(plugin.configs, {
 
 export default plugin;
 export const { configs, rules, meta } = plugin;
-export { noPrimereactDialog, noRootBarrelImport };
+export { noPrimereactDialog, noRootBarrelImport, onbeforeexecuteMustReturn, noHooksInViewModel };

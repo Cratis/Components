@@ -1,7 +1,7 @@
 {
     "name": "@cratis/eslint-plugin-components",
     "version": "0.0.0",
-    "description": "Cratis Components ESLint rules: import from subpaths, not the root barrel, and use the Cratis dialog wrappers instead of primereact/dialog. Compose on top of @cratis/eslint-config.",
+    "description": "Cratis Components ESLint rules: import from subpaths not the root barrel, use the Cratis dialog wrappers instead of primereact/dialog, require onBeforeExecute callbacks to return their values, and keep React hooks out of view models. Compose on top of @cratis/eslint-config.",
     "author": "Cratis",
     "license": "MIT",
     "type": "module",
