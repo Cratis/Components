@@ -12,6 +12,7 @@ import {
     useCommandInstance,
     type CommandFormProps
 } from '@cratis/arc.react/commands';
+import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
 import './CommandStepper.css';
 
 /**
@@ -58,8 +59,21 @@ export interface CommandStepperContentProps extends StepperCustomizationProps {
 }
 
 export interface CommandStepperProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand, TResponse>, 'children'>,
+    extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
         Omit<CommandStepperContentProps, 'activeStep' | 'visitedSteps' | 'onActiveStepChange' | 'onVisitedStepsChange' | 'getFieldError' | 'isSubmitting' | 'isSubmitDisabled' | 'onSubmit'> {
+    /**
+     * A transformer invoked with the current command values immediately before
+     * the command executes on submit. It **must return** the values to run with
+     * (mutated or not) — a callback that returns nothing does not execute the
+     * command with `undefined`; the current values are kept and a warning is
+     * logged. May be async.
+     *
+     * ⚠️ It runs **only on submit**, after every step has already been validated,
+     * so a value produced here can never satisfy required-field validation. Seed
+     * required values through `initialValues`; reserve `onBeforeExecute` for
+     * transforms that do not affect validity (for example a generated id).
+     */
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
 }
@@ -299,7 +313,7 @@ type CommandStepperWrapperProps<TCommand extends object, TResponse = object> =
         onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
         onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
         onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
-        onBeforeExecute?: (values: TCommand) => TCommand;
+        onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     };
 
 const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
@@ -333,8 +347,8 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
 
     const handleSubmit = async () => {
         if (onBeforeExecute) {
-            const transformedValues = onBeforeExecute(commandInstance);
-            setCommandValues(transformedValues);
+            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+            setCommandValues(applied instanceof Promise ? await applied : applied);
         }
 
         setIsSubmitting(true);
@@ -472,6 +486,7 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
         pt,
         ptOptions,
         unstyled,
+        onBeforeExecute,
         ...commandFormProps
     } = props;
 
@@ -497,7 +512,7 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
-                onBeforeExecute={commandFormProps.onBeforeExecute}
+                onBeforeExecute={onBeforeExecute}
             >
                 {children}
             </CommandStepperWrapper>
