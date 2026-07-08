@@ -14,6 +14,7 @@ import {
 } from '@cratis/arc.react/commands';
 import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
 import { CommandStepperContent, type StepperCustomizationProps } from './CommandStepper';
+import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
 
 /**
  * Props for {@link StepperCommandDialog}. Combines the command-form props,
@@ -28,8 +29,21 @@ import { CommandStepperContent, type StepperCustomizationProps } from './Command
  * @typeParam TResponse - The response payload type returned by a successful command.
  */
 export interface StepperCommandDialogProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand, TResponse>, 'children'>,
+    extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
         StepperCustomizationProps {
+    /**
+     * A transformer invoked with the current command values immediately before
+     * the command executes on submit. It **must return** the values to run with
+     * (mutated or not) — a callback that returns nothing does not execute the
+     * command with `undefined`; the current values are kept and a warning is
+     * logged. May be async.
+     *
+     * ⚠️ It runs **only on submit**, after every step has already been validated,
+     * so a value produced here can never satisfy required-field validation. Seed
+     * required values through `initialValues`; reserve `onBeforeExecute` for
+     * transforms that do not affect validity (for example a generated id).
+     */
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     /** Dialog title text. */
     title: string;
     /** Controls dialog visibility. Defaults to `true`. */
@@ -117,7 +131,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
-    onBeforeExecute?: (values: TCommand) => TCommand;
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     okLabel?: string;
     nextLabel?: string;
     previousLabel?: string;
@@ -179,8 +193,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
 
     const handleSubmit = async () => {
         if (onBeforeExecute) {
-            const transformedValues = onBeforeExecute(commandInstance);
-            setCommandValues(transformedValues);
+            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+            setCommandValues(applied instanceof Promise ? await applied : applied);
         }
 
         setIsBusy(true);
@@ -391,6 +405,7 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
         onClose,
         onConfirm,
         onCancel,
+        onBeforeExecute,
         okLabel,
         nextLabel,
         previousLabel,
@@ -427,7 +442,7 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
-                onBeforeExecute={commandFormProps.onBeforeExecute}
+                onBeforeExecute={onBeforeExecute}
                 okLabel={okLabel}
                 nextLabel={nextLabel}
                 previousLabel={previousLabel}

@@ -25,6 +25,38 @@ export const StringIconWithExtraClass: Story = {
     render: () => <IconDisplay icon='pi pi-home' className='text-3xl' />,
 };
 
+/**
+ * A lone PrimeIcons class (`'pi-home'`) missing its required base `pi` class is repaired to
+ * `'pi pi-home'` so it still renders — a common mistake that otherwise shows nothing.
+ */
+export const PiClassMissingBase: Story = {
+    render: () => <IconDisplay icon='pi-home' className='text-3xl' />,
+};
+
+/**
+ * A bare icon name (`'plus'`) is not a CSS class and renders nothing — passing one logs a
+ * development warning pointing at the full `'pi pi-plus'` class. Shown here next to the
+ * correct usage for contrast.
+ */
+export const BareIconNameWarns: Story = {
+    render: () => (
+        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
+                <IconDisplay icon='plus' className='text-2xl' />
+                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
+                    'plus' (bare name — warns, renders nothing)
+                </p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+                <IconDisplay icon='pi pi-plus' className='text-2xl' />
+                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
+                    'pi pi-plus' (correct)
+                </p>
+            </div>
+        </div>
+    ),
+};
+
 /** Renders an SVG React node directly — no wrapping `<i>` element is produced. */
 export const SvgReactNode: Story = {
     render: () => (

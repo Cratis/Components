@@ -12,6 +12,7 @@ import {
     useCommandInstance,
     type CommandFormProps
 } from '@cratis/arc.react/commands';
+import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
 
 /**
  * Props for {@link CommandDialog}. Combines the props of a `CommandForm`
@@ -23,8 +24,23 @@ import {
  * @typeParam TResponse - The response payload type returned by a successful command. Defaults to `object`.
  */
 export interface CommandDialogProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand, TResponse>, 'children'>,
+    extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
         Omit<DialogProps, 'children'> {
+    /**
+     * A transformer invoked with the current command values immediately before
+     * the command executes on confirm. It **must return** the values to run with
+     * (mutated or not) — a callback that returns nothing does not execute the
+     * command with `undefined`; the current values are kept and a warning is
+     * logged. May be async.
+     *
+     * ⚠️ It runs **only on submit**, after the form has already been validated,
+     * so a value produced here can never satisfy required-field validation — the
+     * submit button stays disabled if a required value is only seeded here. Seed
+     * required values through `initialValues`; reserve `onBeforeExecute` for
+     * transforms that do not affect validity (for example a generated id).
+     */
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+
     /**
      * Form fields and arbitrary content for the dialog body. Children that are
      * `CommandFormField` instances are automatically wrapped so they bind to
@@ -77,7 +93,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
-    onBeforeExecute?: (values: TCommand) => TCommand;
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     className?: DialogProps['className'];
     pt?: DialogProps['pt'];
     ptOptions?: DialogProps['ptOptions'];
@@ -90,8 +106,8 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
 
     const handleConfirm = async () => {
         if (onBeforeExecute) {
-            const transformedValues = onBeforeExecute(commandInstance);
-            setCommandValues(transformedValues);
+            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+            setCommandValues(applied instanceof Promise ? await applied : applied);
         }
 
         setIsBusy(true);
@@ -288,6 +304,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         onClose,
         onConfirm,
         onCancel,
+        onBeforeExecute,
         className,
         pt,
         ptOptions,
@@ -317,7 +334,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
-                onBeforeExecute={commandFormProps.onBeforeExecute}
+                onBeforeExecute={onBeforeExecute}
                 className={className}
                 pt={pt}
                 ptOptions={ptOptions}

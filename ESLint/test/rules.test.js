@@ -1,7 +1,10 @@
 import { RuleTester } from 'eslint';
 import { afterAll, describe, it } from 'vitest';
+import tsParser from '@typescript-eslint/parser';
 import { noPrimereactDialog } from '../lib/noPrimereactDialog.js';
 import { noRootBarrelImport } from '../lib/noRootBarrelImport.js';
+import { onbeforeexecuteMustReturn } from '../lib/onbeforeexecuteMustReturn.js';
+import { noHooksInViewModel } from '../lib/noHooksInViewModel.js';
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;
@@ -10,6 +13,16 @@ RuleTester.itOnly = it.only;
 
 const ruleTester = new RuleTester({
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+});
+
+// A tester using the TypeScript parser for JSX and decorator syntax.
+const tsRuleTester = new RuleTester({
+    languageOptions: {
+        parser: tsParser,
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        parserOptions: { ecmaFeatures: { jsx: true } },
+    },
 });
 
 ruleTester.run('no-root-barrel-import', noRootBarrelImport, {
@@ -61,6 +74,71 @@ ruleTester.run('no-primereact-dialog', noPrimereactDialog, {
         {
             code: "export { Dialog } from 'primereact/dialog';",
             errors: [{ messageId: 'useWrapper' }],
+        },
+    ],
+});
+
+tsRuleTester.run('onbeforeexecute-must-return', onbeforeexecuteMustReturn, {
+    valid: [
+        // Expression-bodied arrow always returns.
+        "const a = <CommandDialog onBeforeExecute={values => values} />;",
+        // Block body that returns the values.
+        "const b = <CommandDialog onBeforeExecute={(values) => { values.id = '1'; return values; }} />;",
+        // Object property form.
+        "const c = { onBeforeExecute: (v) => v };",
+        // Variable form.
+        "const onBeforeExecute = (v) => { return v; };",
+        // A nested callback returning nothing does not count against the outer return.
+        "const d = <CommandDialog onBeforeExecute={(v) => { [1].forEach(() => {}); return v; }} />;",
+        // Unrelated callbacks are never flagged, even when they return nothing.
+        "const e = <button onClick={() => { doThing(); }} />;",
+    ],
+    invalid: [
+        {
+            code: "const a = <CommandDialog onBeforeExecute={(values) => { doSideEffect(values); }} />;",
+            errors: [{ messageId: 'missingReturn' }],
+        },
+        {
+            code: "const b = <CommandDialog onBeforeExecute={function (values) { doSideEffect(values); }} />;",
+            errors: [{ messageId: 'missingReturn' }],
+        },
+        {
+            code: "const c = <CommandDialog onBeforeExecute={(values) => { return; }} />;",
+            errors: [{ messageId: 'emptyReturn' }],
+        },
+        {
+            code: "const d = { onBeforeExecute: (v) => { log(v); } };",
+            errors: [{ messageId: 'missingReturn' }],
+        },
+    ],
+});
+
+tsRuleTester.run('no-hooks-in-view-model', noHooksInViewModel, {
+    valid: [
+        // A view model with no hooks.
+        "class FooViewModel { select(id) { this.selected = id; } }",
+        // A *ViewModel calling a plain method is fine.
+        "class BarViewModel { compute() { return this.transform(); } }",
+        // A non-view-model class may use hooks (it is a component/helper, not a VM).
+        "class Helper { render() { const x = useState(0); return x; } }",
+        // An injectable view model with only injected collaborators.
+        "@injectable class BazViewModel { constructor(private readonly svc) {} load() { return this.svc.get(); } }",
+    ],
+    invalid: [
+        {
+            // Generated Arc proxy .use() inside a *ViewModel.
+            code: "class FooViewModel { load() { const [x] = AllAuthors.use(); return x; } }",
+            errors: [{ messageId: 'noHook', data: { name: '.use' } }],
+        },
+        {
+            // A React hook inside an @injectable view model.
+            code: "@injectable class Bar { method() { const s = useState(0); return s; } }",
+            errors: [{ messageId: 'noHook', data: { name: 'useState' } }],
+        },
+        {
+            // A class registered via withViewModel, even without the naming/decorator signals.
+            code: "class Vm { method() { useIdentity(); } } const C = withViewModel(Vm, () => null);",
+            errors: [{ messageId: 'noHook', data: { name: 'useIdentity' } }],
         },
     ],
 });
