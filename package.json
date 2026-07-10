@@ -26,7 +26,7 @@
     },
     "license": "MIT",
     "version": "0.0.0",
-    "packageManager": "yarn@4.5.3",
+    "packageManager": "yarn@4.17.1",
     "devDependencies": {
         "@cratis/arc": "^20.49.2",
         "@cratis/arc.react": "^20.49.2",
@@ -80,7 +80,7 @@
         "tailwindcss": "^4.3.2",
         "ts-node": "^10.9.2",
         "tsyringe": "4.10.0",
-        "typescript": "^6.0.3",
+        "typescript": "^7.0.2",
         "typescript-eslint": "^8.63.0",
         "vite": "^8.1.3",
         "vite-plugin-commonjs": "^0.10.4",
