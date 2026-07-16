@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from './StepperPanel';
 import { CommandStepper } from './CommandStepper';
 import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';

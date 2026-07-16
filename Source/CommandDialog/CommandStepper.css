@@ -1,10 +1,6 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-.p-stepper [data-pc-section="header"][data-p-active="false"] {
-    opacity: 0.5;
-}
-
 /* Make stepper and its panels fill available width */
 .cratis-command-stepper {
     display: flex;
@@ -13,12 +9,18 @@
     width: 100%;
 }
 
-.cratis-command-stepper .p-stepper {
+/* PrimeReact 11 stepper parts carry data-scope/data-part attributes rather
+   than the v10 .p-stepper* class names, so key structural rules off those. */
+.cratis-command-stepper [data-scope="stepper"][data-part="root"] {
     width: 100%;
 }
 
-.cratis-command-stepper .p-stepperpanel-content {
+.cratis-command-stepper [data-scope="stepper"][data-part="panel"] {
     width: 100%;
     box-sizing: border-box;
 }
 
+/* Dim the header of steps that are not currently active */
+.cratis-command-stepper [data-scope="stepper"][data-part="step"]:not([data-active]) [data-part="header"] {
+    opacity: 0.5;
+}

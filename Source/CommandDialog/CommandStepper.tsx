@@ -1,8 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { Stepper as PrimeStepper, type StepperProps } from 'primereact/stepper';
+import React, { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { Stepper } from 'primereact/stepper';
+import type { StepperRootProps } from '@primereact/types/primitive/stepper';
 import { Button } from 'primereact/button';
 import { ICommandResult } from '@cratis/arc/commands';
 import {
@@ -13,15 +14,44 @@ import {
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import type { StepperPanelProps } from './StepperPanel';
 import './CommandStepper.css';
 
 /**
- * Stepper-specific customization props forwarded directly to PrimeReact Stepper.
- * `activeStep` and `children` are managed by the component.
+ * Event passed to {@link StepperCustomizationProps.onChangeStep} when the user
+ * navigates to a different step.
  */
-export type StepperCustomizationProps = Pick<StepperProps,
-    'orientation' | 'headerPosition' | 'linear' | 'onChangeStep' | 'start' | 'end' | 'pt' | 'ptOptions' | 'unstyled'
->;
+export interface StepperChangeEvent {
+    /** Zero-based index of the step being navigated to. */
+    index: number;
+}
+
+/**
+ * Stepper-specific customization surface exposed by {@link CommandStepper} and
+ * {@link StepperCommandDialog}. This is a Cratis-owned type — it no longer
+ * leaks PrimeReact's `StepperProps` — so PrimeReact 11's compositional Stepper
+ * can be rebuilt underneath without changing the public API.
+ *
+ * The PrimeReact 10 slots `orientation`, `headerPosition`, `start`, and `end`
+ * have no PrimeReact 11 equivalent and were removed.
+ */
+export interface StepperCustomizationProps {
+    /**
+     * Whether the wizard is linear. In linear mode the step headers are not
+     * directly clickable — the user advances through the Previous / Next
+     * buttons. Set to `false` to let the user jump between steps by clicking
+     * their headers. Defaults to `true`.
+     */
+    linear?: boolean;
+    /** Invoked when the active step changes (via navigation or a header click). */
+    onChangeStep?: (event: StepperChangeEvent) => void;
+    /** PrimeReact pass-through configuration for the underlying Stepper parts. */
+    pt?: StepperRootProps['pt'];
+    /** PrimeReact pass-through options controlling merge vs. replace for {@link pt}. */
+    ptOptions?: StepperRootProps['ptOptions'];
+    /** When true, disables every base PrimeReact style on the Stepper. */
+    unstyled?: boolean;
+}
 
 export interface CommandStepperContentProps extends StepperCustomizationProps {
     /** The active step index. */
@@ -127,6 +157,9 @@ const processChildren = (nodes: React.ReactNode): React.ReactNode => {
     });
 };
 
+/** The value used to identify a step in PrimeReact 11's Stepper — its index as a string. */
+const stepValue = (index: number): string => String(index);
+
 export const CommandStepperContent = ({
     activeStep,
     visitedSteps,
@@ -144,27 +177,23 @@ export const CommandStepperContent = ({
     isSubmitting = false,
     isSubmitDisabled = false,
     onSubmit,
-    orientation = 'horizontal',
-    headerPosition,
     linear = true,
     onChangeStep,
-    start,
-    end,
     pt,
     ptOptions,
     unstyled,
 }: CommandStepperContentProps) => {
-    const stepCount = React.Children.count(children);
+    const panels = useMemo(
+        () => React.Children.toArray(children).filter(React.isValidElement) as React.ReactElement<StepperPanelProps>[],
+        [children]
+    );
+    const stepCount = panels.length;
     const isLastStep = activeStep >= stepCount - 1;
     const isFirstStep = activeStep <= 0;
 
     const stepFieldNames = useMemo(
-        () => React.Children.toArray(children).map((step) => {
-            if (!React.isValidElement(step)) return [] as string[];
-            const stepProps = step.props as Record<string, unknown>;
-            return extractFieldNamesFromNode(stepProps.children as React.ReactNode);
-        }),
-        [children]
+        () => panels.map((panel) => extractFieldNamesFromNode(panel.props.children)),
+        [panels]
     );
 
     const stepErrors = useMemo(
@@ -179,59 +208,34 @@ export const CommandStepperContent = ({
     const isCurrentStepInvalid = stepErrors[activeStep] ?? false;
     const hasAnyStepErrors = stepErrors.some(hasError => hasError);
 
-    const stepperPt = useMemo(() => {
-        type StepContext = { context: { index: number } };
-        type NumberPtFn = (opts: StepContext) => Record<string, unknown>;
+    // The per-step number indicator paints red when a visited step still has a
+    // field error and green once a step has been visited without errors — a
+    // traffic-light status marker that is intentionally theme-independent, so
+    // the literal color names are appropriate here (and let specs assert on the
+    // computed background reliably).
+    const numberStyle = (index: number): CSSProperties | undefined => {
+        const hasError = stepErrors[index] ?? false;
+        const isVisited = visitedSteps.has(index);
+        const backgroundColor = hasError ? 'red' : isVisited ? 'green' : undefined;
+        if (!backgroundColor) return undefined;
+        return { backgroundColor, color: 'var(--cratis-primary-color-text)' };
+    };
 
-        const userPt = pt as Record<string, unknown> | undefined;
-        const userStepperPanelPt = userPt?.stepperpanel as Record<string, unknown> | undefined;
-        const userNumberPt = userStepperPanelPt?.number;
+    const handleValueChange: StepperRootProps['onValueChange'] = event => {
+        const raw = event.value;
+        const index = typeof raw === 'number' ? raw : parseInt(String(raw ?? ''), 10);
+        if (Number.isNaN(index)) return;
 
-        return {
-            ...userPt,
-            stepperpanel: {
-                ...userStepperPanelPt,
-                number: (opts: StepContext) => {
-                    const existing: Record<string, unknown> =
-                        typeof userNumberPt === 'function'
-                            ? (userNumberPt as NumberPtFn)(opts)
-                            : (userNumberPt as Record<string, unknown> | undefined) ?? {};
-                    const idx = opts.context.index;
-                    const hasError = stepErrors[idx] ?? false;
-                    const isVisited = visitedSteps.has(idx);
+        onChangeStep?.({ index });
 
-                    // Use straightforward color names here so unit tests that
-                    // inspect the computed `backgroundColor` can assert reliably.
-                    const bgColor = hasError
-                        ? 'red'
-                        : isVisited
-                            ? 'green'
-                            : null;
-
-                    if (!bgColor) return existing;
-                    const existingStyle = existing.style as Record<string, unknown> | undefined;
-                    return {
-                        ...existing,
-                        style: { ...existingStyle, backgroundColor: bgColor, color: 'var(--cratis-primary-color-text)' }
-                    };
-                }
-            }
-        };
-    }, [pt, stepErrors, visitedSteps]);
-
-    const handleChangeStep: StepperProps['onChangeStep'] = event => {
-        onChangeStep?.(event);
-        const index = (event as { index?: number }).index;
-        if (typeof index === 'number') {
-            if (index > activeStep && isCurrentStepInvalid) {
-                return;
-            }
-
-            if (index > activeStep) {
-                onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
-            }
-            onActiveStepChange?.(index);
+        if (index > activeStep && isCurrentStepInvalid) {
+            return;
         }
+
+        if (index > activeStep) {
+            onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
+        }
+        onActiveStepChange?.(index);
     };
 
     const handlePrevious = () => {
@@ -249,54 +253,64 @@ export const CommandStepperContent = ({
 
     return (
         <div className="cratis-command-stepper">
-            <PrimeStepper
-                activeStep={activeStep}
+            <Stepper.Root
+                value={stepValue(activeStep)}
                 linear={linear}
-                orientation={orientation}
-                headerPosition={headerPosition}
-                onChangeStep={handleChangeStep}
-                start={start}
-                end={end}
-                pt={stepperPt as StepperProps['pt']}
+                onValueChange={handleValueChange}
+                pt={pt}
                 ptOptions={ptOptions}
-                unstyled={unstyled}
-            >
-                {processChildren(children)}
-            </PrimeStepper>
+                unstyled={unstyled}>
+                <Stepper.List>
+                    {panels.map((panel, index) => (
+                        <Stepper.Step key={index} value={stepValue(index)}>
+                            <Stepper.Header>
+                                <Stepper.Number style={numberStyle(index)}>{index + 1}</Stepper.Number>
+                                <Stepper.Title>{panel.props.header}</Stepper.Title>
+                            </Stepper.Header>
+                            {index < stepCount - 1 && <Stepper.Separator />}
+                        </Stepper.Step>
+                    ))}
+                </Stepper.List>
+                <Stepper.Panels>
+                    {panels.map((panel, index) => (
+                        <Stepper.Panel key={index} value={stepValue(index)}>
+                            {processChildren(panel.props.children)}
+                        </Stepper.Panel>
+                    ))}
+                </Stepper.Panels>
+            </Stepper.Root>
 
             {showNavigation && (
                 <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.75rem' }}>
                     {!isFirstStep && (
                         <Button
-                            label={previousLabel}
-                            icon="pi pi-arrow-left"
+                            variant="outlined"
                             onClick={handlePrevious}
                             disabled={isBusy}
-                            outlined
-                            style={{ width: 'auto' }}
-                        />
+                            style={{ width: 'auto' }}>
+                            <i className="pi pi-arrow-left" />
+                            <span>{previousLabel}</span>
+                        </Button>
                     )}
                     <div style={{ flex: 1 }} />
                     {!isLastStep && (
                         <Button
-                            label={nextLabel}
-                            icon="pi pi-arrow-right"
-                            iconPos="right"
                             onClick={handleNext}
                             disabled={isBusy || isSubmitting || isCurrentStepInvalid}
-                            style={{ width: 'auto' }}
-                        />
+                            style={{ width: 'auto' }}>
+                            <span>{nextLabel}</span>
+                            <i className="pi pi-arrow-right" />
+                        </Button>
                     )}
                     {isLastStep && showSubmit && (
                         <Button
-                            label={okLabel}
-                            icon="pi pi-check"
                             onClick={() => void onSubmit?.()}
-                            loading={isSubmitting}
                             disabled={isBusy || isSubmitting || isSubmitDisabled || hasAnyStepErrors}
                             autoFocus
-                            style={{ width: 'auto' }}
-                        />
+                            style={{ width: 'auto' }}>
+                            <i className={isSubmitting ? 'pi pi-spin pi-spinner' : 'pi pi-check'} />
+                            <span>{okLabel}</span>
+                        </Button>
                     )}
                 </div>
             )}
@@ -325,12 +339,8 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     previousLabel,
     okLabel,
     isBusy,
-    orientation,
-    headerPosition,
     linear,
     onChangeStep,
-    start,
-    end,
     pt,
     ptOptions,
     unstyled,
@@ -390,12 +400,8 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             isSubmitting={isSubmitting}
             isSubmitDisabled={!isCommandFormValid}
             onSubmit={handleSubmit}
-            orientation={orientation}
-            headerPosition={headerPosition}
             linear={linear}
             onChangeStep={onChangeStep}
-            start={start}
-            end={end}
             pt={pt}
             ptOptions={ptOptions}
             unstyled={unstyled}
@@ -444,8 +450,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
  * Stepper directly.
  *
  * ```tsx
- * import { CommandStepper } from '@cratis/components/CommandStepper';
- * import { StepperPanel } from 'primereact/stepperpanel';
+ * import { CommandStepper, StepperPanel } from '@cratis/components/CommandDialog';
  * import { RegisterAuthor } from './RegisterAuthor';   // proxy from C#
  *
  * export const RegisterAuthorPage = () => (
@@ -477,12 +482,8 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
         previousLabel,
         okLabel,
         isBusy,
-        orientation,
-        headerPosition,
         linear,
         onChangeStep,
-        start,
-        end,
         pt,
         ptOptions,
         unstyled,
@@ -500,12 +501,8 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
                 previousLabel={previousLabel}
                 okLabel={okLabel}
                 isBusy={isBusy}
-                orientation={orientation}
-                headerPosition={headerPosition}
                 linear={linear}
                 onChangeStep={onChangeStep}
-                start={start}
-                end={end}
                 pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}

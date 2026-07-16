@@ -5,3 +5,4 @@ export * from './applyBeforeExecute';
 export * from './CommandDialog';
 export * from './CommandStepper';
 export * from './StepperCommandDialog';
+export * from './StepperPanel';

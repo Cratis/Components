@@ -10,44 +10,35 @@ const { commandFormValidity, executeCommand } = vi.hoisted(() => ({
     executeCommand: vi.fn(async () => ({ isSuccess: true, isValid: true, validationResults: [] }))
 }));
 
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, props.footer, props.children),
+vi.mock('../../Dialogs/Dialog', () => ({
+    Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
+        React.createElement('div', null, props.buttons, props.children),
 }));
 
-vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode; pt?: Record<string, unknown>; activeStep?: number }) => {
-        type StepCtx = { context: { index: number } };
-        type NumberPtFn = (opts: StepCtx) => { style?: { backgroundColor?: string } };
-        const ptStepperpanel = (props.pt as Record<string, unknown> | undefined)?.stepperpanel as Record<string, unknown> | undefined;
-        const numberPtFn = ptStepperpanel?.number as NumberPtFn | undefined;
-        const children = React.Children.map(props.children, (child, index) => {
-            if (!React.isValidElement(child)) return child;
-            const result = typeof numberPtFn === 'function' ? numberPtFn({ context: { index } }) : {};
-            const bg = result?.style?.backgroundColor ?? '';
-            return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, { 'data-number-bg': bg });
-        });
-        return React.createElement('div', { 'data-testid': 'stepper', 'data-active-step': props.activeStep }, children);
-    },
-}));
-
-vi.mock('primereact/stepperpanel', () => {
-    const MockStepperPanel = (props: { header?: string; children?: React.ReactNode; 'data-number-bg'?: string }) =>
-        React.createElement('div', {
-            'data-testid': 'stepper-panel',
-            'data-header': props.header,
-            'data-number-bg': props['data-number-bg'] ?? '',
-        }, props.children);
-    MockStepperPanel.displayName = 'StepperPanel';
-    return { StepperPanel: MockStepperPanel };
+vi.mock('primereact/stepper', () => {
+    const part = (name: string) => {
+        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
+            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
+        Component.displayName = name;
+        return Component;
+    };
+    return {
+        Stepper: {
+            Root: part('root'), List: part('list'), Step: part('step'),
+            Header: part('header'), Number: part('number'), Title: part('title'),
+            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
+        },
+    };
 });
 
+// The submit button is the only one carrying autoFocus — auto-activate it (when
+// enabled) so the spec can assert whether the command executes.
 vi.mock('primereact/button', () => ({
-    Button: (props: { icon?: string; label?: string; onClick?: () => Promise<void> | void; disabled?: boolean; loading?: boolean }) => {
-        if (props.icon === 'pi pi-check' && props.onClick && props.disabled !== true) {
+    Button: (props: { children?: React.ReactNode; onClick?: () => Promise<void> | void; disabled?: boolean; autoFocus?: boolean }) => {
+        if (props.autoFocus && props.onClick && props.disabled !== true) {
             void props.onClick();
         }
-        return React.createElement('button', { disabled: props.disabled, 'data-loading': props.loading }, props.label);
+        return React.createElement('button', { disabled: props.disabled }, props.children);
     },
 }));
 
@@ -77,13 +68,13 @@ class TestCommand {
 }
 
 let StepperCommandDialog: typeof import('../StepperCommandDialog').StepperCommandDialog;
-let StepperPanel: typeof import('primereact/stepperpanel').StepperPanel;
+let StepperPanel: typeof import('../StepperPanel').StepperPanel;
 
 beforeEach(async () => {
     executeCommand.mockClear();
     vi.resetModules();
     StepperCommandDialog = (await import('../StepperCommandDialog')).StepperCommandDialog;
-    StepperPanel = (await import('primereact/stepperpanel')).StepperPanel;
+    StepperPanel = (await import('../StepperPanel')).StepperPanel;
 });
 
 afterEach(() => {

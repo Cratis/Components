@@ -105,6 +105,16 @@ export interface DialogProps {
     noLabel?: string;
 
     /**
+     * Whether the dialog can be dismissed via the header close button, a
+     * backdrop click, or the Escape key. When omitted, the dialog is
+     * dismissable exactly when a predefined {@link DialogButtons} set is used
+     * (a custom `ReactNode` footer or `null` footer is not dismissable by
+     * default). Set it explicitly to keep a dismiss affordance with a custom
+     * footer — as {@link StepperCommandDialog} does for its wizard chrome.
+     */
+    dismissable?: boolean;
+
+    /**
      * Extra CSS class names forwarded to the underlying PrimeReact Dialog root.
      */
     className?: string;
@@ -222,6 +232,7 @@ export const Dialog = ({
     cancelLabel = 'Cancel',
     yesLabel = 'Yes',
     noLabel = 'No',
+    dismissable,
     className,
     pt,
     ptOptions,
@@ -339,9 +350,11 @@ export const Dialog = ({
     );
 
     // The dialog is dismissable (backdrop click, Escape, header close button)
-    // only for the predefined-button sets, mirroring the v10 `closable` behavior
-    // that keyed off `typeof buttons === 'number'`.
-    const isDismissable = typeof buttons === 'number';
+    // for the predefined-button sets by default, mirroring the v10 `closable`
+    // behavior that keyed off `typeof buttons === 'number'`. The `dismissable`
+    // prop overrides that default so a custom-footer dialog (e.g. the stepper
+    // wizard) can still offer a header-close affordance.
+    const isDismissable = dismissable ?? (typeof buttons === 'number');
 
     // PrimeReact 11's Dialog is a controlled overlay: `open` reflects `visible`,
     // and any dismiss gesture fires `onOpenChange` with `value: false`. We route
