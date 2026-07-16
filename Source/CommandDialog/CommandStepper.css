@@ -24,3 +24,42 @@
 .cratis-command-stepper [data-scope="stepper"][data-part="step"]:not([data-active]) [data-part="header"] {
     opacity: 0.5;
 }
+
+/* Horizontal (default): the step list flows left-to-right. */
+.cratis-command-stepper--horizontal [data-scope="stepper"][data-part="list"] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Vertical: the step list is a stacked column beside the panels. */
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="root"] {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="list"] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="step"] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="separator"] {
+    width: 2px;
+    min-height: 1.25rem;
+    margin-left: 0.9rem;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="panels"] {
+    flex: 1;
+    min-width: 0;
+}

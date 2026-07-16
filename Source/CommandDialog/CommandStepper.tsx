@@ -26,14 +26,19 @@ export interface StepperChangeEvent {
     index: number;
 }
 
+/** Orientation of a {@link CommandStepper} / {@link StepperCommandDialog}. */
+export type StepperOrientation = 'horizontal' | 'vertical';
+
+/** Where the step headers sit relative to the panels. */
+export type StepperHeaderPosition = 'top' | 'bottom';
+
 /**
  * Stepper-specific customization surface exposed by {@link CommandStepper} and
  * {@link StepperCommandDialog}. This is a Cratis-owned type — it no longer
  * leaks PrimeReact's `StepperProps` — so PrimeReact 11's compositional Stepper
- * can be rebuilt underneath without changing the public API.
- *
- * The PrimeReact 10 slots `orientation`, `headerPosition`, `start`, and `end`
- * have no PrimeReact 11 equivalent and were removed.
+ * can be rebuilt underneath without changing the public API. PrimeReact 11's
+ * Stepper has no built-in `orientation` / `start` / `end` / `headerPosition`,
+ * so the wrapper re-implements them over the compositional parts.
  */
 export interface StepperCustomizationProps {
     /**
@@ -43,6 +48,14 @@ export interface StepperCustomizationProps {
      * their headers. Defaults to `true`.
      */
     linear?: boolean;
+    /** Lays the steps out horizontally (default) or stacked vertically. */
+    orientation?: StepperOrientation;
+    /** Places the step-header row above (default) or below the panels. */
+    headerPosition?: StepperHeaderPosition;
+    /** Content rendered before the stepper (e.g. a logo or title). */
+    start?: React.ReactNode;
+    /** Content rendered after the stepper. */
+    end?: React.ReactNode;
     /** Invoked when the active step changes (via navigation or a header click). */
     onChangeStep?: (event: StepperChangeEvent) => void;
     /** PrimeReact pass-through configuration for the underlying Stepper parts. */
@@ -178,6 +191,10 @@ export const CommandStepperContent = ({
     isSubmitDisabled = false,
     onSubmit,
     linear = true,
+    orientation = 'horizontal',
+    headerPosition = 'top',
+    start,
+    end,
     onChangeStep,
     pt,
     ptOptions,
@@ -251,34 +268,46 @@ export const CommandStepperContent = ({
         onActiveStepChange?.(Math.min(stepCount - 1, activeStep + 1));
     };
 
+    const stepperList = (
+        <Stepper.List>
+            {panels.map((panel, index) => (
+                <Stepper.Step key={index} value={stepValue(index)}>
+                    <Stepper.Header>
+                        <Stepper.Number style={numberStyle(index)}>{index + 1}</Stepper.Number>
+                        <Stepper.Title>{panel.props.header}</Stepper.Title>
+                    </Stepper.Header>
+                    {index < stepCount - 1 && <Stepper.Separator />}
+                </Stepper.Step>
+            ))}
+        </Stepper.List>
+    );
+
+    const stepperPanels = (
+        <Stepper.Panels>
+            {panels.map((panel, index) => (
+                <Stepper.Panel key={index} value={stepValue(index)}>
+                    {processChildren(panel.props.children)}
+                </Stepper.Panel>
+            ))}
+        </Stepper.Panels>
+    );
+
     return (
-        <div className="cratis-command-stepper">
+        <div className={`cratis-command-stepper cratis-command-stepper--${orientation}`} data-orientation={orientation}>
+            {start}
             <Stepper.Root
                 value={stepValue(activeStep)}
                 linear={linear}
                 onValueChange={handleValueChange}
+                data-orientation={orientation}
                 pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}>
-                <Stepper.List>
-                    {panels.map((panel, index) => (
-                        <Stepper.Step key={index} value={stepValue(index)}>
-                            <Stepper.Header>
-                                <Stepper.Number style={numberStyle(index)}>{index + 1}</Stepper.Number>
-                                <Stepper.Title>{panel.props.header}</Stepper.Title>
-                            </Stepper.Header>
-                            {index < stepCount - 1 && <Stepper.Separator />}
-                        </Stepper.Step>
-                    ))}
-                </Stepper.List>
-                <Stepper.Panels>
-                    {panels.map((panel, index) => (
-                        <Stepper.Panel key={index} value={stepValue(index)}>
-                            {processChildren(panel.props.children)}
-                        </Stepper.Panel>
-                    ))}
-                </Stepper.Panels>
+                {headerPosition === 'bottom'
+                    ? (<>{stepperPanels}{stepperList}</>)
+                    : (<>{stepperList}{stepperPanels}</>)}
             </Stepper.Root>
+            {end}
 
             {showNavigation && (
                 <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.75rem' }}>
@@ -340,6 +369,10 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     okLabel,
     isBusy,
     linear,
+    orientation,
+    headerPosition,
+    start,
+    end,
     onChangeStep,
     pt,
     ptOptions,
@@ -401,6 +434,10 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             isSubmitDisabled={!isCommandFormValid}
             onSubmit={handleSubmit}
             linear={linear}
+            orientation={orientation}
+            headerPosition={headerPosition}
+            start={start}
+            end={end}
             onChangeStep={onChangeStep}
             pt={pt}
             ptOptions={ptOptions}
@@ -483,6 +520,10 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
         okLabel,
         isBusy,
         linear,
+        orientation,
+        headerPosition,
+        start,
+        end,
         onChangeStep,
         pt,
         ptOptions,
@@ -502,6 +543,10 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
                 okLabel={okLabel}
                 isBusy={isBusy}
                 linear={linear}
+                orientation={orientation}
+                headerPosition={headerPosition}
+                start={start}
+                end={end}
                 onChangeStep={onChangeStep}
                 pt={pt}
                 ptOptions={ptOptions}

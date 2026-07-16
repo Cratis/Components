@@ -128,6 +128,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     nextLabel = 'Next',
     previousLabel = 'Previous',
     linear = true,
+    orientation,
+    headerPosition,
+    start,
+    end,
     onChangeStep,
     pt,
     ptOptions,
@@ -276,6 +280,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 showNavigation={false}
                 showSubmit={false}
                 linear={linear}
+                orientation={orientation}
+                headerPosition={headerPosition}
+                start={start}
+                end={end}
                 onChangeStep={onChangeStep}
                 pt={pt}
                 ptOptions={ptOptions}
@@ -391,6 +399,10 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
         nextLabel,
         previousLabel,
         linear,
+        orientation,
+        headerPosition,
+        start,
+        end,
         onChangeStep,
         pt,
         ptOptions,
@@ -424,6 +436,10 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
                 nextLabel={nextLabel}
                 previousLabel={previousLabel}
                 linear={linear}
+                orientation={orientation}
+                headerPosition={headerPosition}
+                start={start}
+                end={end}
                 onChangeStep={onChangeStep}
                 pt={pt}
                 ptOptions={ptOptions}

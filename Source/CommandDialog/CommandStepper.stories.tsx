@@ -244,6 +244,58 @@ export const InDialogFrameWithCenteredHeader: Story = {
     },
 };
 
+export const Vertical: Story = {
+    render: () => {
+        const [result, setResult] = useState('');
+
+        return (
+            <div style={{ width: '700px', padding: '1.5rem' }}>
+                <CommandStepper<CreateProjectCommand>
+                    command={CreateProjectCommand}
+                    autoServerValidate={false}
+                    validateOn="change"
+                    orientation="vertical"
+                    start={<h3 style={{ margin: '0 0 1rem' }}>Create Project</h3>}
+                    onSuccess={async () => setResult('Command submitted successfully')}
+                >
+                    <StepperPanel header="Basic Info">
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.name}
+                            title="Project Name"
+                            placeholder="Enter project name (min 2 chars)"
+                        />
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.email}
+                            title="Contact Email"
+                            placeholder="Enter contact email"
+                            type="email"
+                        />
+                    </StepperPanel>
+                    <StepperPanel header="Details">
+                        <TextAreaField<CreateProjectCommand>
+                            value={c => c.description}
+                            title="Description"
+                            placeholder="Describe the project (min 10 chars)"
+                            rows={4}
+                        />
+                        <NumberField<CreateProjectCommand>
+                            value={c => c.budget}
+                            title="Budget"
+                            placeholder="Enter budget (must be > 0)"
+                        />
+                    </StepperPanel>
+                </CommandStepper>
+
+                {result && (
+                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                        {result}
+                    </div>
+                )}
+            </div>
+        );
+    },
+};
+
 export const WithValidationIndicators: Story = {
     render: () => {
         const [result, setResult] = useState('');
