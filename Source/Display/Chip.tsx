@@ -27,7 +27,7 @@ export const Chip = ({ label, icon, removable, onRemove, className }: ChipProps)
         {icon && <PrimeChip.Start>{icon}</PrimeChip.Start>}
         <PrimeChip.Label>{label}</PrimeChip.Label>
         {removable && (
-            <PrimeChip.Remove onClick={onRemove} aria-label="Remove">
+            <PrimeChip.Remove onClick={onRemove} role="button" aria-label="Remove">
                 <i className="pi pi-times" />
             </PrimeChip.Remove>
         )}

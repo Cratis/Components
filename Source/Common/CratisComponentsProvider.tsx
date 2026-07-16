@@ -5,6 +5,7 @@ import React, { useMemo } from 'react';
 import { PrimeReactProvider } from '@primereact/core';
 import type { PrimeReactProps } from '@primereact/types/core';
 import { merge } from 'ts-deepmerge';
+import { Toaster, type ToasterProps } from '../Notifications';
 
 /**
  * Configuration accepted by {@link CratisComponentsProvider}. Mirrors PrimeReact 11's
@@ -20,6 +21,13 @@ export interface CratisComponentsProviderProps {
      * library's defaults and made available to every Cratis component below in the tree.
      */
     value?: CratisComponentsConfig;
+
+    /**
+     * When set, mounts a {@link Toaster} inside the provider so the imperative
+     * `toast(...)` works app-wide with no extra setup. Pass `true` for the
+     * defaults, or a {@link ToasterProps} object to position/configure it.
+     */
+    toaster?: boolean | ToasterProps;
 
     children: React.ReactNode;
 }
@@ -66,8 +74,13 @@ export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | unde
  * {@link PrimeReactProvider} themselves — this component is an optional convenience,
  * not a requirement.
  */
-export const CratisComponentsProvider = ({ value, children }: CratisComponentsProviderProps) => {
+export const CratisComponentsProvider = ({ value, toaster, children }: CratisComponentsProviderProps) => {
     const merged = useMemo<CratisComponentsConfig>(() => mergeCratisComponentsConfig(value), [value]);
 
-    return <PrimeReactProvider {...merged}>{children}</PrimeReactProvider>;
+    return (
+        <PrimeReactProvider {...merged}>
+            {children}
+            {toaster && <Toaster {...(typeof toaster === 'object' ? toaster : {})} />}
+        </PrimeReactProvider>
+    );
 };

@@ -42,7 +42,7 @@
     --cratis-surface-border:     var(--p-surface-200, #e2e8f0);
 
     --cratis-text-color:           var(--p-text-color, #1e293b);
-    --cratis-text-color-secondary: var(--p-text-muted-color, #64748b);
+    --cratis-text-color-secondary: var(--p-text-muted-color, #475569);
     --cratis-highlight-bg:         var(--p-highlight-background, #dbeafe);
     --cratis-highlight-text-color: var(--p-highlight-color, #1e40af);
     --cratis-maskbg:               rgba(0, 0, 0, 0.4);
@@ -61,7 +61,7 @@
     --cratis-surface-border:  #334155;
 
     --cratis-text-color:           #f8fafc;
-    --cratis-text-color-secondary: #94a3b8;
+    --cratis-text-color-secondary: #cbd5e1;
     --cratis-highlight-bg:         #1e3a8a;
     --cratis-highlight-text-color: #ffffff;
     --cratis-maskbg:               rgba(0, 0, 0, 0.6);
@@ -76,13 +76,14 @@
     padding: 0.5rem 1rem;
     border: 1px solid transparent;
     border-radius: var(--cratis-border-radius, 6px);
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    /* A WCAG-AA-safe filled shade against the white label. */
+    background: #1d4ed8;
+    color: #fff;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.15s, opacity 0.15s;
 }
-.cratis-theme [data-scope='button']:not([disabled]):hover { background: var(--cratis-primary-600, var(--cratis-primary-color)); }
+.cratis-theme [data-scope='button']:not([disabled]):hover { background: #1e40af; }
 .cratis-theme [data-scope='button']:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--cratis-primary-300, var(--cratis-primary-color)); }
 .cratis-theme [data-scope='button'][disabled] { opacity: 0.5; cursor: not-allowed; }
 
@@ -229,12 +230,13 @@
 .cratis-theme [data-scope='badge'] {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 1.4rem; height: 1.4rem; padding: 0 0.4rem; border-radius: 999px;
-    font-size: 0.75rem; font-weight: 600; background: var(--cratis-primary-color); color: var(--cratis-primary-color-text);
+    font-size: 0.75rem; font-weight: 600; background: #1d4ed8; color: #fff;
 }
-.cratis-theme [data-severity='success'] { background: var(--cratis-green-500); color: #fff; }
-.cratis-theme [data-severity='info'] { background: var(--cratis-primary-color); color: var(--cratis-primary-color-text); }
-.cratis-theme [data-severity='warn'] { background: var(--cratis-orange-500, #f59e0b); color: #fff; }
-.cratis-theme [data-severity='danger'] { background: var(--cratis-red-500); color: #fff; }
+/* Filled severity backgrounds use WCAG-AA-safe (darker) shades against white text. */
+.cratis-theme [data-severity='success'] { background: #15803d; color: #fff; }
+.cratis-theme [data-severity='info'] { background: #1d4ed8; color: #fff; }
+.cratis-theme [data-severity='warn'] { background: #b45309; color: #fff; }
+.cratis-theme [data-severity='danger'] { background: #b91c1c; color: #fff; }
 .cratis-theme [data-severity='secondary'] { background: var(--cratis-surface-hover); color: var(--cratis-text-color); }
 
 /* ── Chip / Avatar ───────────────────────────────────────────────────────── */
@@ -256,7 +258,7 @@
 }
 .cratis-theme [data-scope='progressbar'][data-part='indicator'] {
     display: flex; align-items: center; justify-content: center; height: 100%;
-    background: var(--cratis-primary-color); color: var(--cratis-primary-color-text); font-size: 0.75rem;
+    background: #1d4ed8; color: #fff; font-size: 0.75rem;
     transition: width 0.2s;
 }
 .cratis-theme [data-scope='skeleton'] {

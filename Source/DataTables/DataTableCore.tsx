@@ -192,7 +192,9 @@ export const DataTableCore = <TData extends object>({
                                     className={column.props.headerClassName}>
                                     <div className="cratis-datatable-header-cell">
                                         {column.props.sortable && column.props.field ? (
-                                            <PrimeDataTable.Sort field={column.props.field}>
+                                            // aria-sort belongs on the column header, not the sort button; PrimeReact 11's
+                                            // Sort part puts it on its role="button" element (invalid ARIA), so strip it here.
+                                            <PrimeDataTable.Sort field={column.props.field} pt={{ root: { 'aria-sort': undefined } }}>
                                                 {column.props.header}
                                                 <PrimeDataTable.SortIndicator match="asc"> ▲</PrimeDataTable.SortIndicator>
                                                 <PrimeDataTable.SortIndicator match="desc"> ▼</PrimeDataTable.SortIndicator>

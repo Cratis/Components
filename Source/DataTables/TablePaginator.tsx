@@ -34,7 +34,10 @@ export const TablePaginator = ({ page, pageCount, onPageChange, totalItems, page
     const rangeReport = paginatorRange(page, pageSize, totalItems);
 
     return (
-        <div className={className ? `cratis-table-paginator ${className}` : 'cratis-table-paginator'}>
+        <div
+            role="navigation"
+            aria-label="Pagination"
+            className={className ? `cratis-table-paginator ${className}` : 'cratis-table-paginator'}>
             {rangeReport && <span className="cratis-table-paginator-range">{rangeReport}</span>}
             <Button variant="text" disabled={isFirst} onClick={() => onPageChange(0)} aria-label="First page">
                 <i className="pi pi-angle-double-left" />
