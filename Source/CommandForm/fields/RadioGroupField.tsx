@@ -60,8 +60,9 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                     const optValue = option[props.optionValue] as string | number;
                     const optLabel = option[props.optionLabel] as string;
                     return (
-                        // `onBlur` rides on the wrapping div because React blur bubbles (focusout).
-                        <div key={String(optValue)} className="flex items-center" onBlur={props.onBlur}>
+                        // A real <label> per option so the visible text is the radio's
+                        // accessible name. `onBlur` rides on the label (blur bubbles).
+                        <label key={String(optValue)} className="flex items-center" onBlur={props.onBlur}>
                             <RadioButton.Root
                                 value={optValue}
                                 checked={props.value === optValue}
@@ -74,8 +75,8 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                                     <RadioButton.Indicator />
                                 </RadioButton.Box>
                             </RadioButton.Root>
-                            <label className="ml-2">{optLabel}</label>
-                        </div>
+                            <span className="ml-2">{optLabel}</span>
+                        </label>
                     );
                 })}
             </div>

@@ -37,10 +37,12 @@ interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
  */
 export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
     (props) => (
-        // PrimeReact 11's Checkbox is compositional (Root → Box → Indicator).
-        // `onBlur` rides on the wrapping div because React blur bubbles (focusout),
-        // so the CommandForm's blur-timed validation still fires from the inner input.
-        <div className="flex items-center" onBlur={props.onBlur}>
+        // PrimeReact 11's Checkbox is compositional (Root → Box → Indicator). A real
+        // <label> wraps the control so the visible text is its accessible name
+        // (implicit association) and doubles the click target. `onBlur` rides on the
+        // label because React blur bubbles (focusout), so the CommandForm's blur-timed
+        // validation still fires from the inner input.
+        <label className="flex items-center" onBlur={props.onBlur}>
             <Checkbox.Root
                 checked={props.value}
                 onCheckedChange={props.onChange}
@@ -53,8 +55,8 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
                     <Checkbox.Indicator />
                 </Checkbox.Box>
             </Checkbox.Root>
-            {props.label && <label className="ml-2">{props.label}</label>}
-        </div>
+            {props.label && <span className="ml-2">{props.label}</span>}
+        </label>
     ),
     {
         defaultValue: false,

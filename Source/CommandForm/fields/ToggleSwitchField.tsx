@@ -34,14 +34,12 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
         // A real <label> wrapping the switch: the underlying checkbox input is a
         // descendant, so the visible text becomes its accessible name (implicit
         // association) regardless of the composition's internal structure — and
-        // the text doubles the click target. `aria-label` covers the label-less
-        // case so the switch is never nameless to a screen reader.
+        // the text doubles the click target.
         <label className="flex items-center" onBlur={props.onBlur}>
             <ToggleSwitch.Root
                 checked={props.value}
                 onCheckedChange={props.onChange}
                 invalid={props.invalid}
-                aria-label={props.label}
                 className={props.className}
                 pt={props.pt}
                 ptOptions={props.ptOptions}

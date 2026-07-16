@@ -44,8 +44,10 @@ interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | numb
  */
 export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProps>(
     (props) => (
-        // `onBlur` rides on the wrapping div because React blur bubbles (focusout).
-        <div className="flex items-center" onBlur={props.onBlur}>
+        // A real <label> wraps the control so the visible text is its accessible
+        // name (implicit association). `onBlur` rides on the label because React
+        // blur bubbles (focusout).
+        <label className="flex items-center" onBlur={props.onBlur}>
             <RadioButton.Root
                 value={props.buttonValue}
                 checked={props.value === props.buttonValue}
@@ -59,8 +61,8 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                     <RadioButton.Indicator />
                 </RadioButton.Box>
             </RadioButton.Root>
-            {props.label && <label className="ml-2">{props.label}</label>}
-        </div>
+            {props.label && <span className="ml-2">{props.label}</span>}
+        </label>
     ),
     {
         defaultValue: '',
