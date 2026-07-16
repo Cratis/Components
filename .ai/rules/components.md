@@ -42,7 +42,8 @@ const result = await command.execute();
 if (toastCommandResult(result, { successTitle: 'Author registered' })) refresh();
 ```
 
-For ad-hoc notifications, call the imperative `toast.success/info/warn/error(...)`.
+For ad-hoc notifications, call the imperative `toast.success/info/warn/error(...)`
+— each takes an **options object**, not a bare string: `toast.info({ title: 'Saved', description: '…' })`.
 
 ### Column filtering & display components
 
