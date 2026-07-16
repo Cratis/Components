@@ -1,0 +1,69 @@
+# Notifications
+
+`CommandDialog` shows success and error feedback for you. But when you run a command **programmatically** — `command.execute()` outside a dialog — nothing tells the user what happened. The `Notifications` components fill that gap with app-wide toasts. Import them from `@cratis/components/Notifications`.
+
+## Mount one Toaster
+
+Mount a single `Toaster` near your app root. Every toast — from anywhere in the tree, even outside React — appears here and auto-dismisses.
+
+```tsx
+import { Toaster } from '@cratis/components/Notifications';
+
+<Toaster position="top-right" />
+```
+
+Or let the provider mount it for you:
+
+```tsx
+<CratisComponentsProvider toaster>
+    <App />
+</CratisComponentsProvider>
+```
+
+| `Toaster` prop | Type | Description |
+|------|------|-------------|
+| `position` | `ToasterPosition` | Corner/edge the toasts stack from. Defaults to `'top-right'`. |
+| `limit` | `number` | Maximum toasts shown at once. Defaults to `3`. |
+| `timeout` | `number` | Auto-dismiss timeout in milliseconds. Defaults to `6000`. |
+| `dismissAriaLabel` | `string` | Accessible name for each toast's dismiss button. Override to localize. Defaults to `'Dismiss'`. |
+
+## Surface a command result with `toastCommandResult`
+
+When you execute a command outside a dialog you have to branch on the granular `ICommandResult` flags — authorized? valid? did it throw? `toastCommandResult` does that branching for you and shows the right toast: a success toast, a warning when not authorized, an error listing the per-field validation messages, or a generic error when the handler threw (stack traces are never shown to users).
+
+```tsx
+import { toastCommandResult } from '@cratis/components/Notifications';
+
+const result = await command.execute();
+if (toastCommandResult(result, { successTitle: 'Author registered' })) {
+    refresh();
+}
+```
+
+It returns `true` on success, so you can gate follow-up work (close a panel, refresh a query) on the same call.
+
+| `toastCommandResult` option | Type | Description |
+|------|------|-------------|
+| `successTitle` | `string` | Title for the success toast. Defaults to `'Success'`. |
+| `successDescription` | `string` | Description for the success toast. |
+| `unauthorizedTitle` | `string` | Title when rejected by authorization. Defaults to `'Not authorized'`. |
+| `validationTitle` | `string` | Title when validation failed. Defaults to `'Validation failed'`. |
+| `exceptionTitle` | `string` | Title when the handler threw. Defaults to `'Something went wrong'`. |
+| `showSuccess` | `boolean` | When `false`, no toast is shown on success. Defaults to `true`. |
+
+Every title is overridable — pass translated strings to localize.
+
+## Ad-hoc toasts with `toast`
+
+For notifications unrelated to a command, call the imperative `toast`. Each method takes an **options object**, not a bare string.
+
+```tsx
+import { toast } from '@cratis/components/Notifications';
+
+toast.success({ title: 'Saved', description: 'Your changes were saved.' });
+toast.info({ title: 'Heads up' });
+toast.warn({ title: 'Check your input' });
+toast.error({ title: 'Failed', description: 'Please try again.' });
+```
+
+`toast.dismiss(id?)` closes a toast (or all of them), and `toast.promise(...)` tracks a promise through pending/success/error states.
