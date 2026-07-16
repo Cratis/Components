@@ -4,6 +4,7 @@
 import { useMemo } from 'react';
 import { Button } from 'primereact/button';
 import * as faIcons from 'react-icons/fa6';
+import { Tooltip } from '../Common/Tooltip';
 import { buildNavigationBreadcrumbs } from './breadcrumbHelpers';
 import './ObjectNavigationalBar.css';
 
@@ -45,15 +46,17 @@ export function ObjectNavigationalBar({ navigationPath, onNavigate, className }:
     return (
         <div className={rootClassName}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Button
-                    icon={<faIcons.FaArrowLeft />}
-                    text
-                    size="small"
-                    onClick={() => onNavigate(navigationPath.length - 1)}
-                    tooltip="Navigate back"
-                    tooltipOptions={{ position: 'top' }}
-                    disabled={navigationPath.length === 0}
-                />
+                <Tooltip content="Navigate back" position="top">
+                    <Button
+                        variant="text"
+                        size="small"
+                        iconOnly
+                        onClick={() => onNavigate(navigationPath.length - 1)}
+                        disabled={navigationPath.length === 0}
+                        aria-label="Navigate back">
+                        <faIcons.FaArrowLeft />
+                    </Button>
+                </Tooltip>
                 <div style={{ fontSize: '0.9rem', color: 'var(--cratis-text-color-secondary)' }}>
                     {breadcrumbItems.map((item, index) => (
                         <span key={index}>

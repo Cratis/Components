@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Timeline, type TimelineProps } from 'primereact/timeline';
+import { Timeline } from 'primereact/timeline';
+import type { TimelineRootProps } from '@primereact/types/primitive/timeline';
 import type { Event } from './types';
 import { Properties } from './Properties';
 import './EventsView.css';
@@ -18,10 +19,10 @@ interface EventsViewProps {
     className?: string;
 
     /** PrimeReact pass-through configuration applied to the underlying Timeline. */
-    pt?: TimelineProps['pt'];
+    pt?: TimelineRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the underlying Timeline. */
-    ptOptions?: TimelineProps['ptOptions'];
+    ptOptions?: TimelineRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the underlying Timeline. */
     unstyled?: boolean;
@@ -122,16 +123,23 @@ export const EventsView: React.FC<EventsViewProps> = ({ events, className, pt, p
                     </button>
                 </div>
             )}
-            <Timeline
-                value={displayEvents}
+            <Timeline.Root
                 align="alternate"
-                content={customContent}
-                marker={customMarker}
                 className={className ? `events-view-timeline ${className}` : 'events-view-timeline'}
                 pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}
-            />
+            >
+                {displayEvents.map((event, index) => (
+                    <Timeline.Event key={index}>
+                        <Timeline.Separator>
+                            <Timeline.Marker>{customMarker()}</Timeline.Marker>
+                            {index < displayEvents.length - 1 && <Timeline.Connector />}
+                        </Timeline.Separator>
+                        <Timeline.Content>{customContent(event, index)}</Timeline.Content>
+                    </Timeline.Event>
+                ))}
+            </Timeline.Root>
             {canScrollDown && (
                 <div className="events-view-scroll-button-wrapper events-view-scroll-button-wrapper--bottom">
                     <button

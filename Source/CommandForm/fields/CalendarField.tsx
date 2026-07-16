@@ -2,10 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { DatePicker } from 'primereact/datepicker';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import type { DatePickerRootProps, DatePickerRootValueChangeEvent } from '@primereact/types/primitive/datepicker';
+import { DatePickerInput } from '../../Common/DatePickerInput';
+import type { DatePickerRootProps } from '@primereact/types/primitive/datepicker';
 import React from 'react';
 
 /**
@@ -61,58 +59,23 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
  */
 export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
     (props) => (
-        // PrimeReact 11's DatePicker is compositional: Root owns the date model, Input is
-        // the text field, and the popup Calendar/Table auto-render the grid. `onBlur` rides
-        // the wrapping div because React blur bubbles (focusout).
-        <div className={props.className ? `w-full ${props.className}` : 'w-full'} onBlur={props.onBlur}>
-            <DatePicker.Root
-                value={props.value}
-                onValueChange={(e: DatePickerRootValueChangeEvent) => props.onChange(e.value instanceof Date ? e.value : null)}
-                invalid={props.invalid}
-                dateFormat={props.dateFormat}
-                showTime={props.showTime}
-                hourFormat={props.hourFormat}
-                minDate={props.minDate}
-                maxDate={props.maxDate}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}>
-                <DatePicker.Input as={InputText} placeholder={props.placeholder} className="w-full" />
-                {props.showIcon && (
-                    <DatePicker.Trigger>
-                        <i className="pi pi-calendar" />
-                    </DatePicker.Trigger>
-                )}
-                <DatePicker.Portal>
-                    <DatePicker.Positioner align="start">
-                        <DatePicker.Popup>
-                            <DatePicker.Calendar>
-                                <DatePicker.Header>
-                                    <DatePicker.Prev as={Button} iconOnly variant="text" rounded severity="secondary" size="small">
-                                        <i className="pi pi-chevron-left" />
-                                    </DatePicker.Prev>
-                                    <DatePicker.Title>
-                                        <DatePicker.SelectMonth />
-                                        <DatePicker.SelectYear />
-                                        <DatePicker.Decade />
-                                    </DatePicker.Title>
-                                    <DatePicker.Next as={Button} iconOnly variant="text" rounded severity="secondary" size="small">
-                                        <i className="pi pi-chevron-right" />
-                                    </DatePicker.Next>
-                                </DatePicker.Header>
-                                <DatePicker.Table>
-                                    <DatePicker.TableHead />
-                                    <DatePicker.TableBody />
-                                    <DatePicker.TableBody view="month" />
-                                    <DatePicker.TableBody view="year" />
-                                </DatePicker.Table>
-                            </DatePicker.Calendar>
-                            {props.showTime && <DatePicker.Time />}
-                        </DatePicker.Popup>
-                    </DatePicker.Positioner>
-                </DatePicker.Portal>
-            </DatePicker.Root>
-        </div>
+        <DatePickerInput
+            value={props.value}
+            onChange={props.onChange}
+            onBlur={props.onBlur}
+            invalid={props.invalid}
+            placeholder={props.placeholder}
+            dateFormat={props.dateFormat}
+            showIcon={props.showIcon}
+            showTime={props.showTime}
+            hourFormat={props.hourFormat}
+            minDate={props.minDate}
+            maxDate={props.maxDate}
+            className={props.className}
+            pt={props.pt}
+            ptOptions={props.ptOptions}
+            unstyled={props.unstyled}
+        />
     ),
     {
         defaultValue: null,
