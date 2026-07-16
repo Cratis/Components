@@ -110,7 +110,7 @@ much control you want, and the other layers stay invisible.
 | Setup | When | Effort | License | What you write |
 |---|---|---|---|---|
 | **Cratis baseline theme** | You want a polished default look with no license. | Lowest | None | `unstyled` + `import '@cratis/components/theme'` + `class="cratis-theme"` |
-| **A styled `@primeuix/themes` preset** | You want a prebuilt design system to tweak from. | Low | PrimeUI key | `theme={{ preset }}` on the provider |
+| **A styled `@primeuix/themes` preset** | You want a prebuilt design system to tweak from. | Low | PrimeUI key | `value={{ theme: { preset } }}` on the provider |
 | **A custom palette over a preset** | You want the preset's structure but your own colors. | Low | PrimeUI key | A preset + CSS variable overrides |
 | **Fully unstyled** | You're integrating into a tightly controlled design system. | Highest | None | `unstyled: true` + a `pt` preset in CSS or Tailwind |
 
@@ -151,7 +151,7 @@ export const App = () => (
   you're bringing your own Tailwind.)
 - `CratisComponentsProvider` is a thin wrapper over `@primereact/core`'s
   `PrimeReactProvider` so Cratis has one place to layer in defaults (including
-  the optional `theme={{ preset }}` styled layer). Drop in the raw
+  the optional `value={{ theme: { preset } }}` styled layer). Drop in the raw
   `PrimeReactProvider` from `@primereact/core` if you'd rather.
 
 The setups below differ only in **what else** you load on top of this
@@ -163,8 +163,8 @@ provider setup.
 
 PrimeReact 11 dropped the v10 `primereact/resources/themes/*/theme.css`
 stylesheets in favor of the token-based `@primeuix/themes` layer. Apply a
-preset by passing `theme={{ preset }}` to `CratisComponentsProvider` — no theme
-CSS import. PrimeReact's own widgets paint themselves from the preset, and the
+preset by passing `value={{ theme: { preset } }}` to `CratisComponentsProvider` —
+no theme CSS import. PrimeReact's own widgets paint themselves from the preset, and the
 `--cratis-*` tokens cascade to the matching variables so Cratis-scoped surfaces
 follow along.
 
@@ -176,7 +176,7 @@ import '@cratis/components/styles';
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider theme={{ preset: Aura }}>
+    <CratisComponentsProvider value={{ theme: { preset: Aura } }}>
         <YourApp />
     </CratisComponentsProvider>
 );
@@ -197,7 +197,7 @@ import 'primeicons/primeicons.css';
 import '@cratis/components/theme';   // the baseline theme
 
 export const App = () => (
-    <CratisComponentsProvider unstyled>
+    <CratisComponentsProvider value={{ unstyled: true }}>
         <div className="cratis-theme">   {/* scope: put on <body>, app root, or a subtree */}
             <YourApp />
         </div>

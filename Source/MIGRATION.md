@@ -67,7 +67,7 @@ PrimeReact 11 removed the v10 theme stylesheets. Pick one:
   + import Aura from '@primeuix/themes/aura';
     // …
   - <CratisComponentsProvider>
-  + <CratisComponentsProvider theme={{ preset: Aura }}>
+  + <CratisComponentsProvider value={{ theme: { preset: Aura } }}>
   ```
 
 If you dropped in the raw `PrimeReactProvider`, it now comes from
@@ -105,7 +105,7 @@ PrimeReact 11 changed its licensing:
 - **The styled `@primeuix/themes` presets are license-gated.** Applying a preset
   needs a **PrimeUI license key** (free community tier or paid); without one,
   PrimeReact shows an *"Invalid PrimeUI License"* banner in dev **and** prod.
-  Supply your key through `CratisComponentsProvider`'s `license` prop.
+  Supply your key through the provider's `value`: `value={{ license: '…' }}`.
 
 **If you use unstyled-first or the Cratis baseline theme, you need no license.**
 Only a bundled `@primeuix/themes` preset requires a (free or paid) PrimeUI key.

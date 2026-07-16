@@ -56,12 +56,15 @@ export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | unde
  * take complete control. PrimeReact 11 is unstyled-first, so this library ships no
  * bundled theme — you choose the styling posture:
  *
- * - **Unstyled (default posture):** pass nothing, or `unstyled: true`, and style the
- *   structural markup yourself through the `--cratis-*` token layer, your own CSS,
- *   Tailwind, or `pt` definitions.
- * - **Styled:** pass `theme={{ preset }}` with a `@primeuix/themes` preset (for example
- *   `import Aura from '@primeuix/themes/aura'`) to opt into a token-based styled look.
- * - Pass `pt` / `ptOptions` to apply global per-component pass-through.
+ * Every option is passed through the single `value` prop (it is deep-merged onto
+ * PrimeReact's provider config):
+ *
+ * - **Unstyled (default posture):** pass nothing, or `value={{ unstyled: true }}`, and
+ *   style the structural markup yourself through the `--cratis-*` token layer, your own
+ *   CSS, Tailwind, or `pt` definitions.
+ * - **Styled:** pass `value={{ theme: { preset } }}` with a `@primeuix/themes` preset
+ *   (e.g. `import Aura from '@primeuix/themes/aura'`) to opt into a token-based styled look.
+ * - Pass `value={{ pt, ptOptions }}` to apply global per-component pass-through.
  *
  * **PrimeUI license.** PrimeReact 11 is no longer MIT — its provider verifies a PrimeUI
  * license on mount and, without one, logs a warning and shows an "Invalid PrimeUI License"
