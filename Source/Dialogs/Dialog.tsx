@@ -225,7 +225,8 @@ export const Dialog = ({
     width = '450px',
     style,
     contentStyle,
-    resizable = false,
+    // `resizable` is accepted for API compatibility but has no effect on
+    // PrimeReact 11's headless Dialog, so it is intentionally not destructured.
     isValid,
     isBusy = false,
     okLabel = 'Ok',

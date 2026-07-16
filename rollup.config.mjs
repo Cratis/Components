@@ -124,8 +124,8 @@ export function rollup(esmPath, tsconfigPath, pkg) {
                     composite: false,
                 }
             }),
-            generatePackageJson(cjsPath, esmPath),
-            compileTailwind(sourceDir, cjsPath, esmPath),
+            generatePackageJson(esmPath),
+            compileTailwind(sourceDir, esmPath),
         ]
     };
 }
