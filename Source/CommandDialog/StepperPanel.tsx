@@ -7,8 +7,12 @@ import React from 'react';
  * Props for {@link StepperPanel}.
  */
 export interface StepperPanelProps {
-    /** Text shown in the step's header (the label next to the step number). */
-    header?: string;
+    /**
+     * Content shown in the step's header (the label next to the step number).
+     * Accepts a string or any node, so a custom/template header works as it did
+     * with PrimeReact 10's `StepperPanel`.
+     */
+    header?: React.ReactNode;
     /** The command form fields that make up this step. */
     children?: React.ReactNode;
 }

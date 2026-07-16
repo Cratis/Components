@@ -5,6 +5,7 @@ import { ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
+import type { ButtonProps } from '@primereact/types/primitive/button';
 import { IObservableQueryFor, IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
@@ -92,7 +93,13 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
 
     return (
         <div className="px-4 py-2">
-            <ActionMenubar aria-label={context.actionsAriaLabel ?? 'Actions'} model={items} className={context.menubarClassName} />
+            <ActionMenubar
+                aria-label={context.actionsAriaLabel ?? 'Actions'}
+                model={items}
+                className={context.menubarClassName}
+                pt={context.menubarPt}
+                ptOptions={context.menubarPtOptions}
+                unstyled={context.menubarUnstyled} />
         </div>);
 };
 
@@ -236,7 +243,9 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * When true, filtering is performed client-side only
+     * @deprecated No longer toggles behavior. Filtering is always applied
+     * client-side to the loaded page; retained only for source compatibility and
+     * will be removed in a future release.
      */
     clientFiltering?: boolean;
 
@@ -263,6 +272,15 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
      * Extra CSS class name forwarded to the action menubar root.
      */
     menubarClassName?: string;
+
+    /** PrimeReact pass-through configuration applied to the action menubar's buttons. */
+    menubarPt?: ButtonProps['pt'];
+
+    /** PrimeReact pass-through options applied to the action menubar's buttons. */
+    menubarPtOptions?: ButtonProps['ptOptions'];
+
+    /** When true, disables every base PrimeReact style on the action menubar's buttons. */
+    menubarUnstyled?: boolean;
 
     /**
      * Accessible name for the action menubar (toolbar). Override to localize.
@@ -342,11 +360,13 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
  *
  * ## Styling
  *
- * The inner DataTable and Menubar each have their own per-slot props:
+ * The inner DataTable and action toolbar each have their own per-slot props:
  * `tablePt` / `tableUnstyled` / `tableClassName` for the table;
- * `menubarPt` / `menubarUnstyled` / `menubarClassName` for the action
- * menubar. See the [pass-through cheat sheet](../../Documentation/Styling/pass-through.md)
- * for the full slot reference.
+ * `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` for
+ * the action toolbar's buttons (in PrimeReact 11 the v10 Menubar is replaced by
+ * a button toolbar, so `menubarPt` targets those buttons). See the
+ * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md) for
+ * the full slot reference.
  *
  * @typeParam TQuery - The query class (proxy generated from a C# read model query).
  * @typeParam TDataType - The row type returned by the query.

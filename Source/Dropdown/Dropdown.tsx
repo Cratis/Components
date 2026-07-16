@@ -57,6 +57,24 @@ export interface DropdownProps<T = unknown> {
     /** Extra CSS class name forwarded to the Select root. */
     className?: string;
 
+    /** Inline style forwarded to the Select root. */
+    style?: React.CSSProperties;
+
+    /** DOM id forwarded to the Select root — pair it with a label's `htmlFor`. */
+    id?: string;
+
+    /** Form field name forwarded to the Select root. */
+    name?: string;
+
+    /** Tab order for the control. */
+    tabIndex?: number;
+
+    /** Accessible name for the control (when no visible label is associated). */
+    'aria-label'?: string;
+
+    /** Id of the element that labels the control. */
+    'aria-labelledby'?: string;
+
     /** Fired when the selection changes. */
     onChange?: (event: DropdownChangeEvent<T>) => void;
 
@@ -99,6 +117,12 @@ export const Dropdown = <T = unknown,>({
     invalid,
     disabled,
     className,
+    style,
+    id,
+    name,
+    tabIndex,
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledby,
     onChange,
     onBlur,
     pt,
@@ -117,6 +141,12 @@ export const Dropdown = <T = unknown,>({
                 invalid={invalid}
                 disabled={disabled}
                 className={className}
+                style={style}
+                id={id}
+                name={name}
+                tabIndex={tabIndex}
+                aria-label={ariaLabel}
+                aria-labelledby={ariaLabelledby}
                 onValueChange={(event: SelectValueChangeEvent) =>
                     onChange?.({ value: event.value as T, originalEvent: event.originalEvent })}
                 pt={pt}

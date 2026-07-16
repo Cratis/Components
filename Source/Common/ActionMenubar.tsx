@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { Button } from 'primereact/button';
+import type { ButtonProps } from '@primereact/types/primitive/button';
 import './ActionMenubar.css';
 
 /** A single action in an {@link ActionMenubar}. */
@@ -31,6 +32,12 @@ export interface ActionMenubarProps {
     className?: string;
     /** Accessible label for the toolbar. */
     'aria-label'?: string;
+    /** PrimeReact pass-through configuration applied to each action button. */
+    pt?: ButtonProps['pt'];
+    /** PrimeReact pass-through options applied to each action button. */
+    ptOptions?: ButtonProps['ptOptions'];
+    /** When true, disables every base PrimeReact style on the action buttons. */
+    unstyled?: boolean;
 }
 
 /**
@@ -40,7 +47,7 @@ export interface ActionMenubarProps {
  * `model` array shape. Each item is a text `Button` unless it supplies a
  * `template`.
  */
-export const ActionMenubar = ({ model, className, ...rest }: ActionMenubarProps) => (
+export const ActionMenubar = ({ model, className, pt, ptOptions, unstyled, ...rest }: ActionMenubarProps) => (
     <div
         role="toolbar"
         className={className ? `cratis-action-menubar ${className}` : 'cratis-action-menubar'}
@@ -57,7 +64,10 @@ export const ActionMenubar = ({ model, className, ...rest }: ActionMenubarProps)
                     severity={item.severity}
                     onClick={item.command}
                     disabled={item.disabled}
-                    className={item.className}>
+                    className={item.className}
+                    pt={pt}
+                    ptOptions={ptOptions}
+                    unstyled={unstyled}>
                     {item.icon}
                     {item.label && <span>{item.label}</span>}
                 </Button>

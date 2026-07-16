@@ -136,8 +136,11 @@ export const DataTableCore = <TData extends object>({
     const showGlobalSearch = !!globalFilterFields && globalFilterFields.length > 0;
 
     const handleFilter = (event: UseDataTableFilterEvent) => {
-        setFilters(event.filters);
-        onFilter?.(event.filters);
+        // PrimeReact's headless filter meta is looser than the typed Cratis
+        // constraint the public API exposes; narrow at this one boundary.
+        const next = event.filters as unknown as DataTableFilterMeta;
+        setFilters(next);
+        onFilter?.(next);
     };
 
     const keyOf = (row: TData): string | undefined =>

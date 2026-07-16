@@ -7,7 +7,7 @@ import { IObservableQueryFor, Paging } from '@cratis/arc/queries';
 import { useObservableQueryWithPaging } from '@cratis/arc.react/queries';
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { DataTableCore } from './DataTableCore';
-import { TablePaginator } from './TablePaginator';
+import { TablePaginator, type TablePaginatorProps } from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
@@ -65,7 +65,10 @@ export interface DataTableForObservableQueryProps<TQuery extends IObservableQuer
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * Enable client-side filtering for the data table
+     * @deprecated No longer toggles behavior. Filtering (`<Column filter>` and the
+     * global search) is always applied client-side to the loaded page; this flag
+     * is retained only for source compatibility and will be removed in a future
+     * release.
      */
     clientFiltering?: boolean;
 
@@ -85,6 +88,9 @@ export interface DataTableForObservableQueryProps<TQuery extends IObservableQuer
 
     /** Extra CSS class name forwarded to the paginator. */
     paginatorClassName?: string;
+
+    /** Accessible names for the paginator controls. Override any to localize. */
+    paginatorAriaLabels?: TablePaginatorProps['ariaLabels'];
 }
 
 const paging = new Paging(0, 20);
@@ -207,6 +213,8 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}
+
+                        ariaLabels={props.paginatorAriaLabels}
                     />
                 </div>
             )}
