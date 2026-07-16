@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Button } from 'primereact/button';
+import { paginatorRange } from './paginatorRange';
 import './TablePaginator.css';
 
 /** Props for {@link TablePaginator}. */
@@ -30,9 +31,7 @@ export interface TablePaginatorProps {
 export const TablePaginator = ({ page, pageCount, onPageChange, totalItems, pageSize, className }: TablePaginatorProps) => {
     const isFirst = page <= 0;
     const isLast = page >= pageCount - 1;
-    const rangeReport = totalItems !== undefined && pageSize !== undefined && totalItems > 0
-        ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalItems)} of ${totalItems}`
-        : undefined;
+    const rangeReport = paginatorRange(page, pageSize, totalItems);
 
     return (
         <div className={className ? `cratis-table-paginator ${className}` : 'cratis-table-paginator'}>

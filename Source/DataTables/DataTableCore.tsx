@@ -5,9 +5,10 @@ import React, { useMemo, useState, type CSSProperties, type ReactNode } from 're
 import { DataTable as PrimeDataTable } from 'primereact/datatable';
 import { InputText } from 'primereact/inputtext';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
-import type { SelectionKeys, UseDataTableSelectionEvent, UseDataTableRowMouseEvent, UseDataTableFilterEvent } from '@primereact/types/headless/datatable';
+import type { UseDataTableSelectionEvent, UseDataTableRowMouseEvent, UseDataTableFilterEvent } from '@primereact/types/headless/datatable';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
+import { selectionKeysForRow, rowFromSelectionKeys } from './selectionKeys';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import './DataTableCore.css';
@@ -139,19 +140,11 @@ export const DataTableCore = <TData extends object>({
     const keyOf = (row: TData): string | undefined =>
         dataKey ? String((row as Record<string, unknown>)[dataKey]) : undefined;
 
-    const selectionKeys: SelectionKeys = useMemo(() => {
-        if (!selection || !dataKey) return {};
-        const key = String((selection as Record<string, unknown>)[dataKey]);
-        return { [key]: true };
-    }, [selection, dataKey]);
+    const selectionKeys = useMemo(() => selectionKeysForRow(selection, dataKey), [selection, dataKey]);
 
     const handleSelectionChange = (event: UseDataTableSelectionEvent) => {
         if (!onSelectionChange) return;
-        const selectedKey = Object.keys(event.value).find(key => event.value[key]);
-        const row = selectedKey !== undefined
-            ? data.find(candidate => keyOf(candidate) === selectedKey) ?? null
-            : null;
-        onSelectionChange({ value: row, originalEvent: event.originalEvent });
+        onSelectionChange({ value: rowFromSelectionKeys(event.value, data, dataKey), originalEvent: event.originalEvent });
     };
 
     const handleRowClick = onRowClick
