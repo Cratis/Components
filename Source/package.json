@@ -73,6 +73,10 @@
             "types": "./dist/esm/Filter/index.d.ts",
             "import": "./dist/esm/Filter/index.js"
         },
+        "./Notifications": {
+            "types": "./dist/esm/Notifications/index.d.ts",
+            "import": "./dist/esm/Notifications/index.js"
+        },
         "./ObjectContentEditor": {
             "types": "./dist/esm/ObjectContentEditor/index.d.ts",
             "import": "./dist/esm/ObjectContentEditor/index.js"
