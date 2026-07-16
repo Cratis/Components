@@ -47,7 +47,8 @@ With nothing else, you've imported:
 
 That's enough for the wrappers to render structurally, but PrimeReact 11 is **unstyled-first**: widgets need a look applied before they resemble anything other than raw browser primitives. Choose the setup that matches how much visual control you need:
 
-- [Use a theme](themed.md) — the license-free Cratis baseline theme, or a styled `@primeuix/themes` preset (needs a PrimeUI license key)
+- [Use the Cratis baseline theme](baseline-theme.md) — the license-free default look
+- [Use a PrimeReact theme](themed.md) — a styled `@primeuix/themes` preset (needs a PrimeUI license key)
 - [Use a custom palette on top of a theme](custom-palette.md) — keep the theme's structure and supply your colors
 - [Use fully unstyled mode](unstyled.md) — bring every visual yourself through `pt` / CSS
 

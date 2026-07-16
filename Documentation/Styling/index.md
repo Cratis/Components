@@ -2,24 +2,25 @@
 
 Cratis Components is built on top of PrimeReact 11 and stays out of your way when it comes to styling. PrimeReact 11 is **unstyled-first** — it ships no widget chrome by default — so you decide the look: apply a ready-made theme, keep a theme's structure while painting your own palette, or take complete control and provide every visual yourself — all without forking the library or fighting it.
 
-There are three supported styling approaches. They are not mutually exclusive: every component still exposes the same building blocks, so you can combine them per-component or per-region of your app.
+The supported styling setups are not mutually exclusive: every component still exposes the same building blocks, so you can combine them per-component or per-region of your app.
 
 ## TL;DR — choose a styling setup
 
 | Setup | When | Effort | What you write |
 |---|---|---|---|
-| [**Use a theme**](themed.md) | You want components to look good immediately. Pick the **license-free Cratis baseline theme**, or a `@primeuix/themes` **preset** if you have a PrimeUI license key. | Lowest | `import '@cratis/components/theme'` + `class="cratis-theme"`, or a preset via `value={{ theme: { preset } }}` |
-| [**Use a custom palette on top of a theme**](custom-palette.md) | You want a theme's structure but your own colors. | Low | A theme + `--cratis-*` (or preset) token overrides |
-| [**Use fully unstyled mode**](unstyled.md) | You're integrating into a tightly controlled design system. | Highest | `unstyled: true` + a `pt` preset in CSS or Tailwind |
+| [**Cratis baseline theme**](baseline-theme.md) | You want a polished default look with **no license**. | Lowest | `import '@cratis/components/theme'` + `class="cratis-theme"` |
+| [**A `@primeuix/themes` preset**](themed.md) | You want one of PrimeReact's design systems and have a PrimeUI license key. | Low | A preset via `value={{ theme: { preset } }}` (+ a `license` key) |
+| [**A custom palette on top of a theme**](custom-palette.md) | You want a theme's structure but your own colors. | Low | A theme + `--cratis-*` (or preset) token overrides |
+| [**Fully unstyled mode**](unstyled.md) | You're integrating into a tightly controlled design system. | Highest | `unstyled: true` + a `pt` preset in CSS or Tailwind |
 
-All three setups share the same one-line setup described in [Getting Started](getting-started.md). You can change direction later because the same provider, tokens, and `pt` hooks stay available.
+Every setup shares the same one-line install described in [Getting Started](getting-started.md). You can change direction later because the same provider, tokens, and `pt` hooks stay available.
 
-## Why the first two options need a theme
+## Why the themed options need a theme
 
-PrimeReact 11 is unstyled-first: on its own it ships **no** widget chrome — no padding, borders, dialog frame, focus rings, or button shapes. That chrome comes from one of two license-relevant sources:
+Every setup except fully-unstyled starts from a theme, because PrimeReact 11 is unstyled-first: on its own it ships **no** widget chrome — no padding, borders, dialog frame, focus rings, or button shapes. That chrome comes from one of two license-relevant sources:
 
-- a `@primeuix/themes` **preset** — its design tokens (`--p-*`) paint the widgets. Applying a preset requires a **PrimeUI license key** (a free community tier or a paid one).
 - the **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`) — a token-based default look that needs **no license**.
+- a `@primeuix/themes` **preset** — its design tokens (`--p-*`) paint the widgets. Applying a preset requires a **PrimeUI license key** (a free community tier or a paid one).
 
 Without either — and without your own `pt` / CSS — components render as the raw HTML primitives the browser supplies by default. (The v10 `primereact/resources/themes/*/theme.css` stylesheets no longer exist.)
 
@@ -40,7 +41,8 @@ The [Cratis token reference](cratis-tokens.md) lists every token and the surface
 ## See also
 
 - [Getting Started](getting-started.md) — the one-line setup every option shares
-- [Use a theme](themed.md) — the Cratis baseline theme or a `@primeuix/themes` preset
+- [Use the Cratis baseline theme](baseline-theme.md) — the license-free default look
+- [Use a PrimeReact theme](themed.md) — a `@primeuix/themes` preset (needs a license)
 - [Use a custom palette on top of a theme](custom-palette.md)
 - [Use fully unstyled mode](unstyled.md)
 - [Cratis token reference](cratis-tokens.md)

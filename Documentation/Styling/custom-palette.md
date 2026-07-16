@@ -2,10 +2,10 @@
 
 You want a theme's chrome — its dialog frames, button shapes, focus rings, input borders — but in your own colors. You don't want to write a theme from scratch.
 
-This setup keeps a theme as the **structural baseline** and repaints it with your palette. Which knob you turn depends on which theme you started from in [Use a theme](themed.md):
+This setup keeps a theme as the **structural baseline** and repaints it with your palette. Which knob you turn depends on which theme you started from:
 
-- **Cratis baseline theme** (license-free) — override the `--cratis-*` tokens in CSS.
-- **`@primeuix/themes` preset** (license) — customize the preset's design tokens with `definePreset`.
+- **[Cratis baseline theme](baseline-theme.md)** (license-free) — override the `--cratis-*` tokens in CSS.
+- **[`@primeuix/themes` preset](themed.md)** (license) — customize the preset's design tokens with `definePreset`.
 
 Either way the `--cratis-*` layer follows your palette, so Cratis-scoped surfaces stay in sync.
 

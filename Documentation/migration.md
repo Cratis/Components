@@ -49,8 +49,8 @@ Per-column filter menus (`<Column filter>`), a global search box, and a paginato
 
 PrimeReact 11 removed the v10 theme stylesheets and is unstyled-first. Pick one of the [styling setups](Styling/index.md):
 
-- **Unstyled-first (default, no license):** ship structure plus the `--cratis-*` token layer and bring your own visuals via `pt` / CSS / Tailwind. Your existing `--surface-*` / `--cratis-*` overrides keep working.
-- **[Cratis baseline theme](Styling/baseline-theme.md) (no license):** `import '@cratis/components/theme'` for a polished default look built entirely on the Cratis tokens.
+- **Unstyled-first (default, no license):** ship structure plus the `--cratis-*` token layer and bring your own visuals via `pt` / CSS / Tailwind. Your existing `--cratis-*` overrides keep working.
+- **[Cratis baseline theme](Styling/baseline-theme.md) (no license):** `import '@cratis/components/theme'` plus `class="cratis-theme"` for a polished default look built entirely on the Cratis tokens.
 - **A styled `@primeuix/themes` preset (license-gated — see below):**
 
 ```diff

@@ -38,10 +38,10 @@ The baseline theme defers to a `@primeuix/themes` preset's `--p-*` tokens when o
 
 ## Overriding
 
-Every rule is overridable with your own CSS or `pt`. Target PrimeReact's class names, your own `className`, or the `--cratis-*` tokens:
+Every rule is overridable with your own CSS or `pt`. The baseline theme styles the unstyled primitives through their `[data-scope]` attributes, so target those (or your own `className`, or the `--cratis-*` tokens):
 
 ```css
-.p-button { border-radius: 999px; }          /* pill buttons everywhere */
+.cratis-theme [data-scope='button'] { border-radius: 999px; }   /* pill buttons */
 .dangerous { background: var(--cratis-red-500); color: white; }
 ```
 
