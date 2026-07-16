@@ -17,6 +17,16 @@ import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExe
 import type { StepperPanelProps } from './StepperPanel';
 import './CommandStepper.css';
 
+// PrimeReact 11's Stepper annotates each step header as role="tab" and each panel
+// as role="tabpanel", with `aria-controls` pointing at element ids it never
+// renders — a dangling-reference + orphaned-tab pattern (the list is not a
+// role="tablist") that axe flags as critical. The headless stepper implements no
+// keyboard navigation bound to these roles (steps navigate by click on the native
+// <button>), so stripping the broken tab semantics is safe: it leaves natively
+// keyboard-accessible buttons and a plain content region. `undefined` in `pt`
+// removes the attribute the primitive would otherwise set.
+const stripBrokenTabRole = { root: { role: undefined, 'aria-controls': undefined } };
+
 /**
  * Event passed to {@link StepperCustomizationProps.onChangeStep} when the user
  * navigates to a different step.
@@ -272,7 +282,7 @@ export const CommandStepperContent = ({
         <Stepper.List>
             {panels.map((panel, index) => (
                 <Stepper.Step key={index} value={stepValue(index)}>
-                    <Stepper.Header>
+                    <Stepper.Header pt={stripBrokenTabRole}>
                         <Stepper.Number style={numberStyle(index)}>{index + 1}</Stepper.Number>
                         <Stepper.Title>{panel.props.header}</Stepper.Title>
                     </Stepper.Header>
@@ -285,7 +295,7 @@ export const CommandStepperContent = ({
     const stepperPanels = (
         <Stepper.Panels>
             {panels.map((panel, index) => (
-                <Stepper.Panel key={index} value={stepValue(index)}>
+                <Stepper.Panel key={index} value={stepValue(index)} pt={stripBrokenTabRole}>
                     {processChildren(panel.props.children)}
                 </Stepper.Panel>
             ))}
