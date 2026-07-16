@@ -4,22 +4,31 @@
 import { ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
-import { MenuItem as PrimeMenuItem } from 'primereact/menuitem';
-import { Menubar, type MenubarProps } from 'primereact/menubar';
+import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
 import { IObservableQueryFor, IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
-import { DataTableFilterMeta, DataTableSelectionSingleChangeEvent, type DataTableProps as PrimeDataTableProps } from 'primereact/datatable';
+import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
+import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
+import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
 import { Allotment } from 'allotment';
 import { Constructor } from '@cratis/fundamentals';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Props for {@link MenuItem}. Extends PrimeReact's `MenuItem` shape with one
- * Cratis-specific flag.
+ * Props for {@link MenuItem} — a single action in a {@link DataPage}'s
+ * action bar.
  */
-export interface MenuItemProps extends PrimeMenuItem {
+export interface MenuItemProps {
+    /** Icon component rendered before the label (e.g. a react-icons icon). */
+    icon?: React.ComponentType<{ className?: string }>;
+    /** The visible label. */
+    label?: string;
+    /** Invoked when the item is activated. */
+    command?: () => void;
+    /** When true, the item is greyed out regardless of selection. */
+    disabled?: boolean;
     /**
      * When true, the menu item is disabled while no row is selected in the
      * surrounding {@link DataPage}. Use it for context-sensitive actions like
@@ -31,9 +40,8 @@ export interface MenuItemProps extends PrimeMenuItem {
 /**
  * Declarative menu item for use inside `<DataPage.MenuItems>`. Renders nothing
  * directly; the surrounding {@link MenuItems} component reads its props and
- * forwards them to the action `Menubar`.
+ * forwards them to the action menubar.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const MenuItem = (_: MenuItemProps) => {
     return null;
 };
@@ -63,36 +71,28 @@ export interface ColumnProps {
  */
 export const MenuItems = ({ children }: MenuItemsProps) => {
     const context = useDataPageContext();
-
-    const isDisabled = useMemo(() => {
-        return !context.selectedItem;
-    }, [context.selectedItem]);
+    const isDisabled = !context.selectedItem;
 
     const items = useMemo(() => {
-        const menuItems: PrimeMenuItem[] = [];
+        const menuItems: ActionMenuItem[] = [];
         React.Children.forEach(children, (child) => {
-            if (React.isValidElement<MenuItemProps>(child) && child.type == MenuItem) {
+            if (React.isValidElement<MenuItemProps>(child) && child.type === MenuItem) {
                 const Icon = child.props.icon;
-                const menuItem = { ...child.props };
-                menuItem.icon = <Icon className='mr-2' />;
-                menuItem.disabled = isDisabled && child.props.disableOnUnselected;
-                menuItems.push(menuItem);
+                menuItems.push({
+                    label: child.props.label,
+                    command: child.props.command,
+                    icon: Icon ? <Icon className='mr-2' /> : undefined,
+                    disabled: (child.props.disabled ?? false) || (isDisabled && (child.props.disableOnUnselected ?? false)),
+                });
             }
         });
 
         return menuItems;
-    }, [children, context.selectedItem]);
+    }, [children, isDisabled]);
 
     return (
         <div className="px-4 py-2">
-            <Menubar
-                aria-label="Actions"
-                model={items}
-                className={context.menubarClassName}
-                pt={context.menubarPt}
-                ptOptions={context.menubarPtOptions}
-                unstyled={context.menubarUnstyled}
-            />
+            <ActionMenubar aria-label="Actions" model={items} className={context.menubarClassName} />
         </div>);
 };
 
@@ -159,7 +159,7 @@ export interface IDetailsComponentProps<TDataType> {
 
 interface IDataPageContext extends DataPageProps<any, any, any> {
     selectedItem: any;
-    onSelectionChanged: (e: DataTableSelectionSingleChangeEvent<any>) => void;
+    onSelectionChanged: (e: DataTableSelectionChangeEvent<any>) => void;
 }
 
 const DataPageContext = React.createContext<IDataPageContext | null>(null);
@@ -223,7 +223,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<any>): void;
+    onSelectionChange?(event: DataTableSelectionChangeEvent<any>): void;
 
     /**
      * Fields to use for global filtering
@@ -251,27 +251,18 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     tableClassName?: string;
 
     /** PrimeReact pass-through configuration applied to the inner DataTable. */
-    tablePt?: PrimeDataTableProps<TDataType[]>['pt'];
+    tablePt?: DataTableRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the inner DataTable. */
-    tablePtOptions?: PrimeDataTableProps<TDataType[]>['ptOptions'];
+    tablePtOptions?: DataTableRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the inner DataTable. */
     tableUnstyled?: boolean;
 
     /**
-     * Extra CSS class name forwarded to the action Menubar root.
+     * Extra CSS class name forwarded to the action menubar root.
      */
     menubarClassName?: string;
-
-    /** PrimeReact pass-through configuration applied to the action Menubar. */
-    menubarPt?: MenubarProps['pt'];
-
-    /** PrimeReact pass-through options applied to the action Menubar. */
-    menubarPtOptions?: MenubarProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the action Menubar. */
-    menubarUnstyled?: boolean;
 }
 
 /**
@@ -359,7 +350,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
 const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
 
-    const selectionChanged = (e: DataTableSelectionSingleChangeEvent<any>) => {
+    const selectionChanged = (e: DataTableSelectionChangeEvent<any>) => {
         setSelectedItem(e.value);
         if (props.onSelectionChange) {
             props.onSelectionChange(e);

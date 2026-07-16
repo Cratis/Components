@@ -3,10 +3,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from 'primereact/button';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Menubar } from 'primereact/menubar';
-import { Tooltip } from 'primereact/tooltip';
+import { DataTableCore } from '../DataTables/DataTableCore';
+import { Column } from '../DataTables/Column';
+import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
+import { Tooltip } from '../Common/Tooltip';
 import * as faIcons from 'react-icons/fa6';
 import { NameCell } from './NameCell';
 import { TypeCell } from './TypeCell';
@@ -14,7 +14,6 @@ import { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
 import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
 import css from './SchemaEditor.module.css';
-import { MenuItem } from 'primereact/menuitem';
 
 /**
  * Props for {@link SchemaEditor}.
@@ -347,22 +346,21 @@ export const SchemaEditor = ({
 
     const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
-    const menuItems = useMemo(() => [
+    const menuItems = useMemo<ActionMenuItem[]>(() => [
         ...(!isEditMode ? [{
             label: 'Edit',
             icon: <faIcons.FaPencil className='mr-2' />,
             command: canEdit ? handleEdit : undefined,
             className: !canEdit ? 'edit-disabled-with-reason' : undefined,
-            template: !canEdit && canNotEditReason ? (item: MenuItem) => (
-                <div
-                    className="p-menuitem-link p-disabled"
-                    data-pr-tooltip={canNotEditReason}
-                    data-pr-position="bottom"
-                    style={{ cursor: 'not-allowed', opacity: 0.6 }}
-                >
-                    {item.icon}
-                    <span className="p-menuitem-text">{item.label}</span>
-                </div>
+            template: !canEdit && canNotEditReason ? (item: ActionMenuItem) => (
+                <Tooltip content={canNotEditReason} position="bottom">
+                    <div
+                        style={{ cursor: 'not-allowed', opacity: 0.6, display: 'inline-flex', alignItems: 'center', padding: '0.5rem 0.75rem' }}
+                    >
+                        {item.icon}
+                        <span>{item.label}</span>
+                    </div>
+                </Tooltip>
             ) : undefined
         }] : []),
         ...(isEditMode ? [
@@ -392,23 +390,24 @@ export const SchemaEditor = ({
     return (
         <div className={className ? `schema-editor ${className}` : 'schema-editor'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="px-4 py-4">
-                <Tooltip target="[data-pr-tooltip]" />
                 <div className="schema-editor-menubar">
-                    <Menubar aria-label="Actions" model={menuItems} />
+                    <ActionMenubar aria-label="Actions" model={menuItems} />
                 </div>
             </div>
 
             <div className={`px-4 py-2 ${css.bottomBorder}`}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Button
-                        icon={<faIcons.FaArrowLeft />}
-                        text
-                        size="small"
-                        onClick={navigateBack}
-                        disabled={isAtRoot}
-                        tooltip="Navigate back"
-                        tooltipOptions={{ position: 'top' }}
-                    />
+                    <Tooltip content="Navigate back" position="top">
+                        <Button
+                            variant="text"
+                            size="small"
+                            iconOnly
+                            onClick={navigateBack}
+                            disabled={isAtRoot}
+                            aria-label="Navigate back">
+                            <faIcons.FaArrowLeft />
+                        </Button>
+                    </Tooltip>
                     <div style={{ fontSize: '0.9rem', color: 'var(--cratis-text-color-secondary)', cursor: 'pointer' }}>
                         {breadcrumbItems.map((item, index) => (
                             <span key={index}>
@@ -432,14 +431,12 @@ export const SchemaEditor = ({
             </div>
 
             <div style={{ flex: 1, overflow: 'auto', padding: '1rem' }}>
-                <Tooltip key={`nav-${eventTypeName}-${currentPath.join('/')}`} target=".schema-navigation-tooltip" mouseTrack mouseTrackTop={15} />
-                <Tooltip key={`desc-${eventTypeName}-${currentPath.join('/')}`} target=".schema-description-tooltip" />
-                <DataTable
+                <DataTableCore<JsonSchemaProperty>
                     key={`${isEditMode}-${currentPath.join('/')}`}
-                    value={properties}
+                    data={properties}
                     dataKey="id"
                     emptyMessage="No properties defined"
-                    rowClassName={(rowData: JsonSchemaProperty) => {
+                    rowClassName={(rowData) => {
                         if (!isEditMode && (rowData.type === 'object' || (rowData.type === 'array' && rowData.items?.type === 'object'))) {
                             return css.navigableRow;
                         }
@@ -447,7 +444,7 @@ export const SchemaEditor = ({
                     }}
                     onRowClick={(e) => {
                         if (!isEditMode) {
-                            const rowData = e.data as JsonSchemaProperty;
+                            const rowData = e.data;
                             if (rowData.name) {
                                 if (rowData.type === 'object') {
                                     navigateToProperty(rowData.name);
@@ -491,7 +488,7 @@ export const SchemaEditor = ({
                         )}
                         style={{ width: '70%' }}
                     />
-                </DataTable>
+                </DataTableCore>
             </div>
         </div>
     );
