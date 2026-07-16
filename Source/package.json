@@ -15,7 +15,11 @@
     "files": [
         "dist",
         "!dist/**/*.stories.*",
-        "!dist/**/given.*"
+        "!dist/**/given.*",
+        "!dist/**/storybook-static/**",
+        "!dist/**/vite.config.*",
+        "!dist/**/vitest.setup.*",
+        "!dist/**/*.tsbuildinfo"
     ],
     "main": "dist/esm/index.js",
     "module": "dist/esm/index.js",
