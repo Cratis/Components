@@ -4,9 +4,9 @@
 import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForQuery } from './DataTableForQuery';
-import { Column } from 'primereact/column';
+import { Column } from './Column';
 import { QueryFor, QueryResult } from '@cratis/arc/queries';
-import { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
+import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
 const meta: Meta<typeof DataTableForQuery> = {
     title: 'DataTables/DataTableForQuery',
@@ -107,7 +107,7 @@ export const WithSelection: Story = {
                     emptyMessage="No products found"
                     dataKey="id"
                     selection={selectedProduct}
-                    onSelectionChange={(e: DataTableSelectionSingleChangeEvent<Product[]>) => setSelectedProduct(e.value as Product)}
+                    onSelectionChange={(e: DataTableSelectionChangeEvent<Product>) => setSelectedProduct(e.value ?? undefined)}
                 >
                     <Column selectionMode="single" headerStyle={{ width: '3rem' }} />
                     <Column field="id" header="ID" sortable style={{ width: '10%' }} />

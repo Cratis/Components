@@ -4,9 +4,9 @@
 import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForObservableQuery } from './DataTableForObservableQuery';
-import { Column } from 'primereact/column';
+import { Column } from './Column';
 import { ObservableQueryFor, QueryResult, ObservableQuerySubscription } from '@cratis/arc/queries';
-import { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
+import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
 const meta: Meta<typeof DataTableForObservableQuery> = {
     title: 'DataTables/DataTableForObservableQuery',
@@ -138,7 +138,7 @@ export const WithSelection: Story = {
                     emptyMessage="No tasks found"
                     dataKey="id"
                     selection={selectedTask}
-                    onSelectionChange={(e: DataTableSelectionSingleChangeEvent<Task[]>) => setSelectedTask(e.value as Task)}
+                    onSelectionChange={(e: DataTableSelectionChangeEvent<Task>) => setSelectedTask(e.value ?? undefined)}
                 >
                     <Column selectionMode="single" headerStyle={{ width: '3rem' }} />
                     <Column field="id" header="ID" sortable style={{ width: '10%' }} />

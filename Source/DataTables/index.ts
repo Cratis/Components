@@ -3,3 +3,6 @@
 
 export * from './DataTableForQuery';
 export * from './DataTableForObservableQuery';
+export * from './Column';
+export * from './DataTableSelectionChangeEvent';
+export * from './DataTableFilterMeta';
