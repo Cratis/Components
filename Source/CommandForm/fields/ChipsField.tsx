@@ -30,6 +30,9 @@ interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
     /** When true, the same chip value may be added multiple times. */
     allowDuplicate?: boolean;
 
+    /** Accessible name for each chip's remove button. Override to localize. Defaults to `'Remove'`. */
+    removeAriaLabel?: string;
+
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
@@ -73,7 +76,7 @@ export const ChipsField = asCommandFormField<ChipsFieldComponentProps>(
                     {({ item, index, remove, itemProps }) => (
                         <span key={index} {...itemProps} className="cratis-inputtags-item">
                             <span>{item}</span>
-                            <button type="button" aria-label="Remove" onClick={remove}>
+                            <button type="button" aria-label={props.removeAriaLabel ?? 'Remove'} onClick={remove}>
                                 <i className="pi pi-times-circle" />
                             </button>
                         </span>

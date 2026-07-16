@@ -7,6 +7,7 @@ import { Tooltip } from '../Common/Tooltip';
 import * as faIcons from 'react-icons/fa6';
 import { TypeFormat } from '../types/TypeFormat';
 import { JsonSchemaProperty } from '../types/JsonSchema';
+import type { SchemaEditorLabels } from './SchemaEditor';
 
 export interface TypeCellProps {
     rowData: JsonSchemaProperty;
@@ -17,6 +18,8 @@ export interface TypeCellProps {
     onNavigateToProperty: (propertyName: string) => void;
     onNavigateToArrayItems: (propertyName: string) => void;
     onRemoveProperty: (propertyName: string) => void;
+    /** Resolved (merged with defaults) SchemaEditor labels for the cell's buttons. */
+    labels: SchemaEditorLabels;
 }
 
 const CONTAINER_TYPES = [
@@ -32,7 +35,8 @@ export const TypeCell = ({
     onUpdateArrayItemType,
     onNavigateToProperty,
     onNavigateToArrayItems,
-    onRemoveProperty
+    onRemoveProperty,
+    labels
 }: TypeCellProps) => {
     const DEFAULT_TYPE_OPTIONS = [
         { label: 'string', value: 'string' },
@@ -149,22 +153,22 @@ export const TypeCell = ({
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 {rowData.type === 'array' && rowData.items?.type === 'object' && rowData.name && (
-                    <Tooltip content="Navigate to item definition" position="top">
-                        <Button variant="text" size="small" iconOnly onClick={() => onNavigateToArrayItems(rowData.name!)} aria-label="Navigate to item definition">
+                    <Tooltip content={labels.navigateToItemDefinition} position="top">
+                        <Button variant="text" size="small" iconOnly onClick={() => onNavigateToArrayItems(rowData.name!)} aria-label={labels.navigateToItemDefinition}>
                             <faIcons.FaArrowRight />
                         </Button>
                     </Tooltip>
                 )}
                 {rowData.type === 'object' && rowData.name && (
-                    <Tooltip content="Navigate to object properties" position="top">
-                        <Button variant="text" size="small" iconOnly onClick={() => onNavigateToProperty(rowData.name!)} aria-label="Navigate to object properties">
+                    <Tooltip content={labels.navigateToProperties} position="top">
+                        <Button variant="text" size="small" iconOnly onClick={() => onNavigateToProperty(rowData.name!)} aria-label={labels.navigateToProperties}>
                             <faIcons.FaArrowRight />
                         </Button>
                     </Tooltip>
                 )}
                 {rowData.name && (
-                    <Tooltip content="Delete property" position="top">
-                        <Button variant="text" severity="danger" size="small" iconOnly onClick={() => onRemoveProperty(rowData.name!)} aria-label="Delete property">
+                    <Tooltip content={labels.deleteProperty} position="top">
+                        <Button variant="text" severity="danger" size="small" iconOnly onClick={() => onRemoveProperty(rowData.name!)} aria-label={labels.deleteProperty}>
                             <faIcons.FaTrash />
                         </Button>
                     </Tooltip>

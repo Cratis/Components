@@ -92,7 +92,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
 
     return (
         <div className="px-4 py-2">
-            <ActionMenubar aria-label="Actions" model={items} className={context.menubarClassName} />
+            <ActionMenubar aria-label={context.actionsAriaLabel ?? 'Actions'} model={items} className={context.menubarClassName} />
         </div>);
 };
 
@@ -263,6 +263,12 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
      * Extra CSS class name forwarded to the action menubar root.
      */
     menubarClassName?: string;
+
+    /**
+     * Accessible name for the action menubar (toolbar). Override to localize.
+     * Defaults to `'Actions'`.
+     */
+    actionsAriaLabel?: string;
 }
 
 /**

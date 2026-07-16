@@ -16,6 +16,48 @@ import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
 import css from './SchemaEditor.module.css';
 
 /**
+ * User-facing strings for {@link SchemaEditor}. Every field is optional; pass a
+ * partial `labels` to override any of them (for localization). Omitted fields
+ * fall back to {@link defaultSchemaEditorLabels} (English).
+ */
+export interface SchemaEditorLabels {
+    /** Menu action that enters edit mode. */
+    edit: string;
+    /** Menu action that saves changes. */
+    save: string;
+    /** Menu action that cancels editing. */
+    cancel: string;
+    /** Menu action that adds a property. */
+    addProperty: string;
+    /** Accessible name for the action menubar. */
+    actions: string;
+    /** Accessible name and tooltip for the back button. */
+    navigateBack: string;
+    /** Shown when the schema has no properties. */
+    emptyMessage: string;
+    /** Accessible name for the "drill into array item definition" button. */
+    navigateToItemDefinition: string;
+    /** Accessible name for the "drill into object properties" button. */
+    navigateToProperties: string;
+    /** Accessible name for the "remove property" button. */
+    deleteProperty: string;
+}
+
+/** English defaults for {@link SchemaEditorLabels}. */
+export const defaultSchemaEditorLabels: SchemaEditorLabels = {
+    edit: 'Edit',
+    save: 'Save',
+    cancel: 'Cancel',
+    addProperty: 'Add Property',
+    actions: 'Actions',
+    navigateBack: 'Navigate back',
+    emptyMessage: 'No properties defined',
+    navigateToItemDefinition: 'Navigate to item definition',
+    navigateToProperties: 'Navigate to object properties',
+    deleteProperty: 'Delete property'
+};
+
+/**
  * Props for {@link SchemaEditor}.
  */
 export interface SchemaEditorProps {
@@ -65,6 +107,9 @@ export interface SchemaEditorProps {
      * PrimeReact components, use a global `pt` preset on `CratisComponentsProvider`.
      */
     className?: string;
+
+    /** Override any user-facing string (for localization). See {@link SchemaEditorLabels}. */
+    labels?: Partial<SchemaEditorLabels>;
 }
 
 /**
@@ -91,8 +136,10 @@ export const SchemaEditor = ({
     saveDisabled = false,
     cancelDisabled = false,
     typeFormats = DEFAULT_TYPE_FORMATS,
-    className
+    className,
+    labels
 }: SchemaEditorProps) => {
+    const l = { ...defaultSchemaEditorLabels, ...labels };
     const [currentPath, setCurrentPath] = useState<string[]>([]);
     const [properties, setProperties] = useState<JsonSchemaProperty[]>([]);
     const [currentSchema, setCurrentSchema] = useState<JsonSchema>(schema);
@@ -348,7 +395,7 @@ export const SchemaEditor = ({
 
     const menuItems = useMemo<ActionMenuItem[]>(() => [
         ...(!isEditMode ? [{
-            label: 'Edit',
+            label: l.edit,
             icon: <faIcons.FaPencil className='mr-2' />,
             command: canEdit ? handleEdit : undefined,
             className: !canEdit ? 'edit-disabled-with-reason' : undefined,
@@ -365,18 +412,18 @@ export const SchemaEditor = ({
         }] : []),
         ...(isEditMode ? [
             ...(!saveDisabled ? [{
-                label: 'Save',
+                label: l.save,
                 icon: <faIcons.FaCheck className='mr-2' />,
                 command: hasValidationErrors ? undefined : handleSave,
                 disabled: hasValidationErrors
             }] : []),
             ...(!cancelDisabled ? [{
-                label: 'Cancel',
+                label: l.cancel,
                 icon: <faIcons.FaXmark className='mr-2' />,
                 command: handleCancel
             }] : []),
             {
-                label: 'Add Property',
+                label: l.addProperty,
                 icon: <faIcons.FaPlus className='mr-2' />,
                 command: addProperty
             }
@@ -391,7 +438,7 @@ export const SchemaEditor = ({
         <div className={className ? `schema-editor ${className}` : 'schema-editor'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div className="px-4 py-4">
                 <div className="schema-editor-menubar">
-                    <ActionMenubar aria-label="Actions" model={menuItems} />
+                    <ActionMenubar aria-label={l.actions} model={menuItems} />
                 </div>
             </div>
 
@@ -404,7 +451,7 @@ export const SchemaEditor = ({
                             iconOnly
                             onClick={navigateBack}
                             disabled={isAtRoot}
-                            aria-label="Navigate back">
+                            aria-label={l.navigateBack}>
                             <faIcons.FaArrowLeft />
                         </Button>
                     </Tooltip>
@@ -435,7 +482,7 @@ export const SchemaEditor = ({
                     key={`${isEditMode}-${currentPath.join('/')}`}
                     data={properties}
                     dataKey="id"
-                    emptyMessage="No properties defined"
+                    emptyMessage={l.emptyMessage}
                     rowClassName={(rowData) => {
                         if (!isEditMode && (rowData.type === 'object' || (rowData.type === 'array' && rowData.items?.type === 'object'))) {
                             return css.navigableRow;
@@ -484,6 +531,7 @@ export const SchemaEditor = ({
                                 onNavigateToProperty={navigateToProperty}
                                 onNavigateToArrayItems={navigateToArrayItems}
                                 onRemoveProperty={removeProperty}
+                                labels={l}
                             />
                         )}
                         style={{ width: '70%' }}

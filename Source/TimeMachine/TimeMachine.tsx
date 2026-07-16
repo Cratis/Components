@@ -5,7 +5,11 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import type { Version } from './types';
 import { ReadModelView } from './ReadModelView';
 import { EventsView } from './EventsView';
+import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import './TimeMachine.css';
+
+export type { TimeMachineLabels } from './TimeMachineLabels';
+export { defaultTimeMachineLabels } from './TimeMachineLabels';
 
 enum ViewModes {
   ReadModel = 'ReadModel',
@@ -18,6 +22,8 @@ interface TimeMachineProps {
   onVersionChange?: (index: number) => void;
   /** Scroll sensitivity - higher values require more scrolling to change versions */
   scrollSensitivity?: number;
+  /** Override any user-facing string (for localization). See {@link TimeMachineLabels}. */
+  labels?: Partial<TimeMachineLabels>;
 }
 
 export const TimeMachine: React.FC<TimeMachineProps> = ({
@@ -25,7 +31,9 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
   currentVersionIndex = 0,
   onVersionChange,
   scrollSensitivity = 50,
+  labels,
 }) => {
+  const l = { ...defaultTimeMachineLabels, ...labels };
   const [selectedIndex, setSelectedIndex] = useState(currentVersionIndex);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [isHoveringCard, setIsHoveringCard] = useState(false);
@@ -104,16 +112,16 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
         <button
           className={`view-button ${viewMode === ViewModes.ReadModel ? 'active' : ''}`}
           onClick={() => setViewMode(ViewModes.ReadModel)}
-          aria-label="Read Model View"
-          title="Read Model View"
+          aria-label={l.readModelView}
+          title={l.readModelView}
         >
           <i className="pi pi-box" />
         </button>
         <button
           className={`view-button ${viewMode === ViewModes.Events ? 'active' : ''}`}
           onClick={() => setViewMode(ViewModes.Events)}
-          aria-label="Events View"
-          title="Events View"
+          aria-label={l.eventsView}
+          title={l.eventsView}
         >
           <i className="pi pi-list" />
         </button>
@@ -127,9 +135,10 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
           hoveredIndex={hoveredIndex}
           onVersionSelect={handleVersionSelect}
           onHoveringCardChange={setIsHoveringCard}
+          labels={l}
         />
       ) : (
-        <EventsView events={allEvents} />
+        <EventsView events={allEvents} labels={l} />
       )}
 
       {/* Timeline - only show in ReadModel view */}
@@ -150,7 +159,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
             className="nav-button prev"
             disabled={selectedIndex === 0}
             onClick={() => handleVersionSelect(Math.max(0, selectedIndex - 1))}
-            aria-label="Previous version"
+            aria-label={l.previousVersion}
           >
             ‹
           </button>
@@ -158,7 +167,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
             className="nav-button next"
             disabled={selectedIndex === versions.length - 1}
             onClick={() => handleVersionSelect(Math.min(versions.length - 1, selectedIndex + 1))}
-            aria-label="Next version"
+            aria-label={l.nextVersion}
           >
             ›
           </button>

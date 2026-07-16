@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Timeline } from 'primereact/timeline';
 import type { TimelineRootProps } from '@primereact/types/primitive/timeline';
 import type { Event } from './types';
+import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { Properties } from './Properties';
 import './EventsView.css';
 
@@ -26,6 +27,9 @@ interface EventsViewProps {
 
     /** When true, disables every base PrimeReact style on the underlying Timeline. */
     unstyled?: boolean;
+
+    /** Accessible-name overrides; defaults to English. See {@link TimeMachineLabels}. */
+    labels?: TimeMachineLabels;
 }
 
 /**
@@ -39,7 +43,7 @@ interface EventsViewProps {
  *
  * @param props - {@link EventsViewProps}.
  */
-export const EventsView: React.FC<EventsViewProps> = ({ events, className, pt, ptOptions, unstyled }) => {
+export const EventsView: React.FC<EventsViewProps> = ({ events, className, pt, ptOptions, unstyled, labels = defaultTimeMachineLabels }) => {
     // Use test data if no events provided
     const displayEvents = events.length > 0 ? events : [];
     const containerRef = useRef<HTMLDivElement>(null);
@@ -117,7 +121,7 @@ export const EventsView: React.FC<EventsViewProps> = ({ events, className, pt, p
                         type="button"
                         className="events-view-scroll-button events-view-scroll-button--top"
                         onClick={scrollToTop}
-                        aria-label="Scroll to top"
+                        aria-label={labels.scrollToTop}
                     >
                         <i className="pi pi-arrow-up" />
                     </button>
@@ -146,7 +150,7 @@ export const EventsView: React.FC<EventsViewProps> = ({ events, className, pt, p
                         type="button"
                         className="events-view-scroll-button events-view-scroll-button--bottom"
                         onClick={scrollToBottom}
-                        aria-label="Scroll to bottom"
+                        aria-label={labels.scrollToBottom}
                     >
                         <i className="pi pi-arrow-down" />
                     </button>

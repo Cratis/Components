@@ -25,6 +25,9 @@ export interface ObjectNavigationalBarProps {
      */
     onNavigate: (index: number) => void;
 
+    /** Label and accessible name for the back button (tooltip + aria-label). Override to localize. Defaults to `'Navigate back'`. */
+    backLabel?: string;
+
     /** Extra CSS class names appended to the navigation bar root. */
     className?: string;
 }
@@ -37,7 +40,7 @@ export interface ObjectNavigationalBarProps {
  *
  * @param props - {@link ObjectNavigationalBarProps}.
  */
-export function ObjectNavigationalBar({ navigationPath, onNavigate, className }: ObjectNavigationalBarProps) {
+export function ObjectNavigationalBar({ navigationPath, onNavigate, backLabel = 'Navigate back', className }: ObjectNavigationalBarProps) {
     const breadcrumbItems = useMemo(() => buildNavigationBreadcrumbs(navigationPath), [navigationPath]);
     const rootClassName = className
         ? `cratis-object-navigational-bar px-4 py-2 mb-2 ${className}`
@@ -46,14 +49,14 @@ export function ObjectNavigationalBar({ navigationPath, onNavigate, className }:
     return (
         <div className={rootClassName}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Tooltip content="Navigate back" position="top">
+                <Tooltip content={backLabel} position="top">
                     <Button
                         variant="text"
                         size="small"
                         iconOnly
                         onClick={() => onNavigate(navigationPath.length - 1)}
                         disabled={navigationPath.length === 0}
-                        aria-label="Navigate back">
+                        aria-label={backLabel}>
                         <faIcons.FaArrowLeft />
                     </Button>
                 </Tooltip>
