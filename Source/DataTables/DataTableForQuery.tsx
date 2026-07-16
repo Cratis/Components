@@ -173,6 +173,8 @@ export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments
                         page={result.paging.page}
                         pageCount={pageCount}
                         onPageChange={setPage}
+                        totalItems={totalItems}
+                        pageSize={paging.pageSize}
                         className={props.paginatorClassName}
                     />
                 </div>

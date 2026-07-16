@@ -14,3 +14,10 @@
     color: var(--cratis-text-color-secondary);
     padding: 0 0.5rem;
 }
+
+.cratis-table-paginator-range {
+    font-size: 0.8125rem;
+    color: var(--cratis-text-color-secondary);
+    margin-right: auto;
+    padding: 0 0.5rem;
+}

@@ -204,6 +204,8 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
                         page={result.paging.page}
                         pageCount={pageCount}
                         onPageChange={setPage}
+                        totalItems={totalItems}
+                        pageSize={paging.pageSize}
                         className={props.paginatorClassName}
                     />
                 </div>

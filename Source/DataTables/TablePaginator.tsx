@@ -12,6 +12,10 @@ export interface TablePaginatorProps {
     pageCount: number;
     /** Invoked with the requested zero-based page. */
     onPageChange: (page: number) => void;
+    /** Total number of records across all pages — enables the "X–Y of Z" range report. */
+    totalItems?: number;
+    /** Rows per page — enables the "X–Y of Z" range report. */
+    pageSize?: number;
     /** Extra class name for the paginator container. */
     className?: string;
 }
@@ -23,12 +27,16 @@ export interface TablePaginatorProps {
  * table's internal pagination — so this renders the page controls wired to a
  * simple `onPageChange(pageIndex)` callback.
  */
-export const TablePaginator = ({ page, pageCount, onPageChange, className }: TablePaginatorProps) => {
+export const TablePaginator = ({ page, pageCount, onPageChange, totalItems, pageSize, className }: TablePaginatorProps) => {
     const isFirst = page <= 0;
     const isLast = page >= pageCount - 1;
+    const rangeReport = totalItems !== undefined && pageSize !== undefined && totalItems > 0
+        ? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, totalItems)} of ${totalItems}`
+        : undefined;
 
     return (
         <div className={className ? `cratis-table-paginator ${className}` : 'cratis-table-paginator'}>
+            {rangeReport && <span className="cratis-table-paginator-range">{rangeReport}</span>}
             <Button variant="text" disabled={isFirst} onClick={() => onPageChange(0)} aria-label="First page">
                 <i className="pi pi-angle-double-left" />
             </Button>
