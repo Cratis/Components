@@ -39,7 +39,11 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                 ptOptions={props.ptOptions}
                 unstyled={props.unstyled}>
                 {Array.from({ length: props.stars ?? 5 }, (_, index) => (
-                    <Rating.Option key={index} value={index + 1} index={index}>
+                    <Rating.Option
+                        key={index}
+                        value={index + 1}
+                        index={index}
+                        aria-label={`${index + 1} ${index === 0 ? 'star' : 'stars'}`}>
                         <Rating.On><i className="pi pi-star-fill" /></Rating.On>
                         <Rating.Off><i className="pi pi-star" /></Rating.Off>
                     </Rating.Option>

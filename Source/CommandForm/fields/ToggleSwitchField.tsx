@@ -31,11 +31,17 @@ interface ToggleSwitchFieldComponentProps extends WrappedFieldProps<boolean> {
  */
 export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentProps>(
     (props) => (
-        <div className="flex items-center" onBlur={props.onBlur}>
+        // A real <label> wrapping the switch: the underlying checkbox input is a
+        // descendant, so the visible text becomes its accessible name (implicit
+        // association) regardless of the composition's internal structure — and
+        // the text doubles the click target. `aria-label` covers the label-less
+        // case so the switch is never nameless to a screen reader.
+        <label className="flex items-center" onBlur={props.onBlur}>
             <ToggleSwitch.Root
                 checked={props.value}
                 onCheckedChange={props.onChange}
                 invalid={props.invalid}
+                aria-label={props.label}
                 className={props.className}
                 pt={props.pt}
                 ptOptions={props.ptOptions}
@@ -44,8 +50,8 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
                     <ToggleSwitch.Handle />
                 </ToggleSwitch.Control>
             </ToggleSwitch.Root>
-            {props.label && <label className="ml-2">{props.label}</label>}
-        </div>
+            {props.label && <span className="ml-2">{props.label}</span>}
+        </label>
     ),
     {
         defaultValue: false,
