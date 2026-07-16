@@ -61,6 +61,10 @@
             "types": "./dist/esm/Dialogs/index.d.ts",
             "import": "./dist/esm/Dialogs/index.js"
         },
+        "./Display": {
+            "types": "./dist/esm/Display/index.d.ts",
+            "import": "./dist/esm/Display/index.js"
+        },
         "./Dropdown": {
             "types": "./dist/esm/Dropdown/index.d.ts",
             "import": "./dist/esm/Dropdown/index.js"

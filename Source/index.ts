@@ -8,6 +8,7 @@ import * as Common from './Common';
 import * as DataPage from './DataPage';
 import * as DataTables from './DataTables';
 import * as Dialogs from './Dialogs';
+import * as Display from './Display';
 import * as Dropdown from './Dropdown';
 import * as Filter from './Filter';
 import * as ObjectContentEditor from './ObjectContentEditor';
@@ -26,6 +27,7 @@ export {
     DataPage,
     DataTables,
     Dialogs,
+    Display,
     Dropdown,
     Filter,
     ObjectContentEditor,
