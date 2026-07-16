@@ -25,8 +25,9 @@ export const tailwindPtPreset = {
             className: [
                 'inline-flex items-center justify-center gap-2',
                 'px-4 py-2 rounded-lg font-medium',
-                'bg-sky-500 text-white',
-                'hover:bg-sky-400 active:bg-sky-600',
+                // sky-700 (not sky-500) so white label text clears WCAG AA (~6:1).
+                'bg-sky-700 text-white',
+                'hover:bg-sky-600 active:bg-sky-800',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'transition-colors',
                 focusRing,
