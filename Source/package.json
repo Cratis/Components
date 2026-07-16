@@ -106,7 +106,8 @@
             "import": "./dist/esm/types/index.js"
         },
         "./styles": "./dist/esm/tailwind-utilities.css",
-        "./tokens": "./dist/esm/tokens.css"
+        "./tokens": "./dist/esm/tokens.css",
+        "./theme": "./dist/esm/theme.css"
     },
     "scripts": {
         "prepare": "yarn g:build",

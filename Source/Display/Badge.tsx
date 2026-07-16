@@ -28,7 +28,7 @@ export interface BadgeProps {
  * unread counts, notification indicators, and small numeric overlays.
  */
 export const Badge = ({ value, severity, size, shape, className, children }: BadgeProps) => (
-    <PrimeBadge severity={severity} size={size} shape={shape} className={className}>
+    <PrimeBadge severity={severity} size={size} shape={shape} className={className} data-severity={severity}>
         {value ?? children}
     </PrimeBadge>
 );

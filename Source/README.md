@@ -179,6 +179,29 @@ Omit `theme` entirely to stay unstyled-first — ship only structure plus the
 `--cratis-*` tokens and bring your own visuals (see the pass-through / `pt`
 options below).
 
+### Use the Cratis baseline theme (no license)
+
+Want a polished default look **without a PrimeUI license**? Ship the components
+unstyled and import the Cratis baseline theme — a token-based stylesheet that
+styles every component from the `--cratis-*` layer:
+
+```tsx
+import 'primeicons/primeicons.css';
+import '@cratis/components/theme';   // the baseline theme
+
+export const App = () => (
+    <CratisComponentsProvider unstyled>
+        <div className="cratis-theme">   {/* scope: put on <body>, app root, or a subtree */}
+            <YourApp />
+        </div>
+    </CratisComponentsProvider>
+);
+```
+
+Add `cratis-dark` to an ancestor for the dark palette. The theme defers to a
+`@primeuix/themes` preset's `--p-*` tokens when one is present, so you can layer
+it under a preset too, and every rule is overridable via your own CSS or `pt`.
+
 #### Override a single component with CSS
 
 Plain CSS works fine on top of the theme. Target either PrimeReact's class

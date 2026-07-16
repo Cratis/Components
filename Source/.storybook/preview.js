@@ -5,6 +5,7 @@ import { addons } from 'storybook/preview-api';
 import React from 'react';
 import 'primeicons/primeicons.css';
 import './preview.css';
+import '../theme.css';
 import Aura from '@primeuix/themes/aura';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import { tailwindPtPreset } from './pt-preset';
@@ -50,11 +51,11 @@ const STYLING_MODES = {
         bodyClass: null,
         providerValue: withLicense({ ripple: true, theme: styledTheme }),
     },
-    'cratis-themed': {
-        title: 'Path B — Styled with custom Cratis palette — needs PrimeUI license',
+    'cratis-theme': {
+        title: 'Path B — Cratis baseline theme (no license)',
         dark: true,
-        bodyClass: 'cratis-themed',
-        providerValue: withLicense({ ripple: true, theme: styledTheme }),
+        bodyClass: 'cratis-theme',
+        providerValue: { unstyled: true },
     },
 };
 

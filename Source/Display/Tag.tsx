@@ -29,7 +29,7 @@ export interface TagProps {
  * or a read-model flag.
  */
 export const Tag = ({ value, severity, rounded, icon, className, children }: TagProps) => (
-    <PrimeTag severity={severity} rounded={rounded} className={className}>
+    <PrimeTag severity={severity} rounded={rounded} className={className} data-severity={severity}>
         {icon}
         {value ?? children}
     </PrimeTag>
