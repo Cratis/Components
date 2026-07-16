@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React from 'react';
+import type { ColumnFilterDataType } from './ColumnFilterMenu';
 
 /**
  * Props for {@link Column}.
@@ -17,6 +18,16 @@ export interface ColumnProps<TData = unknown> {
     body?: (rowData: TData) => React.ReactNode;
     /** When true, the column header becomes a sort control. */
     sortable?: boolean;
+    /** When true, the column header gains a filter-menu affordance. */
+    filter?: boolean;
+    /** The field the filter applies to, when it differs from {@link field}. */
+    filterField?: string;
+    /** Placeholder for the filter value input. */
+    filterPlaceholder?: string;
+    /** The value kind the filter edits (drives match modes + input). Defaults to `'text'`. */
+    dataType?: ColumnFilterDataType;
+    /** Whether the filter menu shows the match-mode selector. Defaults to `true`. */
+    showFilterMatchModes?: boolean;
     /**
      * Renders a selection control column (a radio for `single`, a checkbox for
      * `multiple`) instead of a data column.

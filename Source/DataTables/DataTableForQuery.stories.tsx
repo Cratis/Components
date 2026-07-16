@@ -69,10 +69,11 @@ export const Default: Story = {
                 query={ProductsQuery}
                 emptyMessage="No products found"
                 dataKey="id"
+                globalFilterFields={['name', 'category']}
             >
                 <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                <Column field="name" header="Product Name" sortable style={{ width: '30%' }} />
-                <Column field="category" header="Category" sortable style={{ width: '20%' }} />
+                <Column field="name" header="Product Name" sortable filter filterPlaceholder="Filter by name" style={{ width: '30%' }} />
+                <Column field="category" header="Category" sortable filter filterPlaceholder="Filter by category" style={{ width: '20%' }} />
                 <Column 
                     field="price" 
                     header="Price" 

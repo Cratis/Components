@@ -1,12 +1,16 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useMemo, type CSSProperties, type ReactNode } from 'react';
+import React, { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { DataTable as PrimeDataTable } from 'primereact/datatable';
+import { InputText } from 'primereact/inputtext';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
-import type { SelectionKeys, UseDataTableSelectionEvent, UseDataTableRowMouseEvent } from '@primereact/types/headless/datatable';
+import type { SelectionKeys, UseDataTableSelectionEvent, UseDataTableRowMouseEvent, UseDataTableFilterEvent } from '@primereact/types/headless/datatable';
 import type { ColumnProps } from './Column';
+import { ColumnFilterMenu } from './ColumnFilterMenu';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
+import type { DataTableFilterMeta } from './DataTableFilterMeta';
+import './DataTableCore.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -46,10 +50,14 @@ export interface DataTableCoreProps<TData extends object> {
     onRowClick?: (event: DataTableRowClickEvent<TData>) => void;
     /** Computes an extra class name for each row. */
     rowClassName?: (rowData: TData) => string;
-    /** A global filter term applied across {@link globalFilterFields}. */
-    globalFilter?: string | null;
-    /** The fields the {@link globalFilter} term is matched against. */
+    /** The fields the global search term is matched against. When set, a search box is shown above the table. */
     globalFilterFields?: string[];
+    /** Placeholder for the global search box. */
+    globalSearchPlaceholder?: string;
+    /** Initial per-column filter state. */
+    defaultFilters?: DataTableFilterMeta;
+    /** Invoked whenever the per-column filter state changes. */
+    onFilter?: (filters: DataTableFilterMeta) => void;
     /** Renders the table body in a scroll region of {@link scrollHeight}. */
     scrollable?: boolean;
     /** The height of the scroll region when {@link scrollable} is set. */
@@ -106,8 +114,10 @@ export const DataTableCore = <TData extends object>({
     onSelectionChange,
     onRowClick,
     rowClassName,
-    globalFilter,
     globalFilterFields,
+    globalSearchPlaceholder = 'Search…',
+    defaultFilters,
+    onFilter,
     scrollable,
     scrollHeight,
     className,
@@ -117,6 +127,14 @@ export const DataTableCore = <TData extends object>({
     unstyled,
 }: DataTableCoreProps<TData>) => {
     const columns = useColumns(children);
+    const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters ?? {});
+    const [globalFilter, setGlobalFilter] = useState<string>('');
+    const showGlobalSearch = !!globalFilterFields && globalFilterFields.length > 0;
+
+    const handleFilter = (event: UseDataTableFilterEvent) => {
+        setFilters(event.filters);
+        onFilter?.(event.filters);
+    };
 
     const keyOf = (row: TData): string | undefined =>
         dataKey ? String((row as Record<string, unknown>)[dataKey]) : undefined;
@@ -149,7 +167,9 @@ export const DataTableCore = <TData extends object>({
             selectionKeys={selectionKeys}
             onSelectionChange={onSelectionChange ? handleSelectionChange : undefined}
             onRowClick={handleRowClick}
-            globalFilter={globalFilter}
+            filters={filters}
+            onFilter={handleFilter}
+            globalFilter={globalFilter || null}
             globalFilterFields={globalFilterFields}
             scrollable={scrollable}
             scrollHeight={scrollHeight}
@@ -158,6 +178,16 @@ export const DataTableCore = <TData extends object>({
             pt={pt}
             ptOptions={ptOptions}
             unstyled={unstyled}>
+            {showGlobalSearch && (
+                <div className="cratis-datatable-search">
+                    <InputText
+                        value={globalFilter}
+                        placeholder={globalSearchPlaceholder}
+                        className="w-full"
+                        onChange={(event) => setGlobalFilter(event.target.value)}
+                    />
+                </div>
+            )}
             <PrimeDataTable.TableContainer>
                 <PrimeDataTable.Table>
                     <PrimeDataTable.THead>
@@ -167,15 +197,25 @@ export const DataTableCore = <TData extends object>({
                                     key={index}
                                     style={column.props.headerStyle ?? column.props.style}
                                     className={column.props.headerClassName}>
-                                    {column.props.sortable && column.props.field ? (
-                                        <PrimeDataTable.Sort field={column.props.field}>
-                                            {column.props.header}
-                                            <PrimeDataTable.SortIndicator match="asc"> ▲</PrimeDataTable.SortIndicator>
-                                            <PrimeDataTable.SortIndicator match="desc"> ▼</PrimeDataTable.SortIndicator>
-                                        </PrimeDataTable.Sort>
-                                    ) : (
-                                        column.props.header
-                                    )}
+                                    <div className="cratis-datatable-header-cell">
+                                        {column.props.sortable && column.props.field ? (
+                                            <PrimeDataTable.Sort field={column.props.field}>
+                                                {column.props.header}
+                                                <PrimeDataTable.SortIndicator match="asc"> ▲</PrimeDataTable.SortIndicator>
+                                                <PrimeDataTable.SortIndicator match="desc"> ▼</PrimeDataTable.SortIndicator>
+                                            </PrimeDataTable.Sort>
+                                        ) : (
+                                            <span>{column.props.header}</span>
+                                        )}
+                                        {column.props.filter && (column.props.filterField ?? column.props.field) && (
+                                            <ColumnFilterMenu
+                                                field={(column.props.filterField ?? column.props.field) as string}
+                                                dataType={column.props.dataType}
+                                                placeholder={column.props.filterPlaceholder}
+                                                showMatchModes={column.props.showFilterMatchModes}
+                                            />
+                                        )}
+                                    </div>
                                 </PrimeDataTable.THeadCell>
                             ))}
                         </PrimeDataTable.THeadRow>

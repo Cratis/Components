@@ -186,6 +186,7 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
                     globalFilterFields={props.globalFilterFields}
+                    defaultFilters={props.defaultFilters}
                     scrollable
                     scrollHeight='100%'
                     className={props.className}

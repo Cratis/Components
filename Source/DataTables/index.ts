@@ -4,5 +4,6 @@
 export * from './DataTableForQuery';
 export * from './DataTableForObservableQuery';
 export * from './Column';
+export * from './ColumnFilterMenu';
 export * from './DataTableSelectionChangeEvent';
 export * from './DataTableFilterMeta';

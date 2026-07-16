@@ -157,6 +157,7 @@ export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
                     globalFilterFields={props.globalFilterFields}
+                    defaultFilters={props.defaultFilters}
                     className={props.className}
                     style={{ minWidth: '100%' }}
                     pt={props.pt}
