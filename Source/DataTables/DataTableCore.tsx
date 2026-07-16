@@ -188,7 +188,16 @@ export const DataTableCore = <TData extends object>({
                                         key={columnIndex}
                                         style={{ ...column.props.style, ...column.props.bodyStyle }}
                                         className={column.props.bodyClassName ?? column.props.className}>
-                                        {renderCellContent(column.props, item)}
+                                        {column.props.selectionMode ? (
+                                            <input
+                                                type="radio"
+                                                readOnly
+                                                aria-label="Select row"
+                                                checked={!!selection && keyOf(item as TData) === keyOf(selection)}
+                                            />
+                                        ) : (
+                                            renderCellContent(column.props, item)
+                                        )}
                                     </PrimeDataTable.Cell>
                                 ))}
                             </PrimeDataTable.Row>
