@@ -53,6 +53,23 @@
     --cratis-highlight-text-color: var(--p-highlight-color, #1e40af);
     --cratis-maskbg:               rgba(0, 0, 0, 0.4);
     --cratis-border-radius:        6px;
+
+    /* Arc component chrome. @cratis/arc.react's field wrappers, form errors, and
+       dialogs read this `--color-*` token family; map it onto the palette so the
+       baseline theme also themes the Arc surface (labels, borders, field errors),
+       not only the PrimeReact components. The chrome/text tokens reference the
+       `--cratis-*` vars so they flip automatically in dark; the semantic colors
+       are WCAG-AA-safe on the light surface and re-declared for dark below. */
+    --color-text:                 var(--cratis-text-color);
+    --color-text-secondary:       var(--cratis-text-color-secondary);
+    --color-text-muted:           var(--cratis-text-color-secondary);
+    --color-border:               var(--cratis-surface-border);
+    --color-background-secondary: var(--cratis-surface-section);
+    --color-background-tertiary:  var(--cratis-surface-100);
+    --color-error:                #b91c1c;
+    --color-error-bg:             #fef2f2;
+    --color-success:              #15803d;
+    --color-warning:              #b45309;
 }
 
 /* Dark palette — applied when the `cratis-dark` class is on an ancestor. */
@@ -71,6 +88,14 @@
     --cratis-highlight-bg:         #1e3a8a;
     --cratis-highlight-text-color: #ffffff;
     --cratis-maskbg:               rgba(0, 0, 0, 0.6);
+
+    /* Lighter semantic colors that stay AA-legible on the dark surface. The
+       chrome/text `--color-*` tokens follow the `--cratis-*` vars redefined
+       above, so only the concrete semantic colors are re-declared here. */
+    --color-error:    #f87171;
+    --color-error-bg: #7f1d1d;
+    --color-success:  #4ade80;
+    --color-warning:  #fbbf24;
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
