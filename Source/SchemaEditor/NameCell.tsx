@@ -3,6 +3,7 @@
 
 import { InputText } from 'primereact/inputtext';
 import * as faIcons from 'react-icons/fa6';
+import { Tooltip } from '../Common/Tooltip';
 import { JsonSchemaProperty } from '../types/JsonSchema';
 
 export interface NameCellProps {
@@ -21,33 +22,28 @@ export const NameCell = ({ rowData, isEditMode, onUpdate, validationError }: Nam
 
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span
-                    className={isNavigable ? 'schema-navigation-tooltip' : undefined}
-                    data-pr-tooltip={isNavigable ? navigationTooltipText : undefined}
-                    data-pr-position="top"
-                >
-                    {rowData.name}
-                </span>
+                <Tooltip content={isNavigable ? navigationTooltipText : undefined} position="top">
+                    <span>{rowData.name}</span>
+                </Tooltip>
                 {rowData.description && (
-                    <faIcons.FaCircleInfo
-                        className="schema-description-tooltip"
-                        style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.875rem' }}
-                        data-pr-tooltip={rowData.description}
-                        data-pr-position="right"
-                    />
+                    <Tooltip content={rowData.description} position="right">
+                        <faIcons.FaCircleInfo
+                            style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.875rem' }}
+                        />
+                    </Tooltip>
                 )}
             </div>
         );
     }
 
     return (
-        <InputText
-            value={rowData.name || ''}
-            onChange={(e) => onUpdate(rowData.name || '', 'name', e.target.value)}
-            className="w-full"
-            invalid={!!validationError}
-            data-pr-tooltip={validationError}
-            data-pr-position="top"
-        />
+        <Tooltip content={validationError} position="top" className="w-full">
+            <InputText
+                value={rowData.name || ''}
+                onChange={(e) => onUpdate(rowData.name || '', 'name', e.target.value)}
+                className="w-full"
+                invalid={!!validationError}
+            />
+        </Tooltip>
     );
 };
