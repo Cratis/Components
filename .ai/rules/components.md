@@ -33,8 +33,7 @@ Use `Dropdown` from `@cratis/components/Dropdown` (not raw `primereact/dropdown`
 Columns and toolbar actions are compositional children:
 
 ```tsx
-import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { DataPage, MenuItem, Column } from '@cratis/components/DataPage';
 
 <DataPage title="Accounts" query={AllAccounts} emptyMessage="No accounts yet.">
     <DataPage.Columns>

@@ -142,35 +142,42 @@ export const App = () => (
   the package plus the `--cratis-*` CSS variable token layer that every
   internal component reads from. (Use `@cratis/components/tokens` instead if
   you're bringing your own Tailwind.)
-- `CratisComponentsProvider` is a thin wrapper over PrimeReact's
-  `PrimeReactProvider` so Cratis has one place to layer in defaults. Drop in
-  raw `PrimeReactProvider` if you'd rather.
+- `CratisComponentsProvider` is a thin wrapper over `@primereact/core`'s
+  `PrimeReactProvider` so Cratis has one place to layer in defaults (including
+  the optional `theme={{ preset }}` styled layer). Drop in the raw
+  `PrimeReactProvider` from `@primereact/core` if you'd rather.
 
 The three setups below differ only in **what else** you load on top of this
 setup.
 
 ---
 
-### Use a PrimeReact theme
+### Use a styled preset
 
-Load any PrimeReact theme stylesheet alongside Cratis Components. PrimeReact's
-own widgets paint themselves from the theme, and the `--cratis-*` tokens cascade
-to the matching theme variables so Cratis-scoped surfaces follow along.
+PrimeReact 11 dropped the v10 `primereact/resources/themes/*/theme.css`
+stylesheets in favor of the token-based `@primeuix/themes` layer. Apply a
+preset by passing `theme={{ preset }}` to `CratisComponentsProvider` — no theme
+CSS import. PrimeReact's own widgets paint themselves from the preset, and the
+`--cratis-*` tokens cascade to the matching variables so Cratis-scoped surfaces
+follow along.
 
 ```tsx
-// 1. Theme first, then Cratis styles so any --cratis-* override wins.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
+import Aura from '@primeuix/themes/aura';   // or lara / nora / material
 import 'primeicons/primeicons.css';
 import '@cratis/components/styles';
 
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider>
+    <CratisComponentsProvider theme={{ preset: Aura }}>
         <YourApp />
     </CratisComponentsProvider>
 );
 ```
+
+Omit `theme` entirely to stay unstyled-first — ship only structure plus the
+`--cratis-*` tokens and bring your own visuals (see the pass-through / `pt`
+options below).
 
 #### Override a single component with CSS
 
@@ -255,11 +262,10 @@ independently if you want Cratis surfaces to differ from PrimeReact widgets.
 ```
 
 ```tsx
-// 1. PrimeReact theme provides the structure.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
+// 1. A styled preset provides the structure (apply it via the provider — see above).
 import 'primeicons/primeicons.css';
 import '@cratis/components/styles';
-// 2. Your palette overrides — must come after the theme so they win.
+// 2. Your palette overrides — must come after the styles so they win.
 import './palette.override.css';
 ```
 
@@ -290,7 +296,6 @@ Tailwind handles cascade and dark mode:
 ```css
 /* app.css */
 @import "tailwindcss";
-@import "primereact/resources/themes/lara-dark-blue/theme.css";
 @import "@cratis/components/styles";
 
 @layer base {
