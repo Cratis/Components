@@ -21,7 +21,13 @@
    is empty, so the baseline theme supplies real colors here — deferring to a
    preset's `--p-*` when one *is* present, and falling back to these otherwise. */
 .cratis-theme {
+    /* Paint the base surface, not just the text color — so the theme is
+       self-contained on any host background. Applied to <body> it fills the
+       viewport; applied to a subtree (a documented use) it establishes the
+       themed backdrop instead of letting the dark text fall on whatever is
+       behind it. The surface token flips light/dark with the palette below. */
     color: var(--cratis-text-color);
+    background-color: var(--cratis-surface-section);
 
     --cratis-primary-color:      var(--p-primary-color, #3b82f6);
     --cratis-primary-color-text: var(--p-primary-contrast-color, #ffffff);

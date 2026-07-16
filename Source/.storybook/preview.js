@@ -52,8 +52,14 @@ const STYLING_MODES = {
         providerValue: withLicense({ ripple: true, theme: styledTheme }),
     },
     'cratis-theme': {
-        title: 'Path B — Cratis baseline theme (no license)',
+        title: 'Path B — Cratis baseline theme, dark (no license)',
         dark: true,
+        bodyClass: 'cratis-theme',
+        providerValue: { unstyled: true },
+    },
+    'cratis-theme-light': {
+        title: 'Path B — Cratis baseline theme, light (no license)',
+        dark: false,
         bodyClass: 'cratis-theme',
         providerValue: { unstyled: true },
     },
