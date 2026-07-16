@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForQuery } from './DataTableForQuery';
 import { Column } from './Column';
+import { Tag } from '../Display/Tag';
 import { QueryFor, QueryResult } from '@cratis/arc/queries';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
@@ -87,9 +88,10 @@ export const Default: Story = {
                     sortable 
                     style={{ width: '20%' }}
                     body={(rowData: Product) => (
-                        <span className={rowData.inStock ? 'text-green-600' : 'text-red-600'}>
-                            {rowData.inStock ? 'Yes' : 'No'}
-                        </span>
+                        <Tag
+                            severity={rowData.inStock ? 'success' : 'danger'}
+                            value={rowData.inStock ? 'In stock' : 'Out of stock'}
+                        />
                     )}
                 />
             </DataTableForQuery>
