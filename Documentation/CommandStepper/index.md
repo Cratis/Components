@@ -18,7 +18,7 @@ Use it when you want to:
 
 ```tsx
 import { CommandStepper } from '@cratis/components/CommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '@cratis/components/CommandDialog';
 import { InputTextField } from '@cratis/components/CommandForm/fields';
 import { CreateProject } from '../api/projects/CreateProject';
 

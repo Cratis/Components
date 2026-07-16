@@ -20,13 +20,13 @@ You can build that straight on PrimeReact — instantiate the command, track its
 
 <Steps>
 
-1. **Install the package and its PrimeReact peers.**
+1. **Install the package.**
 
    ```bash title="Install Components"
-   npm install @cratis/components primereact primeicons
+   npm install @cratis/components
    ```
 
-   A few components pull extra peers only when you use them — `pixi.js` for `PivotViewer`, `framer-motion` for animated panels, `allotment` for `DataPage`. Skip them until you reach for those.
+   PrimeReact and its icons (`primereact`, `primeicons`), plus `pixi.js` (`PivotViewer`), `framer-motion` (animated panels), and `allotment` (`DataPage`), are **bundled dependencies** — they install automatically with the package, so there's nothing extra to add. The real peers — `react`/`react-dom` 19+, `@cratis/arc*`, `reflect-metadata`, and `tsyringe` — already come with the Arc frontend from the prerequisites.
 
 2. **Import the styles once**, at your app's entry point:
 
@@ -53,7 +53,7 @@ You can build that straight on PrimeReact — instantiate the command, track its
 
 ## What the provider sets up
 
-That one wrapper does more than it looks. Components renders PrimeReact in **unstyled mode** with a pass-through preset, configures locale, ripple, and overlay z-index, and routes every component's look through the `--cratis-*` tokens you just imported. The upshot: everything below it renders structurally right away, and it takes its visual identity from tokens you control — not from styles baked into the library.
+That one wrapper does more than it looks. Components renders PrimeReact **unstyled-first** (PrimeReact 11's default) and is the single place you layer on a `pt` preset, locale, ripple, overlay z-index, or a styled theme — routing every component's look through the `--cratis-*` tokens you just imported. The upshot: everything below it renders structurally right away, and it takes its visual identity from tokens and the styling setup you control — not from styles baked into the library.
 
 ```mermaid
 flowchart LR
@@ -84,11 +84,11 @@ No `isExecuting` flag, no button wiring, no duplicate validation logic — and b
 
 ## Choose how it looks
 
-The components render structurally the moment the provider is mounted; their *look* is a separate, deliberate choice. Pick one setup on the [Styling](/components/styling/) page:
+The components render structurally the moment the provider is mounted; their *look* is a separate, deliberate choice. PrimeReact 11 is unstyled-first, so pick one setup on the [Styling](/components/styling/) page:
 
-- a ready-made PrimeReact theme,
-- a theme repainted with a custom `--cratis-*` palette, or
-- fully unstyled, with your own pass-through preset.
+- the license-free **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`),
+- a styled `@primeuix/themes` **preset** via `value={{ theme: { preset } }}` (needs a PrimeUI license key), or
+- fully unstyled, with your own `pt` / CSS.
 
 ## Recap
 

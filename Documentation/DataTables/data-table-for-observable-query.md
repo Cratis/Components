@@ -19,7 +19,7 @@ DataTableForObservableQuery displays data from observable queries that automatic
 
 ```typescript
 import { DataTableForObservableQuery } from '@cratis/components/DataTables';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataTables';
 import { MyObservableQuery } from './queries';
 
 function MyTable() {

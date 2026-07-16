@@ -8,7 +8,7 @@ The `MenuItems` component defines the action menu for a DataPage.
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa';
 
 <DataPage title="Products" query={ProductsQuery} emptyMessage="No products">

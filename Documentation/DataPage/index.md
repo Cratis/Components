@@ -21,7 +21,7 @@ Declare the columns and menu actions with the compound `DataPage.Columns` and `D
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { FaPlus, FaPencil } from 'react-icons/fa';
 import { AllAuthors } from './queries';   // generated query proxy
 
@@ -52,7 +52,7 @@ Pass a `detailsComponent` and `DataPage` adds a resizable split: the table on th
 
 ```tsx
 import { DataPage } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { AllAuthorsWithBooks } from './queries';
 
 const AuthorDetails = ({ item }) => (

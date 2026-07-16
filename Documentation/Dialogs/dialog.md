@@ -70,7 +70,7 @@ const MyComponent = () => {
 - `width`: Dialog width
 - `style`: Custom dialog style forwarded to PrimeReact `Dialog`
 - `contentStyle`: Custom content area style forwarded to PrimeReact `Dialog`
-- `resizable`: Enables resize
+- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle. Existing code that passes it keeps compiling; it simply has no effect.
 - `isValid`: Enables or disables confirm actions
 - `isBusy`: When `true`, disables all buttons and shows a loading spinner on the primary action button
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels

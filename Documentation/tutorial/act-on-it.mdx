@@ -41,7 +41,7 @@ The table lists authors; now a librarian needs to *change* the list. Every chang
        const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
        return (
            <Page title="Authors" panel>
-               <Button label="Add author" icon="pi pi-plus" onClick={() => showAddAuthor()} />
+               <Button onClick={() => showAddAuthor()}><i className="pi pi-plus" /> Add author</Button>
                <DataTableForObservableQuery query={AllAuthors} emptyMessage="No authors yet">
                    <Column field="name" header="Name" sortable />
                </DataTableForObservableQuery>

@@ -4,7 +4,7 @@ Single setup point for Cratis Components. Wraps PrimeReact's `PrimeReactProvider
 
 ## Purpose
 
-- Hosts the PrimeReact `pt` / `unstyled` / `ptOptions` / `inputStyle` / `ripple` / `appendTo` / `zIndex` / `locale` configuration for every Cratis wrapper below it in the tree.
+- Hosts the PrimeReact `pt` / `unstyled` / `ptOptions` / `inputVariant` / `ripple` / `theme` / `zIndex` / `locale` configuration for every Cratis wrapper below it in the tree.
 - Deep-merges Cratis-wide defaults with the consumer's value, so future Cratis defaults can land without breaking consumer overrides.
 - Re-exported from the package root so the recommended setup is one import:
 
@@ -29,7 +29,7 @@ export const App = () => (
 
 ## Configuring `pt` / `unstyled` globally
 
-The `value` prop accepts the full PrimeReact `APIOptions` shape. The most commonly used members are `unstyled`, `pt`, `ptOptions`, `inputStyle`, `ripple`, and `appendTo`:
+The `value` prop accepts PrimeReact 11's `Partial<PrimeReactProps>` shape. The most commonly used members are `unstyled`, `pt`, `ptOptions`, `inputVariant`, `ripple`, and `theme`:
 
 ```tsx
 import { CratisComponentsProvider } from '@cratis/components';
@@ -48,7 +48,7 @@ The `value` is deep-merged with the Cratis defaults (currently empty) so consume
 
 ### `value`
 
-`Partial<APIOptions>` — Cratis-wide and PrimeReact pass-through configuration. Merged on top of the library's defaults and made available to every Cratis component below in the tree.
+`Partial<PrimeReactProps>` — Cratis-wide and PrimeReact pass-through configuration. Merged on top of the library's defaults and made available to every Cratis component below in the tree.
 
 The most useful members:
 
@@ -57,10 +57,11 @@ The most useful members:
 | `unstyled` | When `true`, disables every PrimeReact base style. Combine with `pt` (or per-component CSS / Tailwind) to fully restyle. |
 | `pt` | Per-component pass-through configuration. Keys are PrimeReact component names (`button`, `dialog`, `inputtext`, …); values are slot configuration objects. |
 | `ptOptions` | Controls merge vs. replace behavior for `pt`. Default is `{ mergeSections: true }` which merges per-instance `pt` with the global preset. |
-| `inputStyle` | `'outlined'` or `'filled'` — switches the default input rendering across the whole app. |
+| `inputVariant` | `'outlined'` or `'filled'` — switches the default input rendering across the whole app. |
+| `theme` | `{ preset, options }` — opt into a styled `@primeuix/themes` preset (e.g. `import Aura from '@primeuix/themes/aura'`). Applying a preset requires a PrimeUI `license` key; the license-free paths are the unstyled core and the Cratis baseline theme. |
+| `license` | Your PrimeUI license key, passed straight through to PrimeReact. Required for the styled `@primeuix/themes` presets — see [Styling](../Styling/index.md). |
 | `ripple` | Enables PrimeReact's ripple animation on supported components. |
-| `appendTo` | Where overlays mount (`document.body`, `'self'`, or a DOM ref). The Cratis `Dropdown` defaults to `document.body` independently of this setting. |
-| `zIndex` | Per-overlay-type z-index baseline (`{ modal: 1100, overlay: 1000, … }`). |
+| `zIndex` | Per-overlay-type z-index baseline (`{ modal: 1100, overlay: 1000, menu: 1000, tooltip: 1100 }`). |
 | `locale` | PrimeReact locale string. |
 
 The full type is re-exported as `CratisComponentsConfig`.
@@ -74,7 +75,7 @@ The full type is re-exported as `CratisComponentsConfig`.
 `CratisComponentsProvider` is optional. If you'd rather mount PrimeReact's own provider directly, that works too — every Cratis wrapper reads the same context:
 
 ```tsx
-import { PrimeReactProvider } from 'primereact/api';
+import { PrimeReactProvider } from '@primereact/core';
 
 export const App = () => (
     <PrimeReactProvider value={{ unstyled: true, pt: globalPt }}>
@@ -100,7 +101,7 @@ const merged = mergeCratisComponentsConfig({ unstyled: true, pt: myPt });
 |---|---|
 | `CratisComponentsProvider`     | The React component. |
 | `CratisComponentsProviderProps` | Props type. |
-| `CratisComponentsConfig`        | Alias for `Partial<APIOptions>`. |
+| `CratisComponentsConfig`        | Alias for `Partial<PrimeReactProps>`. |
 | `cratisDefaults`                | The Cratis-wide defaults that ship today (currently `{}`). |
 | `mergeCratisComponentsConfig`   | Pure deep-merge helper used inside the provider. |
 
