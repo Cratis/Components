@@ -70,6 +70,27 @@
     --color-error-bg:             #fef2f2;
     --color-success:              #15803d;
     --color-warning:              #b45309;
+
+    /* Arc also reads these radius/spacing/font tokens (with no fallbacks of its
+       own); supply a scale so Arc chrome keeps its corners, padding, and gaps
+       under the baseline theme instead of collapsing to the initial value. */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* Concrete values for two tokens tokens.css leaves preset-only. Filter/
+       FilterPanel.css (shipped via @cratis/components/Filter) consumes both
+       without inline fallbacks, so with no preset the Filter panel would lose its
+       sub-surface backgrounds and focus rings. */
+    --cratis-surface-ground: var(--p-surface-50, #f8fafc);
+    --cratis-focus-ring:     0 0 0 0.2rem rgba(59, 130, 246, 0.45);
 }
 
 /* Dark palette — applied when the `cratis-dark` class is on an ancestor. */
@@ -88,12 +109,15 @@
     --cratis-highlight-bg:         #1e3a8a;
     --cratis-highlight-text-color: #ffffff;
     --cratis-maskbg:               rgba(0, 0, 0, 0.6);
+    --cratis-surface-ground:       #020617;
 
     /* Lighter semantic colors that stay AA-legible on the dark surface. The
        chrome/text `--color-*` tokens follow the `--cratis-*` vars redefined
-       above, so only the concrete semantic colors are re-declared here. */
+       above, so only the concrete semantic colors are re-declared here. The
+       error-bg is deepened (red-950) so the #f87171 error text clears AA (~6.4:1)
+       on the exception banner, not just on the section surface. */
     --color-error:    #f87171;
-    --color-error-bg: #7f1d1d;
+    --color-error-bg: #450a0a;
     --color-success:  #4ade80;
     --color-warning:  #fbbf24;
 }
@@ -311,3 +335,23 @@
 .cratis-theme [data-scope='stepper'][data-part='header'] {
     display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; border: none; cursor: pointer; color: inherit;
 }
+
+/* ── Rating ──────────────────────────────────────────────────────────────── */
+.cratis-theme [data-scope='rating'][data-part='root'] { display: inline-flex; gap: 0.25rem; }
+.cratis-theme [data-scope='rating'] .pi { font-size: 1.25rem; cursor: pointer; }
+.cratis-theme [data-scope='rating'] .pi-star { color: var(--cratis-surface-border); }
+.cratis-theme [data-scope='rating'] .pi-star-fill { color: var(--cratis-orange-500, #f59e0b); }
+
+/* ── ProgressSpinner (BusyIndicatorDialog) ───────────────────────────────────
+   The unstyled primitive is a bare SVG circle with no stroke or motion; give it
+   a visible ring and spin it so the busy indicator actually shows. */
+.cratis-theme [data-scope='progressspinner'][data-part='root'] {
+    display: inline-block; width: 2.5rem; height: 2.5rem;
+    animation: cratis-spin 1s linear infinite;
+}
+.cratis-theme [data-scope='progressspinner'] svg { width: 100%; height: 100%; }
+.cratis-theme [data-scope='progressspinner'] circle {
+    fill: none; stroke: var(--cratis-primary-color, #3b82f6); stroke-width: 4;
+    stroke-linecap: round; stroke-dasharray: 80 200;
+}
+@keyframes cratis-spin { to { transform: rotate(360deg); } }
