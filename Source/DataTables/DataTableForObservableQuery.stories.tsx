@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForObservableQuery } from './DataTableForObservableQuery';
 import { Column } from './Column';
+import { Tag, type TagSeverity } from '../Display/Tag';
 import { ObservableQueryFor, QueryResult, ObservableQuerySubscription } from '@cratis/arc/queries';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
@@ -63,29 +64,21 @@ class TasksQuery extends ObservableQueryFor<Task, object> {
     }
 }
 
-const getStatusColor = (status: string) => {
+// Status/priority render as theme-aware Tags with a severity, which stay
+// WCAG-legible on both light and dark surfaces (unlike fixed text colors).
+const getStatusSeverity = (status: string): TagSeverity => {
     switch (status) {
-        case 'done':
-            return 'text-green-600';
-        case 'in-progress':
-            return 'text-blue-600';
-        case 'todo':
-            return 'text-gray-600';
-        default:
-            return '';
+        case 'done': return 'success';
+        case 'in-progress': return 'info';
+        default: return 'secondary';
     }
 };
 
-const getPriorityColor = (priority: string) => {
+const getPrioritySeverity = (priority: string): TagSeverity => {
     switch (priority) {
-        case 'high':
-            return 'text-red-600 font-bold';
-        case 'medium':
-            return 'text-orange-600';
-        case 'low':
-            return 'text-gray-600';
-        default:
-            return '';
+        case 'high': return 'danger';
+        case 'medium': return 'warn';
+        default: return 'secondary';
     }
 };
 
@@ -105,9 +98,7 @@ export const Default: Story = {
                     sortable
                     style={{ width: '20%' }}
                     body={(rowData: Task) => (
-                        <span className={getStatusColor(rowData.status)}>
-                            {rowData.status}
-                        </span>
+                        <Tag severity={getStatusSeverity(rowData.status)} value={rowData.status} />
                     )}
                 />
                 <Column
@@ -116,9 +107,7 @@ export const Default: Story = {
                     sortable
                     style={{ width: '15%' }}
                     body={(rowData: Task) => (
-                        <span className={getPriorityColor(rowData.priority)}>
-                            {rowData.priority}
-                        </span>
+                        <Tag severity={getPrioritySeverity(rowData.priority)} value={rowData.priority} />
                     )}
                 />
                 <Column field="assignee" header="Assignee" sortable style={{ width: '20%' }} />
@@ -149,9 +138,7 @@ export const WithSelection: Story = {
                         sortable
                         style={{ width: '20%' }}
                         body={(rowData: Task) => (
-                            <span className={getStatusColor(rowData.status)}>
-                                {rowData.status}
-                            </span>
+                            <Tag severity={getStatusSeverity(rowData.status)} value={rowData.status} />
                         )}
                     />
                     <Column field="assignee" header="Assignee" sortable style={{ width: '20%' }} />
