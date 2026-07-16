@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { RadioButton, RadioButtonChangeEvent, type RadioButtonProps } from 'primereact/radiobutton';
+import { RadioButton } from 'primereact/radiobutton';
+import type { RadioButtonRootProps, RadioButtonRootChangeEvent } from '@primereact/types/primitive/radiobutton';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
@@ -22,10 +23,10 @@ interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | numb
     className?: string;
 
     /** PrimeReact pass-through configuration applied to the underlying RadioButton. */
-    pt?: RadioButtonProps['pt'];
+    pt?: RadioButtonRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the underlying RadioButton. */
-    ptOptions?: RadioButtonProps['ptOptions'];
+    ptOptions?: RadioButtonRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the underlying RadioButton. */
     unstyled?: boolean;
@@ -43,18 +44,21 @@ interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | numb
  */
 export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProps>(
     (props) => (
-        <div className="flex items-center">
-            <RadioButton
+        // `onBlur` rides on the wrapping div because React blur bubbles (focusout).
+        <div className="flex items-center" onBlur={props.onBlur}>
+            <RadioButton.Root
                 value={props.buttonValue}
                 checked={props.value === props.buttonValue}
-                onChange={(e: RadioButtonChangeEvent) => props.onChange(e.value)}
-                onBlur={props.onBlur}
+                onCheckedChange={(e: RadioButtonRootChangeEvent) => { if (e.checked) props.onChange(props.buttonValue); }}
                 invalid={props.invalid}
                 className={props.className}
                 pt={props.pt}
                 ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
-            />
+                unstyled={props.unstyled}>
+                <RadioButton.Box>
+                    <RadioButton.Indicator />
+                </RadioButton.Box>
+            </RadioButton.Root>
             {props.label && <label className="ml-2">{props.label}</label>}
         </div>
     ),

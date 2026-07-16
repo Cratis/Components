@@ -1,10 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Dialog as PrimeDialog, type DialogProps as PrimeDialogProps } from 'primereact/dialog';
+import { Dialog as PrimeDialog } from 'primereact/dialog';
+import type { DialogRootProps, DialogRootChangeEvent } from '@primereact/types/primitive/dialog';
 import { Button } from 'primereact/button';
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
-import { ReactNode } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 
 /**
  * Callback used by {@link Dialog} (and its wrappers) when the dialog is about to
@@ -63,13 +64,19 @@ export interface DialogProps {
     /** Dialog width, any valid CSS length. Defaults to `'450px'`. */
     width?: string;
 
-    /** Inline style forwarded to the underlying PrimeReact Dialog root. */
-    style?: PrimeDialogProps['style'];
+    /** Inline style forwarded to the dialog popup (the visible dialog box). */
+    style?: CSSProperties;
 
     /** Inline style forwarded to the dialog's inner content area. */
-    contentStyle?: PrimeDialogProps['contentStyle'];
+    contentStyle?: CSSProperties;
 
-    /** When true, allows the user to resize the dialog. Defaults to `false`. */
+    /**
+     * When true, allows the user to resize the dialog. Defaults to `false`.
+     *
+     * PrimeReact 11's headless Dialog has no built-in resize handle, so this is
+     * currently accepted for API compatibility and has no effect. Kept so
+     * existing call sites continue to type-check.
+     */
     resizable?: boolean;
 
     /**
@@ -104,17 +111,18 @@ export interface DialogProps {
 
     /**
      * PrimeReact pass-through configuration. Applies to the underlying Dialog's
-     * slots — see PrimeReact's Dialog `pt` reference for the available keys.
-     * Use this (or set a global preset on `CratisComponentsProvider`) to take
-     * full control of styling.
+     * slots (`root`, `positioner`, `backdrop`, `header`, `title`, `close`,
+     * `content`, `footer`, …) — see PrimeReact's Dialog `pt` reference for the
+     * available keys. Use this (or set a global preset on
+     * `CratisComponentsProvider`) to take full control of styling.
      */
-    pt?: PrimeDialogProps['pt'];
+    pt?: DialogRootProps['pt'];
 
     /**
      * PrimeReact pass-through options. Controls merge vs. replace behavior for
      * the {@link pt} preset.
      */
-    ptOptions?: PrimeDialogProps['ptOptions'];
+    ptOptions?: DialogRootProps['ptOptions'];
 
     /**
      * When true, disables every base PrimeReact style on the underlying Dialog.
@@ -263,31 +271,43 @@ export const Dialog = ({
         }
     };
 
-    const okFooter = (
-        <>
-            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
-        </>
+    // PrimeReact 11's Button renders its content as children (the v10 `label`/`icon`
+    // props are gone) and expresses the outlined look through `variant`. The primary
+    // (confirm) button shows a spinner in place of its icon while busy and carries
+    // autoFocus. This helper keeps the footer definitions below readable.
+    const footerButton = (result: DialogResult, label: string, icon: string, primary: boolean) => (
+        <Button
+            key={`${result}-${label}`}
+            variant={primary ? undefined : 'outlined'}
+            onClick={() => handleClose(result)}
+            disabled={primary ? !isDialogValid || isBusy : isBusy}
+            autoFocus={primary}>
+            <i className={primary && isBusy ? 'pi pi-spin pi-spinner' : icon} />
+            <span>{label}</span>
+        </Button>
     );
+
+    const okFooter = footerButton(DialogResult.Ok, okLabel, 'pi pi-check', true);
 
     const okCancelFooter = (
         <>
-            <Button label={okLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Ok)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
-            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} disabled={isBusy} />
+            {footerButton(DialogResult.Ok, okLabel, 'pi pi-check', true)}
+            {footerButton(DialogResult.Cancelled, cancelLabel, 'pi pi-times', false)}
         </>
     );
 
     const yesNoFooter = (
         <>
-            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
-            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} disabled={isBusy} />
+            {footerButton(DialogResult.Yes, yesLabel, 'pi pi-check', true)}
+            {footerButton(DialogResult.No, noLabel, 'pi pi-times', false)}
         </>
     );
 
     const yesNoCancelFooter = (
         <>
-            <Button label={yesLabel} icon="pi pi-check" onClick={() => handleClose(DialogResult.Yes)} disabled={!isDialogValid || isBusy} loading={isBusy} autoFocus />
-            <Button label={noLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.No)} disabled={isBusy} />
-            <Button label={cancelLabel} icon="pi pi-times" outlined onClick={() => handleClose(DialogResult.Cancelled)} disabled={isBusy} />
+            {footerButton(DialogResult.Yes, yesLabel, 'pi pi-check', true)}
+            {footerButton(DialogResult.No, noLabel, 'pi pi-times', false)}
+            {footerButton(DialogResult.Cancelled, cancelLabel, 'pi pi-times', false)}
         </>
     );
 
@@ -318,23 +338,50 @@ export const Dialog = ({
         </div>
     );
 
+    // The dialog is dismissable (backdrop click, Escape, header close button)
+    // only for the predefined-button sets, mirroring the v10 `closable` behavior
+    // that keyed off `typeof buttons === 'number'`.
+    const isDismissable = typeof buttons === 'number';
+
+    // PrimeReact 11's Dialog is a controlled overlay: `open` reflects `visible`,
+    // and any dismiss gesture fires `onOpenChange` with `value: false`. We route
+    // that through the same `handleClose(Cancelled)` path used by the footer's
+    // cancel button, so the "return false keeps the dialog open" contract holds —
+    // the parent (the Arc dialog host) owns `visible`, so nothing closes unless
+    // `handleClose` calls back through the host.
+    const handleOpenChange = (event: DialogRootChangeEvent) => {
+        if (!event.value) {
+            handleClose(DialogResult.Cancelled);
+        }
+    };
+
     return (
-        <PrimeDialog
-            header={headerElement}
+        <PrimeDialog.Root
+            open={visible}
+            onOpenChange={handleOpenChange}
             modal
-            footer={footer}
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onHide={typeof buttons === 'number' ? () => handleClose(DialogResult.Cancelled) : () => {}}
-            visible={visible}
-            style={{ width, ...style }}
-            contentStyle={contentStyle}
-            resizable={resizable}
-            closable={typeof buttons === 'number'}
-            className={className}
+            dismissable={isDismissable}
+            closeOnEscape={isDismissable}
             pt={pt}
             ptOptions={ptOptions}
             unstyled={unstyled}>
-            {children}
-        </PrimeDialog>
+            <PrimeDialog.Portal>
+                <PrimeDialog.Backdrop />
+                <PrimeDialog.Positioner>
+                    <PrimeDialog.Popup className={className} style={{ width, ...style }}>
+                        <PrimeDialog.Header>
+                            <PrimeDialog.Title>{headerElement}</PrimeDialog.Title>
+                            {isDismissable && (
+                                <PrimeDialog.Close aria-label="Close">
+                                    <i className="pi pi-times" />
+                                </PrimeDialog.Close>
+                            )}
+                        </PrimeDialog.Header>
+                        <PrimeDialog.Content style={contentStyle}>{children}</PrimeDialog.Content>
+                        <PrimeDialog.Footer>{footer}</PrimeDialog.Footer>
+                    </PrimeDialog.Popup>
+                </PrimeDialog.Positioner>
+            </PrimeDialog.Portal>
+        </PrimeDialog.Root>
     );
 };

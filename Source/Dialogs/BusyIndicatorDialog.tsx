@@ -61,7 +61,7 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             buttons={null}
         >
             <div className="flex flex-col items-center justify-center gap-4 py-4">
-                <ProgressSpinner />
+                <ProgressSpinner.Root />
                 <p className="m-0 text-center">
                     {props.message}
                 </p>

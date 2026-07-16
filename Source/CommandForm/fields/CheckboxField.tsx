@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Checkbox, type CheckboxProps } from 'primereact/checkbox';
+import { Checkbox } from 'primereact/checkbox';
+import type { CheckboxRootProps, CheckboxRootChangeEvent } from '@primereact/types/primitive/checkbox';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
@@ -16,10 +17,10 @@ interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
     className?: string;
 
     /** PrimeReact pass-through configuration applied to the underlying Checkbox. */
-    pt?: CheckboxProps['pt'];
+    pt?: CheckboxRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the underlying Checkbox. */
-    ptOptions?: CheckboxProps['ptOptions'];
+    ptOptions?: CheckboxRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the underlying Checkbox. */
     unstyled?: boolean;
@@ -36,22 +37,27 @@ interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
  */
 export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
     (props) => (
-        <div className="flex items-center">
-            <Checkbox
+        // PrimeReact 11's Checkbox is compositional (Root → Box → Indicator).
+        // `onBlur` rides on the wrapping div because React blur bubbles (focusout),
+        // so the CommandForm's blur-timed validation still fires from the inner input.
+        <div className="flex items-center" onBlur={props.onBlur}>
+            <Checkbox.Root
                 checked={props.value}
-                onChange={props.onChange}
-                onBlur={props.onBlur}
+                onCheckedChange={props.onChange}
                 invalid={props.invalid}
                 className={props.className}
                 pt={props.pt}
                 ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
-            />
+                unstyled={props.unstyled}>
+                <Checkbox.Box>
+                    <Checkbox.Indicator />
+                </Checkbox.Box>
+            </Checkbox.Root>
             {props.label && <label className="ml-2">{props.label}</label>}
         </div>
     ),
     {
         defaultValue: false,
-        extractValue: (e: { checked: boolean }) => e.checked
+        extractValue: (e: CheckboxRootChangeEvent) => e.checked
     }
 );

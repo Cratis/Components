@@ -11,12 +11,13 @@
     "publishConfig": {
         "access": "public"
     },
+    "type": "module",
     "files": [
         "dist",
         "!dist/**/*.stories.*",
         "!dist/**/given.*"
     ],
-    "main": "dist/cjs/index.js",
+    "main": "dist/esm/index.js",
     "module": "dist/esm/index.js",
     "types": "dist/esm/index.d.ts",
     "sideEffects": [
@@ -26,92 +27,74 @@
         "./package.json": "./package.json",
         ".": {
             "types": "./dist/esm/index.d.ts",
-            "require": "./dist/cjs/index.js",
             "import": "./dist/esm/index.js"
         },
         "./CommandDialog": {
             "types": "./dist/esm/CommandDialog/index.d.ts",
-            "require": "./dist/cjs/CommandDialog/index.js",
             "import": "./dist/esm/CommandDialog/index.js"
         },
         "./CommandStepper": {
             "types": "./dist/esm/CommandDialog/CommandStepper.d.ts",
-            "require": "./dist/cjs/CommandDialog/CommandStepper.js",
             "import": "./dist/esm/CommandDialog/CommandStepper.js"
         },
         "./CommandForm": {
             "types": "./dist/esm/CommandForm/index.d.ts",
-            "require": "./dist/cjs/CommandForm/index.js",
             "import": "./dist/esm/CommandForm/index.js"
         },
         "./CommandForm/fields": {
             "types": "./dist/esm/CommandForm/index.d.ts",
-            "require": "./dist/cjs/CommandForm/index.js",
             "import": "./dist/esm/CommandForm/index.js"
         },
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
-            "require": "./dist/cjs/Common/index.js",
             "import": "./dist/esm/Common/index.js"
         },
         "./DataPage": {
             "types": "./dist/esm/DataPage/index.d.ts",
-            "require": "./dist/cjs/DataPage/index.js",
             "import": "./dist/esm/DataPage/index.js"
         },
         "./DataTables": {
             "types": "./dist/esm/DataTables/index.d.ts",
-            "require": "./dist/cjs/DataTables/index.js",
             "import": "./dist/esm/DataTables/index.js"
         },
         "./Dialogs": {
             "types": "./dist/esm/Dialogs/index.d.ts",
-            "require": "./dist/cjs/Dialogs/index.js",
             "import": "./dist/esm/Dialogs/index.js"
         },
         "./Dropdown": {
             "types": "./dist/esm/Dropdown/index.d.ts",
-            "require": "./dist/cjs/Dropdown/index.js",
             "import": "./dist/esm/Dropdown/index.js"
         },
         "./Filter": {
             "types": "./dist/esm/Filter/index.d.ts",
-            "require": "./dist/cjs/Filter/index.js",
             "import": "./dist/esm/Filter/index.js"
         },
         "./ObjectContentEditor": {
             "types": "./dist/esm/ObjectContentEditor/index.d.ts",
-            "require": "./dist/cjs/ObjectContentEditor/index.js",
             "import": "./dist/esm/ObjectContentEditor/index.js"
         },
         "./ObjectNavigationalBar": {
             "types": "./dist/esm/ObjectNavigationalBar/index.d.ts",
-            "require": "./dist/cjs/ObjectNavigationalBar/index.js",
             "import": "./dist/esm/ObjectNavigationalBar/index.js"
         },
         "./PivotViewer": {
             "types": "./dist/esm/PivotViewer/index.d.ts",
-            "require": "./dist/cjs/PivotViewer/index.js",
             "import": "./dist/esm/PivotViewer/index.js"
         },
         "./SchemaEditor": {
             "types": "./dist/esm/SchemaEditor/index.d.ts",
-            "require": "./dist/cjs/SchemaEditor/index.js",
             "import": "./dist/esm/SchemaEditor/index.js"
         },
         "./TimeMachine": {
             "types": "./dist/esm/TimeMachine/index.d.ts",
-            "require": "./dist/cjs/TimeMachine/index.js",
             "import": "./dist/esm/TimeMachine/index.js"
         },
         "./Toolbar": {
             "types": "./dist/esm/Toolbar/index.d.ts",
-            "require": "./dist/cjs/Toolbar/index.js",
             "import": "./dist/esm/Toolbar/index.js"
         },
         "./types": {
             "types": "./dist/esm/types/index.d.ts",
-            "require": "./dist/cjs/types/index.js",
             "import": "./dist/esm/types/index.js"
         },
         "./styles": "./dist/esm/tailwind-utilities.css",
@@ -132,16 +115,19 @@
         "build-storybook": "npx storybook build"
     },
     "dependencies": {
+        "@primereact/core": "11.0.0",
+        "@primereact/headless": "11.0.0",
         "allotment": "1.20.5",
         "framer-motion": "12.42.2",
         "pixi.js": "^8.19.0",
-        "primeicons": "7.0.0",
-        "primereact": "10.9.8",
+        "primeicons": "8.0.0",
+        "primereact": "11.0.0",
         "react-icons": "5.7.0",
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "^20.49.2"
+        "@cratis/arc.vite": "^20.49.2",
+        "@primeuix/themes": "3.0.0"
     },
     "peerDependencies": {
         "@cratis/arc": "^20.3.1",

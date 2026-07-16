@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { RadioButton, RadioButtonChangeEvent, type RadioButtonProps } from 'primereact/radiobutton';
+import { RadioButton } from 'primereact/radiobutton';
+import type { RadioButtonRootProps, RadioButtonRootChangeEvent } from '@primereact/types/primitive/radiobutton';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
@@ -23,9 +24,9 @@ interface RadioGroupFieldComponentProps extends WrappedFieldProps<string | numbe
     /** Extra CSS class name forwarded to the group container. */
     className?: string;
     /** PrimeReact pass-through configuration applied to every inner RadioButton. */
-    pt?: RadioButtonProps['pt'];
+    pt?: RadioButtonRootProps['pt'];
     /** PrimeReact pass-through options applied to every inner RadioButton. */
-    ptOptions?: RadioButtonProps['ptOptions'];
+    ptOptions?: RadioButtonRootProps['ptOptions'];
     /** When true, disables every base PrimeReact style on the inner RadioButtons. */
     unstyled?: boolean;
 }
@@ -59,17 +60,20 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                     const optValue = option[props.optionValue] as string | number;
                     const optLabel = option[props.optionLabel] as string;
                     return (
-                        <div key={String(optValue)} className="flex items-center">
-                            <RadioButton
+                        // `onBlur` rides on the wrapping div because React blur bubbles (focusout).
+                        <div key={String(optValue)} className="flex items-center" onBlur={props.onBlur}>
+                            <RadioButton.Root
                                 value={optValue}
                                 checked={props.value === optValue}
-                                onChange={(e: RadioButtonChangeEvent) => props.onChange(e.value)}
-                                onBlur={props.onBlur}
+                                onCheckedChange={(e: RadioButtonRootChangeEvent) => { if (e.checked) props.onChange(optValue); }}
                                 invalid={props.invalid}
                                 pt={props.pt}
                                 ptOptions={props.ptOptions}
-                                unstyled={props.unstyled}
-                            />
+                                unstyled={props.unstyled}>
+                                <RadioButton.Box>
+                                    <RadioButton.Indicator />
+                                </RadioButton.Box>
+                            </RadioButton.Root>
                             <label className="ml-2">{optLabel}</label>
                         </div>
                     );

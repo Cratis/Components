@@ -11,17 +11,26 @@ const { commandFormValidity, executeCommand, setCommandValues } = vi.hoisted(() 
     setCommandValues: vi.fn()
 }));
 
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, props.footer, props.children),
-}));
+vi.mock('primereact/dialog', () => {
+    // PrimeReact 11's Dialog is compositional; each part is a pass-through that
+    // renders its children so the footer buttons and content reach the markup.
+    const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
+    return {
+        Dialog: {
+            Root: part, Portal: part, Backdrop: part, Positioner: part, Popup: part,
+            Header: part, Title: part, Close: part, Content: part, Footer: part,
+        },
+    };
+});
 
 vi.mock('primereact/button', () => ({
-    Button: (props: { icon?: string; label?: string; onClick?: () => Promise<void> | void; disabled?: boolean }) => {
-        if (props.icon === 'pi pi-check' && props.onClick && props.disabled !== true) {
+    // PrimeReact 11 Button renders children (the v10 label/icon props are gone); the
+    // confirm button carries autoFocus, which stands in for the click in this SSR render.
+    Button: (props: { autoFocus?: boolean; onClick?: () => Promise<void> | void; disabled?: boolean; children?: React.ReactNode }) => {
+        if (props.autoFocus && props.onClick && props.disabled !== true) {
             void props.onClick();
         }
-        return React.createElement('button', { disabled: props.disabled }, props.label);
+        return React.createElement('button', { disabled: props.disabled }, props.children);
     },
 }));
 
@@ -72,7 +81,9 @@ describe('when CommandDialog validity is gated', () => {
         })
     );
 
-    const getOkButton = (html: string) => html.match(/<button[^>]*>Ok<\/button>/)?.[0] ?? '';
+    // The PrimeReact 11 Button renders its content as children, so the Ok button's
+    // markup is `<button ...><i .../><span>Ok</span></button>` — find it by its label span.
+    const getOkButton = (html: string) => (html.match(/<button[\s\S]*?<\/button>/g) ?? []).find(button => button.includes('>Ok<')) ?? '';
 
     afterEach(() => {
         commandFormValidity.isValid = true;

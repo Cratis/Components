@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { InputTextarea, type InputTextareaProps } from 'primereact/inputtextarea';
+import { Textarea } from 'primereact/textarea';
+import type { TextareaProps } from '@primereact/types/primitive/textarea';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
@@ -21,13 +22,13 @@ interface TextAreaFieldComponentProps extends WrappedFieldProps<string> {
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying InputTextarea. */
-    pt?: InputTextareaProps['pt'];
+    /** PrimeReact pass-through configuration applied to the underlying Textarea. */
+    pt?: TextareaProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying InputTextarea. */
-    ptOptions?: InputTextareaProps['ptOptions'];
+    /** PrimeReact pass-through options applied to the underlying Textarea. */
+    ptOptions?: TextareaProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying InputTextarea. */
+    /** When true, disables every base PrimeReact style on the underlying Textarea. */
     unstyled?: boolean;
 }
 
@@ -44,7 +45,7 @@ interface TextAreaFieldComponentProps extends WrappedFieldProps<string> {
  */
 export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
     (props) => (
-        <InputTextarea
+        <Textarea
             value={props.value}
             onChange={props.onChange}
             onBlur={props.onBlur}

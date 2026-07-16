@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Dropdown, type DropdownProps } from 'primereact/dropdown';
+import { Dropdown, type DropdownProps } from '../../Dropdown/Dropdown';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 

@@ -2,16 +2,17 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useMemo } from 'react';
-import { PrimeReactProvider } from 'primereact/api';
-import type { APIOptions } from 'primereact/api';
+import { PrimeReactProvider } from '@primereact/core';
+import type { PrimeReactProps } from '@primereact/types/core';
 import { merge } from 'ts-deepmerge';
 
 /**
- * Configuration accepted by {@link CratisComponentsProvider}. Mirrors PrimeReact's
- * {@link APIOptions} — the most commonly used members are `unstyled`, `pt`, `ptOptions`,
- * `inputStyle`, `ripple`, `appendTo`, `zIndex` and `locale`.
+ * Configuration accepted by {@link CratisComponentsProvider}. Mirrors PrimeReact 11's
+ * {@link PrimeReactProps} — the most commonly used members are `unstyled`, `pt`, `ptOptions`,
+ * `ripple`, `inputVariant`, `zIndex`, `locale`, and `theme` (`{ preset, options }` for the
+ * `@primeuix/themes` styled layer).
  */
-export type CratisComponentsConfig = Partial<APIOptions>;
+export type CratisComponentsConfig = Partial<PrimeReactProps>;
 
 export interface CratisComponentsProviderProps {
     /**
@@ -41,14 +42,25 @@ export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | unde
     merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
 
 /**
- * Single setup point for Cratis Components. Wraps {@link PrimeReactProvider} so the
- * library can layer Cratis-wide defaults on top of PrimeReact's pass-through and
- * unstyled mechanisms while still letting the consumer take complete control:
+ * Single setup point for Cratis Components. Wraps PrimeReact 11's
+ * {@link PrimeReactProvider} so the library can layer Cratis-wide defaults on top of
+ * PrimeReact's pass-through and unstyled mechanisms while still letting the consumer
+ * take complete control. PrimeReact 11 is unstyled-first, so this library ships no
+ * bundled theme — you choose the styling posture:
  *
- * - Pass `unstyled: true` to disable every PrimeReact base style. The wrappers in
- *   this package then render structurally only and pick up all visuals from your
- *   own CSS, Tailwind, or pt definitions.
+ * - **Unstyled (default posture):** pass nothing, or `unstyled: true`, and style the
+ *   structural markup yourself through the `--cratis-*` token layer, your own CSS,
+ *   Tailwind, or `pt` definitions.
+ * - **Styled:** pass `theme={{ preset }}` with a `@primeuix/themes` preset (for example
+ *   `import Aura from '@primeuix/themes/aura'`) to opt into a token-based styled look.
  * - Pass `pt` / `ptOptions` to apply global per-component pass-through.
+ *
+ * **PrimeUI license.** PrimeReact 11 is no longer MIT — its provider verifies a PrimeUI
+ * license on mount and, without one, logs a warning and shows an "Invalid PrimeUI License"
+ * banner (in development *and* production). Supply your key via `value={{ license: '…' }}`
+ * (a free Community tier covers individuals, non-profits, non-commercial OSS, and small
+ * orgs; otherwise a Commercial license is required — see primeui.store). The key flows
+ * straight through to PrimeReact's provider.
  *
  * Consumers who want to talk to PrimeReact directly may still mount
  * {@link PrimeReactProvider} themselves — this component is an optional convenience,
@@ -57,5 +69,5 @@ export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | unde
 export const CratisComponentsProvider = ({ value, children }: CratisComponentsProviderProps) => {
     const merged = useMemo<CratisComponentsConfig>(() => mergeCratisComponentsConfig(value), [value]);
 
-    return <PrimeReactProvider value={merged}>{children}</PrimeReactProvider>;
+    return <PrimeReactProvider {...merged}>{children}</PrimeReactProvider>;
 };
