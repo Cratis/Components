@@ -10,6 +10,8 @@ import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/command
 interface RatingFieldComponentProps extends WrappedFieldProps<number> {
     /** Number of stars. Defaults to `5`. */
     stars?: number;
+    /** Builds the accessible name for each star. Override to localize. Defaults to `` `${n} star(s)` ``. */
+    starAriaLabel?: (starValue: number) => string;
     /** Extra CSS class name. */
     className?: string;
     /** PrimeReact pass-through configuration applied to the underlying Rating. */
@@ -43,7 +45,7 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                         key={index}
                         value={index + 1}
                         index={index}
-                        aria-label={`${index + 1} ${index === 0 ? 'star' : 'stars'}`}>
+                        aria-label={(props.starAriaLabel ?? ((n) => `${n} ${n === 1 ? 'star' : 'stars'}`))(index + 1)}>
                         <Rating.On><i className="pi pi-star-fill" /></Rating.On>
                         <Rating.Off><i className="pi pi-star" /></Rating.Off>
                     </Rating.Option>

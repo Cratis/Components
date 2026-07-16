@@ -104,6 +104,9 @@ export interface DialogProps {
     /** Override the No button label. Defaults to `'No'`. */
     noLabel?: string;
 
+    /** Accessible name for the header close button. Override to localize. Defaults to `'Close'`. */
+    closeAriaLabel?: string;
+
     /**
      * Whether the dialog can be dismissed via the header close button, a
      * backdrop click, or the Escape key. When omitted, the dialog is
@@ -233,6 +236,7 @@ export const Dialog = ({
     cancelLabel = 'Cancel',
     yesLabel = 'Yes',
     noLabel = 'No',
+    closeAriaLabel = 'Close',
     dismissable,
     className,
     pt,
@@ -386,7 +390,7 @@ export const Dialog = ({
                         <PrimeDialog.Header>
                             <PrimeDialog.Title>{headerElement}</PrimeDialog.Title>
                             {isDismissable && (
-                                <PrimeDialog.Close aria-label="Close">
+                                <PrimeDialog.Close aria-label={closeAriaLabel}>
                                     <i className="pi pi-times" />
                                 </PrimeDialog.Close>
                             )}

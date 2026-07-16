@@ -43,6 +43,8 @@ export interface DataTableCoreProps<TData extends object> {
     emptyMessage: ReactNode;
     /** Enables single-row selection by clicking a row. */
     selectionMode?: 'single';
+    /** Accessible name for each row's selection control. Override to localize. Defaults to `'Select row'`. */
+    selectionAriaLabel?: string;
     /** The currently-selected row. */
     selection?: TData | null;
     /** Invoked when the selected row changes. */
@@ -111,6 +113,7 @@ export const DataTableCore = <TData extends object>({
     dataKey,
     emptyMessage,
     selectionMode,
+    selectionAriaLabel = 'Select row',
     selection,
     onSelectionChange,
     onRowClick,
@@ -227,7 +230,7 @@ export const DataTableCore = <TData extends object>({
                                             <input
                                                 type="radio"
                                                 readOnly
-                                                aria-label="Select row"
+                                                aria-label={selectionAriaLabel}
                                                 checked={!!selection && keyOf(item as TData) === keyOf(selection)}
                                             />
                                         ) : (

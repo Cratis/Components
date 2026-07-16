@@ -13,7 +13,7 @@ import './Toaster.css';
  * imperative `toast(...)` calls push into the same module-level store this
  * subscribes to, so a single mounted region shows toasts from anywhere.
  */
-const ToastList = () => {
+const ToastList = ({ dismissAriaLabel }: { dismissAriaLabel: string }) => {
     const toaster = useToasterContext();
     if (!toaster) return null;
 
@@ -30,7 +30,7 @@ const ToastList = () => {
                         <Toast.Title />
                         <Toast.Description />
                     </Toast.Content>
-                    <Toast.Close aria-label="Dismiss">
+                    <Toast.Close aria-label={dismissAriaLabel}>
                         <i className="pi pi-times" />
                     </Toast.Close>
                 </Toast.Root>
@@ -47,6 +47,8 @@ export interface ToasterProps {
     limit?: number;
     /** Auto-dismiss timeout in milliseconds. Defaults to `6000`. Per-toast `duration` overrides it. */
     timeout?: number;
+    /** Accessible name for each toast's dismiss button. Override to localize. Defaults to `'Dismiss'`. */
+    dismissAriaLabel?: string;
 }
 
 /**
@@ -72,11 +74,11 @@ export interface ToasterProps {
  *
  * To surface an Arc command result automatically, see {@link toastCommandResult}.
  */
-export const Toaster = ({ position = 'top-right', limit = 3, timeout = 6000 }: ToasterProps) => (
+export const Toaster = ({ position = 'top-right', limit = 3, timeout = 6000, dismissAriaLabel = 'Dismiss' }: ToasterProps) => (
     <PrimeToaster.Root position={position} limit={limit} timeout={timeout}>
         <PrimeToaster.Portal>
             <PrimeToaster.Region>
-                <ToastList />
+                <ToastList dismissAriaLabel={dismissAriaLabel} />
             </PrimeToaster.Region>
         </PrimeToaster.Portal>
     </PrimeToaster.Root>

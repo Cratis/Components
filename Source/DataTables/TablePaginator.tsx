@@ -17,6 +17,14 @@ export interface TablePaginatorProps {
     totalItems?: number;
     /** Rows per page — enables the "X–Y of Z" range report. */
     pageSize?: number;
+    /** Accessible names for the paginator and its controls. Override any to localize. */
+    ariaLabels?: {
+        navigation?: string;
+        first?: string;
+        previous?: string;
+        next?: string;
+        last?: string;
+    };
     /** Extra class name for the paginator container. */
     className?: string;
 }
@@ -28,28 +36,30 @@ export interface TablePaginatorProps {
  * table's internal pagination — so this renders the page controls wired to a
  * simple `onPageChange(pageIndex)` callback.
  */
-export const TablePaginator = ({ page, pageCount, onPageChange, totalItems, pageSize, className }: TablePaginatorProps) => {
+export const TablePaginator = ({ page, pageCount, onPageChange, totalItems, pageSize, ariaLabels, className }: TablePaginatorProps) => {
     const isFirst = page <= 0;
     const isLast = page >= pageCount - 1;
     const rangeReport = paginatorRange(page, pageSize, totalItems);
+    // English defaults; a consumer overrides any of these to localize.
+    const labels = { navigation: 'Pagination', first: 'First page', previous: 'Previous page', next: 'Next page', last: 'Last page', ...ariaLabels };
 
     return (
         <div
             role="navigation"
-            aria-label="Pagination"
+            aria-label={labels.navigation}
             className={className ? `cratis-table-paginator ${className}` : 'cratis-table-paginator'}>
             {rangeReport && <span className="cratis-table-paginator-range">{rangeReport}</span>}
-            <Button variant="text" disabled={isFirst} onClick={() => onPageChange(0)} aria-label="First page">
+            <Button variant="text" disabled={isFirst} onClick={() => onPageChange(0)} aria-label={labels.first}>
                 <i className="pi pi-angle-double-left" />
             </Button>
-            <Button variant="text" disabled={isFirst} onClick={() => onPageChange(page - 1)} aria-label="Previous page">
+            <Button variant="text" disabled={isFirst} onClick={() => onPageChange(page - 1)} aria-label={labels.previous}>
                 <i className="pi pi-angle-left" />
             </Button>
             <span className="cratis-table-paginator-info">{page + 1} / {Math.max(pageCount, 1)}</span>
-            <Button variant="text" disabled={isLast} onClick={() => onPageChange(page + 1)} aria-label="Next page">
+            <Button variant="text" disabled={isLast} onClick={() => onPageChange(page + 1)} aria-label={labels.next}>
                 <i className="pi pi-angle-right" />
             </Button>
-            <Button variant="text" disabled={isLast} onClick={() => onPageChange(pageCount - 1)} aria-label="Last page">
+            <Button variant="text" disabled={isLast} onClick={() => onPageChange(pageCount - 1)} aria-label={labels.last}>
                 <i className="pi pi-angle-double-right" />
             </Button>
         </div>
