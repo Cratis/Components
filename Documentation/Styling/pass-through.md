@@ -70,14 +70,14 @@ The wrapper composes more than one PrimeReact widget and exposes a sibling set o
 | Prop | Targets |
 |---|---|
 | `pt` / `ptOptions` / `unstyled` / `className` | The inner DataTable. |
-| `paginatorPt` / `paginatorPtOptions` / `paginatorUnstyled` | The inner Paginator. |
+| `paginatorClassName` / `paginatorAriaLabels` | The paginator (a Cratis button control — styled by class name, not `pt`). |
 
-`DataPage` composes a DataTable **and** a Menubar:
+`DataPage` composes a DataTable **and** an action toolbar:
 
 | Prop | Targets |
 |---|---|
 | `tablePt` / `tablePtOptions` / `tableUnstyled` / `tableClassName` | The inner DataTable. |
-| `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` | The action Menubar. |
+| `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` | The action toolbar's buttons (PrimeReact 11 replaced the v10 Menubar with a button toolbar). |
 
 ```tsx
 <DataPage<AllAuthors, Author, never>

@@ -94,8 +94,7 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `selection`: Currently selected item
 - `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
-- `defaultFilters`: Initial filter state (see [DataTableFilterMeta](https://primereact.org/datatable/))
-- `clientFiltering`: Enable client-side filtering (default: `false`)
+- `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
 - `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
 - `detailsComponent`: Component to render in the resizable details panel when a row is selected
 

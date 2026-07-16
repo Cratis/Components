@@ -52,8 +52,8 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 - `selection`: Currently selected row
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
-- `defaultFilters`: Initial filter configuration
-- `clientFiltering`: Enable client-side filtering (default: `false`)
+- `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
+- `paginatorClassName` / `paginatorAriaLabels`: styling and localization for the paginator
 - `children`: Column definitions
 
 ## Observable Behavior

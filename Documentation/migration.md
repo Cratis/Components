@@ -67,6 +67,19 @@ Styling options are passed through the provider's single `value` prop — `value
 
 Existing `Dialog` / `CommandDialog` / `StepperCommandDialog` APIs are unchanged. `Dialog` gains an additive `dismissable` prop; `resizable` is accepted but has no effect (PrimeReact 11's headless dialog has no built-in resize handle). `CommandStepper` / `StepperCommandDialog` keep their public props, including `orientation`, `headerPosition`, and `start` / `end`.
 
+## Reduced capabilities (forced by PrimeReact 11)
+
+A few v10 features have no PrimeReact 11 equivalent. The props are kept so your code still compiles, but they no longer do anything — remove them or adopt the alternative:
+
+| Prop | What changed |
+|---|---|
+| `Dialog` `resizable` | v11's headless dialog has no resize handle — no effect. |
+| `ChipsField` `separator` | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split into chips. |
+| `MultiSelectField` `display` / `maxSelectedLabels` | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone. |
+| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Deprecated — filtering is always applied client-side to the loaded page; the toggle has no effect. |
+
+Some wrappers also narrowed their surface (they no longer leak PrimeReact's full API): `Column` keeps `field` / `header` / `body` / `sortable` / `filter` (v10 extras like `editor`, `frozen`, `footer`, `colSpan`, `expander` are dropped); `Dropdown` exposes a curated single/multi select surface plus `pt` / `ptOptions` / `unstyled`; and the `DataPage` action toolbar replaces the v10 Menubar, so `menubarPt` now targets the toolbar's buttons and the paginator is styled via `paginatorClassName` (+ `paginatorAriaLabels`), not `pt`.
+
 ## What's new (nothing to migrate — just available)
 
 - **[Notifications](Notifications/index.md)** — `Toaster`, the imperative `toast`, and `toastCommandResult(result)` to surface an Arc command result as a toast.

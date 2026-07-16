@@ -87,7 +87,26 @@ effect (PrimeReact 11's headless dialog has no built-in resize handle).
 PrimeReact's `StepperProps`) — if you imported it, the shape is the same minus
 the removed slots.
 
-## 7. What's new (nothing to migrate — just available)
+## 7. Reduced capabilities (forced by PrimeReact 11)
+
+A few v10 features have no PrimeReact 11 equivalent. The props are **kept so your
+code still compiles**, but they no longer do anything — remove them or adopt the
+alternative:
+
+| Prop | What changed |
+|---|---|
+| `Dialog` `resizable` | v11's headless dialog has no resize handle — no effect. |
+| `ChipsField` `separator` | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split into chips. |
+| `MultiSelectField` `display` / `maxSelectedLabels` | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone. |
+| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Deprecated — filtering is always applied client-side to the loaded page; the toggle has no effect. |
+
+Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
+
+- **`Column`** keeps the `field` / `header` / `body` / `sortable` / `filter` authoring model; v10 extras like `editor`, `frozen`, `footer`, `colSpan`, and `expander` are not carried over.
+- **`Dropdown`** exposes a curated single/multi select surface (`value`, `options`, `optionLabel`/`optionValue`, `placeholder`, `filter`, `multiple`, `showClear`, `style`, `id`, `name`, `aria-*`, …) plus `pt` / `ptOptions` / `unstyled` — it no longer accepts arbitrary PrimeReact Select props.
+- The **`DataPage` action toolbar** replaces the v10 Menubar: `menubarPt` / `menubarPtOptions` / `menubarUnstyled` now target the toolbar's **buttons**, and the paginator is styled via `paginatorClassName` (+ `paginatorAriaLabels`), not `pt`.
+
+## 8. What's new (nothing to migrate — just available)
 
 - **`@cratis/components/Notifications`** — `Toaster`, the imperative `toast`, and
   `toastCommandResult(result)` to surface an Arc command result as a toast.
