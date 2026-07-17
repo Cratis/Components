@@ -3,6 +3,11 @@
 
 export * from './DataTableForQuery';
 export * from './DataTableForObservableQuery';
+export * from './DataTableCore';
+export * from './TableRenderer';
+export * from './DataTableRowClickEvent';
+export * from './bindQuery';
+export * from './bindObservableQuery';
 export * from './Column';
 export * from './ColumnFilterMenu';
 export * from './DataTableSelectionChangeEvent';

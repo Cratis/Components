@@ -6,3 +6,5 @@
   href: data-table-for-observable-query.md
 - name: Column Configuration
   href: column-configuration.md
+- name: Bring your own table renderer
+  href: bring-your-own-renderer.md

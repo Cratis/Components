@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import React, { useMemo, useState, type ReactNode } from 'react';
 import { DataTable as PrimeDataTable } from 'primereact/datatable';
 import { InputText } from 'primereact/inputtext';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
@@ -9,66 +9,32 @@ import type { UseDataTableSelectionEvent, UseDataTableRowMouseEvent, UseDataTabl
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
 import { selectionKeysForRow, rowFromSelectionKeys } from './selectionKeys';
-import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
+import type { TableRendererProps } from './TableRenderer';
 import './DataTableCore.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/**
- * Row-click event surfaced by {@link DataTableCore}.
- *
- * @typeParam TData - The row type.
- */
-export interface DataTableRowClickEvent<TData> {
-    /** The clicked row. */
-    data: TData;
-    /** The row's index in the current page. */
-    index: number;
-}
+// Re-exported for source compatibility — the canonical definition now lives in
+// its own file so the rendering-seam contract (TableRenderer) can reference it.
+export type { DataTableRowClickEvent } from './DataTableRowClickEvent';
 
 /**
- * Props for {@link DataTableCore}.
+ * Props for {@link DataTableCore} — the {@link TableRendererProps} rendering
+ * seam plus the PrimeReact pass-through and rendering extras specific to this
+ * default, PrimeReact-based implementation.
  *
  * @typeParam TData - The row type.
  */
-export interface DataTableCoreProps<TData extends object> {
-    /** The rows to render (already paged by the caller). */
-    data: TData[];
-    /** `<Column>` elements describing the columns. */
-    children?: ReactNode;
-    /** The row property uniquely identifying each row — required for selection. */
-    dataKey?: string;
-    /** Content shown when there are no rows. */
-    emptyMessage: ReactNode;
-    /** Enables single-row selection by clicking a row. */
-    selectionMode?: 'single';
+export interface DataTableCoreProps<TData extends object> extends TableRendererProps<TData> {
     /** Accessible name for each row's selection control. Override to localize. Defaults to `'Select row'`. */
     selectionAriaLabel?: string;
-    /** The currently-selected row. */
-    selection?: TData | null;
-    /** Invoked when the selected row changes. */
-    onSelectionChange?: (event: DataTableSelectionChangeEvent<TData>) => void;
-    /** Invoked when a row is clicked. */
-    onRowClick?: (event: DataTableRowClickEvent<TData>) => void;
     /** Computes an extra class name for each row. */
     rowClassName?: (rowData: TData) => string;
-    /** The fields the global search term is matched against. When set, a search box is shown above the table. */
-    globalFilterFields?: string[];
     /** Placeholder for the global search box. */
     globalSearchPlaceholder?: string;
-    /** Initial per-column filter state. */
-    defaultFilters?: DataTableFilterMeta;
     /** Invoked whenever the per-column filter state changes. */
     onFilter?: (filters: DataTableFilterMeta) => void;
-    /** Renders the table body in a scroll region of {@link scrollHeight}. */
-    scrollable?: boolean;
-    /** The height of the scroll region when {@link scrollable} is set. */
-    scrollHeight?: string;
-    /** Extra class name for the table root. */
-    className?: string;
-    /** Inline style for the table root. */
-    style?: CSSProperties;
     /** PrimeReact pass-through configuration for the underlying DataTable. */
     pt?: DataTableRootProps['pt'];
     /** PrimeReact pass-through options for the underlying DataTable. */

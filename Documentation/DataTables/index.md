@@ -31,8 +31,17 @@ Both table components share:
 - Empty state messages
 - PrimeReact Column support
 
+## Bring your own renderer
+
+Both tables are built on a small, UI-library-agnostic rendering seam: Cratis
+owns the query and paging behavior, and hands rendering off to any component
+that satisfies the `TableRenderer` contract. `DataTableForQuery` is just
+`bindQuery(DataTableCore)`. To render a query's paged rows with your own table
+implementation, see [Bring your own table renderer](bring-your-own-renderer.md).
+
 ## See Also
 
 - [DataTableForQuery](data-table-for-query.md) - Standard query tables
 - [DataTableForObservableQuery](data-table-for-observable-query.md) - Real-time tables
 - [Column Configuration](column-configuration.md) - Customizing columns
+- [Bring your own table renderer](bring-your-own-renderer.md) - Plug in a custom renderer
