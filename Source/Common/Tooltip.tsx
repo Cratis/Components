@@ -13,6 +13,12 @@ export interface TooltipProps {
     content: string;
     /** Where the tooltip appears relative to the trigger (default: 'top'). */
     position?: TooltipPosition;
+    /**
+     * When true, the tooltip is suppressed and never appears on hover (default: false).
+     * Useful when the trigger has expanded into a submenu/fan-out panel and the hover
+     * label would otherwise overlap the revealed content.
+     */
+    disabled?: boolean;
     /** The element that triggers the tooltip on hover. */
     children: React.ReactNode;
 }
@@ -28,17 +34,19 @@ const POSITION_CLASSES: Record<TooltipPosition, string> = {
  * A CSS-only hover tooltip wrapper. Wraps any child element and displays
  * a styled floating label on hover without relying on native browser tooltips.
  */
-export const Tooltip: React.FC<TooltipProps> = ({ content, position = 'top', children }) => (
+export const Tooltip: React.FC<TooltipProps> = ({ content, position = 'top', disabled = false, children }) => (
     <div className='relative group inline-flex'>
         {children}
-        <div
-            role='tooltip'
-            className={`tooltip-bubble pointer-events-none absolute ${POSITION_CLASSES[position]} z-50
-                text-xs px-2 py-1 rounded
-                whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 delay-200`}
-            style={{ fontFamily: 'system-ui, sans-serif' }}
-        >
-            {content}
-        </div>
+        {!disabled && (
+            <div
+                role='tooltip'
+                className={`tooltip-bubble pointer-events-none absolute ${POSITION_CLASSES[position]} z-50
+                    text-xs px-2 py-1 rounded
+                    whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 delay-200`}
+                style={{ fontFamily: 'system-ui, sans-serif' }}
+            >
+                {content}
+            </div>
+        )}
     </div>
 );

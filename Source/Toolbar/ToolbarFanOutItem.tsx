@@ -71,7 +71,7 @@ export const ToolbarFanOutItem = ({
 
     return (
         <div className='toolbar-fanout-item' ref={containerRef}>
-            <Tooltip content={tooltip} position={tooltipPosition}>
+            <Tooltip content={tooltip} position={tooltipPosition} disabled={isExpanded}>
                 <button
                     type='button'
                     aria-label={tooltip}
