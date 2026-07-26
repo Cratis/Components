@@ -11,10 +11,10 @@ In a PrimeReact app, the screen often owns request creation, loading state, dial
 
 ## A command form
 
-You have a dialog with a field and a save button. By hand, that's local state, a loading flag, a fetch, and footer buttons:
+You have a dialog with a field and a save button. By hand, that's local state, a saving flag, a fetch, and footer buttons you wire yourself:
 
 ```tsx
-// PrimeReact, local state
+// Manual: local state, a saving flag, a fetch, and hand-wired footer buttons
 const [name, setName] = useState('');
 const [saving, setSaving] = useState(false);
 
@@ -28,10 +28,10 @@ const save = async () => {
     setSaving(false);
 };
 
-<Dialog header="Add author" visible={visible} onHide={hide} footer={
+<Dialog title="Add author" onCancel={hide} buttons={
     <>
-        <Button label="Cancel" onClick={hide} />
-        <Button label="Add" loading={saving} onClick={save} />
+        <Button onClick={hide}>Cancel</Button>
+        <Button disabled={saving} onClick={save}>Add</Button>
     </>
 }>
     <InputText value={name} onChange={e => setName(e.target.value)} />
@@ -106,13 +106,13 @@ Selection, the resizable split, and disabling menu items until a row is selected
 | `DataTable value={...}` + `useEffect` fetch | `DataTableForObservableQuery query={...}` (live) or `DataTableForQuery` |
 | Split panes + selection + detail wiring | `DataPage` with `detailsComponent` |
 | A multi-step wizard you build yourself | `StepperCommandDialog` |
-| A PrimeReact theme | the same theme, plus `--cratis-*` tokens for repainting |
+| A PrimeReact theme | the Cratis baseline theme or a `@primeuix/themes` preset, plus `--cratis-*` tokens for repainting |
 
 ## What stays the same
 
-- It's still PrimeReact underneath. `Column`, `Button`, icons, and your chosen theme all work as you know them.
+- It's still PrimeReact underneath — `Column`, `Button`, and icons all work as you know them. (One PrimeReact 11 change to keep in mind: `Button` renders its content as **children**, not a `label`/`icon` prop.)
 - You keep using plain PrimeReact for purely presentational widgets that aren't tied to a command or query — the two coexist happily on the same screen.
-- Your styling knowledge carries over; Components renders PrimeReact in unstyled mode and reads colors and spacing from tokens you control. See [Styling](/components/styling/).
+- Your styling knowledge carries over; PrimeReact 11 is unstyled-first, so Components reads colors and spacing from the theme and tokens you control — the license-free Cratis baseline theme, a `@primeuix/themes` preset, or your own `pt`. See [Styling](/components/styling/).
 
 ## What changes (and why it's less code)
 

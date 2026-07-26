@@ -3,7 +3,8 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 # Find all CSS files (excluding node_modules, dist, and .storybook)
-# and copy them to both dist/esm and dist/cjs directories
+# and copy them into the ESM output directory. PrimeReact 11 is ESM-only, so
+# the package ships a single ESM build — there is no CJS output.
 
 find . -name '*.css' \
   -not -path './node_modules/*' \
@@ -11,17 +12,15 @@ find . -name '*.css' \
   -not -path './.storybook/*' \
   -not -name 'tailwind.css' \
   -not -name 'tailwind-utilities.css' | while read -r file; do
-  
+
   # Remove the leading './'
   relative_path="${file#./}"
-  
-  # Create directory structure and copy file to both output directories
+
+  # Create directory structure and copy file to the ESM output directory
   mkdir -p "dist/esm/$(dirname "$relative_path")"
-  mkdir -p "dist/cjs/$(dirname "$relative_path")"
-  
+
   cp "$file" "dist/esm/$relative_path"
-  cp "$file" "dist/cjs/$relative_path"
-  
+
   echo "Copied $relative_path"
 done
 

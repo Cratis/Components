@@ -2,7 +2,9 @@
   href: index.md
 - name: Getting Started
   href: getting-started.md
-- name: Use a PrimeReact theme
+- name: Use the Cratis baseline theme (no license)
+  href: baseline-theme.md
+- name: Use a PrimeReact theme (preset, needs a license)
   href: themed.md
 - name: Use a custom palette on top of a PrimeReact theme
   href: custom-palette.md

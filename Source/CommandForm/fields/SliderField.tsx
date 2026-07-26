@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Slider, type SliderProps } from 'primereact/slider';
+import { Slider } from 'primereact/slider';
+import type { SliderRootProps, SliderRootChangeEvent } from '@primereact/types/primitive/slider';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
@@ -22,10 +23,10 @@ interface SliderFieldComponentProps extends WrappedFieldProps<number> {
     className?: string;
 
     /** PrimeReact pass-through configuration applied to the underlying Slider. */
-    pt?: SliderProps['pt'];
+    pt?: SliderRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the underlying Slider. */
-    ptOptions?: SliderProps['ptOptions'];
+    ptOptions?: SliderRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the underlying Slider. */
     unstyled?: boolean;
@@ -43,17 +44,21 @@ interface SliderFieldComponentProps extends WrappedFieldProps<number> {
 export const SliderField = asCommandFormField<SliderFieldComponentProps>(
     (props) => (
         <div className="w-full" onBlur={props.onBlur}>
-            <Slider
+            <Slider.Root
                 value={props.value}
-                onChange={(e) => props.onChange(e.value)}
+                onValueChange={(e: SliderRootChangeEvent) => props.onChange(Array.isArray(e.value) ? (e.value[0] ?? 0) : e.value)}
                 min={props.min ?? 0}
                 max={props.max ?? 100}
                 step={props.step ?? 1}
                 className={props.className ? `w-full ${props.className}` : 'w-full'}
                 pt={props.pt}
                 ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
-            />
+                unstyled={props.unstyled}>
+                <Slider.Track>
+                    <Slider.Range />
+                </Slider.Track>
+                <Slider.Handle />
+            </Slider.Root>
             <div className="text-center mt-2">
                 <span className="font-semibold">{props.value}</span>
             </div>

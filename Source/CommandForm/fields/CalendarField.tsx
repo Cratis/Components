@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { Calendar, type CalendarProps } from 'primereact/calendar';
+import { DatePickerInput } from '../../Common/DatePickerInput';
+import type { DatePickerRootProps } from '@primereact/types/primitive/datepicker';
 import React from 'react';
 
 /**
@@ -33,13 +34,13 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying Calendar. */
-    pt?: CalendarProps['pt'];
+    /** PrimeReact pass-through configuration applied to the underlying DatePicker. */
+    pt?: DatePickerRootProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying Calendar. */
-    ptOptions?: CalendarProps['ptOptions'];
+    /** PrimeReact pass-through options applied to the underlying DatePicker. */
+    ptOptions?: DatePickerRootProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying Calendar. */
+    /** When true, disables every base PrimeReact style on the underlying DatePicker. */
     unstyled?: boolean;
 }
 
@@ -58,9 +59,9 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
  */
 export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
     (props) => (
-        <Calendar
+        <DatePickerInput
             value={props.value}
-            onChange={(e: { value: Date | null | undefined }) => props.onChange(e.value ?? null)}
+            onChange={props.onChange}
             onBlur={props.onBlur}
             invalid={props.invalid}
             placeholder={props.placeholder}
@@ -70,7 +71,7 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
             hourFormat={props.hourFormat}
             minDate={props.minDate}
             maxDate={props.maxDate}
-            className={props.className ? `w-full ${props.className}` : 'w-full'}
+            className={props.className}
             pt={props.pt}
             ptOptions={props.ptOptions}
             unstyled={props.unstyled}

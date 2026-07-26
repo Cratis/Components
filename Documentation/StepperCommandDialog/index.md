@@ -24,7 +24,7 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 
 ```typescript
 import { StepperCommandDialog } from '@cratis/components/CommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '@cratis/components/CommandDialog';
 import { InputTextField, TextAreaField, NumberField } from '@cratis/components/CommandForm/fields';
 import { CommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
@@ -187,7 +187,7 @@ Cancel is always available via the X button in the dialog header. The Submit but
 
 ## Step Structure
 
-Each step is defined by a `StepperPanel` from `primereact/stepperpanel`. The `header` prop sets the step title shown in the stepper navigation:
+Each step is defined by a `StepperPanel` from `@cratis/components/CommandDialog`. The `header` prop sets the step title shown in the stepper navigation:
 
 ```tsx
 <StepperPanel header="Contact Details">

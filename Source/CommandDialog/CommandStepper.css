@@ -1,10 +1,6 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-.p-stepper [data-pc-section="header"][data-p-active="false"] {
-    opacity: 0.5;
-}
-
 /* Make stepper and its panels fill available width */
 .cratis-command-stepper {
     display: flex;
@@ -13,12 +9,57 @@
     width: 100%;
 }
 
-.cratis-command-stepper .p-stepper {
+/* PrimeReact 11 stepper parts carry data-scope/data-part attributes rather
+   than the v10 .p-stepper* class names, so key structural rules off those. */
+.cratis-command-stepper [data-scope="stepper"][data-part="root"] {
     width: 100%;
 }
 
-.cratis-command-stepper .p-stepperpanel-content {
+.cratis-command-stepper [data-scope="stepper"][data-part="panel"] {
     width: 100%;
     box-sizing: border-box;
 }
 
+/* Dim the header of steps that are not currently active */
+.cratis-command-stepper [data-scope="stepper"][data-part="step"]:not([data-active]) [data-part="header"] {
+    opacity: 0.5;
+}
+
+/* Horizontal (default): the step list flows left-to-right. */
+.cratis-command-stepper--horizontal [data-scope="stepper"][data-part="list"] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+/* Vertical: the step list is a stacked column beside the panels. */
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="root"] {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="list"] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="step"] {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="separator"] {
+    width: 2px;
+    min-height: 1.25rem;
+    margin-left: 0.9rem;
+}
+
+.cratis-command-stepper--vertical [data-scope="stepper"][data-part="panels"] {
+    flex: 1;
+    min-width: 0;
+}

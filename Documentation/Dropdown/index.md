@@ -8,11 +8,9 @@ Dropdown provides a select component that correctly appears above dialogs and ot
 
 ## Key Features
 
-- Full PrimeReact Dropdown functionality
-- Automatic z-index management
-- Works inside dialogs
-- Appends to document body by default
-- All PrimeReact Dropdown props supported
+- Single or multiple selection (set `multiple`)
+- Renders through PrimeReact 11's overlay manager, so it stacks correctly above dialogs — no manual z-index
+- A small, curated prop surface (below) plus `pt` / `ptOptions` / `unstyled` for full styling control
 
 ## Quick Start
 
@@ -41,23 +39,33 @@ function MyForm() {
 
 ## Props
 
-All PrimeReact Dropdown props are supported. See [PrimeReact Dropdown Documentation](https://primereact.org/dropdown/) for complete list.
-
-### Common Props
+`Dropdown` exposes a wrapper-owned surface — the common single/multi select props every Cratis form needs — rather than leaking PrimeReact's entire Select API. For anything beyond this, use `pt` / `ptOptions` / `unstyled`.
 
 ```typescript
-interface DropdownProps {
-    value?: unknown;
-    options: Array<{ label: string; value: unknown }>;
-    onChange?: (e: { value: unknown }) => void;
+interface DropdownProps<T = unknown> {
+    value?: T;
+    options?: unknown[];
+    optionLabel?: string;                       // property used as the visible label
+    optionValue?: string;                       // property used as the underlying value
     placeholder?: string;
-    disabled?: boolean;
-    filter?: boolean;
-    filterPlaceholder?: string;
+    filter?: boolean;                           // filter input inside the popup
+    multiple?: boolean;                         // multi-select
     showClear?: boolean;
-    optionLabel?: string;
-    optionValue?: string;
-    // ... all other PrimeReact Dropdown props
+    invalid?: boolean;
+    disabled?: boolean;
+    onChange?: (event: DropdownChangeEvent<T>) => void;   // event.value is typed as T
+    onBlur?: React.FocusEventHandler<HTMLElement>;
+    // identity / accessibility / styling forwarded to the Select root:
+    className?: string;
+    style?: React.CSSProperties;
+    id?: string;
+    name?: string;
+    tabIndex?: number;
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
+    pt?: SelectRootProps['pt'];
+    ptOptions?: SelectRootProps['ptOptions'];
+    unstyled?: boolean;
 }
 ```
 

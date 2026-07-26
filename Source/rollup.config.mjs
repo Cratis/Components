@@ -7,8 +7,7 @@ import pkg from './package.json' with { type: 'json' };
 
 import path from "path";
 
-const cjsPath = path.dirname(pkg.main);
 const esmPath = path.dirname(pkg.module);
 const tsconfigPath = path.join(import.meta.dirname, "tsconfig.json");
 
-export default rollup(cjsPath, esmPath, tsconfigPath, pkg);
+export default rollup(esmPath, tsconfigPath, pkg);

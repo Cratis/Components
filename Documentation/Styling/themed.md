@@ -1,31 +1,30 @@
 # Use a PrimeReact theme
 
-You want components to look reasonable out of the box and only intervene when needed. Use this setup for prototypes, internal tools, or any app where one of the prebuilt PrimeReact themes is a good fit.
+You want components to look reasonable out of the box using one of PrimeReact's own design systems. PrimeReact 11 is unstyled-first, so a *theme* comes from a **`@primeuix/themes` preset** — Aura, Lara, Nora, or Material — applied through the provider.
+
+> **Licensing.** Applying a `@primeuix/themes` preset needs a **PrimeUI license key** (a free community tier or a paid one). If you want a polished look with **no license**, use the [Cratis baseline theme](baseline-theme.md) instead.
 
 ## Setup
 
-Load any PrimeReact theme stylesheet alongside Cratis Components. PrimeReact's own widgets paint themselves from the theme, and the `--cratis-*` tokens cascade to the matching theme variables so Cratis-scoped surfaces follow along:
+Install `@primeuix/themes`, pick a preset, and pass it — together with your license key — through the provider's single `value` prop. The preset paints PrimeReact's own widgets, and the `--cratis-*` tokens follow the preset so Cratis-scoped surfaces stay in sync:
 
 ```tsx
-// 1. Theme first, then Cratis styles so any --cratis-* override wins.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
-import 'primeicons/primeicons.css';
 import '@cratis/components/styles';
-
+import Aura from '@primeuix/themes/aura';
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider>
+    <CratisComponentsProvider value={{ theme: { preset: Aura }, license: 'YOUR-PRIMEUI-KEY' }}>
         <YourApp />
     </CratisComponentsProvider>
 );
 ```
 
-Available themes ship inside the `primereact/resources/themes/` directory — Lara, Soho, Viva, Vela, Bootstrap, Material, Tailwind, and others, each in light/dark and a handful of accent colors. Pick whichever matches your app.
+Presets ship in the `@primeuix/themes` package — Aura, Lara, Nora, and Material — each customizable with `definePreset`. Without a license key, PrimeReact logs a warning and shows an "Invalid PrimeUI License" banner in development **and** production.
 
 ## Override one component with CSS
 
-When you want to tweak a single widget without redesigning anything, plain CSS works on top of the theme. Target PrimeReact's own class names for global overrides:
+When you want to tweak a single widget without redesigning anything, plain CSS works on top of the preset. A `@primeuix/themes` preset's widgets carry PrimeReact's own `.p-*` class names, so a global rule reaches them:
 
 ```css
 /* yourApp.css */
@@ -44,7 +43,7 @@ When you want to tweak a single widget without redesigning anything, plain CSS w
 ```
 
 ```tsx
-<Button label="Delete" className="dangerous-button" />
+<Button className="dangerous-button">Delete</Button>
 ```
 
 ## Override one component with Tailwind
@@ -64,7 +63,7 @@ For multi-slot composites like `StepperCommandDialog` or `DataPage`, the `classN
 
 ## Tint a specific Cratis surface
 
-Validation error text, the FormElement addon, breadcrumb bottom borders, and other Cratis-specific surfaces read from `--cratis-*` tokens (not from PrimeReact's variables). Override the relevant token to retint just those surfaces while leaving the PrimeReact theme untouched:
+Validation error text, the FormElement addon, breadcrumb bottom borders, and other Cratis-specific surfaces read from `--cratis-*` tokens (not from PrimeReact's design tokens). Override the relevant token to retint just those surfaces while leaving the preset untouched:
 
 ```css
 :root {
@@ -100,5 +99,6 @@ When CSS overrides aren't enough — for example, when you need to attach a clas
 
 This setup stops being a good fit when:
 
-- The PrimeReact theme is "almost" but not your brand — use [a custom palette on top of a PrimeReact theme](custom-palette.md) and override the PrimeReact variables on `:root`.
+- You don't want a PrimeUI license — use the license-free [Cratis baseline theme](baseline-theme.md).
+- The preset is "almost" but not your brand — use [a custom palette on top of a theme](custom-palette.md) and customize the preset's design tokens.
 - You're integrating into a design system that defines its own button, dialog, and input visuals — use [fully unstyled mode](unstyled.md) and bring every visual yourself.

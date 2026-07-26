@@ -21,7 +21,7 @@ Declare the columns and menu actions with the compound `DataPage.Columns` and `D
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { FaPlus, FaPencil } from 'react-icons/fa';
 import { AllAuthors } from './queries';   // generated query proxy
 
@@ -52,7 +52,7 @@ Pass a `detailsComponent` and `DataPage` adds a resizable split: the table on th
 
 ```tsx
 import { DataPage } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { AllAuthorsWithBooks } from './queries';
 
 const AuthorDetails = ({ item }) => (
@@ -94,8 +94,7 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `selection`: Currently selected item
 - `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
-- `defaultFilters`: Initial filter state (see [DataTableFilterMeta](https://primereact.org/datatable/))
-- `clientFiltering`: Enable client-side filtering (default: `false`)
+- `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
 - `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
 - `detailsComponent`: Component to render in the resizable details panel when a row is selected
 

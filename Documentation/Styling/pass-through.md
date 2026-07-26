@@ -8,22 +8,22 @@ Every Cratis wrapper forwards PrimeReact's `pt`, `ptOptions`, and `unstyled` pro
 
 The wrapper renders exactly one PrimeReact widget and forwards `pt` / `ptOptions` / `unstyled` / `className` straight to it. The pt slot names are PrimeReact's own — see the underlying component's documentation.
 
-| Wrapper | Underlying widget | pt slot reference |
+| Wrapper | Underlying widget (PrimeReact 11) | pt slot reference |
 |---|---|---|
 | `Dialog`            | `primereact/dialog` Dialog          | PrimeReact Dialog `pt` |
-| `Dropdown`          | `primereact/dropdown` Dropdown      | PrimeReact Dropdown `pt` |
+| `Dropdown`          | `primereact/select` Select          | PrimeReact Select `pt` |
 | `InputTextField`    | `primereact/inputtext` InputText    | PrimeReact InputText `pt` |
-| `TextAreaField`     | `primereact/inputtextarea` InputTextarea | PrimeReact InputTextarea `pt` |
+| `TextAreaField`     | `primereact/textarea` Textarea      | PrimeReact Textarea `pt` |
 | `NumberField`       | `primereact/inputnumber` InputNumber | PrimeReact InputNumber `pt` |
-| `DropdownField`     | `primereact/dropdown` Dropdown      | PrimeReact Dropdown `pt` |
+| `DropdownField`     | `primereact/select` Select          | PrimeReact Select `pt` |
 | `RadioGroupField`   | `primereact/radiobutton` RadioButton (one per option) | PrimeReact RadioButton `pt` |
 | `RadioButtonField`  | `primereact/radiobutton` RadioButton | PrimeReact RadioButton `pt` |
-| `CalendarField`     | `primereact/calendar` Calendar      | PrimeReact Calendar `pt` |
+| `CalendarField`     | `primereact/datepicker` DatePicker  | PrimeReact DatePicker `pt` |
 | `CheckboxField`     | `primereact/checkbox` Checkbox      | PrimeReact Checkbox `pt` |
 | `SliderField`       | `primereact/slider` Slider          | PrimeReact Slider `pt` |
-| `ChipsField`        | `primereact/chips` Chips            | PrimeReact Chips `pt` |
-| `MultiSelectField`  | `primereact/multiselect` MultiSelect | PrimeReact MultiSelect `pt` |
-| `ColorPickerField`  | `primereact/colorpicker` ColorPicker | PrimeReact ColorPicker `pt` |
+| `ChipsField`        | `primereact/inputtags` InputTags    | PrimeReact InputTags `pt` |
+| `MultiSelectField`  | `primereact/select` Select (multiple mode) | PrimeReact Select `pt` |
+| `ColorPickerField`  | `primereact/inputcolor` InputColor  | PrimeReact InputColor `pt` |
 | `EventsView`        | `primereact/timeline` Timeline      | PrimeReact Timeline `pt` |
 
 Example:
@@ -70,14 +70,14 @@ The wrapper composes more than one PrimeReact widget and exposes a sibling set o
 | Prop | Targets |
 |---|---|
 | `pt` / `ptOptions` / `unstyled` / `className` | The inner DataTable. |
-| `paginatorPt` / `paginatorPtOptions` / `paginatorUnstyled` | The inner Paginator. |
+| `paginatorClassName` / `paginatorAriaLabels` | The paginator (a Cratis button control — styled by class name, not `pt`). |
 
-`DataPage` composes a DataTable **and** a Menubar:
+`DataPage` composes a DataTable **and** an action toolbar:
 
 | Prop | Targets |
 |---|---|
 | `tablePt` / `tablePtOptions` / `tableUnstyled` / `tableClassName` | The inner DataTable. |
-| `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` | The action Menubar. |
+| `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` | The action toolbar's buttons (PrimeReact 11 replaced the v10 Menubar with a button toolbar). |
 
 ```tsx
 <DataPage<AllAuthors, Author, never>
@@ -97,9 +97,9 @@ These wrappers render many PrimeReact widgets internally (`InputText`, `InputNum
 
 | Wrapper | What it accepts | How to restyle internals |
 |---|---|---|
-| `ObjectContentEditor`   | `className` | Global `pt` on `CratisComponentsProvider` covering `inputtext`, `inputnumber`, `checkbox`, `calendar`, `inputtextarea`. |
+| `ObjectContentEditor`   | `className` | Global `pt` on `CratisComponentsProvider` covering `inputtext`, `inputnumber`, `checkbox`, `textarea`. |
 | `ObjectNavigationalBar` | `className` | Global `pt` covering `button`; `--cratis-surface-border` for the bottom border. |
-| `SchemaEditor`          | `className` | Global `pt` covering `menubar`, `button`, `datatable`, `dropdown`, `inputtext`. |
+| `SchemaEditor`          | `className` | Global `pt` covering `button`, `inputtext`, `select`, `datatable`. |
 
 Example with a global preset:
 
@@ -124,8 +124,10 @@ A `pt` preset on `CratisComponentsProvider` flows into **every** PrimeReact widg
 To replace a slot's preset entirely on a single instance, opt out of merging:
 
 ```tsx
-<Button label="Special" pt={{ root: { className: 'special-btn' } }}
-        ptOptions={{ mergeSections: false }} />
+<Button pt={{ root: { className: 'special-btn' } }}
+        ptOptions={{ mergeSections: false }}>
+    Special
+</Button>
 ```
 
 ## Components that do NOT accept per-instance `pt`

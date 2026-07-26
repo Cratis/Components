@@ -15,7 +15,7 @@ sidebar:
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { useDialog } from '@cratis/arc.react/dialogs';
 import { AllAuthors } from './Author';        // observable query proxy
 import { AddAuthor } from './AddAuthor';       // CommandDialog from the form recipe

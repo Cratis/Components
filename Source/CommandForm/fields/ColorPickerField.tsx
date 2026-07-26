@@ -2,29 +2,46 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { ColorPicker, type ColorPickerProps } from 'primereact/colorpicker';
+import { InputColor } from 'primereact/inputcolor';
+import { parseColor } from '@primereact/headless/inputcolor';
+import type { InputColorRootProps, InputColorRootChangeEvent } from '@primereact/types/primitive/inputcolor';
 import React from 'react';
+
+/** Parse a bare hex string (no leading `#`) into a color, falling back on invalid input. */
+const toColor = (hex: string, fallback: string) => {
+    const candidate = typeof hex === 'string' && hex.length > 0 ? hex : fallback;
+    try {
+        return parseColor(`#${candidate}`);
+    } catch {
+        return parseColor(`#${fallback}`);
+    }
+};
 
 /**
  * Component-level props for {@link ColorPickerField}.
  */
 interface ColorPickerFieldComponentProps extends WrappedFieldProps<string> {
-    /** When true, renders the color picker inline rather than as a popover. */
+    /**
+     * When true, renders the color picker inline rather than as a popover.
+     *
+     * PrimeReact 11's InputColor is composed inline (area + sliders + swatch); the
+     * v10 popover mode is not reproduced here. Accepted for API compatibility.
+     */
     inline?: boolean;
 
     /** Initial color shown when the bound property is empty. Defaults to `'000000'`. */
     defaultColor?: string;
 
-    /** Extra CSS class name forwarded to the underlying ColorPicker. */
+    /** Extra CSS class name forwarded to the underlying InputColor. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying ColorPicker. */
-    pt?: ColorPickerProps['pt'];
+    /** PrimeReact pass-through configuration applied to the underlying InputColor. */
+    pt?: InputColorRootProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying ColorPicker. */
-    ptOptions?: ColorPickerProps['ptOptions'];
+    /** PrimeReact pass-through options applied to the underlying InputColor. */
+    ptOptions?: InputColorRootProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying ColorPicker. */
+    /** When true, disables every base PrimeReact style on the underlying InputColor. */
     unstyled?: boolean;
 }
 
@@ -41,26 +58,34 @@ interface ColorPickerFieldComponentProps extends WrappedFieldProps<string> {
 export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProps>(
     (props) => {
         const defaultColor = props.defaultColor ?? '000000';
-        const value = typeof props.value === 'string' && props.value.length > 0 ? props.value : defaultColor;
-        // PrimeReact's ColorPicker is the one form component that exposes no `invalid` prop,
-        // so we apply the `p-invalid` state class directly. This is the exact class the
-        // `invalid` prop emits on the other fields, so the rendered DOM stays consistent —
-        // it picks up a theme's invalid styling and harmlessly no-ops in unstyled mode.
+        // InputColor exposes no `invalid` prop, so surface the invalid state as a class on the
+        // wrapper — the same `p-invalid` token the other fields emit; it no-ops when unstyled.
         const invalidClass = props.invalid ? 'p-invalid' : undefined;
         const className = [invalidClass, props.className].filter(Boolean).join(' ') || undefined;
 
         return (
-            <ColorPicker
-                value={value}
-                onChange={(e: { value: unknown }) => props.onChange(typeof e.value === 'string' ? e.value : '')}
-                onBlur={props.onBlur}
-                inline={props.inline}
-                defaultColor={defaultColor}
-                className={className}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
-            />
+            // PrimeReact 11's InputColor is compositional (area + hue slider + swatch).
+            // `onBlur` rides the wrapping div because React blur bubbles (focusout).
+            <div className={className} onBlur={props.onBlur}>
+                <InputColor.Root
+                    value={toColor(props.value, defaultColor)}
+                    onValueChange={(e: InputColorRootChangeEvent) => props.onChange(e.value.toString('hex').replace('#', ''))}
+                    pt={props.pt}
+                    ptOptions={props.ptOptions}
+                    unstyled={props.unstyled}>
+                    <InputColor.Area>
+                        <InputColor.AreaBackground />
+                        <InputColor.AreaHandle />
+                    </InputColor.Area>
+                    <InputColor.Slider>
+                        <InputColor.SliderTrack />
+                        <InputColor.SliderHandle />
+                    </InputColor.Slider>
+                    <InputColor.Swatch>
+                        <InputColor.SwatchBackground />
+                    </InputColor.Swatch>
+                </InputColor.Root>
+            </div>
         );
     },
     {

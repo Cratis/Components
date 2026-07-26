@@ -4,7 +4,7 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataPage, MenuItem } from './DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '../DataTables/Column';
 import { QueryFor, QueryResult } from '@cratis/arc/queries';
 
 const meta: Meta<typeof DataPage> = {
@@ -168,9 +168,9 @@ export const WithClientFiltering: Story = {
             >
                 <DataPage.Columns>
                     <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable filter filterPlaceholder="Search" style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable filter filterPlaceholder="Search" style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable filter filterPlaceholder="Search" style={{ width: '25%' }} />
+                    <Column field="name" header="Name" sortable filter filterPlaceholder="Filter by name" style={{ width: '30%' }} />
+                    <Column field="email" header="Email" sortable filter filterPlaceholder="Filter by email" style={{ width: '35%' }} />
+                    <Column field="role" header="Role" sortable filter filterPlaceholder="Filter by role" style={{ width: '25%' }} />
                 </DataPage.Columns>
             </DataPage>
         </div>

@@ -1,0 +1,23 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-table-paginator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.25rem;
+}
+
+.cratis-table-paginator-info {
+    font-size: 0.875rem;
+    color: var(--cratis-text-color-secondary);
+    padding: 0 0.5rem;
+}
+
+.cratis-table-paginator-range {
+    font-size: 0.8125rem;
+    color: var(--cratis-text-color-secondary);
+    margin-right: auto;
+    padding: 0 0.5rem;
+}

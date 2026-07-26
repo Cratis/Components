@@ -4,5 +4,7 @@
 export { TimeMachine } from './TimeMachine';
 export { ReadModelView } from './ReadModelView';
 export { EventsView } from './EventsView';
+export { defaultTimeMachineLabels } from './TimeMachineLabels';
+export type { TimeMachineLabels } from './TimeMachineLabels';
 export { Properties } from './Properties';
 export * from './types';

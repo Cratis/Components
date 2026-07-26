@@ -1,12 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { DataTable, DataTableFilterMeta, DataTableSelectionSingleChangeEvent, type DataTableProps as PrimeDataTableProps } from 'primereact/datatable';
-import { Paginator, type PaginatorProps } from 'primereact/paginator';
+import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
 import { Constructor } from '@cratis/fundamentals';
 import { IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
-import { ReactNode, useState, useRef } from 'react';
+import { ReactNode } from 'react';
+import { DataTableCore } from './DataTableCore';
+import { TablePaginator, type TablePaginatorProps } from './TablePaginator';
+import type { DataTableFilterMeta } from './DataTableFilterMeta';
+import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -17,7 +20,7 @@ import { ReactNode, useState, useRef } from 'react';
  */
 export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object> {
     /**
-     * Children to render
+     * Children to render — `<Column>` elements describing the visible columns.
      */
     children?: ReactNode;
 
@@ -49,7 +52,7 @@ export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArg
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<TDataType[]>): void;
+    onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
 
     /**
      * Fields to use for global filtering
@@ -62,32 +65,32 @@ export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArg
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * Enable client-side filtering for the data table
+     * @deprecated No longer toggles behavior. Filtering (`<Column filter>` and the
+     * global search) is always applied client-side to the loaded page; this flag
+     * is retained only for source compatibility and will be removed in a future
+     * release.
      */
     clientFiltering?: boolean;
 
     /**
-     * Extra CSS class name forwarded to the underlying PrimeReact DataTable root.
+     * Extra CSS class name forwarded to the underlying DataTable root.
      */
     className?: string;
 
     /** PrimeReact pass-through configuration applied to the underlying DataTable. */
-    pt?: PrimeDataTableProps<TDataType[]>['pt'];
+    pt?: DataTableRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the underlying DataTable. */
-    ptOptions?: PrimeDataTableProps<TDataType[]>['ptOptions'];
+    ptOptions?: DataTableRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the underlying DataTable. */
     unstyled?: boolean;
 
-    /** PrimeReact pass-through configuration applied to the inner Paginator. */
-    paginatorPt?: PaginatorProps['pt'];
+    /** Extra CSS class name forwarded to the paginator. */
+    paginatorClassName?: string;
 
-    /** PrimeReact pass-through options applied to the inner Paginator. */
-    paginatorPtOptions?: PaginatorProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the inner Paginator. */
-    paginatorUnstyled?: boolean;
+    /** Accessible names for the paginator controls. Override any to localize. */
+    paginatorAriaLabels?: TablePaginatorProps['ariaLabels'];
 }
 
 const paging = new Paging(0, 20);
@@ -96,8 +99,8 @@ const paging = new Paging(0, 20);
  * A paged data table bound to a snapshot Cratis Arc query
  * (`IQueryFor<TDataType, TArguments>`). Subscribes via
  * `useQueryWithPaging` from `@cratis/arc.react/queries`, renders the result
- * page in a PrimeReact `DataTable`, and shows a `Paginator` when the result
- * set exceeds one page.
+ * page through the headless {@link DataTableCore}, and shows a
+ * {@link TablePaginator} when the result set exceeds one page.
  *
  * ## What `TQuery` is
  *
@@ -106,33 +109,13 @@ const paging = new Paging(0, 20);
  * writes a `.ts` file per query with the right return type and a `use()`
  * hook; importing the class is all the connection-to-the-backend you need.
  *
- * ## What's unique
- *
- * - **Lazy paging**: the table runs in PrimeReact's `lazy` mode by default
- *   so the server returns one page at a time. The Paginator's
- *   `onPageChange` calls back into the Arc hook to fetch the next page.
- * - **Client-side filtering toggle**: pass `clientFiltering` to keep the
- *   page-fetched rows in the browser and filter locally — useful for
- *   small result sets where you want PrimeReact's filter UI but don't want
- *   to round-trip every keystroke.
- * - **Default filter state**: `defaultFilters` seeds the table's filter
- *   meta on first render so saved or URL-encoded filter state can be
- *   rehydrated.
- *
- * Use {@link DataTableForObservableQuery} for queries that should update in
- * real time as the underlying read model changes server-side. Use
- * {@link DataPage} for a higher-level layout that combines this table with
- * a menubar, selection, and a details pane.
- *
  * ## Children
  *
- * Children are PrimeReact `<Column>` elements describing the visible
- * columns — sorting, filtering, custom body templates, everything
- * PrimeReact's `<Column>` supports.
+ * Children are Cratis `<Column>` elements describing the visible columns —
+ * `field`, `header`, custom `body` templates, and `sortable`.
  *
  * ```tsx
- * import { DataTableForQuery } from '@cratis/components/DataTables';
- * import { Column } from 'primereact/column';
+ * import { DataTableForQuery, Column } from '@cratis/components/DataTables';
  * import { AllAuthors } from './AllAuthors';     // proxy from C#
  *
  * <DataTableForQuery query={AllAuthors} emptyMessage="No authors">
@@ -141,12 +124,15 @@ const paging = new Paging(0, 20);
  * </DataTableForQuery>
  * ```
  *
+ * Use {@link DataTableForObservableQuery} for queries that should update in
+ * real time as the underlying read model changes server-side. Use
+ * {@link DataPage} for a higher-level layout that combines this table with
+ * an action menubar, selection, and a details pane.
+ *
  * ## Styling
  *
  * Forward `pt` / `ptOptions` / `unstyled` / `className` to the underlying
- * PrimeReact DataTable. Use `paginatorPt` / `paginatorPtOptions` /
- * `paginatorUnstyled` to style the inner Paginator independently. See
- * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md).
+ * DataTable. See [pass-through cheat sheet](../../Documentation/Styling/pass-through.md).
  *
  * @typeParam TQuery - The query class (proxy generated from C# `IQueryFor`).
  * @typeParam TDataType - The row type returned by the query.
@@ -154,16 +140,12 @@ const paging = new Paging(0, 20);
  * @param props - {@link DataTableForQueryProps}.
  */
 export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForQueryProps<TQuery, TDataType, TArguments>) => {
-    const [filters, setFilters] = useState<DataTableFilterMeta>(props.defaultFilters ?? {});
-    const [filteredTotal, setFilteredTotal] = useState<number | undefined>(undefined);
     const [result, , , setPage] = useQueryWithPaging(props.query, paging, props.queryArguments);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const isClientFiltering = props.clientFiltering === true;
-    const totalRecords = isClientFiltering && filteredTotal !== undefined ? filteredTotal : result.paging.totalItems;
+    const totalItems = result.paging.totalItems;
+    const pageCount = result.paging.totalPages;
 
     return (
         <div
-            ref={containerRef}
             style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -173,45 +155,34 @@ export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments
                 overflow: 'hidden'
             }}>
             <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-                <DataTable
-                    value={result.data as unknown as object[]}
-                    lazy={!isClientFiltering}
-                    rows={paging.pageSize}
-                    totalRecords={totalRecords}
+                <DataTableCore<TDataType>
+                    data={result.data as unknown as TDataType[]}
+                    dataKey={props.dataKey}
+                    emptyMessage={props.emptyMessage}
                     selectionMode='single'
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
-                    dataKey={props.dataKey}
-                    filters={filters}
-                    filterDisplay='menu'
-                    onFilter={(e) => {
-                        setFilters(e.filters);
-                        if (isClientFiltering) {
-                            const filteredValue = e.filteredValue as unknown[] | undefined;
-                            setFilteredTotal(filteredValue ? filteredValue.length : undefined);
-                        }
-                    }}
                     globalFilterFields={props.globalFilterFields}
-                    emptyMessage={props.emptyMessage}
-                    style={{ minWidth: '100%' }}
+                    defaultFilters={props.defaultFilters}
                     className={props.className}
+                    style={{ minWidth: '100%' }}
                     pt={props.pt}
                     ptOptions={props.ptOptions}
                     unstyled={props.unstyled}>
                     {props.children}
-                </DataTable>
+                </DataTableCore>
             </div>
 
-            {result.paging.totalItems > 0 && (
+            {totalItems > 0 && pageCount > 1 && (
                 <div style={{ borderTop: '1px solid var(--cratis-surface-border)', flexShrink: 0 }}>
-                    <Paginator
-                        first={result.paging.page * paging.pageSize}
-                        rows={paging.pageSize}
-                        totalRecords={result.paging.totalItems}
-                        onPageChange={(e) => setPage(e.page)}
-                        pt={props.paginatorPt}
-                        ptOptions={props.paginatorPtOptions}
-                        unstyled={props.paginatorUnstyled}
+                    <TablePaginator
+                        page={result.paging.page}
+                        pageCount={pageCount}
+                        onPageChange={setPage}
+                        totalItems={totalItems}
+                        pageSize={paging.pageSize}
+                        className={props.paginatorClassName}
+                        ariaLabels={props.paginatorAriaLabels}
                     />
                 </div>
             )}

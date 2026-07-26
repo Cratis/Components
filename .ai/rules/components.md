@@ -21,10 +21,36 @@ Reach PrimeReact almost exclusively through Cratis Components wrappers. Import f
 | Dropdown | `Dropdown` | `@cratis/components/Dropdown` |
 | Command dialog | `CommandDialog` / `StepperCommandDialog` | `@cratis/components/CommandDialog` |
 | Data/confirmation dialog | `Dialog` / `ConfirmationDialog` / `BusyIndicatorDialog` | `@cratis/components/Dialogs` |
-| Command form fields | `InputTextField`, … | `@cratis/components/CommandForm` |
+| Command form fields | `InputTextField`, `PasswordField`, `ToggleSwitchField`, `RatingField`, … | `@cratis/components/CommandForm` |
+| Notifications (toasts) | `Toaster` / `toast` / `toastCommandResult` | `@cratis/components/Notifications` |
+| Status & display | `Tag` / `Badge` / `Chip` / `Skeleton` / `Avatar` / `ProgressBar` | `@cratis/components/Display` |
 | Canvas tool palette | `Toolbar` | `@cratis/components/Toolbar` |
 
 Use `Dropdown` from `@cratis/components/Dropdown` (not raw `primereact/dropdown`) — it appends to the document body and stacks correctly above overlays, avoiding the z-index issues raw PrimeReact dropdowns have inside dialogs.
+
+### Notifications — feedback for commands run outside a dialog
+
+`CommandDialog` handles success/error feedback itself. For a command executed
+**programmatically** (`command.execute()` outside a dialog), mount one
+`<Toaster />` near the app root and surface the result with `toastCommandResult`
+(both from `@cratis/components/Notifications`) — it maps the granular
+`ICommandResult` flags to the right toast (success, not-authorized, validation
+with per-field messages, exceptions — never stack traces):
+
+```tsx
+const result = await command.execute();
+if (toastCommandResult(result, { successTitle: 'Author registered' })) refresh();
+```
+
+For ad-hoc notifications, call the imperative `toast.success/info/warn/error(...)`
+— each takes an **options object**, not a bare string: `toast.info({ title: 'Saved', description: '…' })`.
+
+### Column filtering & display components
+
+`<Column>` supports `filter` (a per-column filter menu with match modes) and
+`DataPage` / the data tables show a global search box when `globalFilterFields`
+is set. Use the `Display` components (`Tag`, `Badge`, `Skeleton`, …) for status
+indicators and loading states in tables and detail views.
 
 ### `DataPage` — query list pages
 
@@ -33,8 +59,7 @@ Use `Dropdown` from `@cratis/components/Dropdown` (not raw `primereact/dropdown`
 Columns and toolbar actions are compositional children:
 
 ```tsx
-import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { DataPage, MenuItem, Column } from '@cratis/components/DataPage';
 
 <DataPage title="Accounts" query={AllAccounts} emptyMessage="No accounts yet.">
     <DataPage.Columns>
