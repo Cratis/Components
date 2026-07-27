@@ -97,7 +97,7 @@ export const ToolbarFolder = ({
     return (
         <ToolbarFolderContext.Provider value={mode}>
             <div className='toolbar-folder-item' ref={containerRef}>
-                <Tooltip content={title} position={tooltipPosition}>
+                <Tooltip content={title} position={tooltipPosition} disabled={isExpanded}>
                     <button
                         type='button'
                         aria-label={title}
