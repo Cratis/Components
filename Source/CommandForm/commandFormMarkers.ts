@@ -76,6 +76,13 @@ export const isCommandFormColumn = (component: unknown): boolean => {
  * Both are set on purpose: the marker is what survives a build transform, and the
  * `displayName` is what an older `@cratis/arc.react` — which knows nothing of the
  * marker — still needs in order to bind the field.
+ *
+ * Prefer `asCommandFormField` from `@cratis/arc.react` where it applies; it marks
+ * the wrapped component for you. Reach for this when hand-rolling a field.
+ *
+ * ⚠️ Any existing `displayName` is replaced. That is not incidental — an older Arc
+ * binds the field by that exact string — so a component needing its own diagnostic
+ * label cannot also be marked this way.
  */
 export const markAsCommandFormField = <T extends object>(component: T): T => {
     const target = component as T & CommandFormChild;
@@ -86,7 +93,8 @@ export const markAsCommandFormField = <T extends object>(component: T): T => {
 
 /**
  * Marks `component` as a `CommandForm` column, setting both the marker and the
- * legacy `displayName`, and returns it. See {@link markAsCommandFormField}.
+ * legacy `displayName`, and returns it. Any existing `displayName` is replaced.
+ * See {@link markAsCommandFormField}.
  */
 export const markAsCommandFormColumn = <T extends object>(component: T): T => {
     const target = component as T & CommandFormChild;
