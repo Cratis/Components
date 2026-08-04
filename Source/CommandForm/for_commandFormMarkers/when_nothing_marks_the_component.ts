@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { isCommandFormColumn, isCommandFormField } from '../commandFormMarkers';
+import { CommandFormFieldMarker, isCommandFormColumn, isCommandFormField } from '../commandFormMarkers';
 
 describe('when nothing marks the component', () => {
     it('should_not_recognise_an_unmarked_component', () => {
@@ -21,6 +21,19 @@ describe('when nothing marks the component', () => {
     it('should_not_recognise_a_host_element', () => {
         isCommandFormField('div').should.be.false;
         isCommandFormColumn('div').should.be.false;
+    });
+
+    // Pins the `=== true` comparison rather than a truthiness check. A component
+    // that deliberately carries `marker = false` is opting out, and must not be
+    // recognised through some other value that merely happens to be present.
+    it('should_not_recognise_a_marker_that_is_not_true', () => {
+        const disabled = () => undefined;
+        (disabled as unknown as Record<symbol, unknown>)[CommandFormFieldMarker] = false;
+        isCommandFormField(disabled).should.be.false;
+
+        const wrongType = () => undefined;
+        (wrongType as unknown as Record<symbol, unknown>)[CommandFormFieldMarker] = 'yes';
+        isCommandFormField(wrongType).should.be.false;
     });
 
     it('should_not_recognise_nullish_values', () => {
