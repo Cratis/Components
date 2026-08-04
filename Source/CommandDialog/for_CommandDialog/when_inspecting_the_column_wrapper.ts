@@ -3,11 +3,7 @@
 
 import React from 'react';
 import { vi } from 'vitest';
-import {
-    CommandFormColumnDisplayName,
-    CommandFormColumnMarker,
-    isCommandFormColumn,
-} from '../../CommandForm/commandFormMarkers';
+import { CommandFormColumnDisplayName, isCommandFormColumn } from '../../CommandForm/commandFormMarkers';
 
 vi.mock('primereact/dialog', () => {
     const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
@@ -59,7 +55,7 @@ describe('when inspecting the column wrapper', () => {
     });
 
     it('should carry the column marker', () => {
-        (Column as Record<symbol, unknown>)[CommandFormColumnMarker]!.should.equal(true);
+        (Column as { isCommandFormColumn?: boolean }).isCommandFormColumn!.should.equal(true);
     });
 
     it('should be recognized as a column', () => {

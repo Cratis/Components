@@ -3,9 +3,7 @@
 
 import {
     CommandFormColumnDisplayName,
-    CommandFormColumnMarker,
     CommandFormFieldDisplayName,
-    CommandFormFieldMarker,
     markAsCommandFormColumn,
     markAsCommandFormField,
 } from '../commandFormMarkers';
@@ -26,11 +24,11 @@ describe('when marking a component', () => {
     });
 
     it('should set the field marker', () => {
-        (field as Record<symbol, unknown>)[CommandFormFieldMarker]!.should.equal(true);
+        (field as { isCommandFormField?: boolean }).isCommandFormField!.should.equal(true);
     });
 
     it('should set the column marker', () => {
-        (column as Record<symbol, unknown>)[CommandFormColumnMarker]!.should.equal(true);
+        (column as { isCommandFormColumn?: boolean }).isCommandFormColumn!.should.equal(true);
     });
 
     it('should also set the legacy field display name for older arc', () => {
@@ -42,7 +40,7 @@ describe('when marking a component', () => {
     });
 
     it('should not cross mark a field with the column marker', () => {
-        ((field as Record<symbol, unknown>)[CommandFormColumnMarker] === undefined).should.be.true;
+        ((field as { isCommandFormColumn?: boolean }).isCommandFormColumn === undefined).should.be.true;
     });
 
     // The helpers mark in place and hand the component back, so both

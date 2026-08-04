@@ -2,103 +2,95 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 /**
- * The registry key identifying a component as a `CommandForm` field.
+ * The `displayName` a command form field carries.
  *
- * `Symbol.for` rather than `Symbol` is deliberate. The key is resolved through the
- * global symbol registry, so `@cratis/arc.react` and `@cratis/components` arrive at
- * the same symbol without either importing it from the other. That matters because
- * the two packages are versioned independently — this one declares
- * `@cratis/arc.react` as a range — so a named import would be a hard module-link
- * error against any version that does not yet export it, and a duplicate install
- * would otherwise produce two keys that never compare equal.
- */
-export const CommandFormFieldMarker = Symbol.for('cratis.commandFormField');
-
-/**
- * The registry key identifying a component as a `CommandForm` column.
- * See {@link CommandFormFieldMarker} for why this is a registry symbol.
- */
-export const CommandFormColumnMarker = Symbol.for('cratis.commandFormColumn');
-
-/**
- * The `displayName` a `CommandForm` field has always carried.
- *
- * It is retained indefinitely rather than deprecated: it is the compatibility path
- * for consumers that mark a field by hand, and it is what lets a new
- * `@cratis/components` work against an older `@cratis/arc.react` that stamps nothing
- * else. Removing it would silently unbind every such field — the exact failure the
- * marker exists to prevent.
+ * Exported so a consumer recognizing a field has a constant to compare against rather than a
+ * duplicated string literal.
  */
 export const CommandFormFieldDisplayName = 'CommandFormField';
 
-/** The `displayName` a `CommandForm` column has always carried. See {@link CommandFormFieldDisplayName}. */
+/** The `displayName` a command form column carries. */
 export const CommandFormColumnDisplayName = 'CommandFormColumn';
 
-/** The properties read when deciding what a `CommandForm` child is. */
-type CommandFormChild = {
-    displayName?: string;
-    [CommandFormFieldMarker]?: boolean;
-    [CommandFormColumnMarker]?: boolean;
-};
-
 /**
- * Determines whether `component` is a `CommandForm` field.
+ * The shape a component carries to say what it is to a `CommandForm`.
  *
- * The marker is checked first and `displayName` second. `displayName` is public,
- * writable, and a routine target for build tooling — Storybook's
- * `reactDocgen: 'react-docgen-typescript'` setting rewrites it by default — so a
- * component whose label has been rewritten by a third party is still recognized
- * through the marker, while one carrying only the legacy label still works.
+ * This is the cross-package contract, and it is defined identically here and in
+ * `@cratis/arc.react`. It is duplicated rather than imported on purpose: this package declares
+ * `@cratis/arc.react` as a version range, so a named import would be a hard module-link error
+ * against any version in that range predating the marker. Both packages therefore describe the
+ * same shape independently, and neither has to know the other's version.
  *
- * @param component - The child's component type. Anything may be passed; host
- * elements such as `'div'` and nullish values are simply not fields.
+ * ⚠️ Changing a property name here is a breaking change to that contract even though nothing in
+ * this package stops compiling — the other package simply stops seeing the marker, and every
+ * field whose `displayName` a build transform has rewritten silently unbinds.
  */
-export const isCommandFormField = (component: unknown): boolean => {
-    const candidate = component as CommandFormChild | undefined;
-    return candidate?.[CommandFormFieldMarker] === true
-        || candidate?.displayName === CommandFormFieldDisplayName;
+export type CommandFormMarked = {
+    /** Set on a field component. */
+    isCommandFormField?: boolean;
+
+    /** Set on a column component. */
+    isCommandFormColumn?: boolean;
+
+    /** The React display name, kept as the compatibility fallback. */
+    displayName?: string;
 };
 
 /**
- * Determines whether `component` is a `CommandForm` column.
+ * Marks a component as a command form field, and returns it.
+ *
+ * Sets both the marker and the `displayName`. The `displayName` is not redundant and is not on a
+ * deprecation path: it is what lets a version of this package interoperate with a version of
+ * `@cratis/arc.react` that only knows the string, in both directions. Removing it would silently
+ * unbind every field across that version boundary — the very failure the marker exists to prevent.
+ *
+ * Prefer `asCommandFormField` from `@cratis/arc.react` where it applies; it marks the wrapped
+ * component for you. Reach for this when hand-rolling a field.
+ *
+ * ⚠️ Any existing `displayName` is replaced. That is forced rather than incidental — a version of
+ * `@cratis/arc.react` predating the marker binds the field by that exact string — so a component
+ * needing its own diagnostic label cannot also be marked this way.
+ */
+export function markAsCommandFormField<T>(component: T): T & CommandFormMarked {
+    const marked = component as T & CommandFormMarked;
+    marked.isCommandFormField = true;
+    marked.displayName = CommandFormFieldDisplayName;
+    return marked;
+}
+
+/**
+ * Marks a component as a command form column, and returns it. Any existing `displayName` is
+ * replaced. See {@link markAsCommandFormField}.
+ */
+export function markAsCommandFormColumn<T>(component: T): T & CommandFormMarked {
+    const marked = component as T & CommandFormMarked;
+    marked.isCommandFormColumn = true;
+    marked.displayName = CommandFormColumnDisplayName;
+    return marked;
+}
+
+/**
+ * Whether a component is a command form field.
+ *
+ * The marker is checked first and the `displayName` second. A build transform that rewrites
+ * `displayName` — which `react-docgen-typescript` does by default, and Storybook selects it
+ * through a documented option — leaves the marker alone, so a field survives where it used to
+ * unbind silently. The fallback keeps a hand-marked component, and a component from a version of
+ * `@cratis/arc.react` that predates the marker, working exactly as before.
+ *
+ * @param component - The child's component type. Anything may be passed: this runs over every
+ * child a form is given, and a host element's type is a string rather than a component.
+ */
+export function isCommandFormField(component: unknown): boolean {
+    const candidate = component as CommandFormMarked | undefined;
+    return candidate?.isCommandFormField === true || candidate?.displayName === CommandFormFieldDisplayName;
+}
+
+/**
+ * Whether a component is a command form column.
  * See {@link isCommandFormField} for the ordering and why it matters.
  */
-export const isCommandFormColumn = (component: unknown): boolean => {
-    const candidate = component as CommandFormChild | undefined;
-    return candidate?.[CommandFormColumnMarker] === true
-        || candidate?.displayName === CommandFormColumnDisplayName;
-};
-
-/**
- * Marks `component` as a `CommandForm` field, setting both the tamper-resistant
- * marker and the legacy `displayName`, and returns it.
- *
- * Both are set on purpose: the marker is what survives a build transform, and the
- * `displayName` is what an older `@cratis/arc.react` — which knows nothing of the
- * marker — still needs in order to bind the field.
- *
- * Prefer `asCommandFormField` from `@cratis/arc.react` where it applies; it marks
- * the wrapped component for you. Reach for this when hand-rolling a field.
- *
- * ⚠️ Any existing `displayName` is replaced. That is not incidental — an older Arc
- * binds the field by that exact string — so a component needing its own diagnostic
- * label cannot also be marked this way.
- */
-export const markAsCommandFormField = <T extends object>(component: T): T => {
-    const target = component as T & CommandFormChild;
-    target[CommandFormFieldMarker] = true;
-    target.displayName = CommandFormFieldDisplayName;
-    return component;
-};
-
-/**
- * Marks `component` as a `CommandForm` column, setting both the marker and the
- * legacy `displayName`, and returns it. Any existing `displayName` is replaced.
- * See {@link markAsCommandFormField}.
- */
-export const markAsCommandFormColumn = <T extends object>(component: T): T => {
-    const target = component as T & CommandFormChild;
-    target[CommandFormColumnMarker] = true;
-    target.displayName = CommandFormColumnDisplayName;
-    return component;
-};
+export function isCommandFormColumn(component: unknown): boolean {
+    const candidate = component as CommandFormMarked | undefined;
+    return candidate?.isCommandFormColumn === true || candidate?.displayName === CommandFormColumnDisplayName;
+}

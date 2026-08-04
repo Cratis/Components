@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { CommandFormFieldMarker, isCommandFormColumn, isCommandFormField } from '../commandFormMarkers';
+import { isCommandFormColumn, isCommandFormField } from '../commandFormMarkers';
 
 describe('when nothing marks the component', () => {
     it('should not recognize an unmarked component', () => {
@@ -28,11 +28,11 @@ describe('when nothing marks the component', () => {
     // recognized through some other value that merely happens to be present.
     it('should not recognize a marker that is not true', () => {
         const disabled = () => undefined;
-        (disabled as unknown as Record<symbol, unknown>)[CommandFormFieldMarker] = false;
+        (disabled as unknown as Record<string, unknown>).isCommandFormField = false;
         isCommandFormField(disabled).should.be.false;
 
         const wrongType = () => undefined;
-        (wrongType as unknown as Record<symbol, unknown>)[CommandFormFieldMarker] = 'yes';
+        (wrongType as unknown as Record<string, unknown>).isCommandFormField = 'yes';
         isCommandFormField(wrongType).should.be.false;
     });
 
