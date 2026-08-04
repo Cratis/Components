@@ -5,6 +5,7 @@ import { noPrimereactDialog } from '../lib/noPrimereactDialog.js';
 import { noRootBarrelImport } from '../lib/noRootBarrelImport.js';
 import { onbeforeexecuteMustReturn } from '../lib/onbeforeexecuteMustReturn.js';
 import { noHooksInViewModel } from '../lib/noHooksInViewModel.js';
+import { noRawCommandFormMarker } from '../lib/noRawCommandFormMarker.js';
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;
@@ -139,6 +140,69 @@ tsRuleTester.run('no-hooks-in-view-model', noHooksInViewModel, {
             // A class registered via withViewModel, even without the naming/decorator signals.
             code: "class Vm { method() { useIdentity(); } } const C = withViewModel(Vm, () => null);",
             errors: [{ messageId: 'noHook', data: { name: 'useIdentity' } }],
+        },
+    ],
+});
+
+tsRuleTester.run('no-raw-command-form-marker', noRawCommandFormMarker, {
+    valid: [
+        // The sanctioned way to mark and to test, in both directions.
+        "markAsCommandFormField(MyField);",
+        "markAsCommandFormColumn(MyColumn);",
+        "if (isCommandFormField(component)) { wrap(component); }",
+        "if (isCommandFormColumn(component)) { layout(component); }",
+        // Referring to the exported constant rather than repeating the literal.
+        "MyField.displayName = CommandFormFieldDisplayName;",
+        "if (component.displayName === CommandFormFieldDisplayName) { wrap(component); }",
+        // Declaring the constants themselves — the one place the literal belongs.
+        "export const CommandFormFieldDisplayName = 'CommandFormField';",
+        "export const CommandFormColumnDisplayName = 'CommandFormColumn';",
+        // displayName used as the diagnostic label it is meant to be.
+        "MyDialog.displayName = 'MyDialog';",
+        "StepperPanel.displayName = 'StepperPanel';",
+        "const label = `DialogWrapper(${Component.displayName})`;",
+        // A different property that happens to hold the same string.
+        "const meta = { kind: 'CommandFormField' };",
+        // Comparing a non-displayName property.
+        "if (component.name === 'CommandFormField') { legacy(component); }",
+    ],
+    invalid: [
+        {
+            code: "MyField.displayName = 'CommandFormField';",
+            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormField', name: 'CommandFormField' } }],
+        },
+        {
+            code: "MyColumn.displayName = 'CommandFormColumn';",
+            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormColumn', name: 'CommandFormColumn' } }],
+        },
+        {
+            // Computed member access is the same stamp.
+            code: "MyField['displayName'] = 'CommandFormField';",
+            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormField', name: 'CommandFormField' } }],
+        },
+        {
+            // Set through an object literal, e.g. Object.assign.
+            code: "Object.assign(MyField, { displayName: 'CommandFormField' });",
+            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormField', name: 'CommandFormField' } }],
+        },
+        {
+            code: "if (component.displayName === 'CommandFormField') { wrap(component); }",
+            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormField', name: 'CommandFormField' } }],
+        },
+        {
+            // Reversed operand order.
+            code: "if ('CommandFormColumn' === component.displayName) { layout(component); }",
+            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormColumn', name: 'CommandFormColumn' } }],
+        },
+        {
+            // Negated comparison misses a renamed field just as badly.
+            code: "if (component.displayName !== 'CommandFormField') { return child; }",
+            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormField', name: 'CommandFormField' } }],
+        },
+        {
+            // The cast form this package used before the marker existed.
+            code: "if ((component as { displayName?: string }).displayName === 'CommandFormField') { wrap(component); }",
+            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormField', name: 'CommandFormField' } }],
         },
     ],
 });
