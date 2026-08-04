@@ -106,7 +106,7 @@ comparison against `displayName` — and `displayName` is React's public, writab
 *diagnostic* name, a routine target for build tooling. Storybook's
 `reactDocgen: 'react-docgen-typescript'` setting rewrites it by default.
 
-When it is rewritten, the child stops being recognised as a field: it renders with no
+When it is rewritten, the child stops being recognized as a field: it renders with no
 container, so no label, no bound value and no change handler. There is no error and no
 warning, and every gate stays green.
 

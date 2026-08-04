@@ -92,21 +92,21 @@ describe('when a renamed field is nested in a column', () => {
         html = renderToStaticMarkup(element);
     });
 
-    it('should_still_recognise_the_nested_field_and_wrap_it', () => {
+    it('should still recognize the nested field and wrap it', () => {
         html.should.include('field-wrapper');
     });
 
-    it('should_still_render_the_column_around_it', () => {
+    it('should still render the column around it', () => {
         html.should.include('column');
     });
 
-    it('should_still_render_the_field_itself', () => {
+    it('should still render the field itself', () => {
         html.should.include('the-field');
     });
 
     // Guards the assertions above: were the overwrite to silently fail, they would
     // pass through the legacy fallback and prove nothing about the marker.
-    it('should_have_actually_lost_the_legacy_display_name', () => {
+    it('should have actually lost the legacy display name', () => {
         (RenamedField as { displayName?: string }).displayName!
             .should.not.equal(CommandFormFieldDisplayName);
     });

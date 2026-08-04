@@ -58,18 +58,18 @@ describe('when inspecting the column wrapper', () => {
         Column = (CommandDialog as unknown as { Column: object }).Column;
     });
 
-    it('should_carry_the_column_marker', () => {
+    it('should carry the column marker', () => {
         (Column as Record<symbol, unknown>)[CommandFormColumnMarker]!.should.equal(true);
     });
 
-    it('should_be_recognised_as_a_column', () => {
+    it('should be recognized as a column', () => {
         isCommandFormColumn(Column).should.be.true;
     });
 
     // The legacy label has to stay: an @cratis/arc.react that predates the marker
     // classifies columns by this string alone, and this package's peer range admits
     // exactly those versions. Dropping it would silently unbind every column there.
-    it('should_still_carry_the_legacy_display_name_for_older_arc', () => {
+    it('should still carry the legacy display name for older arc', () => {
         (Column as { displayName?: string }).displayName!.should.equal(CommandFormColumnDisplayName);
     });
 });

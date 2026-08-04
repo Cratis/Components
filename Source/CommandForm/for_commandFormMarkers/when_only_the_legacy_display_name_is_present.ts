@@ -27,19 +27,19 @@ describe('when a component carries only the legacy displayName', () => {
         column = stampDisplayNameOnly(CommandFormColumnDisplayName);
     });
 
-    it('should_recognise_the_field', () => {
+    it('should recognize the field', () => {
         isCommandFormField(field).should.be.true;
     });
 
-    it('should_recognise_the_column', () => {
+    it('should recognize the column', () => {
         isCommandFormColumn(column).should.be.true;
     });
 
-    it('should_not_mistake_a_field_for_a_column', () => {
+    it('should not mistake a field for a column', () => {
         isCommandFormColumn(field).should.be.false;
     });
 
-    it('should_not_mistake_a_column_for_a_field', () => {
+    it('should not mistake a column for a field', () => {
         isCommandFormField(column).should.be.false;
     });
 });

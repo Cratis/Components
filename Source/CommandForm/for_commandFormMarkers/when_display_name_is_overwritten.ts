@@ -29,30 +29,30 @@ describe('when a marked component has had its displayName overwritten', () => {
         overwriteDisplayName(column, 'AppColumnWrapper');
     });
 
-    it('should_still_recognise_the_field', () => {
+    it('should still recognize the field', () => {
         isCommandFormField(field).should.be.true;
     });
 
-    it('should_still_recognise_the_column', () => {
+    it('should still recognize the column', () => {
         isCommandFormColumn(column).should.be.true;
     });
 
-    it('should_not_mistake_a_field_for_a_column', () => {
+    it('should not mistake a field for a column', () => {
         isCommandFormColumn(field).should.be.false;
     });
 
-    it('should_not_mistake_a_column_for_a_field', () => {
+    it('should not mistake a column for a field', () => {
         isCommandFormField(column).should.be.false;
     });
 
     // These two guard the specs above: if the overwrite silently failed to take,
     // every assertion here would pass through the legacy `displayName` fallback
     // and prove nothing about the marker.
-    it('should_have_actually_lost_the_legacy_field_display_name', () => {
+    it('should have actually lost the legacy field display name', () => {
         (field as { displayName?: string }).displayName!.should.not.equal(CommandFormFieldDisplayName);
     });
 
-    it('should_have_actually_lost_the_legacy_column_display_name', () => {
+    it('should have actually lost the legacy column display name', () => {
         (column as { displayName?: string }).displayName!.should.not.equal(CommandFormColumnDisplayName);
     });
 });
