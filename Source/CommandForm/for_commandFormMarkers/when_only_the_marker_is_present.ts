@@ -1,20 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import {
-    CommandFormColumnMarker,
-    CommandFormFieldMarker,
-    isCommandFormColumn,
-    isCommandFormField,
-} from '../commandFormMarkers';
+import { isCommandFormColumn, isCommandFormField } from '../commandFormMarkers';
 
 // The mirror of when_only_the_legacy_display_name_is_present: a component carrying
 // the marker and no `displayName` whatsoever. This is the case a build transform
 // cannot produce by renaming, and the one that proves the marker is sufficient on
 // its own rather than merely corroborating the legacy label.
-const stampMarkerOnly = (marker: symbol): object => {
+const stampMarkerOnly = (marker: 'isCommandFormField' | 'isCommandFormColumn'): object => {
     const component = () => undefined;
-    (component as unknown as Record<symbol, boolean>)[marker] = true;
+    (component as unknown as Record<string, boolean>)[marker] = true;
     return component;
 };
 
@@ -23,8 +18,8 @@ describe('when a component carries only the marker', () => {
     let column: object;
 
     beforeEach(() => {
-        field = stampMarkerOnly(CommandFormFieldMarker);
-        column = stampMarkerOnly(CommandFormColumnMarker);
+        field = stampMarkerOnly('isCommandFormField');
+        column = stampMarkerOnly('isCommandFormColumn');
     });
 
     it('should recognize the field', () => {

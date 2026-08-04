@@ -110,9 +110,10 @@ When it is rewritten, the child stops being recognized as a field: it renders wi
 container, so no label, no bound value and no change handler. There is no error and no
 warning, and every gate stays green.
 
-The helpers go through a `Symbol.for` marker that a rename cannot reach, while still
-setting and honouring the legacy `displayName` — so they are strictly more permissive
-than the literal, never less.
+The helpers go through an `isCommandFormField` / `isCommandFormColumn` marker that a rename
+does not touch, while still setting and honoring the legacy `displayName` — so they are strictly
+more permissive than the literal, never less. `@cratis/arc.react` marks and reads the same two
+properties, and that shared shape is what carries the contract across the two packages.
 
 ```ts
 // ❌ a build transform that rewrites displayName silently unbinds this field

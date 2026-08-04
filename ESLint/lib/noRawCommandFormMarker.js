@@ -28,9 +28,11 @@ const markerFor = node =>
 // anything renames it, and it fails silently — the field simply renders with no container,
 // so no label, no bound value and no change handler, with no error and no warning.
 //
-// The helpers in '@cratis/components/CommandForm' set and read a `Symbol.for` marker that a
-// rename cannot reach, and keep the legacy `displayName` alongside it for compatibility, so
-// going through them is both safer and strictly more permissive than the literal.
+// The helpers in '@cratis/components/CommandForm' set and read an `isCommandFormField` /
+// `isCommandFormColumn` marker that a rename does not touch, and keep the legacy `displayName`
+// alongside it for compatibility, so going through them is both safer and strictly more
+// permissive than the literal. `@cratis/arc.react` marks and reads the same two properties;
+// that shared shape is what carries the contract between the packages.
 export const noRawCommandFormMarker = {
     meta: {
         type: 'problem',
