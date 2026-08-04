@@ -4,9 +4,9 @@
 import { vi } from 'vitest';
 import type { ICommandResult } from '@cratis/arc/commands';
 
-// One file for all outcomes: the project runs specs with `isolate: false`, so a
-// single module load + one mock avoids the cross-file mock caching that
-// separate files (or vi.resetModules) would run into.
+// One file for all outcomes: the project runs specs with `isolate: false`, so
+// keeping every case behind one mock avoids multiplying the cross-file mock
+// caching that separate files would each have to defend against.
 const { calls } = vi.hoisted(() => ({ calls: { success: [] as { title: string; description?: string }[], warn: [] as { title: string }[], error: [] as { title: string; description?: string }[] } }));
 
 vi.mock('primereact/toaster', () => ({
@@ -17,7 +17,19 @@ vi.mock('primereact/toaster', () => ({
     },
 }));
 
-import { toastCommandResult } from '../toastCommandResult';
+// Loaded per test rather than statically imported: with `isolate: false` a module
+// pulled in by an earlier spec file stays cached with that file's bindings, and
+// `toastCommandResult` reaches `primereact/toaster` transitively through
+// Common/CratisComponentsProvider — so a static import here binds the real toaster
+// whenever another file happened to load that graph first, and the run order is not
+// stable between runs. Re-evaluating under this file's own mock is what makes the
+// spec deterministic.
+let toastCommandResult: typeof import('../toastCommandResult').toastCommandResult;
+
+beforeEach(async () => {
+    vi.resetModules();
+    ({ toastCommandResult } = await import('../toastCommandResult'));
+});
 
 const result = (over: Partial<ICommandResult>): ICommandResult =>
     ({ isSuccess: false, isAuthorized: true, isValid: true, hasExceptions: false, validationResults: [], exceptionMessages: [], ...over } as unknown as ICommandResult);

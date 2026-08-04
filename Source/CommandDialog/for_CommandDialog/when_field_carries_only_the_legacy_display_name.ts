@@ -4,10 +4,9 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
+import { CommandFormFieldDisplayName } from '../../CommandForm/commandFormMarkers';
 
 vi.mock('primereact/dialog', () => {
-    // PrimeReact 11's Dialog is compositional; each part is a pass-through that
-    // renders its children so the footer buttons and content reach the markup.
     const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
     return {
         Dialog: {
@@ -18,8 +17,6 @@ vi.mock('primereact/dialog', () => {
 });
 
 vi.mock('primereact/button', () => ({
-    // PrimeReact 11 Button renders children (the v10 label/icon/loading props are gone).
-    // A busy dialog now disables its confirm button rather than setting a loading flag.
     Button: (props: { disabled?: boolean; children?: React.ReactNode }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),
 }));
@@ -39,36 +36,57 @@ vi.mock('@cratis/arc.react/commands', () => ({
         setCommandResult: () => {},
     }),
     useCommandInstance: () => ({}),
+    // Tagged so the markup shows whether the dialog recognized the child as a
+    // field and wrapped it. An unrecognized child is returned untouched — no
+    // container, so no label, no bound value and no change handler.
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
-        React.createElement('div', null, props.field),
+        React.createElement('div', { 'data-testid': 'field-wrapper' }, props.field),
 }));
+
 
 class TestCommand {
     name: string = '';
 }
 
-describe('when CommandDialog is in its initial state', () => {
+// The compatibility case, and the one that keeps a new @cratis/components working
+// against an older @cratis/arc.react: this field carries the legacy `displayName`
+// and no marker at all, exactly as a hand-rolled field or a pre-marker release of
+// Arc produces. Deleting the fallback would silently unbind every one of them.
+const HandRolledField = (props: { value?: (c: TestCommand) => unknown }) => {
+    void props;
+    return React.createElement('input', { 'data-testid': 'the-field' });
+};
+HandRolledField.displayName = CommandFormFieldDisplayName;
+
+describe('when a field carries only the legacy displayName', () => {
     let html: string;
 
     beforeEach(async () => {
         // The project runs specs with `isolate: false`, so a module imported by an
         // earlier spec file stays cached with that file's mocks bound in, and the
-        // order files run in is not stable between runs. Re-evaluate under this
-        // file's own mocks so this spec neither inherits another file's stubs nor
-        // leaves its own behind — a static import here passes or fails by luck.
+        // order files run in is not stable between runs. Re-evaluate CommandDialog
+        // under this file's own mocks so the tagged CommandFormFieldWrapper is
+        // always the one in effect.
         vi.resetModules();
         const { CommandDialog } = await import('../CommandDialog');
 
-        const element = React.createElement(CommandDialog, {
-            command: TestCommand as unknown as new () => object,
-            visible: true,
-            title: 'Test Dialog',
-        });
+        const element = React.createElement(
+            CommandDialog,
+            {
+                command: TestCommand as unknown as new () => object,
+                visible: true,
+                title: 'Test Dialog',
+            },
+            React.createElement(HandRolledField, { value: (c: TestCommand) => c.name })
+        );
         html = renderToStaticMarkup(element);
     });
 
-    it('should_not_have_buttons_disabled_due_to_busy', () => {
-        // A busy dialog swaps the confirm icon for a spinner; a non-busy dialog shows none.
-        html.should.not.include('pi-spinner');
+    it('should recognize the child as a field and wrap it', () => {
+        html.should.include('field-wrapper');
+    });
+
+    it('should render the field itself', () => {
+        html.should.include('the-field');
     });
 });

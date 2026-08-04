@@ -4,7 +4,6 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
-import { Dialog } from '../Dialog';
 
 vi.mock('primereact/dialog', () => {
     // PrimeReact 11's Dialog is compositional; each part is a pass-through that
@@ -38,7 +37,15 @@ vi.mock('@cratis/arc.react/dialogs', () => ({
 describe('when rendered with is busy', () => {
     let html: string;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        // The project runs specs with `isolate: false`, so a module imported by an
+        // earlier spec file stays cached with that file's mocks bound in, and the
+        // order files run in is not stable between runs. Re-evaluate under this
+        // file's own mocks so this spec neither inherits another file's stubs nor
+        // leaves its own behind — a static import here passes or fails by luck.
+        vi.resetModules();
+        const { Dialog } = await import('../Dialog');
+
         const element = React.createElement(Dialog, {
             title: 'Save changes',
             visible: true,

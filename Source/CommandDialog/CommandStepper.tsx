@@ -14,6 +14,7 @@ import {
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import { isCommandFormField } from '../CommandForm/commandFormMarkers';
 import type { StepperPanelProps } from './StepperPanel';
 import './CommandStepper.css';
 
@@ -145,7 +146,7 @@ const extractFieldNamesFromNode = (nodes: React.ReactNode): string[] => {
     React.Children.forEach(nodes, (child) => {
         if (!React.isValidElement(child)) return;
         const component = child.type as React.ComponentType<unknown>;
-        if ((component as { displayName?: string }).displayName === 'CommandFormField') {
+        if (isCommandFormField(component)) {
             const fieldProps = child.props as { value?: (obj: unknown) => unknown };
             const name = getPropertyName(fieldProps.value);
             if (name) names.push(name);
@@ -164,7 +165,7 @@ const processChildren = (nodes: React.ReactNode): React.ReactNode => {
         if (!React.isValidElement(child)) return child;
 
         const component = child.type as React.ComponentType<unknown>;
-        if ((component as { displayName?: string }).displayName === 'CommandFormField') {
+        if (isCommandFormField(component)) {
             type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
             return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
         }
