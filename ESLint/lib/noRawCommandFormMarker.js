@@ -1,4 +1,4 @@
-// The identifiers a CommandForm child is recognised by, and the helpers that own each one.
+// The identifiers a CommandForm child is recognized by, and the helpers that own each one.
 const MARKERS = {
     CommandFormField: { mark: 'markAsCommandFormField', predicate: 'isCommandFormField' },
     CommandFormColumn: { mark: 'markAsCommandFormColumn', predicate: 'isCommandFormColumn' },
@@ -24,7 +24,7 @@ const markerFor = node =>
 //
 // `displayName` is React's public, writable diagnostic name and a routine target for build
 // tooling: Storybook's `reactDocgen: 'react-docgen-typescript'` setting rewrites it by
-// default. A component identified only by that string stops being recognised the moment
+// default. A component identified only by that string stops being recognized the moment
 // anything renames it, and it fails silently — the field simply renders with no container,
 // so no label, no bound value and no change handler, with no error and no warning.
 //

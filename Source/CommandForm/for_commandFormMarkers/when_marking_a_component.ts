@@ -25,30 +25,30 @@ describe('when marking a component', () => {
         column = markAsCommandFormColumn(() => undefined);
     });
 
-    it('should_set_the_field_marker', () => {
+    it('should set the field marker', () => {
         (field as Record<symbol, unknown>)[CommandFormFieldMarker]!.should.equal(true);
     });
 
-    it('should_set_the_column_marker', () => {
+    it('should set the column marker', () => {
         (column as Record<symbol, unknown>)[CommandFormColumnMarker]!.should.equal(true);
     });
 
-    it('should_also_set_the_legacy_field_display_name_for_older_arc', () => {
+    it('should also set the legacy field display name for older arc', () => {
         (field as { displayName?: string }).displayName!.should.equal(CommandFormFieldDisplayName);
     });
 
-    it('should_also_set_the_legacy_column_display_name_for_older_arc', () => {
+    it('should also set the legacy column display name for older arc', () => {
         (column as { displayName?: string }).displayName!.should.equal(CommandFormColumnDisplayName);
     });
 
-    it('should_not_cross_mark_a_field_with_the_column_marker', () => {
+    it('should not cross mark a field with the column marker', () => {
         ((field as Record<symbol, unknown>)[CommandFormColumnMarker] === undefined).should.be.true;
     });
 
     // The helpers mark in place and hand the component back, so both
     // `markAsCommandFormField(C)` as a statement and `const C = markAs...(fn)` as an
     // expression mark the same object — the two call styles used across this package.
-    it('should_return_the_very_component_it_marked', () => {
+    it('should return the very component it marked', () => {
         const component = () => undefined;
         markAsCommandFormField(component).should.equal(component);
     });

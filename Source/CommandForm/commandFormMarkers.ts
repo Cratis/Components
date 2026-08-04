@@ -47,7 +47,7 @@ type CommandFormChild = {
  * The marker is checked first and `displayName` second. `displayName` is public,
  * writable, and a routine target for build tooling — Storybook's
  * `reactDocgen: 'react-docgen-typescript'` setting rewrites it by default — so a
- * component whose label has been rewritten by a third party is still recognised
+ * component whose label has been rewritten by a third party is still recognized
  * through the marker, while one carrying only the legacy label still works.
  *
  * @param component - The child's component type. Anything may be passed; host

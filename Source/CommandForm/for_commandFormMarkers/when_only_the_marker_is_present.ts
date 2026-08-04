@@ -27,25 +27,25 @@ describe('when a component carries only the marker', () => {
         column = stampMarkerOnly(CommandFormColumnMarker);
     });
 
-    it('should_recognise_the_field', () => {
+    it('should recognize the field', () => {
         isCommandFormField(field).should.be.true;
     });
 
-    it('should_recognise_the_column', () => {
+    it('should recognize the column', () => {
         isCommandFormColumn(column).should.be.true;
     });
 
-    it('should_not_mistake_a_field_for_a_column', () => {
+    it('should not mistake a field for a column', () => {
         isCommandFormColumn(field).should.be.false;
     });
 
-    it('should_not_mistake_a_column_for_a_field', () => {
+    it('should not mistake a column for a field', () => {
         isCommandFormField(column).should.be.false;
     });
 
     // Guards the four assertions above: if a `displayName` had leaked onto these
     // components they would pass through the legacy fallback instead.
-    it('should_have_no_display_name_at_all', () => {
+    it('should have no display name at all', () => {
         ((field as { displayName?: string }).displayName === undefined).should.be.true;
         ((column as { displayName?: string }).displayName === undefined).should.be.true;
     });

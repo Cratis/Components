@@ -54,8 +54,8 @@ vi.mock('@cratis/arc.react/commands', () => ({
             fieldName === 'name' ? 'Name is required' : undefined,
     }),
     useCommandInstance: () => ({}),
-    // Tagged so the markup shows whether the stepper recognised the child as a
-    // field and wrapped it. An unrecognised child is returned untouched — no
+    // Tagged so the markup shows whether the stepper recognized the child as a
+    // field and wrapped it. An unrecognized child is returned untouched — no
     // container, so no label, no bound value and no change handler.
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
         React.createElement('div', { 'data-testid': 'field-wrapper' }, props.field),
@@ -108,29 +108,29 @@ describe('when a stepper field displayName has been overwritten by a build trans
     });
 
     // Covers the read in processChildren.
-    it('should_still_recognise_the_child_as_a_field_and_wrap_it', () => {
+    it('should still recognize the child as a field and wrap it', () => {
         html.should.include('field-wrapper');
     });
 
-    it('should_still_render_the_field_itself', () => {
+    it('should still render the field itself', () => {
         html.should.include('the-field');
     });
 
     // Covers the read in extractFieldNamesFromNode: the step indicator can only
-    // turn red if the field was recognised and its property name extracted.
-    it('should_still_extract_the_field_name_for_the_step_indicator', () => {
+    // turn red if the field was recognized and its property name extracted.
+    it('should still extract the field name for the step indicator', () => {
         const step1Number = html.match(/<span data-part="number"[^>]*>1<\/span>|<div data-part="number"[^>]*>1<\/div>/);
         (step1Number?.[0] ?? '').should.include('red');
     });
 
-    it('should_not_mark_the_step_that_has_no_fields', () => {
+    it('should not mark the step that has no fields', () => {
         const step2Number = html.match(/<span data-part="number"[^>]*>2<\/span>|<div data-part="number"[^>]*>2<\/div>/);
         (step2Number?.[0] ?? '').should.not.include('red');
     });
 
     // Guards every assertion above: were the overwrite to silently fail, they
     // would pass through the legacy fallback and prove nothing about the marker.
-    it('should_have_actually_lost_the_legacy_display_name', () => {
+    it('should have actually lost the legacy display name', () => {
         (RenamedField as { displayName?: string }).displayName!
             .should.not.equal(CommandFormFieldDisplayName);
     });

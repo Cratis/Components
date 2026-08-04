@@ -38,8 +38,8 @@ vi.mock('@cratis/arc.react/commands', () => ({
         setCommandResult: () => {},
     }),
     useCommandInstance: () => ({}),
-    // Tagged so the markup shows whether the dialog recognised the child as a
-    // field and wrapped it. An unrecognised child is returned untouched — no
+    // Tagged so the markup shows whether the dialog recognized the child as a
+    // field and wrapped it. An unrecognized child is returned untouched — no
     // container, so no label, no bound value and no change handler.
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
         React.createElement('div', { 'data-testid': 'field-wrapper' }, props.field),
@@ -87,17 +87,17 @@ describe('when a field displayName has been overwritten by a build transform', (
         html = renderToStaticMarkup(element);
     });
 
-    it('should_still_recognise_the_child_as_a_field_and_wrap_it', () => {
+    it('should still recognize the child as a field and wrap it', () => {
         html.should.include('field-wrapper');
     });
 
-    it('should_still_render_the_field_itself', () => {
+    it('should still render the field itself', () => {
         html.should.include('the-field');
     });
 
     // Guards the two assertions above: were the overwrite to silently fail, they
     // would pass through the legacy fallback and prove nothing about the marker.
-    it('should_have_actually_lost_the_legacy_display_name', () => {
+    it('should have actually lost the legacy display name', () => {
         (RenamedField as { displayName?: string }).displayName!
             .should.not.equal(CommandFormFieldDisplayName);
     });

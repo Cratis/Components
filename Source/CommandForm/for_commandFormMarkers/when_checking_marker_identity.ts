@@ -17,23 +17,23 @@ import { CommandFormColumnMarker, CommandFormFieldMarker } from '../commandFormM
 // strings are the whole cross-package contract: changing one is a breaking change
 // even though no exported identifier changes.
 describe('when checking marker identity', () => {
-    it('should_register_the_field_marker_globally_under_its_documented_key', () => {
+    it('should register the field marker globally under its documented key', () => {
         Symbol.keyFor(CommandFormFieldMarker)!.should.equal('cratis.commandFormField');
     });
 
-    it('should_register_the_column_marker_globally_under_its_documented_key', () => {
+    it('should register the column marker globally under its documented key', () => {
         Symbol.keyFor(CommandFormColumnMarker)!.should.equal('cratis.commandFormColumn');
     });
 
-    it('should_resolve_the_field_marker_a_second_module_instance_would_compute', () => {
+    it('should resolve the field marker a second module instance would compute', () => {
         (Symbol.for('cratis.commandFormField') === CommandFormFieldMarker).should.be.true;
     });
 
-    it('should_resolve_the_column_marker_a_second_module_instance_would_compute', () => {
+    it('should resolve the column marker a second module instance would compute', () => {
         (Symbol.for('cratis.commandFormColumn') === CommandFormColumnMarker).should.be.true;
     });
 
-    it('should_keep_the_field_and_column_markers_distinct', () => {
+    it('should keep the field and column markers distinct', () => {
         (CommandFormFieldMarker as symbol).should.not.equal(CommandFormColumnMarker as symbol);
     });
 });

@@ -49,7 +49,7 @@ import { InputTextField, NumberField, CheckboxField } from '@cratis/components/C
 </CommandDialog>
 ```
 
-## How a child is recognised as a field
+## How a child is recognized as a field
 
 `CommandForm`, `CommandDialog` and `CommandStepper` decide which of their children are
 fields by inspecting the child's component type. A component is treated as a field when
@@ -65,7 +65,7 @@ Columns work the same way, through `CommandFormColumnMarker` and `'CommandFormCo
 > [!IMPORTANT]
 > **`displayName` is load-bearing on field and column components — never overwrite it.**
 > A child whose `displayName` has been replaced and that carries no marker is not
-> recognised as a field: it renders without its container, so it gets no label, no bound
+> recognized as a field: it renders without its container, so it gets no label, no bound
 > value and no change handler. This fails silently — there is no error and no warning.
 
 The marker exists so that this stops being fatal. Because it is a `Symbol.for` registry
@@ -104,5 +104,5 @@ markAsCommandFormField(MyField);
 ```
 
 Both helpers set the marker *and* the legacy `displayName`, so a component marked this
-way is recognised by every version of `@cratis/arc.react` within this package's
+way is recognized by every version of `@cratis/arc.react` within this package's
 supported range.

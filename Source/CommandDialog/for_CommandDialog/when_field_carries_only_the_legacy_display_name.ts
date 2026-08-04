@@ -36,8 +36,8 @@ vi.mock('@cratis/arc.react/commands', () => ({
         setCommandResult: () => {},
     }),
     useCommandInstance: () => ({}),
-    // Tagged so the markup shows whether the dialog recognised the child as a
-    // field and wrapped it. An unrecognised child is returned untouched — no
+    // Tagged so the markup shows whether the dialog recognized the child as a
+    // field and wrapped it. An unrecognized child is returned untouched — no
     // container, so no label, no bound value and no change handler.
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
         React.createElement('div', { 'data-testid': 'field-wrapper' }, props.field),
@@ -82,11 +82,11 @@ describe('when a field carries only the legacy displayName', () => {
         html = renderToStaticMarkup(element);
     });
 
-    it('should_recognise_the_child_as_a_field_and_wrap_it', () => {
+    it('should recognize the child as a field and wrap it', () => {
         html.should.include('field-wrapper');
     });
 
-    it('should_render_the_field_itself', () => {
+    it('should render the field itself', () => {
         html.should.include('the-field');
     });
 });

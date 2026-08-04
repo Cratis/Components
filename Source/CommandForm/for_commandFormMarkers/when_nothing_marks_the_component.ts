@@ -4,11 +4,11 @@
 import { CommandFormFieldMarker, isCommandFormColumn, isCommandFormField } from '../commandFormMarkers';
 
 describe('when nothing marks the component', () => {
-    it('should_not_recognise_an_unmarked_component', () => {
+    it('should not recognize an unmarked component', () => {
         isCommandFormField(() => undefined).should.be.false;
     });
 
-    it('should_not_recognise_an_unrelated_display_name', () => {
+    it('should not recognize an unrelated display name', () => {
         const component = () => undefined;
         (component as { displayName?: string }).displayName = 'StepperPanel';
         isCommandFormField(component).should.be.false;
@@ -18,15 +18,15 @@ describe('when nothing marks the component', () => {
     // A child's `type` is a string for host elements such as `<div>`, and the
     // predicates are called on every child a form is given, so neither of these
     // may throw.
-    it('should_not_recognise_a_host_element', () => {
+    it('should not recognize a host element', () => {
         isCommandFormField('div').should.be.false;
         isCommandFormColumn('div').should.be.false;
     });
 
     // Pins the `=== true` comparison rather than a truthiness check. A component
     // that deliberately carries `marker = false` is opting out, and must not be
-    // recognised through some other value that merely happens to be present.
-    it('should_not_recognise_a_marker_that_is_not_true', () => {
+    // recognized through some other value that merely happens to be present.
+    it('should not recognize a marker that is not true', () => {
         const disabled = () => undefined;
         (disabled as unknown as Record<symbol, unknown>)[CommandFormFieldMarker] = false;
         isCommandFormField(disabled).should.be.false;
@@ -36,7 +36,7 @@ describe('when nothing marks the component', () => {
         isCommandFormField(wrongType).should.be.false;
     });
 
-    it('should_not_recognise_nullish_values', () => {
+    it('should not recognize nullish values', () => {
         isCommandFormField(undefined).should.be.false;
         isCommandFormField(null).should.be.false;
         isCommandFormColumn(undefined).should.be.false;
