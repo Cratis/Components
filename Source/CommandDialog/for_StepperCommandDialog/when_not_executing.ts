@@ -4,8 +4,6 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
-import { StepperCommandDialog } from '../StepperCommandDialog';
-import { StepperPanel } from '../StepperPanel';
 
 // StepperCommandDialog now composes the Cratis Dialog wrapper (not primereact/dialog
 // directly) — render its custom footer (`buttons`) and body.
@@ -66,7 +64,16 @@ class TestCommand {
 describe('when StepperCommandDialog is in its initial state', () => {
     let html: string;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        // The project runs specs with `isolate: false`, so a module imported by an
+        // earlier spec file stays cached with that file's mocks bound in, and the
+        // order files run in is not stable between runs. Re-evaluate under this
+        // file's own mocks so this spec neither inherits another file's stubs nor
+        // leaves its own behind — a static import here passes or fails by luck.
+        vi.resetModules();
+        const { StepperCommandDialog } = await import('../StepperCommandDialog');
+        const { StepperPanel } = await import('../StepperPanel');
+
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {

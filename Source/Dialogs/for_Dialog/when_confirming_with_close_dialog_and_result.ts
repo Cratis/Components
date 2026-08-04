@@ -4,7 +4,6 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
-import { Dialog } from '../Dialog';
 
 const { closeDialog } = vi.hoisted(() => ({
     closeDialog: vi.fn(),
@@ -42,8 +41,16 @@ vi.mock('@cratis/arc.react/dialogs', () => ({
 describe('when confirming with close dialog and result', () => {
     const resultPayload = { id: 'project-1', name: 'Project 1' };
 
-    beforeEach(() => {
+    beforeEach(async () => {
         closeDialog.mockReset();
+
+        // The project runs specs with `isolate: false`, so a module imported by an
+        // earlier spec file stays cached with that file's mocks bound in, and the
+        // order files run in is not stable between runs. Re-evaluate Dialog under
+        // this file's own mocks so the confirm button is always the one that fires
+        // onClick — a static import here makes this spec pass or fail by luck.
+        vi.resetModules();
+        const { Dialog } = await import('../Dialog');
 
         const element = React.createElement(Dialog, {
             title: 'Add project',

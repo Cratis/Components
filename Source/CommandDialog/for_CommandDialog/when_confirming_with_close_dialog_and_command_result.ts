@@ -5,7 +5,6 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
-import { CommandDialog } from '../CommandDialog';
 
 const { closeDialog, commandResult } = vi.hoisted(() => ({
     closeDialog: vi.fn(),
@@ -64,20 +63,29 @@ class TestCommand {
     name: string = '';
 }
 
-const TestDialog = () => {
-    const { closeDialog: closeWithResult } = useDialogContext<typeof commandResult>();
-
-    return React.createElement(CommandDialog<TestCommand>, {
-        command: TestCommand,
-        title: 'Update user',
-        onConfirm: async () => closeWithResult(DialogResult.Ok, commandResult),
-        onCancel: async () => closeWithResult(DialogResult.Cancelled),
-    });
-};
-
 describe('when confirming with close dialog and command result', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         closeDialog.mockReset();
+
+        // The project runs specs with `isolate: false`, so a module imported by an
+        // earlier spec file stays cached with that file's mocks bound in, and the
+        // order files run in is not stable between runs. Re-evaluate CommandDialog
+        // under this file's own mocks so the confirm button is always the one that
+        // fires onClick — a static import here makes this spec pass or fail by luck.
+        vi.resetModules();
+        const { CommandDialog } = await import('../CommandDialog');
+
+        const TestDialog = () => {
+            const { closeDialog: closeWithResult } = useDialogContext<typeof commandResult>();
+
+            return React.createElement(CommandDialog<TestCommand>, {
+                command: TestCommand,
+                title: 'Update user',
+                onConfirm: async () => closeWithResult(DialogResult.Ok, commandResult),
+                onCancel: async () => closeWithResult(DialogResult.Cancelled),
+            });
+        };
+
         renderToStaticMarkup(React.createElement(TestDialog));
     });
 
