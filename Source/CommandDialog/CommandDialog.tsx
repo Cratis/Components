@@ -57,6 +57,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     contentStyle,
     resizable,
     buttons,
+    initialFocus,
     okLabel,
     cancelLabel,
     yesLabel,
@@ -82,6 +83,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     contentStyle?: DialogProps['contentStyle'];
     resizable?: boolean;
     buttons?: DialogProps['buttons'];
+    initialFocus?: DialogProps['initialFocus'];
     okLabel?: string;
     cancelLabel?: string;
     yesLabel?: string;
@@ -176,6 +178,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             contentStyle={contentStyle}
             resizable={resizable}
             buttons={buttons}
+            initialFocus={initialFocus}
             onClose={onClose}
             onConfirm={handleConfirm}
             onCancel={onCancel}
@@ -230,6 +233,32 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
  *
  * Throughout, the dialog is in the `isBusy` state — every action button is
  * disabled and the confirm button shows a spinner.
+ *
+ * ## Destructive commands and initial focus
+ *
+ * The confirm button is focused when the dialog opens, and a focused native
+ * button fires `click` from the `keydown` of `Enter`. A command whose form
+ * has required fields is protected from a held or double-tapped `Enter` for
+ * free, because `isCommandFormValid` keeps confirm disabled until something
+ * is filled in. A command that takes **no** input — the typical "delete
+ * this, permanently" command — has no such gate, so its confirm button is
+ * armed the instant the dialog appears.
+ *
+ * Pass `initialFocus` (forwarded straight to {@link Dialog}) for those:
+ *
+ * ```tsx
+ * <CommandDialog<DeletePerson>
+ *     command={DeletePerson}
+ *     title="Delete personal data?"
+ *     okLabel="Delete"
+ *     initialFocus={DialogInitialFocus.Cancel}
+ *     onSuccess={() => closeDialog(DialogResult.Ok)}>
+ *     This cannot be undone.
+ * </CommandDialog>
+ * ```
+ *
+ * Everything else — the footer, the close (X), `Escape`, and the confirm
+ * wiring that runs the command — is untouched.
  *
  * ## Field binding
  *
@@ -296,6 +325,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         contentStyle,
         resizable,
         buttons = DialogButtons.OkCancel,
+        initialFocus,
         okLabel,
         cancelLabel,
         yesLabel,
@@ -323,6 +353,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 contentStyle={contentStyle}
                 resizable={resizable}
                 buttons={buttons}
+                initialFocus={initialFocus}
                 okLabel={okLabel}
                 cancelLabel={cancelLabel}
                 yesLabel={yesLabel}
