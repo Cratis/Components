@@ -31,7 +31,10 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'node',
-        isolate: false,
+        // Isolated, because several spec files mock the same module (@cratis/arc.react/dialogs) with
+        // their own spies. With a shared module graph whichever file loaded first wins and the others
+        // observe zero calls, which showed up as an intermittent "expected one closeDialog call, got 0".
+        isolate: true,
         fileParallelism: false,
         pool: 'threads',
         coverage: {
