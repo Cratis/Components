@@ -141,11 +141,11 @@
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "^20.49.2"
+        "@cratis/arc.vite": "^21.0.2"
     },
     "peerDependencies": {
-        "@cratis/arc": "^20.3.1",
-        "@cratis/arc.react": "^20.3.1",
+        "@cratis/arc": ">=20.3.1 <22",
+        "@cratis/arc.react": ">=20.3.1 <22",
         "@cratis/fundamentals": "^7.10.3",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
