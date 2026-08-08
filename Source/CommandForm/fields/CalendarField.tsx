@@ -3,6 +3,7 @@
 
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 import { Calendar, type CalendarProps } from 'primereact/calendar';
+import { useOverlayZIndex } from '../../useOverlayZIndex';
 import React from 'react';
 
 /**
@@ -57,25 +58,32 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
  * ```
  */
 export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
-    (props) => (
-        <Calendar
-            value={props.value}
-            onChange={(e: { value: Date | null | undefined }) => props.onChange(e.value ?? null)}
-            onBlur={props.onBlur}
-            invalid={props.invalid}
-            placeholder={props.placeholder}
-            dateFormat={props.dateFormat}
-            showIcon={props.showIcon}
-            showTime={props.showTime}
-            hourFormat={props.hourFormat}
-            minDate={props.minDate}
-            maxDate={props.maxDate}
-            className={props.className ? `w-full ${props.className}` : 'w-full'}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
-    ),
+    (props) => {
+        // Same overlay treatment as the Dropdown wrapper: the panel must escape
+        // dialog scroll containers and stay above modal dialogs.
+        useOverlayZIndex('p-datepicker');
+
+        return (
+            <Calendar
+                value={props.value}
+                onChange={(e: { value: Date | null | undefined }) => props.onChange(e.value ?? null)}
+                onBlur={props.onBlur}
+                invalid={props.invalid}
+                placeholder={props.placeholder}
+                dateFormat={props.dateFormat}
+                showIcon={props.showIcon}
+                showTime={props.showTime}
+                hourFormat={props.hourFormat}
+                minDate={props.minDate}
+                maxDate={props.maxDate}
+                appendTo={document.body}
+                className={props.className ? `w-full ${props.className}` : 'w-full'}
+                pt={props.pt}
+                ptOptions={props.ptOptions}
+                unstyled={props.unstyled}
+            />
+        );
+    },
     {
         defaultValue: null,
         extractValue: (e: unknown) => e instanceof Date ? e : null
