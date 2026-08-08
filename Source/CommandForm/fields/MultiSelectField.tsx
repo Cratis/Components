@@ -4,6 +4,7 @@
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 import { MultiSelect, type MultiSelectProps } from 'primereact/multiselect';
 import React from 'react';
+import { useOverlayZIndex } from '../../useOverlayZIndex';
 
 /**
  * Component-level props for {@link MultiSelectField}.
@@ -59,26 +60,33 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
  * ```
  */
 export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProps>(
-    (props) => (
-        <MultiSelect
-            value={props.value}
-            onChange={(e: { value: Array<string | number> | undefined }) => props.onChange(e.value ?? [])}
-            onBlur={props.onBlur}
-            options={props.options}
-            optionValue={props.optionValue}
-            optionLabel={props.optionLabel}
-            placeholder={props.placeholder}
-            display={props.display}
-            maxSelectedLabels={props.maxSelectedLabels}
-            filter={props.filter}
-            showClear={props.showClear}
-            invalid={props.invalid}
-            className={props.className ? `w-full ${props.className}` : 'w-full'}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
-    ),
+    (props) => {
+        // Same overlay treatment as the Dropdown wrapper: the panel must escape
+        // dialog scroll containers and stay above modal dialogs.
+        useOverlayZIndex('p-multiselect-panel');
+
+        return (
+            <MultiSelect
+                value={props.value}
+                onChange={(e: { value: Array<string | number> | undefined }) => props.onChange(e.value ?? [])}
+                onBlur={props.onBlur}
+                options={props.options}
+                optionValue={props.optionValue}
+                optionLabel={props.optionLabel}
+                placeholder={props.placeholder}
+                display={props.display}
+                maxSelectedLabels={props.maxSelectedLabels}
+                filter={props.filter}
+                showClear={props.showClear}
+                invalid={props.invalid}
+                appendTo={document.body}
+                className={props.className ? `w-full ${props.className}` : 'w-full'}
+                pt={props.pt}
+                ptOptions={props.ptOptions}
+                unstyled={props.unstyled}
+            />
+        );
+    },
     {
         defaultValue: [],
         extractValue: (e: unknown) => {

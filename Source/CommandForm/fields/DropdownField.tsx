@@ -1,9 +1,10 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Dropdown, type DropdownProps } from 'primereact/dropdown';
+import { type DropdownProps } from 'primereact/dropdown';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import { Dropdown } from '../../Dropdown';
 
 /**
  * Component-level props for {@link DropdownField}.
@@ -40,6 +41,9 @@ interface DropdownFieldComponentProps extends WrappedFieldProps<string | number>
  * `optionValue` and `optionLabel` declare which property on each option
  * holds the bound value and which one holds the visible label. See
  * {@link InputTextField} for the full `value={c => c.prop}` binding model.
+ *
+ * Renders through the library's own {@link Dropdown} wrapper so the panel
+ * escapes dialog scroll containers and stays above modal dialogs.
  *
  * ```tsx
  * <DropdownField value={c => c.country}
