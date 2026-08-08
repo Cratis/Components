@@ -4,6 +4,7 @@
 import { BusyIndicatorDialogRequest } from '@cratis/arc.react/dialogs';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Dialog } from './Dialog';
+import { DialogInitialFocus } from './DialogInitialFocus';
 
 /**
  * Modal "busy" dialog used by the `@cratis/arc.react` dialog host whenever a
@@ -43,7 +44,10 @@ import { Dialog } from './Dialog';
  *
  * - **No interactive buttons.** A busy indicator is a wait-state, not a
  *   confirmation prompt. The dialog has no Ok / Cancel / X — only the host
- *   can dismiss it.
+ *   can dismiss it. Because there is nothing focusable inside it, initial
+ *   focus is put on the dialog's own title, so a keyboard or screen-reader
+ *   user is told what is happening instead of being left on `document.body`
+ *   behind the modal mask.
  * - **No per-instance pass-through.** The request type
  *   ({@link BusyIndicatorDialogRequest}) is owned by `@cratis/arc.react`, so
  *   `pt` / `unstyled` are not exposed on a per-call basis. Restyle the
@@ -59,6 +63,7 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             visible={true}
             onCancel={() => undefined}
             buttons={null}
+            initialFocus={DialogInitialFocus.Content}
         >
             <div className="flex flex-col items-center justify-center gap-4 py-4">
                 <ProgressSpinner />

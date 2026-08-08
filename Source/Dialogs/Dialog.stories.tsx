@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { Dialog } from './Dialog';
+import { DialogInitialFocus } from './DialogInitialFocus';
 import { DialogButtons, DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -19,7 +20,7 @@ const meta: Meta<typeof Dialog> = {
 export default meta;
 type Story = StoryObj<typeof Dialog>;
 
-const DialogWrapper = ({ buttons, title, children, isValid }: { buttons: DialogButtons; title: string; children: React.ReactNode; isValid?: boolean }) => {
+const DialogWrapper = ({ buttons, title, children, isValid, initialFocus }: { buttons: DialogButtons; title: string; children: React.ReactNode; isValid?: boolean; initialFocus?: DialogInitialFocus }) => {
     const ResultDialog = () => {
         const { closeDialog } = useDialogContext();
 
@@ -27,6 +28,7 @@ const DialogWrapper = ({ buttons, title, children, isValid }: { buttons: DialogB
             <Dialog
                 title={title}
                 buttons={buttons}
+                initialFocus={initialFocus}
                 onConfirm={() => closeDialog(DialogResult.Ok)}
                 onCancel={() => closeDialog(DialogResult.Cancelled)}
                 isValid={isValid}
@@ -74,6 +76,33 @@ export const Ok: Story = {
     render: () => (
         <DialogWrapper title="Information" buttons={DialogButtons.Ok}>
             <p>The operation completed successfully.</p>
+        </DialogWrapper>
+    )
+};
+
+/**
+ * A destructive dialog that needs no input. Initial focus is put on the
+ * dismissing button, so the `Enter` still held down from the row that opened
+ * the dialog — or a reflexive second press — cannot confirm it. Hold `Enter`
+ * on the trigger button to see the difference against the stories above.
+ */
+export const DestructiveFocusesDismiss: Story = {
+    render: () => (
+        <DialogWrapper title="Delete personal data?" buttons={DialogButtons.YesNo} initialFocus={DialogInitialFocus.Cancel}>
+            <p>This permanently removes the person and every record about them. It cannot be undone.</p>
+        </DialogWrapper>
+    )
+};
+
+/**
+ * Nothing is armed at all: focus goes to the dialog's own title, so screen
+ * readers announce the dialog from the top and the first `Tab` walks the
+ * content. Use it when the dialog should be read before it is answered.
+ */
+export const DestructiveArmsNothing: Story = {
+    render: () => (
+        <DialogWrapper title="Delete personal data?" buttons={DialogButtons.OkCancel} initialFocus={DialogInitialFocus.Content}>
+            <p>This permanently removes the person and every record about them. It cannot be undone.</p>
         </DialogWrapper>
     )
 };
