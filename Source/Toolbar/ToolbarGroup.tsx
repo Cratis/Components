@@ -83,9 +83,15 @@ const SlotTransition = ({ slotName, flexClass }: { slotName: string; flexClass: 
 
     if (current.length === 0 && exiting.length === 0) return null;
 
+    // The section is only clipped while outgoing content is fading out, so it
+    // doesn't bleed outside the container. Once the transition is complete the
+    // section must be overflow:visible so fan-out and folder panels (which are
+    // position:absolute children) can escape the slot section's bounds.
+    const transitioningClass = exiting.length > 0 ? 'toolbar-slot-section--transitioning' : '';
+
     return (
         <div
-            className='toolbar-slot-section'
+            className={`toolbar-slot-section ${transitioningClass}`}
             style={size ? { width: size.width, height: size.height } : undefined}
         >
             {/* Incoming content — fades in via @keyframes animation on mount */}
