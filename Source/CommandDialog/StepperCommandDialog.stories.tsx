@@ -466,3 +466,84 @@ export const WithResponseTypeAndCallbacks: Story = {
         );
     },
 };
+
+/**
+ * A step rendered as `{condition && <StepperPanel/>}` disappears entirely when the condition
+ * is false. Toggle the optional step off and the dialog must behave as a genuine two-step
+ * wizard: Submit shows on "Details" instead of a Next button that leads to an empty step.
+ */
+export const ConditionalSteps: Story = {
+    render: () => {
+        const [visible, setVisible] = useState(true);
+        const [includeBudgetStep, setIncludeBudgetStep] = useState(false);
+        const [result, setResult] = useState('');
+
+        return (
+            <div className="storybook-wrapper">
+                <button
+                    className="p-button p-component mb-3"
+                    onClick={() => setIncludeBudgetStep(current => !current)}
+                >
+                    {includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}
+                </button>
+                <button
+                    className="p-button p-component mb-3 ml-2"
+                    onClick={() => {
+                        setResult('');
+                        setVisible(true);
+                    }}
+                >
+                    Open Dialog
+                </button>
+                <p className="mb-3 text-sm text-color-secondary">
+                    The Budget step is currently <strong>{includeBudgetStep ? 'shown' : 'hidden'}</strong>, so the
+                    wizard has {includeBudgetStep ? 'three' : 'two'} steps.
+                </p>
+
+                {result && (
+                    <div className="p-3 mt-3 bg-green-100 border-round">
+                        <strong>Submitted:</strong> {result}
+                    </div>
+                )}
+
+                <StepperCommandDialog<CreateProjectCommand>
+                    command={CreateProjectCommand}
+                    visible={visible}
+                    title="Create New Project"
+                    okLabel="Create"
+                    autoServerValidate={false}
+                    onConfirm={async () => {
+                        setResult('Project created successfully');
+                        setVisible(false);
+                    }}
+                    onCancel={() => setVisible(false)}
+                >
+                    <StepperPanel header="Basic Info">
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.name}
+                            title="Project Name"
+                            placeholder="Enter project name (min 2 chars)"
+                        />
+                    </StepperPanel>
+                    <StepperPanel header="Details">
+                        <TextAreaField<CreateProjectCommand>
+                            value={c => c.description}
+                            title="Description"
+                            placeholder="Describe the project (min 10 chars)"
+                            rows={4}
+                        />
+                    </StepperPanel>
+                    {includeBudgetStep && (
+                        <StepperPanel header="Budget">
+                            <NumberField<CreateProjectCommand>
+                                value={c => c.budget}
+                                title="Budget"
+                                placeholder="Enter budget (must be > 0)"
+                            />
+                        </StepperPanel>
+                    )}
+                </StepperCommandDialog>
+            </div>
+        );
+    },
+};

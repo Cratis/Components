@@ -13,6 +13,7 @@ import {
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import { getStepPanels } from './stepChildren';
 import './CommandStepper.css';
 
 /**
@@ -154,17 +155,20 @@ export const CommandStepperContent = ({
     ptOptions,
     unstyled,
 }: CommandStepperContentProps) => {
-    const stepCount = React.Children.count(children);
+    // The steps that actually render. Conditional steps (`{condition && <StepperPanel/>}`)
+    // leave falsy children behind, so the count, the per-step validation state and what the
+    // Stepper renders are all derived from this one list — they cannot drift apart.
+    const steps = useMemo(() => getStepPanels(children), [children]);
+    const stepCount = steps.length;
     const isLastStep = activeStep >= stepCount - 1;
     const isFirstStep = activeStep <= 0;
 
     const stepFieldNames = useMemo(
-        () => React.Children.toArray(children).map((step) => {
-            if (!React.isValidElement(step)) return [] as string[];
+        () => steps.map((step) => {
             const stepProps = step.props as Record<string, unknown>;
             return extractFieldNamesFromNode(stepProps.children as React.ReactNode);
         }),
-        [children]
+        [steps]
     );
 
     const stepErrors = useMemo(
@@ -261,7 +265,7 @@ export const CommandStepperContent = ({
                 ptOptions={ptOptions}
                 unstyled={unstyled}
             >
-                {processChildren(children)}
+                {processChildren(steps)}
             </PrimeStepper>
 
             {showNavigation && (

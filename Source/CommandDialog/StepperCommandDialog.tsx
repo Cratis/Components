@@ -15,6 +15,7 @@ import {
 import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
 import { CommandStepperContent, type StepperCustomizationProps } from './CommandStepper';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import { getStepPanels } from './stepChildren';
 
 /**
  * Props for {@link StepperCommandDialog}. Combines the command-form props,
@@ -159,7 +160,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         contextCloseDialog = undefined;
     }
 
-    const stepCount = React.Children.count(children);
+    // Only the steps that actually render count — the footer's Next button is the sole way
+    // into the unclamped `setActiveStep(s => s + 1)` below, so a step count inflated by
+    // falsy conditional children would walk the wizard onto an empty step.
+    const stepCount = getStepPanels(children).length;
     const isLastStep = activeStep === stepCount - 1;
     const isFirstStep = activeStep === 0;
     const isDialogValid = isValid !== false && isCommandFormValid;

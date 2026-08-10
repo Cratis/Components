@@ -297,3 +297,68 @@ export const WithValidationIndicators: Story = {
         );
     },
 };
+
+/**
+ * A step rendered as `{condition && <StepperPanel/>}` disappears entirely when the condition
+ * is false. Toggle the optional step off and the wizard must behave as a genuine two-step
+ * wizard: Submit shows on "Details" instead of a Next button that leads nowhere.
+ */
+export const ConditionalSteps: Story = {
+    render: () => {
+        const [includeBudgetStep, setIncludeBudgetStep] = useState(false);
+        const [result, setResult] = useState('');
+
+        return (
+            <div style={{ width: '600px', padding: '1.5rem' }}>
+                <button
+                    className="p-button p-component mb-3"
+                    onClick={() => setIncludeBudgetStep(current => !current)}
+                >
+                    {includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}
+                </button>
+                <p className="mb-3 text-sm text-color-secondary">
+                    The Budget step is currently <strong>{includeBudgetStep ? 'shown' : 'hidden'}</strong>, so the
+                    wizard has {includeBudgetStep ? 'three' : 'two'} steps.
+                </p>
+
+                <CommandStepper<CreateProjectCommand>
+                    command={CreateProjectCommand}
+                    autoServerValidate={false}
+                    validateOn="change"
+                    onSuccess={async () => setResult('Command submitted successfully')}
+                >
+                    <StepperPanel header="Basic Info">
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.name}
+                            title="Project Name"
+                            placeholder="Enter project name (min 2 chars)"
+                        />
+                    </StepperPanel>
+                    <StepperPanel header="Details">
+                        <TextAreaField<CreateProjectCommand>
+                            value={c => c.description}
+                            title="Description"
+                            placeholder="Describe the project (min 10 chars)"
+                            rows={4}
+                        />
+                    </StepperPanel>
+                    {includeBudgetStep && (
+                        <StepperPanel header="Budget">
+                            <NumberField<CreateProjectCommand>
+                                value={c => c.budget}
+                                title="Budget"
+                                placeholder="Enter budget (must be > 0)"
+                            />
+                        </StepperPanel>
+                    )}
+                </CommandStepper>
+
+                {result && (
+                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                        {result}
+                    </div>
+                )}
+            </div>
+        );
+    },
+};
