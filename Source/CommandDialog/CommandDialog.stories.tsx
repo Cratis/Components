@@ -8,6 +8,7 @@ import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { InputTextField, NumberField, TextAreaField } from '../CommandForm/fields';
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
+import { DialogInitialFocus } from '../Dialogs/DialogInitialFocus';
 import '@cratis/arc/validation';
 
 const meta: Meta<typeof CommandDialog> = {
@@ -845,6 +846,100 @@ export const WithResponseTypeAndCallbacks: Story = {
                     <InputTextField value={(c: CreateUserCommand) => c.email} title="Email" placeholder="Enter email" type="email" />
                     <NumberField value={(c: CreateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
                 </CommandDialog>
+            </div>
+        );
+    },
+};
+
+/**
+ * A destructive command that needs **no** input. Every other story here is
+ * protected from a held or double-tapped `Enter` for free, because
+ * `isCommandFormValid` keeps the confirm button disabled until its fields are
+ * filled in — but a command with no fields is valid the moment it appears, so
+ * its confirm button is armed on mount.
+ *
+ * `initialFocus` moves the keyboard off it without giving up the footer, the
+ * close (X), `Escape`, or the confirm wiring that runs the command.
+ */
+export const DestructiveCommandFocusesDismiss: Story = {
+    render: () => {
+        const [result, setResult] = useState<string>('');
+
+        class NothingToValidate extends CommandValidator {
+        }
+
+        class DeletePersonalDataCommand extends Command<object> {
+            readonly route: string = '/api/people/delete';
+            readonly validation: CommandValidator = new NothingToValidate();
+            readonly propertyDescriptors: PropertyDescriptor[] = [
+                new PropertyDescriptor('personId', String),
+            ];
+
+            personId = '';
+
+            constructor() {
+                super(Object, false);
+            }
+
+            get requestParameters(): string[] {
+                return [];
+            }
+
+            get properties(): string[] {
+                return ['personId'];
+            }
+
+            override async validate(): Promise<CommandResult<object>> {
+                return CommandResult.empty;
+            }
+
+            override async execute(): Promise<CommandResult<object>> {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                return CommandResult.empty;
+            }
+        }
+
+        const DeletePersonalDataDialog = () => {
+            const { closeDialog } = useDialogContext<CommandResult<object>>();
+
+            return (
+                <CommandDialog<DeletePersonalDataCommand>
+                    command={DeletePersonalDataCommand}
+                    title="Delete personal data?"
+                    okLabel="Delete"
+                    cancelLabel="Keep"
+                    autoServerValidate={false}
+                    initialFocus={DialogInitialFocus.Cancel}
+                    initialValues={{ personId: '8f1b9c1e-0000-4000-8000-000000000000' }}
+                    onSuccess={() => closeDialog(DialogResult.Ok)}
+                    onCancel={() => closeDialog(DialogResult.Cancelled)}
+                >
+                    <p>This permanently removes the person and every record about them. It cannot be undone.</p>
+                </CommandDialog>
+            );
+        };
+
+        const [DeletePersonalDataDialogComponent, showDeletePersonalDataDialog] = useDialog<CommandResult<object>>(DeletePersonalDataDialog);
+
+        return (
+            <div className="storybook-wrapper">
+                <button
+                    className="p-button p-component mb-3"
+                    onClick={async () => {
+                        const [dialogResult] = await showDeletePersonalDataDialog();
+                        setResult(dialogResult === DialogResult.Ok ? 'Deleted' : 'Kept');
+                    }}
+                >
+                    Delete
+                </button>
+
+                {result && (
+                    <div className="p-3 mt-3 bg-green-100 border-round">
+                        <strong>Outcome:</strong> {result}
+                    </div>
+                )}
+
+                <DeletePersonalDataDialogComponent />
             </div>
         );
     },

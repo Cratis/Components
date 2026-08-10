@@ -4,3 +4,4 @@
 export * from './BusyIndicatorDialog';
 export * from './ConfirmationDialog';
 export * from './Dialog';
+export * from './DialogInitialFocus';

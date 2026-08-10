@@ -104,6 +104,7 @@ function MyComponent() {
 - `cancelLabel`: Custom text for cancel button (default: "Cancel")
 - `yesLabel`, `noLabel`: Labels for `YesNo` and `YesNoCancel` button modes
 - `buttons`: `DialogButtons` value or custom footer content
+- `initialFocus`: Where keyboard focus lands when the dialog opens — forwarded to `Dialog` (see below)
 - `resizable`: Whether dialog can be resized
 - `isValid`: Additional validity gate combined with command form validity
 - `onFieldValidate`: Custom validation function for fields
@@ -134,6 +135,33 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 - If `onConfirm` is not provided, `onClose(DialogResult.Ok)` is used.
 - `onCancel` follows the same behavior as `Dialog` (`true` closes).
 - `onClose` closes unless it returns `false`.
+
+## Destructive Commands and Initial Focus
+
+The confirm button is focused when the dialog opens, and a focused native button
+fires `click` from the `keydown` of `Enter`. A command whose form has required
+fields is protected from a held or double-tapped `Enter` for free, because the
+form's validity keeps confirm disabled until something is filled in. A command
+that takes **no** input — the typical "delete this, permanently" command — has
+no such gate, so its confirm button is armed the instant the dialog appears.
+
+Pass `initialFocus` for those. It is forwarded straight to
+[`Dialog`](../Dialogs/dialog.md#initial-focus) and changes nothing else — the
+footer, the close (X), `Escape`, and the confirm wiring that runs the command
+all stay intact.
+
+```tsx
+import { DialogInitialFocus } from '@cratis/components/Dialogs';
+
+<CommandDialog<DeletePersonalData>
+    command={DeletePersonalData}
+    title="Delete personal data?"
+    okLabel="Delete"
+    initialFocus={DialogInitialFocus.Cancel}
+    onSuccess={() => closeDialog(DialogResult.Ok)}>
+    This cannot be undone.
+</CommandDialog>
+```
 
 ## Busy State
 
