@@ -72,6 +72,14 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     /** Label for the previous step button. Defaults to `'Previous'`. */
     previousLabel?: string;
     /**
+     * Show a Cancel action in the footer. Defaults to `false`, leaving the X in the header as the
+     * only way to dismiss. Turn it on for a wizard whose dismissal should be as reachable as its
+     * submit — a destructive or long flow, or one presented without a visible header.
+     */
+    showCancel?: boolean;
+    /** Label for the footer cancel button. Defaults to `'Cancel'`. */
+    cancelLabel?: string;
+    /**
      * Extra CSS class name forwarded to the underlying PrimeReact Dialog root.
      * Use the inherited `pt`/`ptOptions`/`unstyled` props to customize the Stepper.
      */
@@ -104,6 +112,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     okLabel = 'Submit',
     nextLabel = 'Next',
     previousLabel = 'Previous',
+    showCancel = false,
+    cancelLabel = 'Cancel',
     orientation = 'horizontal',
     headerPosition,
     linear = true,
@@ -136,6 +146,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     okLabel?: string;
     nextLabel?: string;
     previousLabel?: string;
+    showCancel?: boolean;
+    cancelLabel?: string;
     dialogClassName?: string;
     dialogPt?: PrimeDialogProps['pt'];
     dialogPtOptions?: PrimeDialogProps['ptOptions'];
@@ -238,6 +250,15 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
 
     const footer = (
         <div className="flex items-center w-full gap-3">
+            {showCancel && (
+                <Button
+                    label={cancelLabel}
+                    icon="pi pi-times"
+                    onClick={() => handleClose(DialogResult.Cancelled)}
+                    disabled={isBusy}
+                    outlined
+                />
+            )}
             {!isFirstStep && (
                 <Button
                     label={previousLabel}
@@ -418,6 +439,8 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
         okLabel,
         nextLabel,
         previousLabel,
+        showCancel,
+        cancelLabel,
         orientation,
         headerPosition,
         linear,
@@ -455,6 +478,8 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
                 okLabel={okLabel}
                 nextLabel={nextLabel}
                 previousLabel={previousLabel}
+                showCancel={showCancel}
+                cancelLabel={cancelLabel}
                 orientation={orientation}
                 headerPosition={headerPosition}
                 linear={linear}
