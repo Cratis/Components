@@ -187,6 +187,22 @@
     pointer-events: auto;
 }
 
+/*
+ * Reveal complete. The clip-path did its job — the wipe cannot run without it,
+ * because `clip-path: none` is a discrete value that snaps instead of
+ * interpolating. But clip-path also clips every descendant, so leaving a zero
+ * inset in place slices off the hover tooltips of the outermost buttons, which
+ * paint outside the panel by design.
+ *
+ * ToolbarFanOutItem therefore adds this class once the reveal transition ends,
+ * and takes it off again (restoring an interpolable inset) before the close
+ * transition starts — so both wipes keep their exact timing and a settled panel
+ * clips nothing.
+ */
+.toolbar-fanout-panel--settled {
+    clip-path: none;
+}
+
 /* ── Toolbar folder ──────────────────────────────────────────────────────── */
 
 .toolbar-folder-item {
@@ -288,16 +304,23 @@
 /* ── Toolbar slot transition (ToolbarGroup slot content) ─────────────────── */
 
 /*
- * Size-morphing container for slot content inside a ToolbarGroup.
+ * Size-morphing container for slot content inside a ToolbarGroup or ToolbarLayout.
  * Mirrors the .toolbar-section transition parameters for visual consistency —
  * the container resizes smoothly while content cross-fades.
+ * Overflow stays visible in the settled state so absolutely-positioned children
+ * (fan-out and folder panels, and the hover tooltips inside them) can escape the
+ * section's bounds; it is only clipped while outgoing content is fading out, so
+ * that content does not bleed past the container mid-transition.
  */
 .toolbar-slot-section {
     position: relative;
-    overflow: hidden;
     transition:
         width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
         height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toolbar-slot-section--transitioning {
+    overflow: hidden;
 }
 
 @keyframes toolbar-slot-fade-in {

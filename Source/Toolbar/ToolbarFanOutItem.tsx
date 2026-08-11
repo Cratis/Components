@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { IconDisplay } from '../Common/Icon';
 import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
@@ -43,10 +43,40 @@ export const ToolbarFanOutItem = ({
     children,
 }: ToolbarFanOutItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isSettled, setIsSettled] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    // A settled panel has `clip-path: none`, which cannot interpolate — closing
+    // straight from it would snap the panel shut instead of wiping it closed.
+    // Put an equivalent inset back and let the browser observe it (the forced
+    // reflow) before React removes the visible class, so the close transition
+    // has an interpolable starting value.
+    const collapse = useCallback(() => {
+        const panel = panelRef.current;
+        if (panel && panel.classList.contains('toolbar-fanout-panel--settled')) {
+            panel.style.setProperty('clip-path', 'inset(0 0 0 0 round 1rem)');
+            panel.style.setProperty('transition', 'none');
+            void panel.offsetWidth;
+            panel.style.removeProperty('transition');
+            panel.style.removeProperty('clip-path');
+        }
+        setIsSettled(false);
+        setIsExpanded(false);
+    }, []);
 
     const handleToggle = () => {
-        setIsExpanded(!isExpanded);
+        if (isExpanded) {
+            collapse();
+        } else {
+            setIsExpanded(true);
+        }
+    };
+
+    const handleTransitionEnd = (event: React.TransitionEvent<HTMLDivElement>) => {
+        if (event.target === panelRef.current && event.propertyName === 'clip-path' && isExpanded) {
+            setIsSettled(true);
+        }
     };
 
     // Close the fan-out when clicking outside
@@ -55,7 +85,7 @@ export const ToolbarFanOutItem = ({
 
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setIsExpanded(false);
+                collapse();
             }
         };
 
@@ -63,10 +93,11 @@ export const ToolbarFanOutItem = ({
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isExpanded]);
+    }, [isExpanded, collapse]);
 
     const activeClass = isExpanded ? 'toolbar-button--active' : '';
     const panelVisibleClass = isExpanded ? 'toolbar-fanout-panel--visible' : '';
+    const panelSettledClass = isExpanded && isSettled ? 'toolbar-fanout-panel--settled' : '';
     const directionClass = `toolbar-fanout-panel--${fanOutDirection}`;
 
     return (
@@ -82,7 +113,11 @@ export const ToolbarFanOutItem = ({
                     <IconDisplay icon={icon} className='text-lg' />
                 </button>
             </Tooltip>
-            <div className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass}`}>
+            <div
+                ref={panelRef}
+                className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass}`}
+                onTransitionEnd={handleTransitionEnd}
+            >
                 {children}
             </div>
         </div>
