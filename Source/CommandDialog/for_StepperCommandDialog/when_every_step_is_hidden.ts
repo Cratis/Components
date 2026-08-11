@@ -8,6 +8,7 @@ import { vi } from 'vitest';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { StepperCommandDialog } from '../StepperCommandDialog';
 import {
+    activeStep,
     buttonLabels,
     render,
     rerender,
@@ -110,5 +111,13 @@ describe('when every step is hidden', () => {
 
     it('should_not_offer_previous', () => {
         buttonLabels(dialog).should.not.contain('Previous');
+    });
+
+    // Zero steps is the one count where the last index is negative, and the step handed to the
+    // Stepper is what the panel shown, the validation state read and the buttons offered are all
+    // derived from. Floored at the first step it stays a step a user could be on; unfloored it is
+    // -1, an index no step ever answers to.
+    it('should_hand_the_stepper_the_first_step', () => {
+        activeStep(dialog).should.equal('0');
     });
 });
