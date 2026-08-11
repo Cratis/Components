@@ -1,0 +1,169 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+// @vitest-environment jsdom
+
+import React from 'react';
+import { vi } from 'vitest';
+import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperCommandDialog } from '../../StepperCommandDialog';
+import {
+    buttonLabels,
+    click,
+    render,
+    settle,
+    unmount,
+    type StepperDialogInTheDom
+} from '../given/a_stepper_dialog_in_the_dom';
+
+// `onBeforeExecute` may be async, so pressing Submit opens a window in which the dialog has
+// committed to running the command but the request has not gone out yet. The spec owns the
+// transform's promise so it can hold the dialog inside that window and act on it; `execution`
+// counts the runs, because the whole question is whether a command the operator cancelled ran
+// anyway.
+const { execution } = vi.hoisted(() => ({ execution: { calls: 0 } }));
+
+const { closeDialog } = vi.hoisted(() => ({ closeDialog: vi.fn() }));
+
+vi.mock('primereact/dialog', () => ({
+    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
+        React.createElement('div', { 'data-testid': 'dialog' }, props.footer, props.children),
+}));
+
+vi.mock('primereact/stepper', () => ({
+    Stepper: (props: { children?: React.ReactNode; activeStep?: number }) =>
+        React.createElement('div', { 'data-testid': 'stepper', 'data-active-step': props.activeStep }, props.children),
+}));
+
+vi.mock('primereact/stepperpanel', () => ({
+    StepperPanel: (props: { header?: string; children?: React.ReactNode }) =>
+        React.createElement('div', { 'data-testid': 'stepper-panel', 'data-header': props.header }, props.children),
+}));
+
+vi.mock('primereact/button', () => ({
+    Button: (props: { label?: string; disabled?: boolean; onClick?: () => void }) =>
+        React.createElement('button', { disabled: props.disabled, onClick: props.onClick }, props.label),
+}));
+
+vi.mock('@cratis/arc.react/dialogs', () => ({
+    DialogResult: { None: 0, Yes: 1, No: 2, Ok: 3, Cancelled: 4 },
+    useDialogContext: () => ({ closeDialog }),
+}));
+
+// The context object is created once rather than per call: this spec renders for real, so an
+// identity that changed on every render would re-run the stepper's error effect forever. The
+// command settles immediately and rejected - the delay under test is the transform's, and a
+// rejected result keeps the dialog open so the state after the window is still observable.
+vi.mock('@cratis/arc.react/commands', () => {
+    const commandFormContext = {
+        isValid: true,
+        setCommandValues: () => { },
+        setCommandResult: () => { },
+        getFieldError: () => undefined,
+    };
+    const commandInstance = {
+        name: '',
+        execute: () => {
+            execution.calls += 1;
+            return Promise.resolve({ isSuccess: false, isValid: true });
+        },
+    };
+
+    return {
+        CommandForm: (props: { children?: React.ReactNode }) =>
+            React.createElement('div', null, props.children),
+        useCommandFormContext: () => commandFormContext,
+        useCommandInstance: () => commandInstance,
+        CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
+            React.createElement('div', null, props.field),
+    };
+});
+
+class TestCommand {
+    name: string = '';
+}
+
+const transform: { settle: (values: TestCommand) => void; promise: Promise<TestCommand> } = {
+    settle: () => { },
+    promise: Promise.resolve(new TestCommand()),
+};
+
+/** Arms a fresh transform that will not hand back values until the spec says so. */
+const aTransformThatHasNotSettled = () => {
+    transform.promise = new Promise<TestCommand>(resolve => {
+        transform.settle = resolve;
+    });
+};
+
+const onCancel = vi.fn(() => true);
+const onBeforeExecute = vi.fn(() => transform.promise);
+
+const aWizardOfferingCancel = () => React.createElement(
+    StepperCommandDialog<TestCommand>,
+    {
+        command: TestCommand as unknown as new () => object,
+        visible: true,
+        title: 'Test Dialog',
+        showCancel: true,
+        onCancel,
+        onBeforeExecute,
+    },
+    React.createElement(StepperPanel, { header: 'Only Step' }, 'Only Step content'));
+
+// The dangerous cell of the state machine: submit committed, command not yet sent. A Cancel honored
+// here is a lie - the dialog reports cancellation, the transform then resolves, and the write lands
+// regardless. Which is why the spec does not stop at "Cancel did nothing": it settles the transform
+// and reads that the command really did run, so the silence from the dialog context is measured
+// against a run that happened rather than against a submit that quietly went nowhere.
+describe('when cancel is clicked while an async before-execute transform is still running', () => {
+    let dialog: StepperDialogInTheDom;
+    let footerWhileTransforming: string[];
+    let executeCallsWhileTransforming: number;
+    let closeDialogCallsWhileTransforming: number;
+    let executeCallsAfterSettling: number;
+    let cancelCallsAfterSettling: number;
+
+    beforeEach(async () => {
+        closeDialog.mockClear();
+        onCancel.mockClear();
+        onBeforeExecute.mockClear();
+        execution.calls = 0;
+        aTransformThatHasNotSettled();
+
+        dialog = await render(aWizardOfferingCancel());
+        await click(dialog, 'Submit');
+        footerWhileTransforming = buttonLabels(dialog);
+        executeCallsWhileTransforming = execution.calls;
+
+        await click(dialog, 'Cancel');
+        closeDialogCallsWhileTransforming = closeDialog.mock.calls.length;
+
+        await settle(() => transform.settle(new TestCommand()));
+        executeCallsAfterSettling = execution.calls;
+
+        await click(dialog, 'Cancel');
+        cancelCallsAfterSettling = onCancel.mock.calls.length;
+    });
+
+    afterEach(async () => await unmount(dialog));
+
+    it('should_still_render_a_cancel_to_click', () => {
+        footerWhileTransforming.should.deep.equal(['Cancel', 'Submit']);
+    });
+
+    it('should_not_have_run_the_command_yet', () => {
+        executeCallsWhileTransforming.should.equal(0);
+    });
+
+    it('should_report_no_cancellation_to_the_dialog_context', () => {
+        closeDialogCallsWhileTransforming.should.equal(0);
+    });
+
+    it('should_run_the_command_the_submit_committed_to', () => {
+        executeCallsAfterSettling.should.equal(1);
+    });
+
+    it('should_honor_a_cancel_click_once_the_command_returns', () => {
+        cancelCallsAfterSettling.should.equal(1);
+    });
+});

@@ -12,7 +12,7 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 - All steps share a single command form — one command is submitted at the end
 - Submit button only appears on the last step when all fields are valid
 - Previous button hidden on the first step; Next button hidden on the last step
-- Cancel via the X button in the upper-right corner — no footer Cancel button
+- Cancel via the X button in the dialog header or the Escape key, and — with `showCancel` — a Cancel button in the footer
 - Step number circles change color to indicate validation state (red = errors, green = visited and valid)
 - Non-active steps are visually dimmed to keep focus on the current step
 - Busy state management during command execution
@@ -93,11 +93,13 @@ function MyComponent() {
 - `onUnauthorized`: Callback invoked when authorization fails
 - `onValidationFailure`: Callback invoked on validation errors with the validation results
 - `onConfirm`: Confirm callback — called only after successful command execution
-- `onCancel`: Cancel callback — invoked when the X button is clicked
+- `onCancel`: Cancel callback — invoked for every dismissal that is not a successful submit: the X in the dialog header, the Escape key, and the footer Cancel button when `showCancel` is on
 - `onClose`: Fallback close callback
 - `okLabel`: Label for the submit button shown on the last step when valid (default: `'Submit'`)
 - `nextLabel`: Label for the next step button (default: `'Next'`)
 - `previousLabel`: Label for the previous step button (default: `'Previous'`)
+- `showCancel`: Adds a Cancel button as the first item in the footer (default: `false`)
+- `cancelLabel`: Label for the footer cancel button (default: `'Cancel'`)
 - `isValid`: Additional validity gate combined with command form validity
 - `width`: Dialog width (default: `'600px'`)
 - `resizable`: Whether the dialog can be resized
@@ -169,21 +171,47 @@ This is useful when the dialog opens with pre-populated values that may already 
 
 ## Navigation and Submit
 
-| Step position | Footer content |
-|---|---|
-| First step | Next |
-| Middle step | Previous, Next |
-| Last step (invalid) | Previous |
-| Last step (valid) | Previous, Submit |
+| Step position | Footer content | Footer content with `showCancel` |
+|---|---|---|
+| First step | Next | Cancel, Next |
+| Middle step | Previous, Next | Cancel, Previous, Next |
+| Last step (invalid) | Previous | Cancel, Previous |
+| Last step (valid) | Previous, Submit | Cancel, Previous, Submit |
 
-Cancel is always available via the X button in the dialog header. The Submit button is hidden until the user reaches the last step **and** all command form fields across every step pass validation.
+The Submit button is hidden until the user reaches the last step **and** all command form fields across every step pass validation.
+
+## Cancelling
+
+Dismissal is always reachable from the X button in the dialog header and from the Escape key. Both run `onCancel` and close with `DialogResult.Cancelled`.
+
+Set `showCancel` to add a Cancel button to the footer as well. It leads the footer on every step — on the dismissal side of the divider, opposite Next and Submit — and takes exactly the same path as the header X. Use it for a wizard whose dismissal should be as reachable as its submit: a destructive or long flow, or one presented without a visible header. `cancelLabel` renames it.
+
+```tsx
+<StepperCommandDialog<DeleteEnvironment>
+    command={DeleteEnvironment}
+    title="Delete environment"
+    okLabel="Delete"
+    showCancel
+    cancelLabel="Keep environment"
+    onCancel={() => closeDialog(DialogResult.Cancelled)}
+>
+    <StepperPanel header="Environment">
+        <DropdownField<DeleteEnvironment> value={c => c.environmentId} title="Environment" options={environments} />
+    </StepperPanel>
+    <StepperPanel header="Confirm">
+        <InputTextField<DeleteEnvironment> value={c => c.confirmationText} title="Type the environment name to confirm" />
+    </StepperPanel>
+</StepperCommandDialog>
+```
 
 ## Busy State
 
 `StepperCommandDialog` automatically manages a busy state during command execution:
 
 - When Submit is clicked, the Submit button shows a loading spinner and all navigation buttons are disabled.
-- Once execution completes (success or failure), the buttons return to their normal state.
+- Every route out of the dialog is withdrawn for the same window: the footer Cancel is disabled, the header X is not rendered, and Escape does not dismiss. A dialog can therefore never report cancellation for a command that goes on to execute anyway.
+- The window opens the moment Submit is pressed — including while an `async` `onBeforeExecute` transform is still resolving, before the command has been sent.
+- Once execution completes (success or failure), the buttons and every dismissal route return to their normal state.
 
 ## Step Structure
 

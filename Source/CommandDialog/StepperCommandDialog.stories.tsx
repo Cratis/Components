@@ -468,6 +468,88 @@ export const WithResponseTypeAndCallbacks: Story = {
 };
 
 /**
+ * `showCancel` adds a Cancel button to the footer, where it leads every step on the dismissal side
+ * of the divider, opposite Next and Submit; `cancelLabel` renames it. The command behind this
+ * wizard takes two seconds, so submitting also shows what the busy window does to every route out
+ * of the dialog: the footer Cancel greys out and the header X disappears until the command returns.
+ */
+export const WithFooterCancel: Story = {
+    render: () => {
+        const [visible, setVisible] = useState(false);
+        const [outcome, setOutcome] = useState('');
+
+        return (
+            <div className="storybook-wrapper">
+                <p className="mb-3 text-sm text-color-secondary">
+                    The footer leads with a renamed Cancel. Fill both steps and click Create to run a 2-second
+                    command — while it runs, neither the footer Cancel nor the header X can dismiss the dialog.
+                </p>
+                <button
+                    className="p-button p-component mb-3"
+                    onClick={() => {
+                        setOutcome('');
+                        setVisible(true);
+                    }}
+                >
+                    Open Dialog
+                </button>
+
+                {outcome && (
+                    <div className="p-3 mt-3 bg-green-100 border-round">
+                        <strong>Outcome:</strong> {outcome}
+                    </div>
+                )}
+
+                <StepperCommandDialog<SlowCreateProjectCommand>
+                    command={SlowCreateProjectCommand}
+                    visible={visible}
+                    title="Create New Project"
+                    okLabel="Create"
+                    showCancel
+                    cancelLabel="Discard draft"
+                    autoServerValidate={false}
+                    onConfirm={async () => {
+                        setOutcome('Created');
+                        setVisible(false);
+                    }}
+                    onCancel={() => {
+                        setOutcome('Discarded');
+                        setVisible(false);
+                    }}
+                >
+                    <StepperPanel header="Basic Info">
+                        <InputTextField<SlowCreateProjectCommand>
+                            value={c => c.name}
+                            title="Project Name"
+                            placeholder="Enter project name (min 2 chars)"
+                        />
+                        <InputTextField<SlowCreateProjectCommand>
+                            value={c => c.email}
+                            title="Contact Email"
+                            placeholder="Enter contact email"
+                            type="email"
+                        />
+                    </StepperPanel>
+                    <StepperPanel header="Details">
+                        <TextAreaField<SlowCreateProjectCommand>
+                            value={c => c.description}
+                            title="Description"
+                            placeholder="Describe the project (min 10 chars)"
+                            rows={4}
+                        />
+                        <NumberField<SlowCreateProjectCommand>
+                            value={c => c.budget}
+                            title="Budget"
+                            placeholder="Enter budget (must be > 0)"
+                        />
+                    </StepperPanel>
+                </StepperCommandDialog>
+            </div>
+        );
+    },
+};
+
+/**
  * A step rendered as `{condition && <StepperPanel/>}` disappears entirely when the condition
  * is false. Toggle the optional step off and the dialog must behave as a genuine two-step
  * wizard: Submit shows on "Details" instead of a Next button that leads to an empty step.
