@@ -63,7 +63,12 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     onClose?: CloseDialog;
     /** Confirm callback — called only after successful command execution. */
     onConfirm?: ConfirmCallback;
-    /** Cancel callback — invoked when the dialog X button is clicked. */
+    /**
+     * Cancel callback — invoked for every dismissal that is not a successful submit: the X in the
+     * dialog header, the Escape key, and the footer Cancel button when `showCancel` is on. Return
+     * `true` to let the dialog close through the dialog context. None of the three is offered while
+     * the command is executing.
+     */
     onCancel?: CancelCallback;
     /** Label for the submit button shown on the last step when valid. Defaults to `'Submit'`. */
     okLabel?: string;
@@ -212,16 +217,23 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         }
     };
 
+    // Busy is set before anything is awaited, not just around execute(). `onBeforeExecute` may be
+    // async, and from the moment Submit is pressed the dialog is committed to running the command -
+    // so every dismissal has to be withdrawn for the whole window, not only for the part of it the
+    // request is in flight. Setting it after the transform would leave Cancel live while the command
+    // is already on its way: the operator cancels, the dialog closes reporting cancellation, the
+    // transform resolves, and the command executes anyway. The `finally` is what releases it, so the
+    // flag is cleared on the failure paths and on a transform that throws just as it is on success.
     const handleSubmit = async () => {
-        if (onBeforeExecute) {
-            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-            setCommandValues(applied instanceof Promise ? await applied : applied);
-        }
-
         setIsBusy(true);
         let result: ICommandResult<TResponse>;
 
         try {
+            if (onBeforeExecute) {
+                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+                setCommandValues(applied instanceof Promise ? await applied : applied);
+            }
+
             result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
         } finally {
             setIsBusy(false);
@@ -294,6 +306,10 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         </div>
     );
 
+    // The header X and the Escape key are withdrawn on the same flag as the footer Cancel. A
+    // dismissal that still worked mid-flight would close the dialog and then let onSuccess fire on a
+    // dialog that is already gone. PrimeReact gates Escape behind `closable` too, so `closeOnEscape`
+    // is stated rather than load-bearing - it keeps the Escape path guarded on its own terms.
     return (
         <PrimeDialog
             header={headerElement}
@@ -304,7 +320,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             style={{ width, ...style }}
             contentStyle={contentStyle}
             resizable={resizable}
-            closable
+            closable={!isBusy}
+            closeOnEscape={!isBusy}
             className={dialogClassName}
             pt={dialogPt}
             ptOptions={dialogPtOptions}

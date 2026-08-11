@@ -75,6 +75,16 @@ export const click = async (dialog: StepperDialogInTheDom, label: string) => {
 };
 
 /**
+ * Presses Escape on the document, which is where a dialog listens for it — the key is not sent to
+ * any one element, so there is no dialog argument to pass.
+ */
+export const pressEscape = async () => {
+    await act(async () => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    });
+};
+
+/**
  * The labels of every button the dialog currently offers. Rendered elements come
  * from the jsdom realm and carry no `should`, so the footer is described as plain
  * strings — and a failure then says which buttons were offered instead of only

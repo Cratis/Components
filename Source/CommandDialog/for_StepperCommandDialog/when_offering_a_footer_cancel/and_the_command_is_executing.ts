@@ -164,7 +164,12 @@ describe('when the command submitted from the last step has not returned', () =>
         disabledWhileRunning.should.contain('Cancel');
     });
 
-    it('should_ignore_a_cancel_click_while_the_command_runs', () => {
+    // Named for what it measures. A disabled control never dispatches a click, so this does not
+    // observe a handler turning the click away - it observes that Cancel is out of the click path
+    // altogether. It is kept rather than deleted as a twin of the disabled attribute because it is
+    // the "before" half of the window: without it, the honored click below would be satisfied just
+    // as well by a click that landed while the command was still running.
+    it('should_take_cancel_out_of_the_click_path_while_the_command_runs', () => {
         cancelCallsWhileRunning.should.equal(0);
     });
 
@@ -181,11 +186,17 @@ describe('when the command submitted from the last step has not returned', () =>
 // carries no Previous - the cell of the state machine where Cancel is the leading button *and* the
 // dialog is working. On a middle step there is no Submit to press and Previous is itself disabled
 // while busy, so a busy middle step cannot be reached at all.
+//
+// The run is settled and Cancel clicked a second time for the same reason as next door: the click
+// while busy is turned away by a disabled attribute, not by a handler, so on its own it would pass
+// on a dialog that never wired the button up at all. Clicking again once the command has returned
+// is what puts the onClick inside this suite's reach.
 describe('when the command submitted from the only step has not returned', () => {
     let dialog: StepperDialogInTheDom;
     let footerWhileRunning: string[];
     let disabledWhileRunning: string[];
     let cancelCallsWhileRunning: number;
+    let cancelCallsAfterReturning: number;
 
     beforeEach(async () => {
         closeDialog.mockClear();
@@ -201,6 +212,9 @@ describe('when the command submitted from the only step has not returned', () =>
         cancelCallsWhileRunning = onCancel.mock.calls.length;
 
         await settle(() => execution.settle(aRejectedResult));
+
+        await click(dialog, 'Cancel');
+        cancelCallsAfterReturning = onCancel.mock.calls.length;
     });
 
     afterEach(async () => await unmount(dialog));
@@ -213,7 +227,11 @@ describe('when the command submitted from the only step has not returned', () =>
         disabledWhileRunning.should.contain('Cancel');
     });
 
-    it('should_ignore_a_cancel_click_while_the_command_runs', () => {
+    it('should_take_cancel_out_of_the_click_path_while_the_command_runs', () => {
         cancelCallsWhileRunning.should.equal(0);
+    });
+
+    it('should_honor_a_cancel_click_once_the_command_returns', () => {
+        cancelCallsAfterReturning.should.equal(1);
     });
 });
