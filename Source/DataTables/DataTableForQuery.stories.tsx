@@ -62,6 +62,45 @@ class ProductsQuery extends QueryFor<Product, object> {
     }
 }
 
+const manyProducts: Product[] = Array.from({ length: 24 }, (_, index) => ({
+    id: index + 1,
+    name: `Product ${index + 1}`,
+    category: ['Electronics', 'Office', 'Accessories'][index % 3],
+    price: 9.99 + index,
+    inStock: index % 4 !== 0,
+}));
+
+// Mock query with more records than fit on a page, so the table has to divide a
+// fixed height between a scrolling row region and the paginator below it.
+class ManyProductsQuery extends QueryFor<Product, object> {
+    readonly route = '/api/many-products';
+    readonly defaultValue: Product = [] as unknown as Product;
+    readonly parameterDescriptors = [];
+    get requiredRequestParameters() {
+        return [];
+    }
+    constructor() {
+        super(Object, true);
+    }
+    override perform(): Promise<QueryResult<Product>> {
+        const page = this.paging?.page ?? 0;
+        const size = this.paging?.pageSize ?? 20;
+        const first = page * size;
+
+        return Promise.resolve({
+            data: manyProducts.slice(first, first + size),
+            paging: { totalItems: manyProducts.length, totalPages: Math.ceil(manyProducts.length / size), page, size },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            hasExceptions: false,
+            validationResults: [],
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Product>);
+    }
+}
+
 export const Default: Story = {
     render: () => (
         <div className="p-4">
@@ -92,6 +131,36 @@ export const Default: Story = {
                     )}
                 />
             </DataTableForQuery>
+        </div>
+    )
+};
+
+/**
+ * The table's own `height: 100%` only means something inside a container that
+ * has a height. Here it gets 560px and 24 records at a page size of 20, so the
+ * rows scroll while the paginator stays pinned to the bottom edge.
+ */
+export const InBoundedHeight: Story = {
+    render: () => (
+        <div className="p-4">
+            <div style={{ height: '560px' }}>
+                <DataTableForQuery<ManyProductsQuery, Product, object>
+                    query={ManyProductsQuery}
+                    emptyMessage="No products found"
+                    dataKey="id"
+                >
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Product Name" sortable style={{ width: '40%' }} />
+                    <Column field="category" header="Category" sortable style={{ width: '25%' }} />
+                    <Column
+                        field="price"
+                        header="Price"
+                        sortable
+                        style={{ width: '25%' }}
+                        body={(rowData: Product) => `$${rowData.price.toFixed(2)}`}
+                    />
+                </DataTableForQuery>
+            </div>
         </div>
     )
 };

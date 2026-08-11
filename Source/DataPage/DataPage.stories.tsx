@@ -64,6 +64,46 @@ class PersonsQuery extends QueryFor<Person, object> {
     }
 }
 
+const manyPersons: Person[] = Array.from({ length: 24 }, (_, index) => ({
+    id: index + 1,
+    name: `Person ${index + 1}`,
+    email: `person${index + 1}@example.com`,
+    role: ['Admin', 'Editor', 'Viewer'][index % 3],
+}));
+
+// Mock query with more records than fit on a page, so the paginator is real and
+// the row region has to scroll. This is the shape that shows whether the page
+// keeps its paginator inside the height it was given.
+class ManyPersonsQuery extends QueryFor<Person, object> {
+    readonly route = '/api/many-persons';
+    readonly routeTemplate = '/api/many-persons';
+    readonly defaultValue: Person = [] as unknown as Person;
+    readonly parameterDescriptors = [];
+    get requiredRequestParameters() {
+        return [];
+    }
+    constructor() {
+        super(Object, true);
+    }
+    override perform(): Promise<QueryResult<Person>> {
+        const page = this.paging?.page ?? 0;
+        const size = this.paging?.pageSize ?? 20;
+        const first = page * size;
+
+        return Promise.resolve({
+            data: manyPersons.slice(first, first + size),
+            paging: { totalItems: manyPersons.length, totalPages: Math.ceil(manyPersons.length / size), page, size },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            hasExceptions: false,
+            validationResults: [],
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Person>);
+    }
+}
+
 const PersonDetails = ({ item }: { item: Person }) => {
     return (
         <div className="p-4">
@@ -210,6 +250,97 @@ export const WithOnRefresh: Story = {
                 detailsComponent={PersonDetailsWithRefresh as React.FC<{ item: unknown }>}
                 onRefresh={() => alert('onRefresh triggered — reload your data here')}
             >
+                <DataPage.Columns>
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
+                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
+                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                </DataPage.Columns>
+            </DataPage>
+        </div>
+    )
+};
+
+/**
+ * 24 records at a page size of 20 in a 560px container — more rows than fit,
+ * so the paginator has to stay on screen while the row region scrolls on its
+ * own. Page to the short second page and back: the paginator must not move.
+ */
+export const MultiplePages: Story = {
+    render: () => (
+        <div style={{ height: '560px' }}>
+            <DataPage<ManyPersonsQuery, Person, object>
+                title="Persons (24 records, 20 per page)"
+                query={ManyPersonsQuery}
+                emptyMessage="No persons found"
+                dataKey="id"
+                globalFilterFields={['name', 'email', 'role']}
+            >
+                <DataPage.MenuItems>
+                    <MenuItem
+                        label="Add Person"
+                        icon={() => <i className="pi pi-plus" />}
+                        command={() => alert('Add person clicked')}
+                    />
+                </DataPage.MenuItems>
+                <DataPage.Columns>
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
+                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
+                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                </DataPage.Columns>
+            </DataPage>
+        </div>
+    )
+};
+
+/**
+ * The same overflowing data with no action bar, so the table region is the only
+ * item in the column and still has to leave room for the paginator.
+ */
+export const MultiplePagesWithoutMenuItems: Story = {
+    render: () => (
+        <div style={{ height: '560px' }}>
+            <DataPage<ManyPersonsQuery, Person, object>
+                title="Persons (24 records, no action bar)"
+                query={ManyPersonsQuery}
+                emptyMessage="No persons found"
+                dataKey="id"
+            >
+                <DataPage.Columns>
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
+                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
+                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                </DataPage.Columns>
+            </DataPage>
+        </div>
+    )
+};
+
+/**
+ * The overflowing data with a details pane — select a row to split the page, then drag the
+ * divider between the panes. The paginator stays inside the primary pane's bounds at every
+ * split, and the two panes sit side by side rather than stacking.
+ */
+export const MultiplePagesWithDetails: Story = {
+    render: () => (
+        <div style={{ height: '560px' }}>
+            <DataPage<ManyPersonsQuery, Person, object>
+                title="Persons (24 records, with details)"
+                query={ManyPersonsQuery}
+                emptyMessage="No persons found"
+                dataKey="id"
+                detailsComponent={PersonDetails}
+            >
+                <DataPage.MenuItems>
+                    <MenuItem
+                        label="Edit Person"
+                        icon={() => <i className="pi pi-pencil" />}
+                        command={() => alert('Edit person clicked')}
+                        disableOnUnselected
+                    />
+                </DataPage.MenuItems>
                 <DataPage.Columns>
                     <Column field="id" header="ID" sortable style={{ width: '10%' }} />
                     <Column field="name" header="Name" sortable style={{ width: '30%' }} />

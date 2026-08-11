@@ -110,12 +110,47 @@ The component automatically detects the query type and renders the appropriate d
 
 ## Layout
 
-DataPage uses Allotment for resizable split panels when a DetailsComponent is provided. The layout consists of:
+DataPage uses Allotment for the resizable split when a `detailsComponent` is provided. The layout consists of:
 
 1. Page header with title
 2. Menu bar with actions
 3. Data table
 4. Optional details panel (when item is selected)
+
+Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. DataPage imports it itself, the same way every other stylesheet in this package travels with the component that needs it — there is nothing for you to import, and nothing to configure. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
+
+Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs; the table region takes everything that is left and scrolls its rows internally. Given an ancestor with a real height — the condition described next — the paginator therefore sits at the bottom of the page rather than below its edge, however many rows the query returns, and whether or not the page is split.
+
+### DataPage needs an ancestor with a height
+
+That division only works if there is a height to divide. Every element from the page root down is sized as a percentage of its parent, so **some ancestor of `DataPage` has to have a definite height** — a viewport unit, a pixel height, a grid row, or a flex child that is allowed to shrink. Give it one and the paginator stays on screen no matter how many rows the query returns.
+
+```tsx
+// ✅ the layout gives the page a height to divide
+<div style={{ height: '100vh' }}>
+    <DataPage title="Authors" query={AllAuthors} emptyMessage="No authors found">
+        <DataPage.Columns>
+            <Column field="name" header="Name" sortable />
+        </DataPage.Columns>
+    </DataPage>
+</div>
+```
+
+```tsx
+// ❌ nothing above resolves to a height, so the table grows to its content and
+//    the paginator ends up past the bottom of the page
+<div>
+    <DataPage title="Authors" query={AllAuthors} emptyMessage="No authors found">
+        <DataPage.Columns>
+            <Column field="name" header="Name" sortable />
+        </DataPage.Columns>
+    </DataPage>
+</div>
+```
+
+A flex or grid child counts as bounded only when it is allowed to shrink — `min-height: 0` on the item, or `overflow: hidden` on the container. Without that, the item's automatic minimum keeps it at content height, which is the same as having no bound at all.
+
+When no ancestor supplies a height, DataPage falls back to a small fixed height so the page stays usable instead of collapsing to nothing. Treat that fallback as a symptom, not a solution — fix the ancestor.
 
 ## Integration
 

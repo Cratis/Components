@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ReactNode, useMemo } from 'react';
+import { CSSProperties, ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
 import { MenuItem as PrimeMenuItem } from 'primereact/menuitem';
@@ -12,6 +12,16 @@ import { DataTableFilterMeta, DataTableSelectionSingleChangeEvent, type DataTabl
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
 import { Allotment } from 'allotment';
 import { Constructor } from '@cratis/fundamentals';
+import { DataPageLayout } from './DataPageLayout';
+
+// Allotment ships its layout as a stylesheet rather than inline styles, and a pane only becomes
+// the absolutely positioned, full-height box the split view assumes once that stylesheet is on
+// the page. Without it a pane is an ordinary block that grows to its content, `height: 100%`
+// inside it resolves to auto, and the table pushes its paginator past the page's clipped edge.
+// Importing it here is the same contract as every other stylesheet in this package: Rollup keeps
+// CSS imports external, `sideEffects` marks them live, and the consuming bundler injects it - so
+// a consumer gets a working split view without having to know the dependency exists.
+import 'allotment/dist/style.css';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -33,7 +43,6 @@ export interface MenuItemProps extends PrimeMenuItem {
  * directly; the surrounding {@link MenuItems} component reads its props and
  * forwards them to the action `Menubar`.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const MenuItem = (_: MenuItemProps) => {
     return null;
 };
@@ -53,6 +62,29 @@ export interface ColumnProps {
     /** PrimeReact `<Column>` elements describing each visible column. */
     children: ReactNode;
 }
+
+/**
+ * The action bar is an intrinsically sized item in the page's layout column —
+ * it takes the height its menubar needs and never gives any of it up, so the
+ * table region below it is the only part that has to adapt to the space left.
+ */
+const actionsStyle: CSSProperties = { flexShrink: 0 };
+
+/**
+ * The table region takes every pixel the action bar leaves and no more.
+ * `minHeight: 0` is the load-bearing half: without it the region's automatic
+ * minimum keeps it at content height, the column grows past the page, and the
+ * table's paginator ends up below the clipped edge.
+ */
+const tableRegionStyle: CSSProperties = { flexGrow: 1, flexBasis: 0, minHeight: 0 };
+
+/**
+ * The floor a `DataPage` falls back to when its ancestors give it no height at
+ * all. A page that renders as an empty sliver is indistinguishable from a
+ * broken one, so a contract-violating consumer gets a small but usable page
+ * instead of nothing.
+ */
+const pageStyle: CSSProperties = { minHeight: '20rem' };
 
 /**
  * Renders an action `Menubar` at the top of a {@link DataPage}, populated from
@@ -84,7 +116,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
     }, [children, context.selectedItem]);
 
     return (
-        <div className="px-4 py-2">
+        <div className="cratis-data-page-actions px-4 py-2" style={actionsStyle}>
             <Menubar
                 aria-label="Actions"
                 model={items}
@@ -108,35 +140,34 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
 export const Columns = ({ children }: ColumnProps) => {
 
     const context = useDataPageContext();
+    const isSnapshotQuery = context.query.prototype instanceof QueryFor;
 
-    if (context.query.prototype instanceof QueryFor) {
-        return (
-            <DataTableForQuery
-                {...context}
-                selection={context.selectedItem}
-                onSelectionChange={context.onSelectionChanged}
-                clientFiltering={context.clientFiltering}
-                className={context.tableClassName}
-                pt={context.tablePt}
-                ptOptions={context.tablePtOptions}
-                unstyled={context.tableUnstyled}>
-                {children}
-            </DataTableForQuery>);
-
-    } else {
-        return (
-            <DataTableForObservableQuery
-                {...context}
-                selection={context.selectedItem}
-                onSelectionChange={context.onSelectionChanged}
-                clientFiltering={context.clientFiltering}
-                className={context.tableClassName}
-                pt={context.tablePt}
-                ptOptions={context.tablePtOptions}
-                unstyled={context.tableUnstyled}>
-                {children}
-            </DataTableForObservableQuery>);
-    }
+    return (
+        <div className="cratis-data-page-table" style={tableRegionStyle}>
+            {isSnapshotQuery
+                ? <DataTableForQuery
+                    {...context}
+                    selection={context.selectedItem}
+                    onSelectionChange={context.onSelectionChanged}
+                    clientFiltering={context.clientFiltering}
+                    className={context.tableClassName}
+                    pt={context.tablePt}
+                    ptOptions={context.tablePtOptions}
+                    unstyled={context.tableUnstyled}>
+                    {children}
+                </DataTableForQuery>
+                : <DataTableForObservableQuery
+                    {...context}
+                    selection={context.selectedItem}
+                    onSelectionChange={context.onSelectionChanged}
+                    clientFiltering={context.clientFiltering}
+                    className={context.tableClassName}
+                    pt={context.tablePt}
+                    ptOptions={context.tablePtOptions}
+                    unstyled={context.tableUnstyled}>
+                    {children}
+                </DataTableForObservableQuery>}
+        </div>);
 };
 
 /**
@@ -343,6 +374,29 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
  * </DataPage>
  * ```
  *
+ * ## Height — `DataPage` needs a bounded ancestor
+ *
+ * `DataPage` fills the height it is given and divides it between the action
+ * bar and the table region, so the table's paginator always sits at the
+ * bottom of the page rather than below its edge. It cannot invent that height:
+ * every element from the page root down sizes as a percentage of its parent,
+ * so **some ancestor has to have a definite height**.
+ *
+ * ```tsx
+ * // ✅ the router outlet, a sized container, or a flex child with min-height
+ * <div style={{ height: '100vh' }}>
+ *     <DataPage … />
+ * </div>
+ *
+ * // ❌ nothing above resolves to a height — the table grows to its content
+ * <div>
+ *     <DataPage … />
+ * </div>
+ * ```
+ *
+ * Without one, the page falls back to a small fixed height so it stays
+ * usable instead of collapsing to nothing.
+ *
  * ## Styling
  *
  * The inner DataTable and Menubar each have their own per-slot props:
@@ -370,17 +424,19 @@ const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDat
 
     return (
         <DataPageContext.Provider value={context}>
-            <Page title={props.title} panel={true}>
-                <Allotment className="h-full" proportionalLayout={false}>
-                    <Allotment.Pane className="flex-grow">
-                        {props.children}
-                    </Allotment.Pane>
-                    {props.detailsComponent && selectedItem &&
-                        <Allotment.Pane preferredSize="450px">
-                            <props.detailsComponent item={selectedItem} onRefresh={props.onRefresh} />
+            <Page title={props.title} panel={true} style={pageStyle}>
+                {props.detailsComponent
+                    ? <Allotment className="h-full" proportionalLayout={false}>
+                        <Allotment.Pane>
+                            <DataPageLayout>{props.children}</DataPageLayout>
                         </Allotment.Pane>
-                    }
-                </Allotment>
+                        {selectedItem &&
+                            <Allotment.Pane preferredSize="450px">
+                                <props.detailsComponent item={selectedItem} onRefresh={props.onRefresh} />
+                            </Allotment.Pane>
+                        }
+                    </Allotment>
+                    : <DataPageLayout>{props.children}</DataPageLayout>}
             </Page>
         </DataPageContext.Provider>
     );
