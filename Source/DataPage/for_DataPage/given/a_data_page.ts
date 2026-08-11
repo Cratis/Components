@@ -178,3 +178,24 @@ export const scrollRegion = (page: DataPageInTheDom): HTMLElement =>
  */
 export const paginator = (page: DataPageInTheDom): HTMLElement | null =>
     page.container.querySelector<HTMLElement>('.p-paginator');
+
+/**
+ * How each split-view pane is actually laid out, top pane first.
+ *
+ * Allotment lays its panes out from a stylesheet rather than from inline styles, so this reads the
+ * **computed** style: an inline-style assertion would pass on a declaration nothing ever honored,
+ * which is exactly the failure this page was fixed for. A pane that the stylesheet reached is
+ * `absolute / 100%` — taken out of flow and given the whole height of the split view. One it did
+ * not is `static / auto`: an ordinary block that grows to its content, which makes every `height:
+ * 100%` beneath it resolve to auto and pushes the paginator past the page's clipped edge.
+ *
+ * Described as plain strings because rendered elements come from the jsdom realm and carry no
+ * `should` — and a failure then says how the panes were laid out rather than only that two objects
+ * differ. An empty array means the page rendered no split view at all, so a claim about the panes
+ * can never be satisfied by their absence.
+ * @param page - The mounted page.
+ * @returns One description per pane, in document order.
+ */
+export const paneLayouts = (page: DataPageInTheDom): string[] =>
+    Array.from(page.container.querySelectorAll<HTMLElement>('[class*="splitViewView"]'))
+        .map(pane => `${getComputedStyle(pane).position} / ${getComputedStyle(pane).height}`);

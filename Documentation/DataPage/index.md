@@ -110,14 +110,16 @@ The component automatically detects the query type and renders the appropriate d
 
 ## Layout
 
-DataPage uses Allotment for resizable split panels when a DetailsComponent is provided. The layout consists of:
+DataPage uses Allotment for the resizable split when a `detailsComponent` is provided. The layout consists of:
 
 1. Page header with title
 2. Menu bar with actions
 3. Data table
 4. Optional details panel (when item is selected)
 
-Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs; the table region takes everything that is left and scrolls its rows internally, so the table's paginator always sits at the bottom of the page rather than below its edge.
+Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. DataPage imports it itself, the same way every other stylesheet in this package travels with the component that needs it — there is nothing for you to import, and nothing to configure. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
+
+Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs; the table region takes everything that is left and scrolls its rows internally. Given an ancestor with a real height — the condition described next — the paginator therefore sits at the bottom of the page rather than below its edge, however many rows the query returns, and whether or not the page is split.
 
 ### DataPage needs an ancestor with a height
 

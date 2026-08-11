@@ -12,6 +12,7 @@ import {
     layoutRootChildren,
     layoutRoots,
     paginator,
+    paneLayouts,
     render,
     scrollRegion,
     tableRegion,
@@ -68,7 +69,12 @@ describe('when rendered with menu items', () => {
         tableRegion(page).style.minHeight.should.equal('0px');
     });
 
+    it('should not mount a split view for a page with nothing to split', () => {
+        paneLayouts(page).should.deep.equal([]);
+    });
+
     it('should keep the paginator out of the scrolling region', () => {
+        (paginator(page) === null).should.be.false;
         scrollRegion(page).contains(paginator(page)).should.be.false;
     });
 

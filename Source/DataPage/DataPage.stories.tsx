@@ -319,8 +319,9 @@ export const MultiplePagesWithoutMenuItems: Story = {
 };
 
 /**
- * The overflowing data with a details pane — select a row to split the page and
- * confirm the paginator stays inside the primary pane's bounds.
+ * The overflowing data with a details pane — select a row to split the page, then drag the
+ * divider between the panes. The paginator stays inside the primary pane's bounds at every
+ * split, and the two panes sit side by side rather than stacking.
  */
 export const MultiplePagesWithDetails: Story = {
     render: () => (

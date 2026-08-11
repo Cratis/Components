@@ -37,6 +37,12 @@ export default defineConfig({
         isolate: true,
         fileParallelism: false,
         pool: 'threads',
+        // Stylesheets are stubbed out by default, which is right for the ones this package writes:
+        // every layout declaration those specs assert on is an inline style, and processing CSS is
+        // slow. Allotment's is the exception - its split view is laid out entirely by that
+        // stylesheet, so a spec can only tell an honored rule from an inert one if the rule is
+        // actually in the document. Scoped to that one file so nothing else pays for it.
+        css: { include: [/allotment[\\/]dist[\\/]style\.css$/] },
         coverage: {
             provider: 'v8',
             exclude: [

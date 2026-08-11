@@ -12,6 +12,7 @@ import {
     layoutRootChildren,
     layoutRoots,
     paginator,
+    paneLayouts,
     render,
     scrollRegion,
     tableRegion,
@@ -69,7 +70,12 @@ describe('when a details component is supplied and nothing is selected', () => {
         tableRegion(page).style.minHeight.should.equal('0px');
     });
 
+    it('should give the only pane the height the split view was given', () => {
+        paneLayouts(page).should.deep.equal(['absolute / 100%']);
+    });
+
     it('should keep the paginator out of the scrolling region', () => {
+        (paginator(page) === null).should.be.false;
         scrollRegion(page).contains(paginator(page)).should.be.false;
     });
 

@@ -12,6 +12,7 @@ import {
     layoutRootChildren,
     layoutRoots,
     paginator,
+    paneLayouts,
     render,
     scrollRegion,
     selectFirstRow,
@@ -71,7 +72,12 @@ describe('when a details component is supplied and a row is selected', () => {
         tableRegion(page).style.minHeight.should.equal('0px');
     });
 
+    it('should side the two panes rather than stack them', () => {
+        paneLayouts(page).should.deep.equal(['absolute / 100%', 'absolute / 100%']);
+    });
+
     it('should keep the paginator out of the scrolling region', () => {
+        (paginator(page) === null).should.be.false;
         scrollRegion(page).contains(paginator(page)).should.be.false;
     });
 

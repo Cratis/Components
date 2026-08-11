@@ -14,6 +14,15 @@ import { Allotment } from 'allotment';
 import { Constructor } from '@cratis/fundamentals';
 import { DataPageLayout } from './DataPageLayout';
 
+// Allotment ships its layout as a stylesheet rather than inline styles, and a pane only becomes
+// the absolutely positioned, full-height box the split view assumes once that stylesheet is on
+// the page. Without it a pane is an ordinary block that grows to its content, `height: 100%`
+// inside it resolves to auto, and the table pushes its paginator past the page's clipped edge.
+// Importing it here is the same contract as every other stylesheet in this package: Rollup keeps
+// CSS imports external, `sideEffects` marks them live, and the consuming bundler injects it - so
+// a consumer gets a working split view without having to know the dependency exists.
+import 'allotment/dist/style.css';
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
@@ -34,7 +43,6 @@ export interface MenuItemProps extends PrimeMenuItem {
  * directly; the surrounding {@link MenuItems} component reads its props and
  * forwards them to the action `Menubar`.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const MenuItem = (_: MenuItemProps) => {
     return null;
 };
