@@ -86,6 +86,44 @@ export const buttonLabels = (dialog: StepperDialogInTheDom): string[] =>
     Array.from(dialog.container.querySelectorAll('button')).map(button => button.textContent ?? '');
 
 /**
+ * The footer laid out the way it is composed: every button by its label, and the flexible spacer
+ * that divides the dismissal side from the progression side as `'spacer'`. Buttons on their own
+ * cannot say which side of that spacer a button sits on, and on a step that offers no Previous
+ * that is the only thing separating "leads the footer" from "trails it".
+ * @param dialog - The mounted dialog.
+ * @returns The footer's children, in document order.
+ */
+export const footerLayout = (dialog: StepperDialogInTheDom): string[] => {
+    const footer = dialog.container.querySelector('[data-testid="dialog"]')?.firstElementChild;
+
+    return Array.from(footer?.children ?? [])
+        .map(child => child.tagName === 'BUTTON' ? child.textContent ?? '' : 'spacer');
+};
+
+/**
+ * The labels of the buttons the dialog currently renders as disabled, in document order.
+ * Read alongside {@link buttonLabels} so a spec can tell "the button is disabled" apart
+ * from "the button is not there at all".
+ * @param dialog - The mounted dialog.
+ * @returns The disabled button labels, in document order.
+ */
+export const disabledButtonLabels = (dialog: StepperDialogInTheDom): string[] =>
+    Array.from(dialog.container.querySelectorAll('button'))
+        .filter(button => button.disabled)
+        .map(button => button.textContent ?? '');
+
+/**
+ * Runs work that resolves a promise the spec itself holds - settling a command execution,
+ * say - and lets React process everything it triggers before returning.
+ * @param work - The work to run.
+ */
+export const settle = async (work: () => void) => {
+    await act(async () => {
+        work();
+    });
+};
+
+/**
  * The headers of the step panels the wizard actually rendered, in render order.
  * @param dialog - The mounted dialog.
  * @returns The step headers.
