@@ -160,8 +160,14 @@ export const CommandStepperContent = ({
     // Stepper renders are all derived from this one list — they cannot drift apart.
     const steps = useMemo(() => getStepPanels(children), [children]);
     const stepCount = steps.length;
-    const isLastStep = activeStep >= stepCount - 1;
-    const isFirstStep = activeStep <= 0;
+
+    // A conditional step can vanish after the user has advanced past it, which leaves the
+    // incoming index pointing at a step that is no longer rendered. Clamp it into the set that
+    // is, so the panel shown, the validation state read and the buttons offered all belong to a
+    // step that exists.
+    const currentStep = Math.min(Math.max(activeStep, 0), Math.max(stepCount - 1, 0));
+    const isLastStep = currentStep >= stepCount - 1;
+    const isFirstStep = currentStep <= 0;
 
     const stepFieldNames = useMemo(
         () => steps.map((step) => {
@@ -180,7 +186,7 @@ export const CommandStepperContent = ({
         onStepErrorsChange?.(stepErrors);
     }, [onStepErrorsChange, stepErrors]);
 
-    const isCurrentStepInvalid = stepErrors[activeStep] ?? false;
+    const isCurrentStepInvalid = stepErrors[currentStep] ?? false;
     const hasAnyStepErrors = stepErrors.some(hasError => hasError);
 
     const stepperPt = useMemo(() => {
@@ -227,19 +233,19 @@ export const CommandStepperContent = ({
         onChangeStep?.(event);
         const index = (event as { index?: number }).index;
         if (typeof index === 'number') {
-            if (index > activeStep && isCurrentStepInvalid) {
+            if (index > currentStep && isCurrentStepInvalid) {
                 return;
             }
 
-            if (index > activeStep) {
-                onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
+            if (index > currentStep) {
+                onVisitedStepsChange?.(new Set(visitedSteps).add(currentStep));
             }
             onActiveStepChange?.(index);
         }
     };
 
     const handlePrevious = () => {
-        onActiveStepChange?.(Math.max(0, activeStep - 1));
+        onActiveStepChange?.(Math.max(0, currentStep - 1));
     };
 
     const handleNext = () => {
@@ -247,14 +253,14 @@ export const CommandStepperContent = ({
             return;
         }
 
-        onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
-        onActiveStepChange?.(Math.min(stepCount - 1, activeStep + 1));
+        onVisitedStepsChange?.(new Set(visitedSteps).add(currentStep));
+        onActiveStepChange?.(Math.min(stepCount - 1, currentStep + 1));
     };
 
     return (
         <div className="cratis-command-stepper">
             <PrimeStepper
-                activeStep={activeStep}
+                activeStep={currentStep}
                 linear={linear}
                 orientation={orientation}
                 headerPosition={headerPosition}

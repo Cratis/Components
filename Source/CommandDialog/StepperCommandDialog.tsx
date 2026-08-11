@@ -160,14 +160,19 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         contextCloseDialog = undefined;
     }
 
-    // Only the steps that actually render count — the footer's Next button is the sole way
-    // into the unclamped `setActiveStep(s => s + 1)` below, so a step count inflated by
-    // falsy conditional children would walk the wizard onto an empty step.
+    // Only the steps that actually render count. That count is not fixed: a conditional step
+    // (`{condition && <StepperPanel/>}`) can disappear after the user has already advanced past
+    // it — a late-resolving query or a `currentValues` overlay flipping the condition is enough.
+    // The step the wizard is on is therefore clamped into the set that still renders, and the
+    // last/first tests are inequalities, so an index left stranded above the end still resolves
+    // to the last surviving step instead of a step that is neither last nor navigable. Same
+    // shape as CommandStepperContent, which this dialog's body is.
     const stepCount = getStepPanels(children).length;
-    const isLastStep = activeStep === stepCount - 1;
-    const isFirstStep = activeStep === 0;
+    const currentStep = Math.min(Math.max(activeStep, 0), Math.max(stepCount - 1, 0));
+    const isLastStep = currentStep >= stepCount - 1;
+    const isFirstStep = currentStep <= 0;
     const isDialogValid = isValid !== false && isCommandFormValid;
-    const isCurrentStepInvalid = stepErrors[activeStep] ?? false;
+    const isCurrentStepInvalid = stepErrors[currentStep] ?? false;
 
     const handleClose = async (result: DialogResult) => {
         let shouldCloseThroughContext = true;
@@ -237,7 +242,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 <Button
                     label={previousLabel}
                     icon="pi pi-arrow-left"
-                    onClick={() => setActiveStep(s => s - 1)}
+                    onClick={() => setActiveStep(Math.max(0, currentStep - 1))}
                     disabled={isBusy}
                     outlined
                 />
@@ -249,8 +254,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                     icon="pi pi-arrow-right"
                     iconPos="right"
                     onClick={() => {
-                        setVisitedSteps(prev => new Set(prev).add(activeStep));
-                        setActiveStep(s => s + 1);
+                        setVisitedSteps(prev => new Set(prev).add(currentStep));
+                        setActiveStep(Math.min(stepCount - 1, currentStep + 1));
                     }}
                     disabled={isBusy || isCurrentStepInvalid}
                 />
@@ -285,7 +290,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             unstyled={dialogUnstyled}
         >
             <CommandStepperContent
-                activeStep={activeStep}
+                activeStep={currentStep}
                 visitedSteps={visitedSteps}
                 getFieldError={getFieldError}
                 onActiveStepChange={setActiveStep}
