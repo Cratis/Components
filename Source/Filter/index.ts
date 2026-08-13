@@ -9,12 +9,14 @@ export { RangeHistogramFilter } from './RangeHistogramFilter';
 export type { RangeHistogramFilterProps } from './RangeHistogramFilter';
 export { useFilterState } from './useFilterState';
 export type { UseFilterStateResult } from './useFilterState';
-export { buildFilterValues, buildRangeValues } from './utils';
+export { buildFilterValues, buildRangeValues, buildHistogram } from './utils';
+export type { RenderedHistogramBucket } from './utils';
 export type {
   FilterValue,
   FilterOption,
   FilterEditorProps,
   FilterDefinition,
+  HistogramBucket,
   FilterValues,
   RangeValues,
   CustomFilterValues,

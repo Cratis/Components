@@ -312,6 +312,7 @@ export function FilterPanel({
                       ) : isNumeric && filter.numericRange ? (
                         <RangeHistogramFilter
                           values={filter.numericRange.values}
+                          histogram={filter.numericRange.histogram}
                           min={filter.numericRange.min}
                           max={filter.numericRange.max}
                           buckets={filter.buckets ?? 20}

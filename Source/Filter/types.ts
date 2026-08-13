@@ -15,6 +15,16 @@ export interface FilterEditorProps {
   onChange: (value: unknown) => void;
 }
 
+/** One pre-counted bar of a range filter's histogram. */
+export interface HistogramBucket {
+  /** Inclusive start of the bucket, on the same scale as the filter's range. */
+  start: number;
+  /** Exclusive end of the bucket, on the same scale as the filter's range. */
+  end: number;
+  /** Number of items that fall inside the bucket. */
+  count: number;
+}
+
 export interface FilterDefinition {
   key: string;
   label: string;
@@ -27,8 +37,14 @@ export interface FilterDefinition {
   multi?: boolean;
   /** Pre-computed options for string/date filters. */
   options?: FilterOption[];
-  /** Numeric range data for 'number' type filters. */
-  numericRange?: { min: number; max: number; values: FilterValue[] };
+  /**
+   * Numeric range data for 'number' and 'date' type filters.
+   *
+   * Supply `values` to have the histogram counted in the browser, or `histogram` when the counts
+   * were produced elsewhere - by a server aggregating over more rows than are worth transferring,
+   * for instance. `histogram` wins when both are present.
+   */
+  numericRange?: { min: number; max: number; values?: FilterValue[]; histogram?: HistogramBucket[] };
   /** Number of histogram buckets. Defaults to 20. */
   buckets?: number;
   /** Show an inline search box that filters the displayed options for this group. */
