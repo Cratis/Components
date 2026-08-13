@@ -2,10 +2,21 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { FilterValue } from './types';
+import type { FilterValue, HistogramBucket } from './types';
+import { buildHistogram } from './utils';
+import type { RenderedHistogramBucket } from './utils';
 
 export interface RangeHistogramFilterProps {
-  values: FilterValue[];
+  /**
+   * The raw values to count into buckets in the browser. Ignored when `histogram` is supplied.
+   */
+  values?: FilterValue[];
+  /**
+   * Pre-counted buckets to render instead of counting `values`. Use this when the counts come from
+   * somewhere that can see more data than the browser holds - a server aggregating over a large
+   * table, for instance - so the picker reflects everything rather than the loaded page.
+   */
+  histogram?: HistogramBucket[];
   min: number;
   max: number;
   buckets?: number;
@@ -18,13 +29,6 @@ export interface RangeHistogramFilterProps {
   formatValue?: (value: number) => string;
 }
 
-interface HistogramBucket {
-  start: number;
-  end: number;
-  count: number;
-  maxCount: number;
-}
-
 const defaultFormatValue = (value: number) => {
   if (Number.isInteger(value)) return value.toString();
   return value.toFixed(1);
@@ -32,6 +36,7 @@ const defaultFormatValue = (value: number) => {
 
 export function RangeHistogramFilter({
   values,
+  histogram: providedHistogram,
   min,
   max,
   buckets = 20,
@@ -44,7 +49,7 @@ export function RangeHistogramFilter({
   const [dragStart, setDragStart] = useState<{ x: number; range: [number, number] } | null>(null);
 
   const numericValues = useMemo(() => {
-    return values
+    return (values ?? [])
       .map((v) => {
         if (typeof v === 'number') return v;
         if (v instanceof Date) return v.getTime();
@@ -54,34 +59,10 @@ export function RangeHistogramFilter({
       .filter((v): v is number => v !== null);
   }, [values]);
 
-  const histogram = useMemo((): HistogramBucket[] => {
-    const range = max - min;
-    if (range <= 0 || numericValues.length === 0) {
-      return [];
-    }
-
-    const bucketSize = range / buckets;
-    const bucketCounts: number[] = Array(buckets).fill(0);
-
-    numericValues.forEach((value) => {
-      const bucketIndex = Math.min(
-        Math.floor((value - min) / bucketSize),
-        buckets - 1
-      );
-      if (bucketIndex >= 0 && bucketIndex < buckets) {
-        bucketCounts[bucketIndex]++;
-      }
-    });
-
-    const maxCount = Math.max(...bucketCounts, 1);
-
-    return bucketCounts.map((count, i) => ({
-      start: min + i * bucketSize,
-      end: min + (i + 1) * bucketSize,
-      count,
-      maxCount,
-    }));
-  }, [numericValues, min, max, buckets]);
+  const histogram = useMemo(
+    () => buildHistogram(numericValues, min, max, buckets, providedHistogram),
+    [providedHistogram, numericValues, min, max, buckets]
+  );
 
   const currentRange = selectedRange ?? [min, max];
 
@@ -155,7 +136,7 @@ export function RangeHistogramFilter({
     };
   }, [isDragging, dragStart, min, max, onChange]);
 
-  const handleBarClick = (bucket: HistogramBucket) => {
+  const handleBarClick = (bucket: RenderedHistogramBucket) => {
     onChange([bucket.start, bucket.end]);
   };
 
