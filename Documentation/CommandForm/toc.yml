@@ -1,5 +1,7 @@
 - name: Overview
   href: index.md
+- name: AutoCommandForm
+  href: auto-command-form.md
 - name: CalendarField
   href: calendar-field.md
 - name: CheckboxField
