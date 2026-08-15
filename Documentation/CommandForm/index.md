@@ -48,3 +48,26 @@ import { InputTextField, NumberField, CheckboxField } from '@cratis/components/C
     <CheckboxField<MyCommand> value={c => c.active} label="Active" />
 </CommandDialog>
 ```
+
+## Populating Initial Values from a Query
+
+Every field here is built with `asCommandFormField` from `@cratis/arc.react/commands`, so each one automatically supports `CommandForm`'s `populateFromQuery`/`populateFromObservableQuery` props - the form fetches a single-instance query itself and seeds its fields from the result, matched onto the command by property name:
+
+```tsx
+import { CommandForm } from '@cratis/arc.react/commands';
+import { InputTextField } from '@cratis/components/CommandForm';
+import { GetUserProfile } from './queries';
+import { UpdateProfile } from './commands';
+
+<CommandForm command={UpdateProfile} populateFromQuery={GetUserProfile} populateFromQueryArgs={{ userId }}>
+    <InputTextField<UpdateProfile> value={c => c.firstName} title="First name" />
+    <InputTextField<UpdateProfile> value={c => c.lastName} title="Last name" />
+</CommandForm>
+```
+
+Two field props refine this per field - both work on every field type in this package, since they come from the shared `asCommandFormField` wrapper:
+
+- `noInitialValue` - skip this field entirely, even if the query result has a same-named property.
+- `initialValue` - override how the field's value is derived from the query result, either a property accessor matched by name or a function composing a value from the whole result.
+
+See Arc's [Populating a Form from a Query](https://github.com/Cratis/Arc/blob/main/Documentation/frontend/react/command-form/data-loading.md) for the full behavior, including how the populated data becomes the form's change-tracking baseline.
