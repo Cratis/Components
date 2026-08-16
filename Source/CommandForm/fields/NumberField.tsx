@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { InputNumber, type InputNumberProps } from 'primereact/inputnumber';
+import { InputNumber } from 'primereact/inputnumber';
+import type { InputNumberRootProps, InputNumberRootValueChangeEvent } from '@primereact/types/primitive/inputnumber';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 
@@ -25,10 +26,10 @@ interface NumberFieldComponentProps extends WrappedFieldProps<number> {
     className?: string;
 
     /** PrimeReact pass-through configuration applied to the underlying InputNumber. */
-    pt?: InputNumberProps['pt'];
+    pt?: InputNumberRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the underlying InputNumber. */
-    ptOptions?: InputNumberProps['ptOptions'];
+    ptOptions?: InputNumberRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the underlying InputNumber. */
     unstyled?: boolean;
@@ -46,20 +47,23 @@ interface NumberFieldComponentProps extends WrappedFieldProps<number> {
  */
 export const NumberField = asCommandFormField<NumberFieldComponentProps>(
     (props) => (
-        <InputNumber
-            value={props.value}
-            onValueChange={(e) => props.onChange(e.value ?? 0)}
-            onBlur={props.onBlur}
-            invalid={props.invalid}
-            placeholder={props.placeholder}
-            min={props.min}
-            max={props.max}
-            step={props.step}
-            className={props.className ? `w-full ${props.className}` : 'w-full'}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
+        // PrimeReact 11's InputNumber is compositional (Root owns the numeric model,
+        // Input is the text field). `onBlur` rides on the wrapping div so the
+        // CommandForm's blur-timed validation still fires from the inner input.
+        <div onBlur={props.onBlur} className={props.className ? `w-full ${props.className}` : 'w-full'}>
+            <InputNumber.Root
+                value={props.value}
+                onValueChange={(e: InputNumberRootValueChangeEvent) => props.onChange(e.value ?? 0)}
+                invalid={props.invalid}
+                min={props.min}
+                max={props.max}
+                step={props.step}
+                pt={props.pt}
+                ptOptions={props.ptOptions}
+                unstyled={props.unstyled}>
+                <InputNumber.Input placeholder={props.placeholder} className="w-full" />
+            </InputNumber.Root>
+        </div>
     ),
     {
         defaultValue: 0,

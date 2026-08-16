@@ -8,7 +8,11 @@
  * built entirely from Tailwind utility classes.
  *
  * This file is Storybook-only and not part of the published package. Treat it
- * as a starting point you can fork into your own app.
+ * as a PrimeReact 11 starting point you can fork into your own app — the
+ * per-component keys match PrimeReact 11 (`select`, `textarea`, …) and the
+ * leaf slots below cover the common structure; a component's deeper headless
+ * slots (e.g. the compositional Select/DataTable parts) can be extended as
+ * needed, and any slot a component doesn't expose is simply ignored.
  */
 
 const surface = 'bg-slate-900 text-slate-50';
@@ -21,8 +25,9 @@ export const tailwindPtPreset = {
             className: [
                 'inline-flex items-center justify-center gap-2',
                 'px-4 py-2 rounded-lg font-medium',
-                'bg-sky-500 text-white',
-                'hover:bg-sky-400 active:bg-sky-600',
+                // sky-700 (not sky-500) so white label text clears WCAG AA (~6:1).
+                'bg-sky-700 text-white',
+                'hover:bg-sky-600 active:bg-sky-800',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'transition-colors',
                 focusRing,
@@ -44,7 +49,7 @@ export const tailwindPtPreset = {
         },
     },
 
-    inputtextarea: {
+    textarea: {
         root: {
             className: [
                 'w-full px-3 py-2 rounded-md',
@@ -70,7 +75,7 @@ export const tailwindPtPreset = {
         },
     },
 
-    dropdown: {
+    select: {
         root: {
             className: [
                 'w-full inline-flex items-center justify-between gap-2',
@@ -80,15 +85,15 @@ export const tailwindPtPreset = {
                 focusRing,
             ].join(' '),
         },
-        input: { className: 'flex-1 truncate text-left' },
-        trigger: { className: 'shrink-0 text-slate-400' },
-        panel: {
+        value: { className: 'flex-1 truncate text-left' },
+        dropdown: { className: 'shrink-0 text-slate-400' },
+        popup: {
             className: [
                 'mt-1 rounded-md shadow-xl overflow-hidden',
                 surface, border,
             ].join(' '),
         },
-        item: {
+        option: {
             className: 'px-3 py-2 cursor-pointer hover:bg-slate-800',
         },
     },
@@ -165,13 +170,6 @@ export const tailwindPtPreset = {
         },
     },
 
-    menubar: {
-        root: {
-            className: 'flex items-center gap-1 px-3 py-2 bg-slate-800 border-b border-slate-700',
-        },
-        menuitem: { className: 'rounded' },
-        action: {
-            className: 'inline-flex items-center gap-2 px-3 py-1.5 rounded hover:bg-slate-700 cursor-pointer',
-        },
-    },
+    // PrimeReact 11 removed Menubar; the Cratis action bar is a Button toolbar
+    // styled through the `button` slot above, so no menubar preset is needed.
 } as const;

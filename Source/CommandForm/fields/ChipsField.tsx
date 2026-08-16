@@ -2,7 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { Chips, type ChipsProps } from 'primereact/chips';
+import { InputTags } from 'primereact/inputtags';
+import type { InputTagsRootProps, InputTagsRootValueChangeEvent } from '@primereact/types/primitive/inputtags';
 import React from 'react';
 
 /**
@@ -15,7 +16,12 @@ interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
     /** Maximum number of chips allowed. */
     max?: number;
 
-    /** Character (or regex source) that splits typed input into multiple chips. */
+    /**
+     * Character (or regex source) that splits typed input into multiple chips.
+     *
+     * PrimeReact 11's `InputTags` commits one tag per Enter rather than exposing
+     * v10 Chips' `separator`; accepted for API compatibility, not applied.
+     */
     separator?: string;
 
     /** When true, the current input is committed as a chip on blur. */
@@ -24,16 +30,19 @@ interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
     /** When true, the same chip value may be added multiple times. */
     allowDuplicate?: boolean;
 
+    /** Accessible name for each chip's remove button. Override to localize. Defaults to `'Remove'`. */
+    removeAriaLabel?: string;
+
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying Chips. */
-    pt?: ChipsProps['pt'];
+    /** PrimeReact pass-through configuration applied to the underlying InputTags. */
+    pt?: InputTagsRootProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying Chips. */
-    ptOptions?: ChipsProps['ptOptions'];
+    /** PrimeReact pass-through options applied to the underlying InputTags. */
+    ptOptions?: InputTagsRootProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying Chips. */
+    /** When true, disables every base PrimeReact style on the underlying InputTags. */
     unstyled?: boolean;
 }
 
@@ -49,21 +58,35 @@ interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
  */
 export const ChipsField = asCommandFormField<ChipsFieldComponentProps>(
     (props) => (
-        <Chips
-            value={props.value}
-            onChange={(e: { value: string[] | null | undefined }) => props.onChange(e.value ?? [])}
-            onBlur={props.onBlur}
-            invalid={props.invalid}
-            placeholder={props.placeholder}
-            max={props.max}
-            separator={props.separator}
-            addOnBlur={props.addOnBlur}
-            allowDuplicate={props.allowDuplicate}
-            className={props.className ? `w-full ${props.className}` : 'w-full'}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
+        // PrimeReact 11's InputTags is compositional with render-prop parts: Items
+        // renders one node per tag, Control renders the text-entry input. `onBlur`
+        // rides the wrapping div because React blur bubbles (focusout).
+        <div className={props.className ? `w-full ${props.className}` : 'w-full'} onBlur={props.onBlur}>
+            <InputTags.Root
+                value={props.value}
+                onValueChange={(e: InputTagsRootValueChangeEvent) => props.onChange(e.value ?? [])}
+                invalid={props.invalid}
+                max={props.max}
+                addOnBlur={props.addOnBlur}
+                allowDuplicate={props.allowDuplicate}
+                pt={props.pt}
+                ptOptions={props.ptOptions}
+                unstyled={props.unstyled}>
+                <InputTags.Items>
+                    {({ item, index, remove, itemProps }) => (
+                        <span key={index} {...itemProps} className="cratis-inputtags-item">
+                            <span>{item}</span>
+                            <button type="button" aria-label={props.removeAriaLabel ?? 'Remove'} onClick={remove}>
+                                <i className="pi pi-times-circle" />
+                            </button>
+                        </span>
+                    )}
+                </InputTags.Items>
+                <InputTags.Control>
+                    {({ controlProps }) => <input {...controlProps} placeholder={props.placeholder} />}
+                </InputTags.Control>
+            </InputTags.Root>
+        </div>
     ),
     {
         defaultValue: [],

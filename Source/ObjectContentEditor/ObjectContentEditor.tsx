@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Tooltip } from 'primereact/tooltip';
+import { Tooltip } from '../Common/Tooltip';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import * as faIcons from 'react-icons/fa6';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
@@ -9,9 +9,11 @@ import { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { getValueAtPath } from './objectHelpers';
 import { InputText } from 'primereact/inputtext';
 import { InputNumber } from 'primereact/inputnumber';
+import type { InputNumberRootValueChangeEvent } from '@primereact/types/primitive/inputnumber';
 import { Checkbox } from 'primereact/checkbox';
-import { Calendar } from 'primereact/calendar';
-import { InputTextarea } from 'primereact/inputtextarea';
+import type { CheckboxRootChangeEvent } from '@primereact/types/primitive/checkbox';
+import { Textarea } from 'primereact/textarea';
+import { DatePickerInput } from '../Common/DatePickerInput';
 
 /**
  * Props for {@link ObjectContentEditor}.
@@ -236,18 +238,17 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
             });
         };
 
-        const inputStyle = {
-            width: '100%',
-            ...(error ? { borderColor: 'var(--cratis-red-500)' } : {})
-        };
-
         if (property.type === 'boolean') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <Checkbox
+                    <Checkbox.Root
                         checked={Boolean(value)}
-                        onChange={(e) => handleChange(e.checked ?? false)}
-                    />
+                        onCheckedChange={(e: CheckboxRootChangeEvent) => handleChange(e.checked ?? false)}
+                        invalid={!!error}>
+                        <Checkbox.Box>
+                            <Checkbox.Indicator />
+                        </Checkbox.Box>
+                    </Checkbox.Root>
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
@@ -256,13 +257,13 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         if (property.type === 'number' || property.type === 'integer') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <InputNumber
+                    <InputNumber.Root
                         value={(value === null || value === undefined) ? null : Number(value)}
-                        onValueChange={(e) => handleChange(e.value ?? null)}
-                        mode="decimal"
+                        onValueChange={(e: InputNumberRootValueChangeEvent) => handleChange(e.value ?? null)}
                         useGrouping={false}
-                        style={inputStyle}
-                    />
+                        invalid={!!error}>
+                        <InputNumber.Input className="w-full" />
+                    </InputNumber.Root>
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
@@ -272,12 +273,12 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
             const dateValue = value ? new Date(value as string) : null;
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <Calendar
+                    <DatePickerInput
                         value={dateValue}
-                        onChange={(e) => handleChange(e.value instanceof Date ? e.value.toISOString() : null)}
+                        onChange={(date) => handleChange(date ? date.toISOString() : null)}
                         showTime
                         showIcon
-                        style={inputStyle}
+                        invalid={!!error}
                     />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
@@ -288,11 +289,11 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
             const dateValue = value ? new Date(value as string) : null;
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <Calendar
+                    <DatePickerInput
                         value={dateValue}
-                        onChange={(e) => handleChange(e.value instanceof Date ? e.value.toISOString().split('T')[0] : null)}
+                        onChange={(date) => handleChange(date ? date.toISOString().split('T')[0] : null)}
                         showIcon
-                        style={inputStyle}
+                        invalid={!!error}
                     />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
@@ -320,11 +321,12 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         if (isLongText) {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <InputTextarea
+                    <Textarea
                         value={String(value ?? '')}
                         onChange={(e) => handleChange(e.target.value)}
                         rows={3}
-                        style={inputStyle}
+                        invalid={!!error}
+                        className="w-full"
                     />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
@@ -336,7 +338,8 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                 <InputText
                     value={String(value ?? '')}
                     onChange={(e) => handleChange(e.target.value)}
-                    style={inputStyle}
+                    invalid={!!error}
+                    className="w-full"
                 />
                 {error && <small style={fieldErrorStyle}>{error}</small>}
             </div>
@@ -442,11 +445,11 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                                         {propertyName}
                                         {description && (
-                                            <faIcons.FaCircleInfo
-                                                className="property-info-icon"
-                                                style={infoIconStyle}
-                                                data-pr-tooltip={description}
-                                                data-pr-position="right" />
+                                            <Tooltip content={description} position="right">
+                                                <faIcons.FaCircleInfo
+                                                    className="property-info-icon"
+                                                    style={infoIconStyle} />
+                                            </Tooltip>
                                         )}
                                     </span>
                                 </td>
@@ -466,7 +469,6 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
     return (
         <div className={className ? `order-content ${className}` : 'order-content'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <Tooltip target="[data-pr-tooltip]" />
             <ObjectNavigationalBar
                 navigationPath={navigationPath}
                 onNavigate={navigateToBreadcrumb}

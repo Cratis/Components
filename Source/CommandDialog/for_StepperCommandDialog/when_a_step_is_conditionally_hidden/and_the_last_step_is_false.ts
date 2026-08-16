@@ -5,26 +5,36 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { StepperCommandDialog } from '../../StepperCommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '../../StepperPanel';
 
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'dialog' }, props.footer, props.children),
+vi.mock('../../../Dialogs/Dialog', () => ({
+    Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
+        React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode; activeStep?: number }) =>
-        React.createElement('div', { 'data-testid': 'stepper', 'data-active-step': props.activeStep }, props.children),
-}));
+// PrimeReact 11's Stepper is compositional: each part renders its children, so the
+// steps the wizard actually renders show up as one `data-part="panel"` element each.
+vi.mock('primereact/stepper', () => {
+    const part = (name: string) => {
+        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
+            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
+        Component.displayName = name;
+        return Component;
+    };
+    return {
+        Stepper: {
+            Root: part('root'), List: part('list'), Step: part('step'),
+            Header: part('header'), Number: part('number'), Title: part('title'),
+            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
+        },
+    };
+});
 
-vi.mock('primereact/stepperpanel', () => ({
-    StepperPanel: (props: { header?: string; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'stepper-panel', 'data-header': props.header }, props.children),
-}));
 
+// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean }) =>
-        React.createElement('button', { disabled: props.disabled }, props.label),
+    Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
+        React.createElement('button', { disabled: props.disabled }, props.children),
 }));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
@@ -50,7 +60,7 @@ class TestCommand {
     name: string = '';
 }
 
-const renderedPanels = (html: string) => html.split('data-testid="stepper-panel"').length - 1;
+const renderedPanels = (html: string) => html.split('data-part="panel"').length - 1;
 
 // Exactly how a conditional step is written in an application: `{condition && <StepperPanel/>}`.
 const showOptionalStep: boolean = false;

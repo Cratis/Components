@@ -4,6 +4,7 @@
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
 
 /**
  * A dialog mounted into a real document, together with what is needed to take
@@ -19,18 +20,29 @@ export interface DialogInTheDom {
  * Renders an element into a real document and lets PrimeReact's show
  * transition complete, so the dialog has settled on its initial focus by the
  * time the spec looks at it.
+ *
+ * PrimeReact 11 components resolve their configuration from a
+ * `PrimeReactProvider` and throw without one, so the element is mounted inside
+ * the Cratis provider that supplies it. `ResizeObserver` is stubbed because
+ * PrimeReact's positioner observes the overlay and jsdom has no layout engine
+ * to report any size at all.
  * @param element - The element to render.
  * @returns The mounted dialog, to be passed to {@link unmount}.
  */
 export const render = async (element: React.ReactElement): Promise<DialogInTheDom> => {
     (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
+        observe() { }
+        unobserve() { }
+        disconnect() { }
+    };
 
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
 
     await act(async () => {
-        root.render(element);
+        root.render(React.createElement(CratisComponentsProvider, null, element));
     });
 
     await act(async () => {
@@ -80,17 +92,20 @@ export const focusIsInsideTheDialog = (): boolean => {
 };
 
 /**
- * Whether the dialog renders its header close (X) button.
+ * Whether the dialog renders its header close (X) button. PrimeReact 11 is unstyled-first —
+ * with no theme preset applied every `class` attribute is empty — so its parts are addressed
+ * by the `data-scope` / `data-part` pair rather than by a `p-*` class name.
  * @returns True when the close button is present.
  */
-export const hasCloseButton = (): boolean => !!document.querySelector('.p-dialog-header-close');
+export const hasCloseButton = (): boolean =>
+    !!document.querySelector('[data-scope="dialog"][data-part="close"]');
 
 /**
  * The `tabindex` attribute on the dialog's title, or `'none'` when it has none.
  * @returns The tab index as a string.
  */
 export const titleTabIndex = (): string =>
-    document.querySelector('.p-dialog-title span')?.getAttribute('tabindex') ?? 'none';
+    document.querySelector('[data-scope="dialog"][data-part="title"] span')?.getAttribute('tabindex') ?? 'none';
 
 const buttonLabeled = (label: string) =>
     Array.from(document.querySelectorAll('button')).find(button => button.textContent === label);

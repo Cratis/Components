@@ -1,0 +1,48 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/*
+ * The manifest for `@cratis/components/styles` — every stylesheet the components need.
+ *
+ * Why a manifest rather than a `.css` import inside each component: a CSS import sitting in the
+ * JavaScript module graph is what makes the published ESM unloadable by Node
+ * (Cratis/Components#118 — `ERR_UNKNOWN_FILE_EXTENSION` on every subpath that reaches one, and no
+ * node-environment consumer can render a `Dialog` in a spec). The components therefore import no
+ * CSS at all, and every rule arrives through this one entry point instead.
+ *
+ * The build flattens these `@import`s into `dist/esm/styles.css`, with the compiled Tailwind
+ * utilities prepended. Storybook and Vite dev resolve them directly.
+ *
+ * Adding a component stylesheet? Add its `@import` here. The build fails if a `.css` file under
+ * `Source/` is not reachable from this manifest, so the two cannot drift apart silently.
+ *
+ * Consumers import this alongside the token layer:
+ *
+ *     import '@cratis/components/tokens';   // the --cratis-* seam (always)
+ *     import '@cratis/components/styles';   // component rules (always)
+ *     import '@cratis/components/theme';    // optional license-free baseline look
+ */
+
+/* Third-party: Allotment lays its split view out entirely from this stylesheet, so a `DataPage`
+   with a details pane only sides its panes — and only keeps its paginator in frame — once these
+   rules are present. Vendored in here rather than imported from `DataPage.tsx` for the same
+   reason as everything else in this file. */
+@import 'allotment/dist/style.css';
+
+@import './CommandDialog/CommandStepper.css';
+@import './Common/ActionMenubar.css';
+@import './Common/FormElement.css';
+@import './Common/Tooltip.css';
+@import './DataTables/ColumnFilterMenu.css';
+@import './DataTables/DataTableCore.css';
+@import './DataTables/TablePaginator.css';
+@import './Filter/FilterPanel.css';
+@import './Notifications/Toaster.css';
+@import './ObjectNavigationalBar/ObjectNavigationalBar.css';
+@import './PivotViewer/PivotViewer.css';
+@import './PivotViewer/components/Spinner.css';
+@import './SchemaEditor/SchemaEditor.css';
+@import './TimeMachine/EventsView.css';
+@import './TimeMachine/Properties.css';
+@import './TimeMachine/TimeMachine.css';
+@import './Toolbar/Toolbar.css';

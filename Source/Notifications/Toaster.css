@@ -1,0 +1,61 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Baseline toast card — a notification needs a visible surface even before a
+   theme preset is applied, so this ships a token-based default that a preset or
+   `pt` can still override. */
+.cratis-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    min-width: 18rem;
+    max-width: 26rem;
+    padding: 0.75rem 1rem;
+    background: var(--cratis-surface-overlay);
+    color: var(--cratis-text-color);
+    border: 1px solid var(--cratis-surface-border);
+    border-left: 4px solid var(--cratis-surface-border);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.cratis-toast [data-part="content"] {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.cratis-toast [data-part="title"] {
+    font-weight: 600;
+}
+
+.cratis-toast [data-part="description"] {
+    font-size: 0.875rem;
+    color: var(--cratis-text-color-secondary);
+    white-space: pre-line;
+}
+
+.cratis-toast [data-part="close"] {
+    border: none;
+    background: transparent;
+    color: var(--cratis-text-color-secondary);
+    cursor: pointer;
+    padding: 0.125rem;
+    border-radius: 0.25rem;
+}
+
+.cratis-toast [data-part="close"]:hover {
+    color: var(--cratis-text-color);
+}
+
+.cratis-toast[data-severity="success"] { border-left-color: var(--cratis-green-500); }
+.cratis-toast[data-severity="info"]    { border-left-color: var(--cratis-primary-color); }
+.cratis-toast[data-severity="warn"]    { border-left-color: var(--cratis-yellow-500, #eab308); }
+.cratis-toast[data-severity="error"]   { border-left-color: var(--cratis-red-500); }
+
+.cratis-toast[data-severity="success"] [data-part="icon"] { color: var(--cratis-green-500); }
+.cratis-toast[data-severity="info"]    [data-part="icon"] { color: var(--cratis-primary-color); }
+.cratis-toast[data-severity="warn"]    [data-part="icon"] { color: var(--cratis-yellow-500, #eab308); }
+.cratis-toast[data-severity="error"]   [data-part="icon"] { color: var(--cratis-red-500); }

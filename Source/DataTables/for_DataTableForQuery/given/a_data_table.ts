@@ -4,7 +4,8 @@
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Column } from 'primereact/column';
+import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
+import { Column } from '../../Column';
 import { DataTableForQuery } from '../../DataTableForQuery';
 import { ProductsQuery, resetQueryResult } from './a_query_result';
 
@@ -33,18 +34,28 @@ export const aDataTable = () => React.createElement(
 
 /**
  * Renders an element into a real document and lets React settle.
+ *
+ * PrimeReact 11 components resolve their configuration from a `PrimeReactProvider` and
+ * throw without one, so the element is mounted inside the Cratis provider that supplies
+ * it. `ResizeObserver` is stubbed because PrimeReact observes its containers for size
+ * changes and jsdom has no layout engine to report any.
  * @param element - The element to render.
  * @returns The mounted table, to be passed to {@link unmount}.
  */
 export const render = async (element: React.ReactElement): Promise<DataTableInTheDom> => {
     (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
+        observe() { }
+        unobserve() { }
+        disconnect() { }
+    };
 
     const container = document.createElement('div');
     document.body.appendChild(container);
     const root = createRoot(container);
 
     await act(async () => {
-        root.render(element);
+        root.render(React.createElement(CratisComponentsProvider, null, element));
     });
 
     return { container, root };
@@ -63,9 +74,11 @@ export const unmount = async (table: DataTableInTheDom) => {
 };
 
 /**
- * Whether the table rendered its paginator.
+ * Whether the table rendered its paginator. PrimeReact 11 has no Paginator, so the
+ * paging controls are the Cratis `TablePaginator` and carry its own class rather than
+ * PrimeReact's `.p-paginator`.
  * @param table - The mounted table.
  * @returns True when a paginator is present.
  */
 export const hasPaginator = (table: DataTableInTheDom): boolean =>
-    table.container.querySelector('.p-paginator') !== null;
+    table.container.querySelector('.cratis-table-paginator') !== null;

@@ -21,8 +21,8 @@ Declare the columns and menu actions with the compound `DataPage.Columns` and `D
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
-import { FaPlus, FaPencil } from 'react-icons/fa';
+import { Column } from '@cratis/components/DataPage';
+import { FaPlus, FaPencil } from 'react-icons/fa6';
 import { AllAuthors } from './queries';   // generated query proxy
 
 function Authors() {
@@ -52,7 +52,7 @@ Pass a `detailsComponent` and `DataPage` adds a resizable split: the table on th
 
 ```tsx
 import { DataPage } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { AllAuthorsWithBooks } from './queries';
 
 const AuthorDetails = ({ item }) => (
@@ -94,8 +94,7 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `selection`: Currently selected item
 - `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
-- `defaultFilters`: Initial filter state (see [DataTableFilterMeta](https://primereact.org/datatable/))
-- `clientFiltering`: Enable client-side filtering (default: `false`)
+- `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
 - `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
 - `detailsComponent`: Component to render in the resizable details panel when a row is selected
 
@@ -117,7 +116,7 @@ DataPage uses Allotment for the resizable split when a `detailsComponent` is pro
 3. Data table
 4. Optional details panel (when item is selected)
 
-Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. DataPage imports it itself, the same way every other stylesheet in this package travels with the component that needs it — there is nothing for you to import, and nothing to configure. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
+Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. From 3.0 it is **vendored into `@cratis/components/styles`**, so importing that one file at your app entry point is all it takes — you do not need `allotment/dist/style.css` yourself, and if you were importing it you can drop it. Without `@cratis/components/styles` the details pane grows to its content and clips the paginator. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
 
 Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs; the table region takes everything that is left and scrolls its rows internally. Given an ancestor with a real height — the condition described next — the paginator therefore sits at the bottom of the page rather than below its edge, however many rows the query returns, and whether or not the page is split.
 
@@ -158,8 +157,8 @@ DataPage integrates with:
 
 - `@cratis/arc/queries` for data fetching
 - `DataTableForQuery` and `DataTableForObservableQuery` components
-- PrimeReact components (Menubar, DataTable)
-- Allotment for split view layout
+- PrimeReact's DataTable, plus a Cratis action toolbar of `Button`s (PrimeReact 11 removed Menubar)
+- Allotment for split view layout — its stylesheet is vendored into `@cratis/components/styles`, so the split view lays out as long as you import that
 
 ## See Also
 

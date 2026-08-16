@@ -1,6 +1,6 @@
 # MultiSelectField
 
-`MultiSelectField` wraps the PrimeReact `MultiSelect` component for selecting multiple values from a list.
+`MultiSelectField` lets the user pick several values from a list. PrimeReact 11 removed `MultiSelect` entirely, so the field is now built on the Cratis [`Dropdown`](../Dropdown/index.md) wrapper in `multiple` mode — the binding and the props below are unchanged, but two of them no longer have an effect (see the note at the end).
 
 ## Usage
 
@@ -21,7 +21,6 @@ const categoryOptions = [
         optionLabel="label"
         optionValue="id"
         placeholder="Select categories"
-        display="chip"
         filter
     />
 </CommandDialog>
@@ -36,13 +35,18 @@ const categoryOptions = [
 | `optionLabel` | `string` | - | Property name in each option object used as the display text. |
 | `optionValue` | `string` | - | Property name in each option object used as the bound value. |
 | `placeholder` | `string` | - | Placeholder text shown when no options are selected. |
-| `display` | `'comma' \| 'chip'` | PrimeReact default | How selected values are rendered in the input. |
-| `maxSelectedLabels` | `number` | PrimeReact default | Maximum number of labels to render before collapsing. |
-| `filter` | `boolean` | PrimeReact default | Enables filtering in the options panel. |
+| `display` | `'comma' \| 'chip'` | - | **No effect.** See below. |
+| `maxSelectedLabels` | `number` | - | **No effect.** See below. |
+| `filter` | `boolean` | `false` | Shows a filter input in the options popup. |
 | `showClear` | `boolean` | `false` | Displays a clear icon to reset selected values. |
+| `className` | `string` | - | Extra CSS class combined with the default `w-full`. |
+| `pt` / `ptOptions` / `unstyled` | - | - | Pass-through styling for the underlying `Select`. |
 
 ## Behavior
 
 - Default value is an empty array.
 - The field spans full width within its container.
 - Validation state is reflected via the PrimeReact `invalid` flag.
+
+> [!IMPORTANT]
+> **`display` and `maxSelectedLabels` no longer do anything.** PrimeReact 11's `Select` renders the selection through its value slot, so v10 MultiSelect's comma/chip display modes and its label-collapse threshold have no equivalent. Both props are still accepted so existing call sites compile — remove them, and restyle the value slot through `pt` if you need a different presentation.

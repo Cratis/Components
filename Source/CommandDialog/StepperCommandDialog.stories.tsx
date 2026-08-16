@@ -8,7 +8,7 @@ import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { InputTextField, NumberField, TextAreaField } from '../CommandForm/fields';
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from './StepperPanel';
 import '@cratis/arc/validation';
 
 const meta: Meta<typeof StepperCommandDialog> = {

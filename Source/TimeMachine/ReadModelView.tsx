@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import type { Version } from './types';
+import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { Properties } from './Properties';
 
 /**
@@ -30,6 +31,9 @@ interface ReadModelViewProps {
      * the hover state.
      */
     onHoveringCardChange: (isHovering: boolean) => void;
+
+    /** Accessible-name overrides; defaults to English. See {@link TimeMachineLabels}. */
+    labels?: TimeMachineLabels;
 }
 
 /**
@@ -48,6 +52,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
     hoveredIndex,
     onVersionSelect,
     onHoveringCardChange,
+    labels = defaultTimeMachineLabels,
 }) => {
     const displayIndex = hoveredIndex ?? selectedIndex;
     const [flippedMap, setFlippedMap] = useState<Record<string, boolean>>({});
@@ -116,7 +121,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     type="button"
                                                     className="window-flip-button"
                                                     onClick={toggleFlip(version.id)}
-                                                    aria-label="Show related events"
+                                                    aria-label={labels.showRelatedEvents}
                                                     aria-pressed={isFlipped}
                                                 >
                                                     <i className={`pi ${isFlipped ? 'pi-undo' : 'pi-refresh'}`} />
@@ -140,7 +145,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     type="button"
                                                     className="window-flip-button"
                                                     onClick={toggleFlip(version.id)}
-                                                    aria-label="Show read model snapshot"
+                                                    aria-label={labels.showReadModelSnapshot}
                                                     aria-pressed={isFlipped}
                                                 >
                                                     <i className={`pi ${isFlipped ? 'pi-undo' : 'pi-refresh'}`} />

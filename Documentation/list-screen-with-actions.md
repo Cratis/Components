@@ -15,8 +15,9 @@ sidebar:
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { useDialog } from '@cratis/arc.react/dialogs';
+import { FaPlus } from 'react-icons/fa6';
 import { AllAuthors } from './Author';        // observable query proxy
 import { AddAuthor } from './AddAuthor';       // CommandDialog from the form recipe
 
@@ -30,7 +31,7 @@ export const Authors = () => {
                 query={AllAuthors}
                 emptyMessage="No authors yet">
                 <DataPage.MenuItems>
-                    <MenuItem label="Add author" icon="pi pi-plus" command={() => showAddAuthor()} />
+                    <MenuItem label="Add author" icon={FaPlus} command={() => showAddAuthor()} />
                 </DataPage.MenuItems>
                 <DataPage.Columns>
                     <Column field="name" header="Name" sortable />

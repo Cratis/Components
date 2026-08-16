@@ -7,7 +7,7 @@ import { vi } from 'vitest';
 import { Toolbar } from '../../Toolbar';
 import { ToolbarButton } from '../../ToolbarButton';
 
-vi.mock('../../Common/Tooltip', () => ({
+vi.mock('../../../Common/Tooltip', () => ({
     Tooltip: (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children),
 }));
 

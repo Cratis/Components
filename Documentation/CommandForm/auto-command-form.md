@@ -43,5 +43,6 @@ Register once, at module load, before any `AutoCommandForm` renders. Providers a
 
 ## Behavior
 
-- Field titles are generated from the property name (`dueDate` becomes "Due date"); there is no way to override an individual generated field's title other than excluding it and writing that one field by hand.
+- Field titles are generated from the property name by splitting on capitals and uppercasing the first letter (`dueDate` becomes "Due Date"); there is no way to override an individual generated field's title other than excluding it and writing that one field by hand.
+- `required` is **not** derived from the property descriptor's `isOptional` — every generated field is rendered without it. Write the field by hand when you need `required` on it.
 - Every generated field participates in `CommandForm`'s validation, change tracking and initial-value population exactly as a hand-written field does - `AutoCommandForm` only decides *which* fields to render, not how they behave once rendered.

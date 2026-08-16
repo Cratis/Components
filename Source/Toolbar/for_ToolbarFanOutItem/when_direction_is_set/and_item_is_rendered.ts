@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { ToolbarFanOutItem } from '../../ToolbarFanOutItem';
 
-vi.mock('../../Common/Tooltip', () => ({
+vi.mock('../../../Common/Tooltip', () => ({
     Tooltip: (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children),
 }));
 

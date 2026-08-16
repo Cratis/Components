@@ -62,6 +62,8 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     cancelLabel,
     yesLabel,
     noLabel,
+    dismissable,
+    closeAriaLabel,
     isValid,
     onClose,
     onConfirm,
@@ -88,6 +90,8 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     cancelLabel?: string;
     yesLabel?: string;
     noLabel?: string;
+    dismissable?: DialogProps['dismissable'];
+    closeAriaLabel?: DialogProps['closeAriaLabel'];
     isValid?: boolean;
     onClose?: DialogProps['onClose'];
     onConfirm?: DialogProps['onConfirm'];
@@ -186,6 +190,8 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             cancelLabel={cancelLabel}
             yesLabel={yesLabel}
             noLabel={noLabel}
+            dismissable={dismissable}
+            closeAriaLabel={closeAriaLabel}
             isValid={isDialogValid}
             isBusy={isBusy}
             className={className}
@@ -330,6 +336,8 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         cancelLabel,
         yesLabel,
         noLabel,
+        dismissable,
+        closeAriaLabel,
         isValid,
         onClose,
         onConfirm,
@@ -358,6 +366,8 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 cancelLabel={cancelLabel}
                 yesLabel={yesLabel}
                 noLabel={noLabel}
+                dismissable={dismissable}
+                closeAriaLabel={closeAriaLabel}
                 isValid={isValid}
                 onClose={onClose}
                 onConfirm={onConfirm}

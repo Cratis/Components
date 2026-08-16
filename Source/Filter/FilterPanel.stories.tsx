@@ -95,7 +95,7 @@ export const SingleSelectFilter: Story = {
             <div style={pageStyle}>
                 <div>
                     <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Single-select Filter</h2>
-                    <p style={{ margin: 0, opacity: 0.6, fontSize: '0.9rem' }}>
+                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
                         Radio-button style — only one option can be selected at a time.
                     </p>
                 </div>
@@ -169,7 +169,7 @@ export const MultiSelectFilter: Story = {
             <div style={pageStyle}>
                 <div>
                     <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Multi-select Filter</h2>
-                    <p style={{ margin: 0, opacity: 0.6, fontSize: '0.9rem' }}>
+                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
                         Checkbox style — multiple options can be selected simultaneously.
                     </p>
                 </div>
@@ -250,7 +250,7 @@ export const NumericRangeFilter: Story = {
             <div style={pageStyle}>
                 <div>
                     <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Numeric Range Filter</h2>
-                    <p style={{ margin: 0, opacity: 0.6, fontSize: '0.9rem' }}>
+                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
                         Histogram with draggable range handles. Click a bar to jump-select that bucket.
                     </p>
                 </div>
@@ -390,7 +390,7 @@ export const CustomEditor: Story = {
             <div style={pageStyle}>
                 <div>
                     <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Custom Filter Editors</h2>
-                    <p style={{ margin: 0, opacity: 0.6, fontSize: '0.9rem' }}>
+                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
                         Declare a <code style={{ fontFamily: 'monospace', fontSize: '0.8em', opacity: 0.8 }}>&lt;FilterEditor&gt;</code> child inside <code style={{ fontFamily: 'monospace', fontSize: '0.8em', opacity: 0.8 }}>&lt;FilterPanel&gt;</code> to provide a custom editor for any filter group.
                     </p>
                 </div>
@@ -511,7 +511,7 @@ export const MixedFilters: Story = {
             <div style={pageStyle}>
                 <div>
                     <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Mixed Filter Types</h2>
-                    <p style={{ margin: 0, opacity: 0.6, fontSize: '0.9rem' }}>
+                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
                         Single-select, multi-select, numeric range and custom editor in one panel, plus a search box.
                     </p>
                 </div>

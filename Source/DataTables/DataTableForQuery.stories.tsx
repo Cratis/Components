@@ -4,9 +4,10 @@
 import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForQuery } from './DataTableForQuery';
-import { Column } from 'primereact/column';
+import { Column } from './Column';
+import { Tag } from '../Display/Tag';
 import { QueryFor, QueryResult } from '@cratis/arc/queries';
-import { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
+import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
 const meta: Meta<typeof DataTableForQuery> = {
     title: 'DataTables/DataTableForQuery',
@@ -108,10 +109,11 @@ export const Default: Story = {
                 query={ProductsQuery}
                 emptyMessage="No products found"
                 dataKey="id"
+                globalFilterFields={['name', 'category']}
             >
                 <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                <Column field="name" header="Product Name" sortable style={{ width: '30%' }} />
-                <Column field="category" header="Category" sortable style={{ width: '20%' }} />
+                <Column field="name" header="Product Name" sortable filter filterPlaceholder="Filter by name" style={{ width: '30%' }} />
+                <Column field="category" header="Category" sortable filter filterPlaceholder="Filter by category" style={{ width: '20%' }} />
                 <Column 
                     field="price" 
                     header="Price" 
@@ -125,9 +127,10 @@ export const Default: Story = {
                     sortable 
                     style={{ width: '20%' }}
                     body={(rowData: Product) => (
-                        <span className={rowData.inStock ? 'text-green-600' : 'text-red-600'}>
-                            {rowData.inStock ? 'Yes' : 'No'}
-                        </span>
+                        <Tag
+                            severity={rowData.inStock ? 'success' : 'danger'}
+                            value={rowData.inStock ? 'In stock' : 'Out of stock'}
+                        />
                     )}
                 />
             </DataTableForQuery>
@@ -176,7 +179,7 @@ export const WithSelection: Story = {
                     emptyMessage="No products found"
                     dataKey="id"
                     selection={selectedProduct}
-                    onSelectionChange={(e: DataTableSelectionSingleChangeEvent<Product[]>) => setSelectedProduct(e.value as Product)}
+                    onSelectionChange={(e: DataTableSelectionChangeEvent<Product>) => setSelectedProduct(e.value ?? undefined)}
                 >
                     <Column selectionMode="single" headerStyle={{ width: '3rem' }} />
                     <Column field="id" header="ID" sortable style={{ width: '10%' }} />

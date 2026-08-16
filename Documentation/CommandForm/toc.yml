@@ -18,11 +18,17 @@
   href: multi-select-field.md
 - name: NumberField
   href: number-field.md
+- name: PasswordField
+  href: password-field.md
 - name: RadioButtonField
   href: radio-button-field.md
 - name: RadioGroupField
   href: radio-group-field.md
+- name: RatingField
+  href: rating-field.md
 - name: SliderField
   href: slider-field.md
 - name: TextAreaField
   href: text-area-field.md
+- name: ToggleSwitchField
+  href: toggle-switch-field.md
