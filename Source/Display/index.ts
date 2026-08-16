@@ -7,3 +7,5 @@ export * from './Chip';
 export * from './Skeleton';
 export * from './Avatar';
 export * from './ProgressBar';
+export * from './Message';
+export * from './ProgressSpinner';

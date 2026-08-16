@@ -9,6 +9,8 @@ import { Chip } from './Chip';
 import { Skeleton } from './Skeleton';
 import { Avatar } from './Avatar';
 import { ProgressBar } from './ProgressBar';
+import { Message } from './Message';
+import { ProgressSpinner } from './ProgressSpinner';
 
 const meta = {
     title: 'Display/Overview',
@@ -54,6 +56,16 @@ export const Overview: Story = {
                 <div style={{ flex: 1, minWidth: '200px' }}>
                     <ProgressBar value={65} />
                 </div>
+            </Row>
+            <Row label="Message">
+                <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <Message severity="info" text="An informational notice." />
+                    <Message severity="warn" text="Something needs attention." />
+                    <Message severity="error">Something went wrong.</Message>
+                </div>
+            </Row>
+            <Row label="ProgressSpinner">
+                <ProgressSpinner style={{ width: '2rem', height: '2rem' }} />
             </Row>
             <Row label="ProgressBar (indeterminate)">
                 <div style={{ flex: 1, minWidth: '200px' }}>
