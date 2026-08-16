@@ -59,7 +59,7 @@ The most useful members:
 | `pt` | Per-component pass-through configuration. Keys are PrimeReact component names (`button`, `dialog`, `inputtext`, …); values are slot configuration objects. |
 | `ptOptions` | Controls merge vs. replace behavior for `pt`. Default is `{ mergeSections: true }` which merges per-instance `pt` with the global preset. |
 | `inputVariant` | `'outlined'` or `'filled'` — switches the default input rendering across the whole app. |
-| `theme` | `{ preset, options }` — opt into a styled `@primeuix/themes` preset (e.g. `import Aura from '@primeuix/themes/aura'`). Applying a preset requires a PrimeUI `license` key; the license-free paths are the unstyled core and the Cratis baseline theme. |
+| `theme` | `{ preset, options }` — opt into a styled `@primeuix/themes` preset (e.g. `import Aura from '@primeuix/themes/aura'`). A PrimeUI `license` key is required whether or not you apply a preset — the check runs when the provider mounts. |
 | `license` | Your PrimeUI license key, passed straight through to PrimeReact. Required for the styled `@primeuix/themes` presets — see [Styling](../Styling/index.md). |
 | `ripple` | Enables PrimeReact's ripple animation on supported components. |
 | `zIndex` | Per-overlay-type z-index baseline (`{ modal: 1100, overlay: 1000, menu: 1000, tooltip: 1100 }`). |

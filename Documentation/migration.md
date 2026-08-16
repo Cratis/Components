@@ -57,7 +57,7 @@ In 2.x, every component did `import './Foo.css'` and relied on your bundler inje
   // in your app entry point
 + import '@cratis/components/tokens';   // the --cratis-* token layer
 + import '@cratis/components/styles';   // all component CSS, in one file
-+ import '@cratis/components/theme';    // optional — the license-free baseline look
++ import '@cratis/components/theme';    // optional — the Cratis baseline look (MIT CSS)
 ```
 
 Import them in that order. `styles` and `theme` both consume the tokens.
@@ -118,20 +118,20 @@ The chain is: **preset (JS) → `--p-*` (runtime) → `--cratis-*` (our token la
 
 Pick one of three paths — the [Styling](Styling/index.md) section walks each one:
 
-**A. Unstyled-first (default, no license).** Ship structure plus the `--cratis-*` token layer and bring your own visuals via `pt` / CSS / Tailwind. Your existing `--surface-*` and `--cratis-*` overrides keep working.
+**A. Unstyled-first (default).** Ship structure plus the `--cratis-*` token layer and bring your own visuals via `pt` / CSS / Tailwind. Your existing `--surface-*` and `--cratis-*` overrides keep working.
 
 ```tsx
 <CratisComponentsProvider value={{ unstyled: true, pt: myPreset }}>
 ```
 
-**B. [The Cratis baseline theme](Styling/baseline-theme.md) (no license).** A license-free stylesheet that assigns the `--cratis-*` tokens directly, light and dark, for a polished default with no preset and no key. It defers to a preset's `--p-*` values when one is present.
+**B. [The Cratis baseline theme](Styling/baseline-theme.md).** Cratis-authored MIT CSS that assigns the `--cratis-*` tokens directly, light and dark, for a polished default with no preset and no `@primeuix/themes` dependency. It defers to a preset's `--p-*` values when one is present.
 
 ```diff
 - import 'primereact/resources/themes/lara-dark-blue/theme.css';
 + import '@cratis/components/theme';
 ```
 
-**C. [A styled `@primeuix/themes` preset](Styling/themed.md) (license-gated — see below).**
+**C. [A styled `@primeuix/themes` preset](Styling/themed.md).**
 
 ```diff
 - import 'primereact/resources/themes/lara-dark-blue/theme.css';
@@ -191,13 +191,35 @@ v11 is unstyled-first: with no preset applied, PrimeReact elements carry **no `p
 - **[Display](Display/index.md)** — `Tag`, `Badge`, `Chip`, `Skeleton`, `Avatar`, `ProgressBar`.
 - **CommandForm fields** — [PasswordField](CommandForm/password-field.md), [ToggleSwitchField](CommandForm/toggle-switch-field.md), [RatingField](CommandForm/rating-field.md).
 - **[AutoCommandForm](CommandForm/auto-command-form.md)** — generates a `CommandForm`'s fields from the command's own `propertyDescriptors`, with a `registerFieldTypeProvider` registry for custom types.
-- **[`@cratis/components/theme`](Styling/baseline-theme.md)** — the license-free Cratis baseline theme.
+- **[`@cratis/components/theme`](Styling/baseline-theme.md)** — the Cratis baseline theme (MIT CSS).
 
 ## Licensing
 
-PrimeReact 11 changed its licensing:
+**PrimeReact 11 is no longer MIT.** PrimeReact 10 was; 11 is part of PrimeTek's commercial **PrimeUI** family, along with `primeicons` 8.x, `@primereact/core`, `@primereact/headless`, `@primeuix/themes` and `@primeuix/styled`.
 
-- **Unstyled core + the Cratis token layer + `pt` are free** — no key needed.
-- **The styled `@primeuix/themes` presets are license-gated.** Applying a preset needs a **PrimeUI license key** (free community tier or paid); without one, PrimeReact shows an *"Invalid PrimeUI License"* banner in development **and** production. Supply your key through the provider: `value={{ license: '…' }}`.
+`@cratis/components` itself stays **MIT**. What changed is what it depends on — and because PrimeReact is a peer dependency as of 3.0.0, you install it and its terms apply to you directly.
 
-**If you use unstyled-first (path A) or the Cratis baseline theme (path B), you need no license.** Only a bundled `@primeuix/themes` preset requires a (free or paid) PrimeUI key.
+### A key is required regardless of how you style
+
+An earlier version of this page said unstyled rendering and the Cratis baseline theme needed no key. **That was wrong.** PrimeReact 11 verifies a license key when `PrimeReactProvider` mounts, with no condition on `unstyled`, on whether a preset is applied, or on `NODE_ENV` — so all three styling paths above reach it. Without a valid key you get a console warning and a fixed *"Invalid PrimeUI License"* banner, in development **and** production.
+
+```tsx
+<CratisComponentsProvider value={{ license: '…' }}>
+```
+
+What the styling choice changes is whether you additionally depend on `@primeuix/themes`. [The Cratis baseline theme](Styling/baseline-theme.md) is Cratis-authored MIT CSS embedding no PrimeTek values, so that *stylesheet* carries no PrimeTek terms — but rendering it still runs PrimeReact 11, which needs a key.
+
+### Which license you need
+
+- **[Community License](https://primeui.dev/licenses/community)** — free, and covers individuals, students, non-profits and non-commercial open source. For an organization it requires *all* of: under $1M USD annual gross revenue, fewer than 5 developers, fewer than 10 employees, and under $3M USD in outside funding. Supports up to 4 developers, renewed annually by confirming eligibility.
+- **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else. Per developer, perpetual, one year of updates.
+
+### If you redistribute
+
+PrimeReact 11's terms state: *"You may not … redistribute it as a component library or development tool … Redistributing the software so that third parties can develop with it requires a separate OEM License."* Building an application is not what that clause is aimed at; publishing a library or tool that others build with is — read it and check your position with PrimeTek.
+
+### Staying on MIT
+
+**`@cratis/components` 2.x stays on PrimeReact 10 and is fully MIT.** It is not getting new features, but it is the supported way to remain MIT-only.
+
+> Nothing here is legal advice, and this summary may lag PrimeTek's terms. The authoritative text is the `LICENSE.md` inside the `primereact` package and the pages linked above.

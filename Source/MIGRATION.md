@@ -87,7 +87,7 @@ cleanly in Node. The cost is one explicit import in your app:
   // in your app entry point
 + import '@cratis/components/tokens';   // the --cratis-* token layer
 + import '@cratis/components/styles';   // all component CSS, in one file
-+ import '@cratis/components/theme';    // optional — the license-free baseline look (§6)
++ import '@cratis/components/theme';    // optional — the Cratis baseline look, MIT CSS (§6)
 ```
 
 Import them in that order. `styles` and `theme` both consume the tokens.
@@ -204,7 +204,7 @@ keeps working, and nothing breaks the day it is removed.
 
 Pick one of three paths:
 
-**A. Unstyled-first (default, no license).** Ship structure plus the `--cratis-*` token
+**A. Unstyled-first (default).** Ship structure plus the `--cratis-*` token
 layer and bring your own visuals via `pt` / CSS / Tailwind. Your existing `--surface-*`
 and `--cratis-*` overrides keep working.
 
@@ -212,7 +212,7 @@ and `--cratis-*` overrides keep working.
 <CratisComponentsProvider value={{ unstyled: true, pt: myPreset }}>
 ```
 
-**B. The Cratis baseline theme (no license).** A license-free stylesheet that assigns the
+**B. The Cratis baseline theme.** Cratis-authored MIT CSS that assigns the
 `--cratis-*` tokens directly, light and dark, for a polished default with no preset and
 no key. It defers to a preset's `--p-*` values when one is present.
 
@@ -317,19 +317,77 @@ slot keys are unaffected.)
 - **CommandForm fields** — `PasswordField`, `ToggleSwitchField`, `RatingField`.
 - **`AutoCommandForm`** — generates a `CommandForm`'s fields from the command's own
   `propertyDescriptors`, with a `registerFieldTypeProvider` registry for custom types.
-- **`@cratis/components/theme`** — the license-free Cratis baseline theme (§6).
+- **`@cratis/components/theme`** — the Cratis baseline theme, MIT CSS (§6).
 
 ---
 
 ## Licensing (read this)
 
-PrimeReact 11 changed its licensing:
+**PrimeReact 11 is no longer MIT.** This is the single most consequential change in the
+upgrade, and it is not a theming detail — it applies to the whole library.
 
-- **Unstyled core + the Cratis token layer + `pt` are free** — no key needed.
-- **The styled `@primeuix/themes` presets are license-gated.** Applying a preset needs a
-  **PrimeUI license key** (free community tier or paid); without one, PrimeReact shows an
-  *"Invalid PrimeUI License"* banner in development **and** production. Supply your key
-  through the provider: `value={{ license: '…' }}`.
+| Package | v10 | v11 |
+|---|---|---|
+| `primereact` | MIT | PrimeUI commercial |
+| `primeicons` | MIT (7.x) | PrimeUI commercial (8.x) |
+| `@primereact/core`, `@primereact/headless` | — | PrimeUI commercial |
+| `@primeuix/themes`, `@primeuix/styled` | — | PrimeUI commercial |
 
-**If you use unstyled-first (path A) or the Cratis baseline theme (path B), you need no
-license.** Only a bundled `@primeuix/themes` preset requires a (free or paid) PrimeUI key.
+From PrimeReact 11's own `LICENSE.md`: *"A valid license key is required to use this
+software. A missing, invalid, or expired key may cause the software to display a license
+notice."*
+
+### A key is required regardless of how you style
+
+An earlier version of this guide said unstyled rendering and the Cratis baseline theme
+needed no key. **That was wrong.** The check runs in `PrimeReactProvider` on mount, with
+an empty dependency array and no condition on `unstyled`, on `theme`, or on `NODE_ENV`:
+
+```js
+useEffect(() => {
+    license && registerLicense({ primeui: license });
+    verifyLicense('primeui', { releaseDate }).then(result => {
+        result.valid || (console.warn(`[PrimeUI] ${result.message}`), showInvalidLicenseBanner());
+    });
+}, []);
+```
+
+So every styling path below reaches the same verification. Without a valid key you get a
+console warning and a fixed *"Invalid PrimeUI License"* banner, in development **and**
+production. Supply your key through the provider:
+
+```tsx
+<CratisComponentsProvider value={{ license: '…' }}>
+```
+
+What the styling choice *does* change is whether you additionally pull in
+`@primeuix/themes`. `@cratis/components/theme` is Cratis-authored MIT CSS that embeds no
+PrimeTek values — so that **stylesheet** carries no PrimeTek terms, but rendering it still
+means running PrimeReact 11, which needs a key.
+
+### Which license you need
+
+- **[Community License](https://primeui.dev/licenses/community)** — free, and covers
+  individuals, students, non-profits and non-commercial open source. For organizations it
+  requires *all* of: under $1M USD annual gross revenue, fewer than 5 developers, fewer
+  than 10 employees, and under $3M USD in outside funding. It supports up to 4 developers
+  and must be renewed annually by confirming continued eligibility.
+- **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else.
+  Per developer, perpetual, one year of updates included.
+
+### If you redistribute
+
+PrimeReact 11's restrictions clause is explicit: *"You may not … redistribute it as a
+component library or development tool … Redistributing the software so that third parties
+can develop with it requires a separate OEM License."*
+
+If you are building an application, that clause is not about you. If you are publishing a
+library or tool that others build with — as this package does — read it carefully and
+check your position with PrimeTek. Nothing in this document is legal advice; the
+authoritative terms are at the links above.
+
+### Staying on MIT
+
+If a commercial dependency is not acceptable for your project, **`@cratis/components` 2.x
+remains on PrimeReact 10 and is fully MIT**. It is not receiving new features, but it is
+the supported option for staying MIT-only.

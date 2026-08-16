@@ -35,8 +35,27 @@ You can build that straight on PrimeReact — instantiate the command, track its
    ```typescript title="main.tsx"
    import '@cratis/components/tokens';   // the --cratis-* token layer
    import '@cratis/components/styles';   // every component stylesheet, in one file
-   import '@cratis/components/theme';    // optional — the license-free baseline look
+   import '@cratis/components/theme';    // optional — the Cratis baseline look (MIT CSS)
    ```
+
+:::caution[PrimeReact 11 is not MIT]
+`@cratis/components` is MIT, but as of 3.0.0 it builds on **PrimeReact 11**, which is part of
+PrimeTek's commercial **PrimeUI** family — as are `primeicons` 8.x, `@primereact/core`,
+`@primereact/headless`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
+
+A **PrimeUI license key is required regardless of how you style** — the check runs when
+`PrimeReactProvider` mounts, not when a theme is applied. Without one you get a console warning and
+an *"Invalid PrimeUI License"* banner, in development and production.
+
+The [Community License](https://primeui.dev/licenses/community) is free for individuals, students,
+non-profits, non-commercial open source, and organizations under $1M revenue with fewer than 5
+developers. Everyone else needs a [Commercial License](https://primeui.dev/licenses/commercial).
+Redistributing a library that others build with needs a separate OEM License.
+
+Need to stay MIT-only? **`@cratis/components` 2.x remains on PrimeReact 10.** See
+[Licensing](/components/migration/#licensing).
+:::
+
 
    Components no longer import their own CSS — that's what lets the package load in a plain Node test environment. `tokens` declares the `--cratis-*` [token layer](/components/styling/) the components read their colors and spacing from; `styles` is the component CSS plus the pre-compiled utility styles; `theme` is optional and covered below. It works with any bundler.
 
@@ -95,8 +114,8 @@ No `isExecuting` flag, no button wiring, no duplicate validation logic — and b
 
 The components render structurally the moment the provider is mounted; their *look* is a separate, deliberate choice. PrimeReact 11 is unstyled-first, so pick one setup on the [Styling](/components/styling/) page:
 
-- the license-free **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`),
-- a styled `@primeuix/themes` **preset** via `value={{ theme: { preset } }}` (needs a PrimeUI license key), or
+- the **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`),
+- a styled `@primeuix/themes` **preset** via `value={{ theme: { preset } }}`, or
 - fully unstyled, with your own `pt` / CSS.
 
 ## Recap

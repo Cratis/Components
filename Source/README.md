@@ -50,7 +50,7 @@ The other **peer dependencies** you provide are `react` / `react-dom` (**19+**),
 and `tsyringe`; you typically already have these in a Cratis app. `pixi.js`,
 `framer-motion`, `allotment` and `react-icons` remain regular dependencies and are
 installed for you. The styled `@primeuix/themes` presets are optional and only needed
-if you opt into a licensed preset (see [Styling](#styling)).
+if you opt into a preset (see [Styling](#styling)).
 
 ### Stylesheets
 
@@ -60,11 +60,75 @@ entry point, in this order:
 ```ts
 import '@cratis/components/tokens';   // the --cratis-* token layer
 import '@cratis/components/styles';   // every component stylesheet, in one file
-import '@cratis/components/theme';    // optional — the license-free baseline look
+import '@cratis/components/theme';    // optional — the Cratis baseline look (MIT CSS)
 ```
 
 `./styles` also vendors `allotment/dist/style.css`, which `DataPage` needs for its
 split view, so you do not have to import that yourself.
+
+## Licensing
+
+**As of 3.0.0 this library builds on PrimeReact 11, which is no longer MIT.** PrimeReact 10
+was; PrimeReact 11 is part of PrimeTek's commercial **PrimeUI** family, and so are the
+packages it brings with it.
+
+| Package | v10 | v11 |
+|---|---|---|
+| `primereact` | MIT | PrimeUI commercial |
+| `primeicons` | MIT (7.x) | PrimeUI commercial (8.x) |
+| `@primereact/core`, `@primereact/headless` | — | PrimeUI commercial |
+| `@primeuix/themes`, `@primeuix/styled` | — | PrimeUI commercial |
+
+`@cratis/components` itself remains **MIT**. The change is in what it depends on, and it is
+yours to satisfy: PrimeReact is a peer dependency, so you install it and its license terms
+apply to you directly.
+
+### A key is required regardless of how you style
+
+PrimeReact 11 verifies a license key when `PrimeReactProvider` mounts. The check is not
+conditional on `unstyled`, on whether a theme preset is applied, or on `NODE_ENV` — so
+every styling setup in [Styling](#styling) reaches it. Without a valid key you get a
+console warning and a fixed *"Invalid PrimeUI License"* banner, in development **and**
+production.
+
+Supply your key through the provider:
+
+```tsx
+<CratisComponentsProvider value={{ license: '…' }}>
+```
+
+`@cratis/components/theme` is Cratis-authored MIT CSS that embeds no PrimeTek values, so
+that **stylesheet** carries no PrimeTek terms — but rendering it still means running
+PrimeReact 11, which needs a key.
+
+### Which license you need
+
+- **[Community License](https://primeui.dev/licenses/community)** — free. Covers
+  individuals, students, non-profits and non-commercial open source outright. For an
+  organization it requires *all* of: under $1M USD annual gross revenue, fewer than 5
+  developers, fewer than 10 employees, and under $3M USD in outside funding. Supports up to
+  4 developers and is renewed annually by confirming continued eligibility.
+- **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else.
+  Per developer, perpetual, with one year of updates.
+
+### If you redistribute
+
+PrimeReact 11's terms state: *"You may not … redistribute it as a component library or
+development tool … Redistributing the software so that third parties can develop with it
+requires a separate OEM License."*
+
+If you are building an application, that clause is not aimed at you. If you are publishing
+a library or tool that others build with, read it and check your position with PrimeTek.
+
+### Staying on MIT
+
+If a commercial dependency is not acceptable, **`@cratis/components` 2.x stays on
+PrimeReact 10 and is fully MIT.** It is not getting new features, but it is the supported
+way to remain MIT-only.
+
+> Nothing here is legal advice, and this summary may lag PrimeTek's terms. The
+> authoritative text is the `LICENSE.md` inside the `primereact` package and the pages
+> linked above.
 
 ## Usage
 
@@ -108,7 +172,7 @@ Components:
 
 Stylesheets:
 
-- `@cratis/components/theme` — the **Cratis baseline theme** (light + dark, no PrimeUI license); import it and add `class="cratis-theme"` to skin every component from the token layer
+- `@cratis/components/theme` — the **Cratis baseline theme** (light + dark, Cratis-authored MIT CSS, no `@primeuix/themes` dependency); import it and add `class="cratis-theme"` to skin every component from the token layer
 - `@cratis/components/styles` — **required**: every component stylesheet, the Tailwind utilities used inside the package, and the `allotment` rules `DataPage` needs, in one file
 - `@cratis/components/tokens` — **required**: the `--cratis-*` CSS variable tokens every component reads from
 
@@ -120,26 +184,30 @@ much control you want, and the other layers stay invisible.
 
 > **Tip — see each setup live:** every Storybook story includes a **Styling**
 > toolbar (paintbrush icon) that flips between the modes demonstrating the
-> setups below: *Aura Dark* and *Aura Light* (a licensed `@primeuix/themes`
-> preset), *Cratis baseline theme* (light and dark, no license), *Unstyled
+> setups below: *Aura Dark* and *Aura Light* (an `@primeuix/themes`
+> preset), *Cratis baseline theme* (light and dark), *Unstyled
 > (bare structure)*, and *Unstyled + Tailwind pt*. Open any story (`yarn dev`)
 > and switch modes to see the same component under each setup.
 
 ### TL;DR — choose a styling setup
 
-| Setup | When | Effort | License | What you write |
+> **A PrimeUI license key is required for every row below** — see [Licensing](#licensing).
+> The styling choice changes how it looks and whether you additionally pull in
+> `@primeuix/themes`; it does not change whether you need a key.
+
+| Setup | When | Effort | Extra dependency | What you write |
 |---|---|---|---|---|
-| **Cratis baseline theme** | You want a polished default look with no license. | Lowest | None | `unstyled` + `import '@cratis/components/theme'` + `class="cratis-theme"` |
-| **A styled `@primeuix/themes` preset** | You want a prebuilt design system to tweak from. | Low | PrimeUI key | `value={{ theme: { preset } }}` on the provider |
-| **A custom palette over a preset** | You want the preset's structure but your own colors. | Low | PrimeUI key | A preset + CSS variable overrides |
+| **Cratis baseline theme** | You want a polished default look without adding a theme package. | Lowest | None | `unstyled` + `import '@cratis/components/theme'` + `class="cratis-theme"` |
+| **A styled `@primeuix/themes` preset** | You want a prebuilt design system to tweak from. | Low | `@primeuix/themes` | `value={{ theme: { preset } }}` on the provider |
+| **A custom palette over a preset** | You want the preset's structure but your own colors. | Low | `@primeuix/themes` | A preset + CSS variable overrides |
 | **Fully unstyled** | You're integrating into a tightly controlled design system. | Highest | None | `unstyled: true` + a `pt` preset in CSS or Tailwind |
 
 > **Why you need a theme, a baseline stylesheet, or a `pt` preset**
 >
 > PrimeReact 11 is **unstyled-first**: the primitives render structural markup
 > with no built-in visuals. A look comes from one of three sources — a
-> `@primeuix/themes` preset (token-based, license-gated), the Cratis baseline
-> theme (`@cratis/components/theme`, no license), or your own `pt`/CSS. Load
+> `@primeuix/themes` preset (token-based), the Cratis baseline
+> theme (`@cratis/components/theme`), or your own `pt`/CSS. Load
 > none of them and the components render as their raw HTML primitives.
 >
 > The `--cratis-*` token layer is an **additive Cratis-scoped tint** for
@@ -212,11 +280,12 @@ Omit `theme` entirely to stay unstyled-first — ship only structure plus the
 `--cratis-*` tokens and bring your own visuals (see the pass-through / `pt`
 options below).
 
-### Use the Cratis baseline theme (no license)
+### Use the Cratis baseline theme
 
-Want a polished default look **without a PrimeUI license**? Ship the components
-unstyled and import the Cratis baseline theme — a token-based stylesheet that
-styles every component from the `--cratis-*` layer:
+Want a polished default look **without adding `@primeuix/themes`**? Ship the
+components unstyled and import the Cratis baseline theme — Cratis-authored MIT
+CSS that styles every component from the `--cratis-*` layer. (You still need a
+PrimeUI key to run PrimeReact itself — see [Licensing](#licensing).)
 
 ```tsx
 import 'primeicons/primeicons.css';
