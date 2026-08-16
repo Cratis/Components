@@ -18,7 +18,7 @@ import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEv
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type.
  */
-export interface DataTableForObservableQueryProps<TQuery extends IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object> {
+export interface DataTableForObservableQueryProps<TQuery extends IObservableQueryFor<TDataType, TArguments> | IObservableQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object> {
     /**
      * Children to render — `<Column>` elements describing the visible columns.
      */
@@ -126,7 +126,7 @@ const paging = new Paging(0, 20);
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataTableForObservableQueryProps}.
  */
-export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForObservableQueryProps<TQuery, TDataType, TArguments>) => {
+export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<TDataType, TArguments> | IObservableQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForObservableQueryProps<TQuery, TDataType, TArguments>) => {
     // Type arguments are supplied explicitly, and the constructor is erased on the way in
     // (Cratis/Components#135). Two separate defects in `@cratis/arc.react` make the plain call
     // fail to type-check:

@@ -7,7 +7,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
 import { Column } from '../../Column';
 import { DataTableForQuery } from '../../DataTableForQuery';
-import { ProductsQuery, resetQueryResult } from './a_query_result';
+import { GeneratedProductsQuery, type Product, ProductsQuery, resetQueryResult } from './a_query_result';
 
 /**
  * A data table mounted into a real document, together with what is needed to
@@ -28,6 +28,25 @@ export const aDataTable = () => React.createElement(
         query: ProductsQuery,
         emptyMessage: 'No products found',
         dataKey: 'id'
+    },
+    React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
+    React.createElement(Column, { key: 'name', field: 'name', header: 'Name' }));
+
+/**
+ * Builds a `DataTableForQuery` over a proxy shaped like Arc's generated ones (an array-typed
+ * data type) while naming the row type explicitly - the form a selectable table needs so its
+ * `selection` and `onSelectionChange` are typed to the row rather than to `object`. That this
+ * compiles is the point: the generic constraint used to reject it.
+ * @param onSelectionChange - Receives the typed selection.
+ * @returns The element.
+ */
+export const aDataTableOverAGeneratedProxy = (onSelectionChange: (product: Product | null) => void) => React.createElement(
+    DataTableForQuery<GeneratedProductsQuery, Product, object>,
+    {
+        query: GeneratedProductsQuery,
+        emptyMessage: 'No products found',
+        dataKey: 'id',
+        onSelectionChange: (event) => onSelectionChange(event.value)
     },
     React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
     React.createElement(Column, { key: 'name', field: 'name', header: 'Name' }));

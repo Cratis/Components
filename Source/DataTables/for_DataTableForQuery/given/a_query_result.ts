@@ -108,3 +108,29 @@ export class ProductsQuery extends QueryFor<Product, object> {
         return Promise.resolve({ data: rowsForCurrentPage() } as unknown as QueryResult<Product>);
     }
 }
+
+/**
+ * A snapshot query proxy shaped exactly like the ones Arc generates: the data type is the
+ * row *array*, not the row. {@link ProductsQuery} above names the row so the table's generics
+ * infer without help; this one exists so a spec can prove that a real, array-typed proxy is
+ * accepted while the row type is still named explicitly - the shape every consumer with a
+ * selectable table has to write.
+ */
+export class GeneratedProductsQuery extends QueryFor<Product[], object> {
+    readonly route = '/api/products';
+    readonly routeTemplate = '/api/products';
+    readonly defaultValue: Product[] = [];
+    readonly parameterDescriptors = [];
+
+    get requiredRequestParameters(): string[] {
+        return [];
+    }
+
+    constructor() {
+        super(Object, true);
+    }
+
+    override perform(): Promise<QueryResult<Product[]>> {
+        return Promise.resolve({ data: rowsForCurrentPage() } as unknown as QueryResult<Product[]>);
+    }
+}
