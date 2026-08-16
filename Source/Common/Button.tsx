@@ -44,6 +44,10 @@ export interface ButtonProps {
     disabled?: boolean;
     /** Native button type. */
     type?: 'button' | 'submit' | 'reset';
+    /** Native title attribute - the browser's own hover text, for when a full {@link tooltip} is too much. */
+    title?: string;
+    /** Focuses the button when it mounts. */
+    autoFocus?: boolean;
     /** Called when the button is activated. */
     onClick?: MouseEventHandler<HTMLButtonElement>;
     /** Applied to the button element. */
@@ -84,6 +88,8 @@ export const Button = ({
     size,
     disabled,
     type = 'button',
+    title,
+    autoFocus,
     onClick,
     className,
     style,
@@ -95,6 +101,8 @@ export const Button = ({
     const button = (
         <PrimeButton
             type={type}
+            title={title}
+            autoFocus={autoFocus}
             variant={variant}
             rounded={rounded}
             severity={severity}
