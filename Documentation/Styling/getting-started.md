@@ -28,7 +28,7 @@ Components no longer import their own CSS. In 2.x every component did `import '.
 ```ts
 import '@cratis/components/tokens';   // the --cratis-* token layer
 import '@cratis/components/styles';   // every component stylesheet, in one file
-import '@cratis/components/theme';    // optional — the license-free baseline look
+import '@cratis/components/theme';    // optional — the Cratis baseline look (MIT CSS)
 ```
 
 Import them in that order: `styles` and `theme` both consume the tokens.
@@ -63,8 +63,8 @@ With nothing else, you've imported:
 
 That's enough for the wrappers to render structurally, but PrimeReact 11 is **unstyled-first**: widgets need a look applied before they resemble anything other than raw browser primitives. Choose the setup that matches how much visual control you need:
 
-- [Use the Cratis baseline theme](baseline-theme.md) — the license-free default look
-- [Use a PrimeReact theme](themed.md) — a styled `@primeuix/themes` preset (needs a PrimeUI license key)
+- [Use the Cratis baseline theme](baseline-theme.md) — the default look, no preset needed
+- [Use a PrimeReact theme](themed.md) — a styled `@primeuix/themes` preset
 - [Use a custom palette on top of a theme](custom-palette.md) — keep the theme's structure and supply your colors
 - [Use fully unstyled mode](unstyled.md) — bring every visual yourself through `pt` / CSS
 

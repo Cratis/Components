@@ -33,7 +33,7 @@ export const App = () => (
 
 ## Unstyled app with one themed island
 
-Run the app fully unstyled and give a single subtree the license-free Cratis baseline look. The baseline theme's rules are scoped under `.cratis-theme`, so wrapping one element in the class themes just that subtree:
+Run the app fully unstyled and give a single subtree the Cratis baseline look. The baseline theme's rules are scoped under `.cratis-theme`, so wrapping one element in the class themes just that subtree:
 
 ```tsx
 import '@cratis/components/tokens';

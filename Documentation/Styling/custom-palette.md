@@ -4,7 +4,7 @@ You want a theme's chrome — its dialog frames, button shapes, focus rings, inp
 
 This setup keeps a theme as the **structural baseline** and repaints it with your palette. Which knob you turn depends on which theme you started from:
 
-- **[Cratis baseline theme](baseline-theme.md)** (license-free) — override the `--cratis-*` tokens in CSS.
+- **[Cratis baseline theme](baseline-theme.md)** — override the `--cratis-*` tokens in CSS.
 - **[`@primeuix/themes` preset](themed.md)** (license) — customize the preset's design tokens with `definePreset`.
 
 Either way the `--cratis-*` layer follows your palette, so Cratis-scoped surfaces stay in sync.

@@ -2,7 +2,7 @@
   href: index.md
 - name: Getting Started
   href: getting-started.md
-- name: Use the Cratis baseline theme (no license)
+- name: Use the Cratis baseline theme
   href: baseline-theme.md
 - name: Use a PrimeReact theme (preset, needs a license)
   href: themed.md

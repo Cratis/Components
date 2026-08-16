@@ -1,4 +1,4 @@
-# Use the Cratis baseline theme (no license)
+# Use the Cratis baseline theme
 
 PrimeReact 11 is unstyled-first, and its styled `@primeuix/themes` presets need a PrimeUI license. If you want a polished default look **without a license**, ship the components unstyled and import the **Cratis baseline theme** — a token-based stylesheet that skins every component from the `--cratis-*` layer.
 
@@ -51,5 +51,5 @@ The baseline theme also maps the `--color-*` token family that `@cratis/arc.reac
 
 ## When this is the wrong fit
 
-- You want one of PrimeReact's prebuilt design systems (Aura, Lara, …) — [use a preset](./themed.md) instead (needs a PrimeUI license).
+- You want one of PrimeReact's prebuilt design systems (Aura, Lara, …) — [use a preset](./themed.md) instead.
 - You have a strict design system to honor — go [fully unstyled](./unstyled.md) with your own `pt`.

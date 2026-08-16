@@ -18,7 +18,7 @@ You override `--cratis-*` tokens when you want **just** Cratis-scoped surfaces (
 PrimeReact 11 ships **zero CSS**, so nothing populates `--p-*` until something does it at runtime. Two things can:
 
 - **A `@primeuix/themes` preset.** A preset is a plain JavaScript token object; `@primeuix/styled` turns it into `--p-*` custom properties when you hand it to the provider (`value={{ theme: { preset: Aura } }}`). This path is [license-gated](themed.md).
-- **The [Cratis baseline theme](baseline-theme.md).** `@cratis/components/theme` skips `--p-*` entirely and assigns the `--cratis-*` tokens concrete values directly, light and dark — no preset, no license. It still defers to a preset's `--p-*` when one is present.
+- **The [Cratis baseline theme](baseline-theme.md).** `@cratis/components/theme` skips `--p-*` entirely and assigns the `--cratis-*` tokens concrete values directly, light and dark — no preset needed. It still defers to a preset's `--p-*` when one is present.
 
 With neither, the tokens resolve to nothing and the rules that read them no-op. That is deliberate: the library stays theme-agnostic rather than imposing a default palette on consumers.
 

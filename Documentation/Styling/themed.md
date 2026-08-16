@@ -2,7 +2,7 @@
 
 You want components to look reasonable out of the box using one of PrimeReact's own design systems. PrimeReact 11 ships zero CSS and is unstyled-first, so a *theme* is no longer a stylesheet you import — it is a **`@primeuix/themes` preset**, a plain JavaScript token object that `@primeuix/styled` turns into `--p-*` custom properties at runtime when you hand it to the provider.
 
-> **Licensing.** Applying a `@primeuix/themes` preset needs a **PrimeUI license key** (a free community tier or a paid one). If you want a polished look with **no license**, use the [Cratis baseline theme](baseline-theme.md) instead.
+> **Licensing.** A **PrimeUI license key** is required to run PrimeReact 11 at all — applying a preset does not change that, and neither does going unstyled. See [Licensing](../migration.md#licensing). What a preset *does* add is a dependency on `@primeuix/themes`; the [Cratis baseline theme](baseline-theme.md) gives a polished look without it.
 
 ## Setup
 
@@ -103,6 +103,6 @@ When CSS overrides aren't enough — for example, when you need to attach a clas
 
 This setup stops being a good fit when:
 
-- You don't want a PrimeUI license — use the license-free [Cratis baseline theme](baseline-theme.md).
+- You don't want the extra `@primeuix/themes` dependency — use the [Cratis baseline theme](baseline-theme.md) instead.
 - The preset is "almost" but not your brand — use [a custom palette on top of a theme](custom-palette.md) and customize the preset's design tokens.
 - You're integrating into a design system that defines its own button, dialog, and input visuals — use [fully unstyled mode](unstyled.md) and bring every visual yourself.
