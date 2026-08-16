@@ -66,19 +66,58 @@ const MyComponent = () => {
 - `onConfirm`: Callback for confirm actions
 - `onCancel`: Callback for cancel actions
 - `onClose`: Fallback close callback
-- `buttons`: Predefined `DialogButtons` or custom footer content. A custom
-  footer also removes the close (X), stops `Escape` closing the dialog, and
-  leaves `onConfirm` / `onCancel` / `onClose` uncalled — the dialog cannot tell
-  which of your buttons means what, so a custom footer must close the dialog
-  itself through `useDialogContext().closeDialog(...)`
-- `width`: Dialog width
-- `style`: Custom dialog style forwarded to PrimeReact `Dialog`
-- `contentStyle`: Custom content area style forwarded to PrimeReact `Dialog`
-- `resizable`: Enables resize
-- `isValid`: Enables or disables confirm actions
+- `buttons`: Predefined `DialogButtons` (`Ok`, `OkCancel`, `YesNo`, `YesNoCancel`),
+  `null` for no footer, or a custom React node. Defaults to
+  `DialogButtons.OkCancel`. Anything other than a `DialogButtons` value also
+  removes the close (X), stops `Escape` closing the dialog, and leaves
+  `onConfirm` / `onCancel` / `onClose` uncalled — the dialog cannot tell which
+  of your buttons means what, so a custom footer must close the dialog itself
+  through `useDialogContext().closeDialog(...)`, or opt the dismiss
+  affordances back in explicitly with `dismissable`
+- `dismissable`: Whether the header close (X), a backdrop click and `Escape` are
+  offered (see below)
+- `closeAriaLabel`: Accessible name for the header close button. Defaults to
+  `'Close'` — override it to localize
+- `width`: Dialog width (defaults to `'450px'`)
+- `style`: Custom dialog style
+- `contentStyle`: Custom content area style
+- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle. Existing code that passes it keeps compiling; it simply has no effect.
+- `isValid`: Enables or disables confirm actions (defaults to `true`)
 - `isBusy`: When `true`, disables all buttons and shows a loading spinner on the primary action button
 - `initialFocus`: Where keyboard focus lands when the dialog opens (see below)
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels
+- `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the
+  underlying PrimeReact Dialog — see the [pass-through cheat sheet](../Styling/pass-through.md)
+
+## Dismissing
+
+A dialog is *dismissable* when the header close (X), a backdrop click and
+`Escape` are all offered. In PrimeReact 11 those three are one switch, so they
+are always on or off together.
+
+By default the dialog works out which it should be from `buttons`: a predefined
+`DialogButtons` set is dismissable, a custom `ReactNode` footer or `null` is
+not. That mirrors the v10 behavior and is usually what you want — if the
+dialog renders your buttons, it does not know which one means "get me out of
+here", so it declines to invent one.
+
+Set `dismissable` explicitly to override that:
+
+```typescript
+<Dialog
+    title="Choose a plan"
+    buttons={<MyOwnFooter />}
+    dismissable
+    closeAriaLabel="Close plan chooser"
+    onCancel={() => closeDialog(DialogResult.Cancelled)}
+>
+    …
+</Dialog>
+```
+
+This is what `StepperCommandDialog` does for its wizard chrome: it renders a
+custom footer and still keeps a header X — and withdraws it again, along with
+`Escape` and the backdrop, for the whole window a command is executing in.
 
 ## Initial focus
 

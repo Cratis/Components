@@ -7,7 +7,8 @@ This setup disables every PrimeReact base style at the provider and supplies vis
 ## Setup
 
 ```tsx
-import '@cratis/components/styles';   // tokens + Tailwind utilities still useful for spacing/layout
+import '@cratis/components/tokens';   // the --cratis-* layer, still useful for Cratis-scoped surfaces
+import '@cratis/components/styles';   // component CSS + Tailwind utilities for spacing/layout
 import { CratisComponentsProvider } from '@cratis/components';
 import { globalPt } from './pt-preset';
 
@@ -19,6 +20,8 @@ export const App = () => (
 ```
 
 `unstyled: true` removes every PrimeReact base style. The `pt` preset is what fills the visual vacuum. Without one, components render as raw HTML elements with browser defaults.
+
+The top-level keys of a `pt` preset are PrimeReact 11's own component names — so `select`, not `dropdown`; `textarea`, not `inputtextarea`; and there is no `menubar` key at all, because PrimeReact 11 removed Menubar and the Cratis action bar is a `button` toolbar. Slot names come from the component's own `pt` reference; a slot a component doesn't expose is simply ignored.
 
 The two examples below show the same preset in two different styling languages. Pick whichever your design system uses.
 
@@ -159,7 +162,7 @@ export const globalPt = {
         mask:        { className: 'bg-slate-950/70 backdrop-blur-sm' },
     },
 
-    dropdown: {
+    select: {
         root: {
             className: [
                 'w-full inline-flex items-center justify-between gap-2',
@@ -169,10 +172,10 @@ export const globalPt = {
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400',
             ].join(' '),
         },
-        input:   { className: 'flex-1 truncate text-left' },
-        trigger: { className: 'shrink-0 text-slate-400' },
-        panel:   { className: 'mt-1 rounded-md shadow-xl overflow-hidden bg-slate-800 border border-slate-700' },
-        item:    { className: 'px-3 py-2 cursor-pointer hover:bg-slate-800' },
+        value:    { className: 'flex-1 truncate text-left' },
+        dropdown: { className: 'shrink-0 text-slate-400' },
+        popup:    { className: 'mt-1 rounded-md shadow-xl overflow-hidden bg-slate-800 border border-slate-700' },
+        option:   { className: 'px-3 py-2 cursor-pointer hover:bg-slate-800' },
     },
 
     checkbox: {
@@ -198,11 +201,17 @@ export const globalPt = {
         bodyCell:   { className: 'px-3 py-2 text-slate-100' },
     },
 
-    menubar: {
-        root:     { className: 'flex items-center gap-1 px-3 py-2 bg-slate-800 border-b border-slate-700' },
-        menuitem: { className: 'rounded' },
-        action:   { className: 'inline-flex items-center gap-2 px-3 py-1.5 rounded hover:bg-slate-700 cursor-pointer' },
+    paginator: {
+        root: {
+            className: 'flex items-center justify-end gap-1 px-3 py-2 bg-slate-800 border-t border-slate-700',
+        },
+        pageButton: {
+            className: 'px-3 py-1 rounded hover:bg-slate-700 data-[p-highlight=true]:bg-sky-500 data-[p-highlight=true]:text-white',
+        },
     },
+
+    // PrimeReact 11 removed Menubar; the Cratis action bar is a Button toolbar
+    // styled through the `button` slot above, so no menubar preset is needed.
 } as const;
 ```
 

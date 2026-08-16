@@ -10,7 +10,6 @@ import { useFilterState } from './hooks/useFilterState';
 import { useDimensionState } from './hooks/useDimensionState';
 import { useZoomState } from './hooks/useZoomState';
 import { BASE_CARD_WIDTH, BASE_CARD_HEIGHT, CARDS_PER_COLUMN, GROUP_SPACING } from './constants';
-import './PivotViewer.css';
 import { PivotViewerMain } from './components/PivotViewerMain';
 import { FilterPanelContainer } from './components/FilterPanelContainer';
 import { ToolbarContainer } from './components/ToolbarContainer';

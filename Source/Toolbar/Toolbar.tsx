@@ -3,7 +3,6 @@
 
 import { ReactNode } from 'react';
 import { ToolbarDragContext } from './ToolbarDragContext';
-import './Toolbar.css';
 
 /** Props for the {@link Toolbar} component. */
 export interface ToolbarProps {

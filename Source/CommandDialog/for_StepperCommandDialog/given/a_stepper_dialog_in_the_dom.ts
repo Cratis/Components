@@ -134,19 +134,22 @@ export const settle = async (work: () => void) => {
 };
 
 /**
- * The headers of the step panels the wizard actually rendered, in render order.
+ * The headers of the steps the wizard actually rendered, in render order. PrimeReact 11's
+ * Stepper is compositional, so a step's header text is the `Stepper.Title` part inside its
+ * header rather than an attribute on the panel — one title per rendered step either way.
  * @param dialog - The mounted dialog.
  * @returns The step headers.
  */
 export const renderedSteps = (dialog: StepperDialogInTheDom): string[] =>
-    Array.from(dialog.container.querySelectorAll('[data-testid="stepper-panel"]'))
-        .map(panel => panel.getAttribute('data-header') ?? '');
+    Array.from(dialog.container.querySelectorAll('[data-part="title"]'))
+        .map(title => title.textContent ?? '');
 
 /**
  * The step index the wizard handed the Stepper, or `'none'` when no stepper was
- * rendered at all.
+ * rendered at all. PrimeReact 11 drives the Stepper by `value` — the step's index
+ * as a string — on its root part, in place of v10's `activeStep`.
  * @param dialog - The mounted dialog.
  * @returns The active step index as a string.
  */
 export const activeStep = (dialog: StepperDialogInTheDom): string =>
-    dialog.container.querySelector('[data-testid="stepper"]')?.getAttribute('data-active-step') ?? 'none';
+    dialog.container.querySelector('[data-part="root"]')?.getAttribute('data-value') ?? 'none';

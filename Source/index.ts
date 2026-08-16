@@ -8,8 +8,10 @@ import * as Common from './Common';
 import * as DataPage from './DataPage';
 import * as DataTables from './DataTables';
 import * as Dialogs from './Dialogs';
+import * as Display from './Display';
 import * as Dropdown from './Dropdown';
 import * as Filter from './Filter';
+import * as Notifications from './Notifications';
 import * as ObjectContentEditor from './ObjectContentEditor';
 import * as ObjectNavigationalBar from './ObjectNavigationalBar';
 import * as PivotViewer from './PivotViewer';
@@ -26,8 +28,10 @@ export {
     DataPage,
     DataTables,
     Dialogs,
+    Display,
     Dropdown,
     Filter,
+    Notifications,
     ObjectContentEditor,
     ObjectNavigationalBar,
     PivotViewer,

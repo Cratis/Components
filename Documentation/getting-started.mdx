@@ -20,25 +20,34 @@ You can build that straight on PrimeReact — instantiate the command, track its
 
 <Steps>
 
-1. **Install the package and its PrimeReact peers.**
+1. **Install the package — and PrimeReact alongside it.**
 
    ```bash title="Install Components"
-   npm install @cratis/components primereact primeicons
+   npm install @cratis/components primereact @primereact/core @primereact/headless primeicons
    ```
 
-   A few components pull extra peers only when you use them — `pixi.js` for `PivotViewer`, `framer-motion` for animated panels, `allotment` for `DataPage`. Skip them until you reach for those.
+   From 3.0, PrimeReact is a **peer dependency**, so you supply it and the library uses yours. That's not bureaucracy: when the library bundled its own copy, an app that also depended on `primereact` could end up with **two** — and two copies means two `PrimeReactProvider` contexts, so overlays stack wrongly and `pt` silently stops applying, with no error to point at it. One declared peer is one copy. If you carried a `resolutions` / `overrides` pin for `primereact` to work around this, delete it.
 
-2. **Import the styles once**, at your app's entry point:
+   `primeicons` went 7 → 8 with PrimeReact 11. The heavier extras — `pixi.js` (`PivotViewer`), `framer-motion` (animated panels), `allotment` (`DataPage`) — are still regular dependencies and install automatically. The remaining peers (`react`/`react-dom` 19+, `@cratis/arc*`, `reflect-metadata`, `tsyringe`) already come with the Arc frontend from the prerequisites.
+
+2. **Import the stylesheets once**, at your app's entry point, in this order:
 
    ```typescript title="main.tsx"
-   import '@cratis/components/styles';
+   import '@cratis/components/tokens';   // the --cratis-* token layer
+   import '@cratis/components/styles';   // every component stylesheet, in one file
+   import '@cratis/components/theme';    // optional — the license-free baseline look
    ```
 
-   This ships the pre-compiled utility styles and the `--cratis-*` [token layer](/components/styling/) the components read their colors and spacing from. It works with any bundler.
+   Components no longer import their own CSS — that's what lets the package load in a plain Node test environment. `tokens` declares the `--cratis-*` [token layer](/components/styling/) the components read their colors and spacing from; `styles` is the component CSS plus the pre-compiled utility styles; `theme` is optional and covered below. It works with any bundler.
+
+<Aside type="caution" title="Order matters">
+Import `tokens` first. Both `styles` and `theme` resolve `--cratis-*` variables that `tokens` declares.
+</Aside>
 
 3. **Mount the provider** around your app:
 
    ```tsx title="App.tsx"
+   import '@cratis/components/tokens';
    import '@cratis/components/styles';
    import { CratisComponentsProvider } from '@cratis/components';
 
@@ -53,7 +62,7 @@ You can build that straight on PrimeReact — instantiate the command, track its
 
 ## What the provider sets up
 
-That one wrapper does more than it looks. Components renders PrimeReact in **unstyled mode** with a pass-through preset, configures locale, ripple, and overlay z-index, and routes every component's look through the `--cratis-*` tokens you just imported. The upshot: everything below it renders structurally right away, and it takes its visual identity from tokens you control — not from styles baked into the library.
+That one wrapper does more than it looks. Components renders PrimeReact **unstyled-first** (PrimeReact 11's default) and is the single place you layer on a `pt` preset, locale, ripple, overlay z-index, or a styled theme — routing every component's look through the `--cratis-*` tokens you just imported. The upshot: everything below it renders structurally right away, and it takes its visual identity from tokens and the styling setup you control — not from styles baked into the library.
 
 ```mermaid
 flowchart LR
@@ -84,15 +93,15 @@ No `isExecuting` flag, no button wiring, no duplicate validation logic — and b
 
 ## Choose how it looks
 
-The components render structurally the moment the provider is mounted; their *look* is a separate, deliberate choice. Pick one setup on the [Styling](/components/styling/) page:
+The components render structurally the moment the provider is mounted; their *look* is a separate, deliberate choice. PrimeReact 11 is unstyled-first, so pick one setup on the [Styling](/components/styling/) page:
 
-- a ready-made PrimeReact theme,
-- a theme repainted with a custom `--cratis-*` palette, or
-- fully unstyled, with your own pass-through preset.
+- the license-free **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`),
+- a styled `@primeuix/themes` **preset** via `value={{ theme: { preset } }}` (needs a PrimeUI license key), or
+- fully unstyled, with your own `pt` / CSS.
 
 ## Recap
 
-You installed `@cratis/components`, imported its styles, and wrapped your app in `CratisComponentsProvider` — and with that one provider in place, a typed command form is a handful of lines instead of a handful of files. Everything else in the library works the same way: declare it, point it at a proxy, done.
+You installed `@cratis/components` and its PrimeReact peers, imported the token and component stylesheets, and wrapped your app in `CratisComponentsProvider` — and with that one provider in place, a typed command form is a handful of lines instead of a handful of files. Everything else in the library works the same way: declare it, point it at a proxy, done.
 
 ## Where to go next
 

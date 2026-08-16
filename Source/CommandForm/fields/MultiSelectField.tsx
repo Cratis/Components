@@ -2,9 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { MultiSelect, type MultiSelectProps } from 'primereact/multiselect';
+import { Dropdown, type DropdownProps } from '../../Dropdown/Dropdown';
 import React from 'react';
-import { useOverlayZIndex } from '../../useOverlayZIndex';
 
 /**
  * Component-level props for {@link MultiSelectField}.
@@ -22,10 +21,21 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
     /** Placeholder text shown when nothing is selected. */
     placeholder?: string;
 
-    /** How the selection is displayed in the field: comma-separated or as chips. */
+    /**
+     * How the selection is displayed in the field: comma-separated or as chips.
+     *
+     * PrimeReact 11's `Select` (in `multiple` mode) renders the selection through
+     * its value slot rather than v10 MultiSelect's chip/comma modes, so this is
+     * currently accepted for API compatibility and does not change rendering.
+     */
     display?: 'comma' | 'chip';
 
-    /** Maximum number of selected labels to show before collapsing into a count. */
+    /**
+     * Maximum number of selected labels to show before collapsing into a count.
+     *
+     * Accepted for API compatibility; not applied under the PrimeReact 11
+     * `Select` value rendering.
+     */
     maxSelectedLabels?: number;
 
     /** When true, shows a filter input in the dropdown panel. */
@@ -37,13 +47,13 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying MultiSelect. */
-    pt?: MultiSelectProps['pt'];
+    /** PrimeReact pass-through configuration applied to the underlying Select. */
+    pt?: DropdownProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying MultiSelect. */
-    ptOptions?: MultiSelectProps['ptOptions'];
+    /** PrimeReact pass-through options applied to the underlying Select. */
+    ptOptions?: DropdownProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying MultiSelect. */
+    /** When true, disables every base PrimeReact style on the underlying Select. */
     unstyled?: boolean;
 }
 
@@ -60,33 +70,25 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
  * ```
  */
 export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProps>(
-    (props) => {
-        // Same overlay treatment as the Dropdown wrapper: the panel must escape
-        // dialog scroll containers and stay above modal dialogs.
-        useOverlayZIndex('p-multiselect-panel');
-
-        return (
-            <MultiSelect
-                value={props.value}
-                onChange={(e: { value: Array<string | number> | undefined }) => props.onChange(e.value ?? [])}
-                onBlur={props.onBlur}
-                options={props.options}
-                optionValue={props.optionValue}
-                optionLabel={props.optionLabel}
-                placeholder={props.placeholder}
-                display={props.display}
-                maxSelectedLabels={props.maxSelectedLabels}
-                filter={props.filter}
-                showClear={props.showClear}
-                invalid={props.invalid}
-                appendTo={document.body}
-                className={props.className ? `w-full ${props.className}` : 'w-full'}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
-            />
-        );
-    },
+    (props) => (
+        <Dropdown<Array<string | number>>
+            multiple
+            value={props.value}
+            onChange={(e) => props.onChange(e.value ?? [])}
+            onBlur={props.onBlur}
+            options={props.options}
+            optionValue={props.optionValue}
+            optionLabel={props.optionLabel}
+            placeholder={props.placeholder}
+            filter={props.filter}
+            showClear={props.showClear}
+            invalid={props.invalid}
+            className={props.className ? `w-full ${props.className}` : 'w-full'}
+            pt={props.pt}
+            ptOptions={props.ptOptions}
+            unstyled={props.unstyled}
+        />
+    ),
     {
         defaultValue: [],
         extractValue: (e: unknown) => {

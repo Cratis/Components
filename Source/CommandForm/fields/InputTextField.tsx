@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { InputText, type InputTextProps } from 'primereact/inputtext';
+import { InputText } from 'primereact/inputtext';
+import type { InputTextProps } from '@primereact/types/primitive/inputtext';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 

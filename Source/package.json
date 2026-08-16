@@ -1,6 +1,6 @@
 {
     "name": "@cratis/components",
-    "version": "0.1.8",
+    "version": "3.0.0",
     "description": "",
     "author": "Cratis",
     "license": "MIT",
@@ -11,12 +11,18 @@
     "publishConfig": {
         "access": "public"
     },
+    "type": "module",
     "files": [
         "dist",
         "!dist/**/*.stories.*",
-        "!dist/**/given.*"
+        "!dist/**/given.*",
+        "!dist/**/storybook-static/**",
+        "!dist/**/vite.config.*",
+        "!dist/**/vitest.setup.*",
+        "!dist/**/*.tsbuildinfo",
+        "!dist/cjs/**"
     ],
-    "main": "dist/cjs/index.js",
+    "main": "dist/esm/index.js",
     "module": "dist/esm/index.js",
     "types": "dist/esm/index.d.ts",
     "sideEffects": [
@@ -26,96 +32,87 @@
         "./package.json": "./package.json",
         ".": {
             "types": "./dist/esm/index.d.ts",
-            "require": "./dist/cjs/index.js",
             "import": "./dist/esm/index.js"
         },
         "./CommandDialog": {
             "types": "./dist/esm/CommandDialog/index.d.ts",
-            "require": "./dist/cjs/CommandDialog/index.js",
             "import": "./dist/esm/CommandDialog/index.js"
         },
         "./CommandStepper": {
             "types": "./dist/esm/CommandDialog/CommandStepper.d.ts",
-            "require": "./dist/cjs/CommandDialog/CommandStepper.js",
             "import": "./dist/esm/CommandDialog/CommandStepper.js"
         },
         "./CommandForm": {
             "types": "./dist/esm/CommandForm/index.d.ts",
-            "require": "./dist/cjs/CommandForm/index.js",
             "import": "./dist/esm/CommandForm/index.js"
         },
         "./CommandForm/fields": {
             "types": "./dist/esm/CommandForm/index.d.ts",
-            "require": "./dist/cjs/CommandForm/index.js",
             "import": "./dist/esm/CommandForm/index.js"
         },
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
-            "require": "./dist/cjs/Common/index.js",
             "import": "./dist/esm/Common/index.js"
         },
         "./DataPage": {
             "types": "./dist/esm/DataPage/index.d.ts",
-            "require": "./dist/cjs/DataPage/index.js",
             "import": "./dist/esm/DataPage/index.js"
         },
         "./DataTables": {
             "types": "./dist/esm/DataTables/index.d.ts",
-            "require": "./dist/cjs/DataTables/index.js",
             "import": "./dist/esm/DataTables/index.js"
         },
         "./Dialogs": {
             "types": "./dist/esm/Dialogs/index.d.ts",
-            "require": "./dist/cjs/Dialogs/index.js",
             "import": "./dist/esm/Dialogs/index.js"
+        },
+        "./Display": {
+            "types": "./dist/esm/Display/index.d.ts",
+            "import": "./dist/esm/Display/index.js"
         },
         "./Dropdown": {
             "types": "./dist/esm/Dropdown/index.d.ts",
-            "require": "./dist/cjs/Dropdown/index.js",
             "import": "./dist/esm/Dropdown/index.js"
         },
         "./Filter": {
             "types": "./dist/esm/Filter/index.d.ts",
-            "require": "./dist/cjs/Filter/index.js",
             "import": "./dist/esm/Filter/index.js"
+        },
+        "./Notifications": {
+            "types": "./dist/esm/Notifications/index.d.ts",
+            "import": "./dist/esm/Notifications/index.js"
         },
         "./ObjectContentEditor": {
             "types": "./dist/esm/ObjectContentEditor/index.d.ts",
-            "require": "./dist/cjs/ObjectContentEditor/index.js",
             "import": "./dist/esm/ObjectContentEditor/index.js"
         },
         "./ObjectNavigationalBar": {
             "types": "./dist/esm/ObjectNavigationalBar/index.d.ts",
-            "require": "./dist/cjs/ObjectNavigationalBar/index.js",
             "import": "./dist/esm/ObjectNavigationalBar/index.js"
         },
         "./PivotViewer": {
             "types": "./dist/esm/PivotViewer/index.d.ts",
-            "require": "./dist/cjs/PivotViewer/index.js",
             "import": "./dist/esm/PivotViewer/index.js"
         },
         "./SchemaEditor": {
             "types": "./dist/esm/SchemaEditor/index.d.ts",
-            "require": "./dist/cjs/SchemaEditor/index.js",
             "import": "./dist/esm/SchemaEditor/index.js"
         },
         "./TimeMachine": {
             "types": "./dist/esm/TimeMachine/index.d.ts",
-            "require": "./dist/cjs/TimeMachine/index.js",
             "import": "./dist/esm/TimeMachine/index.js"
         },
         "./Toolbar": {
             "types": "./dist/esm/Toolbar/index.d.ts",
-            "require": "./dist/cjs/Toolbar/index.js",
             "import": "./dist/esm/Toolbar/index.js"
         },
         "./types": {
             "types": "./dist/esm/types/index.d.ts",
-            "require": "./dist/cjs/types/index.js",
             "import": "./dist/esm/types/index.js"
         },
-        "./styles": "./dist/esm/tailwind-utilities.css",
-        "./tokens": "./dist/esm/tokens.css"
+        "./styles": "./dist/esm/styles.css",
+        "./tokens": "./dist/esm/tokens.css",
+        "./theme": "./dist/esm/theme.css"
     },
     "scripts": {
         "prepare": "yarn g:build",
@@ -123,6 +120,7 @@
         "build": "tsc -p tsconfig.json",
         "compile": "tsc -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
+        "verify-exports": "node ./scripts/verify-exports.mjs",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
@@ -135,21 +133,37 @@
         "allotment": "1.20.5",
         "framer-motion": "12.42.2",
         "pixi.js": "^8.19.0",
-        "primeicons": "7.0.0",
-        "primereact": "10.9.8",
         "react-icons": "5.7.0",
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "^21.0.2"
+        "@cratis/arc.vite": "21.19.0",
+        "@primereact/core": "11.1.0",
+        "@primereact/headless": "11.1.0",
+        "@primereact/types": "11.1.0",
+        "@primeuix/motion": "^1.0.0",
+        "@primeuix/styled": "^1.0.0",
+        "@primeuix/themes": "3.0.0",
+        "primeicons": "8.0.0",
+        "primereact": "11.1.0"
     },
     "peerDependencies": {
         "@cratis/arc": ">=20.3.1 <22",
         "@cratis/arc.react": ">=20.3.1 <22",
         "@cratis/fundamentals": "^7.10.3",
+        "@primereact/core": "^11.0.0",
+        "@primereact/headless": "^11.0.0",
+        "@primereact/types": "^11.0.0",
+        "primeicons": "^8.0.0",
+        "primereact": "^11.0.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "reflect-metadata": "0.2.2",
         "tsyringe": "4.10.0"
+    },
+    "peerDependenciesMeta": {
+        "@primereact/types": {
+            "optional": true
+        }
     }
 }

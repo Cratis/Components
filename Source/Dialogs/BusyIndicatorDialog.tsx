@@ -33,7 +33,7 @@ import { DialogInitialFocus } from './DialogInitialFocus';
  *         }
  *     };
  *
- *     return <Button label="Save" onClick={onSave} />;
+ *     return <Button onClick={onSave}>Save</Button>;
  * };
  * ```
  *
@@ -66,7 +66,9 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             initialFocus={DialogInitialFocus.Content}
         >
             <div className="flex flex-col items-center justify-center gap-4 py-4">
-                <ProgressSpinner />
+                {/* The spinner's role="progressbar" needs an accessible name; use the
+                    consumer-supplied message/title (already localized), never a baked-in string. */}
+                <ProgressSpinner.Root aria-label={props.message || props.title || 'Loading'} />
                 <p className="m-0 text-center">
                     {props.message}
                 </p>

@@ -4,32 +4,41 @@
 import { CSSProperties, ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
-import { MenuItem as PrimeMenuItem } from 'primereact/menuitem';
-import { Menubar, type MenubarProps } from 'primereact/menubar';
+import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
+import type { ButtonProps } from '@primereact/types/primitive/button';
 import { IObservableQueryFor, IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
-import { DataTableFilterMeta, DataTableSelectionSingleChangeEvent, type DataTableProps as PrimeDataTableProps } from 'primereact/datatable';
+import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
+import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
+import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
 import { Allotment } from 'allotment';
 import { Constructor } from '@cratis/fundamentals';
 import { DataPageLayout } from './DataPageLayout';
 
 // Allotment ships its layout as a stylesheet rather than inline styles, and a pane only becomes
 // the absolutely positioned, full-height box the split view assumes once that stylesheet is on
-// the page. Without it a pane is an ordinary block that grows to its content, `height: 100%`
-// inside it resolves to auto, and the table pushes its paginator past the page's clipped edge.
-// Importing it here is the same contract as every other stylesheet in this package: Rollup keeps
-// CSS imports external, `sideEffects` marks them live, and the consuming bundler injects it - so
-// a consumer gets a working split view without having to know the dependency exists.
-import 'allotment/dist/style.css';
+// the page. It used to be pulled in here with a bare `import 'allotment/dist/style.css'`, but a
+// CSS import inside the JS graph is precisely what stops the published ESM from loading in Node
+// (Cratis/Components#118). The rules now ship inside this package's own `./styles` entry point,
+// which the build concatenates from every component stylesheet plus this third-party one — so a
+// consumer still gets a working split view, from the single stylesheet they already import.
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
- * Props for {@link MenuItem}. Extends PrimeReact's `MenuItem` shape with one
- * Cratis-specific flag.
+ * Props for {@link MenuItem} — a single action in a {@link DataPage}'s
+ * action bar.
  */
-export interface MenuItemProps extends PrimeMenuItem {
+export interface MenuItemProps {
+    /** Icon component rendered before the label (e.g. a react-icons icon). */
+    icon?: React.ComponentType<{ className?: string }>;
+    /** The visible label. */
+    label?: string;
+    /** Invoked when the item is activated. */
+    command?: () => void;
+    /** When true, the item is greyed out regardless of selection. */
+    disabled?: boolean;
     /**
      * When true, the menu item is disabled while no row is selected in the
      * surrounding {@link DataPage}. Use it for context-sensitive actions like
@@ -41,7 +50,7 @@ export interface MenuItemProps extends PrimeMenuItem {
 /**
  * Declarative menu item for use inside `<DataPage.MenuItems>`. Renders nothing
  * directly; the surrounding {@link MenuItems} component reads its props and
- * forwards them to the action `Menubar`.
+ * forwards them to the action menubar.
  */
 export const MenuItem = (_: MenuItemProps) => {
     return null;
@@ -87,7 +96,7 @@ const tableRegionStyle: CSSProperties = { flexGrow: 1, flexBasis: 0, minHeight: 
 const pageStyle: CSSProperties = { minHeight: '20rem' };
 
 /**
- * Renders an action `Menubar` at the top of a {@link DataPage}, populated from
+ * Renders an action menubar at the top of a {@link DataPage}, populated from
  * `<DataPage.MenuItem>` children. Each menu item's `disableOnUnselected` flag
  * is automatically honored against the current row selection.
  *
@@ -95,36 +104,34 @@ const pageStyle: CSSProperties = { minHeight: '20rem' };
  */
 export const MenuItems = ({ children }: MenuItemsProps) => {
     const context = useDataPageContext();
-
-    const isDisabled = useMemo(() => {
-        return !context.selectedItem;
-    }, [context.selectedItem]);
+    const isDisabled = !context.selectedItem;
 
     const items = useMemo(() => {
-        const menuItems: PrimeMenuItem[] = [];
+        const menuItems: ActionMenuItem[] = [];
         React.Children.forEach(children, (child) => {
-            if (React.isValidElement<MenuItemProps>(child) && child.type == MenuItem) {
+            if (React.isValidElement<MenuItemProps>(child) && child.type === MenuItem) {
                 const Icon = child.props.icon;
-                const menuItem = { ...child.props };
-                menuItem.icon = <Icon className='mr-2' />;
-                menuItem.disabled = isDisabled && child.props.disableOnUnselected;
-                menuItems.push(menuItem);
+                menuItems.push({
+                    label: child.props.label,
+                    command: child.props.command,
+                    icon: Icon ? <Icon className='mr-2' /> : undefined,
+                    disabled: (child.props.disabled ?? false) || (isDisabled && (child.props.disableOnUnselected ?? false)),
+                });
             }
         });
 
         return menuItems;
-    }, [children, context.selectedItem]);
+    }, [children, isDisabled]);
 
     return (
         <div className="cratis-data-page-actions px-4 py-2" style={actionsStyle}>
-            <Menubar
-                aria-label="Actions"
+            <ActionMenubar
+                aria-label={context.actionsAriaLabel ?? 'Actions'}
                 model={items}
                 className={context.menubarClassName}
                 pt={context.menubarPt}
                 ptOptions={context.menubarPtOptions}
-                unstyled={context.menubarUnstyled}
-            />
+                unstyled={context.menubarUnstyled} />
         </div>);
 };
 
@@ -190,7 +197,7 @@ export interface IDetailsComponentProps<TDataType> {
 
 interface IDataPageContext extends DataPageProps<any, any, any> {
     selectedItem: any;
-    onSelectionChanged: (e: DataTableSelectionSingleChangeEvent<any>) => void;
+    onSelectionChanged: (e: DataTableSelectionChangeEvent<any>) => void;
 }
 
 const DataPageContext = React.createContext<IDataPageContext | null>(null);
@@ -254,7 +261,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionSingleChangeEvent<any>): void;
+    onSelectionChange?(event: DataTableSelectionChangeEvent<any>): void;
 
     /**
      * Fields to use for global filtering
@@ -267,7 +274,9 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * When true, filtering is performed client-side only
+     * @deprecated No longer toggles behavior. Filtering is always applied
+     * client-side to the loaded page; retained only for source compatibility and
+     * will be removed in a future release.
      */
     clientFiltering?: boolean;
 
@@ -282,27 +291,33 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     tableClassName?: string;
 
     /** PrimeReact pass-through configuration applied to the inner DataTable. */
-    tablePt?: PrimeDataTableProps<TDataType[]>['pt'];
+    tablePt?: DataTableRootProps['pt'];
 
     /** PrimeReact pass-through options applied to the inner DataTable. */
-    tablePtOptions?: PrimeDataTableProps<TDataType[]>['ptOptions'];
+    tablePtOptions?: DataTableRootProps['ptOptions'];
 
     /** When true, disables every base PrimeReact style on the inner DataTable. */
     tableUnstyled?: boolean;
 
     /**
-     * Extra CSS class name forwarded to the action Menubar root.
+     * Extra CSS class name forwarded to the action menubar root.
      */
     menubarClassName?: string;
 
-    /** PrimeReact pass-through configuration applied to the action Menubar. */
-    menubarPt?: MenubarProps['pt'];
+    /** PrimeReact pass-through configuration applied to the action menubar's buttons. */
+    menubarPt?: ButtonProps['pt'];
 
-    /** PrimeReact pass-through options applied to the action Menubar. */
-    menubarPtOptions?: MenubarProps['ptOptions'];
+    /** PrimeReact pass-through options applied to the action menubar's buttons. */
+    menubarPtOptions?: ButtonProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the action Menubar. */
+    /** When true, disables every base PrimeReact style on the action menubar's buttons. */
     menubarUnstyled?: boolean;
+
+    /**
+     * Accessible name for the action menubar (toolbar). Override to localize.
+     * Defaults to `'Actions'`.
+     */
+    actionsAriaLabel?: string;
 }
 
 /**
@@ -399,11 +414,13 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
  *
  * ## Styling
  *
- * The inner DataTable and Menubar each have their own per-slot props:
+ * The inner DataTable and action toolbar each have their own per-slot props:
  * `tablePt` / `tableUnstyled` / `tableClassName` for the table;
- * `menubarPt` / `menubarUnstyled` / `menubarClassName` for the action
- * menubar. See the [pass-through cheat sheet](../../Documentation/Styling/pass-through.md)
- * for the full slot reference.
+ * `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` for
+ * the action toolbar's buttons (in PrimeReact 11 the v10 Menubar is replaced by
+ * a button toolbar, so `menubarPt` targets those buttons). See the
+ * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md) for
+ * the full slot reference.
  *
  * @typeParam TQuery - The query class (proxy generated from a C# read model query).
  * @typeParam TDataType - The row type returned by the query.
@@ -413,7 +430,7 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
 const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
 
-    const selectionChanged = (e: DataTableSelectionSingleChangeEvent<any>) => {
+    const selectionChanged = (e: DataTableSelectionChangeEvent<any>) => {
         setSelectedItem(e.value);
         if (props.onSelectionChange) {
             props.onSelectionChange(e);

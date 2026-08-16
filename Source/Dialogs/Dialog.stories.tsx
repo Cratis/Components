@@ -42,7 +42,7 @@ const DialogWrapper = ({ buttons, title, children, isValid, initialFocus }: { bu
 
     return (
         <>
-            <Button label="Open Dialog" onClick={async () => await showDialog()} />
+            <Button onClick={async () => await showDialog()}>Open Dialog</Button>
             <DialogComponent />
         </>
     );
@@ -145,14 +145,13 @@ export const WithForm: Story = {
         return (
             <>
                 <Button
-                    label="Open Form Dialog"
                     onClick={async () => {
                         const [dialogResult, value] = await showAddNameDialog();
                         if (dialogResult === DialogResult.Ok && value) {
                             setResult(value.name);
                         }
                     }}
-                />
+                >Open Form Dialog</Button>
                 {result && <p>Last saved name: {result}</p>}
                 <AddNameDialogComponent />
             </>
@@ -190,7 +189,7 @@ export const IsBusy: Story = {
 
         return (
             <>
-                <Button label="Open Dialog" onClick={async () => await showDialog()} />
+                <Button onClick={async () => await showDialog()}>Open Dialog</Button>
                 <DialogComponent />
             </>
         );
@@ -210,16 +209,12 @@ export const CustomButtons: Story = {
                     buttons={
                         <>
                             <Button
-                                label="Save Draft"
-                                icon="pi pi-save"
                                 severity="secondary"
                                 onClick={() => closeDialog(DialogResult.Ok, { action: 'draft' })}
-                            />
+                            ><i className="pi pi-save" /> Save Draft</Button>
                             <Button
-                                label="Publish"
-                                icon="pi pi-send"
                                 onClick={() => closeDialog(DialogResult.Ok, { action: 'publish' })}
-                            />
+                            ><i className="pi pi-send" /> Publish</Button>
                         </>
                     }
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
@@ -235,14 +230,13 @@ export const CustomButtons: Story = {
         return (
             <>
                 <Button
-                    label="Open Custom Dialog"
                     onClick={async () => {
                         const [dialogResult, value] = await showCustomActionsDialog();
                         if (dialogResult === DialogResult.Ok && value) {
                             setResult(value.action);
                         }
                     }}
-                />
+                >Open Custom Dialog</Button>
                 {result && <p>Last action: {result}</p>}
                 <CustomActionsDialogComponent />
             </>

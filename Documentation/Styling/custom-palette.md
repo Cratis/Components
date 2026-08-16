@@ -1,97 +1,101 @@
-# Use a custom palette on top of a PrimeReact theme
+# Use a custom palette on top of a theme
 
-You want PrimeReact's chrome — its dialog frames, button shapes, focus rings, input borders — but in your own colors. You don't want to write a PrimeReact theme from scratch.
+You want a theme's chrome — its dialog frames, button shapes, focus rings, input borders — but in your own colors. You don't want to write a theme from scratch.
 
-This setup keeps a PrimeReact theme as the **structural baseline** and overrides PrimeReact's own CSS variables on `:root` to repaint the whole UI. The `--cratis-*` tokens follow along through `tokens.css`'s cascade, so Cratis-scoped surfaces stay in sync. You can also override the Cratis tokens independently when you want Cratis surfaces to differ from PrimeReact widgets.
+This setup keeps a theme as the **structural baseline** and repaints it with your palette. Which knob you turn depends on which theme you started from:
 
-> **PrimeReact version note.** The examples below override PrimeReact **v10** theme variables (`--surface-*`, `--primary-color`, …). On **PrimeReact v11**, customize the palette through `@primeuix/themes` instead — define a preset with `definePreset` (or override the `--p-*` design tokens). Either way you don't touch the `--cratis-*` layer: it resolves the v11 design token first and falls back to the v10 variable, so Cratis-scoped surfaces follow your palette on both majors.
+- **[Cratis baseline theme](baseline-theme.md)** (license-free) — override the `--cratis-*` tokens in CSS.
+- **[`@primeuix/themes` preset](themed.md)** (license) — customize the preset's design tokens with `definePreset`.
 
-## Setup
+Either way the `--cratis-*` layer follows your palette, so Cratis-scoped surfaces stay in sync.
+
+## With the Cratis baseline theme (CSS token overrides)
+
+The baseline theme paints everything from the `--cratis-*` tokens. Override them under `.cratis-theme` (loaded after the theme so your values win):
 
 ```tsx
-// 1. PrimeReact theme provides the structure.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
-import 'primeicons/primeicons.css';
+import '@cratis/components/tokens';
 import '@cratis/components/styles';
-// 2. Your palette overrides — must come after the theme so they win.
-import './palette.override.css';
+import '@cratis/components/theme';
+import './palette.override.css';   // after the theme so it wins
 ```
-
-## With plain CSS
-
-Override PrimeReact's variables — these are what its widgets read directly:
 
 ```css
 /* palette.override.css */
-:root {
+.cratis-theme {
     /* Surfaces */
-    --surface-0:        #1e293b;
-    --surface-100:      #1e293b;
-    --surface-ground:   #020617;
-    --surface-section:  #0f172a;
-    --surface-card:     #1e293b;
-    --surface-overlay:  #1e293b;
-    --surface-hover:    #334155;
-    --surface-border:   #334155;
+    --cratis-surface-0:       #1e293b;
+    --cratis-surface-100:     #1e293b;
+    --cratis-surface-section: #0f172a;
+    --cratis-surface-card:    #1e293b;
+    --cratis-surface-overlay: #1e293b;
+    --cratis-surface-hover:   #334155;
+    --cratis-surface-border:  #334155;
 
     /* Text */
-    --text-color:           #f8fafc;
-    --text-color-secondary: #94a3b8;
+    --cratis-text-color:           #f8fafc;
+    --cratis-text-color-secondary: #94a3b8;
 
     /* Brand */
-    --primary-color:      #38bdf8;
-    --primary-color-text: #0b1220;
+    --cratis-primary-color:      #38bdf8;
+    --cratis-primary-color-text: #0b1220;
 
     /* Selection */
-    --highlight-bg:         #1e40af;
-    --highlight-text-color: #ffffff;
+    --cratis-highlight-bg:         #1e40af;
+    --cratis-highlight-text-color: #ffffff;
 
     /* Geometry */
-    --border-radius: 10px;
+    --cratis-border-radius: 10px;
+}
 
-    /* --cratis-* tokens default to var(--surface-*) etc. via tokens.css, so
-       the overrides above flow through automatically. Set these explicitly
-       only if you want Cratis-scoped surfaces tinted differently. */
-    --cratis-red-500:   #ef4444;
-    --cratis-green-500: #22c55e;
+/* Dark palette is applied when `cratis-dark` is on the same ancestor. */
+.cratis-theme.cratis-dark {
+    --cratis-surface-card: #0b1220;
+    --cratis-text-color:   #e2e8f0;
 }
 ```
 
-## With TailwindCSS
+## With a `@primeuix/themes` preset (`definePreset`)
 
-Tailwind's `@layer base` is the idiomatic spot — declare the palette once and Tailwind handles cascade and dark mode:
+Presets are customized in TypeScript, not CSS: derive a new preset from a base one with `definePreset` and hand it to the provider. Design-token references like `{sky.500}` point at the preset's built-in primitive palette:
 
-```css
-/* app.css */
-@import "tailwindcss";
-@import "primereact/resources/themes/lara-dark-blue/theme.css";
-@import "@cratis/components/styles";
+```ts
+// brand-preset.ts
+import { definePreset } from '@primeuix/themes';
+import Aura from '@primeuix/themes/aura';
 
-@layer base {
-    :root {
-        --surface-card:    theme('colors.slate.800');
-        --surface-border:  theme('colors.slate.700');
-        --text-color:      theme('colors.slate.50');
-        --primary-color:   theme('colors.sky.400');
-        --cratis-red-500:  theme('colors.red.500');
-    }
+export const BrandPreset = definePreset(Aura, {
+    semantic: {
+        primary: {
+            50: '{sky.50}',   100: '{sky.100}', 200: '{sky.200}',
+            300: '{sky.300}', 400: '{sky.400}', 500: '{sky.500}',
+            600: '{sky.600}', 700: '{sky.700}', 800: '{sky.800}',
+            900: '{sky.900}', 950: '{sky.950}',
+        },
+    },
+});
+```
 
-    .dark {
-        --surface-card: theme('colors.slate.900');
-        --text-color:   theme('colors.slate.100');
-    }
-}
+```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+import { BrandPreset } from './brand-preset';
+
+export const App = () => (
+    <CratisComponentsProvider value={{ theme: { preset: BrandPreset }, license: 'YOUR-PRIMEUI-KEY' }}>
+        <YourApp />
+    </CratisComponentsProvider>
+);
 ```
 
 ## Scoped overrides
 
-PrimeReact variables cascade like any other CSS variable, so an ancestor scope works for region-specific looks:
+The `--cratis-*` tokens cascade like any other CSS variable, so an ancestor scope works for region-specific looks with the baseline theme:
 
 ```css
 .dark-zone {
-    --surface-card:  #0b1220;
-    --text-color:    #f8fafc;
-    --primary-color: #60a5fa;
+    --cratis-surface-card:  #0b1220;
+    --cratis-text-color:    #f8fafc;
+    --cratis-primary-color: #60a5fa;
 }
 ```
 
@@ -110,22 +114,22 @@ PrimeReact variables cascade like any other CSS variable, so an ancestor scope w
 Put each palette behind a class on the root element and toggle the class with your theme switcher:
 
 ```css
-:root.theme-light {
-    --surface-card: #ffffff;
-    --text-color:   #0f172a;
+.cratis-theme.theme-light {
+    --cratis-surface-card: #ffffff;
+    --cratis-text-color:   #0f172a;
     /* … */
 }
 
-:root.theme-dark {
-    --surface-card: #1e293b;
-    --text-color:   #f8fafc;
+.cratis-theme.theme-dark {
+    --cratis-surface-card: #1e293b;
+    --cratis-text-color:   #f8fafc;
     /* … */
 }
 
-:root.theme-brand {
-    --surface-card: #1f1147;
-    --text-color:   #ede9fe;
-    --primary-color: #a78bfa;
+.cratis-theme.theme-brand {
+    --cratis-surface-card:  #1f1147;
+    --cratis-text-color:    #ede9fe;
+    --cratis-primary-color: #a78bfa;
     /* … */
 }
 ```
@@ -134,12 +138,14 @@ Put each palette behind a class on the root element and toggle the class with yo
 document.documentElement.classList.add('theme-dark');
 ```
 
+The baseline theme's own `cratis-dark` class is the simplest light/dark switch when you only need those two — add it alongside `cratis-theme` for dark, remove it for light.
+
 ## What `--cratis-*` tokens are for in this setup
 
 Two override surfaces are available, with different reach:
 
-- **PrimeReact variables** (`--surface-card`, `--text-color`, `--primary-color`, …) — read by PrimeReact widgets directly. Override these to repaint the whole UI (PrimeReact widgets *and* Cratis-scoped surfaces, because Cratis tokens cascade to PrimeReact's via `tokens.css`).
-- **`--cratis-*` tokens** — read only by Cratis-scoped surfaces (validation errors, FormElement addon, breadcrumb borders, etc.). Override these when you want Cratis surfaces to differ from PrimeReact widgets, *without* repainting PrimeReact widgets.
+- **The theme's palette** (`--cratis-*` for the baseline theme, or the preset's `--p-*` design tokens) — read by the widgets. Override these to repaint the whole UI.
+- **`--cratis-*` tokens on a Cratis-only scope** — read by Cratis-scoped surfaces (validation errors, the FormElement addon, breadcrumb borders, etc.). Override these when you want Cratis surfaces to differ from the surrounding widgets.
 
 See [Cratis token reference](cratis-tokens.md) for the full Cratis token list, and [Pass-through cheat sheet](pass-through.md) when you want even tighter per-component control.
 

@@ -19,7 +19,7 @@ DataTableForQuery provides a data table specifically designed for `IQueryFor` qu
 
 ```typescript
 import { DataTableForQuery } from '@cratis/components/DataTables';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataTables';
 import { MyQuery } from './queries';
 
 function MyTable() {
@@ -51,37 +51,22 @@ function MyTable() {
 - `selection`: Currently selected row
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
-- `defaultFilters`: Initial filter configuration
-- `clientFiltering`: Enable client-side filtering (default: false)
+- `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
+- `paginatorClassName` / `paginatorAriaLabels`: styling and localization for the paginator
 - `children`: Column definitions
 
 ## Pagination
 
 DataTableForQuery automatically handles pagination with a default page size of 20 items. Pagination controls are displayed at the bottom of the table.
 
-## Server-Side Filtering
+## Filtering
 
-Default mode - filters are applied on the server:
+Add `filter` to a `<Column>` for a per-column filter menu, and/or `globalFilterFields` for a global search box. Filtering is applied client-side to the loaded page; seed the initial state with `defaultFilters`:
 
 ```typescript
 <DataTableForQuery
     query={MyQuery}
     globalFilterFields={['name', 'email']}
-    emptyMessage="No results"
->
-    <Column field="name" header="Name" />
-    <Column field="email" header="Email" />
-</DataTableForQuery>
-```
-
-## Client-Side Filtering
-
-Enable client-side filtering for smaller datasets:
-
-```typescript
-<DataTableForQuery
-    query={MyQuery}
-    clientFiltering={true}
     defaultFilters={{
         name: { value: '', matchMode: 'contains' }
     }}

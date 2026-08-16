@@ -13,3 +13,6 @@ export * from './MultiSelectField';
 export * from './ChipsField';
 export * from './RadioButtonField';
 export * from './RadioGroupField';
+export * from './PasswordField';
+export * from './ToggleSwitchField';
+export * from './RatingField';

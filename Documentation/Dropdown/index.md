@@ -1,18 +1,17 @@
 # Dropdown
 
-The `Dropdown` component is a wrapper around PrimeReact's Dropdown with automatic z-index management for proper overlay behavior.
+The `Dropdown` component is a curated wrapper around PrimeReact 11's compositional `Select`. It assembles `Select.Root`, `Select.Trigger`, `Select.Value`, `Select.Portal`, `Select.Positioner`, `Select.Popup` and `Select.List` for you, so a select is one element with props instead of seven nested parts.
 
 ## Purpose
 
-Dropdown provides a select component that correctly appears above dialogs and other overlays without z-index conflicts.
+Dropdown gives you a single-element select that binds a value to a list of options, works inside dialogs without any z-index configuration, and exposes a small, stable prop surface rather than the whole PrimeReact Select API.
 
 ## Key Features
 
-- Full PrimeReact Dropdown functionality
-- Automatic z-index management
-- Works inside dialogs
-- Appends to document body by default
-- All PrimeReact Dropdown props supported
+- Single or multiple selection (set `multiple`)
+- Optional in-popup filter (`filter`) and clear control (`showClear`)
+- Portaled and stacked by PrimeReact 11 itself, so it renders above the dialog it was opened from — no manual z-index, no `appendTo`
+- A small, curated prop surface (below) plus `pt` / `ptOptions` / `unstyled` for full styling control
 
 ## Quick Start
 
@@ -41,23 +40,46 @@ function MyForm() {
 
 ## Props
 
-All PrimeReact Dropdown props are supported. See [PrimeReact Dropdown Documentation](https://primereact.org/dropdown/) for complete list.
-
-### Common Props
+`Dropdown` exposes a wrapper-owned surface — the common single/multi select props every Cratis form needs — rather than leaking PrimeReact's entire Select API. For anything beyond this, use `pt` / `ptOptions` / `unstyled`.
 
 ```typescript
-interface DropdownProps {
-    value?: unknown;
-    options: Array<{ label: string; value: unknown }>;
-    onChange?: (e: { value: unknown }) => void;
+interface DropdownProps<T = unknown> {
+    value?: T;
+    options?: unknown[];
+    optionLabel?: string;                       // property used as the visible label
+    optionValue?: string;                       // property used as the underlying value
     placeholder?: string;
-    disabled?: boolean;
-    filter?: boolean;
-    filterPlaceholder?: string;
+    filter?: boolean;                           // filter input inside the popup
+    multiple?: boolean;                         // multi-select
     showClear?: boolean;
-    optionLabel?: string;
-    optionValue?: string;
-    // ... all other PrimeReact Dropdown props
+    invalid?: boolean;
+    disabled?: boolean;
+    onChange?: (event: DropdownChangeEvent<T>) => void;   // event.value is typed as T
+    onBlur?: React.FocusEventHandler<HTMLElement>;
+    // identity / accessibility / styling forwarded to the Select root:
+    className?: string;
+    style?: React.CSSProperties;
+    id?: string;
+    name?: string;
+    tabIndex?: number;
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
+    pt?: SelectRootProps['pt'];
+    ptOptions?: SelectRootProps['ptOptions'];
+    unstyled?: boolean;
+}
+```
+
+Every prop is optional, and the wrapper declares no defaults of its own — `multiple`, `filter`, `showClear`, `invalid` and `disabled` are simply off unless you set them.
+
+There is no `...rest` spread and no index signature, so anything not listed above is a compile error rather than an ignored prop. That includes `aria-*` beyond the two declared (`aria-label`, `aria-labelledby`) and PrimeReact Select props the wrapper deliberately does not surface — `appendTo`, `variant`, `size`, `fluid`, `filterMatchMode`, `optionGroupLabel` / `optionGroupChildren`, `optionDisabled`, `open` / `defaultOpen`, and the rest. Reach those through `pt` / `ptOptions` / `unstyled`, or compose `Select` yourself.
+
+`onChange` receives a `DropdownChangeEvent<T>`:
+
+```typescript
+interface DropdownChangeEvent<T = unknown> {
+    value: T;                                          // the newly selected value (an array when `multiple`)
+    originalEvent?: React.SyntheticEvent;              // the underlying React event, when available
 }
 ```
 
@@ -96,13 +118,14 @@ const countries = [
 
 ### With Filtering
 
+Set `filter` to render a filter input inside the popup. The filter input reuses `placeholder` as its own placeholder — there is no separate `filterPlaceholder` prop:
+
 ```typescript
 <Dropdown
     value={selected}
     options={longListOfOptions}
     onChange={(e) => setSelected(e.value)}
     filter
-    filterPlaceholder="Search..."
     placeholder="Select Option"
 />
 ```
@@ -119,68 +142,33 @@ const countries = [
 />
 ```
 
-### Grouped Options
+### Multiple Selection
 
 ```typescript
-const groupedCities = [
-    {
-        label: 'Norway',
-        items: [
-            { label: 'Oslo', value: 'oslo' },
-            { label: 'Bergen', value: 'bergen' }
-        ]
-    },
-    {
-        label: 'Sweden',
-        items: [
-            { label: 'Stockholm', value: 'stockholm' },
-            { label: 'Gothenburg', value: 'gothenburg' }
-        ]
-    }
-];
-
-<Dropdown
-    value={selected}
-    options={groupedCities}
-    onChange={(e) => setSelected(e.value)}
-    optionLabel="label"
-    optionGroupLabel="label"
-    optionGroupChildren="items"
-    placeholder="Select City"
-/>
-```
-
-### Custom Item Template
-
-```typescript
-const countryTemplate = (option: Country) => {
-    return (
-        <div className="flex align-items-center">
-            <img src={`/flags/${option.code}.png`} width="20" alt={option.name} />
-            <span className="ml-2">{option.name}</span>
-        </div>
-    );
-};
-
-<Dropdown
-    value={selectedCountry}
-    options={countries}
-    onChange={(e) => setSelectedCountry(e.value)}
-    itemTemplate={countryTemplate}
+<Dropdown<string[]>
+    value={selectedTags}
+    options={tags}
+    onChange={(e) => setSelectedTags(e.value)}
     optionLabel="name"
-    placeholder="Select Country"
+    optionValue="id"
+    multiple
+    placeholder="Select tags"
 />
 ```
 
 ## Inside Dialogs
 
-Dropdown automatically works correctly inside dialogs:
+Dropdown works correctly inside dialogs with no configuration:
 
 ```typescript
-<Dialog visible={visible} onHide={() => setVisible(false)}>
+import { Dialog } from '@cratis/components/Dialogs';
+import { Dropdown } from '@cratis/components/Dropdown';
+
+<Dialog title="Categorize" visible={visible} onCancel={() => setVisible(false)}>
     <div className="field">
-        <label>Category</label>
+        <label htmlFor="category">Category</label>
         <Dropdown
+            id="category"
             value={category}
             options={categories}
             onChange={(e) => setCategory(e.value)}
@@ -190,16 +178,17 @@ Dropdown automatically works correctly inside dialogs:
 </Dialog>
 ```
 
-The dropdown panel will appear above the dialog without z-index issues.
+The panel appears above the dialog without z-index issues.
 
-## Z-Index Management
+## Overlay stacking inside dialogs
 
-The component uses `useOverlayZIndex` hook to ensure proper layering:
+On PrimeReact 10 this needed help. A dropdown panel opened inside a modal dialog rendered *inside* the dialog's DOM subtree, so the dialog's stacking and scroll context clipped it and the panel could land under the dialog's own mask. Version 2.x of this library carried two workarounds for that: `appendTo={document.body}` on every overlay-bearing field, and a `useOverlayZIndex` hook that raised the panel to a z-index floor with a `MutationObserver`.
 
-- Dropdown panel automatically gets correct z-index
-- Works with multiple layered dialogs
-- Appends to document body by default
-- Prevents overlay conflicts
+**Both are gone in 3.0, because PrimeReact 11 does the work itself.** `Select.Portal` defaults to `appendTo: 'body'`, so the panel is portaled out of the dialog entirely, and the shared z-index registry assigns a later-opened overlay a value above whatever is already registered — so the panel outranks the dialog it was opened from. Measured on PrimeReact 11.1.0: with the dialog positioner at z-index 1102, the select panel opens at 2103, parented directly to `document.body`.
+
+There is nothing to configure and nothing to import. `useOverlayZIndex` no longer exists; if you called it in your own app for your own overlays, check whether v11 has made it unnecessary there too before inlining it.
+
+A regression spec pins this behavior — `Source/Dropdown/for_Dropdown/when_opened_inside_a_dialog.ts` renders a `Dropdown` inside a `Dialog`, opens it, and asserts that the panel is not contained by the dialog popup, that it is portaled to `document.body`, and that its z-index is above the dialog's. If a future PrimeReact release stops portaling or stops stacking the panel, that spec fails — which is exactly the signal that a workaround is needed again.
 
 ## Disabled State
 
@@ -214,7 +203,7 @@ The component uses `useOverlayZIndex` hook to ensure proper layering:
 
 ## Validation and Errors
 
-Integrate with form validation:
+Use the `invalid` prop to put the trigger into its error state — don't hand-apply a class:
 
 ```typescript
 <div className="field">
@@ -224,11 +213,13 @@ Integrate with form validation:
         value={formData.status}
         options={statusOptions}
         onChange={(e) => setFormData({ ...formData, status: e.value })}
-        className={errors.status ? 'p-invalid' : ''}
+        invalid={!!errors.status}
     />
-    {errors.status && <small className="p-error">{errors.status}</small>}
+    {errors.status && <small style={{ color: 'var(--cratis-red-500)' }}>{errors.status}</small>}
 </div>
 ```
+
+Inside a command form, reach for [`DropdownField`](../CommandForm/dropdown-field.md) instead — it wires `invalid`, the error message and the binding for you.
 
 ## Complete Form Example
 
@@ -318,15 +309,14 @@ function IssueForm() {
 - **Status selection**: Workflow state transitions
 - **Type selection**: Choose item types in editors
 
-## Differences from PrimeReact Dropdown
+## Differences from PrimeReact's Select
 
-This component extends PrimeReact Dropdown with:
+`primereact/dropdown` no longer exists — PrimeReact 11 renamed it to `primereact/select` and made it **compositional**: you assemble `Select.Root`, `Select.Trigger`, `Select.Value`, `Select.Portal`, `Select.Positioner`, `Select.Popup` and `Select.List` yourself. This wrapper differs from using `Select` directly in two ways:
 
-1. **Automatic z-index management**: Works correctly in dialogs without manual configuration
-2. **Default appendTo**: Automatically appends to document.body
-3. **Consistent behavior**: Same overlay behavior across all usage contexts
+1. **It is one element, not seven.** The wrapper composes the parts and gates `Select.Filter` and `Select.Clear` on the `filter` / `showClear` props.
+2. **It is a curated surface, not a passthrough.** Only the props in the table above are accepted; the rest of PrimeReact's Select API is reachable through `pt` / `ptOptions` / `unstyled`. That is deliberate — it is what lets the wrapper's API stay stable across PrimeReact versions.
 
-Otherwise, it's identical to PrimeReact Dropdown.
+Two details of the composition are worth knowing when you style or test it. `onBlur` rides a wrapping `<span>` rather than `Select.Root`, because React blur bubbles as `focusout`. And `placeholder` is not passed to the root — it goes to `Select.Value`, and to the filter input when `filter` is set.
 
 ## Best Practices
 
@@ -342,7 +332,7 @@ Otherwise, it's identical to PrimeReact Dropdown.
 
 ## Accessibility
 
-Inherits PrimeReact Dropdown accessibility features:
+Inherits PrimeReact Select's accessibility features:
 
 - Keyboard navigation (Arrow keys, Enter, Escape)
 - ARIA labels and roles
@@ -364,24 +354,40 @@ Enhance with:
 
 ## Styling
 
-Style via className or custom CSS:
+`className` and `style` go to the Select root:
 
 ```typescript
 <Dropdown
     className="w-full"
-    panelClassName="custom-dropdown-panel"
     // ...
 />
 ```
 
-Or global CSS:
+There is no `panelClassName` — the popup is styled through `pt`, whose slot names are PrimeReact's own:
+
+```typescript
+<Dropdown
+    value={selected}
+    options={options}
+    onChange={(e) => setSelected(e.value)}
+    pt={{
+        root: { className: 'w-full' },
+        popup: { className: 'custom-dropdown-panel' },
+        option: { className: 'px-3 py-2' },
+    }}
+/>
+```
+
+Global CSS is possible too, but not through `p-*` class names. PrimeReact 11 is unstyled-first: with no `@primeuix/themes` preset applied its elements carry **no `p-*` class at all**, and parts are identified by data attributes instead:
 
 ```css
-.p-dropdown {
-    /* Custom dropdown styles */
+[data-scope='select'][data-part='root'] {
+    /* Custom trigger styles */
 }
 
-.p-dropdown-panel {
+[data-scope='select'][data-part='popup'] {
     /* Custom panel styles */
 }
 ```
+
+See the [pass-through cheat sheet](../Styling/pass-through.md) for the wrapper-by-wrapper `pt` reference.

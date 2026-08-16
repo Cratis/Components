@@ -7,8 +7,8 @@ A collection of React components for building modern applications with Cratis.
 ### Minimum Versions
 
 - TypeScript: 4.7+
-- React: 18.0+ or 19.0+
-- Node.js: 16+ (for development)
+- React: 19.0+
+- Node.js: 18+ (for development)
 
 ### TypeScript Configuration
 
@@ -16,32 +16,55 @@ This package is compatible with all modern TypeScript `moduleResolution` strateg
 
 - ✅ `"bundler"` (recommended for Vite, esbuild, webpack 5+)
 - ✅ `"node16"` / `"nodenext"` (for Node.js projects)
-- ✅ `"node"` (legacy, but supported)
 
-The package provides dual CommonJS and ES Module builds with proper conditional exports for optimal module resolution and tree-shaking.
+The package is **ESM-only** (`"type": "module"`) — PrimeReact 11 dropped the
+CommonJS build. It ships subpath `exports` with per-entry `types` for optimal
+module resolution and tree-shaking. Consume it from an ESM or bundler context;
+there is no `require()` entry.
 
 ## Installation
 
 ```bash
-npm install @cratis/components primereact primeicons
+npm install @cratis/components primereact @primereact/core @primereact/headless primeicons
 # or
-yarn add @cratis/components primereact primeicons
+yarn add @cratis/components primereact @primereact/core @primereact/headless primeicons
 ```
 
-`primereact` and `primeicons` are peer dependencies — installing them in your
-app ensures a single copy is shared with the wrappers in this package. The
-`@cratis/arc*` packages and `react`/`react-dom` are also peer dependencies;
-you typically already have them.
+**PrimeReact is a peer dependency** as of 3.0.0. You install it; the library uses
+your copy. This is deliberate: when `primereact` was a regular dependency, an app
+that also depended on it could end up with **two copies** — and two copies mean two
+`PrimeReactProvider` React contexts, so components rendered from the library read a
+different config, theme and z-index registry than components you render yourself.
+Nothing errors; overlays just stack wrongly and `pt` / `unstyled` silently fail to
+apply. If your app carries a `resolutions` / `overrides` pin to collapse PrimeReact
+into one copy, you can now delete it.
 
-The following are **optional** peer dependencies, only required if you use the
-component that depends on them:
+`primereact` pins `@primereact/core` and `@primereact/headless` to its own exact
+version, so one `primereact@11.x` install gives you matching copies of all three;
+declaring them is what makes a strict installer (pnpm, Yarn PnP) resolve them for the
+library too. `@primereact/types` is an **optional** peer — needed only if your own
+code imports the prop types the wrappers re-export.
 
-| Component | Optional peer |
-|---|---|
-| `PivotViewer` | `pixi.js` (canvas) and `framer-motion` (animated panels) |
-| `DataPage` resizable layout | `allotment` |
+The other **peer dependencies** you provide are `react` / `react-dom` (**19+**), the
+`@cratis/arc*` packages (`>=20.3.1 <22` — Arc 20 and 21 both work), `reflect-metadata`
+and `tsyringe`; you typically already have these in a Cratis app. `pixi.js`,
+`framer-motion`, `allotment` and `react-icons` remain regular dependencies and are
+installed for you. The styled `@primeuix/themes` presets are optional and only needed
+if you opt into a licensed preset (see [Styling](#styling)).
 
-Install them only when you reach for the corresponding component.
+### Stylesheets
+
+Component CSS is no longer imported by the JavaScript — import it once in your app
+entry point, in this order:
+
+```ts
+import '@cratis/components/tokens';   // the --cratis-* token layer
+import '@cratis/components/styles';   // every component stylesheet, in one file
+import '@cratis/components/theme';    // optional — the license-free baseline look
+```
+
+`./styles` also vendors `allotment/dist/style.css`, which `DataPage` needs for its
+split view, so you do not have to import that yourself.
 
 ## Usage
 
@@ -72,7 +95,9 @@ Components:
 - `@cratis/components/DataPage`
 - `@cratis/components/DataTables`
 - `@cratis/components/Dialogs`
+- `@cratis/components/Display` — `Tag`, `Badge`, `Chip`, `Skeleton`, `Avatar`, `ProgressBar`
 - `@cratis/components/Dropdown`
+- `@cratis/components/Notifications` — `Toaster`, `toast`, `toastCommandResult`
 - `@cratis/components/ObjectContentEditor`
 - `@cratis/components/ObjectNavigationalBar`
 - `@cratis/components/PivotViewer`
@@ -83,8 +108,9 @@ Components:
 
 Stylesheets:
 
-- `@cratis/components/styles` — Tailwind utilities + Cratis CSS variable tokens (single stylesheet, recommended)
-- `@cratis/components/tokens` — only the `--cratis-*` CSS variable tokens (for consumers using their own utility CSS solution)
+- `@cratis/components/theme` — the **Cratis baseline theme** (light + dark, no PrimeUI license); import it and add `class="cratis-theme"` to skin every component from the token layer
+- `@cratis/components/styles` — **required**: every component stylesheet, the Tailwind utilities used inside the package, and the `allotment` rules `DataPage` needs, in one file
+- `@cratis/components/tokens` — **required**: the `--cratis-*` CSS variable tokens every component reads from
 
 ## Styling
 
@@ -93,41 +119,43 @@ Styling is designed to stay out of the way: choose the setup that matches how
 much control you want, and the other layers stay invisible.
 
 > **Tip — see each setup live:** every Storybook story includes a **Styling**
-> toolbar (paintbrush icon) that flips between five modes that demonstrate
-> the three setups below: *Lara Dark Blue*, *Lara Light Blue*, *Themed with
-> custom palette*, *Unstyled (bare structure)*, and *Unstyled + Tailwind pt*.
-> Open any story (`yarn dev`) and switch modes to see the same component under
-> each setup.
+> toolbar (paintbrush icon) that flips between the modes demonstrating the
+> setups below: *Aura Dark* and *Aura Light* (a licensed `@primeuix/themes`
+> preset), *Cratis baseline theme* (light and dark, no license), *Unstyled
+> (bare structure)*, and *Unstyled + Tailwind pt*. Open any story (`yarn dev`)
+> and switch modes to see the same component under each setup.
 
 ### TL;DR — choose a styling setup
 
-| Setup | When | Effort | What you write |
-|---|---|---|---|
-| **Use a PrimeReact theme** | You want components to look good immediately and tweak from there. | Lowest | Theme CSS import + provider |
-| **Use a custom palette on top of a PrimeReact theme** | You want PrimeReact's structure but your own colors. | Low | A PrimeReact theme + CSS variable overrides |
-| **Use fully unstyled mode** | You're integrating into a tightly controlled design system. | Highest | `unstyled: true` + a `pt` preset in CSS or Tailwind |
+| Setup | When | Effort | License | What you write |
+|---|---|---|---|---|
+| **Cratis baseline theme** | You want a polished default look with no license. | Lowest | None | `unstyled` + `import '@cratis/components/theme'` + `class="cratis-theme"` |
+| **A styled `@primeuix/themes` preset** | You want a prebuilt design system to tweak from. | Low | PrimeUI key | `value={{ theme: { preset } }}` on the provider |
+| **A custom palette over a preset** | You want the preset's structure but your own colors. | Low | PrimeUI key | A preset + CSS variable overrides |
+| **Fully unstyled** | You're integrating into a tightly controlled design system. | Highest | None | `unstyled: true` + a `pt` preset in CSS or Tailwind |
 
-> **Why the first two options still load a PrimeReact theme**
+> **Why you need a theme, a baseline stylesheet, or a `pt` preset**
 >
-> In PrimeReact 10, every widget's *structural* CSS (padding, borders, dialog
-> frame, focus rings, button shapes) ships **inside the theme file**. There is
-> no separate "primitives" stylesheet. So a consumer who doesn't load any
-> PrimeReact theme also has no structural CSS — components render as their
-> raw HTML primitives.
+> PrimeReact 11 is **unstyled-first**: the primitives render structural markup
+> with no built-in visuals. A look comes from one of three sources — a
+> `@primeuix/themes` preset (token-based, license-gated), the Cratis baseline
+> theme (`@cratis/components/theme`, no license), or your own `pt`/CSS. Load
+> none of them and the components render as their raw HTML primitives.
 >
-> The `--cratis-*` token layer is therefore an **additive Cratis-scoped tint**
-> for surfaces *our* wrappers own (validation error text, the FormElement
-> addon, breadcrumb borders, etc.). It is not, by itself, enough to skin
-> PrimeReact widgets. Override PrimeReact's variables when you want the whole
-> UI in your palette. Use `unstyled: true` and a `pt` preset when you want to
-> replace PrimeReact's visuals entirely.
+> The `--cratis-*` token layer is an **additive Cratis-scoped tint** for
+> surfaces *our* wrappers own (validation error text, the FormElement addon,
+> breadcrumb borders, etc.). It is not, by itself, enough to skin the
+> PrimeReact widgets — pair it with the baseline theme, a preset, or a `pt`
+> preset. Override the PrimeReact variables (or a preset's `--p-*` tokens) when
+> you want the whole UI in your palette.
 
-All three setups use the same one-line setup. You can change direction later
-because the same provider, tokens, and `pt` hooks stay available.
+All setups share the same one-line provider setup. You can change direction
+later because the same provider, tokens, and `pt` hooks stay available.
 
 ### One-line setup (every styling option)
 
 ```tsx
+import '@cratis/components/tokens';
 import '@cratis/components/styles';
 import { CratisComponentsProvider } from '@cratis/components';
 
@@ -138,39 +166,74 @@ export const App = () => (
 );
 ```
 
-- `@cratis/components/styles` ships the Tailwind utility classes used inside
-  the package plus the `--cratis-*` CSS variable token layer that every
-  internal component reads from. (Use `@cratis/components/tokens` instead if
-  you're bringing your own Tailwind.)
-- `CratisComponentsProvider` is a thin wrapper over PrimeReact's
-  `PrimeReactProvider` so Cratis has one place to layer in defaults. Drop in
-  raw `PrimeReactProvider` if you'd rather.
+- `@cratis/components/tokens` is the `--cratis-*` CSS variable layer every
+  internal component reads from. It is the seam that lets the library span
+  PrimeReact major versions, so it is always needed.
+- `@cratis/components/styles` is every component stylesheet in one file, plus
+  the Tailwind utility classes used inside the package and the third-party
+  `allotment` rules `DataPage` needs. Components no longer import their own
+  CSS — that is what made the published package unloadable in Node
+  ([#118](https://github.com/Cratis/Components/issues/118)) — so this import is
+  required, not optional.
+- `CratisComponentsProvider` is a thin wrapper over `@primereact/core`'s
+  `PrimeReactProvider` so Cratis has one place to layer in defaults (including
+  the optional `value={{ theme: { preset } }}` styled layer). Drop in the raw
+  `PrimeReactProvider` from `@primereact/core` if you'd rather.
 
-The three setups below differ only in **what else** you load on top of this
-setup.
+The setups below differ only in **what else** you load on top of this
+provider setup.
 
 ---
 
-### Use a PrimeReact theme
+### Use a styled preset
 
-Load any PrimeReact theme stylesheet alongside Cratis Components. PrimeReact's
-own widgets paint themselves from the theme, and the `--cratis-*` tokens cascade
-to the matching theme variables so Cratis-scoped surfaces follow along.
+PrimeReact 11 dropped the v10 `primereact/resources/themes/*/theme.css`
+stylesheets in favor of the token-based `@primeuix/themes` layer. Apply a
+preset by passing `value={{ theme: { preset } }}` to `CratisComponentsProvider` —
+no theme CSS import. PrimeReact's own widgets paint themselves from the preset, and the
+`--cratis-*` tokens cascade to the matching variables so Cratis-scoped surfaces
+follow along.
 
 ```tsx
-// 1. Theme first, then Cratis styles so any --cratis-* override wins.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
+import Aura from '@primeuix/themes/aura';   // or lara / nora / material
 import 'primeicons/primeicons.css';
 import '@cratis/components/styles';
 
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider>
+    <CratisComponentsProvider value={{ theme: { preset: Aura } }}>
         <YourApp />
     </CratisComponentsProvider>
 );
 ```
+
+Omit `theme` entirely to stay unstyled-first — ship only structure plus the
+`--cratis-*` tokens and bring your own visuals (see the pass-through / `pt`
+options below).
+
+### Use the Cratis baseline theme (no license)
+
+Want a polished default look **without a PrimeUI license**? Ship the components
+unstyled and import the Cratis baseline theme — a token-based stylesheet that
+styles every component from the `--cratis-*` layer:
+
+```tsx
+import 'primeicons/primeicons.css';
+import '@cratis/components/theme';   // the baseline theme
+
+export const App = () => (
+    <CratisComponentsProvider value={{ unstyled: true }}>
+        <div className="cratis-theme">   {/* scope: put on <body>, app root, or a subtree */}
+            <YourApp />
+        </div>
+    </CratisComponentsProvider>
+);
+```
+
+Add `cratis-dark` to an ancestor for the dark palette. The theme defers to a
+`@primeuix/themes` preset's `--p-*` tokens when one is present, so you can layer
+it under a preset too, and every rule is overridable via your own CSS or `pt`.
 
 #### Override a single component with CSS
 
@@ -255,11 +318,10 @@ independently if you want Cratis surfaces to differ from PrimeReact widgets.
 ```
 
 ```tsx
-// 1. PrimeReact theme provides the structure.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
+// 1. A styled preset provides the structure (apply it via the provider — see above).
 import 'primeicons/primeicons.css';
 import '@cratis/components/styles';
-// 2. Your palette overrides — must come after the theme so they win.
+// 2. Your palette overrides — must come after the styles so they win.
 import './palette.override.css';
 ```
 
@@ -290,7 +352,6 @@ Tailwind handles cascade and dark mode:
 ```css
 /* app.css */
 @import "tailwindcss";
-@import "primereact/resources/themes/lara-dark-blue/theme.css";
 @import "@cratis/components/styles";
 
 @layer base {
@@ -352,7 +413,7 @@ through PrimeReact's `pt` (pass-through) mechanism, your own CSS, or both.
 Components render structurally only and become a blank canvas.
 
 ```tsx
-import '@cratis/components/styles';   // tokens + Tailwind utilities still useful for spacing/layout
+import '@cratis/components/styles';   // component rules + Tailwind utilities, still needed when unstyled
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
@@ -412,7 +473,7 @@ Same shape, Tailwind utilities as the class strings:
 // pt-preset.ts
 export const globalPt = {
     button: {
-        root: { className: 'inline-flex items-center px-4 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-400 disabled:opacity-50' },
+        root: { className: 'inline-flex items-center px-4 py-2 rounded-lg bg-sky-700 text-white hover:bg-sky-600 disabled:opacity-50' },
     },
     dialog: {
         root:    { className: 'rounded-2xl shadow-2xl overflow-hidden' },

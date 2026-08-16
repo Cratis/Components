@@ -1,5 +1,5 @@
 - name: Overview
-  href: index.md
+  href: index.mdx
 - name: Why Components
   href: why-components.md
 - name: PrimeReact and Components
@@ -40,6 +40,10 @@
   href: Filter/toc.yml
 - name: Dropdown
   href: Dropdown/index.md
+- name: Display
+  href: Display/index.md
+- name: Notifications
+  href: Notifications/index.md
 - name: Toolbar
   href: Toolbar/toc.yml
 - name: ObjectNavigationalBar

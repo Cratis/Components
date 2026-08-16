@@ -105,7 +105,7 @@ function MyComponent() {
 - `yesLabel`, `noLabel`: Labels for `YesNo` and `YesNoCancel` button modes
 - `buttons`: `DialogButtons` value or custom footer content
 - `initialFocus`: Where keyboard focus lands when the dialog opens — forwarded to `Dialog` (see below)
-- `resizable`: Whether dialog can be resized
+- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle
 - `isValid`: Additional validity gate combined with command form validity
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
@@ -113,6 +113,10 @@ function MyComponent() {
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `width`: Dialog width
+- `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the underlying dialog
+
+> [!NOTE]
+> `CommandDialog` inherits `Dialog`'s prop type, so `dismissable`, `closeAriaLabel` and `isBusy` type-check here — but they are not plumbed through. `isBusy` is owned by the dialog (it is raised while the command executes), and `dismissable` / `closeAriaLabel` currently fall back to `Dialog`'s own defaults. Use [`Dialog`](../Dialogs/dialog.md) directly when you need to control them.
 
 ## Callback Behavior
 

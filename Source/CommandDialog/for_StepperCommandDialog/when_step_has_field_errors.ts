@@ -4,52 +4,34 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
-import { StepperCommandDialog } from '../StepperCommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
 
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'dialog' }, props.footer, props.children),
+vi.mock('../../Dialogs/Dialog', () => ({
+    Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
+        React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-// Simulate PrimeReact's Stepper: invoke pt.stepperpanel.number for each child and
-// attach the resulting backgroundColor as data-number-bg so specs can assert on it.
-vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode; pt?: Record<string, unknown>; activeStep?: number }) => {
-        type StepCtx = { context: { index: number } };
-        type NumberPtFn = (opts: StepCtx) => { style?: { backgroundColor?: string } };
-        const ptStepperpanel = (props.pt as Record<string, unknown> | undefined)?.stepperpanel as Record<string, unknown> | undefined;
-        const numberPtFn = ptStepperpanel?.number as NumberPtFn | undefined;
-        const children = React.Children.map(props.children, (child, index) => {
-            if (!React.isValidElement(child)) return child;
-            const result = typeof numberPtFn === 'function' ? numberPtFn({ context: { index } }) : {};
-            const bg = result?.style?.backgroundColor ?? '';
-            return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, { 'data-number-bg': bg });
-        });
-        return React.createElement('div', { 'data-testid': 'stepper' }, children);
-    },
-}));
-
-// Set displayName so the indicator code path in processChildren is triggered.
-// Forward data-number-bg (injected by the Stepper mock above) so specs can assert on it.
-vi.mock('primereact/stepperpanel', () => {
-    const MockStepperPanel = (props: {
-        header?: string;
-        children?: React.ReactNode;
-        'data-number-bg'?: string;
-    }) =>
-        React.createElement('div', {
-            'data-testid': 'stepper-panel',
-            'data-header': props.header,
-            'data-number-bg': props['data-number-bg'] ?? '',
-        }, props.children);
-    MockStepperPanel.displayName = 'StepperPanel';
-    return { StepperPanel: MockStepperPanel };
+// PrimeReact 11's Stepper is compositional: each part renders its children, and
+// the Number part forwards its inline `style` so specs can assert the per-step
+// red/green indicator the wrapper applies directly to each step's number.
+vi.mock('primereact/stepper', () => {
+    const part = (name: string) => {
+        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
+            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
+        Component.displayName = name;
+        return Component;
+    };
+    return {
+        Stepper: {
+            Root: part('root'), List: part('list'), Step: part('step'),
+            Header: part('header'), Number: part('number'), Title: part('title'),
+            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
+        },
+    };
 });
 
 vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean; loading?: boolean }) =>
-        React.createElement('button', { disabled: props.disabled, 'data-loading': props.loading }, props.label),
+    Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
+        React.createElement('button', { disabled: props.disabled }, props.children),
 }));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
@@ -87,10 +69,21 @@ class TestCommand {
     description: string = '';
 }
 
+// The project runs specs with `isolate: false`, so module state and mocks are
+// shared across files by execution order. Re-evaluate the component under this
+// file's own mocks so the getFieldError stub (which drives the error color) is
+// always the one in effect, regardless of which spec file ran first.
+let StepperCommandDialog: typeof import('../StepperCommandDialog').StepperCommandDialog;
+let StepperPanel: typeof import('../StepperPanel').StepperPanel;
+
 describe('when a step contains a field with a validation error', () => {
     let html: string;
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        vi.resetModules();
+        StepperCommandDialog = (await import('../StepperCommandDialog')).StepperCommandDialog;
+        StepperPanel = (await import('../StepperPanel')).StepperPanel;
+
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {
@@ -108,17 +101,15 @@ describe('when a step contains a field with a validation error', () => {
         html = renderToStaticMarkup(element);
     });
 
-    it('should_mark_the_invalid_step_with_error_class', () => {
-        // Step 1 has a field error — its number circle should have the red error background
-        const step1Match = html.match(/data-header="Step 1"[^>]*data-number-bg="([^"]*)"/);
-        const step1Bg = step1Match?.[1] ?? '';
-        step1Bg.should.include('red');
+    it('should_mark_the_invalid_step_number_with_the_error_color', () => {
+        // Step 1 (number "1") has a field error — its number circle should have the red error background
+        const step1Number = html.match(/<span data-part="number"[^>]*>1<\/span>|<div data-part="number"[^>]*>1<\/div>/);
+        (step1Number?.[0] ?? '').should.include('red');
     });
 
-    it('should_not_mark_the_valid_step_with_error_class', () => {
-        // Step 2 has no field errors — its number circle should not have the red error background
-        const step2Match = html.match(/data-header="Step 2"[^>]*data-number-bg="([^"]*)"/);
-        const step2Bg = step2Match?.[1] ?? '';
-        step2Bg.should.not.include('red');
+    it('should_not_mark_the_valid_step_number_with_the_error_color', () => {
+        // Step 2 (number "2") has no field errors — its number circle should not have the red error background
+        const step2Number = html.match(/<span data-part="number"[^>]*>2<\/span>|<div data-part="number"[^>]*>2<\/div>/);
+        (step2Number?.[0] ?? '').should.not.include('red');
     });
 });

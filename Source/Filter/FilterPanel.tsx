@@ -14,7 +14,6 @@ import type {
 } from './types';
 import { FilterEditor } from './FilterEditor';
 import { RangeHistogramFilter } from './RangeHistogramFilter';
-import './FilterPanel.css';
 
 export interface FilterPanelProps {
   /** Whether the panel is visible. */
@@ -31,6 +30,10 @@ export interface FilterPanelProps {
   search?: string;
   /** Placeholder text for the search input. Defaults to 'Search…'. */
   searchPlaceholder?: string;
+  /** Accessible name for a clear-filter button. Override to localize. Defaults to 'Clear filter'. */
+  clearFilterAriaLabel?: string;
+  /** Accessible name for a clear-range button. Override to localize. Defaults to 'Clear range'. */
+  clearRangeAriaLabel?: string;
   /** Which filter group is currently expanded. */
   expandedFilterKey?: string | null;
   /** The button element the panel anchors below. */
@@ -146,6 +149,8 @@ export function FilterPanel({
   customValues,
   search,
   searchPlaceholder = 'Search…',
+  clearFilterAriaLabel = 'Clear filter',
+  clearRangeAriaLabel = 'Clear range',
   expandedFilterKey,
   anchorRef,
   onClose,
@@ -260,7 +265,7 @@ export function FilterPanel({
                                 e.stopPropagation();
                                 onFilterClear(filter.key);
                               }}
-                              aria-label="Clear filter"
+                              aria-label={clearFilterAriaLabel}
                             >
                               ×
                             </button>
@@ -277,7 +282,7 @@ export function FilterPanel({
                                 e.stopPropagation();
                                 onRangeChange(filter.key, null);
                               }}
-                              aria-label="Clear range"
+                              aria-label={clearRangeAriaLabel}
                             >
                               ×
                             </button>
@@ -294,7 +299,7 @@ export function FilterPanel({
                                 e.stopPropagation();
                                 onCustomValueChange?.(filter.key, undefined);
                               }}
-                              aria-label="Clear filter"
+                              aria-label={clearFilterAriaLabel}
                             >
                               ×
                             </button>

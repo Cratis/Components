@@ -4,7 +4,15 @@
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Column } from 'primereact/column';
+import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
+import { Column } from '../../../DataTables/Column';
+// Allotment lays its split view out entirely from this stylesheet, and a pane is only the
+// absolutely positioned, full-height box the page assumes once the rules are on the document.
+// `DataPage` no longer imports it — a CSS import inside the JS graph is what stopped the
+// published ESM loading in Node, so the rules now ship through this package's `./styles`
+// entry point instead. The spec therefore brings the stylesheet the consumer would, and it is
+// the one file the Vitest config processes CSS for.
+import 'allotment/dist/style.css';
 import { DataPage, MenuItem } from '../../DataPage';
 import { PersonsQuery, resetQueryResult, type Person } from './a_paged_query_result';
 
@@ -70,8 +78,10 @@ export const aDataPage = (options: DataPageOptions = {}) => {
  * Renders an element into a real document and lets React settle, so the specs
  * look at the tree a browser would have built.
  *
- * `ResizeObserver` is stubbed because Allotment observes its container for
- * size changes and jsdom has no layout engine to report any.
+ * PrimeReact 11 components resolve their configuration from a `PrimeReactProvider`
+ * and throw without one, so the element is mounted inside the Cratis provider that
+ * supplies it. `ResizeObserver` is stubbed because Allotment observes its container
+ * for size changes and jsdom has no layout engine to report any.
  * @param element - The element to render.
  * @returns The mounted page, to be passed to {@link unmount}.
  */
@@ -88,7 +98,7 @@ export const render = async (element: React.ReactElement): Promise<DataPageInThe
     const root = createRoot(container);
 
     await act(async () => {
-        root.render(element);
+        root.render(React.createElement(CratisComponentsProvider, null, element));
     });
 
     return { container, root };
@@ -177,7 +187,7 @@ export const scrollRegion = (page: DataPageInTheDom): HTMLElement =>
  * @returns The paginator.
  */
 export const paginator = (page: DataPageInTheDom): HTMLElement | null =>
-    page.container.querySelector<HTMLElement>('.p-paginator');
+    page.container.querySelector<HTMLElement>('.cratis-table-paginator');
 
 /**
  * How each split-view pane is actually laid out, top pane first.

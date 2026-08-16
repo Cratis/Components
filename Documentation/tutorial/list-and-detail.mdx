@@ -29,8 +29,9 @@ We'll point it at `AllAuthorsWithBooks` — the read model from the [Arc tutoria
 
    ```tsx title="Authors.tsx"
    import { DataPage, MenuItem } from '@cratis/components/DataPage';
-   import { Column } from 'primereact/column';
+   import { Column } from '@cratis/components/DataPage';
    import { useDialog } from '@cratis/arc.react/dialogs';
+   import { FaPencil, FaPlus } from 'react-icons/fa6';
    import { AllAuthorsWithBooks } from './Authors/AuthorWithBooks';   // generated proxy
    import { AddAuthor } from './AddAuthor';
    import { AuthorDetails } from './AuthorDetails';
@@ -45,8 +46,8 @@ We'll point it at `AllAuthorsWithBooks` — the read model from the [Arc tutoria
                    emptyMessage="No authors yet"
                    detailsComponent={AuthorDetails}>
                    <DataPage.MenuItems>
-                       <MenuItem label="Add author" icon="pi pi-plus" command={() => showAddAuthor()} />
-                       <MenuItem label="Edit" icon="pi pi-pencil" disableOnUnselected command={() => {/* open RenameAuthor */}} />
+                       <MenuItem label="Add author" icon={FaPlus} command={() => showAddAuthor()} />
+                       <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={() => {/* open RenameAuthor */}} />
                    </DataPage.MenuItems>
                    <DataPage.Columns>
                        <Column field="name" header="Name" sortable />

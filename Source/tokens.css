@@ -6,16 +6,30 @@
  *
  * Every internal component references the --cratis-* variables defined here
  * instead of PrimeReact's theme variables directly. This indirection is the
- * single seam that lets the library span PrimeReact major versions: each token
- * resolves the PrimeReact v11 design token first, falling back to the legacy
- * v10 theme variable, so the same build works whether the consumer is on
- * PrimeReact 10 or 11 during the upgrade window.
+ * single seam that lets the library span PrimeReact major versions — and 3.0.0
+ * is the release that seam was built for.
  *
  *   --cratis-surface-border: var(--p-content-border-color, var(--surface-border));
  *                                  ^ PrimeReact v11 (@primeuix/themes)  ^ v10 legacy
  *
- * - Consumer on v11: the --p-* token resolves and wins.
- * - Consumer on v10: --p-* is undefined, so the legacy --surface-* value wins.
+ * Each token resolves the v11 design token first and falls back to the legacy v10
+ * theme variable. @cratis/components 3.0.0 requires `primereact@^11` as a peer, so
+ * the v11 arm is the one that resolves in a correctly installed app; the v10 arm is
+ * kept deliberately for the upgrade window, when an app still has a compiled v10
+ * theme stylesheet on the page while it ports its own screens. Nothing breaks the
+ * day that stylesheet is removed — the v11 arm was already winning.
+ *
+ * ## Where the values now come from
+ *
+ * v11 ships ZERO CSS. There is no `primereact/resources/themes/*.css` to import any
+ * more. The --p-* custom properties are emitted **at runtime** by @primeuix/styled
+ * when a preset (a plain JS token object from @primeuix/themes — Aura, Lara, Nora)
+ * is handed to the provider:
+ *
+ *   import Aura from '@primeuix/themes/aura';
+ *   <CratisComponentsProvider value={{ theme: { preset: Aura } }}>
+ *
+ * So the chain is: preset (JS) → --p-* (runtime) → --cratis-* (this file) → component CSS.
  *
  * v11 is not a rename of v10 — it is a different token vocabulary (a primitive
  * palette plus semantic content/surface/text/primary/highlight tokens). Where
@@ -23,9 +37,15 @@
  * / surface-overlay / the composite focus-ring), the closest durable v11
  * semantic token is used and noted inline; consumers can always override.
  *
- * To take full control of the look and feel (with or without PrimeReact's
- * unstyled / pt mechanism, Tailwind, or your own CSS), override the relevant
- * --cratis-* tokens on :root (or any ancestor element):
+ * ## Three ways to get a look
+ *
+ * 1. **A licensed preset** — `value={{ theme: { preset: Aura } }}`. The styled layer
+ *    is license-gated in v11; without a PrimeUI key it nags and falls back.
+ * 2. **The Cratis baseline theme** — `import '@cratis/components/theme'`. A
+ *    license-free stylesheet that assigns the --cratis-* tokens directly (light and
+ *    dark), so it needs no preset and no key. It defers to a preset's --p-* values
+ *    when one is present.
+ * 3. **Your own tokens** — override any --cratis-* on :root (or any ancestor):
  *
  *   :root {
  *       --cratis-surface-card: #1f2937;
@@ -33,9 +53,9 @@
  *   }
  *
  * Tokens are intentionally fallback-free at the end of the chain — if neither a
- * PrimeReact theme (v10 or v11) nor a consumer override is present, the variable
- * resolves to nothing and the affected rule no-ops. That keeps the library
- * theme-agnostic without imposing a default palette on consumers.
+ * PrimeReact theme (v10 or v11), the baseline theme, nor a consumer override is
+ * present, the variable resolves to nothing and the affected rule no-ops. That keeps
+ * the library theme-agnostic without imposing a default palette on consumers.
  */
 
 :root {

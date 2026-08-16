@@ -5,21 +5,32 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { CommandStepperContent } from '../CommandStepper';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '../StepperPanel';
 
-vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode; activeStep?: number }) =>
-        React.createElement('div', { 'data-testid': 'stepper', 'data-active-step': props.activeStep }, props.children),
-}));
+// PrimeReact 11's Stepper is compositional: each part renders its children, so every step
+// the wizard renders shows up as one `data-part="panel"` element. The step the wizard is on
+// is no longer an `activeStep` prop — the Root is driven by `value`, the step's index as a
+// string — so the Root part surfaces that value for the spec to read.
+vi.mock('primereact/stepper', () => {
+    const part = (name: string) => {
+        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties; value?: string }) =>
+            React.createElement('div', { 'data-part': name, style: props.style, 'data-value': props.value }, props.children);
+        Component.displayName = name;
+        return Component;
+    };
+    return {
+        Stepper: {
+            Root: part('root'), List: part('list'), Step: part('step'),
+            Header: part('header'), Number: part('number'), Title: part('title'),
+            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
+        },
+    };
+});
 
-vi.mock('primereact/stepperpanel', () => ({
-    StepperPanel: (props: { header?: string; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'stepper-panel', 'data-header': props.header }, props.children),
-}));
-
+// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean }) =>
-        React.createElement('button', { disabled: props.disabled }, props.label),
+    Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
+        React.createElement('button', { disabled: props.disabled }, props.children),
 }));
 
 vi.mock('@cratis/arc.react/commands', () => ({
@@ -38,7 +49,7 @@ vi.mock('@cratis/arc.react/commands', () => ({
 
 const panel = (header: string) => React.createElement(StepperPanel, { header, key: header }, `${header} content`);
 
-const activeStepOf = (html: string) => html.match(/data-active-step="(\d+)"/)?.[1] ?? 'none';
+const activeStepOf = (html: string) => html.match(/data-part="root"[^>]*data-value="(\d+)"/)?.[1] ?? 'none';
 
 // The active step is a prop here, and the owner of that state - CommandStepper's own wrapper, or
 // StepperCommandDialog - keeps it across a re-render. So a step vanishing after the user advanced
@@ -56,7 +67,7 @@ describe('when the active step is past the last rendered step', () => {
     });
 
     it('should_render_only_the_surviving_steps', () => {
-        (html.split('data-testid="stepper-panel"').length - 1).should.equal(2);
+        (html.split('data-part="panel"').length - 1).should.equal(2);
     });
 
     it('should_hand_the_stepper_the_last_step_that_still_exists', () => {

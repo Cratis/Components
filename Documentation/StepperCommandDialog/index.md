@@ -1,6 +1,6 @@
 # StepperCommandDialog
 
-The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of `CommandStepper` and the [PrimeReact Stepper](https://primereact.org/stepper/).
+The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of `CommandStepper` and [PrimeReact](https://primereact.org/)'s compositional Stepper.
 
 ## Purpose
 
@@ -16,7 +16,8 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 - Step number circles change color to indicate validation state (red = errors, green = visited and valid)
 - Non-active steps are visually dimmed to keep focus on the current step
 - Busy state management during command execution
-- All [PrimeReact Stepper](https://primereact.org/stepper/) customization props available directly (orientation, headerPosition, pt, etc.)
+- Stepper customization (`orientation`, `headerPosition`, `linear`, `start`, `end`, `pt`, …) available directly on the dialog
+- Conditional steps (`{condition && <StepperPanel/>}`) are counted correctly — only the steps that actually render
 - Supports any `CommandForm` field types inside each `StepperPanel`
 - Full integration with Cratis Arc command system
 
@@ -24,7 +25,7 @@ The `StepperCommandDialog` component provides a multi-step wizard dialog interfa
 
 ```typescript
 import { StepperCommandDialog } from '@cratis/components/CommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '@cratis/components/CommandDialog';
 import { InputTextField, TextAreaField, NumberField } from '@cratis/components/CommandForm/fields';
 import { CommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
@@ -102,26 +103,28 @@ function MyComponent() {
 - `cancelLabel`: Label for the footer cancel button (default: `'Cancel'`)
 - `isValid`: Additional validity gate combined with command form validity
 - `width`: Dialog width (default: `'600px'`)
-- `resizable`: Whether the dialog can be resized
+- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle. Existing call sites keep compiling; the prop simply has no effect.
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
+- `dialogClassName`: Extra CSS class name for the outer dialog root
+- `dialogPt` / `dialogPtOptions` / `dialogUnstyled`: Pass-through styling for the **outer** dialog (the inherited `pt` / `ptOptions` / `unstyled` target the **inner** stepper)
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
-- `onBeforeExecute`: Transform command values before execution
+- `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with. It runs only on submit, after every step has been validated, so a value produced here can never satisfy required-field validation; seed required values through `initialValues` instead.
 
 ### Stepper Props
 
-All [PrimeReact Stepper](https://primereact.org/stepper/) customization props are available directly:
+`StepperCustomizationProps` is Cratis-owned — it no longer aliases PrimeReact's `StepperProps`, so the surface below is the whole of it. PrimeReact 11's Stepper has no built-in `orientation` / `headerPosition` / `start` / `end`; the wrapper re-implements them over the compositional parts.
 
 - `orientation`: `'horizontal'` (default) or `'vertical'`
-- `headerPosition`: `'top'`, `'right'`, `'bottom'`, or `'left'`
-- `linear`: Whether steps must be completed in order (default: `true`)
-- `onChangeStep`: Callback when the active step changes
-- `start`: Custom content rendered before the stepper navigation
-- `end`: Custom content rendered after the stepper navigation
-- `pt`: PrimeReact PassThrough options for deep DOM customization
-- `ptOptions`: PassThrough configuration options
-- `unstyled`: Removes built-in component styles
+- `headerPosition`: `'top'` (default) or `'bottom'`
+- `linear`: Whether the wizard is linear (default: `true`). In linear mode the step headers are not directly clickable — the user advances through Previous / Next. Set it to `false` to let the user jump between steps by clicking their headers.
+- `onChangeStep`: Callback when the active step changes, receiving `{ index }` (zero-based)
+- `start`: Content rendered before the stepper
+- `end`: Content rendered after the stepper
+- `pt`: PrimeReact pass-through configuration for the inner stepper's parts
+- `ptOptions`: Pass-through options controlling merge vs. replace for `pt`
+- `unstyled`: Removes every base PrimeReact style on the inner stepper
 
 ## Callback Behavior
 
@@ -215,7 +218,7 @@ Set `showCancel` to add a Cancel button to the footer as well. It leads the foot
 
 ## Step Structure
 
-Each step is defined by a `StepperPanel` from `primereact/stepperpanel`. The `header` prop sets the step title shown in the stepper navigation:
+Each step is defined by a `StepperPanel` from `@cratis/components/CommandDialog`. The `header` prop sets the step title shown in the stepper navigation:
 
 ```tsx
 <StepperPanel header="Contact Details">
@@ -225,14 +228,43 @@ Each step is defined by a `StepperPanel` from `primereact/stepperpanel`. The `he
 
 CommandForm fields placed inside a `StepperPanel` are automatically bound to the same command instance, regardless of which step they are on.
 
+`StepperPanel` is Cratis-owned — it replaces PrimeReact 10's `primereact/stepperpanel`, which no longer exists in PrimeReact 11. It is a pure marker: the stepper consumes its props, so rendering one on its own produces nothing.
+
+## Conditional steps
+
+A step that only applies sometimes is written the obvious way, and it is counted the obvious way:
+
+```tsx
+<StepperCommandDialog<RegisterCustomer> command={RegisterCustomer} title="New customer">
+    <StepperPanel header="Customer">
+        <InputTextField<RegisterCustomer> value={c => c.name} title="Name" />
+    </StepperPanel>
+    {isBusiness && (
+        <StepperPanel header="Company">
+            <InputTextField<RegisterCustomer> value={c => c.organizationNumber} title="Organization number" />
+        </StepperPanel>
+    )}
+    <StepperPanel header="Confirm">
+        <CheckboxField<RegisterCustomer> value={c => c.acceptedTerms} label="I accept the terms" />
+    </StepperPanel>
+</StepperCommandDialog>
+```
+
+**Only the steps that actually render are counted.** `{condition && <StepperPanel/>}` leaves a `false` child behind when the condition does not hold, and `null` / `undefined` children are just as common; all of them are filtered out before the step count, the per-step validation state and the rendered panels are derived — from the same one list, so they cannot drift apart. With `isBusiness` false the wizard above has two steps, and Submit appears on "Confirm" where the user expects it.
+
+The count is not fixed for the lifetime of the dialog either. A late-resolving query or a `currentValues` overlay can flip the condition *after* the user has advanced past that step, so the active step is clamped into the set that still renders — an index left stranded above the end resolves to the last surviving step rather than a step that is neither last nor navigable.
+
+> [!WARNING]
+> A `<>…</>` fragment wrapping several panels counts as **one** step. Give each step its own `StepperPanel` child.
+
 ## Integration
 
 `StepperCommandDialog` integrates with:
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- [PrimeReact Stepper](https://primereact.org/stepper/) and `StepperPanel` components for the wizard UI
-- PrimeReact `Dialog` component for the modal wrapper
+- [PrimeReact](https://primereact.org/)'s compositional Stepper, plus the Cratis-owned `StepperPanel`, for the wizard UI
+- The Cratis [`Dialog`](../Dialogs/dialog.md) for the modal wrapper
 
 ## See Also
 

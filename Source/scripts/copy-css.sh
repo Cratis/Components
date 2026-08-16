@@ -2,27 +2,20 @@
 # Copyright (c) Cratis. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-# Find all CSS files (excluding node_modules, dist, and .storybook)
-# and copy them to both dist/esm and dist/cjs directories
+# Ships the two standalone stylesheet layers that have their own package export.
+#
+# Component CSS is NOT copied here any more. It is concatenated into dist/esm/styles.css by the
+# `bundle-styles` Rollup plugin, because a `.css` file sitting in the JavaScript module graph is
+# what made every published subpath unloadable in Node (Cratis/Components#118). Copying the
+# individual files alongside the JS would only invite that import back.
 
-find . -name '*.css' \
-  -not -path './node_modules/*' \
-  -not -path './dist/*' \
-  -not -path './.storybook/*' \
-  -not -name 'tailwind.css' \
-  -not -name 'tailwind-utilities.css' | while read -r file; do
-  
-  # Remove the leading './'
-  relative_path="${file#./}"
-  
-  # Create directory structure and copy file to both output directories
-  mkdir -p "dist/esm/$(dirname "$relative_path")"
-  mkdir -p "dist/cjs/$(dirname "$relative_path")"
-  
-  cp "$file" "dist/esm/$relative_path"
-  cp "$file" "dist/cjs/$relative_path"
-  
-  echo "Copied $relative_path"
+set -euo pipefail
+
+mkdir -p dist/esm
+
+for stylesheet in tokens.css theme.css; do
+    cp "$stylesheet" "dist/esm/$stylesheet"
+    echo "Copied $stylesheet"
 done
 
-echo "CSS files copied successfully"
+echo "Stylesheet layers copied successfully"

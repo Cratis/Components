@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { formatPropertyName } from './propertiesHelpers';
-import './Properties.css';
 
 interface PropertiesProps {
     data: Record<string, unknown>;

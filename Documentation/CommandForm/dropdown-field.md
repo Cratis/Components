@@ -1,6 +1,6 @@
 # DropdownField
 
-`DropdownField` renders a PrimeReact `Dropdown` for selecting a single value from a list of options.
+`DropdownField` renders the Cratis [`Dropdown`](../Dropdown/index.md) — PrimeReact 11's `Select`, composed for you — for choosing a single value from a list of options.
 
 ## Usage
 
@@ -49,6 +49,10 @@ const roles = [
 | `optionLabel` | `string` | — | **Required.** Key in each option object to use as the display label. |
 | `optionValue` | `string` | — | **Required.** Key in each option object to use as the submitted value. |
 | `placeholder` | `string` | — | Placeholder text shown when no value is selected. |
+| `className` | `string` | — | Extra CSS class combined with the default `w-full`. |
+| `pt` / `ptOptions` / `unstyled` | — | — | Pass-through styling for the underlying `Select`. |
+
+`DropdownField` deliberately does not surface `multiple`, `filter` or `showClear` — use [`MultiSelectField`](multi-select-field.md) for multi-select, or the [`Dropdown`](../Dropdown/index.md) wrapper directly outside a command form.
 
 ## Behavior
 

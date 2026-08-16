@@ -100,7 +100,7 @@ Validation runs on every field change and whenever `object` or `schema` changes.
 - `string` fields with `format: 'uri'` must start with `http://` or `https://`.
 - `number` / `integer` fields must be valid numbers.
 
-Validation errors are displayed inline beneath each field using PrimeReact's `p-error` style.
+Validation errors are displayed inline beneath each field, tinted with the `--cratis-red-500` token, and the offending input is put into its `invalid` state. Override [`--cratis-red-500`](../Styling/cratis-tokens.md) to retint them.
 
 ### Edit Mode Example
 

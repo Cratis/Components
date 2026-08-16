@@ -71,21 +71,21 @@ Display custom content in cells:
 
 ## Action Buttons
 
-```typescript
-<Column 
+PrimeReact 11's `Button` renders its content as **children** — the v10 `label` / `icon` props are gone, and severity is a `severity` prop rather than a `p-button-*` class:
+
+```tsx
+import { Button } from 'primereact/button';
+
+<Column
     header="Actions"
     body={(rowData) => (
         <div className="flex gap-2">
-            <Button 
-                icon="pi pi-pencil" 
-                onClick={() => handleEdit(rowData)}
-                className="p-button-sm"
-            />
-            <Button 
-                icon="pi pi-trash" 
-                onClick={() => handleDelete(rowData)}
-                className="p-button-sm p-button-danger"
-            />
+            <Button size="small" aria-label="Edit" onClick={() => handleEdit(rowData)}>
+                <i className="pi pi-pencil" />
+            </Button>
+            <Button size="small" severity="danger" aria-label="Delete" onClick={() => handleDelete(rowData)}>
+                <i className="pi pi-trash" />
+            </Button>
         </div>
     )}
 />

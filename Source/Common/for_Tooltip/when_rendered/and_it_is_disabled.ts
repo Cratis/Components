@@ -14,8 +14,8 @@ describe('when Tooltip is rendered and it is disabled', () => {
         ),
     );
 
-    it('should not render the tooltip bubble', () => {
-        html.should.not.include('role="tooltip"');
+    it('should not attach a tooltip to the trigger', () => {
+        html.should.not.include('cratis-tooltip-trigger');
     });
 
     it('should still render the trigger element', () => {

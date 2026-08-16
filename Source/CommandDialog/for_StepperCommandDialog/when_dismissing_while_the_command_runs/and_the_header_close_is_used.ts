@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { vi } from 'vitest';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '../../StepperPanel';
 import { StepperCommandDialog } from '../../StepperCommandDialog';
 import {
     buttonLabels,
@@ -29,36 +29,46 @@ const { execution } = vi.hoisted(() => {
 
 const { closeDialog } = vi.hoisted(() => ({ closeDialog: vi.fn() }));
 
-// PrimeReact renders the header close control only while `closable` (default true). The mock
-// renders that control on the same condition instead of handing the prop back, so the spec presses
-// the X the operator would press rather than reading what the dialog asked for.
-vi.mock('primereact/dialog', () => ({
+// The Cratis Dialog renders the header close control only while `dismissable` — the single switch
+// governing the header close, the backdrop and Escape in PrimeReact 11 — and routes it through the
+// same `onCancel` arm the footer uses. The mock renders that control on the same condition instead
+// of handing the prop back, so the spec presses the X the operator would press rather than reading
+// what the dialog asked for.
+vi.mock('../../../Dialogs/Dialog', () => ({
     Dialog: (props: {
-        closable?: boolean;
-        onHide?: () => void;
-        footer?: React.ReactNode;
+        dismissable?: boolean;
+        onCancel?: () => void;
+        buttons?: React.ReactNode;
         children?: React.ReactNode;
     }) => React.createElement(
         'div',
         { 'data-testid': 'dialog' },
-        props.closable === false ? null : React.createElement('button', { onClick: () => props.onHide?.() }, 'X'),
-        props.footer,
+        props.dismissable === false ? null : React.createElement('button', { onClick: () => props.onCancel?.() }, 'X'),
+        props.buttons,
         props.children),
 }));
 
-vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode; activeStep?: number }) =>
-        React.createElement('div', { 'data-testid': 'stepper', 'data-active-step': props.activeStep }, props.children),
-}));
+// PrimeReact 11's Stepper is compositional: each part renders its children.
+vi.mock('primereact/stepper', () => {
+    const part = (name: string) => {
+        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties; value?: string }) =>
+            React.createElement('div', { 'data-part': name, style: props.style, 'data-value': props.value }, props.children);
+        Component.displayName = name;
+        return Component;
+    };
+    return {
+        Stepper: {
+            Root: part('root'), List: part('list'), Step: part('step'),
+            Header: part('header'), Number: part('number'), Title: part('title'),
+            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
+        },
+    };
+});
 
-vi.mock('primereact/stepperpanel', () => ({
-    StepperPanel: (props: { header?: string; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'stepper-panel', 'data-header': props.header }, props.children),
-}));
-
+// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean; onClick?: () => void }) =>
-        React.createElement('button', { disabled: props.disabled, onClick: props.onClick }, props.label),
+    Button: (props: { children?: React.ReactNode; disabled?: boolean; onClick?: () => void }) =>
+        React.createElement('button', { disabled: props.disabled, onClick: props.onClick }, props.children),
 }));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({

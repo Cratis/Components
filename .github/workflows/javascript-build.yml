@@ -58,19 +58,19 @@ jobs:
   # Builds the artifact that actually ships to npm (the `prepare` script: tsc -b +
   # rollup + copy-css) and loads every subpath of the `exports` map from it.
   #
-  # The `build` job above only runs `tsc -p tsconfig.json`, so nothing in CI has ever
+  # The `build` job above only runs `tsc -p tsconfig.json`, so nothing in CI had ever
   # imported the published shape. That gap is how Cratis/Components#118 - the published
   # ESM contains directory imports, so no node-environment spec can render Dialog or
   # CommandDialog - reached a release unnoticed.
   #
-  # REPORTING ONLY - this job is expected to be RED today; being red is the point,
-  # it reproduces #118. It must not block merges until the two underlying causes are
-  # fixed: PrimeReact 11 (#107) for the bare `primereact/*` directory imports, and the
-  # CSS side-effect imports that rollup externalises via /\.css$/ (independent of #107).
-  # Once both are resolved, drop `continue-on-error` to make this a real publish gate.
+  # This job landed deliberately non-blocking, because it reproduced #118 and both of
+  # that issue's causes were still open: the bare `primereact/*` directory imports
+  # (fixed by the PrimeReact 11 migration) and the CSS side-effect imports rollup
+  # externalised via /\.css$/ (fixed by moving component CSS out of the JavaScript
+  # graph and into the `./styles` entry point). Both are resolved as of 3.0.0 - all 24
+  # subpaths load cleanly - so `continue-on-error` is gone and this is now a real gate.
   verify-published-exports:
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Checkout code

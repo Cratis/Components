@@ -3,22 +3,31 @@
 
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { CratisComponentsProvider } from '../../CratisComponentsProvider';
 import { Tooltip } from '../../Tooltip';
 
+// An enabled tooltip reaches PrimeReact 11's compositional Tooltip, which resolves its
+// configuration from a `PrimeReactProvider` and throws without one — so the trigger is
+// rendered inside the Cratis provider that supplies it. The disabled case needs none,
+// because it never renders a PrimeReact component at all.
 describe('when Tooltip is rendered and it is not disabled', () => {
     const html = renderToStaticMarkup(
         React.createElement(
-            Tooltip,
-            { content: 'Shapes' },
-            React.createElement('button', null, 'Trigger'),
+            CratisComponentsProvider,
+            null,
+            React.createElement(
+                Tooltip,
+                { content: 'Shapes' },
+                React.createElement('button', null, 'Trigger'),
+            ),
         ),
     );
 
-    it('should render the tooltip bubble', () => {
-        html.should.include('role="tooltip"');
+    it('should attach a tooltip to the trigger', () => {
+        html.should.include('cratis-tooltip-trigger');
     });
 
-    it('should render the tooltip content', () => {
-        html.should.include('Shapes');
+    it('should render the trigger element', () => {
+        html.should.include('Trigger');
     });
 });
