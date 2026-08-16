@@ -30,6 +30,8 @@ export interface ButtonProps {
     pt?: ButtonRootProps['pt'];
     /** Renders the button borderless. */
     text?: boolean;
+    /** Renders the button as an inline link. */
+    link?: boolean;
     /** Renders the button with an outline instead of a fill. */
     outlined?: boolean;
     /** Renders the button fully rounded. */
@@ -75,6 +77,7 @@ export const Button = ({
     tooltipOptions,
     pt,
     text,
+    link,
     outlined,
     rounded,
     severity,
@@ -87,7 +90,7 @@ export const Button = ({
     'aria-label': ariaLabel,
     children
 }: ButtonProps) => {
-    const variant = text ? 'text' : outlined ? 'outlined' : undefined;
+    const variant = link ? 'link' : text ? 'text' : outlined ? 'outlined' : undefined;
 
     const button = (
         <PrimeButton

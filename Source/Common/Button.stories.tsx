@@ -21,5 +21,6 @@ export const LabelAndIcon: Story = { args: { label: 'Save', icon: 'pi pi-check' 
 export const IconOnly: Story = { args: { icon: 'pi pi-trash', 'aria-label': 'Delete', severity: 'danger' } };
 export const Loading: Story = { args: { label: 'Saving', loading: true } };
 export const Text: Story = { args: { label: 'Cancel', text: true } };
+export const Link: Story = { args: { label: 'Learn more', link: true } };
 export const Outlined: Story = { args: { label: 'Details', outlined: true, severity: 'secondary' } };
 export const WithTooltip: Story = { args: { icon: 'pi pi-info-circle', 'aria-label': 'Info', tooltip: 'More information' } };
