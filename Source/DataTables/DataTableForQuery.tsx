@@ -18,7 +18,7 @@ import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEv
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type, or `object` if it takes none.
  */
-export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object> {
+export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object> {
     /**
      * Children to render — `<Column>` elements describing the visible columns.
      */
@@ -139,7 +139,7 @@ const paging = new Paging(0, 20);
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataTableForQueryProps}.
  */
-export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForQueryProps<TQuery, TDataType, TArguments>) => {
+export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForQueryProps<TQuery, TDataType, TArguments>) => {
     const [result, , , setPage] = useQueryWithPaging(props.query, paging, props.queryArguments);
     const totalItems = result.paging.totalItems;
     const pageCount = result.paging.totalPages;
