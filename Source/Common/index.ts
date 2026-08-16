@@ -10,3 +10,4 @@ export * from './normalizeIconClass';
 export * from './Page';
 export * from './FormElement';
 export * from './Tooltip';
+export * from './Button';
