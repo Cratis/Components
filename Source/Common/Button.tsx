@@ -72,6 +72,9 @@ const renderIcon = (icon: ReactNode) =>
  * compiler* and silently ignored at runtime — a `<Button label="Save" />`
  * typechecks and renders an empty button. This wrapper closes that trap once, for
  * every application, rather than leaving each call site to be caught by eye.
+ *
+ * `severity` is also stamped as `data-severity` on the element: the Cratis theme colors
+ * by that attribute (as {@link Tag} does), and PrimeReact 11's button does not emit it.
  */
 export const Button = ({
     label,
@@ -113,6 +116,7 @@ export const Button = ({
             className={className}
             style={style}
             aria-label={ariaLabel}
+            data-severity={severity}
             pt={pt}>
             {loading ? <i className='pi pi-spinner pi-spin' aria-hidden='true' /> : renderIcon(icon)}
             {label}
