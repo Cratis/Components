@@ -200,12 +200,13 @@ export const DataTableCore = <TData extends object>({
                                             // aria-sort belongs on the column header, not the sort button; PrimeReact 11's
                                             // Sort part puts it on its role="button" element (invalid ARIA), so strip it here.
                                             <PrimeDataTable.Sort field={column.props.field} pt={{ root: { 'aria-sort': undefined } }}>
-                                                {column.props.header}
+                                                <PrimeDataTable.THeadTitle>{column.props.header}</PrimeDataTable.THeadTitle>
                                                 <PrimeDataTable.SortIndicator match="asc"> ▲</PrimeDataTable.SortIndicator>
                                                 <PrimeDataTable.SortIndicator match="desc"> ▼</PrimeDataTable.SortIndicator>
                                             </PrimeDataTable.Sort>
                                         ) : (
-                                            <span>{column.props.header}</span>
+                                            // The title part, not a bare span, so a theme's column-title weight reaches it.
+                                            <PrimeDataTable.THeadTitle>{column.props.header}</PrimeDataTable.THeadTitle>
                                         )}
                                         {column.props.filter && (column.props.filterField ?? column.props.field) && (
                                             <ColumnFilterMenu
@@ -243,7 +244,10 @@ export const DataTableCore = <TData extends object>({
                             </PrimeDataTable.Row>
                         )}
                     </PrimeDataTable.TBody>
-                    <PrimeDataTable.EmptyTBody>
+                    {/* v11 classes the empty body `p-datatable-empty-message` alone, so a theme's
+                        `.p-datatable-tbody > tr > td` cell rules never reach the message row; the
+                        body class puts the empty row on the same footing as a data row. */}
+                    <PrimeDataTable.EmptyTBody className="p-datatable-tbody">
                         <PrimeDataTable.Row>
                             <PrimeDataTable.Cell colSpan={Math.max(columns.length, 1)}>{emptyMessage}</PrimeDataTable.Cell>
                         </PrimeDataTable.Row>

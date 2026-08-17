@@ -4,13 +4,13 @@ The three styling options compose. You don't have to choose one for the whole ap
 
 ## Themed app with one unstyled island
 
-Keep a styled `@primeuix/themes` preset as your global baseline and opt one specific component out with the per-instance `unstyled` prop:
+Keep [PrimeReact's styled mode](themed.md) as your global baseline and opt one specific component out with the per-instance `unstyled` prop:
 
 ```tsx
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
-import Aura from '@primeuix/themes/aura';
 import { CratisComponentsProvider } from '@cratis/components';
+import { styledMode } from '@cratis/components/styled';
 import { Dialog } from '@cratis/components/Dialogs';
 
 const brandDialogPt = {
@@ -20,10 +20,10 @@ const brandDialogPt = {
 };
 
 export const App = () => (
-    <CratisComponentsProvider value={{ theme: { preset: Aura }, license: 'YOUR-PRIMEUI-KEY' }}>
+    <CratisComponentsProvider value={{ license: 'YOUR-PRIMEUI-KEY', ...styledMode() }}>
         <YourApp />
 
-        {/* This one Dialog opts out of the preset and uses its own brand visuals. */}
+        {/* This one Dialog opts out of the theme and uses its own brand visuals. */}
         <Dialog title="Brand callout" unstyled pt={brandDialogPt}>
             …
         </Dialog>
@@ -56,7 +56,7 @@ export const App = () => (
 
 ## App-wide dark mode
 
-With the Cratis baseline theme, dark mode is a single class: add `cratis-dark` alongside `cratis-theme` for the dark palette, remove it for light. The widgets and Cratis-scoped surfaces both follow because the baseline theme drives everything from the `--cratis-*` tokens:
+With the Cratis baseline theme, dark mode is a single class: add `cratis-dark` alongside `cratis-theme` for the dark palette, remove it for light. The widgets and Cratis-scoped surfaces both follow because the baseline theme drives everything from the `--cratis-*` tokens. The same class switches PrimeReact's styled mode too — `styledMode()`'s `darkModeSelector` defaults to `.cratis-dark` (pass `'system'` to follow `prefers-color-scheme` instead):
 
 ```tsx
 const ThemeToggle = () => {
@@ -113,7 +113,7 @@ Token overrides cascade, so any ancestor scope works for tinting Cratis-scoped s
 </div>
 ```
 
-With the baseline theme these `--cratis-*` overrides already reach the widgets in the region — the theme reads the same tokens. (On a `@primeuix/themes` preset, region-scoped widget colors come from `definePreset` instead; the `--cratis-*` overrides still retint the Cratis-scoped surfaces.)
+With the baseline theme these `--cratis-*` overrides already reach the widgets in the region — the theme reads the same tokens. (In styled mode, region-scoped widget colors come from the preset instead — `definePreset(CratisPreset, …)`; the `--cratis-*` overrides still retint the Cratis-scoped surfaces.)
 
 ## Per-component visual override inside unstyled mode
 
@@ -139,11 +139,11 @@ import './custom-table.css';
 
 - **Provider value updates re-render**: changing `value` on `CratisComponentsProvider` rebuilds the merged config. Use a stable reference (e.g. `useMemo` or a module-level constant) to avoid spurious re-renders.
 - **`pt` merging is deep**: PrimeReact merges global `pt` with per-instance `pt` by default. Set `ptOptions={{ mergeSections: false }}` on the wrapper if you need a hard replace.
-- **Where `--cratis-*` reaches depends on the theme**: with the Cratis baseline theme the widgets read those tokens, so an override repaints both. On a `@primeuix/themes` preset the widgets read `--p-*` design tokens, so `--cratis-*` overrides only retint the Cratis-scoped surfaces — repaint the widgets with `definePreset`. See [Cratis token reference](cratis-tokens.md).
+- **Where `--cratis-*` reaches depends on the theme**: with the Cratis baseline theme the widgets read those tokens, so an override repaints both. In styled mode the widgets read the preset's `--p-*` design tokens, so `--cratis-*` overrides only retint the Cratis-scoped surfaces — repaint the widgets with a `definePreset` derivative handed to `styledMode({ preset })`. See [Cratis token reference](cratis-tokens.md).
 
 ## See also
 
-- [Use a PrimeReact theme](themed.md)
+- [Use PrimeReact's styled mode](themed.md)
 - [Use a custom palette on top of a PrimeReact theme](custom-palette.md)
 - [Use fully unstyled mode](unstyled.md)
 - [Pass-through cheat sheet](pass-through.md)

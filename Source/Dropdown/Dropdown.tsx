@@ -30,10 +30,16 @@ export interface DropdownProps<T = unknown> {
     /** Source array of option objects (or primitives). */
     options?: unknown[];
 
-    /** Property name on each option object used as the visible label. */
+    /**
+     * Property name on each option object used as the visible label. When omitted and the
+     * options are objects carrying a `label`, that is used - the v10 `Dropdown` convention.
+     */
     optionLabel?: string;
 
-    /** Property name on each option object used as the underlying value. */
+    /**
+     * Property name on each option object used as the underlying value. When omitted and the
+     * options are objects carrying a `value`, that is used - the v10 `Dropdown` convention.
+     */
     optionValue?: string;
 
     /** Placeholder shown in the trigger when nothing is selected. */
@@ -105,11 +111,22 @@ export interface DropdownProps<T = unknown> {
  * modal dialogs via PrimeReact 11's overlay manager — the v10 `appendTo` /
  * manual z-index workaround is no longer required.
  */
+/**
+ * PrimeReact 10's `Dropdown` read `label` and `value` off option objects when no
+ * `optionLabel` / `optionValue` was given; v11's `Select` compares the option object
+ * itself against the value instead, so `[{ label, value }]` options with a scalar
+ * `value` never match. Resolve the v10 convention here so those call sites keep working.
+ */
+const conventionalField = (options: unknown[] | undefined, field: 'label' | 'value'): string | undefined => {
+    const first = options?.[0];
+    return first !== null && typeof first === 'object' && field in (first as object) ? field : undefined;
+};
+
 export const Dropdown = <T = unknown,>({
     value,
     options,
-    optionLabel,
-    optionValue,
+    optionLabel = conventionalField(options, 'label'),
+    optionValue = conventionalField(options, 'value'),
     placeholder,
     filter,
     multiple,
@@ -154,8 +171,10 @@ export const Dropdown = <T = unknown,>({
                 unstyled={unstyled}>
                 <Select.Trigger>
                     <Select.Value placeholder={placeholder} />
-                    {showClear && <Select.Clear />}
-                    <Select.Arrow />
+                    {/* v11's parts render no glyph of their own - the icon is the composer's to supply.
+                        `Indicator` is the trigger's chevron; `Arrow` would be the popup's pointer. */}
+                    {showClear && <Select.Clear><i className="pi pi-times" /></Select.Clear>}
+                    <Select.Indicator><i className="pi pi-chevron-down" /></Select.Indicator>
                 </Select.Trigger>
                 <Select.Portal>
                     <Select.Positioner>

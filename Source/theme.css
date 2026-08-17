@@ -39,8 +39,8 @@
     --cratis-orange-500:         var(--p-orange-500, #f59e0b);
     --cratis-red-500:            var(--p-red-500, #ef4444);
 
-    --cratis-surface-0:          var(--p-surface-0, #ffffff);
-    --cratis-surface-100:        var(--p-surface-100, #f1f5f9);
+    --cratis-surface-0:          var(--p-form-field-background, #ffffff);
+    --cratis-surface-100:        var(--p-content-hover-background, #f1f5f9);
     --cratis-surface-section:    var(--p-surface-50, #f8fafc);
     --cratis-surface-card:       var(--p-surface-0, #ffffff);
     --cratis-surface-overlay:    var(--p-surface-0, #ffffff);
@@ -239,9 +239,35 @@
 .cratis-theme [data-scope='slider'][data-part='handle'] { width: 1.1rem; height: 1.1rem; background: var(--cratis-primary-color); border-radius: 50%; }
 
 /* ── Dialog ──────────────────────────────────────────────────────────────── */
+/* PrimeReact 11 renders the backdrop and the positioner as siblings under the portal,
+   and leaves placing them to CSS: without these two rules the backdrop is a zero-height
+   block and the popup flows in after the page content, below the fold. The layout is
+   the one PrimeReact's own dialog style applies (`@primereact/styles/dialog`). */
 .cratis-theme [data-scope='dialog'][data-part='backdrop'],
-.cratis-theme [data-scope='dialog'][data-part='mask'] { background: var(--cratis-maskbg, rgba(0, 0, 0, 0.5)); }
+.cratis-theme [data-scope='dialog'][data-part='mask'] {
+    position: fixed;
+    inset: 0;
+    background: var(--cratis-maskbg, rgba(0, 0, 0, 0.5));
+}
+.cratis-theme [data-scope='dialog'][data-part='positioner'] {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    pointer-events: none;
+}
+.cratis-theme [data-scope='dialog'][data-part='positioner'][data-modal] { pointer-events: auto; }
+.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='top'] { align-items: flex-start; }
+.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='bottom'] { align-items: flex-end; }
+.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='left'] { justify-content: flex-start; }
+.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='right'] { justify-content: flex-end; }
 .cratis-theme [data-scope='dialog'][data-part='popup'] {
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    pointer-events: auto;
     background: var(--cratis-surface-overlay);
     color: var(--cratis-text-color);
     border-radius: 0.75rem;
@@ -257,7 +283,7 @@
     border-bottom: 1px solid var(--cratis-surface-border);
     font-weight: 600;
 }
-.cratis-theme [data-scope='dialog'][data-part='content'] { padding: 1.25rem; }
+.cratis-theme [data-scope='dialog'][data-part='content'] { padding: 1.25rem; overflow-y: auto; }
 .cratis-theme [data-scope='dialog'][data-part='footer'] { padding: 1rem 1.25rem; border-top: 1px solid var(--cratis-surface-border); }
 .cratis-theme [data-scope='dialog'][data-part='close'] {
     border: none; background: transparent; color: var(--cratis-text-color-secondary);

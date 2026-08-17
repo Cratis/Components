@@ -5,7 +5,7 @@ You want a theme's chrome — its dialog frames, button shapes, focus rings, inp
 This setup keeps a theme as the **structural baseline** and repaints it with your palette. Which knob you turn depends on which theme you started from:
 
 - **[Cratis baseline theme](baseline-theme.md)** — override the `--cratis-*` tokens in CSS.
-- **[`@primeuix/themes` preset](themed.md)** (license) — customize the preset's design tokens with `definePreset`.
+- **[PrimeReact's styled mode](themed.md)** (license, `@primereact/styles` + `@primeuix/themes`) — derive your own preset from `CratisPreset` with `definePreset` and hand it to `styledMode({ preset })`.
 
 Either way the `--cratis-*` layer follows your palette, so Cratis-scoped surfaces stay in sync.
 
@@ -55,16 +55,16 @@ import './palette.override.css';   // after the theme so it wins
 }
 ```
 
-## With a `@primeuix/themes` preset (`definePreset`)
+## In PrimeReact's styled mode (`definePreset`)
 
-Presets are customized in TypeScript, not CSS: derive a new preset from a base one with `definePreset` and hand it to the provider. Design-token references like `{sky.500}` point at the preset's built-in primitive palette:
+Presets are customized in TypeScript, not CSS: derive a new preset from a base one with `definePreset` and hand it to `styledMode()`, which pairs it with PrimeReact's component styles so the widgets are actually painted (a preset alone emits `--p-*` tokens but styles nothing — see [styled mode](themed.md)). Start from `CratisPreset` to keep the PrimeReact 10 look of Cratis applications, or from any `@primeuix/themes` preset. Design-token references like `{sky.500}` point at the preset's built-in primitive palette:
 
 ```ts
 // brand-preset.ts
 import { definePreset } from '@primeuix/themes';
-import Aura from '@primeuix/themes/aura';
+import { CratisPreset } from '@cratis/components/styled';
 
-export const BrandPreset = definePreset(Aura, {
+export const BrandPreset = definePreset(CratisPreset, {
     semantic: {
         primary: {
             50: '{sky.50}',   100: '{sky.100}', 200: '{sky.200}',
@@ -78,14 +78,17 @@ export const BrandPreset = definePreset(Aura, {
 
 ```tsx
 import { CratisComponentsProvider } from '@cratis/components';
+import { styledMode } from '@cratis/components/styled';
 import { BrandPreset } from './brand-preset';
 
 export const App = () => (
-    <CratisComponentsProvider value={{ theme: { preset: BrandPreset }, license: 'YOUR-PRIMEUI-KEY' }}>
+    <CratisComponentsProvider value={{ license: 'YOUR-PRIMEUI-KEY', ...styledMode({ preset: BrandPreset }) }}>
         <YourApp />
     </CratisComponentsProvider>
 );
 ```
+
+Dark mode follows `styledMode()`'s `darkModeSelector` — `.cratis-dark` by default, the same class the baseline theme uses — so the preset's dark scheme and the `--cratis-*` tokens switch together.
 
 ## Scoped overrides
 
@@ -144,7 +147,7 @@ The baseline theme's own `cratis-dark` class is the simplest light/dark switch w
 
 Two override surfaces are available, with different reach:
 
-- **The theme's palette** (`--cratis-*` for the baseline theme, or the preset's `--p-*` design tokens) — read by the widgets. Override these to repaint the whole UI.
+- **The theme's palette** (`--cratis-*` for the baseline theme, or the preset's `--p-*` design tokens in styled mode) — read by the widgets. Override these to repaint the whole UI.
 - **`--cratis-*` tokens on a Cratis-only scope** — read by Cratis-scoped surfaces (validation errors, the FormElement addon, breadcrumb borders, etc.). Override these when you want Cratis surfaces to differ from the surrounding widgets.
 
 See [Cratis token reference](cratis-tokens.md) for the full Cratis token list, and [Pass-through cheat sheet](pass-through.md) when you want even tighter per-component control.

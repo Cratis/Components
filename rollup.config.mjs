@@ -4,12 +4,12 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 import { createRequire } from 'module';
 
 /** Stylesheets that are entry points or token layers in their own right, not component rules. */
-const STANDALONE_STYLESHEETS = new Set(['tailwind.css', 'tailwind-utilities.css', 'tokens.css', 'theme.css', 'styles.css']);
+const STANDALONE_STYLESHEETS = new Set(['tailwind.css', 'tailwind-utilities.css', 'tokens.css', 'theme.css', 'primereact-v10-palette.css', 'styles.css']);
 
 /** Directories that never hold shipped component CSS. */
 const NON_SOURCE_DIRECTORIES = new Set(['node_modules', 'dist', 'storybook-static', '.storybook', 'wwwroot']);
@@ -143,10 +143,19 @@ function generatePackageJson(esmPath) {
     };
 }
 
+/**
+ * Entry points that are deliberately NOT reachable from `index.ts`. The root re-exports every
+ * component namespace, so anything imported there lands in every consumer's graph — and the
+ * styled-mode entry pulls in `@primereact/styles` and `@primeuix/themes`, which are optional
+ * peers a consumer that runs unstyled never installs. Listing them here gives them their own
+ * bundle without touching the root.
+ */
+const STANDALONE_ENTRIES = ['Styled/index.ts'];
+
 export function rollup(esmPath, tsconfigPath, pkg) {
     const sourceDir = dirname(tsconfigPath);
     return {
-        input: 'index.ts',
+        input: ['index.ts', ...STANDALONE_ENTRIES.filter((entry) => existsSync(resolve(sourceDir, entry)))],
 
         output: [
             {
