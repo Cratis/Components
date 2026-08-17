@@ -38,6 +38,8 @@ function MyForm() {
 }
 ```
 
+No `optionLabel` / `optionValue` here: when the option objects carry `label` and `value`, those are used — the PrimeReact 10 `Dropdown` convention.
+
 ## Props
 
 `Dropdown` exposes a wrapper-owned surface — the common single/multi select props every Cratis form needs — rather than leaking PrimeReact's entire Select API. For anything beyond this, use `pt` / `ptOptions` / `unstyled`.
@@ -46,8 +48,8 @@ function MyForm() {
 interface DropdownProps<T = unknown> {
     value?: T;
     options?: unknown[];
-    optionLabel?: string;                       // property used as the visible label
-    optionValue?: string;                       // property used as the underlying value
+    optionLabel?: string;                       // property used as the visible label; defaults to 'label' when the options carry it
+    optionValue?: string;                       // property used as the underlying value; defaults to 'value' when the options carry it
     placeholder?: string;
     filter?: boolean;                           // filter input inside the popup
     multiple?: boolean;                         // multi-select
@@ -70,7 +72,7 @@ interface DropdownProps<T = unknown> {
 }
 ```
 
-Every prop is optional, and the wrapper declares no defaults of its own — `multiple`, `filter`, `showClear`, `invalid` and `disabled` are simply off unless you set them.
+Every prop is optional. `multiple`, `filter`, `showClear`, `invalid` and `disabled` are simply off unless you set them. The one convention the wrapper applies is `optionLabel` / `optionValue`: when they are omitted and the options are objects carrying a `label` / `value` field, that field is used — as PrimeReact 10's `Dropdown` did. v11's `Select` compares the option object itself against the value otherwise, so `[{ label, value }]` options with a scalar `value` would never match without it. Options keyed differently (`name` / `code`, say) still need `optionLabel` / `optionValue` spelled out.
 
 There is no `...rest` spread and no index signature, so anything not listed above is a compile error rather than an ignored prop. That includes `aria-*` beyond the two declared (`aria-label`, `aria-labelledby`) and PrimeReact Select props the wrapper deliberately does not surface — `appendTo`, `variant`, `size`, `fluid`, `filterMatchMode`, `optionGroupLabel` / `optionGroupChildren`, `optionDisabled`, `open` / `defaultOpen`, and the rest. Reach those through `pt` / `ptOptions` / `unstyled`, or compose `Select` yourself.
 
@@ -99,6 +101,8 @@ const options = ['React', 'Angular', 'Vue', 'Svelte'];
 ```
 
 ### Object Options
+
+Options shaped `{ label, value }` need nothing more (see the quick start). Any other shape names its fields:
 
 ```typescript
 const countries = [
@@ -378,7 +382,7 @@ There is no `panelClassName` — the popup is styled through `pt`, whose slot na
 />
 ```
 
-Global CSS is possible too, but not through `p-*` class names. PrimeReact 11 is unstyled-first: with no `@primeuix/themes` preset applied its elements carry **no `p-*` class at all**, and parts are identified by data attributes instead:
+Global CSS is possible too, but outside [PrimeReact's styled mode](../Styling/themed.md) not through `p-*` class names. PrimeReact 11 is unstyled-first: its primitives carry **no `p-*` class at all** unless `styledMode()` hands them PrimeReact's component styles, and parts are identified by data attributes instead:
 
 ```css
 [data-scope='select'][data-part='root'] {

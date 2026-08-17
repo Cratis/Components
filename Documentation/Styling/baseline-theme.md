@@ -1,6 +1,6 @@
 # Use the Cratis baseline theme
 
-PrimeReact 11 is unstyled-first, and its styled `@primeuix/themes` presets need a PrimeUI license. If you want a polished default look **without a license**, ship the components unstyled and import the **Cratis baseline theme** — a token-based stylesheet that skins every component from the `--cratis-*` layer.
+PrimeReact 11 is unstyled-first, and [its styled mode](themed.md) needs two more packages — `@primereact/styles` and `@primeuix/themes`. If you want a polished default look **without them**, ship the components unstyled and import the **Cratis baseline theme** — a token-based stylesheet that skins every component from the `--cratis-*` layer. (A PrimeUI license key is still required to run PrimeReact 11 itself — see [Licensing](../migration.md#licensing).)
 
 ## Setup
 
@@ -36,7 +36,7 @@ Add the `cratis-dark` class to an ancestor for the dark palette:
 
 ## Layering under a preset
 
-The baseline theme defers to a `@primeuix/themes` preset's `--p-*` tokens when one is present, so you can also run it underneath a licensed preset — the preset drives the palette and the baseline theme fills the gaps.
+The baseline theme defers to a `@primeuix/themes` preset's `--p-*` tokens when one is present, so you can also run it underneath [styled mode](themed.md) — the preset drives the palette and the baseline theme fills the gaps. `styledMode()`'s dark scheme keys off the same `.cratis-dark` class by default, so one class switches both.
 
 ## Overriding
 
@@ -51,5 +51,5 @@ The baseline theme also maps the `--color-*` token family that `@cratis/arc.reac
 
 ## When this is the wrong fit
 
-- You want one of PrimeReact's prebuilt design systems (Aura, Lara, …) — [use a preset](./themed.md) instead.
+- You want PrimeReact's own look — one of its design systems (Aura, Lara, …) painted by PrimeReact's component styles — [use styled mode](./themed.md) instead.
 - You have a strict design system to honor — go [fully unstyled](./unstyled.md) with your own `pt`.

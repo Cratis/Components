@@ -4,7 +4,7 @@ Single setup point for Cratis Components. Wraps PrimeReact's `PrimeReactProvider
 
 ## Purpose
 
-- Hosts the PrimeReact `pt` / `unstyled` / `ptOptions` / `inputVariant` / `ripple` / `theme` / `zIndex` / `locale` configuration for every Cratis wrapper below it in the tree.
+- Hosts the PrimeReact `pt` / `unstyled` / `ptOptions` / `inputVariant` / `ripple` / `theme` / `defaults` / `zIndex` / `locale` configuration for every Cratis wrapper below it in the tree.
 - Deep-merges Cratis-wide defaults with the consumer's value, so future Cratis defaults can land without breaking consumer overrides.
 - Re-exported from the package root so the recommended setup is one import:
 
@@ -45,6 +45,23 @@ export const App = () => (
 
 The `value` is deep-merged with the Cratis defaults (currently empty) so consumer settings always win. Pass a stable reference (a module-level constant or a `useMemo` result) to avoid unnecessary re-renders.
 
+## PrimeReact's styled mode
+
+PrimeReact 11's primitives are unstyled: `theme: { preset }` on its own emits the `--p-*` design tokens but the elements carry no `p-*` class names, so a preset alone paints nothing. `styledMode()` from `@cratis/components/styled` returns the `theme` *and* the `defaults` (`primeReactStyles`, PrimeReact's own component styles keyed by primitive name) the provider needs to apply PrimeReact's look to every primitive rendered under it — this library's and your own. Spread it into `value` next to your license key:
+
+```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+import { styledMode } from '@cratis/components/styled';
+
+export const App = () => (
+    <CratisComponentsProvider value={{ license: 'YOUR-PRIMEUI-KEY', ...styledMode() }}>
+        <YourApp />
+    </CratisComponentsProvider>
+);
+```
+
+It needs `@primereact/styles` and `@primeuix/themes` installed (optional peers). Options — `preset`, `darkModeSelector`, `cssLayer` — are on [Use PrimeReact's styled mode](../Styling/themed.md).
+
 ## Props
 
 ### `value`
@@ -59,8 +76,9 @@ The most useful members:
 | `pt` | Per-component pass-through configuration. Keys are PrimeReact component names (`button`, `dialog`, `inputtext`, …); values are slot configuration objects. |
 | `ptOptions` | Controls merge vs. replace behavior for `pt`. Default is `{ mergeSections: true }` which merges per-instance `pt` with the global preset. |
 | `inputVariant` | `'outlined'` or `'filled'` — switches the default input rendering across the whole app. |
-| `theme` | `{ preset, options }` — opt into a styled `@primeuix/themes` preset (e.g. `import Aura from '@primeuix/themes/aura'`). A PrimeUI `license` key is required whether or not you apply a preset — the check runs when the provider mounts. |
-| `license` | Your PrimeUI license key, passed straight through to PrimeReact. Required for the styled `@primeuix/themes` presets — see [Styling](../Styling/index.md). |
+| `theme` | `{ preset, options }` — a `@primeuix/themes` preset and its options (`darkModeSelector`, `cssLayer`, …). Emits the `--p-*` design tokens; on its own it paints nothing, because the primitives carry no `p-*` class — pair it with `defaults`, which is what `styledMode()` does. |
+| `defaults` | Default props per PrimeReact component name. `styledMode()` uses it to hand every primitive PrimeReact's component styles (`primeReactStyles`), which is what puts the `p-*` class names on the elements the preset paints. |
+| `license` | Your PrimeUI license key, passed straight through to PrimeReact. Required whichever way you style — the check runs when the provider mounts — see [Styling](../Styling/index.md). |
 | `ripple` | Enables PrimeReact's ripple animation on supported components. |
 | `zIndex` | Per-overlay-type z-index baseline (`{ modal: 1100, overlay: 1000, menu: 1000, tooltip: 1100 }`). |
 | `locale` | PrimeReact locale string. |
@@ -121,5 +139,6 @@ const merged = mergeCratisComponentsConfig({ unstyled: true, pt: myPt });
 ## See also
 
 - [Styling Overview](../Styling/index.md) — the supported styling options and where the provider fits
+- [Use PrimeReact's styled mode](../Styling/themed.md) — `styledMode()`, `CratisPreset` and the options
 - [Pass-through cheat sheet](../Styling/pass-through.md) — what `pt` reaches in each Cratis wrapper
 - [Use fully unstyled mode](../Styling/unstyled.md) — full `pt` preset walk-through

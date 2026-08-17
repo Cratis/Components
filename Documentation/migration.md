@@ -37,7 +37,7 @@ Notes:
 - `primereact` pins `@primereact/core` and `@primereact/headless` to its own **exact** version, so installing `primereact@11.1.0` gives you 11.1.0 of all three. Declaring them anyway is what makes a strict installer (pnpm, Yarn PnP) resolve them for the library too.
 - `primeicons` went **7 → 8** alongside PrimeReact 11.
 - `@primereact/types` is an **optional** peer. You only need it declared if your own code imports our prop types (they re-export `@primereact/types/*` shapes). It arrives transitively via `@primereact/core` in a hoisting installer.
-- `@primeuix/themes` is **not** a peer. Install it only if you want a styled preset — see [Theming without a theme stylesheet](#theming-without-a-theme-stylesheet).
+- `@primereact/styles` and `@primeuix/themes` are **optional** peers. Install them only for PrimeReact's styled mode — see [Theming without a theme stylesheet](#theming-without-a-theme-stylesheet). The baseline theme and unstyled mode need neither.
 - If your app carried a `resolutions` / `overrides` entry to collapse PrimeReact into one copy, **you can delete it** — the peer declaration is what enforces that now.
 
 ### Arc peer range is unchanged
@@ -112,38 +112,57 @@ Per-column filter menus (`<Column filter dataType="…" />`), a global search bo
 
 ## Theming without a theme stylesheet
 
-**PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist. Presets are plain **JavaScript token objects** (`@primeuix/themes` — Aura, Lara, Nora) that `@primeuix/styled` turns into `--p-*` custom properties **at runtime** when you hand one to the provider.
+**PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist, and the `primereact` package is **unstyled primitives**: they render structural markup with `data-scope` / `data-part` attributes and **no `p-*` class names**. A theme is now two things handed to the provider at runtime: a **preset** — a plain JavaScript token object (`@primeuix/themes` — Aura, Lara, Nora) that `@primeuix/styled` turns into `--p-*` custom properties — and PrimeReact's **component styles** (`@primereact/styles`), which put the `p-*` class names on the primitives and carry the CSS the tokens drive. PrimeReact's own styled components (`@primereact/ui`) are just the primitives with those styles preset; `@cratis/components` builds on the primitives, so a preset alone (`theme: { preset }`) emits tokens but paints nothing.
 
-The chain is: **preset (JS) → `--p-*` (runtime) → `--cratis-*` (our token layer) → component CSS.** Our `--cratis-*` tokens resolve the v11 token first and fall back to the v10 variable, so an app that still has a compiled v10 theme on the page during its port keeps working, and nothing breaks the day it is removed.
+The chain is: **preset (JS) → `--p-*` (runtime) → `--cratis-*` (our token layer) → component CSS**, and in styled mode also **`primeReactStyles` → `p-*` class names + PrimeReact's component CSS**. Our `--cratis-*` tokens resolve the v11 token first and fall back to the v10 variable, so an app that still has a compiled v10 theme on the page during its port keeps working, and nothing breaks the day it is removed.
 
 Pick one of three paths — the [Styling](Styling/index.md) section walks each one:
 
-**A. Unstyled-first (default).** Ship structure plus the `--cratis-*` token layer and bring your own visuals via `pt` / CSS / Tailwind. Your existing `--surface-*` and `--cratis-*` overrides keep working.
-
-```tsx
-<CratisComponentsProvider value={{ unstyled: true, pt: myPreset }}>
-```
-
-**B. [The Cratis baseline theme](Styling/baseline-theme.md).** Cratis-authored MIT CSS that assigns the `--cratis-*` tokens directly, light and dark, for a polished default with no preset and no `@primeuix/themes` dependency. It defers to a preset's `--p-*` values when one is present.
+**A. [The Cratis baseline theme](Styling/baseline-theme.md).** Cratis-authored MIT CSS that assigns the `--cratis-*` tokens directly, light and dark, for a polished default with no preset and no extra dependency. It defers to a preset's `--p-*` values when one is present.
 
 ```diff
 - import 'primereact/resources/themes/lara-dark-blue/theme.css';
 + import '@cratis/components/theme';
 ```
 
-**C. [A styled `@primeuix/themes` preset](Styling/themed.md).**
+**B. [PrimeReact's styled mode](Styling/themed.md).** `styledMode()` from `@cratis/components/styled` returns `{ theme, defaults }` — a `@primeuix/themes` preset (default `CratisPreset`: Lara with the blue primary and gray surfaces of `lara-light-blue` / `lara-dark-blue`) plus `primeReactStyles`, PrimeReact's own component styles, which the provider applies to every primitive rendered under it — this library's and your own. Needs `@primereact/styles` and `@primeuix/themes` installed. Options: `preset` (any preset or `definePreset` result), `darkModeSelector` (default `.cratis-dark`), `cssLayer` (default the `primereact` layer, ordered between Tailwind's `base` and `components`, so a plain `.p-button { … }` in your CSS overrides the theme just as it did against v10's `@layer primereact` stylesheets; `false` emits unlayered).
 
 ```diff
 - import 'primereact/resources/themes/lara-dark-blue/theme.css';
-+ import Aura from '@primeuix/themes/aura';
++ import { styledMode } from '@cratis/components/styled';
   // …
 - <CratisComponentsProvider>
-+ <CratisComponentsProvider value={{ theme: { preset: Aura }, license: '…' }}>
++ <CratisComponentsProvider value={{ license: '…', ...styledMode() }}>
 ```
 
-`npm i @primeuix/themes` for this path only.
+`npm i @primereact/styles @primeuix/themes` for this path only.
 
-`CratisComponentsProvider` takes everything through its single `value` prop, which is deep-merged onto PrimeReact's provider config — `unstyled`, `pt`, `ptOptions`, `ripple`, `inputVariant`, `zIndex`, `locale`, `theme` and `license`. It also accepts a `toaster` prop (`true` or a `ToasterProps` object) to mount a `<Toaster />` for you.
+**C. Fully unstyled.** Ship structure plus the `--cratis-*` token layer and bring your own visuals via `pt` / CSS / Tailwind. Your existing `--cratis-*` overrides keep working.
+
+```tsx
+<CratisComponentsProvider value={{ unstyled: true, pt: myPreset }}>
+```
+
+### If your CSS was written against a v10 theme's variables
+
+A v10 theme stylesheet published `--surface-ground`, `--surface-card`, `--surface-border`, `--surface-hover`, `--text-color`, `--text-color-secondary`, `--primary-color`, `--highlight-bg`, `--focus-ring`, `--maskbg`, `--border-radius`, the `--surface-0…900` and `--primary-50…900` scales, the `--gray` / `--blue` / `--green` / `--yellow` / `--cyan` / `--pink` / `--indigo` / `--teal` / `--orange` / `--bluegray` / `--purple` / `--red-50…900` scales, the `--surface-a…f` aliases, `--content-padding` and `--inline-spacing` on `:root`. On PrimeReact 11 they resolve to nothing the day it is installed — borders vanish, cards lose their background. **`@cratis/components/primereact-v10-palette`** restores every one of them with the `lara-light-blue` / `lara-dark-blue` values, so those call sites keep working:
+
+```diff
+- import 'primereact/resources/themes/lara-dark-blue/theme.css';
+  import '@cratis/components/tokens';
+  import '@cratis/components/styles';
++ import '@cratis/components/primereact-v10-palette';
+  // …
++ <CratisComponentsProvider value={{ license: '…', ...styledMode() }}>
+```
+
+- The **semantic** names (`--surface-card`, `--text-color`, `--primary-color`, …) resolve from the active preset's `--p-*` tokens where v11 has an equivalent, with the Lara values as the fallback — so they follow whatever preset styled mode applies.
+- The **numbered scales** are the lara-blue values verbatim. The v10 dark surface scale was inverted, so `--p-surface-*` cannot stand in for it.
+- Light and dark switch through `light-dark()`, keyed off `.cratis-dark` (the file sets `color-scheme: dark` on it) — the same class the baseline theme and `styledMode()` use.
+
+Import order: `tokens`, `styles`, then the palette (and/or `theme`). It exists so what is already written keeps working — write nothing new against those names; use `--cratis-*` (or `--p-*`) instead.
+
+`CratisComponentsProvider` takes everything through its single `value` prop, which is deep-merged onto PrimeReact's provider config — `unstyled`, `pt`, `ptOptions`, `ripple`, `inputVariant`, `zIndex`, `locale`, `theme`, `defaults` and `license`. It also accepts a `toaster` prop (`true` or a `ToasterProps` object) to mount a `<Toaster />` for you.
 
 ## Dialog
 
@@ -177,13 +196,13 @@ A few v10 features have no v11 equivalent. The props are **kept so your code sti
 Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
 
 - **`Column`** keeps the `field` / `header` / `body` / `sortable` / `filter` authoring model; v10 extras like `editor`, `frozen`, `footer`, `colSpan` and `expander` are not carried over.
-- **`Dropdown`** exposes a curated single/multi select surface (`value`, `options`, `optionLabel` / `optionValue`, `placeholder`, `filter`, `multiple`, `showClear`, `style`, `id`, `name`, `aria-*`, …) plus `pt` / `ptOptions` / `unstyled` — it no longer accepts arbitrary PrimeReact Select props.
+- **`Dropdown`** exposes a curated single/multi select surface (`value`, `options`, `optionLabel` / `optionValue`, `placeholder`, `filter`, `multiple`, `showClear`, `style`, `id`, `name`, `aria-*`, …) plus `pt` / `ptOptions` / `unstyled` — it no longer accepts arbitrary PrimeReact Select props. `optionLabel` / `optionValue` default to `label` / `value` when the option objects carry those fields — the v10 `Dropdown` convention — so `[{ label, value }]` options with a scalar `value` keep matching (v11's `Select` compares the option object itself otherwise).
 - The **`DataPage` action toolbar** replaces the v10 Menubar: `menubarPt` / `menubarPtOptions` / `menubarUnstyled` now target the toolbar's **buttons**, and the paginator is styled via `paginatorClassName` (+ `paginatorAriaLabels`), not `pt`.
 - **`StepperCustomizationProps`** is now Cratis-owned (it no longer aliases PrimeReact's `StepperProps`). Same shape, minus the removed slots.
 
 ### If you write `pt` definitions or CSS selectors against PrimeReact internals
 
-v11 is unstyled-first: with no preset applied, PrimeReact elements carry **no `p-*` class at all**. Parts are identified by data attributes instead — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`, and so on. Selectors written against v10 class names will silently match nothing. (`pt` slot keys are unaffected.)
+v11 is unstyled-first: outside [styled mode](Styling/themed.md), PrimeReact elements carry **no `p-*` class at all**. Parts are identified by data attributes instead — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`, and so on. Selectors written against v10 class names will silently match nothing there. In styled mode the `p-*` class names are back — `styledMode()` applies PrimeReact's component styles to every primitive — and the theme sits in the `primereact` cascade layer, so a plain `.p-button { … }` in your own CSS overrides it as it did on v10. (`pt` slot keys are unaffected either way.)
 
 ## What's new (nothing to migrate — just available)
 
@@ -191,11 +210,14 @@ v11 is unstyled-first: with no preset applied, PrimeReact elements carry **no `p
 - **[Display](Display/index.md)** — `Tag`, `Badge`, `Chip`, `Skeleton`, `Avatar`, `ProgressBar`.
 - **CommandForm fields** — [PasswordField](CommandForm/password-field.md), [ToggleSwitchField](CommandForm/toggle-switch-field.md), [RatingField](CommandForm/rating-field.md).
 - **[AutoCommandForm](CommandForm/auto-command-form.md)** — generates a `CommandForm`'s fields from the command's own `propertyDescriptors`, with a `registerFieldTypeProvider` registry for custom types.
-- **[`@cratis/components/theme`](Styling/baseline-theme.md)** — the Cratis baseline theme (MIT CSS).
+- **[`@cratis/components/theme`](Styling/baseline-theme.md)** — the Cratis baseline theme (MIT CSS). It now positions the dialog backdrop and positioner itself; previously a baseline-theme dialog could render below the page content.
+- **[`@cratis/components/styled`](Styling/themed.md)** — `styledMode()`, `CratisPreset`, `primeReactStyles`, `primeReactCssLayer`, `primeReactCssLayerOrder` and `cratisDarkModeSelector`: PrimeReact's styled mode, wired for the provider.
+- **`@cratis/components/primereact-v10-palette`** — the PrimeReact 10 theme variables (`--surface-*`, `--text-color`, `--primary-color`, the color scales, …) restored with the lara-blue values, for CSS already written against them.
+- **`Dropdown`** reads `label` / `value` off option objects when `optionLabel` / `optionValue` are omitted — the v10 `Dropdown` convention.
 
 ## Licensing
 
-**PrimeReact 11 is no longer MIT.** PrimeReact 10 was; 11 is part of PrimeTek's commercial **PrimeUI** family, along with `primeicons` 8.x, `@primereact/core`, `@primereact/headless`, `@primeuix/themes` and `@primeuix/styled`.
+**PrimeReact 11 is no longer MIT.** PrimeReact 10 was; 11 is part of PrimeTek's commercial **PrimeUI** family, along with `primeicons` 8.x, `@primereact/core`, `@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`.
 
 `@cratis/components` itself stays **MIT**. What changed is what it depends on — and because PrimeReact is a peer dependency as of 3.0.0, you install it and its terms apply to you directly.
 
@@ -207,7 +229,7 @@ An earlier version of this page said unstyled rendering and the Cratis baseline 
 <CratisComponentsProvider value={{ license: '…' }}>
 ```
 
-What the styling choice changes is whether you additionally depend on `@primeuix/themes`. [The Cratis baseline theme](Styling/baseline-theme.md) is Cratis-authored MIT CSS embedding no PrimeTek values, so that *stylesheet* carries no PrimeTek terms — but rendering it still runs PrimeReact 11, which needs a key.
+What the styling choice changes is whether you additionally depend on `@primereact/styles` and `@primeuix/themes` — both PrimeUI-licensed too, and needed only for styled mode. [The Cratis baseline theme](Styling/baseline-theme.md) is Cratis-authored MIT CSS embedding no PrimeTek values, so that *stylesheet* carries no PrimeTek terms — but rendering it still runs PrimeReact 11, which needs a key.
 
 ### Which license you need
 

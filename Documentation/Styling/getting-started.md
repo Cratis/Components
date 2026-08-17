@@ -18,6 +18,7 @@ Two more notes:
 
 - `primeicons` went **7 → 8** alongside PrimeReact 11.
 - `primereact` pins `@primereact/core` and `@primereact/headless` to its own exact version, so all three land on the same release. Declaring them anyway is what makes a strict installer (pnpm, Yarn PnP) resolve them for the library too.
+- `@primereact/styles` and `@primeuix/themes` are **optional** peers — install them only for [PrimeReact's styled mode](themed.md). The baseline theme and unstyled mode need neither.
 
 The heavier extras (`pixi.js` for `PivotViewer`, `framer-motion` for animated panels, `allotment` for the `DataPage` resizable layout) are still regular dependencies, so they come down with the package and modern bundlers tree-shake away the ones you never import. The remaining peers — `react`/`react-dom` 19+, `@cratis/arc*`, `reflect-metadata`, and `tsyringe` — already come with your Arc frontend.
 
@@ -39,7 +40,7 @@ Import them in that order: `styles` and `theme` both consume the tokens.
 
 ## Wire the provider
 
-Mount [`CratisComponentsProvider`](../Common/cratis-components-provider.md) once at the root of your tree. The provider is a thin wrapper around PrimeReact's own `PrimeReactProvider` and is where you configure `unstyled`, `pt`, `ptOptions`, `inputVariant`, `ripple`, `zIndex`, `locale`, `theme` and `license` — all through its single `value` prop:
+Mount [`CratisComponentsProvider`](../Common/cratis-components-provider.md) once at the root of your tree. The provider is a thin wrapper around PrimeReact's own `PrimeReactProvider` and is where you configure `unstyled`, `pt`, `ptOptions`, `inputVariant`, `ripple`, `zIndex`, `locale`, `theme`, `defaults` and `license` — all through its single `value` prop:
 
 ```tsx
 import '@cratis/components/tokens';
@@ -64,7 +65,7 @@ With nothing else, you've imported:
 That's enough for the wrappers to render structurally, but PrimeReact 11 is **unstyled-first**: widgets need a look applied before they resemble anything other than raw browser primitives. Choose the setup that matches how much visual control you need:
 
 - [Use the Cratis baseline theme](baseline-theme.md) — the default look, no preset needed
-- [Use a PrimeReact theme](themed.md) — a styled `@primeuix/themes` preset
+- [Use PrimeReact's styled mode](themed.md) — `styledMode()`: a `@primeuix/themes` preset plus PrimeReact's own component styles
 - [Use a custom palette on top of a theme](custom-palette.md) — keep the theme's structure and supply your colors
 - [Use fully unstyled mode](unstyled.md) — bring every visual yourself through `pt` / CSS
 

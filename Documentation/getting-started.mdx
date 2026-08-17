@@ -41,7 +41,7 @@ You can build that straight on PrimeReact — instantiate the command, track its
 :::caution[PrimeReact 11 is not MIT]
 `@cratis/components` is MIT, but as of 3.0.0 it builds on **PrimeReact 11**, which is part of
 PrimeTek's commercial **PrimeUI** family — as are `primeicons` 8.x, `@primereact/core`,
-`@primereact/headless`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
+`@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
 
 A **PrimeUI license key is required regardless of how you style** — the check runs when
 `PrimeReactProvider` mounts, not when a theme is applied. Without one you get a console warning and
@@ -115,7 +115,7 @@ No `isExecuting` flag, no button wiring, no duplicate validation logic — and b
 The components render structurally the moment the provider is mounted; their *look* is a separate, deliberate choice. PrimeReact 11 is unstyled-first, so pick one setup on the [Styling](/components/styling/) page:
 
 - the **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`),
-- a styled `@primeuix/themes` **preset** via `value={{ theme: { preset } }}`, or
+- PrimeReact's **styled mode** — `import { styledMode } from '@cratis/components/styled'` and `value={{ license, ...styledMode() }}`, which hands the provider a `@primeuix/themes` preset *and* PrimeReact's own component styles (a preset alone emits tokens but paints nothing; needs `@primereact/styles` and `@primeuix/themes` installed), or
 - fully unstyled, with your own `pt` / CSS.
 
 ## Recap

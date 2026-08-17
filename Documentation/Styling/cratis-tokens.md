@@ -7,17 +7,17 @@ The `--cratis-*` CSS variable layer is the Cratis-scoped tint surface every Crat
 /*                            ^ v11 (@primeuix/themes)      ^ v10 legacy      */
 ```
 
-`@cratis/components` 3.0 requires `primereact@^11` as a peer, so the **v11 arm is the one that resolves in a correctly installed app**. The v10 arm is kept deliberately for the upgrade window, when an app still has a compiled v10 theme stylesheet on the page while it ports its own screens. Nothing breaks the day that stylesheet is removed — the v11 arm was already winning.
+`@cratis/components` 3.0 requires `primereact@^11` as a peer, so the **v11 arm is the one that resolves in a correctly installed app**. The v10 arm is kept deliberately for the upgrade window, when an app still has a compiled v10 theme stylesheet on the page while it ports its own screens — or imports [`@cratis/components/primereact-v10-palette`](../migration.md#theming-without-a-theme-stylesheet), which restores those v10 names for CSS already written against them. Nothing breaks the day that stylesheet is removed — the v11 arm was already winning.
 
 This indirection is the single seam that insulates your code (and your consumers' `--cratis-*` overrides) from PrimeReact's token system changing underneath you. It is the reason this library could span a PrimeReact major version at all.
 
-You override `--cratis-*` tokens when you want **just** Cratis-scoped surfaces (validation error text, FormElement addon, breadcrumb borders, …) tinted independently of PrimeReact widgets. To repaint PrimeReact widgets themselves, customize the preset — see [the custom palette setup](custom-palette.md).
+You override `--cratis-*` tokens when you want **just** Cratis-scoped surfaces (validation error text, FormElement addon, breadcrumb borders, …) tinted independently of PrimeReact widgets. To repaint PrimeReact widgets themselves, override the tokens under the baseline theme or derive your own preset in styled mode — see [the custom palette setup](custom-palette.md).
 
 ## Where the values come from
 
 PrimeReact 11 ships **zero CSS**, so nothing populates `--p-*` until something does it at runtime. Two things can:
 
-- **A `@primeuix/themes` preset.** A preset is a plain JavaScript token object; `@primeuix/styled` turns it into `--p-*` custom properties when you hand it to the provider (`value={{ theme: { preset: Aura } }}`). This path is [license-gated](themed.md).
+- **A `@primeuix/themes` preset**, in [PrimeReact's styled mode](themed.md). A preset is a plain JavaScript token object; `@primeuix/styled` turns it into `--p-*` custom properties when the provider receives it. `styledMode()` from `@cratis/components/styled` hands the provider the preset together with PrimeReact's component styles — the tokens alone would populate `--p-*` (and so `--cratis-*`) but paint no widget, because the primitives carry no `p-*` class without those styles.
 - **The [Cratis baseline theme](baseline-theme.md).** `@cratis/components/theme` skips `--p-*` entirely and assigns the `--cratis-*` tokens concrete values directly, light and dark — no preset needed. It still defers to a preset's `--p-*` when one is present.
 
 With neither, the tokens resolve to nothing and the rules that read them no-op. That is deliberate: the library stays theme-agnostic rather than imposing a default palette on consumers.
@@ -167,11 +167,11 @@ The Cratis token layer is **additive** on top of PrimeReact's theme system, not 
 
 That means:
 
-- Repaint PrimeReact itself — customize the preset with `definePreset` so the `--p-*` tokens change — and both PrimeReact widgets *and* Cratis surfaces follow. (During an upgrade window, a still-loaded v10 theme's legacy `--surface-*` / `--text-color` variables reach the Cratis surfaces the same way, through the fallback arm.)
+- Repaint PrimeReact itself — in styled mode, derive the preset with `definePreset` so the `--p-*` tokens change — and both PrimeReact widgets *and* Cratis surfaces follow. (During an upgrade window, a still-loaded v10 theme's legacy `--surface-*` / `--text-color` variables — or the ones `@cratis/components/primereact-v10-palette` restores — reach the Cratis surfaces the same way, through the fallback arm.)
 - Override `--cratis-surface-card` → only Cratis surfaces follow; PrimeReact widgets keep their existing color.
 - Under the [Cratis baseline theme](baseline-theme.md) the distinction collapses: the theme skins the widgets from the same `--cratis-*` tokens, so one override repaints both.
 
-Use the preset when you want a whole-UI repaint. Use the Cratis token when you want a Cratis-specific accent that differs from PrimeReact widgets.
+Use the preset (styled mode) or the baseline theme's tokens when you want a whole-UI repaint. Use the Cratis token when you want a Cratis-specific accent that differs from PrimeReact widgets.
 
 ## See also
 

@@ -114,7 +114,7 @@ Selection, the resizable split, and disabling menu items until a row is selected
 | `DataTable value={...}` + `useEffect` fetch | `DataTableForObservableQuery query={...}` (live) or `DataTableForQuery` |
 | Split panes + selection + detail wiring | `DataPage` with `detailsComponent` |
 | A multi-step wizard you build yourself | `StepperCommandDialog` |
-| A PrimeReact theme | the Cratis baseline theme or a `@primeuix/themes` preset, plus `--cratis-*` tokens for repainting |
+| A PrimeReact theme | the Cratis baseline theme, or PrimeReact's styled mode (`styledMode()` — a `@primeuix/themes` preset plus PrimeReact's component styles), plus `--cratis-*` tokens for repainting |
 
 ## The v11 module renames
 
@@ -179,9 +179,9 @@ Three things bite even when you only use Cratis wrappers.
 
 **PrimeReact is now a peer dependency.** You install `primereact`, `@primereact/core`, `@primereact/headless` and `primeicons` yourself. Two copies of PrimeReact means two `PrimeReactProvider` contexts, which breaks overlays and `pt` with no error to point at — the peer declaration is what prevents that. See [Getting started](/components/getting-started/).
 
-**PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist. A theme is now a `@primeuix/themes` preset — a JavaScript token object turned into `--p-*` custom properties at runtime by the provider — or the [Cratis baseline theme](Styling/baseline-theme.md), or your own `pt`. **PrimeReact 11 needs a PrimeUI license key whichever you pick** — the check runs when the provider mounts, not when a theme is applied. See [Licensing](migration.md#licensing) and [Styling](/components/styling/).
+**PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist. A theme is now [PrimeReact's styled mode](Styling/themed.md) — `styledMode()` from `@cratis/components/styled`, which hands the provider a `@primeuix/themes` preset (a JavaScript token object turned into `--p-*` custom properties at runtime) together with PrimeReact's own component styles; a preset by itself paints nothing — or the [Cratis baseline theme](Styling/baseline-theme.md), or your own `pt`. **PrimeReact 11 needs a PrimeUI license key whichever you pick** — the check runs when the provider mounts, not when a theme is applied. See [Licensing](migration.md#licensing) and [Styling](/components/styling/).
 
-**Unstyled elements carry no `p-*` class.** With no preset applied, PrimeReact identifies parts by data attributes instead — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`. CSS selectors written against v10 class names silently match nothing. (`pt` slot keys are unaffected, though the top-level keys follow the renames above: `select`, not `dropdown`.)
+**Outside styled mode, elements carry no `p-*` class.** The `primereact` primitives identify parts by data attributes — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`; the `p-*` class names come from PrimeReact's component styles, which only `styledMode()` applies. Elsewhere, CSS selectors written against v10 class names silently match nothing. (`pt` slot keys are unaffected, though the top-level keys follow the renames above: `select`, not `dropdown`.)
 
 Two smaller ones: `Button` renders its content as **children**, not `label`/`icon` props; and the data-table selection event is now `DataTableSelectionChangeEvent<T>` rather than `DataTableSelectionSingleChangeEvent`.
 
