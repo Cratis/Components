@@ -7,23 +7,24 @@ import 'primeicons/primeicons.css';
 import '../styles.css';
 import './preview.css';
 import '../theme.css';
+import '../primereact-v10-palette.css';
 import Aura from '@primeuix/themes/aura';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
+import { styledMode } from '../Styled';
 import { tailwindPtPreset } from './pt-preset';
 
-// PrimeReact 11 is unstyled-first and token-based: the styled look comes from a
-// @primeuix/themes preset applied through the provider's `theme` config (which
-// injects the `--p-*` design tokens), and dark mode is toggled with a class the
-// preset's `darkModeSelector` targets. There are no theme CSS files to <link>
-// anymore (the v10 `primereact/resources/themes/lara-*` files were removed).
+// PrimeReact 11 is unstyled-first and token-based: the styled look is styled mode -
+// PrimeReact's own component styles handed to every primitive through the provider's
+// `defaults`, painted by a @primeuix/themes preset applied through its `theme` config
+// (which injects the `--p-*` design tokens). A preset alone styles nothing; that is what
+// `styledMode()` composes. Dark mode is toggled with the class the preset's
+// `darkModeSelector` targets. There are no theme CSS files to <link> anymore (the v10
+// `primereact/resources/themes/lara-*` files were removed).
 const DARK_SELECTOR = 'cratis-dark';
 
-const styledTheme = { preset: Aura, options: { darkModeSelector: `.${DARK_SELECTOR}` } };
-
-// PrimeReact 11's styled layer (@primeuix/themes) is license-gated: without a valid
-// PrimeUI license key the components fall back to unstyled and a nag banner appears.
-// Set STORYBOOK_PRIMEUI_LICENSE to preview the styled (Aura) modes with your own key;
-// the license-free default below is the unstyled + Tailwind `pt` path.
+// PrimeReact 11 verifies a PrimeUI license key when its provider mounts, whatever the
+// styling path; without one a nag banner appears. Set STORYBOOK_PRIMEUI_LICENSE to your
+// own key. The default mode below is the unstyled + Tailwind `pt` path.
 const PRIMEUI_LICENSE = import.meta.env?.STORYBOOK_PRIMEUI_LICENSE;
 const withLicense = (value) => (PRIMEUI_LICENSE ? { ...value, license: PRIMEUI_LICENSE } : value);
 
@@ -41,16 +42,22 @@ const STYLING_MODES = {
         providerValue: { unstyled: true },
     },
     'styled-dark': {
-        title: 'Path A — Styled (Aura Dark) — needs PrimeUI license',
+        title: 'Path A — Styled mode, Cratis preset, dark',
         dark: true,
         bodyClass: null,
-        providerValue: withLicense({ ripple: true, theme: styledTheme }),
+        providerValue: withLicense({ ripple: true, ...styledMode() }),
     },
     'styled-light': {
-        title: 'Path A — Styled (Aura Light) — needs PrimeUI license',
+        title: 'Path A — Styled mode, Cratis preset, light',
         dark: false,
         bodyClass: null,
-        providerValue: withLicense({ ripple: true, theme: styledTheme }),
+        providerValue: withLicense({ ripple: true, ...styledMode() }),
+    },
+    'styled-aura-dark': {
+        title: 'Path A — Styled mode, Aura preset, dark',
+        dark: true,
+        bodyClass: null,
+        providerValue: withLicense({ ripple: true, ...styledMode({ preset: Aura }) }),
     },
     'cratis-theme': {
         title: 'Path B — Cratis baseline theme, dark (no license)',

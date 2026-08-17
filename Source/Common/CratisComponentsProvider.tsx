@@ -62,8 +62,11 @@ export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | unde
  * - **Unstyled (default posture):** pass nothing, or `value={{ unstyled: true }}`, and
  *   style the structural markup yourself through the `--cratis-*` token layer, your own
  *   CSS, Tailwind, or `pt` definitions.
- * - **Styled:** pass `value={{ theme: { preset } }}` with a `@primeuix/themes` preset
- *   (e.g. `import Aura from '@primeuix/themes/aura'`) to opt into a token-based styled look.
+ * - **Styled:** spread `styledMode()` from `@cratis/components/styled` into `value` -
+ *   PrimeReact's own component styles for every primitive plus a `@primeuix/themes`
+ *   preset (the Cratis preset by default, `styledMode({ preset: Aura })` for another).
+ *   A preset on `theme` alone only emits design tokens; the primitives render without
+ *   `p-*` classes until `defaults` gives them their styles, which is what `styledMode()` does.
  * - Pass `value={{ pt, ptOptions }}` to apply global per-component pass-through.
  *
  * **PrimeUI license.** PrimeReact 11 is no longer MIT — its provider verifies a PrimeUI
