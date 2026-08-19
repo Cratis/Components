@@ -28,9 +28,9 @@
     "version": "0.0.0",
     "packageManager": "yarn@4.5.3",
     "devDependencies": {
-        "@cratis/arc": "21.19.0",
-        "@cratis/arc.react": "21.19.0",
-        "@cratis/arc.vite": "21.19.0",
+        "@cratis/arc": "21.19.2",
+        "@cratis/arc.react": "21.19.2",
+        "@cratis/arc.vite": "21.19.2",
         "@eslint/eslintrc": "^3.3.6",
         "@eslint/js": "^10.0.1",
         "@rollup/plugin-node-resolve": "^16.0.3",
@@ -51,7 +51,7 @@
         "@typescript-eslint/eslint-plugin": "^8.67.0",
         "@typescript-eslint/parser": "^8.67.0",
         "@vitejs/plugin-react": "^6.0.5",
-        "@vitest/coverage-v8": "^4.1.10",
+        "@vitest/coverage-v8": "^4.1.11",
         "autoprefixer": "^10.5.4",
         "chai": "^6.2.2",
         "chai-as-promised": "^8.0.2",
@@ -77,7 +77,7 @@
         "rollup-plugin-peer-deps-external": "^2.2.4",
         "sinon": "^22.1.0",
         "sinon-chai": "^4.0.1",
-        "storybook": "^10.5.8",
+        "storybook": "^10.5.9",
         "tailwindcss": "^4.3.3",
         "ts-node": "^10.9.2",
         "tsyringe": "4.10.0",
@@ -86,6 +86,6 @@
         "vite": "^8.2.1",
         "vite-plugin-commonjs": "^0.10.4",
         "vite-tsconfig-paths": "^6.1.1",
-        "vitest": "^4.1.10"
+        "vitest": "^4.1.11"
     }
 }
