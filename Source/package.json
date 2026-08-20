@@ -142,7 +142,7 @@
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "21.19.2",
+        "@cratis/arc.vite": "21.19.3",
         "@primereact/core": "11.1.0",
         "@primereact/headless": "11.1.0",
         "@primereact/styles": "11.1.0",
