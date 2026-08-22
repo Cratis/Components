@@ -23,7 +23,7 @@ Your responsibility is to identify performance problems in changed code before t
 
 ### Chronicle / Event Sourcing
 
-- [ ] Projections use `.AutoMap()` — avoids manual field mapping cost
+- [ ] Projections call `.From<>()` directly and rely on default AutoMap; use `.Set().To()` only for genuine name differences
 - [ ] Projections do NOT perform joins on the read model (Chronicle re-hydrates from events; joining on the model forces a full re-read)
 - [ ] Reactors do NOT re-query the event log inside their `On()` handler — use event data directly
 - [ ] No eager loading of entire event logs or event sequences without paging/filtering
@@ -83,7 +83,7 @@ Group findings by category:
 ```
 ### MongoDB / Read Models
 
-🟡 **Medium** — `Features/Projects/Listing/AllProjects.cs`
+🟡 **Medium** — `Projects/Listing/AllProjects.cs`
 > The query does not specify a sort order or index hint, which will result in a
 > collection scan once the `projects` collection grows.
 > Fix: Add `.SortBy(m => m.Name)` and ensure an index on `Name` exists in the

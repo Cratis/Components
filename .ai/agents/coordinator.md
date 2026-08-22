@@ -23,7 +23,7 @@ You do NOT write code yourself — you decompose goals into tasks and delegate e
 
 Always read and follow:
 - `.github/copilot-instructions.md`
-- `.github/instructions/vertical-slices.instructions.md`
+- `.ai/rules/vertical-slices.md`
 
 ---
 
