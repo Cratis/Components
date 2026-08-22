@@ -54,6 +54,7 @@ interface DropdownProps<T = unknown> {
     optionValue?: string; // property used as the underlying value; defaults to 'value' when the options carry it
     placeholder?: string;
     filter?: boolean; // filter input inside the popup
+    filterPlaceholder?: string; // defaults to placeholder when omitted
     multiple?: boolean; // multi-select
     showClear?: boolean;
     invalid?: boolean;
@@ -145,7 +146,7 @@ const countries = [
 
 ### With Filtering
 
-Set `filter` to render a filter input inside the popup. The filter input reuses `placeholder` as its own placeholder — there is no separate `filterPlaceholder` prop:
+Set `filter` to render a filter input inside the popup. `filterPlaceholder` can differ from the closed trigger's `placeholder`; when omitted, it defaults to the trigger placeholder:
 
 ```typescript
 <Dropdown
@@ -154,6 +155,7 @@ Set `filter` to render a filter input inside the popup. The filter input reuses 
     onChange={(e) => setSelected(e.value)}
     filter
     placeholder="Select Option"
+    filterPlaceholder="Search options"
 />
 ```
 
@@ -343,7 +345,7 @@ function IssueForm() {
 1. **It is one element, not seven.** The wrapper composes the parts and gates `Select.Filter` and `Select.Clear` on the `filter` / `showClear` props.
 2. **It is a curated surface, not a passthrough.** Only the props in the table above are accepted; the rest of PrimeReact's Select API is reachable through `pt` / `ptOptions` / `unstyled`. That is deliberate — it is what lets the wrapper's API stay stable across PrimeReact versions.
 
-Two details of the composition are worth knowing when you style or test it. `onBlur` rides a wrapping `<span>` rather than `Select.Root`, because React blur bubbles as `focusout`. And `placeholder` is not passed to the root — it goes to `Select.Value`, and to the filter input when `filter` is set.
+Two details of the composition are worth knowing when you style or test it. `onBlur` rides a wrapping `<span>` rather than `Select.Root`, because React blur bubbles as `focusout`. And `placeholder` is not passed to the root — it goes to `Select.Value` and is the filter input's fallback when no independent `filterPlaceholder` is supplied.
 
 ## Best Practices
 
