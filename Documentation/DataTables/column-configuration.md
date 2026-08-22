@@ -189,6 +189,47 @@ Set `filter` and choose one of the four built-in value editors with `dataType`:
 
 `defaultFilters` on the surrounding table initializes the draft once when the table mounts. Filtering is client-side over the currently loaded query page; the menu's Apply action commits its draft.
 
+### Match-mode vocabulary
+
+Use the Cratis-owned `DataTableFilterMatchMode` values rather than importing rendering-adapter constants:
+
+```typescript
+import {
+    DataTableFilterMatchMode,
+    type DataTableFilterMeta,
+} from '@cratis/components/DataTables';
+
+const filters: DataTableFilterMeta = {
+    name: {
+        value: 'Ada',
+        matchMode: DataTableFilterMatchMode.Contains,
+    },
+};
+```
+
+For a custom mode, register the matcher through Cratis and use the branded value it returns:
+
+```typescript
+import {
+    registerDataTableFilterMatcher,
+    unregisterDataTableFilterMatcher,
+} from '@cratis/components/DataTables';
+
+const UserHasRole = registerDataTableFilterMatcher(
+    'userHasRole',
+    (roles, expectedRole) => Array.isArray(roles) && roles.includes(expectedRole),
+);
+
+const filters: DataTableFilterMeta = {
+    roles: { value: 'advisor', matchMode: UserHasRole.matchMode },
+};
+
+// Optional during hot-module disposal or isolated specs:
+unregisterDataTableFilterMatcher(UserHasRole);
+```
+
+Custom matcher names are process-wide, matching the active table engine's registry. Register them once with a unique application-owned name; built-in names cannot be replaced, and registering a different function under an existing custom name throws. Consumers import only the Cratis vocabulary and registration seam; every loaded table adapter receives the runtime matcher internally.
+
 ### Localize the menu
 
 Override any of the default English labels per filtered column. Omitted labels retain their defaults:
@@ -239,8 +280,8 @@ The callback receives:
 interface ColumnFilterElementOptions {
     field: string; // effective filterField, or field
     value: unknown; // current draft value
-    matchMode: string; // current draft match mode
-    onChange(value: unknown, matchMode?: string): void;
+    matchMode: DataTableFilterMatchMode; // current draft match mode
+    onChange(value: unknown, matchMode?: DataTableFilterMatchMode): void;
     onApply(event: React.SyntheticEvent): void;
     onClear(event: React.SyntheticEvent): void;
 }

@@ -2,7 +2,7 @@
 title: Getting started
 description: Install Components, mount the provider, and render your first type-safe command form — a few declarative lines instead of a few files of glue.
 sidebar:
-  order: 2
+    order: 2
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
@@ -14,7 +14,7 @@ You can build that straight on PrimeReact — instantiate the command, track its
 ## Prerequisites
 
 - **A React app** — a Vite + React frontend (the `dotnet new cratis` template scaffolds one).
-- **An Arc frontend that reaches your backend through generated proxies** — the [Arc frontend get-started](/arc/frontend/getting-started/) sets that up. Components renders forms and tables *on top* of those proxies. If you scaffolded with `dotnet new cratis`, the package is already installed and you're here to understand the pieces.
+- **An Arc frontend that reaches your backend through generated proxies** — the [Arc frontend get-started](/arc/frontend/getting-started/) sets that up. Components renders forms and tables _on top_ of those proxies. If you scaffolded with `dotnet new cratis`, the package is already installed and you're here to understand the pieces.
 
 ## Install and wire it up
 
@@ -22,59 +22,60 @@ You can build that straight on PrimeReact — instantiate the command, track its
 
 1. **Install the package — and PrimeReact alongside it.**
 
-   ```bash title="Install Components"
-   npm install @cratis/components primereact @primereact/core @primereact/headless primeicons
-   ```
+    ```bash title="Install Components"
+    npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+    ```
 
-   From 3.0, PrimeReact is a **peer dependency**, so you supply it and the library uses yours. That's not bureaucracy: when the library bundled its own copy, an app that also depended on `primereact` could end up with **two** — and two copies means two `PrimeReactProvider` contexts, so overlays stack wrongly and `pt` silently stops applying, with no error to point at it. One declared peer is one copy. If you carried a `resolutions` / `overrides` pin for `primereact` to work around this, delete it.
+    From 3.0, PrimeReact is a **peer dependency**, so you supply it and the library uses yours. That's not bureaucracy: when the library bundled its own copy, an app that also depended on `primereact` could end up with **two** — and two copies means two `PrimeReactProvider` contexts, so overlays stack wrongly and `pt` silently stops applying, with no error to point at it. One declared peer is one copy. If you carried a `resolutions` / `overrides` pin for `primereact` to work around this, delete it.
 
-   `primeicons` went 7 → 8 with PrimeReact 11. The heavier extras — `pixi.js` (`PivotViewer`), `framer-motion` (animated panels), `allotment` (`DataPage`) — are still regular dependencies and install automatically. The remaining peers (`react`/`react-dom` 19+, `@cratis/arc*`, `reflect-metadata`, `tsyringe`) already come with the Arc frontend from the prerequisites.
+    `primeicons` went 7 → 8 with PrimeReact 11. The heavier extras — `pixi.js` (`PivotViewer`), `framer-motion` (animated panels), `allotment` (`DataPage`) — are still regular dependencies and install automatically. The remaining peers (`react`/`react-dom` 19+, `@cratis/arc*`, `reflect-metadata`, `tsyringe`) already come with the Arc frontend from the prerequisites.
 
 2. **Import the stylesheets once**, at your app's entry point, in this order:
 
-   ```typescript title="main.tsx"
-   import '@cratis/components/tokens';   // the --cratis-* token layer
-   import '@cratis/components/styles';   // every component stylesheet, in one file
-   import '@cratis/components/theme';    // optional — the Cratis baseline look (MIT CSS)
-   ```
+    ```typescript title="main.tsx"
+    import '@cratis/components/tokens'; // the --cratis-* token layer
+    import '@cratis/components/styles'; // every component stylesheet, in one file
+    import '@cratis/components/theme'; // optional — the Cratis baseline look (MIT CSS)
+    ```
 
-   :::caution[PrimeReact 11 is not MIT]
-   `@cratis/components` is MIT, but as of 3.0.0 it builds on **PrimeReact 11**, which is part of
-   PrimeTek's commercial **PrimeUI** family — as are `primeicons` 8.x, `@primereact/core`,
-   `@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
+    :::caution[PrimeReact 11 is not MIT]
+    `@cratis/components` is MIT, but as of 3.0.0 it builds on **PrimeReact 11**, which is part of
+    PrimeTek's commercial **PrimeUI** family — as are `primeicons` 8.x, `@primereact/core`,
+    `@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
 
-   A **PrimeUI license key is required regardless of how you style** — the check runs when
-   `PrimeReactProvider` mounts, not when a theme is applied. Without one you get a console warning and
-   an *"Invalid PrimeUI License"* banner, in development and production.
+    A **PrimeUI license key is required regardless of how you style** — the check runs when
+    `PrimeReactProvider` mounts, not when a theme is applied. Without one you get a console warning and
+    an _"Invalid PrimeUI License"_ banner, in development and production.
 
-   The [Community License](https://primeui.dev/licenses/community) is free for individuals, students,
-   non-profits, non-commercial open source, and organizations under $1M revenue with fewer than 5
-   developers. Everyone else needs a [Commercial License](https://primeui.dev/licenses/commercial).
-   Redistributing a library that others build with needs a separate OEM License.
+    The [Community License](https://primeui.dev/licenses/community) is free for individuals, students,
+    non-profits, non-commercial open source, and organizations under $1M revenue with fewer than 5
+    developers. Everyone else needs a [Commercial License](https://primeui.dev/licenses/commercial).
+    Redistributing a library that others build with needs a separate OEM License.
 
-   Need to stay MIT-only? **`@cratis/components` 2.x remains on PrimeReact 10.** See
-   [Licensing](/components/migration/#licensing).
-   :::
+    Need to stay MIT-only? **`@cratis/components` 2.x remains on PrimeReact 10.** See
+    [Licensing](/components/migration/#licensing).
+    :::
 
-   Components no longer import their own CSS — that's what lets the package load in a plain Node test environment. `tokens` declares the `--cratis-*` [token layer](/components/styling/) the components read their colors and spacing from; `styles` is the component CSS plus the pre-compiled utility styles; `theme` is optional and covered below. It works with any bundler.
+    Components no longer import their own CSS — that's what lets the package load in a plain Node test environment. `tokens` declares the `--cratis-*` [token layer](/components/styling/) the components read their colors and spacing from; `styles` is the component CSS plus the pre-compiled utility styles; `theme` is optional and covered below. It works with any bundler.
 
-   <Aside type="caution" title="Order matters">
-   Import `tokens` first. Both `styles` and `theme` resolve `--cratis-*` variables that `tokens` declares.
-   </Aside>
+    <Aside type='caution' title='Order matters'>
+        Import `tokens` first. Both `styles` and `theme` resolve `--cratis-*` variables
+        that `tokens` declares.
+    </Aside>
 
 3. **Mount the provider** around your app:
 
-   ```tsx title="App.tsx"
-   import '@cratis/components/tokens';
-   import '@cratis/components/styles';
-   import { CratisComponentsProvider } from '@cratis/components';
+    ```tsx title="App.tsx"
+    import '@cratis/components/tokens';
+    import '@cratis/components/styles';
+    import { CratisComponentsProvider } from '@cratis/components';
 
-   export const App = () => (
-       <CratisComponentsProvider>
-           <YourApp />
-       </CratisComponentsProvider>
-   );
-   ```
+    export const App = () => (
+        <CratisComponentsProvider>
+            <YourApp />
+        </CratisComponentsProvider>
+    );
+    ```
 
 </Steps>
 
@@ -98,11 +99,15 @@ Here's the add-author form — the whole thing. `CommandDialog` takes your gener
 ```tsx title="AddAuthor.tsx"
 import { CommandDialog } from '@cratis/components/CommandDialog';
 import { InputTextField } from '@cratis/components/CommandForm';
-import { RegisterAuthor } from './Authors/RegisterAuthor';   // generated proxy
+import { RegisterAuthor } from './Authors/RegisterAuthor'; // generated proxy
 
 export const AddAuthor = () => (
-    <CommandDialog<RegisterAuthor> command={RegisterAuthor} title="Add author" okLabel="Add">
-        <InputTextField<RegisterAuthor> value={i => i.name} title="Name" />
+    <CommandDialog<RegisterAuthor>
+        command={RegisterAuthor}
+        title='Add author'
+        okLabel='Add'
+    >
+        <InputTextField<RegisterAuthor> value={(i) => i.name} title='Name' />
     </CommandDialog>
 );
 ```
@@ -111,10 +116,10 @@ No `isExecuting` flag, no button wiring, no duplicate validation logic — and b
 
 ## Choose how it looks
 
-The components render structurally the moment the provider is mounted; their *look* is a separate, deliberate choice. PrimeReact 11 is unstyled-first, so pick one setup on the [Styling](/components/styling/) page:
+The components render structurally the moment the provider is mounted; their _look_ is a separate, deliberate choice. PrimeReact 11 is unstyled-first, so pick one setup on the [Styling](/components/styling/) page:
 
 - the **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`),
-- PrimeReact's **styled mode** — `import { styledMode } from '@cratis/components/styled'` and `value={{ license, ...styledMode() }}`, which hands the provider a `@primeuix/themes` preset *and* PrimeReact's own component styles (a preset alone emits tokens but paints nothing; needs `@primereact/styles` and `@primeuix/themes` installed), or
+- PrimeReact's **styled mode** — `import { styledMode } from '@cratis/components/styled'` and `value={{ license, ...styledMode() }}`, which hands the provider a `@primeuix/themes` preset _and_ PrimeReact's own component styles (a preset alone emits tokens but paints nothing; needs `@primereact/styles` and `@primeuix/themes` installed), or
 - fully unstyled, with your own `pt` / CSS.
 
 ## Recap

@@ -16,7 +16,7 @@
 3.0 makes the requirement explicit instead. **You supply PrimeReact; we use yours.**
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless primeicons
+npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
 ```
 
 Which lands in your app's `dependencies` as:
@@ -27,6 +27,7 @@ Which lands in your app's `dependencies` as:
         "primereact": "^11.0.0",
         "@primereact/core": "^11.0.0",
         "@primereact/headless": "^11.0.0",
+        "@primereact/hooks": "^11.0.0",
         "primeicons": "^8.0.0"
     }
 }
@@ -34,7 +35,7 @@ Which lands in your app's `dependencies` as:
 
 Notes:
 
-- `primereact` pins `@primereact/core` and `@primereact/headless` to its own **exact** version, so installing `primereact@11.1.0` gives you 11.1.0 of all three. Declaring them anyway is what makes a strict installer (pnpm, Yarn PnP) resolve them for the library too.
+- `primereact` pins `@primereact/core`, `@primereact/headless` and `@primereact/hooks` to its own **exact** version, so installing `primereact@11.1.0` gives you 11.1.0 of all four. Declaring them anyway is what makes a strict installer (pnpm, Yarn PnP) resolve them for the library too.
 - `primeicons` went **7 → 8** alongside PrimeReact 11.
 - `@primereact/types` is an **optional** peer. You only need it declared if your own code imports our prop types (they re-export `@primereact/types/*` shapes). It arrives transitively via `@primereact/core` in a hoisting installer.
 - `@primereact/styles` and `@primeuix/themes` are **optional** peers. Install them only for PrimeReact's styled mode — see [Theming without a theme stylesheet](#theming-without-a-theme-stylesheet). The baseline theme and unstyled mode need neither.
@@ -217,7 +218,7 @@ v11 is unstyled-first: outside [styled mode](Styling/themed.md), PrimeReact elem
 
 ## Licensing
 
-**PrimeReact 11 is no longer MIT.** PrimeReact 10 was; 11 is part of PrimeTek's commercial **PrimeUI** family, along with `primeicons` 8.x, `@primereact/core`, `@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`.
+**PrimeReact 11 is no longer MIT.** PrimeReact 10 was; 11 is part of PrimeTek's commercial **PrimeUI** family, along with `primeicons` 8.x, `@primereact/core`, `@primereact/headless`, `@primereact/hooks`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`.
 
 `@cratis/components` itself stays **MIT**. What changed is what it depends on — and because PrimeReact is a peer dependency as of 3.0.0, you install it and its terms apply to you directly.
 

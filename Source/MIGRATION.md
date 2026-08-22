@@ -34,17 +34,18 @@ Add these to your app's `dependencies`:
 ```jsonc
 {
     "dependencies": {
-        "primereact":            "^11.0.0",
-        "@primereact/core":      "^11.0.0",
-        "@primereact/headless":  "^11.0.0",
-        "primeicons":            "^8.0.0"
+        "primereact": "^11.0.0",
+        "@primereact/core": "^11.0.0",
+        "@primereact/headless": "^11.0.0",
+        "@primereact/hooks": "^11.0.0",
+        "primeicons": "^8.0.0"
     }
 }
 ```
 
 Notes:
 
-- `primereact` pins `@primereact/core` and `@primereact/headless` to its own **exact**
+- `primereact` pins `@primereact/core`, `@primereact/headless` and `@primereact/hooks` to its own **exact**
   version, so installing `primereact@11.1.0` gives you 11.1.0 of all three. Declaring
   them anyway is what makes a strict installer (pnpm, Yarn PnP) resolve them for the
   library too.
@@ -396,12 +397,12 @@ unaffected either way.)
 **PrimeReact 11 is no longer MIT.** This is the single most consequential change in the
 upgrade, and it is not a theming detail — it applies to the whole library.
 
-| Package | v10 | v11 |
-|---|---|---|
-| `primereact` | MIT | PrimeUI commercial |
-| `primeicons` | MIT (7.x) | PrimeUI commercial (8.x) |
-| `@primereact/core`, `@primereact/headless`, `@primereact/styles` | — | PrimeUI commercial |
-| `@primeuix/themes`, `@primeuix/styled` | — | PrimeUI commercial |
+| Package                                                                               | v10       | v11                      |
+| ------------------------------------------------------------------------------------- | --------- | ------------------------ |
+| `primereact`                                                                          | MIT       | PrimeUI commercial       |
+| `primeicons`                                                                          | MIT (7.x) | PrimeUI commercial (8.x) |
+| `@primereact/core`, `@primereact/headless`, `@primereact/hooks`, `@primereact/styles` | —         | PrimeUI commercial       |
+| `@primeuix/themes`, `@primeuix/styled`                                                | —         | PrimeUI commercial       |
 
 From PrimeReact 11's own `LICENSE.md`: *"A valid license key is required to use this
 software. A missing, invalid, or expired key may cause the software to display a license

@@ -11,6 +11,7 @@ import type { DataTableFilterExposes } from '@primereact/types/primitive/datatab
 import { Button } from 'primereact/button';
 import { Dropdown } from '../Dropdown/Dropdown';
 import { DatePickerInput } from '../Common/DatePickerInput';
+import type { DataTableFilterMatchMode } from './DataTableFilterMeta';
 
 /** The value kind a {@link ColumnFilterMenu} edits, which drives the match modes and the input control. */
 export type ColumnFilterDataType = 'text' | 'numeric' | 'date' | 'boolean';
@@ -45,9 +46,9 @@ export interface ColumnFilterElementOptions {
     /** Current draft value. */
     value: unknown;
     /** Current draft match mode. */
-    matchMode: string;
+    matchMode: DataTableFilterMatchMode;
     /** Updates the draft without applying it. */
-    onChange: (value: unknown, matchMode?: string) => void;
+    onChange: (value: unknown, matchMode?: DataTableFilterMatchMode) => void;
     /** Applies the current draft. */
     onApply: (event: SyntheticEvent) => void;
     /** Clears the current field filter. */
@@ -182,7 +183,8 @@ export const ColumnFilterMenu = ({
                 ? filterElement({
                       field,
                       value: filter.value,
-                      matchMode: filter.matchMode,
+                      // SAFETY: PrimeReact stores the Cratis vocabulary's runtime string values unchanged.
+                      matchMode: filter.matchMode as DataTableFilterMatchMode,
                       onChange: (value, matchMode) => commit(value, undefined, matchMode),
                       onApply: filter.onApply,
                       onClear: filter.onClear,
