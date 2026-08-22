@@ -162,7 +162,7 @@ Components:
 - `@cratis/components/Dialogs`
 - `@cratis/components/Display` — `Tag`, `Badge`, `Chip`, `Skeleton`, `Avatar`, `ProgressBar`
 - `@cratis/components/Dropdown`
-- `@cratis/components/Notifications` — `Toaster`, `toast`, `toastCommandResult`
+- `@cratis/components/Notifications` — `Toaster`, Cratis-owned `toast` / `ToastDispatch`, `toastCommandResult`
 - `@cratis/components/ObjectContentEditor`
 - `@cratis/components/ObjectNavigationalBar`
 - `@cratis/components/PivotViewer`

@@ -101,3 +101,19 @@ The same framing applies when `toast.update` or a `toast.promise` success/error 
 The severity method is `warn`, not `warning`. Alongside the four above, `toast` also offers `secondary` and `contrast`, and calling `toast(...)` directly takes the same options object with an explicit `severity`.
 
 Every call returns a `ToastId` you can hold on to: `toast.dismiss(id?)` closes that toast (or all of them), `toast.update(id, updates)` rewrites one in place, and `toast.promise(promise, options)` tracks a promise through pending/success/error states.
+
+## Supply an existing notification system
+
+`toast` is a Cratis-owned dispatch contract; PrimeReact is only its default renderer. Install an application-owned implementation with `setToastDispatch()` and restore the previous dispatch when the scope ends:
+
+```typescript
+import { setToastDispatch, type ToastDispatch } from '@cratis/components/Notifications';
+
+const restore = setToastDispatch(myToastDispatch satisfies ToastDispatch);
+
+// toast.success(...) and toastCommandResult(...) now use myToastDispatch.
+// Later, during teardown:
+restore();
+```
+
+The contract preserves the existing callable API and severity methods: `show`, `success`, `info`, `warn`, `error`, `secondary`, `contrast`, `update`, `dismiss`, and `promise`. `toastCommandResult` depends on this Cratis dispatch, so command feedback follows the renderer you supply.
