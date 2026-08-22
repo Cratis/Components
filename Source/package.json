@@ -58,6 +58,10 @@
             "types": "./dist/esm/Compatibility/index.d.ts",
             "import": "./dist/esm/Compatibility/index.js"
         },
+        "./core": {
+            "types": "./dist/esm/Core/index.d.ts",
+            "import": "./dist/esm/Core/index.js"
+        },
         "./DataPage": {
             "types": "./dist/esm/DataPage/index.d.ts",
             "import": "./dist/esm/DataPage/index.js"
@@ -159,8 +163,8 @@
         "primereact": "11.1.0"
     },
     "peerDependencies": {
-        "@cratis/arc": ">=20.3.1 <22",
-        "@cratis/arc.react": ">=20.3.1 <22",
+        "@cratis/arc": ">=20.3.1 <23",
+        "@cratis/arc.react": ">=20.3.1 <23",
         "@cratis/fundamentals": "^7.10.3",
         "@primereact/core": "^11.0.0",
         "@primereact/headless": "^11.0.0",
@@ -176,6 +180,15 @@
         "tsyringe": "4.10.0"
     },
     "peerDependenciesMeta": {
+        "@primereact/core": {
+            "optional": true
+        },
+        "@primereact/headless": {
+            "optional": true
+        },
+        "@primereact/hooks": {
+            "optional": true
+        },
         "@primereact/styles": {
             "optional": true
         },
@@ -183,6 +196,12 @@
             "optional": true
         },
         "@primeuix/themes": {
+            "optional": true
+        },
+        "primeicons": {
+            "optional": true
+        },
+        "primereact": {
             "optional": true
         }
     }

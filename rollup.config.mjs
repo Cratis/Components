@@ -150,7 +150,7 @@ function generatePackageJson(esmPath) {
  * peers a consumer that runs unstyled never installs. Listing them here gives them their own
  * bundle without touching the root.
  */
-const STANDALONE_ENTRIES = ['Styled/index.ts'];
+const STANDALONE_ENTRIES = ['Styled/index.ts', 'Core/index.ts'];
 
 export function rollup(esmPath, tsconfigPath, pkg) {
     const sourceDir = dirname(tsconfigPath);

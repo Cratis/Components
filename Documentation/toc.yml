@@ -6,6 +6,8 @@
   href: coming-from-primereact.md
 - name: Getting started
   href: getting-started.mdx
+- name: UI-kit-free Arc bindings
+  href: core.md
 - name: Tutorial
   href: tutorial/toc.yml
 - name: Choosing a component

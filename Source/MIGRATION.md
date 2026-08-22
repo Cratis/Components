@@ -58,10 +58,10 @@ Notes:
 - If your app carried a `resolutions` / `overrides` entry to collapse PrimeReact into one
   copy, **you can delete it** — the peer declaration is what enforces that now.
 
-### Arc peer range is unchanged
+### Arc 22 is now supported
 
-`@cratis/arc` and `@cratis/arc.react` remain `>=20.3.1 <22`. Arc 20 and Arc 21 are both
-supported; 3.0 does **not** narrow this.
+`@cratis/arc` and `@cratis/arc.react` support `>=20.3.1 <23`. Arc 20, 21 and 22 are
+supported.
 
 > ⚠️ **Keep `@cratis/arc`, `@cratis/arc.react` and `@cratis/arc.vite` on the same
 > version.** `@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if

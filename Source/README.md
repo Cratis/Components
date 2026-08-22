@@ -24,14 +24,21 @@ there is no `require()` entry.
 
 ## Installation
 
+For the PrimeReact rendering components:
+
 ```bash
 npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
 # or
 yarn add @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
 ```
 
-**PrimeReact is a peer dependency** as of 3.0.0. You install it; the library uses
-your copy. This is deliberate: when `primereact` was a regular dependency, an app
+For behavior-only command/query bindings, install the package without the optional UI peers and import `@cratis/components/core`:
+
+```bash
+npm install @cratis/components @cratis/arc @cratis/arc.react @cratis/fundamentals react react-dom
+```
+
+**PrimeReact is an optional peer dependency** as of this release. It is required by the rendering entry points, but not by `@cratis/components/core`. When installed, the rendering library uses your copy. This is deliberate: when `primereact` was a regular dependency, an app
 that also depended on it could end up with **two copies** — and two copies mean two
 `PrimeReactProvider` React contexts, so components rendered from the library read a
 different config, theme and z-index registry than components you render yourself.
@@ -46,7 +53,7 @@ library too. `@primereact/types` is an **optional** peer — needed only if your
 code imports the prop types the wrappers re-export.
 
 The other **peer dependencies** you provide are `react` / `react-dom` (**19+**), the
-`@cratis/arc*` packages (`>=20.3.1 <22` — Arc 20 and 21 both work), `reflect-metadata`
+`@cratis/arc*` packages (`>=20.3.1 <23` — Arc 20, 21 and 22 work), `reflect-metadata`
 and `tsyringe`; you typically already have these in a Cratis app. `pixi.js`,
 `framer-motion`, `allotment` and `react-icons` remain regular dependencies and are
 installed for you. `@primereact/styles` and `@primeuix/themes` are **optional** peers,
@@ -162,6 +169,7 @@ Components:
 - `@cratis/components/Dialogs`
 - `@cratis/components/Display` — `Tag`, `Badge`, `Chip`, `Skeleton`, `Avatar`, `ProgressBar`
 - `@cratis/components/Dropdown`
+- `@cratis/components/core` — UI-kit-free Arc command/query/dialog bindings and neutral filter vocabulary; no PrimeReact peer or PrimeUI license required
 - `@cratis/components/Notifications` — `Toaster`, Cratis-owned `toast` / `ToastDispatch`, `toastCommandResult`
 - `@cratis/components/ObjectContentEditor`
 - `@cratis/components/ObjectNavigationalBar`

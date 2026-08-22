@@ -41,9 +41,9 @@ Notes:
 - `@primereact/styles` and `@primeuix/themes` are **optional** peers. Install them only for PrimeReact's styled mode — see [Theming without a theme stylesheet](#theming-without-a-theme-stylesheet). The baseline theme and unstyled mode need neither.
 - If your app carried a `resolutions` / `overrides` entry to collapse PrimeReact into one copy, **you can delete it** — the peer declaration is what enforces that now.
 
-### Arc peer range is unchanged
+### Arc 22 is now supported
 
-`@cratis/arc` and `@cratis/arc.react` remain `>=20.3.1 <22`. Arc 20 and Arc 21 are both supported; 3.0 does **not** narrow this.
+`@cratis/arc` and `@cratis/arc.react` support `>=20.3.1 <23`. Arc 20, 21 and 22 are supported.
 
 > [!WARNING]
 > **Keep `@cratis/arc`, `@cratis/arc.react` and `@cratis/arc.vite` on the same version.** `@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if your own `@cratis/arc` drifts by even a patch your installer nests a second copy. `ObservableQuerySubscription` has a `private` field, which makes it nominally typed, so two copies produce a type error like _"types have separate declarations of a private property `_connection`"_ in any code touching an observable query. This is an Arc packaging issue, not a Components one; `DataTableForObservableQuery` is hardened against it internally so the library itself still compiles either way ([#135](https://github.com/Cratis/Components/issues/135)).
