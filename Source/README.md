@@ -759,7 +759,7 @@ Three patterns, depending on how much PrimeReact a wrapper composes:
    `SchemaEditor` expose `className` only; restyle internals via the global
    `pt` preset.
 
-`DatePickerInput` uses the runtime `input` slot for attributes on its rendered input. Its public type intentionally rejects PrimeReact 11's stale `pcInputText` declaration, which the runtime never emits:
+`DatePickerInput` uses the runtime `input` slot for attributes on its rendered input. Its public type intentionally rejects PrimeReact 11's stale `pcInputText` declaration, which the runtime never emits. The wrapper translates `invalid` to accepted `aria-invalid` and `data-invalid` input attributes instead of forwarding a rejected `invalid` DOM attribute:
 
 ```tsx
 <DatePickerInput
