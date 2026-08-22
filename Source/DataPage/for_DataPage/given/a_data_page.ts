@@ -6,6 +6,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
 import { Column } from '../../../DataTables/Column';
+import type { DataTableFilterMeta } from '../../../DataTables/DataTableFilterMeta';
 // Allotment lays its split view out entirely from this stylesheet, and a pane is only the
 // absolutely positioned, full-height box the page assumes once the rules are on the document.
 // `DataPage` no longer imports it — a CSS import inside the JS graph is what stopped the
@@ -34,25 +35,32 @@ export interface DataPageOptions {
 
     /** Supply a `detailsComponent`, so the page runs its split-view branch. */
     withDetails?: boolean;
+
+    /** Seed the data table's per-field filters. */
+    defaultFilters?: DataTableFilterMeta;
 }
 
 const PersonDetails = ({ item }: { item: Person }) =>
     React.createElement('div', { className: 'person-details' }, item.name);
 
-const columns = () => React.createElement(
-    DataPage.Columns,
-    { key: 'columns' },
-    React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
-    React.createElement(Column, { key: 'name', field: 'name', header: 'Name' }));
+const columns = () =>
+    React.createElement(
+        DataPage.Columns,
+        { key: 'columns' },
+        React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
+        React.createElement(Column, { key: 'name', field: 'name', header: 'Name' }),
+    );
 
-const menuItems = () => React.createElement(
-    DataPage.MenuItems,
-    { key: 'menuItems' },
-    React.createElement(MenuItem, {
-        key: 'add',
-        label: 'Add',
-        icon: () => React.createElement('i', { className: 'pi pi-plus' })
-    }));
+const menuItems = () =>
+    React.createElement(
+        DataPage.MenuItems,
+        { key: 'menuItems' },
+        React.createElement(MenuItem, {
+            key: 'add',
+            label: 'Add',
+            icon: () => React.createElement('i', { className: 'pi pi-plus' }),
+        }),
+    );
 
 /**
  * Builds the `DataPage` element the specs render.
@@ -69,9 +77,11 @@ export const aDataPage = (options: DataPageOptions = {}) => {
             query: PersonsQuery,
             emptyMessage: 'No persons found',
             dataKey: 'id',
-            detailsComponent: options.withDetails ? PersonDetails : undefined
+            detailsComponent: options.withDetails ? PersonDetails : undefined,
+            defaultFilters: options.defaultFilters,
         },
-        ...children);
+        ...children,
+    );
 };
 
 /**
@@ -86,15 +96,19 @@ export const aDataPage = (options: DataPageOptions = {}) => {
  * @returns The mounted page, to be passed to {@link unmount}.
  */
 export const render = async (element: React.ReactElement): Promise<DataPageInTheDom> => {
-    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: React's test-environment flag is an intentionally undocumented global absent from the DOM typings.
+    (
+        globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: jsdom omits ResizeObserver, while the mounted components only require its three observer methods.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-        observe() { }
-        unobserve() { }
-        disconnect() { }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
     };
 
     const container = document.createElement('div');
-    document.body.appendChild(container);
+    document.body.append(container);
     const root = createRoot(container);
 
     await act(async () => {
@@ -153,7 +167,7 @@ export const layoutRoot = (page: DataPageInTheDom): HTMLElement => layoutRoots(p
  * @returns The child roles, top to bottom.
  */
 export const layoutRootChildren = (page: DataPageInTheDom): string[] =>
-    Array.from(layoutRoot(page).children).map(child => child.className.split(' ')[0]);
+    Array.from(layoutRoot(page).children).map((child) => child.className.split(' ')[0]);
 
 /**
  * The action bar, or `null` when the page has no `<DataPage.MenuItems>`.
@@ -179,7 +193,9 @@ export const tableRegion = (page: DataPageInTheDom): HTMLElement =>
  * @returns The scrolling element.
  */
 export const scrollRegion = (page: DataPageInTheDom): HTMLElement =>
-    Array.from(page.container.querySelectorAll<HTMLElement>('div')).find(element => element.style.overflow === 'auto')!;
+    Array.from(page.container.querySelectorAll<HTMLElement>('div')).find(
+        (element) => element.style.overflow === 'auto',
+    )!;
 
 /**
  * The paginator rendered by the data table, or `null` when there is none.
@@ -188,6 +204,36 @@ export const scrollRegion = (page: DataPageInTheDom): HTMLElement =>
  */
 export const paginator = (page: DataPageInTheDom): HTMLElement | null =>
     page.container.querySelector<HTMLElement>('.cratis-table-paginator');
+
+/**
+ * How many data rows the table rendered on its current page.
+ * @param page - The mounted page.
+ * @returns The rendered data-row count.
+ */
+export const renderedDataRowCount = (page: DataPageInTheDom): number =>
+    page.container.querySelectorAll('tbody tr').length;
+
+/**
+ * The item range displayed by the paginator, without its total.
+ * @param page - The mounted page.
+ * @returns The displayed range.
+ */
+export const paginatorRange = (page: DataPageInTheDom): string =>
+    page.container
+        .querySelector('.cratis-table-paginator-range')
+        ?.textContent?.split(' of ')[0] ?? '';
+
+/**
+ * The total item count displayed by the paginator.
+ * @param page - The mounted page.
+ * @returns The displayed total.
+ */
+export const paginatorTotal = (page: DataPageInTheDom): number =>
+    Number(
+        page.container
+            .querySelector('.cratis-table-paginator-range')
+            ?.textContent?.split(' of ')[1],
+    );
 
 /**
  * How each split-view pane is actually laid out, top pane first.
@@ -207,5 +253,8 @@ export const paginator = (page: DataPageInTheDom): HTMLElement | null =>
  * @returns One description per pane, in document order.
  */
 export const paneLayouts = (page: DataPageInTheDom): string[] =>
-    Array.from(page.container.querySelectorAll<HTMLElement>('[class*="splitViewView"]'))
-        .map(pane => `${getComputedStyle(pane).position} / ${getComputedStyle(pane).height}`);
+    Array.from(
+        page.container.querySelectorAll<HTMLElement>('[class*="splitViewView"]'),
+    ).map(
+        (pane) => `${getComputedStyle(pane).position} / ${getComputedStyle(pane).height}`,
+    );

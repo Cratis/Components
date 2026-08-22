@@ -1,11 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { DataPage, MenuItem } from './DataPage';
 import { Column } from '../DataTables/Column';
-import { QueryFor, QueryResult } from '@cratis/arc/queries';
+import { QueryFor, type QueryResult } from '@cratis/arc/queries';
 
 const meta: Meta<typeof DataPage> = {
     title: 'DataPage/DataPage',
@@ -41,6 +41,7 @@ const mockPersons: Person[] = [
 class PersonsQuery extends QueryFor<Person, object> {
     readonly route = '/api/persons';
     readonly routeTemplate = '/api/persons';
+    // SAFETY: Arc collection-query proxies are row-typed while their runtime default is an empty row array.
     readonly defaultValue: Person = [] as unknown as Person;
     readonly parameterDescriptors = [];
     get requiredRequestParameters() {
@@ -50,9 +51,15 @@ class PersonsQuery extends QueryFor<Person, object> {
         super(Object, true);
     }
     override perform(): Promise<QueryResult<Person>> {
+        // SAFETY: Arc collection query results are row-typed while their runtime data is a row array.
         return Promise.resolve({
             data: mockPersons,
-            paging: { totalItems: mockPersons.length, totalPages: 1, page: 0, size: mockPersons.length },
+            paging: {
+                totalItems: mockPersons.length,
+                totalPages: 1,
+                page: 0,
+                size: mockPersons.length,
+            },
             isSuccess: true,
             isAuthorized: true,
             isValid: true,
@@ -77,6 +84,7 @@ const manyPersons: Person[] = Array.from({ length: 24 }, (_, index) => ({
 class ManyPersonsQuery extends QueryFor<Person, object> {
     readonly route = '/api/many-persons';
     readonly routeTemplate = '/api/many-persons';
+    // SAFETY: Arc collection-query proxies are row-typed while their runtime default is an empty row array.
     readonly defaultValue: Person = [] as unknown as Person;
     readonly parameterDescriptors = [];
     get requiredRequestParameters() {
@@ -90,9 +98,15 @@ class ManyPersonsQuery extends QueryFor<Person, object> {
         const size = this.paging?.pageSize ?? 20;
         const first = page * size;
 
+        // SAFETY: Arc collection query results are row-typed while their runtime data is the current row array.
         return Promise.resolve({
             data: manyPersons.slice(first, first + size),
-            paging: { totalItems: manyPersons.length, totalPages: Math.ceil(manyPersons.length / size), page, size },
+            paging: {
+                totalItems: manyPersons.length,
+                totalPages: Math.ceil(manyPersons.length / size),
+                page,
+                size,
+            },
             isSuccess: true,
             isAuthorized: true,
             isValid: true,
@@ -106,9 +120,9 @@ class ManyPersonsQuery extends QueryFor<Person, object> {
 
 const PersonDetails = ({ item }: { item: Person }) => {
     return (
-        <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">Person Details</h2>
-            <div className="space-y-2">
+        <div className='p-4'>
+            <h2 className='text-2xl font-bold mb-4'>Person Details</h2>
+            <div className='space-y-2'>
                 <div>
                     <strong>ID:</strong> {item.id}
                 </div>
@@ -130,104 +144,167 @@ export const Default: Story = {
     render: () => (
         <div style={{ height: '600px' }}>
             <DataPage<PersonsQuery, Person, object>
-                title="Persons"
+                title='Persons'
                 query={PersonsQuery}
-                emptyMessage="No persons found"
-                dataKey="id"
+                emptyMessage='No persons found'
+                dataKey='id'
                 detailsComponent={PersonDetails}
                 globalFilterFields={['name', 'email', 'role']}
             >
                 <DataPage.MenuItems>
-                    <MenuItem 
-                        label="Add Person" 
-                        icon={() => <i className="pi pi-plus" />}
+                    <MenuItem
+                        label='Add Person'
+                        icon={() => <i className='pi pi-plus' />}
                         command={() => alert('Add person clicked')}
                     />
-                    <MenuItem 
-                        label="Edit Person" 
-                        icon={() => <i className="pi pi-pencil" />}
+                    <MenuItem
+                        label='Edit Person'
+                        icon={() => <i className='pi pi-pencil' />}
                         command={() => alert('Edit person clicked')}
                         disableOnUnselected
                     />
-                    <MenuItem 
-                        label="Delete Person" 
-                        icon={() => <i className="pi pi-trash" />}
+                    <MenuItem
+                        label='Delete Person'
+                        icon={() => <i className='pi pi-trash' />}
                         command={() => alert('Delete person clicked')}
                         disableOnUnselected
                     />
                 </DataPage.MenuItems>
                 <DataPage.Columns>
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        style={{ width: '25%' }}
+                    />
                 </DataPage.Columns>
             </DataPage>
         </div>
-    )
+    ),
 };
 
 export const WithoutDetails: Story = {
     render: () => (
         <div style={{ height: '600px' }}>
             <DataPage<PersonsQuery, Person, object>
-                title="Persons (No Details Panel)"
+                title='Persons (No Details Panel)'
                 query={PersonsQuery}
-                emptyMessage="No persons found"
-                dataKey="id"
+                emptyMessage='No persons found'
+                dataKey='id'
                 globalFilterFields={['name', 'email', 'role']}
             >
                 <DataPage.MenuItems>
-                    <MenuItem 
-                        label="Refresh" 
-                        icon={() => <i className="pi pi-refresh" />}
+                    <MenuItem
+                        label='Refresh'
+                        icon={() => <i className='pi pi-refresh' />}
                         command={() => alert('Refresh clicked')}
                     />
                 </DataPage.MenuItems>
                 <DataPage.Columns>
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        style={{ width: '25%' }}
+                    />
                 </DataPage.Columns>
             </DataPage>
         </div>
-    )
+    ),
 };
 
 export const WithClientFiltering: Story = {
     render: () => (
         <div style={{ height: '600px' }}>
             <DataPage<PersonsQuery, Person, object>
-                title="Persons (Client-Side Filtering)"
+                title='Persons (Client-Side Filtering)'
                 query={PersonsQuery}
-                emptyMessage="No persons found"
-                dataKey="id"
+                emptyMessage='No persons found'
+                dataKey='id'
                 clientFiltering
                 globalFilterFields={['name', 'email', 'role']}
             >
                 <DataPage.Columns>
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable filter filterPlaceholder="Filter by name" style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable filter filterPlaceholder="Filter by email" style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable filter filterPlaceholder="Filter by role" style={{ width: '25%' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        filter
+                        filterPlaceholder='Filter by name'
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        filter
+                        filterPlaceholder='Filter by email'
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        filter
+                        filterPlaceholder='Filter by role'
+                        style={{ width: '25%' }}
+                    />
                 </DataPage.Columns>
             </DataPage>
         </div>
-    )
+    ),
 };
 
-const PersonDetailsWithRefresh = ({ item, onRefresh }: { item: Person; onRefresh?: () => void }) => {
+const PersonDetailsWithRefresh = ({
+    item,
+    onRefresh,
+}: {
+    item: Person;
+    onRefresh?: () => void;
+}) => {
     return (
-        <div className="p-4">
-            <h2 className="text-2xl font-bold mb-4">Person Details</h2>
-            <div className="space-y-2 mb-4">
-                <div><strong>Name:</strong> {item.name}</div>
-                <div><strong>Email:</strong> {item.email}</div>
-                <div><strong>Role:</strong> {item.role}</div>
+        <div className='p-4'>
+            <h2 className='text-2xl font-bold mb-4'>Person Details</h2>
+            <div className='space-y-2 mb-4'>
+                <div>
+                    <strong>Name:</strong> {item.name}
+                </div>
+                <div>
+                    <strong>Email:</strong> {item.email}
+                </div>
+                <div>
+                    <strong>Role:</strong> {item.role}
+                </div>
             </div>
             <button
-                className="p-button p-component"
+                className='p-button p-component'
                 onClick={() => {
                     alert(`Saved changes for ${item.name}`);
                     onRefresh?.();
@@ -243,22 +320,37 @@ export const WithOnRefresh: Story = {
     render: () => (
         <div style={{ height: '600px' }}>
             <DataPage<PersonsQuery, Person, object>
-                title="Persons (With Refresh Callback)"
+                title='Persons (With Refresh Callback)'
                 query={PersonsQuery}
-                emptyMessage="No persons found"
-                dataKey="id"
+                emptyMessage='No persons found'
+                dataKey='id'
                 detailsComponent={PersonDetailsWithRefresh as React.FC<{ item: unknown }>}
                 onRefresh={() => alert('onRefresh triggered — reload your data here')}
             >
                 <DataPage.Columns>
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        style={{ width: '25%' }}
+                    />
                 </DataPage.Columns>
             </DataPage>
         </div>
-    )
+    ),
 };
 
 /**
@@ -270,28 +362,84 @@ export const MultiplePages: Story = {
     render: () => (
         <div style={{ height: '560px' }}>
             <DataPage<ManyPersonsQuery, Person, object>
-                title="Persons (24 records, 20 per page)"
+                title='Persons (24 records, 20 per page)'
                 query={ManyPersonsQuery}
-                emptyMessage="No persons found"
-                dataKey="id"
+                emptyMessage='No persons found'
+                dataKey='id'
                 globalFilterFields={['name', 'email', 'role']}
             >
                 <DataPage.MenuItems>
                     <MenuItem
-                        label="Add Person"
-                        icon={() => <i className="pi pi-plus" />}
+                        label='Add Person'
+                        icon={() => <i className='pi pi-plus' />}
                         command={() => alert('Add person clicked')}
                     />
                 </DataPage.MenuItems>
                 <DataPage.Columns>
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        style={{ width: '25%' }}
+                    />
                 </DataPage.Columns>
             </DataPage>
         </div>
-    )
+    ),
+};
+
+/**
+ * The overflowing snapshot query with an explicitly empty default-filter map.
+ * This is the browser-level regression surface for Components #149: it must
+ * render the same first-page rows and paginator count as `MultiplePages`.
+ */
+export const MultiplePagesWithDefaultFilters: Story = {
+    render: () => (
+        <div style={{ height: '560px' }}>
+            <DataPage<ManyPersonsQuery, Person, object>
+                title='Persons (24 records, empty default filters)'
+                query={ManyPersonsQuery}
+                emptyMessage='No persons found'
+                dataKey='id'
+                defaultFilters={{}}
+            >
+                <DataPage.Columns>
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        style={{ width: '25%' }}
+                    />
+                </DataPage.Columns>
+            </DataPage>
+        </div>
+    ),
 };
 
 /**
@@ -302,20 +450,35 @@ export const MultiplePagesWithoutMenuItems: Story = {
     render: () => (
         <div style={{ height: '560px' }}>
             <DataPage<ManyPersonsQuery, Person, object>
-                title="Persons (24 records, no action bar)"
+                title='Persons (24 records, no action bar)'
                 query={ManyPersonsQuery}
-                emptyMessage="No persons found"
-                dataKey="id"
+                emptyMessage='No persons found'
+                dataKey='id'
             >
                 <DataPage.Columns>
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        style={{ width: '25%' }}
+                    />
                 </DataPage.Columns>
             </DataPage>
         </div>
-    )
+    ),
 };
 
 /**
@@ -327,27 +490,42 @@ export const MultiplePagesWithDetails: Story = {
     render: () => (
         <div style={{ height: '560px' }}>
             <DataPage<ManyPersonsQuery, Person, object>
-                title="Persons (24 records, with details)"
+                title='Persons (24 records, with details)'
                 query={ManyPersonsQuery}
-                emptyMessage="No persons found"
-                dataKey="id"
+                emptyMessage='No persons found'
+                dataKey='id'
                 detailsComponent={PersonDetails}
             >
                 <DataPage.MenuItems>
                     <MenuItem
-                        label="Edit Person"
-                        icon={() => <i className="pi pi-pencil" />}
+                        label='Edit Person'
+                        icon={() => <i className='pi pi-pencil' />}
                         command={() => alert('Edit person clicked')}
                         disableOnUnselected
                     />
                 </DataPage.MenuItems>
                 <DataPage.Columns>
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="name" header="Name" sortable style={{ width: '30%' }} />
-                    <Column field="email" header="Email" sortable style={{ width: '35%' }} />
-                    <Column field="role" header="Role" sortable style={{ width: '25%' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
+                    <Column
+                        field='name'
+                        header='Name'
+                        sortable
+                        style={{ width: '30%' }}
+                    />
+                    <Column
+                        field='email'
+                        header='Email'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='role'
+                        header='Role'
+                        sortable
+                        style={{ width: '25%' }}
+                    />
                 </DataPage.Columns>
             </DataPage>
         </div>
-    )
+    ),
 };
