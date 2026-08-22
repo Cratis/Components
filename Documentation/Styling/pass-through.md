@@ -26,18 +26,20 @@ The wrapper renders exactly one PrimeReact widget and forwards `pt` / `ptOptions
 | `ColorPickerField` | `primereact/inputcolor` InputColor                    | PrimeReact InputColor `pt`  |
 | `EventsView`       | `primereact/timeline` Timeline                        | PrimeReact Timeline `pt`    |
 
-`DatePickerInput` deliberately narrows PrimeReact 11's stale root pass-through declaration. Use `input` to target the rendered `data-part="input"` element; `pcInputText` is not a valid `DatePickerInput` slot because PrimeReact does not emit it at runtime. The wrapper also translates its `invalid` prop to `aria-invalid` and `data-invalid` on that input rather than leaking a rejected `invalid` DOM attribute.
+`DatePickerInput` exposes `id`, `disabled`, `readOnly` and `showButtonBar` directly, so those behaviors do not need element-level pass-through workarounds. It deliberately narrows PrimeReact 11's stale root pass-through declaration: use `input` for additional attributes on the rendered `data-part="input"` element; `pcInputText` is not valid because PrimeReact does not emit it. The wrapper also translates `invalid` to `aria-invalid` and `data-invalid` rather than leaking a rejected `invalid` DOM attribute.
 
 ```tsx
 <DatePickerInput
+    id='appointment-date'
     value={selectedDate}
     onChange={setSelectedDate}
+    disabled={isDisabled}
+    readOnly={isReadOnly}
+    showButtonBar
     pt={{
         input: {
-            id: 'appointment-date',
             'aria-label': 'Appointment date',
             'aria-describedby': 'appointment-date-help',
-            disabled: true,
         },
     }}
 />

@@ -1,8 +1,13 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { CSSProperties, FocusEventHandler, InputHTMLAttributes } from 'react';
-import { DatePicker } from 'primereact/datepicker';
+import type {
+    CSSProperties,
+    FocusEventHandler,
+    InputHTMLAttributes,
+    KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
+import { DatePicker, useDatePickerContext } from 'primereact/datepicker';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import type {
@@ -26,6 +31,23 @@ export type DatePickerInputPassThrough = Omit<
     input?: DatePickerRootPassThroughType<InputHTMLAttributes<HTMLInputElement>>;
 };
 
+const stopDatePickerKeyboardOpening = (event: ReactKeyboardEvent) => {
+    if (event.code === 'ArrowDown') {
+        event.stopPropagation();
+    }
+};
+
+const DatePickerInputButtonBar = () => {
+    const datePicker = useDatePickerContext();
+
+    return (
+        <DatePicker.Buttonbar>
+            <DatePicker.Today>{datePicker?.todayLabel}</DatePicker.Today>
+            <DatePicker.Clear>{datePicker?.clearLabel}</DatePicker.Clear>
+        </DatePicker.Buttonbar>
+    );
+};
+
 /** Props for {@link DatePickerInput}. */
 export interface DatePickerInputProps {
     /** The selected date, or `null` when nothing is selected. */
@@ -36,6 +58,14 @@ export interface DatePickerInputProps {
     onBlur?: FocusEventHandler<HTMLElement>;
     /** Renders the control in an invalid (error) state. */
     invalid?: boolean;
+    /** Disables the date model, input and trigger. */
+    disabled?: boolean;
+    /** Prevents manual input and date selection. */
+    readOnly?: boolean;
+    /** DOM id applied to the rendered input element. */
+    id?: string;
+    /** When true, shows the localized Today and Clear button bar in the popup. */
+    showButtonBar?: boolean;
     /** Placeholder text shown when no date is selected. */
     placeholder?: string;
     /** PrimeReact-style date format mask (e.g. `'yy-mm-dd'`). */
@@ -76,6 +106,10 @@ export const DatePickerInput = ({
     onChange,
     onBlur,
     invalid,
+    disabled,
+    readOnly,
+    id,
+    showButtonBar,
     placeholder,
     dateFormat,
     showIcon,
@@ -99,6 +133,9 @@ export const DatePickerInput = ({
             onValueChange={(e: DatePickerRootValueChangeEvent) =>
                 onChange(e.value instanceof Date ? e.value : null)
             }
+            disabled={disabled}
+            readOnly={readOnly}
+            showOnFocus={!disabled && !readOnly}
             dateFormat={dateFormat}
             showTime={showTime}
             hourFormat={hourFormat}
@@ -110,13 +147,23 @@ export const DatePickerInput = ({
         >
             <DatePicker.Input
                 as={InputText}
-                placeholder={placeholder}
+                {...(id === undefined ? {} : { id })}
+                {...(disabled === undefined ? {} : { disabled })}
+                {...(readOnly === undefined ? {} : { readOnly })}
+                {...(disabled || readOnly
+                    ? { onKeyDownCapture: stopDatePickerKeyboardOpening }
+                    : {})}
+                {...(placeholder === undefined ? {} : { placeholder })}
+                {...(invalid === undefined
+                    ? {}
+                    : {
+                          'aria-invalid': invalid || undefined,
+                          'data-invalid': invalid ? '' : undefined,
+                      })}
                 className='w-full'
-                aria-invalid={invalid || undefined}
-                data-invalid={invalid ? '' : undefined}
             />
             {showIcon && (
-                <DatePicker.Trigger>
+                <DatePicker.Trigger disabled={disabled || readOnly}>
                     <i className='pi pi-calendar' />
                 </DatePicker.Trigger>
             )}
@@ -159,6 +206,7 @@ export const DatePickerInput = ({
                             </DatePicker.Table>
                         </DatePicker.Calendar>
                         {showTime && <DatePicker.Time />}
+                        {showButtonBar && <DatePickerInputButtonBar />}
                     </DatePicker.Popup>
                 </DatePicker.Positioner>
             </DatePicker.Portal>
