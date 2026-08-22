@@ -35,7 +35,9 @@ describe('when configuring input pass-through', () => {
                                 id: 'appointment-date',
                                 'aria-label': 'Appointment date',
                                 'aria-describedby': 'appointment-date-help',
+                                'aria-invalid': true,
                                 disabled: true,
+                                placeholder: 'Pass-through placeholder',
                             },
                         }}
                     />
@@ -69,7 +71,15 @@ describe('when configuring input pass-through', () => {
         expect(input.getAttribute('aria-describedby')).to.equal('appointment-date-help');
     });
 
+    it('should preserve pass-through invalid state when the wrapper prop is omitted', () => {
+        expect(input.getAttribute('aria-invalid')).to.equal('true');
+    });
+
     it('should disable the input', () => {
         expect(input.disabled).to.equal(true);
+    });
+
+    it('should preserve the pass-through placeholder when the wrapper prop is omitted', () => {
+        expect(input.placeholder).to.equal('Pass-through placeholder');
     });
 });
