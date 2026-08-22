@@ -144,6 +144,11 @@ export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments
     const totalItems = result.paging.totalItems;
     const pageCount = result.paging.totalPages;
 
+    // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
+    const rows = result.data as unknown as TDataType[];
+    const emptyMessage =
+        result.isPerforming && rows.length === 0 ? null : props.emptyMessage;
+
     return (
         <div
             style={{
@@ -156,9 +161,9 @@ export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments
             }}>
             <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
                 <DataTableCore<TDataType>
-                    data={result.data as unknown as TDataType[]}
+                    data={rows}
                     dataKey={props.dataKey}
-                    emptyMessage={props.emptyMessage}
+                    emptyMessage={emptyMessage}
                     selectionMode='single'
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}

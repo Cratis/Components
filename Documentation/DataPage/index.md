@@ -95,6 +95,9 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
+
+The query-backed table inside `DataPage` suppresses `emptyMessage` while its first result is still performing, so a pending query is not presented as a confirmed empty result.
+
 - `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
 - `detailsComponent`: Component to render in the resizable details panel when a row is selected
 

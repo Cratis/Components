@@ -55,6 +55,8 @@ function MyTable() {
 - `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
 - `children`: Column definitions
 
+While the first query result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
+
 ## Pagination
 
 DataTableForQuery automatically handles pagination with a default page size of 20 items. Pagination controls are displayed at the bottom of the table.

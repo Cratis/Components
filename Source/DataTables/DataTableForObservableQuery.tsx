@@ -152,6 +152,11 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
     const pageCount = result.paging.totalPages;
     const showPaginator = totalItems > 0 && pageCount > 1;
 
+    // SAFETY: Arc observable collection queries are row-typed while runtime data is the current row array.
+    const rows = result.data as unknown as TDataType[];
+    const emptyMessage =
+        result.isPerforming && rows.length === 0 ? null : props.emptyMessage;
+
     useEffect(() => {
         if (!containerRef.current) return;
 
@@ -202,9 +207,9 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
             }}>
             <div style={{ height: `${tableHeight}px`, overflow: 'hidden' }}>
                 <DataTableCore<TDataType>
-                    data={result.data as unknown as TDataType[]}
+                    data={rows}
                     dataKey={props.dataKey}
-                    emptyMessage={props.emptyMessage}
+                    emptyMessage={emptyMessage}
                     selectionMode='single'
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
