@@ -16,7 +16,7 @@
 3.0 makes the requirement explicit instead. **You supply PrimeReact; we use yours.**
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks @primereact/types primeicons
 ```
 
 Which lands in your app's `dependencies` as:
@@ -37,7 +37,7 @@ Notes:
 
 - `primereact` pins `@primereact/core`, `@primereact/headless` and `@primereact/hooks` to its own **exact** version, so installing `primereact@11.1.0` gives you 11.1.0 of all four. Declaring them anyway is what makes a strict installer (pnpm, Yarn PnP) resolve them for the library too.
 - `primeicons` went **7 → 8** alongside PrimeReact 11.
-- `@primereact/types` is an **optional** peer. You only need it declared if your own code imports our prop types (they re-export `@primereact/types/*` shapes). It arrives transitively via `@primereact/core` in a hoisting installer.
+- `@primereact/types` remains optional for core-only consumers. Rendering consumers must install it explicitly because wrapper declarations reference its types and strict installers do not expose transitive copies.
 - `@primereact/styles` and `@primeuix/themes` are **optional** peers. Install them only for PrimeReact's styled mode — see [Theming without a theme stylesheet](#theming-without-a-theme-stylesheet). The baseline theme and unstyled mode need neither.
 - If your app carried a `resolutions` / `overrides` entry to collapse PrimeReact into one copy, **you can delete it** — the peer declaration is what enforces that now.
 

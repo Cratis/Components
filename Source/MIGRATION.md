@@ -49,10 +49,8 @@ Notes:
   version, so installing `primereact@11.1.0` gives you 11.1.0 of all three. Declaring
   them anyway is what makes a strict installer (pnpm, Yarn PnP) resolve them for the
   library too.
-- `@primeicons` went **7 → 8** alongside PrimeReact 11.
-- `@primereact/types` is an **optional** peer. You only need it declared if your own
-  code imports our prop types (they re-export `@primereact/types/*` shapes). It arrives
-  transitively via `@primereact/core` in a hoisting installer.
+- `primeicons` went **7 → 8** alongside PrimeReact 11.
+- `@primereact/types` remains optional for core-only consumers. Rendering consumers must install it explicitly because wrapper declarations reference its types and strict installers do not expose transitive copies.
 - `@primereact/styles` and `@primeuix/themes` are **optional** peers. Install them only for
   PrimeReact's styled mode (§6). The baseline theme and unstyled mode need neither.
 - If your app carried a `resolutions` / `overrides` entry to collapse PrimeReact into one

@@ -7,9 +7,9 @@ Every styling option shares the same setup — an install, two stylesheet import
 From 3.0, **PrimeReact is a peer dependency, not a bundled one.** You install it alongside `@cratis/components`:
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless primeicons
+npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks @primereact/types primeicons
 # or
-yarn add @cratis/components primereact @primereact/core @primereact/headless primeicons
+yarn add @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks @primereact/types primeicons
 ```
 
 Why the extra names, when 2.x needed none? Because bundling PrimeReact meant an app that also depended on it could end up with **two copies** — and two copies of PrimeReact means two `PrimeReactProvider` React contexts. Components rendered from the library then read a different config, theme and z-index registry than the ones you render yourself. Nothing errors; overlays just stack wrongly and `pt` / `unstyled` silently stop applying. Declaring the peer is what collapses it to one copy, so **if you carried a `resolutions` / `overrides` pin for `primereact` to work around this, you can delete it.**

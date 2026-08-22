@@ -27,9 +27,9 @@ there is no `require()` entry.
 For the PrimeReact rendering components:
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks @primereact/types primeicons
 # or
-yarn add @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+yarn add @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks @primereact/types primeicons
 ```
 
 For behavior-only command/query bindings, install the package without the optional UI peers and import `@cratis/components/core`:
@@ -49,8 +49,7 @@ into one copy, you can now delete it.
 `primereact` pins `@primereact/core`, `@primereact/headless` and `@primereact/hooks` to its own exact
 version, so one `primereact@11.x` install gives you matching copies of all three;
 declaring them is what makes a strict installer (pnpm, Yarn PnP) resolve them for the
-library too. `@primereact/types` is an **optional** peer — needed only if your own
-code imports the prop types the wrappers re-export.
+library too. `@primereact/types` remains optional for core-only consumers, but rendering consumers should install it explicitly because wrapper declarations reference its types and strict installers do not expose transitive copies.
 
 The other **peer dependencies** you provide are `react` / `react-dom` (**19+**), the
 `@cratis/arc*` packages (`>=20.3.1 <23` — Arc 20, 21 and 22 work), `reflect-metadata`

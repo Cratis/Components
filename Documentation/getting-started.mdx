@@ -23,7 +23,7 @@ You can build that straight on PrimeReact — instantiate the command, track its
 1. **Install the package — and PrimeReact alongside it.**
 
     ```bash title="Install Components"
-    npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+    npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks @primereact/types primeicons
     ```
 
     From 3.0, PrimeReact is a **peer dependency**, so you supply it and the library uses yours. That's not bureaucracy: when the library bundled its own copy, an app that also depended on `primereact` could end up with **two** — and two copies means two `PrimeReactProvider` contexts, so overlays stack wrongly and `pt` silently stops applying, with no error to point at it. One declared peer is one copy. If you carried a `resolutions` / `overrides` pin for `primereact` to work around this, delete it.
