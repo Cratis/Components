@@ -761,6 +761,8 @@ Three patterns, depending on how much PrimeReact a wrapper composes:
 
 `Dropdown` routes `id`, `tabIndex`, `aria-label`, `aria-labelledby` and `aria-describedby` to its focusable `role="combobox"` trigger. The outer Select root remains a layout wrapper and does not duplicate the control id. For filterable dropdowns, `filterPlaceholder` can differ from the closed trigger's `placeholder` and defaults to it when omitted.
 
+Filtered data-table columns accept partial `filterLabels` overrides for trigger, action and boolean-option text, plus a `filterElement` render callback that replaces the built-in value editor while keeping draft/apply behavior.
+
 `DatePickerInput` exposes `id`, `disabled`, `readOnly` and `showButtonBar` directly. Use its runtime `input` slot only for additional attributes; the public type intentionally rejects PrimeReact 11's stale `pcInputText` declaration, which the runtime never emits. The wrapper translates `invalid` to accepted `aria-invalid` and `data-invalid` input attributes instead of forwarding a rejected `invalid` DOM attribute:
 
 ```tsx

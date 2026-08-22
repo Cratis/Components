@@ -77,6 +77,8 @@ Add `filter` to a `<Column>` for a per-column filter menu, and/or `globalFilterF
 </DataTableForQuery>
 ```
 
+Each filtered `Column` can localize its overlay through `filterLabels` or replace the built-in value editor through `filterElement`. See [Column Configuration](column-configuration.md#column-filters) for the callback contract and draft/apply behavior.
+
 ## Selection
 
 Handle row selection:

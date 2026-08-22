@@ -56,6 +56,8 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 - `paginatorClassName` / `paginatorAriaLabels`: styling and localization for the paginator
 - `children`: Column definitions
 
+Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Filters are applied client-side to the currently loaded observable-query page.
+
 ## Observable Behavior
 
 The table automatically subscribes to the observable query and updates the display when:
@@ -76,17 +78,17 @@ function LiveDashboard() {
             emptyMessage="No active orders"
             dataKey="id"
         >
-            <Column 
-                field="orderNumber" 
-                header="Order #" 
+            <Column
+                field="orderNumber"
+                header="Order #"
             />
-            <Column 
-                field="status" 
+            <Column
+                field="status"
                 header="Status"
                 body={(row) => <StatusBadge status={row.status} />}
             />
-            <Column 
-                field="lastUpdated" 
+            <Column
+                field="lastUpdated"
                 header="Updated"
                 body={(row) => formatTimeAgo(row.lastUpdated)}
             />
