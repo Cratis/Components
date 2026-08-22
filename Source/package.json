@@ -54,6 +54,10 @@
             "types": "./dist/esm/Common/index.d.ts",
             "import": "./dist/esm/Common/index.js"
         },
+        "./compatibility": {
+            "types": "./dist/esm/Compatibility/index.d.ts",
+            "import": "./dist/esm/Compatibility/index.js"
+        },
         "./DataPage": {
             "types": "./dist/esm/DataPage/index.d.ts",
             "import": "./dist/esm/DataPage/index.js"
