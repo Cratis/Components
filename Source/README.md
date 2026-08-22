@@ -25,9 +25,9 @@ there is no `require()` entry.
 ## Installation
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless primeicons
+npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
 # or
-yarn add @cratis/components primereact @primereact/core @primereact/headless primeicons
+yarn add @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
 ```
 
 **PrimeReact is a peer dependency** as of 3.0.0. You install it; the library uses
@@ -39,7 +39,7 @@ Nothing errors; overlays just stack wrongly and `pt` / `unstyled` silently fail 
 apply. If your app carries a `resolutions` / `overrides` pin to collapse PrimeReact
 into one copy, you can now delete it.
 
-`primereact` pins `@primereact/core` and `@primereact/headless` to its own exact
+`primereact` pins `@primereact/core`, `@primereact/headless` and `@primereact/hooks` to its own exact
 version, so one `primereact@11.x` install gives you matching copies of all three;
 declaring them is what makes a strict installer (pnpm, Yarn PnP) resolve them for the
 library too. `@primereact/types` is an **optional** peer — needed only if your own
@@ -72,12 +72,12 @@ split view, so you do not have to import that yourself.
 was; PrimeReact 11 is part of PrimeTek's commercial **PrimeUI** family, and so are the
 packages it brings with it.
 
-| Package                                                          | v10       | v11                      |
-| ---------------------------------------------------------------- | --------- | ------------------------ |
-| `primereact`                                                     | MIT       | PrimeUI commercial       |
-| `primeicons`                                                     | MIT (7.x) | PrimeUI commercial (8.x) |
-| `@primereact/core`, `@primereact/headless`, `@primereact/styles` | —         | PrimeUI commercial       |
-| `@primeuix/themes`, `@primeuix/styled`                           | —         | PrimeUI commercial       |
+| Package                                                                               | v10       | v11                      |
+| ------------------------------------------------------------------------------------- | --------- | ------------------------ |
+| `primereact`                                                                          | MIT       | PrimeUI commercial       |
+| `primeicons`                                                                          | MIT (7.x) | PrimeUI commercial (8.x) |
+| `@primereact/core`, `@primereact/headless`, `@primereact/hooks`, `@primereact/styles` | —         | PrimeUI commercial       |
+| `@primeuix/themes`, `@primeuix/styled`                                                | —         | PrimeUI commercial       |
 
 `@cratis/components` itself remains **MIT**. The change is in what it depends on, and it is
 yours to satisfy: PrimeReact is a peer dependency, so you install it and its license terms
@@ -764,7 +764,7 @@ Three patterns, depending on how much PrimeReact a wrapper composes:
 
 `Dropdown` routes `id`, `tabIndex`, `aria-label`, `aria-labelledby` and `aria-describedby` to its focusable `role="combobox"` trigger. The outer Select root remains a layout wrapper and does not duplicate the control id. For filterable dropdowns, `filterPlaceholder` can differ from the closed trigger's `placeholder` and defaults to it when omitted.
 
-Filtered data-table columns accept partial `filterLabels` overrides for trigger, action and boolean-option text, plus a `filterElement` render callback that replaces the built-in value editor while keeping draft/apply behavior.
+Filtered data-table columns accept partial `filterLabels` overrides for trigger, action and boolean-option text, plus a `filterElement` render callback that replaces the built-in value editor while keeping draft/apply behavior. `DataTableFilterMatchMode` supplies the Cratis-owned built-in vocabulary, and `registerDataTableFilterMatcher()` adds custom modes without importing the active rendering adapter.
 
 `DatePickerInput` exposes `id`, `disabled`, `readOnly` and `showButtonBar` directly. Use its runtime `input` slot only for additional attributes; the public type intentionally rejects PrimeReact 11's stale `pcInputText` declaration, which the runtime never emits. The wrapper translates `invalid` to accepted `aria-invalid` and `data-invalid` input attributes instead of forwarding a rejected `invalid` DOM attribute:
 

@@ -52,7 +52,7 @@ export interface MenuItemProps {
  * directly; the surrounding {@link MenuItems} component reads its props and
  * forwards them to the action menubar.
  */
-export const MenuItem = (_: MenuItemProps) => {
+export const MenuItem = (_props: MenuItemProps) => {
     return null;
 };
 

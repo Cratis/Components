@@ -8,3 +8,8 @@ export * from './Column';
 export * from './ColumnFilterMenu';
 export * from './DataTableSelectionChangeEvent';
 export * from './DataTableFilterMeta';
+export {
+    registerDataTableFilterMatcher,
+    unregisterDataTableFilterMatcher,
+    type DataTableFilterMatcherRegistration,
+} from './DataTableFilterMatcherRegistry';

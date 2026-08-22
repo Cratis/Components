@@ -10,6 +10,7 @@ import React, {
 } from 'react';
 import { DataTable as PrimeDataTable, useDataTableContext } from 'primereact/datatable';
 import { InputText } from 'primereact/inputtext';
+import { registerMatcher, unregisterMatcher } from '@primereact/hooks/use-filter';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
 import type {
     UseDataTableSelectionEvent,
@@ -21,6 +22,12 @@ import { ColumnFilterMenu } from './ColumnFilterMenu';
 import { selectionKeysForRow, rowFromSelectionKeys } from './selectionKeys';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
+import { attachDataTableFilterMatcherAdapter } from './DataTableFilterMatcherRegistry';
+
+attachDataTableFilterMatcherAdapter({
+    register: registerMatcher,
+    unregister: unregisterMatcher,
+});
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
