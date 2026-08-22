@@ -5,7 +5,10 @@ import { useMemo } from 'react';
 import { Toaster as PrimeToaster, useToasterContext } from 'primereact/toaster';
 import { Toast } from 'primereact/toast';
 import type { ToastRootProps } from '@primereact/types/primitive/toast';
-import type { ToasterRegionProps, ToastType } from '@primereact/types/primitive/toaster';
+import type {
+    ToasterRegionProps,
+    ToastType as PrimeReactToastType,
+} from '@primereact/types/primitive/toaster';
 import type { ToasterPosition } from '@primereact/types/headless/toaster';
 
 /**
@@ -15,14 +18,14 @@ import type { ToasterPosition } from '@primereact/types/headless/toaster';
  * subscribes to, so a single mounted region shows toasts from anywhere.
  */
 interface FramedToastProps {
-    item: ToastType;
+    item: PrimeReactToastType;
     dismissAriaLabel: string;
     pt?: ToastRootProps['pt'];
 }
 
 const FramedToast = ({ item, dismissAriaLabel, pt }: FramedToastProps) => {
     const customBody = item.render;
-    const framedToast = useMemo<ToastType>(
+    const framedToast = useMemo<PrimeReactToastType>(
         () => ({
             ...item,
             render: undefined,
@@ -80,7 +83,7 @@ const ToastList = ({ dismissAriaLabel, pt }: ToastListProps) => {
 
     return (
         <>
-            {toaster.toasts.map((item: ToastType) => (
+            {toaster.toasts.map((item: PrimeReactToastType) => (
                 <FramedToast
                     key={item.id}
                     item={item}
