@@ -1,19 +1,48 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useMemo } from 'react';
+import type React from 'react';
+import { useMemo } from 'react';
 import { PrimeReactProvider } from '@primereact/core';
 import type { PrimeReactProps } from '@primereact/types/core';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications';
 
+/** Z-index categories used by overlay-capable rendering adapters. */
+export interface CratisZIndexConfig {
+    modal?: number;
+    overlay?: number;
+    menu?: number;
+    tooltip?: number;
+}
+
 /**
- * Configuration accepted by {@link CratisComponentsProvider}. Mirrors PrimeReact 11's
- * {@link PrimeReactProps} — the most commonly used members are `unstyled`, `pt`, `ptOptions`,
- * `ripple`, `inputVariant`, `zIndex`, `locale`, and `theme` (`{ preset, options }` for the
- * `@primeuix/themes` styled layer).
+ * Cratis-owned configuration accepted by {@link CratisComponentsProvider}.
+ *
+ * The named fields are Cratis-owned and no third-party type leaks through this
+ * contract. Renderer-shaped values (`pt`, `theme`, `defaults`, and similar) are
+ * accepted as `unknown` for source compatibility and interpreted by the active
+ * adapter. Additional options belong under {@link adapter}; named fields win.
  */
-export type CratisComponentsConfig = Partial<PrimeReactProps>;
+export interface CratisComponentsConfig {
+    csp?: { nonce?: string };
+    defaults?: unknown;
+    filterMatchModeOptions?: unknown;
+    inputVariant?: 'outlined' | 'filled';
+    locale?: string;
+    locales?: unknown;
+    pt?: unknown;
+    ptOptions?: unknown;
+    ripple?: boolean;
+    theme?: unknown;
+    stylesheet?: unknown;
+    unstyled?: boolean;
+    zIndex?: CratisZIndexConfig;
+    /** PrimeUI key consumed by the current PrimeReact rendering adapter. */
+    license?: string;
+    /** Additional low-level options for the active rendering adapter. */
+    adapter?: object;
+}
 
 export interface CratisComponentsProviderProps {
     /**
@@ -46,8 +75,17 @@ export const cratisDefaults: CratisComponentsConfig = {};
  * Pure merge of {@link cratisDefaults} and consumer-supplied config. Exposed for
  * specs; the provider component uses the same logic inside its `useMemo`.
  */
-export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | undefined): CratisComponentsConfig =>
-    merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
+export const mergeCratisComponentsConfig = (
+    value: CratisComponentsConfig | undefined,
+): CratisComponentsConfig => merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
+
+const toPrimeReactProps = (config: CratisComponentsConfig): PrimeReactProps => {
+    const { adapter, ...named } = config;
+
+    // SAFETY: This is the single adapter boundary: named Cratis fields are mapped to
+    // PrimeReact keys, while trusted application adapter values supply additional keys.
+    return { ...adapter, ...named } as PrimeReactProps;
+};
 
 /**
  * Single setup point for Cratis Components. Wraps PrimeReact 11's
@@ -80,8 +118,15 @@ export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | unde
  * {@link PrimeReactProvider} themselves — this component is an optional convenience,
  * not a requirement.
  */
-export const CratisComponentsProvider = ({ value, toaster, children }: CratisComponentsProviderProps) => {
-    const merged = useMemo<CratisComponentsConfig>(() => mergeCratisComponentsConfig(value), [value]);
+export const CratisComponentsProvider = ({
+    value,
+    toaster,
+    children,
+}: CratisComponentsProviderProps) => {
+    const merged = useMemo<PrimeReactProps>(
+        () => toPrimeReactProps(mergeCratisComponentsConfig(value)),
+        [value],
+    );
 
     return (
         <PrimeReactProvider {...merged}>

@@ -287,9 +287,11 @@ Import order: `tokens`, `styles`, then the palette (and/or `theme`). It exists s
 already written keeps working — write nothing new against those names; use `--cratis-*`
 (or `--p-*`) instead.
 
-`CratisComponentsProvider` takes everything through its single `value` prop, which is
-deep-merged onto PrimeReact's provider config — `unstyled`, `pt`, `ptOptions`, `ripple`,
-`inputVariant`, `zIndex`, `locale`, `theme`, `defaults` and `license`. It also accepts a
+`CratisComponentsProvider` takes everything through its single `value` prop. Its public
+`CratisComponentsConfig` is Cratis-owned and imports no PrimeReact type; named fields such as
+`unstyled`, `pt`, `ptOptions`, `ripple`, `inputVariant`, `zIndex`, `locale`, `theme`, `defaults`
+and `license` are mapped to the current renderer. Additional renderer-specific values belong
+under `adapter`, with named fields taking precedence. It also accepts a
 `toaster` prop (`true` or a `ToasterProps` object) to mount a `<Toaster />` for you.
 
 ## 7. Dialog

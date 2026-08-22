@@ -255,8 +255,11 @@ export const App = () => (
   required, not optional.
 - `CratisComponentsProvider` is a thin wrapper over `@primereact/core`'s
   `PrimeReactProvider` so Cratis has one place to layer in defaults (including
-  the optional `...styledMode()` styled layer). Drop in the raw
-  `PrimeReactProvider` from `@primereact/core` if you'd rather.
+  the optional `...styledMode()` styled layer). Its public
+  `CratisComponentsConfig` is Cratis-owned and imports no PrimeReact type;
+  low-level renderer extras go under `value.adapter`, while named fields take
+  precedence. Drop in the raw `PrimeReactProvider` from `@primereact/core` if
+  you'd rather.
 
 The setups below differ only in **what else** you load on top of this
 provider setup.

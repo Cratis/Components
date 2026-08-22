@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { CSSLayer, ThemeOptions } from '@primereact/types/core';
-import type { CratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { CratisPreset } from './CratisPreset';
 import { primeReactStyles } from './primeReactStyles';
 
@@ -31,6 +30,17 @@ export const primeReactCssLayerOrder = 'theme, base, primereact, components, uti
  * on the body serves both.
  */
 export const cratisDarkModeSelector = '.cratis-dark';
+
+export interface StyledModeConfiguration {
+    theme: {
+        preset: unknown;
+        options: {
+            darkModeSelector: ThemeOptions['darkModeSelector'];
+            cssLayer: false | CSSLayer;
+        };
+    };
+    defaults: typeof primeReactStyles;
+}
 
 export interface StyledModeOptions {
     /**
@@ -78,12 +88,19 @@ export interface StyledModeOptions {
  * application's own stylesheet overrides it just as it did on PrimeReact 10 — see
  * {@link primeReactCssLayerOrder} for where that layer sits relative to Tailwind's.
  */
-export const styledMode = (options: StyledModeOptions = {}): Pick<CratisComponentsConfig, 'theme' | 'defaults'> => {
-    const cssLayer = options.cssLayer === undefined
-        ? { name: primeReactCssLayer, order: primeReactCssLayerOrder }
-        : typeof options.cssLayer === 'string'
-            ? { name: options.cssLayer, order: primeReactCssLayerOrder.replace(primeReactCssLayer, options.cssLayer) }
-            : options.cssLayer;
+export const styledMode = (options: StyledModeOptions = {}): StyledModeConfiguration => {
+    const cssLayer =
+        options.cssLayer === undefined
+            ? { name: primeReactCssLayer, order: primeReactCssLayerOrder }
+            : typeof options.cssLayer === 'string'
+              ? {
+                    name: options.cssLayer,
+                    order: primeReactCssLayerOrder.replace(
+                        primeReactCssLayer,
+                        options.cssLayer,
+                    ),
+                }
+              : options.cssLayer;
 
     return {
         theme: {
