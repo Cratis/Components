@@ -26,6 +26,23 @@ The wrapper renders exactly one PrimeReact widget and forwards `pt` / `ptOptions
 | `ColorPickerField` | `primereact/inputcolor` InputColor                    | PrimeReact InputColor `pt`  |
 | `EventsView`       | `primereact/timeline` Timeline                        | PrimeReact Timeline `pt`    |
 
+`DatePickerInput` deliberately narrows PrimeReact 11's stale root pass-through declaration. Use `input` to target the rendered `data-part="input"` element; `pcInputText` is not a valid `DatePickerInput` slot because PrimeReact does not emit it at runtime.
+
+```tsx
+<DatePickerInput
+    value={selectedDate}
+    onChange={setSelectedDate}
+    pt={{
+        input: {
+            id: 'appointment-date',
+            'aria-label': 'Appointment date',
+            'aria-describedby': 'appointment-date-help',
+            disabled: true,
+        },
+    }}
+/>
+```
+
 Example:
 
 ```tsx
