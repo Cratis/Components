@@ -238,6 +238,6 @@ Read `viewModel.property` inside JSX (never destructure observables at the top o
 | `queryArguments` | arguments passed to the query |
 | `selection` / `onSelectionChange` | controlled single-row selection |
 | `detailsComponent` | `React.FC<IDetailsComponentProps<T>>` rendered for the selected row |
-| `globalFilterFields` / `defaultFilters` / `clientFiltering` | filtering |
+| `globalFilterFields` / `defaultFilters` | filtering |
 | `onRefresh` | invoked to re-fetch a standard query |
 | `tablePt` / `menubarPt` / `*Unstyled` | PrimeReact pass-through styling |
