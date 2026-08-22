@@ -20,7 +20,7 @@ Your responsibility is to **plan, sequence, and coordinate** the implementation 
 You do NOT write code yourself — you decompose the work and delegate it.
 
 Always read and follow:
-- `.github/instructions/vertical-slices.instructions.md`
+- `.ai/rules/vertical-slices.md`
 - `.github/copilot-instructions.md`
 
 ---
@@ -41,21 +41,21 @@ Extract the following from their request:
 
 For each slice, produce a numbered task list using this template:
 
-```
+```text
 ## Plan for <Feature> / <Slice>  (Type: <SliceType>)
 
 ### Phase 1 — Backend  [delegate to: backend-developer]
-1. Create `Features/<Feature>/<Slice>/<Slice>.cs` with ALL artifacts
+1. Create `<Module>/<Feature>/<Slice>/<Slice>.cs` with ALL artifacts (`<Module>/` is optional)
 
 ### Phase 2 — Specs  [delegate to: spec-writer]  (State Change slices only)
-2. Write integration specs in `Features/<Feature>/<Slice>/when_<behavior>/`
+2. Write integration specs in `<Module>/<Feature>/<Slice>/when_<behavior>/`
 
 ### Phase 3 — Build  [run: dotnet build]
 3. Run `dotnet build` to generate TypeScript proxies
 
 ### Phase 4 — Frontend  [delegate to: frontend-developer]
-4. Create React component(s) in `Features/<Feature>/<Slice>/`
-5. Register component in the composition page `Features/<Feature>/<Feature>.tsx`
+4. Create React component(s) in `<Module>/<Feature>/<Slice>/`
+5. Register the component in `<Module>/<Feature>/<Feature>.tsx`
 6. Update routing if this slice introduces a new page
 
 ### Phase 5 — Quality Gates  [delegate to: code-reviewer, then security-reviewer]
@@ -80,7 +80,7 @@ For each slice, produce a numbered task list using this template:
 When handing off to a specialist:
 
 1. State exactly which files need to be created or modified.
-2. Quote the relevant section of `vertical-slices.instructions.md` that applies.
+2. Quote the relevant section of `.ai/rules/vertical-slices.md` that applies.
 3. State the acceptance criteria (what "done" looks like for this task).
 4. Tell the specialist which agent to hand back to when finished.
 
@@ -118,11 +118,11 @@ Always produce your plan as a markdown checklist so progress can be tracked.
 Each task entry must include the delegating agent in square brackets, e.g.:
 
 ```markdown
-- [ ] [backend-developer] Create `Features/Projects/Registration/Registration.cs`
-- [ ] [spec-writer] Write specs in `Features/Projects/Registration/when_registering/`
+- [ ] [backend-developer] Create `Projects/Registration/Registration.cs`
+- [ ] [spec-writer] Write specs in `Projects/Registration/when_registering/`
 - [ ] Build — run `dotnet build`
-- [ ] [frontend-developer] Create `Features/Projects/Registration/AddProject.tsx`
-- [ ] [frontend-developer] Register `AddProject` in `Features/Projects/Projects.tsx`
+- [ ] [frontend-developer] Create `Projects/Registration/AddProject.tsx`
+- [ ] [frontend-developer] Register `AddProject` in `Projects/Projects.tsx`
 - [ ] [code-reviewer] Review all changed files
 - [ ] [security-reviewer] Security review of all changed files
 ```
