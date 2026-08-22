@@ -38,30 +38,29 @@ You can build that straight on PrimeReact — instantiate the command, track its
    import '@cratis/components/theme';    // optional — the Cratis baseline look (MIT CSS)
    ```
 
-:::caution[PrimeReact 11 is not MIT]
-`@cratis/components` is MIT, but as of 3.0.0 it builds on **PrimeReact 11**, which is part of
-PrimeTek's commercial **PrimeUI** family — as are `primeicons` 8.x, `@primereact/core`,
-`@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
+   :::caution[PrimeReact 11 is not MIT]
+   `@cratis/components` is MIT, but as of 3.0.0 it builds on **PrimeReact 11**, which is part of
+   PrimeTek's commercial **PrimeUI** family — as are `primeicons` 8.x, `@primereact/core`,
+   `@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
 
-A **PrimeUI license key is required regardless of how you style** — the check runs when
-`PrimeReactProvider` mounts, not when a theme is applied. Without one you get a console warning and
-an *"Invalid PrimeUI License"* banner, in development and production.
+   A **PrimeUI license key is required regardless of how you style** — the check runs when
+   `PrimeReactProvider` mounts, not when a theme is applied. Without one you get a console warning and
+   an *"Invalid PrimeUI License"* banner, in development and production.
 
-The [Community License](https://primeui.dev/licenses/community) is free for individuals, students,
-non-profits, non-commercial open source, and organizations under $1M revenue with fewer than 5
-developers. Everyone else needs a [Commercial License](https://primeui.dev/licenses/commercial).
-Redistributing a library that others build with needs a separate OEM License.
+   The [Community License](https://primeui.dev/licenses/community) is free for individuals, students,
+   non-profits, non-commercial open source, and organizations under $1M revenue with fewer than 5
+   developers. Everyone else needs a [Commercial License](https://primeui.dev/licenses/commercial).
+   Redistributing a library that others build with needs a separate OEM License.
 
-Need to stay MIT-only? **`@cratis/components` 2.x remains on PrimeReact 10.** See
-[Licensing](/components/migration/#licensing).
-:::
-
+   Need to stay MIT-only? **`@cratis/components` 2.x remains on PrimeReact 10.** See
+   [Licensing](/components/migration/#licensing).
+   :::
 
    Components no longer import their own CSS — that's what lets the package load in a plain Node test environment. `tokens` declares the `--cratis-*` [token layer](/components/styling/) the components read their colors and spacing from; `styles` is the component CSS plus the pre-compiled utility styles; `theme` is optional and covered below. It works with any bundler.
 
-<Aside type="caution" title="Order matters">
-Import `tokens` first. Both `styles` and `theme` resolve `--cratis-*` variables that `tokens` declares.
-</Aside>
+   <Aside type="caution" title="Order matters">
+   Import `tokens` first. Both `styles` and `theme` resolve `--cratis-*` variables that `tokens` declares.
+   </Aside>
 
 3. **Mount the provider** around your app:
 
