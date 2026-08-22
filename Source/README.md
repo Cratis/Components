@@ -58,9 +58,9 @@ Component CSS is no longer imported by the JavaScript — import it once in your
 entry point, in this order:
 
 ```ts
-import '@cratis/components/tokens';   // the --cratis-* token layer
-import '@cratis/components/styles';   // every component stylesheet, in one file
-import '@cratis/components/theme';    // optional — the Cratis baseline look (MIT CSS)
+import '@cratis/components/tokens'; // the --cratis-* token layer
+import '@cratis/components/styles'; // every component stylesheet, in one file
+import '@cratis/components/theme'; // optional — the Cratis baseline look (MIT CSS)
 ```
 
 `./styles` also vendors `allotment/dist/style.css`, which `DataPage` needs for its
@@ -72,12 +72,12 @@ split view, so you do not have to import that yourself.
 was; PrimeReact 11 is part of PrimeTek's commercial **PrimeUI** family, and so are the
 packages it brings with it.
 
-| Package | v10 | v11 |
-|---|---|---|
-| `primereact` | MIT | PrimeUI commercial |
-| `primeicons` | MIT (7.x) | PrimeUI commercial (8.x) |
-| `@primereact/core`, `@primereact/headless`, `@primereact/styles` | — | PrimeUI commercial |
-| `@primeuix/themes`, `@primeuix/styled` | — | PrimeUI commercial |
+| Package                                                          | v10       | v11                      |
+| ---------------------------------------------------------------- | --------- | ------------------------ |
+| `primereact`                                                     | MIT       | PrimeUI commercial       |
+| `primeicons`                                                     | MIT (7.x) | PrimeUI commercial (8.x) |
+| `@primereact/core`, `@primereact/headless`, `@primereact/styles` | —         | PrimeUI commercial       |
+| `@primeuix/themes`, `@primeuix/styled`                           | —         | PrimeUI commercial       |
 
 `@cratis/components` itself remains **MIT**. The change is in what it depends on, and it is
 yours to satisfy: PrimeReact is a peer dependency, so you install it and its license terms
@@ -89,7 +89,7 @@ adds — are PrimeUI-licensed too.
 PrimeReact 11 verifies a license key when `PrimeReactProvider` mounts. The check is not
 conditional on `unstyled`, on whether a theme preset is applied, or on `NODE_ENV` — so
 every styling setup in [Styling](#styling) reaches it. Without a valid key you get a
-console warning and a fixed *"Invalid PrimeUI License"* banner, in development **and**
+console warning and a fixed _"Invalid PrimeUI License"_ banner, in development **and**
 production.
 
 Supply your key through the provider:
@@ -106,7 +106,7 @@ PrimeReact 11, which needs a key.
 
 - **[Community License](https://primeui.dev/licenses/community)** — free. Covers
   individuals, students, non-profits and non-commercial open source outright. For an
-  organization it requires *all* of: under $1M USD annual gross revenue, fewer than 5
+  organization it requires _all_ of: under $1M USD annual gross revenue, fewer than 5
   developers, fewer than 10 employees, and under $3M USD in outside funding. Supports up to
   4 developers and is renewed annually by confirming continued eligibility.
 - **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else.
@@ -114,9 +114,9 @@ PrimeReact 11, which needs a key.
 
 ### If you redistribute
 
-PrimeReact 11's terms state: *"You may not … redistribute it as a component library or
+PrimeReact 11's terms state: _"You may not … redistribute it as a component library or
 development tool … Redistributing the software so that third parties can develop with it
-requires a separate OEM License."*
+requires a separate OEM License."_
 
 If you are building an application, that clause is not aimed at you. If you are publishing
 a library or tool that others build with, read it and check your position with PrimeTek.
@@ -187,9 +187,9 @@ much control you want, and the other layers stay invisible.
 
 > **Tip — see each setup live:** every Storybook story includes a **Styling**
 > toolbar (paintbrush icon) that flips between the modes demonstrating the
-> setups below: *Aura Dark* and *Aura Light* (an `@primeuix/themes`
-> preset), *Cratis baseline theme* (light and dark), *Unstyled
-> (bare structure)*, and *Unstyled + Tailwind pt*. Open any story (`yarn dev`)
+> setups below: _Aura Dark_ and _Aura Light_ (an `@primeuix/themes`
+> preset), _Cratis baseline theme_ (light and dark), _Unstyled
+> (bare structure)_, and _Unstyled + Tailwind pt_. Open any story (`yarn dev`)
 > and switch modes to see the same component under each setup.
 
 ### TL;DR — choose a styling setup
@@ -198,12 +198,12 @@ much control you want, and the other layers stay invisible.
 > The styling choice changes how it looks and whether you additionally pull in
 > `@primeuix/themes`; it does not change whether you need a key.
 
-| Setup | When | Effort | Extra dependency | What you write |
-|---|---|---|---|---|
-| **Cratis baseline theme** | You want a polished default look without adding a theme package. | Lowest | None | `unstyled` + `import '@cratis/components/theme'` + `class="cratis-theme"` |
-| **PrimeReact's styled mode** | You want PrimeReact's own look — a `@primeuix/themes` preset painting PrimeReact's component styles. | Low | `@primereact/styles` + `@primeuix/themes` | `value={{ license, ...styledMode() }}` with `styledMode` from `@cratis/components/styled` |
-| **A custom palette over a theme** | You want the theme's structure but your own colors. | Low | As above, or none | `--cratis-*` overrides on the baseline theme, or `styledMode({ preset: definePreset(CratisPreset, …) })` |
-| **Fully unstyled** | You're integrating into a tightly controlled design system. | Highest | None | `unstyled: true` + a `pt` preset in CSS or Tailwind |
+| Setup                             | When                                                                                                 | Effort  | Extra dependency                          | What you write                                                                                           |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- | ------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Cratis baseline theme**         | You want a polished default look without adding a theme package.                                     | Lowest  | None                                      | `unstyled` + `import '@cratis/components/theme'` + `class="cratis-theme"`                                |
+| **PrimeReact's styled mode**      | You want PrimeReact's own look — a `@primeuix/themes` preset painting PrimeReact's component styles. | Low     | `@primereact/styles` + `@primeuix/themes` | `value={{ license, ...styledMode() }}` with `styledMode` from `@cratis/components/styled`                |
+| **A custom palette over a theme** | You want the theme's structure but your own colors.                                                  | Low     | As above, or none                         | `--cratis-*` overrides on the baseline theme, or `styledMode({ preset: definePreset(CratisPreset, …) })` |
+| **Fully unstyled**                | You're integrating into a tightly controlled design system.                                          | Highest | None                                      | `unstyled: true` + a `pt` preset in CSS or Tailwind                                                      |
 
 > **Why you need a theme, a baseline stylesheet, or a `pt` preset**
 >
@@ -221,7 +221,7 @@ much control you want, and the other layers stay invisible.
 > emits `--p-*` tokens but styles nothing rendered here.
 >
 > The `--cratis-*` token layer is an **additive Cratis-scoped tint** for
-> surfaces *our* wrappers own (validation error text, the FormElement addon,
+> surfaces _our_ wrappers own (validation error text, the FormElement addon,
 > breadcrumb borders, etc.). It is not, by itself, enough to skin the
 > PrimeReact widgets — pair it with the baseline theme, styled mode, or a `pt`
 > preset. Derive the preset (styled mode) or override the `--cratis-*` tokens
@@ -323,7 +323,7 @@ your own `className`:
 ```css
 /* yourApp.css */
 .p-button {
-    border-radius: 999px;            /* pill buttons everywhere */
+    border-radius: 999px; /* pill buttons everywhere */
 }
 
 .dangerous-button {
@@ -333,7 +333,7 @@ your own `className`:
 ```
 
 ```tsx
-<Button className="dangerous-button">Delete</Button>
+<Button className='dangerous-button'>Delete</Button>
 ```
 
 #### Override a single component with Tailwind
@@ -363,11 +363,13 @@ layer. (You still need a PrimeUI key to run PrimeReact itself — see
 
 ```tsx
 import 'primeicons/primeicons.css';
-import '@cratis/components/theme';   // the baseline theme
+import '@cratis/components/theme'; // the baseline theme
 
 export const App = () => (
     <CratisComponentsProvider value={{ unstyled: true }}>
-        <div className="cratis-theme">   {/* scope: put on <body>, app root, or a subtree */}
+        <div className='cratis-theme'>
+            {' '}
+            {/* scope: put on <body>, app root, or a subtree */}
             <YourApp />
         </div>
     </CratisComponentsProvider>
@@ -382,8 +384,13 @@ attributes — there are no `p-*` class names outside styled mode — so target
 those, or your own `className`, or the `--cratis-*` tokens:
 
 ```css
-.cratis-theme [data-scope='button'] { border-radius: 999px; }   /* pill buttons */
-.dangerous { background: var(--cratis-red-500); color: white; }
+.cratis-theme [data-scope='button'] {
+    border-radius: 999px;
+} /* pill buttons */
+.dangerous {
+    background: var(--cratis-red-500);
+    color: white;
+}
 ```
 
 ---
@@ -407,18 +414,18 @@ own colors. Which knob you turn depends on the theme:
 /* palette.override.css — imported once, after @cratis/components/theme */
 .cratis-theme {
     --cratis-surface-section: #0f172a;
-    --cratis-surface-card:    #1e293b;
+    --cratis-surface-card: #1e293b;
     --cratis-surface-overlay: #1e293b;
-    --cratis-surface-hover:   #334155;
-    --cratis-surface-border:  #334155;
+    --cratis-surface-hover: #334155;
+    --cratis-surface-border: #334155;
 
-    --cratis-text-color:           #f8fafc;
+    --cratis-text-color: #f8fafc;
     --cratis-text-color-secondary: #94a3b8;
 
-    --cratis-primary-color:      #38bdf8;
+    --cratis-primary-color: #38bdf8;
     --cratis-primary-color-text: #0b1220;
 
-    --cratis-highlight-bg:         #1e40af;
+    --cratis-highlight-bg: #1e40af;
     --cratis-highlight-text-color: #ffffff;
 
     --cratis-border-radius: 10px;
@@ -435,10 +442,17 @@ import { CratisPreset } from '@cratis/components/styled';
 export const BrandPreset = definePreset(CratisPreset, {
     semantic: {
         primary: {
-            50: '{sky.50}',   100: '{sky.100}', 200: '{sky.200}',
-            300: '{sky.300}', 400: '{sky.400}', 500: '{sky.500}',
-            600: '{sky.600}', 700: '{sky.700}', 800: '{sky.800}',
-            900: '{sky.900}', 950: '{sky.950}',
+            50: '{sky.50}',
+            100: '{sky.100}',
+            200: '{sky.200}',
+            300: '{sky.300}',
+            400: '{sky.400}',
+            500: '{sky.500}',
+            600: '{sky.600}',
+            700: '{sky.700}',
+            800: '{sky.800}',
+            900: '{sky.900}',
+            950: '{sky.950}',
         },
     },
 });
@@ -456,15 +470,15 @@ from the preset; the `--cratis-*` overrides still retint Cratis-scoped surfaces)
 
 ```css
 .dark-zone {
-    --cratis-surface-card:  #0b1220;
-    --cratis-text-color:    #f8fafc;
+    --cratis-surface-card: #0b1220;
+    --cratis-text-color: #f8fafc;
     --cratis-primary-color: #60a5fa;
 }
 ```
 
 ```tsx
-<div className="dark-zone">
-    <Dialog title="Always dark">…</Dialog>
+<div className='dark-zone'>
+    <Dialog title='Always dark'>…</Dialog>
 </div>
 ```
 
@@ -475,22 +489,22 @@ Tailwind handles cascade and dark mode:
 
 ```css
 /* app.css */
-@import "tailwindcss";
-@import "@cratis/components/tokens";
-@import "@cratis/components/styles";
+@import 'tailwindcss';
+@import '@cratis/components/tokens';
+@import '@cratis/components/styles';
 
 @layer base {
     :root {
-        --cratis-surface-card:   theme('colors.slate.800');
+        --cratis-surface-card: theme('colors.slate.800');
         --cratis-surface-border: theme('colors.slate.700');
-        --cratis-text-color:     theme('colors.slate.50');
-        --cratis-primary-color:  theme('colors.sky.400');
-        --cratis-red-500:        theme('colors.red.500');
+        --cratis-text-color: theme('colors.slate.50');
+        --cratis-primary-color: theme('colors.sky.400');
+        --cratis-red-500: theme('colors.red.500');
     }
 
     .cratis-dark {
         --cratis-surface-card: theme('colors.slate.900');
-        --cratis-text-color:   theme('colors.slate.100');
+        --cratis-text-color: theme('colors.slate.100');
     }
 }
 ```
@@ -527,15 +541,15 @@ The upshot:
 
 #### `--cratis-*` token reference (Cratis-scoped surfaces)
 
-| Group | Tokens |
-|---|---|
-| Surfaces | `--cratis-surface-0`, `--cratis-surface-100`, `--cratis-surface-ground`, `--cratis-surface-section`, `--cratis-surface-card`, `--cratis-surface-overlay`, `--cratis-surface-hover`, `--cratis-surface-border` |
-| Text | `--cratis-text-color`, `--cratis-text-color-secondary` |
-| Brand | `--cratis-primary-color`, `--cratis-primary-color-text`, `--cratis-primary-300`, `--cratis-primary-400`, `--cratis-primary-500`, `--cratis-primary-600` |
-| Selection | `--cratis-highlight-bg`, `--cratis-highlight-text-color` |
-| Semantic | `--cratis-green-500`, `--cratis-orange-500`, `--cratis-red-500` |
-| Geometry | `--cratis-border-radius` |
-| Effects | `--cratis-focus-ring`, `--cratis-maskbg` |
+| Group     | Tokens                                                                                                                                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Surfaces  | `--cratis-surface-0`, `--cratis-surface-100`, `--cratis-surface-ground`, `--cratis-surface-section`, `--cratis-surface-card`, `--cratis-surface-overlay`, `--cratis-surface-hover`, `--cratis-surface-border` |
+| Text      | `--cratis-text-color`, `--cratis-text-color-secondary`                                                                                                                                                        |
+| Brand     | `--cratis-primary-color`, `--cratis-primary-color-text`, `--cratis-primary-300`, `--cratis-primary-400`, `--cratis-primary-500`, `--cratis-primary-600`                                                       |
+| Selection | `--cratis-highlight-bg`, `--cratis-highlight-text-color`                                                                                                                                                      |
+| Semantic  | `--cratis-green-500`, `--cratis-orange-500`, `--cratis-red-500`                                                                                                                                               |
+| Geometry  | `--cratis-border-radius`                                                                                                                                                                                      |
+| Effects   | `--cratis-focus-ring`, `--cratis-maskbg`                                                                                                                                                                      |
 
 Each resolves the v11 design token first and falls back to the v10 variable
 with the same name minus the `--cratis-` prefix (e.g. `--cratis-surface-card`
@@ -555,7 +569,7 @@ through PrimeReact's `pt` (pass-through) mechanism, your own CSS, or both.
 Components render structurally only and become a blank canvas.
 
 ```tsx
-import '@cratis/components/styles';   // component rules + Tailwind utilities, still needed when unstyled
+import '@cratis/components/styles'; // component rules + Tailwind utilities, still needed when unstyled
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
@@ -564,6 +578,12 @@ export const App = () => (
     </CratisComponentsProvider>
 );
 ```
+
+#### Verify pass-through compatibility
+
+Components 3 publishes its PrimeReact 11 slot and rendered-marker contract from `@cratis/components/compatibility`. In a DOM test, apply `primeReact11PassThroughSentinelPreset`, render the surfaces your application uses, and call `assertPrimeReact11PassThroughCompatibility(root, components)`. Additions pass; a missing or renamed contracted slot or marker produces an actionable error. The contract is major-version scoped and does not preserve PrimeReact 10 names.
+
+The machine-readable `components3PrimeReact11PassThroughContract` is the source of truth. Contract revision 1 covers the parts rendered by Components 3's supported compositions on PrimeReact 11, rather than every optional part an application could compose directly. See the [pass-through contract documentation](https://cratis.io/Components/styling/pass-through.html) for the supported component and slot list.
 
 #### A `pt` preset in plain CSS
 
@@ -576,9 +596,11 @@ export const globalPt = {
         root: { className: 'my-btn' },
     },
     dialog: {
-        root: { className: 'my-dialog' },
-        header: { className: 'my-dialog__header' },
-        content: { className: 'my-dialog__body' },
+        root: {
+            popup: { className: 'my-dialog' },
+            header: { className: 'my-dialog__header' },
+            content: { className: 'my-dialog__body' },
+        },
     },
     inputtext: {
         root: { className: 'my-input' },
@@ -615,15 +637,26 @@ Same shape, Tailwind utilities as the class strings:
 // pt-preset.ts
 export const globalPt = {
     button: {
-        root: { className: 'inline-flex items-center px-4 py-2 rounded-lg bg-sky-700 text-white hover:bg-sky-600 disabled:opacity-50' },
+        root: {
+            className:
+                'inline-flex items-center px-4 py-2 rounded-lg bg-sky-700 text-white hover:bg-sky-600 disabled:opacity-50',
+        },
     },
     dialog: {
-        root:    { className: 'rounded-2xl shadow-2xl overflow-hidden' },
-        header:  { className: 'px-5 py-3 bg-slate-800 text-slate-50 font-semibold border-b border-slate-700' },
-        content: { className: 'p-5 bg-slate-900 text-slate-100' },
+        root: {
+            popup: { className: 'rounded-2xl shadow-2xl overflow-hidden' },
+            header: {
+                className:
+                    'px-5 py-3 bg-slate-800 text-slate-50 font-semibold border-b border-slate-700',
+            },
+            content: { className: 'p-5 bg-slate-900 text-slate-100' },
+        },
     },
     inputtext: {
-        root: { className: 'w-full px-3 py-2 rounded-md bg-slate-800 text-slate-50 border border-slate-700 focus:border-sky-400 focus:outline-none' },
+        root: {
+            className:
+                'w-full px-3 py-2 rounded-md bg-slate-800 text-slate-50 border border-slate-700 focus:border-sky-400 focus:outline-none',
+        },
     },
 } as const;
 ```
@@ -684,20 +717,26 @@ The styling options compose, so you don't have to choose one for the whole app:
 
 - **Themed with one unstyled component** — keep the PrimeReact theme and pass
   `unstyled` per-component to opt that one widget out:
-  ```tsx
-  <Dialog title="Custom" unstyled pt={brandDialogPt}>…</Dialog>
-  ```
+
+    ```tsx
+    <Dialog title='Custom' unstyled pt={brandDialogPt}>
+        …
+    </Dialog>
+    ```
+
 - **Unstyled with one themed island** — the baseline theme's rules are scoped
   under `.cratis-theme`, so wrapping one element in the class themes just that
   subtree:
-  ```tsx
-  <CratisComponentsProvider value={{ unstyled: true, pt: globalPt }}>
-      <App />
-      <div className="cratis-theme">
-          <BaselineThemedSubtree />
-      </div>
-  </CratisComponentsProvider>
-  ```
+
+    ```tsx
+    <CratisComponentsProvider value={{ unstyled: true, pt: globalPt }}>
+        <App />
+        <div className='cratis-theme'>
+            <BaselineThemedSubtree />
+        </div>
+    </CratisComponentsProvider>
+    ```
+
 - **Dark mode** — toggle `cratis-dark` on the root element: the baseline
   theme's dark palette, `styledMode()`'s dark scheme (its default
   `darkModeSelector`) and the v10 palette all key off it, so PrimeReact widgets
@@ -713,21 +752,14 @@ Three patterns, depending on how much PrimeReact a wrapper composes:
    `className` straight to their inner PrimeReact component.
 2. **Multi-slot composites** — `StepperCommandDialog` (`pt` for Stepper,
    `dialogPt` for Dialog), `DataPage` (`tablePt` for DataTable, `menubarPt`
-   for Menubar), and `DataTableForQuery` / `DataTableForObservableQuery`
-   (`pt` for DataTable, `paginatorPt` for Paginator) — each slot has
-   `*PtOptions`, `*Unstyled`, and (where applicable) `*ClassName` siblings.
+   for the action toolbar's buttons), and `DataTableForQuery` /
+   `DataTableForObservableQuery` (`pt` for DataTable plus
+   `paginatorClassName` / `paginatorAriaLabels` for the Cratis paginator).
 3. **Large composites** — `ObjectContentEditor`, `ObjectNavigationalBar`,
    `SchemaEditor` expose `className` only; restyle internals via the global
    `pt` preset.
 
-### What is *not* fully pass-through
-
-A small number of internal usages opt into PrimeReact's slot-rendering by
-name (for example, a custom Menubar item template uses `p-menuitem-link` /
-`p-menuitem-text` to match the surrounding default-rendered items). These are
-correct contracts with PrimeReact's own slot rendering, not hard-coded
-theming — they have no effect in `unstyled` mode and match the rest of the
-menu in themed mode.
+### What is _not_ fully pass-through
 
 `BusyIndicatorDialog` only honors the global `pt` set via
 `CratisComponentsProvider`; it does not accept per-instance `pt` because its
@@ -749,9 +781,9 @@ If using TypeScript 4.7+, try updating your `tsconfig.json`:
 
 ```json
 {
-  "compilerOptions": {
-    "moduleResolution": "bundler"  // or "node16" / "nodenext"
-  }
+    "compilerOptions": {
+        "moduleResolution": "bundler" // or "node16" / "nodenext"
+    }
 }
 ```
 

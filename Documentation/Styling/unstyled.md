@@ -7,8 +7,8 @@ This setup disables every PrimeReact base style at the provider and supplies vis
 ## Setup
 
 ```tsx
-import '@cratis/components/tokens';   // the --cratis-* layer, still useful for Cratis-scoped surfaces
-import '@cratis/components/styles';   // component CSS + Tailwind utilities for spacing/layout
+import '@cratis/components/tokens'; // the --cratis-* layer, still useful for Cratis-scoped surfaces
+import '@cratis/components/styles'; // component CSS + Tailwind utilities for spacing/layout
 import { CratisComponentsProvider } from '@cratis/components';
 import { globalPt } from './pt-preset';
 
@@ -21,7 +21,37 @@ export const App = () => (
 
 `unstyled: true` removes every PrimeReact base style. The `pt` preset is what fills the visual vacuum. Without one, components render as raw HTML elements with browser defaults.
 
-The top-level keys of a `pt` preset are PrimeReact 11's own component names — so `select`, not `dropdown`; `textarea`, not `inputtextarea`; and there is no `menubar` key at all, because PrimeReact 11 removed Menubar and the Cratis action bar is a `button` toolbar. Slot names come from the component's own `pt` reference; a slot a component doesn't expose is simply ignored.
+The top-level keys of a `pt` preset are PrimeReact 11's own component names — so `select`, not `dropdown`; `textarea`, not `inputtextarea`; and there is no `menubar` key at all, because PrimeReact 11 removed Menubar and the Cratis action bar is a `button` toolbar. Components 3 publishes the supported keys, slots, and rendered markers from `@cratis/components/compatibility`; do not rely on an ignored unknown slot as a compatibility strategy.
+
+## Verify the contract
+
+Use the published sentinel preset in a DOM test, render the Cratis surfaces your application depends on, and assert the relevant contract subset:
+
+```tsx
+import { render } from '@testing-library/react';
+import { CratisComponentsProvider } from '@cratis/components';
+import {
+    assertPrimeReact11PassThroughCompatibility,
+    primeReact11PassThroughSentinelPreset,
+} from '@cratis/components/compatibility';
+
+it('keeps the unstyled slots used by the application', () => {
+    render(
+        <CratisComponentsProvider
+            value={{
+                unstyled: true,
+                pt: primeReact11PassThroughSentinelPreset,
+            }}
+        >
+            <ApplicationCompatibilitySurface />
+        </CratisComponentsProvider>,
+    );
+
+    assertPrimeReact11PassThroughCompatibility(document, ['button', 'dialog', 'select']);
+});
+```
+
+The assertion ignores additions and fails with one diagnostic per missing sentinel or structural marker. The default component list checks the complete contract. The contract is scoped to Components 3 and PrimeReact 11; future Components majors may publish a different contract.
 
 The two examples below show the same preset in two different styling languages. Pick whichever your design system uses.
 
@@ -36,10 +66,12 @@ export const globalPt = {
         root: { className: 'my-btn' },
     },
     dialog: {
-        root:    { className: 'my-dialog' },
-        header:  { className: 'my-dialog__header' },
-        content: { className: 'my-dialog__body' },
-        mask:    { className: 'my-dialog__mask' },
+        root: {
+            popup: { className: 'my-dialog' },
+            header: { className: 'my-dialog__header' },
+            content: { className: 'my-dialog__body' },
+            backdrop: { className: 'my-dialog__mask' },
+        },
     },
     inputtext: {
         root: { className: 'my-input' },
@@ -60,9 +92,16 @@ export const globalPt = {
     cursor: pointer;
 }
 
-.my-btn:hover  { filter: brightness(1.1); }
-.my-btn:active { filter: brightness(0.9); }
-.my-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.my-btn:hover {
+    filter: brightness(1.1);
+}
+.my-btn:active {
+    filter: brightness(0.9);
+}
+.my-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 .my-dialog {
     border-radius: 16px;
@@ -124,8 +163,6 @@ export const globalPt = {
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400',
             ].join(' '),
         },
-        label: { className: 'whitespace-nowrap' },
-        icon:  { className: 'shrink-0' },
     },
 
     inputtext: {
@@ -143,70 +180,75 @@ export const globalPt = {
 
     dialog: {
         root: {
-            className: [
-                'rounded-2xl shadow-2xl overflow-hidden',
-                'bg-slate-900 text-slate-50',
-            ].join(' '),
+            popup: {
+                className:
+                    'rounded-2xl shadow-2xl overflow-hidden bg-slate-900 text-slate-50',
+            },
+            header: {
+                className: [
+                    'flex items-center justify-between gap-4',
+                    'px-5 py-3 font-semibold',
+                    'bg-slate-800 text-slate-50 border-b border-slate-700',
+                ].join(' '),
+            },
+            title: { className: 'text-base' },
+            close: { className: 'p-1 rounded hover:bg-slate-700 transition-colors' },
+            content: { className: 'p-5 bg-slate-900 text-slate-100' },
+            footer: {
+                className:
+                    'px-5 py-3 bg-slate-800 border-t border-slate-700 flex justify-end gap-2',
+            },
+            backdrop: { className: 'bg-slate-950/70 backdrop-blur-sm' },
         },
-        header: {
-            className: [
-                'flex items-center justify-between gap-4',
-                'px-5 py-3 font-semibold',
-                'bg-slate-800 text-slate-50 border-b border-slate-700',
-            ].join(' '),
-        },
-        headerTitle: { className: 'text-base' },
-        closeButton: { className: 'p-1 rounded hover:bg-slate-700 transition-colors' },
-        content:     { className: 'p-5 bg-slate-900 text-slate-100' },
-        footer:      { className: 'px-5 py-3 bg-slate-800 border-t border-slate-700 flex justify-end gap-2' },
-        mask:        { className: 'bg-slate-950/70 backdrop-blur-sm' },
     },
 
     select: {
         root: {
-            className: [
-                'w-full inline-flex items-center justify-between gap-2',
-                'px-3 py-2 rounded-md cursor-pointer',
-                'bg-slate-800 text-slate-50 border border-slate-700',
-                'hover:border-slate-500',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400',
-            ].join(' '),
+            root: {
+                className: [
+                    'w-full inline-flex items-center justify-between gap-2',
+                    'px-3 py-2 rounded-md cursor-pointer',
+                    'bg-slate-800 text-slate-50 border border-slate-700',
+                    'hover:border-slate-500',
+                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400',
+                ].join(' '),
+            },
+            value: { className: 'flex-1 truncate text-left' },
+            indicator: { className: 'shrink-0 text-slate-400' },
+            popup: {
+                className:
+                    'mt-1 rounded-md shadow-xl overflow-hidden bg-slate-800 border border-slate-700',
+            },
+            option: { className: 'px-3 py-2 cursor-pointer hover:bg-slate-800' },
         },
-        value:    { className: 'flex-1 truncate text-left' },
-        dropdown: { className: 'shrink-0 text-slate-400' },
-        popup:    { className: 'mt-1 rounded-md shadow-xl overflow-hidden bg-slate-800 border border-slate-700' },
-        option:   { className: 'px-3 py-2 cursor-pointer hover:bg-slate-800' },
     },
 
     checkbox: {
-        root: { className: 'inline-flex items-center' },
-        box: {
-            className: [
-                'w-4 h-4 rounded',
-                'border border-slate-500 bg-slate-800',
-                'data-[p-highlight=true]:bg-sky-500 data-[p-highlight=true]:border-sky-500',
-            ].join(' '),
+        root: {
+            root: { className: 'inline-flex items-center' },
+            box: {
+                className: [
+                    'w-4 h-4 rounded',
+                    'border border-slate-500 bg-slate-800',
+                    'data-[p-highlight=true]:bg-sky-500 data-[p-highlight=true]:border-sky-500',
+                ].join(' '),
+            },
+            indicator: { className: 'text-white text-xs' },
         },
-        icon: { className: 'text-white text-xs' },
     },
 
     datatable: {
-        root:       { className: 'w-full' },
-        table:      { className: 'w-full text-sm' },
-        thead:      { className: 'bg-slate-800 text-slate-300 uppercase text-xs tracking-wider' },
-        headerRow:  { className: 'border-b border-slate-700' },
-        headerCell: { className: 'px-3 py-2 text-left font-medium' },
-        tbody:      { className: 'divide-y divide-slate-800' },
-        bodyRow:    { className: 'hover:bg-slate-800/60 transition-colors' },
-        bodyCell:   { className: 'px-3 py-2 text-slate-100' },
-    },
-
-    paginator: {
         root: {
-            className: 'flex items-center justify-end gap-1 px-3 py-2 bg-slate-800 border-t border-slate-700',
-        },
-        pageButton: {
-            className: 'px-3 py-1 rounded hover:bg-slate-700 data-[p-highlight=true]:bg-sky-500 data-[p-highlight=true]:text-white',
+            root: { className: 'w-full' },
+            table: { className: 'w-full text-sm' },
+            head: {
+                className: 'bg-slate-800 text-slate-300 uppercase text-xs tracking-wider',
+            },
+            theadRow: { className: 'border-b border-slate-700' },
+            theadCell: { className: 'px-3 py-2 text-left font-medium' },
+            body: { className: 'divide-y divide-slate-800' },
+            row: { className: 'hover:bg-slate-800/60 transition-colors' },
+            cell: { className: 'px-3 py-2 text-slate-100' },
         },
     },
 
@@ -276,10 +318,10 @@ In fully unstyled mode the `pt` preset carries every PrimeReact visual, so you d
 ```css
 :root {
     --cratis-surface-border: theme('colors.slate.700');
-    --cratis-text-color:     theme('colors.slate.50');
+    --cratis-text-color: theme('colors.slate.50');
     --cratis-text-color-secondary: theme('colors.slate.400');
-    --cratis-red-500:        theme('colors.red.500');
-    --cratis-border-radius:  8px;
+    --cratis-red-500: theme('colors.red.500');
+    --cratis-border-radius: 8px;
 }
 ```
 
