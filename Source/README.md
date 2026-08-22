@@ -759,6 +759,22 @@ Three patterns, depending on how much PrimeReact a wrapper composes:
    `SchemaEditor` expose `className` only; restyle internals via the global
    `pt` preset.
 
+`DatePickerInput` uses the runtime `input` slot for attributes on its rendered input. Its public type intentionally rejects PrimeReact 11's stale `pcInputText` declaration, which the runtime never emits:
+
+```tsx
+<DatePickerInput
+    value={selectedDate}
+    onChange={setSelectedDate}
+    pt={{
+        input: {
+            id: 'appointment-date',
+            'aria-label': 'Appointment date',
+            disabled: true,
+        },
+    }}
+/>
+```
+
 ### What is _not_ fully pass-through
 
 `BusyIndicatorDialog` only honors the global `pt` set via
