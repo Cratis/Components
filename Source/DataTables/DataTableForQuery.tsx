@@ -166,6 +166,8 @@ export const DataTableForQuery = <
 
     // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
+    const emptyMessage =
+        result.isPerforming && rows.length === 0 ? null : props.emptyMessage;
 
     return (
         <div
@@ -182,7 +184,7 @@ export const DataTableForQuery = <
                 <DataTableCore<TDataType>
                     data={rows}
                     dataKey={props.dataKey}
-                    emptyMessage={props.emptyMessage}
+                    emptyMessage={emptyMessage}
                     selectionMode='single'
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}

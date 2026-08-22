@@ -103,6 +103,9 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `globalFilterFields`: Fields to include in global search
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
 - `clientFiltering`: When true, the inner table's paginator totals/pages reflect filtered rows in the currently loaded query page; otherwise they retain server totals
+
+The query-backed table inside `DataPage` suppresses `emptyMessage` while its first result is still performing, so a pending query is not presented as a confirmed empty result.
+
 - `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
 - `detailsComponent`: Component to render in the resizable details panel when a row is selected
 

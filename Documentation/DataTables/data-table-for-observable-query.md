@@ -59,6 +59,8 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 
 Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Filters are applied client-side to the currently loaded observable-query page.
 
+While the first observable result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
+
 ## Observable Behavior
 
 The table automatically subscribes to the observable query and updates the display when:

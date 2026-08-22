@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
-import { Constructor } from '@cratis/fundamentals';
-import { IObservableQueryFor, Paging } from '@cratis/arc/queries';
+import type { Constructor } from '@cratis/fundamentals';
+import { type IObservableQueryFor, Paging } from '@cratis/arc/queries';
 import { useObservableQueryWithPaging } from '@cratis/arc.react/queries';
-import { ReactNode, useState, useRef, useEffect } from 'react';
+import { type ReactNode, useState, useRef, useEffect } from 'react';
 import { DataTableCore } from './DataTableCore';
 import { TablePaginator, type TablePaginatorProps } from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
@@ -178,6 +178,8 @@ export const DataTableForObservableQuery = <
 
     // SAFETY: Arc observable collection queries are row-typed while runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
+    const emptyMessage =
+        result.isPerforming && rows.length === 0 ? null : props.emptyMessage;
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -232,7 +234,7 @@ export const DataTableForObservableQuery = <
                 <DataTableCore<TDataType>
                     data={rows}
                     dataKey={props.dataKey}
-                    emptyMessage={props.emptyMessage}
+                    emptyMessage={emptyMessage}
                     selectionMode='single'
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
