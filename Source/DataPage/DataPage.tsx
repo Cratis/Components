@@ -284,6 +284,13 @@ export interface DataPageProps<
     defaultFilters?: DataTableFilterMeta;
 
     /**
+     * @deprecated Filtering is always applied to the currently loaded page.
+     * This compatibility prop no longer toggles behavior and does not change
+     * server-reported pagination totals.
+     */
+    clientFiltering?: boolean;
+
+    /**
      * Callback triggered to signal data refresh
      */
     onRefresh?(): void;

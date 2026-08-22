@@ -53,10 +53,13 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
+- `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
 - `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
 - `children`: Column definitions
 
-Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Filters are applied client-side to the currently loaded observable-query page.
+Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Filters are applied client-side to the currently loaded observable-query page, while pagination continues to use the server-reported totals.
+
+The deprecated `clientFiltering` prop remains accepted only for source compatibility and does not change that scope. Complete-result filtering must be applied by the server before paging, with filter values passed in `queryArguments`; see [Filtering scope and server pagination](data-table-for-query.md#filtering-scope-and-server-pagination).
 
 While the first observable result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
 

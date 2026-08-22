@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
-import { Constructor } from '@cratis/fundamentals';
-import { IQueryFor, Paging } from '@cratis/arc/queries';
+import type { Constructor } from '@cratis/fundamentals';
+import { type IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
 import type { ReactNode } from 'react';
 import { DataTableCore } from './DataTableCore';
@@ -67,6 +67,13 @@ export interface DataTableForQueryProps<
      * Default filters to use
      */
     defaultFilters?: DataTableFilterMeta;
+
+    /**
+     * @deprecated Filtering is always applied to the currently loaded page.
+     * This compatibility prop no longer toggles behavior and does not change
+     * server-reported pagination totals.
+     */
+    clientFiltering?: boolean;
 
     /**
      * Extra CSS class name forwarded to the underlying DataTable root.

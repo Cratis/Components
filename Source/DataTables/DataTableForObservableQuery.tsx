@@ -71,6 +71,13 @@ export interface DataTableForObservableQueryProps<
     defaultFilters?: DataTableFilterMeta;
 
     /**
+     * @deprecated Filtering is always applied to the currently loaded page.
+     * This compatibility prop no longer toggles behavior and does not change
+     * server-reported pagination totals.
+     */
+    clientFiltering?: boolean;
+
+    /**
      * Extra CSS class name forwarded to the underlying DataTable root.
      */
     className?: string;

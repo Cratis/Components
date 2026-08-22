@@ -29,6 +29,9 @@ const previouslyTypedConfig: Partial<PrimeReactProps> = {
     theme: { preset: {}, options: {} },
 };
 const sourceCompatibleConfig: CratisComponentsConfig = previouslyTypedConfig;
+const legacyDirectAdapterConfig: CratisComponentsConfig = {
+    customOption: 'legacy-direct-value',
+};
 
 describe('when configuring the rendering adapter', () => {
     let container: HTMLDivElement;
@@ -48,8 +51,10 @@ describe('when configuring the rendering adapter', () => {
                 <CratisComponentsProvider
                     value={{
                         ...sourceCompatibleConfig,
+                        ...legacyDirectAdapterConfig,
                         adapter: {
-                            customOption: 'adapter-value',
+                            adapterOnlyOption: 'adapter-value',
+                            customOption: 'shadowed-adapter-value',
                             ripple: false,
                         },
                         license: 'primeui-key',
@@ -68,7 +73,11 @@ describe('when configuring the rendering adapter', () => {
     });
 
     it('should forward low-level adapter options', () => {
-        expect(captured.props.customOption).to.equal('adapter-value');
+        expect(captured.props.adapterOnlyOption).to.equal('adapter-value');
+    });
+
+    it('should retain direct adapter options for source compatibility', () => {
+        expect(captured.props.customOption).to.equal('legacy-direct-value');
     });
 
     it('should let named Cratis options override adapter values', () => {

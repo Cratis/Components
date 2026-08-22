@@ -111,7 +111,7 @@ The removed `DataTableSelectionSingleChangeEvent` is replaced by `DataTableSelec
 
 Per-column filter menus (`<Column filter dataType="…" />`), a global search box, and a paginator range report are all restored — no API change to opt in beyond `filter`.
 
-`DataTableFilterMeta.matchMode` is now typed against the Cratis-owned `DataTableFilterMatchMode` vocabulary instead of an arbitrary string. Replace adapter constants or hard-coded strings with values such as `DataTableFilterMatchMode.Contains`. Custom strings must be registered through `registerDataTableFilterMatcher()`, which returns the branded `matchMode` value and an unregister handle.
+`DataTableFilterMeta.matchMode` now offers the Cratis-owned `DataTableFilterMatchMode` vocabulary. Replace adapter constants or hard-coded built-in strings with values such as `DataTableFilterMatchMode.Contains`. Existing custom strings remain source-compatible when their matcher is registered externally; new custom matchers should use `registerDataTableFilterMatcher()`, which returns the branded `matchMode` value and an unregister handle.
 
 ## Theming without a theme stylesheet
 
@@ -165,7 +165,7 @@ A v10 theme stylesheet published `--surface-ground`, `--surface-card`, `--surfac
 
 Import order: `tokens`, `styles`, then the palette (and/or `theme`). It exists so what is already written keeps working — write nothing new against those names; use `--cratis-*` (or `--p-*`) instead.
 
-`CratisComponentsProvider` takes everything through its single `value` prop. Its public `CratisComponentsConfig` is Cratis-owned and imports no PrimeReact type; named fields such as `unstyled`, `pt`, `ptOptions`, `ripple`, `inputVariant`, `zIndex`, `locale`, `theme`, `defaults` and `license` are mapped to the current renderer. Additional renderer-specific values belong under `adapter`, with named fields taking precedence. The provider also accepts a `toaster` prop (`true` or a `ToasterProps` object) to mount a `<Toaster />` for you.
+`CratisComponentsProvider` takes everything through its single `value` prop. Its public `CratisComponentsConfig` is Cratis-owned and imports no PrimeReact type; named fields such as `unstyled`, `pt`, `ptOptions`, `ripple`, `inputVariant`, `zIndex`, `locale`, `theme`, `defaults` and `license` are mapped to the current renderer. Additional renderer-specific values belong under `adapter`, with named fields taking precedence. Existing direct renderer options remain accepted and forwarded for source compatibility, but new integrations should use the adapter envelope. The provider also accepts a `toaster` prop (`true` or a `ToasterProps` object) to mount a `<Toaster />` for you.
 
 ## Dialog
 
@@ -189,12 +189,12 @@ If you called `useOverlayZIndex` in your own app for your own overlays, you will
 
 A few v10 features have no v11 equivalent. The props are **kept so your code still compiles**, but they no longer do anything — remove them or adopt the alternative:
 
-| Prop                                                                               | What changed                                                                                                                                               |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Dialog` `resizable`                                                               | v11's headless dialog has no resize handle — no effect.                                                                                                    |
-| `ChipsField` `separator`                                                           | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split.                                                                           |
-| `MultiSelectField` `display` / `maxSelectedLabels`                                 | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone.                                           |
-| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Removed because it could not represent coherent client filtering over a server-paged result. Filtering still affects the loaded page and pagination retains server totals. |
+| Prop                                                                               | What changed                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Dialog` `resizable`                                                               | v11's headless dialog has no resize handle — no effect.                                                                                                                                                                                                 |
+| `ChipsField` `separator`                                                           | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split.                                                                                                                                                                        |
+| `MultiSelectField` `display` / `maxSelectedLabels`                                 | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone.                                                                                                                                        |
+| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Retained as a deprecated no-op for source compatibility. Filtering always affects only the loaded page and pagination retains server totals. For complete-result filtering, pass filters as query arguments and apply them on the server before paging. |
 
 Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
 

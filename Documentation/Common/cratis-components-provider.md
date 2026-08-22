@@ -49,7 +49,7 @@ export const App = () => (
 );
 ```
 
-The `value` is deep-merged with the Cratis defaults (currently empty) so consumer settings always win. Pass a stable reference (a module-level constant or a `useMemo` result) to avoid unnecessary re-renders.
+The `value` is deep-merged with the Cratis defaults (currently empty) so consumer settings always win. Renderer-specific options passed directly in `value` are still forwarded for source compatibility, but new code should put them under `adapter` so the renderer boundary stays explicit. Pass a stable reference (a module-level constant or a `useMemo` result) to avoid unnecessary re-renders.
 
 ## PrimeReact's styled mode
 
@@ -72,7 +72,7 @@ It needs `@primereact/styles` and `@primeuix/themes` installed (optional peers).
 
 ### `value`
 
-`CratisComponentsConfig` — Cratis-owned, renderer-type-decoupled configuration. Named fields are stable Cratis names mapped to the active renderer, but renderer-shaped values such as `pt`, `theme`, `defaults` and `license` retain their current adapter semantics. Low-level extras belong under `adapter`; named fields win when the same key appears in both.
+`CratisComponentsConfig` — Cratis-owned, renderer-type-decoupled configuration. Named fields are stable Cratis names mapped to the active renderer, but renderer-shaped values such as `pt`, `theme`, `defaults` and `license` retain their current adapter semantics. Low-level extras belong under `adapter`; named fields win when the same key appears in both. Existing direct extras remain accepted and forwarded for source compatibility.
 
 The most useful members:
 

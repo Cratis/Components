@@ -102,6 +102,7 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
+- `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded query page
 
 The query-backed table inside `DataPage` suppresses `emptyMessage` while its first result is still performing, so a pending query is not presented as a confirmed empty result.
 
@@ -116,6 +117,12 @@ DataPage supports two types of queries:
 2. **IObservableQueryFor**: Observable queries that automatically update when data changes
 
 The component automatically detects the query type and renders the appropriate data table component.
+
+## Filtering scope
+
+Column and global filters run against the currently loaded query page. Pagination continues to use the server-reported total so filtering one page never hides later pages.
+
+`clientFiltering` remains in the public props only so existing applications continue to compile. It is deprecated, has no effect, and should not be used in new code. To filter the complete result set, pass filter values through `queryArguments` and apply them on the server before paging so the query returns the filtered rows and filtered total. See [DataTableForQuery filtering scope](../DataTables/data-table-for-query.md#filtering-scope-and-server-pagination) for the rationale.
 
 ## Layout
 

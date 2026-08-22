@@ -190,11 +190,12 @@ only the type import moves:
 Per-column filter menus (`<Column filter dataType="…" />`), a global search box, and a
 paginator range report are all restored — no API change to opt in beyond `filter`.
 
-`DataTableFilterMeta.matchMode` is now typed against the Cratis-owned
-`DataTableFilterMatchMode` vocabulary instead of an arbitrary string. Replace adapter constants
-or hard-coded strings with values such as `DataTableFilterMatchMode.Contains`. Custom strings
-must be registered through `registerDataTableFilterMatcher()`, which returns the branded
-`matchMode` value and an unregister handle.
+`DataTableFilterMeta.matchMode` now offers the Cratis-owned `DataTableFilterMatchMode`
+vocabulary. Replace adapter constants or hard-coded built-in strings with values such as
+`DataTableFilterMatchMode.Contains`. Existing custom strings remain source-compatible when
+their matcher is registered externally; new custom matchers should use
+`registerDataTableFilterMatcher()`, which returns the branded `matchMode` value and an
+unregister handle.
 
 ## 6. Theming — there is no theme stylesheet any more
 
@@ -296,7 +297,9 @@ already written keeps working — write nothing new against those names; use `--
 `CratisComponentsConfig` is Cratis-owned and imports no PrimeReact type; named fields such as
 `unstyled`, `pt`, `ptOptions`, `ripple`, `inputVariant`, `zIndex`, `locale`, `theme`, `defaults`
 and `license` are mapped to the current renderer. Additional renderer-specific values belong
-under `adapter`, with named fields taking precedence. It also accepts a
+under `adapter`, with named fields taking precedence. Existing direct renderer options remain
+accepted and forwarded for source compatibility, but new integrations should use the adapter
+envelope. It also accepts a
 `toaster` prop (`true` or a `ToasterProps` object) to mount a `<Toaster />` for you.
 
 ## 7. Dialog
@@ -338,12 +341,12 @@ inline it — but check first whether v11 has already made it unnecessary for yo
 A few v10 features have no v11 equivalent. The props are **kept so your code still
 compiles**, but they no longer do anything — remove them or adopt the alternative:
 
-| Prop                                                                               | What changed                                                                                                                                               |
-| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Dialog` `resizable`                                                               | v11's headless dialog has no resize handle — no effect.                                                                                                    |
-| `ChipsField` `separator`                                                           | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split.                                                                           |
-| `MultiSelectField` `display` / `maxSelectedLabels`                                 | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone.                                           |
-| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Removed because it could not represent coherent client filtering over a server-paged result. Filtering still affects the loaded page and pagination retains server totals. |
+| Prop                                                                               | What changed                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Dialog` `resizable`                                                               | v11's headless dialog has no resize handle — no effect.                                                                                                                                                                                                 |
+| `ChipsField` `separator`                                                           | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split.                                                                                                                                                                        |
+| `MultiSelectField` `display` / `maxSelectedLabels`                                 | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone.                                                                                                                                        |
+| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Retained as a deprecated no-op for source compatibility. Filtering always affects only the loaded page and pagination retains server totals. For complete-result filtering, pass filters as query arguments and apply them on the server before paging. |
 
 Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
 

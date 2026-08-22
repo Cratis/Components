@@ -42,6 +42,11 @@ export interface CratisComponentsConfig {
     license?: string;
     /** Additional low-level options for the active rendering adapter. */
     adapter?: object;
+    /**
+     * Unrecognized renderer options are still forwarded for source compatibility.
+     * New code should place renderer-specific options under {@link adapter}.
+     */
+    [adapterOption: string]: unknown;
 }
 
 export interface CratisComponentsProviderProps {

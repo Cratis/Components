@@ -265,8 +265,8 @@ export const App = () => (
   the optional `...styledMode()` styled layer). Its public
   `CratisComponentsConfig` is Cratis-owned and imports no PrimeReact type;
   low-level renderer extras go under `value.adapter`, while named fields take
-  precedence. Drop in the raw `PrimeReactProvider` from `@primereact/core` if
-  you'd rather.
+  precedence. Existing direct extras remain accepted for source compatibility.
+  Drop in the raw `PrimeReactProvider` from `@primereact/core` if you'd rather.
 
 The setups below differ only in **what else** you load on top of this
 provider setup.
