@@ -20,7 +20,6 @@ export {
 export {
     ObservableQueryWhen,
     QueryBoundary,
-    QueryScope,
     QueryWhen,
     useObservableQuery,
     useObservableQueryWithPaging,

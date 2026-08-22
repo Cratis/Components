@@ -111,6 +111,8 @@ The removed `DataTableSelectionSingleChangeEvent` is replaced by `DataTableSelec
 
 Per-column filter menus (`<Column filter dataType="…" />`), a global search box, and a paginator range report are all restored — no API change to opt in beyond `filter`.
 
+`DataTableFilterMeta.matchMode` is now typed against the Cratis-owned `DataTableFilterMatchMode` vocabulary instead of an arbitrary string. Replace adapter constants or hard-coded strings with values such as `DataTableFilterMatchMode.Contains`. Custom strings must be registered through `registerDataTableFilterMatcher()`, which returns the branded `matchMode` value and an unregister handle.
+
 ## Theming without a theme stylesheet
 
 **PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist, and the `primereact` package is **unstyled primitives**: they render structural markup with `data-scope` / `data-part` attributes and **no `p-*` class names**. A theme is now two things handed to the provider at runtime: a **preset** — a plain JavaScript token object (`@primeuix/themes` — Aura, Lara, Nora) that `@primeuix/styled` turns into `--p-*` custom properties — and PrimeReact's **component styles** (`@primereact/styles`), which put the `p-*` class names on the primitives and carry the CSS the tokens drive. PrimeReact's own styled components (`@primereact/ui`) are just the primitives with those styles preset; `@cratis/components` builds on the primitives, so a preset alone (`theme: { preset }`) emits tokens but paints nothing.

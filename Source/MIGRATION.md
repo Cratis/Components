@@ -192,6 +192,12 @@ only the type import moves:
 Per-column filter menus (`<Column filter dataType="…" />`), a global search box, and a
 paginator range report are all restored — no API change to opt in beyond `filter`.
 
+`DataTableFilterMeta.matchMode` is now typed against the Cratis-owned
+`DataTableFilterMatchMode` vocabulary instead of an arbitrary string. Replace adapter constants
+or hard-coded strings with values such as `DataTableFilterMatchMode.Contains`. Custom strings
+must be registered through `registerDataTableFilterMatcher()`, which returns the branded
+`matchMode` value and an unregister handle.
+
 ## 6. Theming — there is no theme stylesheet any more
 
 **PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist, and

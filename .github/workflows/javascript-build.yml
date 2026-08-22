@@ -104,3 +104,57 @@ jobs:
       - name: Verify published exports
         working-directory: Source
         run: node scripts/verify-exports.mjs
+
+  verify-core-consumers:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arc-version: ['20.3.1', '21.19.4', '22.0.1']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.x
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Yarn install
+        run: yarn
+
+      - name: Build and pack Components
+        run: |
+          yarn workspace @cratis/components prepare
+          yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
+
+      - name: Verify UI-kit-free Arc ${{ matrix.arc-version }} consumer
+        run: |
+          CONSUMER="$(mktemp -d)"
+          cd "$CONSUMER"
+          printf '{"private":true,"type":"module"}\n' > package.json
+          npm install --ignore-scripts --omit=optional \
+            /tmp/cratis-components.tgz \
+            "@cratis/arc@${{ matrix.arc-version }}" \
+            "@cratis/arc.react@${{ matrix.arc-version }}" \
+            @cratis/fundamentals react@19 react-dom@19
+          node --input-type=module - <<'NODE'
+          const core = await import('@cratis/components/core');
+          const required = [
+              'asCommandFormField',
+              'useCommand',
+              'useQueryWithPaging',
+              'useObservableQueryWithPaging',
+              'useDialog',
+          ];
+          const missing = required.filter(name => !(name in core));
+          if (missing.length > 0) {
+              throw new Error(`Missing core exports: ${missing.join(', ')}`);
+          }
+          NODE
+          test ! -d node_modules/primereact
+          test ! -d node_modules/@primereact
+          test ! -d node_modules/@primeuix
+          test ! -d node_modules/primeicons
