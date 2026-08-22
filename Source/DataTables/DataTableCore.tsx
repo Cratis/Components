@@ -5,7 +5,11 @@ import React, { useMemo, useState, type CSSProperties, type ReactNode } from 're
 import { DataTable as PrimeDataTable } from 'primereact/datatable';
 import { InputText } from 'primereact/inputtext';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
-import type { UseDataTableSelectionEvent, UseDataTableRowMouseEvent, UseDataTableFilterEvent } from '@primereact/types/headless/datatable';
+import type {
+    UseDataTableSelectionEvent,
+    UseDataTableRowMouseEvent,
+    UseDataTableFilterEvent,
+} from '@primereact/types/headless/datatable';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
 import { selectionKeysForRow, rowFromSelectionKeys } from './selectionKeys';
@@ -76,17 +80,23 @@ export interface DataTableCoreProps<TData extends object> {
     unstyled?: boolean;
 }
 
-/** Reads the parsed column definitions from `<Column>` children. */
+/** Parses column definitions from `<Column>` children. */
 const useColumns = (children: ReactNode): React.ReactElement<ColumnProps<any>>[] =>
     useMemo(
-        () => React.Children.toArray(children).filter(React.isValidElement) as React.ReactElement<ColumnProps<any>>[],
-        [children]
+        () =>
+            React.Children.toArray(children).filter(
+                React.isValidElement,
+            ) as React.ReactElement<ColumnProps<any>>[],
+        [children],
     );
 
-const renderCellContent = (column: ColumnProps<any>, row: object): ReactNode => {
+const renderCellContent = (
+    column: ColumnProps<any>,
+    row: Record<string, unknown>,
+): ReactNode => {
     if (column.body) return column.body(row);
     if (column.field) {
-        const value = (row as Record<string, unknown>)[column.field];
+        const value = row[column.field];
         return value == null ? '' : String(value);
     }
     return null;
@@ -137,6 +147,7 @@ export const DataTableCore = <TData extends object>({
     const handleFilter = (event: UseDataTableFilterEvent) => {
         // PrimeReact's headless filter meta is looser than the typed Cratis
         // constraint the public API exposes; narrow at this one boundary.
+        // SAFETY: DataTableCore only configures one value/match-mode constraint per field.
         const next = event.filters as unknown as DataTableFilterMeta;
         setFilters(next);
         onFilter?.(next);
@@ -145,15 +156,22 @@ export const DataTableCore = <TData extends object>({
     const keyOf = (row: TData): string | undefined =>
         dataKey ? String((row as Record<string, unknown>)[dataKey]) : undefined;
 
-    const selectionKeys = useMemo(() => selectionKeysForRow(selection, dataKey), [selection, dataKey]);
+    const selectionKeys = useMemo(
+        () => selectionKeysForRow(selection, dataKey),
+        [selection, dataKey],
+    );
 
     const handleSelectionChange = (event: UseDataTableSelectionEvent) => {
         if (!onSelectionChange) return;
-        onSelectionChange({ value: rowFromSelectionKeys(event.value, data, dataKey), originalEvent: event.originalEvent });
+        onSelectionChange({
+            value: rowFromSelectionKeys(event.value, data, dataKey),
+            originalEvent: event.originalEvent,
+        });
     };
 
     const handleRowClick = onRowClick
-        ? (event: UseDataTableRowMouseEvent) => onRowClick({ data: event.data as TData, index: event.index })
+        ? (event: UseDataTableRowMouseEvent) =>
+              onRowClick({ data: event.data as TData, index: event.index })
         : undefined;
 
     return (
@@ -175,13 +193,14 @@ export const DataTableCore = <TData extends object>({
             style={style}
             pt={pt}
             ptOptions={ptOptions}
-            unstyled={unstyled}>
+            unstyled={unstyled}
+        >
             {showGlobalSearch && (
-                <div className="cratis-datatable-search">
+                <div className='cratis-datatable-search'>
                     <InputText
                         value={globalFilter}
                         placeholder={globalSearchPlaceholder}
-                        className="w-full"
+                        className='w-full'
                         onChange={(event) => setGlobalFilter(event.target.value)}
                     />
                 </div>
@@ -194,28 +213,55 @@ export const DataTableCore = <TData extends object>({
                                 <PrimeDataTable.THeadCell
                                     key={index}
                                     style={column.props.headerStyle ?? column.props.style}
-                                    className={column.props.headerClassName}>
-                                    <div className="cratis-datatable-header-cell">
+                                    className={column.props.headerClassName}
+                                >
+                                    <div className='cratis-datatable-header-cell'>
                                         {column.props.sortable && column.props.field ? (
                                             // aria-sort belongs on the column header, not the sort button; PrimeReact 11's
                                             // Sort part puts it on its role="button" element (invalid ARIA), so strip it here.
-                                            <PrimeDataTable.Sort field={column.props.field} pt={{ root: { 'aria-sort': undefined } }}>
-                                                <PrimeDataTable.THeadTitle>{column.props.header}</PrimeDataTable.THeadTitle>
-                                                <PrimeDataTable.SortIndicator match="asc"> ▲</PrimeDataTable.SortIndicator>
-                                                <PrimeDataTable.SortIndicator match="desc"> ▼</PrimeDataTable.SortIndicator>
+                                            <PrimeDataTable.Sort
+                                                field={column.props.field}
+                                                pt={{ root: { 'aria-sort': undefined } }}
+                                            >
+                                                <PrimeDataTable.THeadTitle>
+                                                    {column.props.header}
+                                                </PrimeDataTable.THeadTitle>
+                                                <PrimeDataTable.SortIndicator match='asc'>
+                                                    {' '}
+                                                    ▲
+                                                </PrimeDataTable.SortIndicator>
+                                                <PrimeDataTable.SortIndicator match='desc'>
+                                                    {' '}
+                                                    ▼
+                                                </PrimeDataTable.SortIndicator>
                                             </PrimeDataTable.Sort>
                                         ) : (
                                             // The title part, not a bare span, so a theme's column-title weight reaches it.
-                                            <PrimeDataTable.THeadTitle>{column.props.header}</PrimeDataTable.THeadTitle>
+                                            <PrimeDataTable.THeadTitle>
+                                                {column.props.header}
+                                            </PrimeDataTable.THeadTitle>
                                         )}
-                                        {column.props.filter && (column.props.filterField ?? column.props.field) && (
-                                            <ColumnFilterMenu
-                                                field={(column.props.filterField ?? column.props.field) as string}
-                                                dataType={column.props.dataType}
-                                                placeholder={column.props.filterPlaceholder}
-                                                showMatchModes={column.props.showFilterMatchModes}
-                                            />
-                                        )}
+                                        {column.props.filter &&
+                                            (column.props.filterField ??
+                                                column.props.field) && (
+                                                <ColumnFilterMenu
+                                                    field={
+                                                        (column.props.filterField ??
+                                                            column.props.field) as string
+                                                    }
+                                                    dataType={column.props.dataType}
+                                                    placeholder={
+                                                        column.props.filterPlaceholder
+                                                    }
+                                                    showMatchModes={
+                                                        column.props.showFilterMatchModes
+                                                    }
+                                                    filterElement={
+                                                        column.props.filterElement
+                                                    }
+                                                    labels={column.props.filterLabels}
+                                                />
+                                            )}
                                     </div>
                                 </PrimeDataTable.THeadCell>
                             ))}
@@ -223,18 +269,32 @@ export const DataTableCore = <TData extends object>({
                     </PrimeDataTable.THead>
                     <PrimeDataTable.TBody>
                         {({ item, index }) => (
-                            <PrimeDataTable.Row index={index} className={rowClassName?.(item as TData)}>
+                            <PrimeDataTable.Row
+                                index={index}
+                                className={rowClassName?.(item as TData)}
+                            >
                                 {columns.map((column, columnIndex) => (
                                     <PrimeDataTable.Cell
                                         key={columnIndex}
-                                        style={{ ...column.props.style, ...column.props.bodyStyle }}
-                                        className={column.props.bodyClassName ?? column.props.className}>
+                                        style={{
+                                            ...column.props.style,
+                                            ...column.props.bodyStyle,
+                                        }}
+                                        className={
+                                            column.props.bodyClassName ??
+                                            column.props.className
+                                        }
+                                    >
                                         {column.props.selectionMode ? (
                                             <input
-                                                type="radio"
+                                                type='radio'
                                                 readOnly
                                                 aria-label={selectionAriaLabel}
-                                                checked={!!selection && keyOf(item as TData) === keyOf(selection)}
+                                                checked={
+                                                    !!selection &&
+                                                    keyOf(item as TData) ===
+                                                        keyOf(selection)
+                                                }
                                             />
                                         ) : (
                                             renderCellContent(column.props, item)
@@ -247,9 +307,11 @@ export const DataTableCore = <TData extends object>({
                     {/* v11 classes the empty body `p-datatable-empty-message` alone, so a theme's
                         `.p-datatable-tbody > tr > td` cell rules never reach the message row; the
                         body class puts the empty row on the same footing as a data row. */}
-                    <PrimeDataTable.EmptyTBody className="p-datatable-tbody">
+                    <PrimeDataTable.EmptyTBody className='p-datatable-tbody'>
                         <PrimeDataTable.Row>
-                            <PrimeDataTable.Cell colSpan={Math.max(columns.length, 1)}>{emptyMessage}</PrimeDataTable.Cell>
+                            <PrimeDataTable.Cell colSpan={Math.max(columns.length, 1)}>
+                                {emptyMessage}
+                            </PrimeDataTable.Cell>
                         </PrimeDataTable.Row>
                     </PrimeDataTable.EmptyTBody>
                 </PrimeDataTable.Table>
