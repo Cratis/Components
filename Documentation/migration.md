@@ -192,7 +192,7 @@ A few v10 features have no v11 equivalent. The props are **kept so your code sti
 | `Dialog` `resizable`                                                               | v11's headless dialog has no resize handle — no effect.                                                                                                    |
 | `ChipsField` `separator`                                                           | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split.                                                                           |
 | `MultiSelectField` `display` / `maxSelectedLabels`                                 | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone.                                           |
-| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Filtering always affects the loaded page; when enabled, paginator totals also reflect the filtered rows on that page instead of the server-reported total. |
+| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Removed because it could not represent coherent client filtering over a server-paged result. Filtering still affects the loaded page and pagination retains server totals. |
 
 Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
 

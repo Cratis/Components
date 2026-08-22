@@ -239,7 +239,7 @@ export const WithoutDetails: Story = {
     ),
 };
 
-export const WithClientFiltering: Story = {
+export const WithColumnFiltering: Story = {
     render: () => (
         <div style={{ height: '600px' }}>
             <DataPage<PersonsQuery, Person, object>
@@ -247,7 +247,6 @@ export const WithClientFiltering: Story = {
                 query={PersonsQuery}
                 emptyMessage='No persons found'
                 dataKey='id'
-                clientFiltering
                 globalFilterFields={['name', 'email', 'role']}
             >
                 <DataPage.Columns>

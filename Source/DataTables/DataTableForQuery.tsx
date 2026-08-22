@@ -5,7 +5,7 @@ import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
 import { Constructor } from '@cratis/fundamentals';
 import { IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { DataTableCore } from './DataTableCore';
 import { TablePaginator, type TablePaginatorProps } from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
@@ -67,12 +67,6 @@ export interface DataTableForQueryProps<
      * Default filters to use
      */
     defaultFilters?: DataTableFilterMeta;
-
-    /**
-     * When true, paginator totals reflect the rows remaining after client-side
-     * filters are applied to the currently loaded query page.
-     */
-    clientFiltering?: boolean;
 
     /**
      * Extra CSS class name forwarded to the underlying DataTable root.
@@ -153,16 +147,8 @@ export const DataTableForQuery = <
         paging,
         props.queryArguments,
     );
-    const [filteredTotal, setFilteredTotal] = useState<number>();
-    const loadedCount = Array.isArray(result.data) ? result.data.length : 0;
-    const totalItems = props.clientFiltering
-        ? (filteredTotal ?? loadedCount)
-        : result.paging.totalItems;
-    const pageCount = props.clientFiltering
-        ? totalItems > 0
-            ? Math.ceil(totalItems / paging.pageSize)
-            : 0
-        : result.paging.totalPages;
+    const totalItems = result.paging.totalItems;
+    const pageCount = result.paging.totalPages;
 
     // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
@@ -190,8 +176,6 @@ export const DataTableForQuery = <
                     onSelectionChange={props.onSelectionChange}
                     globalFilterFields={props.globalFilterFields}
                     defaultFilters={props.defaultFilters}
-                    clientFiltering={props.clientFiltering}
-                    onFilteredCountChange={setFilteredTotal}
                     className={props.className}
                     style={{ minWidth: '100%' }}
                     pt={props.pt}

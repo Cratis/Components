@@ -71,12 +71,6 @@ export interface DataTableForObservableQueryProps<
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * When true, paginator totals reflect the rows remaining after client-side
-     * filters are applied to the currently loaded observable-query page.
-     */
-    clientFiltering?: boolean;
-
-    /**
      * Extra CSS class name forwarded to the underlying DataTable root.
      */
     className?: string;
@@ -163,17 +157,9 @@ export const DataTableForObservableQuery = <
     >(props.query as never, paging, props.queryArguments);
     const containerRef = useRef<HTMLDivElement>(null);
     const [tableHeight, setTableHeight] = useState<number>(600);
-    const [filteredTotal, setFilteredTotal] = useState<number>();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const loadedCount = Array.isArray(result.data) ? result.data.length : 0;
-    const totalItems = props.clientFiltering
-        ? (filteredTotal ?? loadedCount)
-        : result.paging.totalItems;
-    const pageCount = props.clientFiltering
-        ? totalItems > 0
-            ? Math.ceil(totalItems / paging.pageSize)
-            : 0
-        : result.paging.totalPages;
+    const totalItems = result.paging.totalItems;
+    const pageCount = result.paging.totalPages;
     const showPaginator = totalItems > 0 && pageCount > 1;
 
     // SAFETY: Arc observable collection queries are row-typed while runtime data is the current row array.
@@ -240,8 +226,6 @@ export const DataTableForObservableQuery = <
                     onSelectionChange={props.onSelectionChange}
                     globalFilterFields={props.globalFilterFields}
                     defaultFilters={props.defaultFilters}
-                    clientFiltering={props.clientFiltering}
-                    onFilteredCountChange={setFilteredTotal}
                     scrollable
                     scrollHeight='100%'
                     className={props.className}

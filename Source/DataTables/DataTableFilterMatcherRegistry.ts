@@ -39,6 +39,8 @@ const registry = (registryHost[registryKey] ??= {
     adapters: new Set<DataTableFilterMatcherAdapter>(),
 });
 const builtInMatchModes = new Set<string>(Object.values(DataTableFilterMatchMode));
+const customMatchModePattern = /^[A-Za-z][A-Za-z0-9._:-]*$/;
+const forbiddenMatchModes = new Set(['__proto__', 'prototype', 'constructor']);
 
 /**
  * Registers a process-wide custom matcher through the Cratis filter vocabulary.
@@ -48,6 +50,12 @@ export const registerDataTableFilterMatcher = (
     name: string,
     matcher: DataTableFilterMatcher,
 ): DataTableFilterMatcherRegistration => {
+    if (!customMatchModePattern.test(name) || forbiddenMatchModes.has(name)) {
+        throw new Error(
+            'A custom data-table filter match mode must start with a letter and contain only letters, numbers, dots, colons, underscores, or hyphens.',
+        );
+    }
+
     if (builtInMatchModes.has(name)) {
         throw new Error(
             `'${name}' is a built-in data-table filter match mode and cannot be replaced.`,

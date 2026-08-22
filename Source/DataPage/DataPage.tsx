@@ -1,19 +1,19 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { CSSProperties, ReactNode, useMemo } from 'react';
+import { type CSSProperties, type ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
 import type { ButtonProps } from '@primereact/types/primitive/button';
-import { IObservableQueryFor, IQueryFor, QueryFor } from '@cratis/arc/queries';
+import { type IObservableQueryFor, type IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
 import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
 import { Allotment } from 'allotment';
-import { Constructor } from '@cratis/fundamentals';
+import type { Constructor } from '@cratis/fundamentals';
 import { DataPageLayout } from './DataPageLayout';
 
 // Allotment ships its layout as a stylesheet rather than inline styles, and a pane only becomes
@@ -159,7 +159,6 @@ export const Columns = ({ children }: ColumnProps) => {
                     {...context}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
-                    clientFiltering={context.clientFiltering}
                     className={context.tableClassName}
                     pt={context.tablePt}
                     ptOptions={context.tablePtOptions}
@@ -172,7 +171,6 @@ export const Columns = ({ children }: ColumnProps) => {
                     {...context}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
-                    clientFiltering={context.clientFiltering}
                     className={context.tableClassName}
                     pt={context.tablePt}
                     ptOptions={context.tablePtOptions}
@@ -284,12 +282,6 @@ export interface DataPageProps<
      * Default filters to use
      */
     defaultFilters?: DataTableFilterMeta;
-
-    /**
-     * When true, paginator totals reflect the rows remaining after client-side
-     * filters are applied to the currently loaded query page.
-     */
-    clientFiltering?: boolean;
 
     /**
      * Callback triggered to signal data refresh

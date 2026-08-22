@@ -10,6 +10,15 @@ import {
 } from '../DataTableFilterMatcherRegistry';
 
 describe('when registering custom matchers', () => {
+    it('should reject empty and prototype-sensitive names', () => {
+        for (const name of ['', '__proto__', 'constructor', 'prototype']) {
+            expect(() => registerDataTableFilterMatcher(
+                name,
+                () => true,
+            )).to.throw('must start with a letter');
+        }
+    });
+
     it('should reject a built-in match-mode name', () => {
         expect(() => registerDataTableFilterMatcher('contains', () => true)).to.throw(
             "'contains' is a built-in data-table filter match mode",

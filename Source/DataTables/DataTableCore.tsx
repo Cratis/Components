@@ -2,13 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, {
-    useEffect,
     useMemo,
     useState,
     type CSSProperties,
     type ReactNode,
 } from 'react';
-import { DataTable as PrimeDataTable, useDataTableContext } from 'primereact/datatable';
+import { DataTable as PrimeDataTable } from 'primereact/datatable';
 import { InputText } from 'primereact/inputtext';
 import { registerMatcher, unregisterMatcher } from '@primereact/hooks/use-filter';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
@@ -77,10 +76,6 @@ export interface DataTableCoreProps<TData extends object> {
     defaultFilters?: DataTableFilterMeta;
     /** Invoked whenever the per-column filter state changes. */
     onFilter?: (filters: DataTableFilterMeta) => void;
-    /** Reports the number of rows remaining after PrimeReact applies client-side filters. */
-    onFilteredCountChange?: (count: number) => void;
-    /** When true, reports client-filtered row counts through {@link onFilteredCountChange}. */
-    clientFiltering?: boolean;
     /** Renders the table body in a scroll region of {@link scrollHeight}. */
     scrollable?: boolean;
     /** The height of the scroll region when {@link scrollable} is set. */
@@ -119,14 +114,6 @@ const renderCellContent = (
     return null;
 };
 
-const ClientFilteredCount = ({ onChange }: { onChange: (count: number) => void }) => {
-    const dataTable = useDataTableContext();
-    const count = dataTable?.state?.processedData.length ?? 0;
-
-    useEffect(() => onChange(count), [count, onChange]);
-    return null;
-};
-
 /**
  * The shared, query-agnostic table used by {@link DataTableForQuery},
  * {@link DataTableForObservableQuery}, and the schema editor. Rebuilds
@@ -156,8 +143,6 @@ export const DataTableCore = <TData extends object>({
     globalSearchPlaceholder = 'Search…',
     defaultFilters,
     onFilter,
-    onFilteredCountChange,
-    clientFiltering,
     scrollable,
     scrollHeight,
     className,
@@ -222,9 +207,6 @@ export const DataTableCore = <TData extends object>({
             ptOptions={ptOptions}
             unstyled={unstyled}
         >
-            {clientFiltering && onFilteredCountChange && (
-                <ClientFilteredCount onChange={onFilteredCountChange} />
-            )}
             {showGlobalSearch && (
                 <div className='cratis-datatable-search'>
                     <InputText
