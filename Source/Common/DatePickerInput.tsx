@@ -99,7 +99,6 @@ export const DatePickerInput = ({
             onValueChange={(e: DatePickerRootValueChangeEvent) =>
                 onChange(e.value instanceof Date ? e.value : null)
             }
-            invalid={invalid}
             dateFormat={dateFormat}
             showTime={showTime}
             hourFormat={hourFormat}
@@ -113,6 +112,8 @@ export const DatePickerInput = ({
                 as={InputText}
                 placeholder={placeholder}
                 className='w-full'
+                aria-invalid={invalid || undefined}
+                data-invalid={invalid ? '' : undefined}
             />
             {showIcon && (
                 <DatePicker.Trigger>
