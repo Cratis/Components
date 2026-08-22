@@ -759,7 +759,7 @@ Three patterns, depending on how much PrimeReact a wrapper composes:
    `SchemaEditor` expose `className` only; restyle internals via the global
    `pt` preset.
 
-`Dropdown` routes `id`, `tabIndex`, `aria-label`, `aria-labelledby` and `aria-describedby` to its focusable `role="combobox"` trigger. The outer Select root remains a layout wrapper and does not duplicate the control id.
+`Dropdown` routes `id`, `tabIndex`, `aria-label`, `aria-labelledby` and `aria-describedby` to its focusable `role="combobox"` trigger. The outer Select root remains a layout wrapper and does not duplicate the control id. For filterable dropdowns, `filterPlaceholder` can differ from the closed trigger's `placeholder` and defaults to it when omitted.
 
 `DatePickerInput` uses the runtime `input` slot for attributes on its rendered input. Its public type intentionally rejects PrimeReact 11's stale `pcInputText` declaration, which the runtime never emits. The wrapper translates `invalid` to accepted `aria-invalid` and `data-invalid` input attributes instead of forwarding a rejected `invalid` DOM attribute:
 

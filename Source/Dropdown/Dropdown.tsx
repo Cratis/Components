@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
+import type React from 'react';
 import { Select } from 'primereact/select';
 import type {
     SelectRootProps,
@@ -50,6 +50,9 @@ export interface DropdownProps<T = unknown> {
 
     /** When true, shows a filter input inside the options popup. */
     filter?: boolean;
+
+    /** Placeholder shown in the filter input. Defaults to {@link placeholder}. */
+    filterPlaceholder?: string;
 
     /** When true, the dropdown accepts multiple selections. */
     multiple?: boolean;
@@ -140,6 +143,7 @@ export const Dropdown = <T = unknown,>({
     optionValue = conventionalField(options, 'value'),
     placeholder,
     filter,
+    filterPlaceholder,
     multiple,
     showClear,
     invalid,
@@ -204,7 +208,11 @@ export const Dropdown = <T = unknown,>({
                 <Select.Portal>
                     <Select.Positioner>
                         <Select.Popup>
-                            {filter && <Select.Filter placeholder={placeholder} />}
+                            {filter && (
+                                <Select.Filter
+                                    placeholder={filterPlaceholder ?? placeholder}
+                                />
+                            )}
                             <Select.List />
                         </Select.Popup>
                     </Select.Positioner>
