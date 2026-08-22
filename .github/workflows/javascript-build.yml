@@ -1,163 +1,163 @@
 name: JavaScript Build
 
 on:
-  workflow_dispatch:
-    inputs:
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
-  push:
-    branches:
-      - "main"
-    paths:
-      - "Source/**"
-  pull_request:
-    branches:
-      - "**"
-    paths:
-      - "Source/**"
+    workflow_dispatch:
+        inputs:
+            logLevel:
+                description: 'Log level'
+                required: true
+                default: 'warning'
+                type: choice
+                options:
+                    - info
+                    - warning
+                    - debug
+    push:
+        branches:
+            - 'main'
+        paths:
+            - 'Source/**'
+    pull_request:
+        branches:
+            - '**'
+        paths:
+            - 'Source/**'
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.x
-          registry-url: "https://registry.npmjs.org"
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
 
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: |
-            .yarn/cache
-            **/node_modules
-            **/.eslintcache
-            **/yarn.lock
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
-  
-      - name: Yarn install
-        run: yarn
+            - uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                      **/yarn.lock
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
 
-      - name: Build JS/TS
-        run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          yarn ci
+            - name: Yarn install
+              run: yarn
 
-  # Builds the artifact that actually ships to npm (the `prepare` script: tsc -b +
-  # rollup + copy-css) and loads every subpath of the `exports` map from it.
-  #
-  # The `build` job above only runs `tsc -p tsconfig.json`, so nothing in CI had ever
-  # imported the published shape. That gap is how Cratis/Components#118 - the published
-  # ESM contains directory imports, so no node-environment spec can render Dialog or
-  # CommandDialog - reached a release unnoticed.
-  #
-  # This job landed deliberately non-blocking, because it reproduced #118 and both of
-  # that issue's causes were still open: the bare `primereact/*` directory imports
-  # (fixed by the PrimeReact 11 migration) and the CSS side-effect imports rollup
-  # externalised via /\.css$/ (fixed by moving component CSS out of the JavaScript
-  # graph and into the `./styles` entry point). Both are resolved as of 3.0.0 - all 24
-  # subpaths load cleanly - so `continue-on-error` is gone and this is now a real gate.
-  verify-published-exports:
-    runs-on: ubuntu-latest
+            - name: Build JS/TS
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn ci
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # Builds the artifact that actually ships to npm (the `prepare` script: tsc -b +
+    # rollup + copy-css) and loads every subpath of the `exports` map from it.
+    #
+    # The `build` job above only runs `tsc -p tsconfig.json`, so nothing in CI had ever
+    # imported the published shape. That gap is how Cratis/Components#118 - the published
+    # ESM contains directory imports, so no node-environment spec can render Dialog or
+    # CommandDialog - reached a release unnoticed.
+    #
+    # This job landed deliberately non-blocking, because it reproduced #118 and both of
+    # that issue's causes were still open: the bare `primereact/*` directory imports
+    # (fixed by the PrimeReact 11 migration) and the CSS side-effect imports rollup
+    # externalised via /\.css$/ (fixed by moving component CSS out of the JavaScript
+    # graph and into the `./styles` entry point). Both are resolved as of 3.0.0 - all 24
+    # subpaths load cleanly - so `continue-on-error` is gone and this is now a real gate.
+    verify-published-exports:
+        runs-on: ubuntu-latest
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.x
-          registry-url: "https://registry.npmjs.org"
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: |
-            .yarn/cache
-            **/node_modules
-            **/.eslintcache
-            **/yarn.lock
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Yarn install
-        run: yarn
+            - uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                      **/yarn.lock
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
 
-      - name: Build the published artifact
-        working-directory: Source
-        run: |
-          export NODE_OPTIONS="--max-old-space-size=4096"
-          yarn run prepare
+            - name: Yarn install
+              run: yarn
 
-      - name: Verify published exports
-        working-directory: Source
-        run: node scripts/verify-exports.mjs
+            - name: Build the published artifact
+              working-directory: Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn run prepare
 
-  verify-core-consumers:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arc-version: ['20.3.1', '21.19.4', '22.0.1']
+            - name: Verify published exports
+              working-directory: Source
+              run: node scripts/verify-exports.mjs
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    verify-core-consumers:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                arc-version: ['20.3.1', '21.19.4', '22.0.1']
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.x
-          registry-url: "https://registry.npmjs.org"
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Yarn install
-        run: yarn
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
 
-      - name: Build and pack Components
-        run: |
-          yarn workspace @cratis/components prepare
-          yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
+            - name: Yarn install
+              run: yarn
 
-      - name: Verify UI-kit-free Arc ${{ matrix.arc-version }} consumer
-        run: |
-          CONSUMER="$(mktemp -d)"
-          cd "$CONSUMER"
-          printf '{"private":true,"type":"module"}\n' > package.json
-          npm install --ignore-scripts --omit=optional \
-            /tmp/cratis-components.tgz \
-            "@cratis/arc@${{ matrix.arc-version }}" \
-            "@cratis/arc.react@${{ matrix.arc-version }}" \
-            @cratis/fundamentals react@19 react-dom@19
-          node --input-type=module - <<'NODE'
-          const core = await import('@cratis/components/core');
-          const required = [
-              'asCommandFormField',
-              'useCommand',
-              'useQueryWithPaging',
-              'useObservableQueryWithPaging',
-              'useDialog',
-          ];
-          const missing = required.filter(name => !(name in core));
-          if (missing.length > 0) {
-              throw new Error(`Missing core exports: ${missing.join(', ')}`);
-          }
-          NODE
-          test ! -d node_modules/primereact
-          test ! -d node_modules/@primereact
-          test ! -d node_modules/@primeuix
-          test ! -d node_modules/primeicons
+            - name: Build and pack Components
+              run: |
+                  yarn workspace @cratis/components prepare
+                  yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
+
+            - name: Verify UI-kit-free Arc ${{ matrix.arc-version }} consumer
+              run: |
+                  CONSUMER="$(mktemp -d)"
+                  cd "$CONSUMER"
+                  printf '{"private":true,"type":"module"}\n' > package.json
+                  npm install --ignore-scripts --omit=optional \
+                    /tmp/cratis-components.tgz \
+                    "@cratis/arc@${{ matrix.arc-version }}" \
+                    "@cratis/arc.react@${{ matrix.arc-version }}" \
+                    @cratis/fundamentals react@19 react-dom@19
+                  node --input-type=module - <<'NODE'
+                  const core = await import('@cratis/components/core');
+                  const required = [
+                      'asCommandFormField',
+                      'useCommand',
+                      'useQueryWithPaging',
+                      'useObservableQueryWithPaging',
+                      'useDialog',
+                  ];
+                  const missing = required.filter(name => !(name in core));
+                  if (missing.length > 0) {
+                      throw new Error(`Missing core exports: ${missing.join(', ')}`);
+                  }
+                  NODE
+                  test ! -d node_modules/primereact
+                  test ! -d node_modules/@primereact
+                  test ! -d node_modules/@primeuix
+                  test ! -d node_modules/primeicons
