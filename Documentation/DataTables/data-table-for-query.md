@@ -52,7 +52,7 @@ function MyTable() {
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
-- `paginatorClassName` / `paginatorAriaLabels`: styling and localization for the paginator
+- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
 - `children`: Column definitions
 
 ## Pagination
