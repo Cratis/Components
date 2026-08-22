@@ -18,7 +18,13 @@ import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEv
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type.
  */
-export interface DataTableForObservableQueryProps<TQuery extends IObservableQueryFor<TDataType, TArguments> | IObservableQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object> {
+export interface DataTableForObservableQueryProps<
+    TQuery extends
+        | IObservableQueryFor<TDataType, TArguments>
+        | IObservableQueryFor<TDataType[], TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+> {
     /**
      * Children to render — `<Column>` elements describing the visible columns.
      */
@@ -65,10 +71,8 @@ export interface DataTableForObservableQueryProps<TQuery extends IObservableQuer
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * @deprecated No longer toggles behavior. Filtering (`<Column filter>` and the
-     * global search) is always applied client-side to the loaded page; this flag
-     * is retained only for source compatibility and will be removed in a future
-     * release.
+     * When true, paginator totals reflect the rows remaining after client-side
+     * filters are applied to the currently loaded observable-query page.
      */
     clientFiltering?: boolean;
 
@@ -126,7 +130,15 @@ const paging = new Paging(0, 20);
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataTableForObservableQueryProps}.
  */
-export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<TDataType, TArguments> | IObservableQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForObservableQueryProps<TQuery, TDataType, TArguments>) => {
+export const DataTableForObservableQuery = <
+    TQuery extends
+        | IObservableQueryFor<TDataType, TArguments>
+        | IObservableQueryFor<TDataType[], TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+>(
+    props: DataTableForObservableQueryProps<TQuery, TDataType, TArguments>,
+) => {
     // Type arguments are supplied explicitly, and the constructor is erased on the way in
     // (Cratis/Components#135). Two separate defects in `@cratis/arc.react` make the plain call
     // fail to type-check:
@@ -144,13 +156,28 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
     // explicitly recovers the row type this component is generic over — strictly better than the
     // `unknown` the inference would otherwise produce. Remove both once Arc returns an interface
     // from `subscribe()` and makes `TDataType` inferable.
-    const [result, , setPage] = useObservableQueryWithPaging<TDataType, never, TArguments>(props.query as never, paging, props.queryArguments);
+    const [result, , setPage] = useObservableQueryWithPaging<
+        TDataType,
+        never,
+        TArguments
+    >(props.query as never, paging, props.queryArguments);
     const containerRef = useRef<HTMLDivElement>(null);
     const [tableHeight, setTableHeight] = useState<number>(600);
+    const [filteredTotal, setFilteredTotal] = useState<number>();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const totalItems = result.paging.totalItems;
-    const pageCount = result.paging.totalPages;
+    const loadedCount = Array.isArray(result.data) ? result.data.length : 0;
+    const totalItems = props.clientFiltering
+        ? (filteredTotal ?? loadedCount)
+        : result.paging.totalItems;
+    const pageCount = props.clientFiltering
+        ? totalItems > 0
+            ? Math.ceil(totalItems / paging.pageSize)
+            : 0
+        : result.paging.totalPages;
     const showPaginator = totalItems > 0 && pageCount > 1;
+
+    // SAFETY: Arc observable collection queries are row-typed while runtime data is the current row array.
+    const rows = result.data as unknown as TDataType[];
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -168,7 +195,7 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
                         const calculatedHeight = containerHeight - paginatorHeight - 2;
                         const newHeight = Math.max(calculatedHeight, 200);
 
-                        setTableHeight(prevHeight => {
+                        setTableHeight((prevHeight) => {
                             if (Math.abs(newHeight - prevHeight) > 5) {
                                 return newHeight;
                             }
@@ -198,11 +225,12 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
                 height: '100%',
                 border: '1px solid var(--cratis-surface-border)',
                 borderRadius: 'var(--cratis-border-radius)',
-                overflow: 'hidden'
-            }}>
+                overflow: 'hidden',
+            }}
+        >
             <div style={{ height: `${tableHeight}px`, overflow: 'hidden' }}>
                 <DataTableCore<TDataType>
-                    data={result.data as unknown as TDataType[]}
+                    data={rows}
                     dataKey={props.dataKey}
                     emptyMessage={props.emptyMessage}
                     selectionMode='single'
@@ -210,19 +238,27 @@ export const DataTableForObservableQuery = <TQuery extends IObservableQueryFor<T
                     onSelectionChange={props.onSelectionChange}
                     globalFilterFields={props.globalFilterFields}
                     defaultFilters={props.defaultFilters}
+                    clientFiltering={props.clientFiltering}
+                    onFilteredCountChange={setFilteredTotal}
                     scrollable
                     scrollHeight='100%'
                     className={props.className}
                     style={{ minWidth: '100%' }}
                     pt={props.pt}
                     ptOptions={props.ptOptions}
-                    unstyled={props.unstyled}>
+                    unstyled={props.unstyled}
+                >
                     {props.children}
                 </DataTableCore>
             </div>
 
             {showPaginator && (
-                <div style={{ borderTop: '1px solid var(--cratis-surface-border)', flexShrink: 0 }}>
+                <div
+                    style={{
+                        borderTop: '1px solid var(--cratis-surface-border)',
+                        flexShrink: 0,
+                    }}
+                >
                     <TablePaginator
                         page={result.paging.page}
                         pageCount={pageCount}

@@ -23,21 +23,23 @@ Declare the columns and menu actions with the compound `DataPage.Columns` and `D
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
 import { Column } from '@cratis/components/DataPage';
 import { FaPlus, FaPencil } from 'react-icons/fa6';
-import { AllAuthors } from './queries';   // generated query proxy
+import { AllAuthors } from './queries'; // generated query proxy
 
 function Authors() {
     return (
-        <DataPage
-            title="Authors"
-            query={AllAuthors}
-            emptyMessage="No authors found">
+        <DataPage title='Authors' query={AllAuthors} emptyMessage='No authors found'>
             <DataPage.MenuItems>
-                <MenuItem label="Add" icon={FaPlus} command={() => handleAdd()} />
-                <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={() => handleEdit()} />
+                <MenuItem label='Add' icon={FaPlus} command={() => handleAdd()} />
+                <MenuItem
+                    label='Edit'
+                    icon={FaPencil}
+                    disableOnUnselected
+                    command={() => handleEdit()}
+                />
             </DataPage.MenuItems>
             <DataPage.Columns>
-                <Column field="name" header="Name" sortable />
-                <Column field="id" header="Id" />
+                <Column field='name' header='Name' sortable />
+                <Column field='id' header='Id' />
             </DataPage.Columns>
         </DataPage>
     );
@@ -56,21 +58,26 @@ import { Column } from '@cratis/components/DataPage';
 import { AllAuthorsWithBooks } from './queries';
 
 const AuthorDetails = ({ item }) => (
-    <div className="p-4">
+    <div className='p-4'>
         <h2>{item.name}</h2>
-        <ul>{item.books.map(b => <li key={String(b.id)}>{b.title}</li>)}</ul>
+        <ul>
+            {item.books.map((b) => (
+                <li key={String(b.id)}>{b.title}</li>
+            ))}
+        </ul>
     </div>
 );
 
 function Authors() {
     return (
         <DataPage
-            title="Authors"
+            title='Authors'
             query={AllAuthorsWithBooks}
-            emptyMessage="No authors yet"
-            detailsComponent={AuthorDetails}>
+            emptyMessage='No authors yet'
+            detailsComponent={AuthorDetails}
+        >
             <DataPage.Columns>
-                <Column field="name" header="Name" sortable />
+                <Column field='name' header='Name' sortable />
             </DataPage.Columns>
         </DataPage>
     );
@@ -95,6 +102,7 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
+- `clientFiltering`: When true, the inner table's paginator totals/pages reflect filtered rows in the currently loaded query page; otherwise they retain server totals
 - `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
 - `detailsComponent`: Component to render in the resizable details panel when a row is selected
 
@@ -127,9 +135,9 @@ That division only works if there is a height to divide. Every element from the 
 ```tsx
 // ✅ the layout gives the page a height to divide
 <div style={{ height: '100vh' }}>
-    <DataPage title="Authors" query={AllAuthors} emptyMessage="No authors found">
+    <DataPage title='Authors' query={AllAuthors} emptyMessage='No authors found'>
         <DataPage.Columns>
-            <Column field="name" header="Name" sortable />
+            <Column field='name' header='Name' sortable />
         </DataPage.Columns>
     </DataPage>
 </div>
@@ -139,9 +147,9 @@ That division only works if there is a height to divide. Every element from the 
 // ❌ nothing above resolves to a height, so the table grows to its content and
 //    the paginator ends up past the bottom of the page
 <div>
-    <DataPage title="Authors" query={AllAuthors} emptyMessage="No authors found">
+    <DataPage title='Authors' query={AllAuthors} emptyMessage='No authors found'>
         <DataPage.Columns>
-            <Column field="name" header="Name" sortable />
+            <Column field='name' header='Name' sortable />
         </DataPage.Columns>
     </DataPage>
 </div>

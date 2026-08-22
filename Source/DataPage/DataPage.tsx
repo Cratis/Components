@@ -115,7 +115,9 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
                     label: child.props.label,
                     command: child.props.command,
                     icon: Icon ? <Icon className='mr-2' /> : undefined,
-                    disabled: (child.props.disabled ?? false) || (isDisabled && (child.props.disableOnUnselected ?? false)),
+                    disabled:
+                        (child.props.disabled ?? false) ||
+                        (isDisabled && (child.props.disableOnUnselected ?? false)),
                 });
             }
         });
@@ -124,15 +126,17 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
     }, [children, isDisabled]);
 
     return (
-        <div className="cratis-data-page-actions px-4 py-2" style={actionsStyle}>
+        <div className='cratis-data-page-actions px-4 py-2' style={actionsStyle}>
             <ActionMenubar
                 aria-label={context.actionsAriaLabel ?? 'Actions'}
                 model={items}
                 className={context.menubarClassName}
                 pt={context.menubarPt}
                 ptOptions={context.menubarPtOptions}
-                unstyled={context.menubarUnstyled} />
-        </div>);
+                unstyled={context.menubarUnstyled}
+            />
+        </div>
+    );
 };
 
 /**
@@ -145,14 +149,13 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
  * children defining the table columns.
  */
 export const Columns = ({ children }: ColumnProps) => {
-
     const context = useDataPageContext();
     const isSnapshotQuery = context.query.prototype instanceof QueryFor;
 
     return (
-        <div className="cratis-data-page-table" style={tableRegionStyle}>
-            {isSnapshotQuery
-                ? <DataTableForQuery
+        <div className='cratis-data-page-table' style={tableRegionStyle}>
+            {isSnapshotQuery ? (
+                <DataTableForQuery
                     {...context}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
@@ -160,10 +163,12 @@ export const Columns = ({ children }: ColumnProps) => {
                     className={context.tableClassName}
                     pt={context.tablePt}
                     ptOptions={context.tablePtOptions}
-                    unstyled={context.tableUnstyled}>
+                    unstyled={context.tableUnstyled}
+                >
                     {children}
                 </DataTableForQuery>
-                : <DataTableForObservableQuery
+            ) : (
+                <DataTableForObservableQuery
                     {...context}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
@@ -171,10 +176,13 @@ export const Columns = ({ children }: ColumnProps) => {
                     className={context.tableClassName}
                     pt={context.tablePt}
                     ptOptions={context.tablePtOptions}
-                    unstyled={context.tableUnstyled}>
+                    unstyled={context.tableUnstyled}
+                >
                     {children}
-                </DataTableForObservableQuery>}
-        </div>);
+                </DataTableForObservableQuery>
+            )}
+        </div>
+    );
 };
 
 /**
@@ -217,7 +225,11 @@ function useDataPageContext(): IDataPageContext {
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type, or `object` if the query takes none.
  */
-export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>, TDataType extends object, TArguments> {
+export interface DataPageProps<
+    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>,
+    TDataType extends object,
+    TArguments,
+> {
     /**
      * The title of the page
      */
@@ -274,9 +286,8 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * @deprecated No longer toggles behavior. Filtering is always applied
-     * client-side to the loaded page; retained only for source compatibility and
-     * will be removed in a future release.
+     * When true, paginator totals reflect the rows remaining after client-side
+     * filters are applied to the currently loaded query page.
      */
     clientFiltering?: boolean;
 
@@ -427,7 +438,13 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataPageProps}.
  */
-const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
+const DataPage = <
+    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+>(
+    props: DataPageProps<TQuery, TDataType, TArguments>,
+) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
 
     const selectionChanged = (e: DataTableSelectionChangeEvent<any>) => {
@@ -442,18 +459,23 @@ const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDat
     return (
         <DataPageContext.Provider value={context}>
             <Page title={props.title} panel={true} style={pageStyle}>
-                {props.detailsComponent
-                    ? <Allotment className="h-full" proportionalLayout={false}>
+                {props.detailsComponent ? (
+                    <Allotment className='h-full' proportionalLayout={false}>
                         <Allotment.Pane>
                             <DataPageLayout>{props.children}</DataPageLayout>
                         </Allotment.Pane>
-                        {selectedItem &&
-                            <Allotment.Pane preferredSize="450px">
-                                <props.detailsComponent item={selectedItem} onRefresh={props.onRefresh} />
+                        {selectedItem && (
+                            <Allotment.Pane preferredSize='450px'>
+                                <props.detailsComponent
+                                    item={selectedItem}
+                                    onRefresh={props.onRefresh}
+                                />
                             </Allotment.Pane>
-                        }
+                        )}
                     </Allotment>
-                    : <DataPageLayout>{props.children}</DataPageLayout>}
+                ) : (
+                    <DataPageLayout>{props.children}</DataPageLayout>
+                )}
             </Page>
         </DataPageContext.Provider>
     );

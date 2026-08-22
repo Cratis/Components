@@ -45,7 +45,7 @@ Notes:
 `@cratis/arc` and `@cratis/arc.react` remain `>=20.3.1 <22`. Arc 20 and Arc 21 are both supported; 3.0 does **not** narrow this.
 
 > [!WARNING]
-> **Keep `@cratis/arc`, `@cratis/arc.react` and `@cratis/arc.vite` on the same version.** `@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if your own `@cratis/arc` drifts by even a patch your installer nests a second copy. `ObservableQuerySubscription` has a `private` field, which makes it nominally typed, so two copies produce a type error like *"types have separate declarations of a private property `_connection`"* in any code touching an observable query. This is an Arc packaging issue, not a Components one; `DataTableForObservableQuery` is hardened against it internally so the library itself still compiles either way ([#135](https://github.com/Cratis/Components/issues/135)).
+> **Keep `@cratis/arc`, `@cratis/arc.react` and `@cratis/arc.vite` on the same version.** `@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if your own `@cratis/arc` drifts by even a patch your installer nests a second copy. `ObservableQuerySubscription` has a `private` field, which makes it nominally typed, so two copies produce a type error like _"types have separate declarations of a private property `_connection`"_ in any code touching an observable query. This is an Arc packaging issue, not a Components one; `DataTableForObservableQuery` is hardened against it internally so the library itself still compiles either way ([#135](https://github.com/Cratis/Components/issues/135)).
 
 ## Stylesheets are now an explicit import
 
@@ -77,14 +77,14 @@ PrimeReact 11 is ESM-only, so `@cratis/components` dropped its CommonJS build. `
 
 PrimeReact 11 ships **80** modules where v10 shipped 117. Replace the removed ones with the Cratis-owned equivalents — the authoring model is unchanged:
 
-| Was (PrimeReact 10) | Now (3.0) |
-|---|---|
-| `import { Column } from 'primereact/column'` | `import { Column } from '@cratis/components/DataTables'` (also re-exported from `@cratis/components/DataPage`) |
-| `import { StepperPanel } from 'primereact/stepperpanel'` | `import { StepperPanel } from '@cratis/components/CommandDialog'` |
-| `import { Menubar } from 'primereact/menubar'` | `<DataPage.MenuItems>` for list-page actions; a `Button` toolbar of your own otherwise |
-| `import { Dropdown } from 'primereact/dropdown'` | `import { Dropdown } from '@cratis/components/Dropdown'` |
+| Was (PrimeReact 10)                                                                                                       | Now (3.0)                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `import { Column } from 'primereact/column'`                                                                              | `import { Column } from '@cratis/components/DataTables'` (also re-exported from `@cratis/components/DataPage`)                                          |
+| `import { StepperPanel } from 'primereact/stepperpanel'`                                                                  | `import { StepperPanel } from '@cratis/components/CommandDialog'`                                                                                       |
+| `import { Menubar } from 'primereact/menubar'`                                                                            | `<DataPage.MenuItems>` for list-page actions; a `Button` toolbar of your own otherwise                                                                  |
+| `import { Dropdown } from 'primereact/dropdown'`                                                                          | `import { Dropdown } from '@cratis/components/Dropdown'`                                                                                                |
 | `primereact/calendar`, `primereact/inputtextarea`, `primereact/multiselect`, `primereact/chips`, `primereact/colorpicker` | consume through the [CommandForm fields](CommandForm/index.md) (`CalendarField`, `TextAreaField`, `MultiSelectField`, `ChipsField`, `ColorPickerField`) |
-| `import { PrimeReactProvider } from 'primereact/api'` | `import { PrimeReactProvider } from '@primereact/core'` — or just use [`CratisComponentsProvider`](Common/cratis-components-provider.md) |
+| `import { PrimeReactProvider } from 'primereact/api'`                                                                     | `import { PrimeReactProvider } from '@primereact/core'` — or just use [`CratisComponentsProvider`](Common/cratis-components-provider.md)                |
 
 `<Column field="name" header="Name" sortable filter />` and `<StepperPanel header="…">` work exactly as before.
 
@@ -176,7 +176,7 @@ Import order: `tokens`, `styles`, then the palette (and/or `theme`). It exists s
 
 ## Overlay z-index workarounds are gone (and no longer needed)
 
-2.x exported a `useOverlayZIndex` hook and passed `appendTo={document.body}` on every overlay-bearing field, because a v10 dropdown/calendar panel opened inside a modal dialog rendered *inside* the dialog's subtree and could land under its own mask.
+2.x exported a `useOverlayZIndex` hook and passed `appendTo={document.body}` on every overlay-bearing field, because a v10 dropdown/calendar panel opened inside a modal dialog rendered _inside_ the dialog's subtree and could land under its own mask.
 
 **`useOverlayZIndex` is removed.** PrimeReact 11 does both natively: `Select.Portal` defaults to `appendTo: 'body'`, and the shared z-index registry gives a later-opened overlay a value above whatever is already registered. Measured on v11.1.0: with a dialog at z-index 1102, the select panel opens at **2103**, portaled to `document.body`. There is a regression spec (`Source/Dropdown/for_Dropdown/when_opened_inside_a_dialog.ts`) pinning this, so a future regression is caught rather than rediscovered.
 
@@ -186,12 +186,12 @@ If you called `useOverlayZIndex` in your own app for your own overlays, you will
 
 A few v10 features have no v11 equivalent. The props are **kept so your code still compiles**, but they no longer do anything — remove them or adopt the alternative:
 
-| Prop | What changed |
-|---|---|
-| `Dialog` `resizable` | v11's headless dialog has no resize handle — no effect. |
-| `ChipsField` `separator` | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split. |
-| `MultiSelectField` `display` / `maxSelectedLabels` | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone. |
-| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Deprecated — filtering is always applied client-side to the loaded page; the toggle has no effect. |
+| Prop                                                                               | What changed                                                                                                                                               |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Dialog` `resizable`                                                               | v11's headless dialog has no resize handle — no effect.                                                                                                    |
+| `ChipsField` `separator`                                                           | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split.                                                                           |
+| `MultiSelectField` `display` / `maxSelectedLabels`                                 | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone.                                           |
+| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Filtering always affects the loaded page; when enabled, paginator totals also reflect the filtered rows on that page instead of the server-reported total. |
 
 Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
 
@@ -223,22 +223,22 @@ v11 is unstyled-first: outside [styled mode](Styling/themed.md), PrimeReact elem
 
 ### A key is required regardless of how you style
 
-An earlier version of this page said unstyled rendering and the Cratis baseline theme needed no key. **That was wrong.** PrimeReact 11 verifies a license key when `PrimeReactProvider` mounts, with no condition on `unstyled`, on whether a preset is applied, or on `NODE_ENV` — so all three styling paths above reach it. Without a valid key you get a console warning and a fixed *"Invalid PrimeUI License"* banner, in development **and** production.
+An earlier version of this page said unstyled rendering and the Cratis baseline theme needed no key. **That was wrong.** PrimeReact 11 verifies a license key when `PrimeReactProvider` mounts, with no condition on `unstyled`, on whether a preset is applied, or on `NODE_ENV` — so all three styling paths above reach it. Without a valid key you get a console warning and a fixed _"Invalid PrimeUI License"_ banner, in development **and** production.
 
 ```tsx
 <CratisComponentsProvider value={{ license: '…' }}>
 ```
 
-What the styling choice changes is whether you additionally depend on `@primereact/styles` and `@primeuix/themes` — both PrimeUI-licensed too, and needed only for styled mode. [The Cratis baseline theme](Styling/baseline-theme.md) is Cratis-authored MIT CSS embedding no PrimeTek values, so that *stylesheet* carries no PrimeTek terms — but rendering it still runs PrimeReact 11, which needs a key.
+What the styling choice changes is whether you additionally depend on `@primereact/styles` and `@primeuix/themes` — both PrimeUI-licensed too, and needed only for styled mode. [The Cratis baseline theme](Styling/baseline-theme.md) is Cratis-authored MIT CSS embedding no PrimeTek values, so that _stylesheet_ carries no PrimeTek terms — but rendering it still runs PrimeReact 11, which needs a key.
 
 ### Which license you need
 
-- **[Community License](https://primeui.dev/licenses/community)** — free, and covers individuals, students, non-profits and non-commercial open source. For an organization it requires *all* of: under $1M USD annual gross revenue, fewer than 5 developers, fewer than 10 employees, and under $3M USD in outside funding. Supports up to 4 developers, renewed annually by confirming eligibility.
+- **[Community License](https://primeui.dev/licenses/community)** — free, and covers individuals, students, non-profits and non-commercial open source. For an organization it requires _all_ of: under $1M USD annual gross revenue, fewer than 5 developers, fewer than 10 employees, and under $3M USD in outside funding. Supports up to 4 developers, renewed annually by confirming eligibility.
 - **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else. Per developer, perpetual, one year of updates.
 
 ### If you redistribute
 
-PrimeReact 11's terms state: *"You may not … redistribute it as a component library or development tool … Redistributing the software so that third parties can develop with it requires a separate OEM License."* Building an application is not what that clause is aimed at; publishing a library or tool that others build with is — read it and check your position with PrimeTek.
+PrimeReact 11's terms state: _"You may not … redistribute it as a component library or development tool … Redistributing the software so that third parties can develop with it requires a separate OEM License."_ Building an application is not what that clause is aimed at; publishing a library or tool that others build with is — read it and check your position with PrimeTek.
 
 ### Staying on MIT
 

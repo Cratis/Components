@@ -53,6 +53,7 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
+- `clientFiltering`: When true, paginator totals/pages reflect filtered rows in the currently loaded observable-query page; otherwise they retain server totals
 - `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
 - `children`: Column definitions
 

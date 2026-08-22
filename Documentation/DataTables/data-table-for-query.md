@@ -52,6 +52,7 @@ function MyTable() {
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
+- `clientFiltering`: When true, paginator totals/pages reflect filtered rows in the currently loaded page; otherwise they retain server totals
 - `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
 - `children`: Column definitions
 
@@ -78,6 +79,8 @@ Add `filter` to a `<Column>` for a per-column filter menu, and/or `globalFilterF
 ```
 
 Each filtered `Column` can localize its overlay through `filterLabels` or replace the built-in value editor through `filterElement`. See [Column Configuration](column-configuration.md#column-filters) for the callback contract and draft/apply behavior.
+
+Filtering always affects the loaded page. Set `clientFiltering` when the paginator should also describe only those remaining client-filtered rows; leave it off when the paginator must continue reporting the server's total result set.
 
 ## Selection
 
