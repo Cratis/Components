@@ -85,13 +85,13 @@ const MyComponent = () => {
 - `isValid`: Enables or disables confirm actions (defaults to `true`)
 - `isBusy`: When `true`, disables all buttons and shows a loading spinner on the primary action button
 - `initialFocus`: Where keyboard focus lands when the dialog opens (see below)
-- `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels
+- `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels. Footer icons are decorative and hidden from accessibility APIs, so each button's accessible name is exactly its configured label
 - `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the
   underlying PrimeReact Dialog — see the [pass-through cheat sheet](../Styling/pass-through.md)
 
 ## Dismissing
 
-A dialog is *dismissable* when the header close (X), a backdrop click and
+A dialog is _dismissable_ when the header close (X), a backdrop click and
 `Escape` are all offered. In PrimeReact 11 those three are one switch, so they
 are always on or off together.
 
@@ -122,7 +122,7 @@ custom footer and still keeps a header X — and withdraws it again, along with
 ## Initial focus
 
 By default the confirm button is focused when a dialog opens, which makes the
-common "read it, press Enter" flow cost one keystroke. That default also *arms*
+common "read it, press Enter" flow cost one keystroke. That default also _arms_
 the confirm button: browsers fire `click` from the `keydown` of `Enter`, so a
 key still held down from the control that opened the dialog — or the ordinary
 habit of pressing `Enter` twice — confirms it immediately.
@@ -132,11 +132,11 @@ confirm disabled until the form is complete. A dialog that needs **no** input
 is not, which is exactly backwards when the action is destructive. Say where
 focus should go with `initialFocus`:
 
-| `DialogInitialFocus` | Focuses |
-|---|---|
-| `Confirm` (default) | The `Ok` / `Yes` button |
-| `Cancel` | The dismissing button — `Cancel`, or `No` when the set has no `Cancel` |
-| `Content` | The dialog's own title, so nothing is armed |
+| `DialogInitialFocus` | Focuses                                                                |
+| -------------------- | ---------------------------------------------------------------------- |
+| `Confirm` (default)  | The `Ok` / `Yes` button                                                |
+| `Cancel`             | The dismissing button — `Cancel`, or `No` when the set has no `Cancel` |
+| `Content`            | The dialog's own title, so nothing is armed                            |
 
 ```typescript
 import { Dialog, DialogInitialFocus } from '@cratis/components/Dialogs';
