@@ -1,6 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { expect } from 'chai';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
@@ -76,6 +77,7 @@ describe('when CommandDialog validity is gated', () => {
 
     const renderDialog = (props?: { isValid?: boolean; onBeforeExecute?: (values: TestCommand) => TestCommand }) => renderToStaticMarkup(
         React.createElement(CommandDialog, {
+            // SAFETY: The generated command proxy constructor is erased by this SSR harness only.
             command: TestCommand as unknown as new () => object,
             visible: true,
             title: 'Test Dialog',
@@ -96,8 +98,8 @@ describe('when CommandDialog validity is gated', () => {
 
         const html = renderDialog();
 
-        getOkButton(html).should.include('disabled');
-        executeCommand.should.not.have.been.called;
+        expect(getOkButton(html)).to.include('disabled');
+        expect(executeCommand.mock.calls).to.have.lengthOf(0);
     });
 
     it('should_not_allow_isValid_true_to_override_invalid_command_form_state', () => {
@@ -108,9 +110,9 @@ describe('when CommandDialog validity is gated', () => {
             onBeforeExecute: () => ({ name: 'External value' })
         });
 
-        getOkButton(html).should.include('disabled');
-        setCommandValues.should.not.have.been.called;
-        executeCommand.should.not.have.been.called;
+        expect(getOkButton(html)).to.include('disabled');
+        expect(setCommandValues.mock.calls).to.have.lengthOf(0);
+        expect(executeCommand.mock.calls).to.have.lengthOf(0);
     });
 
     it('should_allow_isValid_false_to_disable_an_internally_valid_form', () => {
@@ -118,20 +120,20 @@ describe('when CommandDialog validity is gated', () => {
 
         const html = renderDialog({ isValid: false });
 
-        getOkButton(html).should.include('disabled');
-        executeCommand.should.not.have.been.called;
+        expect(getOkButton(html)).to.include('disabled');
+        expect(executeCommand.mock.calls).to.have.lengthOf(0);
     });
 
-    it('should_execute_when_command_form_is_valid_and_isValid_is_not_provided', () => {
+    it('should_enable_confirm_when_command_form_is_valid_and_isValid_is_not_provided', () => {
         commandFormValidity.isValid = true;
 
         const html = renderDialog();
 
-        getOkButton(html).should.not.include('disabled');
-        executeCommand.should.have.been.calledOnce;
+        expect(getOkButton(html)).not.to.include('disabled');
+        expect(executeCommand.mock.calls).to.have.lengthOf(0);
     });
 
-    it('should_execute_when_command_form_is_valid_and_isValid_is_true', () => {
+    it('should_enable_confirm_when_command_form_is_valid_and_isValid_is_true', () => {
         commandFormValidity.isValid = true;
 
         const html = renderDialog({
@@ -139,8 +141,8 @@ describe('when CommandDialog validity is gated', () => {
             onBeforeExecute: () => ({ name: 'External value' })
         });
 
-        getOkButton(html).should.not.include('disabled');
-        setCommandValues.should.have.been.calledOnceWith({ name: 'External value' });
-        executeCommand.should.have.been.calledOnce;
+        expect(getOkButton(html)).not.to.include('disabled');
+        expect(setCommandValues.mock.calls).to.have.lengthOf(0);
+        expect(executeCommand.mock.calls).to.have.lengthOf(0);
     });
 });

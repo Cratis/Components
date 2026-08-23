@@ -32,7 +32,7 @@ describe('when initial focus is content', () => {
     it('should focus the title rather than any button', async () => {
         await renderDialog(DialogButtons.OkCancel);
 
-        focusedElement().should.equal('span:Delete personal data');
+        focusedElement().should.equal('h2:Delete personal data');
     });
 
     it('should make the title focusable without putting it in the tab order', async () => {
@@ -44,7 +44,7 @@ describe('when initial focus is content', () => {
     it('should move focus into a dialog that has no focusable content at all', async () => {
         await renderDialog(null);
 
-        focusedElement().should.equal('span:Delete personal data');
+        focusedElement().should.equal('h2:Delete personal data');
         focusIsInsideTheDialog().should.be.true;
     });
 

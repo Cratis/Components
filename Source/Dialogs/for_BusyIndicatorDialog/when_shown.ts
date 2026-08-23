@@ -28,6 +28,6 @@ describe('when a busy indicator dialog is shown', () => {
     });
 
     it('should focus the title so the wait state is announced', () => {
-        focusedElement().should.equal('span:Saving');
+        focusedElement().should.equal('h2:Saving');
     });
 });

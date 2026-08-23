@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // @vitest-environment jsdom
 
+import { expect } from 'chai';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -43,7 +44,9 @@ describe('when dismissal is configured on a command dialog', () => {
     let container: HTMLDivElement;
 
     const render = async (props: { dismissable?: boolean; closeAriaLabel?: string; buttons?: React.ReactNode }) => {
+        // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
         (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        // SAFETY: jsdom omits ResizeObserver; the overlay only calls these observer methods.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
             observe() { } unobserve() { } disconnect() { }
         };
@@ -53,6 +56,7 @@ describe('when dismissal is configured on a command dialog', () => {
         root = createRoot(container);
 
         await act(async () => {
+            // SAFETY: The generated command proxy constructor is erased by this test harness only.
             root.render(React.createElement(CratisComponentsProvider, null,
                 React.createElement(CommandDialog<TestCommand>, {
                     command: TestCommand as unknown as new () => object,
@@ -65,7 +69,7 @@ describe('when dismissal is configured on a command dialog', () => {
         await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
     };
 
-    const closeButton = () => document.querySelector('[data-scope="dialog"][data-part="close"]');
+    const closeButton = () => document.querySelector('[data-cratis-part="close"]');
 
     afterEach(async () => {
         await act(async () => { root.unmount(); });
@@ -75,18 +79,18 @@ describe('when dismissal is configured on a command dialog', () => {
     it('should forward dismissable so a custom footer can keep its close button', async () => {
         await render({ buttons: React.createElement('button', { type: 'button' }, 'Go'), dismissable: true });
 
-        (!!closeButton()).should.be.true;
+        expect(Boolean(closeButton())).to.equal(true);
     });
 
     it('should forward dismissable so a dialog can withdraw its close button', async () => {
         await render({ dismissable: false });
 
-        (!!closeButton()).should.be.false;
+        expect(Boolean(closeButton())).to.equal(false);
     });
 
     it('should forward closeAriaLabel to the close button', async () => {
         await render({ dismissable: true, closeAriaLabel: 'Lukk' });
 
-        closeButton()!.getAttribute('aria-label')!.should.equal('Lukk');
+        expect(closeButton()?.getAttribute('aria-label')).to.equal('Lukk');
     });
 });

@@ -50,13 +50,13 @@ describe('when initial focus is cancel', () => {
     it('should fall back to the title when the button set has nothing to dismiss with', async () => {
         await renderDialog(DialogButtons.Ok);
 
-        focusedElement().should.equal('span:Delete personal data');
+        focusedElement().should.equal('h2:Delete personal data');
     });
 
     it('should fall back to the title when the footer is a custom node', async () => {
         await renderDialog(React.createElement('button', { type: 'button' }, 'Delete'));
 
-        focusedElement().should.equal('span:Delete personal data');
+        focusedElement().should.equal('h2:Delete personal data');
     });
 
     it('should keep focus inside the dialog rather than on the document body', async () => {

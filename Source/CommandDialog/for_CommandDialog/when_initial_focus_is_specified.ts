@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // @vitest-environment jsdom
 
+import { expect } from 'chai';
 import React from 'react';
 import { vi } from 'vitest';
 import { DialogInitialFocus } from '../../Dialogs/DialogInitialFocus';
@@ -38,6 +39,7 @@ describe('when a command dialog is given an initial focus', () => {
 
         const { CommandDialog } = await import('../CommandDialog');
 
+        // SAFETY: The generated command proxy constructor is erased by this test harness only.
         dialog = await render(React.createElement(CommandDialog, {
             command: DeletePersonalData as unknown as new () => object,
             title: 'Delete personal data',
@@ -65,7 +67,7 @@ describe('when a command dialog is given an initial focus', () => {
     it('should forward a request to focus the content', async () => {
         await renderDialog(DialogInitialFocus.Content);
 
-        focusedElement().should.equal('span:Delete personal data');
+        focusedElement().should.equal('h2:Delete personal data');
     });
 
     it('should not run the command on an Enter that repeats onto the freshly mounted dialog', async () => {
@@ -73,7 +75,7 @@ describe('when a command dialog is given an initial focus', () => {
 
         await pressEnterOnFocusedElement();
 
-        executeCommand.should.not.have.been.called;
+        expect(executeCommand.mock.calls).to.have.lengthOf(0);
     });
 
     it('should still run the command when the user deliberately confirms', async () => {
@@ -81,7 +83,7 @@ describe('when a command dialog is given an initial focus', () => {
 
         await click('Ok');
 
-        executeCommand.should.have.been.calledOnce;
-        succeeded.should.have.been.calledOnce;
+        expect(executeCommand.mock.calls).to.have.lengthOf(1);
+        expect(succeeded.mock.calls).to.have.lengthOf(1);
     });
 });
