@@ -5,7 +5,7 @@ import { type CSSProperties, type ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
-import type { ButtonProps } from '@primereact/types/primitive/button';
+import type { ButtonParts } from '../Common/Button';
 import { type IObservableQueryFor, type IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
@@ -314,11 +314,11 @@ export interface DataPageProps<
      */
     menubarClassName?: string;
 
-    /** PrimeReact pass-through configuration applied to the action menubar's buttons. */
-    menubarPt?: ButtonProps['pt'];
+    /** Cratis-owned part attributes applied to the action menubar's buttons. */
+    menubarPt?: ButtonParts;
 
-    /** PrimeReact pass-through options applied to the action menubar's buttons. */
-    menubarPtOptions?: ButtonProps['ptOptions'];
+    /** Retained for source compatibility; Cratis parts always merge. */
+    menubarPtOptions?: object;
 
     /** When true, disables every base PrimeReact style on the action menubar's buttons. */
     menubarUnstyled?: boolean;
@@ -428,7 +428,7 @@ export interface DataPageProps<
  * `tablePt` / `tableUnstyled` / `tableClassName` for the table;
  * `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` for
  * the action toolbar's buttons (in PrimeReact 11 the v10 Menubar is replaced by
- * a button toolbar, so `menubarPt` targets those buttons). See the
+ * a button toolbar, so `menubarPt` targets the stable Cratis button parts). See the
  * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md) for
  * the full slot reference.
  *
