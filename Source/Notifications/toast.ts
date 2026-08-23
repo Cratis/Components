@@ -131,14 +131,10 @@ interface ToastDispatchRegistry {
     active?: ToastDispatchFrame;
 }
 
-const toastDispatchRegistryKey = Symbol.for(
-    '@cratis/components/toast-dispatch/v1',
-);
+const toastDispatchRegistryKey = Symbol.for('@cratis/components/toast-dispatch/v1');
 // SAFETY: Symbol.for gives every loaded Components copy the same isolated dispatch slot.
 const toastDispatchRegistryHost = globalThis as unknown as Record<symbol, unknown>;
-const existingToastDispatchRegistry = toastDispatchRegistryHost[
-    toastDispatchRegistryKey
-];
+const existingToastDispatchRegistry = toastDispatchRegistryHost[toastDispatchRegistryKey];
 const toastDispatchRegistry: ToastDispatchRegistry =
     typeof existingToastDispatchRegistry === 'object' &&
     existingToastDispatchRegistry !== null &&
@@ -178,8 +174,7 @@ export const setToastDispatch = (dispatch: ToastDispatch): (() => void) => {
 };
 
 const activeToastDispatch = () =>
-    nearestActiveFrame(toastDispatchRegistry.active)?.dispatch ??
-    primeReactToastDispatch;
+    nearestActiveFrame(toastDispatchRegistry.active)?.dispatch ?? primeReactToastDispatch;
 
 const callableToast = ((options: ToastOptions) =>
     activeToastDispatch().show(options)) as ToastFunction;

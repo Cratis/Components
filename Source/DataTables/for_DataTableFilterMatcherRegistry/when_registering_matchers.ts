@@ -12,10 +12,9 @@ import {
 describe('when registering custom matchers', () => {
     it('should reject empty and prototype-sensitive names', () => {
         for (const name of ['', '__proto__', 'constructor', 'prototype']) {
-            expect(() => registerDataTableFilterMatcher(
-                name,
-                () => true,
-            )).to.throw('must start with a letter');
+            expect(() => registerDataTableFilterMatcher(name, () => true)).to.throw(
+                'must start with a letter',
+            );
         }
     });
 

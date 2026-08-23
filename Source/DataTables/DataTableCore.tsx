@@ -1,12 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, {
-    useMemo,
-    useState,
-    type CSSProperties,
-    type ReactNode,
-} from 'react';
+import React, { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { DataTable as PrimeDataTable } from 'primereact/datatable';
 import { InputText } from 'primereact/inputtext';
 import { registerMatcher, unregisterMatcher } from '@primereact/hooks/use-filter';

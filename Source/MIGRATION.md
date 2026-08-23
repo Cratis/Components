@@ -38,8 +38,8 @@ Add these to your app's `dependencies`:
         "@primereact/core": "^11.0.0",
         "@primereact/headless": "^11.0.0",
         "@primereact/hooks": "^11.0.0",
-        "primeicons": "^8.0.0"
-    }
+        "primeicons": "^8.0.0",
+    },
 }
 ```
 
@@ -67,8 +67,8 @@ Arc 22 are supported.
 > version.** `@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if
 > your own `@cratis/arc` drifts by even a patch your installer nests a second copy.
 > `ObservableQuerySubscription` has a `private` field, which makes it nominally typed, so
-> two copies produce a type error like *"types have separate declarations of a private
-> property `_connection`"* in any code touching an observable query. This is an Arc
+> two copies produce a type error like _"types have separate declarations of a private
+> property `_connection`"_ in any code touching an observable query. This is an Arc
 > packaging issue, not a Components one; `DataTableForObservableQuery` is hardened
 > against it internally so the library itself still compiles either way
 > ([#135](https://github.com/Cratis/Components/issues/135)).
@@ -118,14 +118,14 @@ PrimeReact 11 is ESM-only, so `@cratis/components` dropped its CommonJS build. `
 PrimeReact 11 ships **80** modules where v10 shipped 117. Replace the removed ones with
 the Cratis-owned equivalents — the authoring model is unchanged:
 
-| Was (PrimeReact 10) | Now (3.0) |
-|---|---|
-| `import { Column } from 'primereact/column'` | `import { Column } from '@cratis/components/DataTables'` (also re-exported from `@cratis/components/DataPage`) |
-| `import { StepperPanel } from 'primereact/stepperpanel'` | `import { StepperPanel } from '@cratis/components/CommandDialog'` |
-| `import { Menubar } from 'primereact/menubar'` | `<DataPage.MenuItems>` for list-page actions; `ActionMenubar` from `@cratis/components/Common` otherwise |
-| `import { Dropdown } from 'primereact/dropdown'` | `import { Dropdown } from '@cratis/components/Dropdown'` |
+| Was (PrimeReact 10)                                                                                                       | Now (3.0)                                                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `import { Column } from 'primereact/column'`                                                                              | `import { Column } from '@cratis/components/DataTables'` (also re-exported from `@cratis/components/DataPage`)                    |
+| `import { StepperPanel } from 'primereact/stepperpanel'`                                                                  | `import { StepperPanel } from '@cratis/components/CommandDialog'`                                                                 |
+| `import { Menubar } from 'primereact/menubar'`                                                                            | `<DataPage.MenuItems>` for list-page actions; `ActionMenubar` from `@cratis/components/Common` otherwise                          |
+| `import { Dropdown } from 'primereact/dropdown'`                                                                          | `import { Dropdown } from '@cratis/components/Dropdown'`                                                                          |
 | `primereact/calendar`, `primereact/inputtextarea`, `primereact/multiselect`, `primereact/chips`, `primereact/colorpicker` | consume through the `CommandForm` fields (`CalendarField`, `TextAreaField`, `MultiSelectField`, `ChipsField`, `ColorPickerField`) |
-| `import { PrimeReactProvider } from 'primereact/api'` | `import { PrimeReactProvider } from '@primereact/core'` — or just use `CratisComponentsProvider` |
+| `import { PrimeReactProvider } from 'primereact/api'`                                                                     | `import { PrimeReactProvider } from '@primereact/core'` — or just use `CratisComponentsProvider`                                  |
 
 `<Column field="name" header="Name" sortable filter />` and `<StepperPanel header="…">`
 work exactly as before.
@@ -137,20 +137,20 @@ edit: `primereact/select` exports `Select.Root` / `Select.Trigger` / `Select.Val
 `Select.Portal` / `Select.Popup` / `Select.List` / `Select.Option`, and you assemble them.
 Prefer a Cratis wrapper where one exists.
 
-| v10 module | v11 module |
-|---|---|
-| `dropdown` | `select` |
-| `calendar` | `datepicker` |
-| `overlaypanel` | `popover` |
-| `inputswitch` | `toggleswitch` |
-| `tabview` + `tabpanel` | `tabs` |
-| `inputtextarea` | `textarea` |
-| `password` | `inputpassword` |
-| `chips` | `inputtags` |
-| `colorpicker` | `inputcolor` |
-| `galleria` | `gallery` |
-| `scrollpanel` | `scrollarea` |
-| `selectbutton` | `togglebuttongroup` |
+| v10 module             | v11 module          |
+| ---------------------- | ------------------- |
+| `dropdown`             | `select`            |
+| `calendar`             | `datepicker`        |
+| `overlaypanel`         | `popover`           |
+| `inputswitch`          | `toggleswitch`      |
+| `tabview` + `tabpanel` | `tabs`              |
+| `inputtextarea`        | `textarea`          |
+| `password`             | `inputpassword`     |
+| `chips`                | `inputtags`         |
+| `colorpicker`          | `inputcolor`        |
+| `galleria`             | `gallery`           |
+| `scrollpanel`          | `scrollarea`        |
+| `selectbutton`         | `togglebuttongroup` |
 
 > ⚠️ **The `Sidebar` trap.** v10's `Sidebar` (an overlay drawer) is now
 > **`primereact/drawer`**. `primereact/sidebar` still exists in v11 but is a **different,
@@ -315,7 +315,7 @@ window a command is executing in.
 
 2.x exported a `useOverlayZIndex` hook and passed `appendTo={document.body}` on every
 overlay-bearing field, because a v10 dropdown/calendar panel opened inside a modal dialog
-rendered *inside* the dialog's subtree and could land under its own mask.
+rendered _inside_ the dialog's subtree and could land under its own mask.
 
 **`useOverlayZIndex` is removed.** PrimeReact 11 does both natively: `Select.Portal`
 defaults to `appendTo: 'body'`, and the shared z-index registry gives a later-opened
@@ -332,11 +332,11 @@ inline it — but check first whether v11 has already made it unnecessary for yo
 A few v10 features have no v11 equivalent. The props are **kept so your code still
 compiles**, but they no longer do anything — remove them or adopt the alternative:
 
-| Prop | What changed |
-|---|---|
-| `Dialog` `resizable` | v11's headless dialog has no resize handle — no effect. |
-| `ChipsField` `separator` | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split. |
-| `MultiSelectField` `display` / `maxSelectedLabels` | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone. |
+| Prop                                                                               | What changed                                                                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Dialog` `resizable`                                                               | v11's headless dialog has no resize handle — no effect.                                                                                                                                                                                                 |
+| `ChipsField` `separator`                                                           | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split.                                                                                                                                                                        |
+| `MultiSelectField` `display` / `maxSelectedLabels`                                 | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone.                                                                                                                                        |
 | `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Retained as a deprecated no-op for source compatibility. Filtering always affects only the loaded page and pagination retains server totals. For complete-result filtering, pass filters as query arguments and apply them on the server before paging. |
 
 Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
@@ -404,9 +404,9 @@ upgrade, and it is not a theming detail — it applies to the whole library.
 | `@primereact/core`, `@primereact/headless`, `@primereact/hooks`, `@primereact/styles` | —         | PrimeUI commercial       |
 | `@primeuix/themes`, `@primeuix/styled`                                                | —         | PrimeUI commercial       |
 
-From PrimeReact 11's own `LICENSE.md`: *"A valid license key is required to use this
+From PrimeReact 11's own `LICENSE.md`: _"A valid license key is required to use this
 software. A missing, invalid, or expired key may cause the software to display a license
-notice."*
+notice."_
 
 ### A key is required regardless of how you style
 
@@ -417,21 +417,22 @@ an empty dependency array and no condition on `unstyled`, on `theme`, or on `NOD
 ```js
 useEffect(() => {
     license && registerLicense({ primeui: license });
-    verifyLicense('primeui', { releaseDate }).then(result => {
-        result.valid || (console.warn(`[PrimeUI] ${result.message}`), showInvalidLicenseBanner());
+    verifyLicense('primeui', { releaseDate }).then((result) => {
+        result.valid ||
+            (console.warn(`[PrimeUI] ${result.message}`), showInvalidLicenseBanner());
     });
 }, []);
 ```
 
 So every styling path below reaches the same verification. Without a valid key you get a
-console warning and a fixed *"Invalid PrimeUI License"* banner, in development **and**
+console warning and a fixed _"Invalid PrimeUI License"_ banner, in development **and**
 production. Supply your key through the provider:
 
 ```tsx
 <CratisComponentsProvider value={{ license: '…' }}>
 ```
 
-What the styling choice *does* change is whether you additionally pull in
+What the styling choice _does_ change is whether you additionally pull in
 `@primereact/styles` and `@primeuix/themes` — both PrimeUI-licensed too, and needed only
 for styled mode. `@cratis/components/theme` is Cratis-authored MIT CSS that embeds no
 PrimeTek values — so that **stylesheet** carries no PrimeTek terms, but rendering it still
@@ -441,7 +442,7 @@ means running PrimeReact 11, which needs a key.
 
 - **[Community License](https://primeui.dev/licenses/community)** — free, and covers
   individuals, students, non-profits and non-commercial open source. For organizations it
-  requires *all* of: under $1M USD annual gross revenue, fewer than 5 developers, fewer
+  requires _all_ of: under $1M USD annual gross revenue, fewer than 5 developers, fewer
   than 10 employees, and under $3M USD in outside funding. It supports up to 4 developers
   and must be renewed annually by confirming continued eligibility.
 - **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else.
@@ -449,9 +450,9 @@ means running PrimeReact 11, which needs a key.
 
 ### If you redistribute
 
-PrimeReact 11's restrictions clause is explicit: *"You may not … redistribute it as a
+PrimeReact 11's restrictions clause is explicit: _"You may not … redistribute it as a
 component library or development tool … Redistributing the software so that third parties
-can develop with it requires a separate OEM License."*
+can develop with it requires a separate OEM License."_
 
 If you are building an application, that clause is not about you. If you are publishing a
 library or tool that others build with — as this package does — read it carefully and
