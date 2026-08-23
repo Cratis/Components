@@ -103,6 +103,9 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `globalFilterFields`: Fields to include in global search
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded query page
+- `tablePt` / `tableClassName`: Stable table-part attributes and root class
+- `paginatorPt` / `paginatorClassName`: Stable paginator-part attributes and root class
+- `paginatorAriaLabels`: Localized labels for the paginator navigation and controls
 
 The query-backed table inside `DataPage` suppresses `emptyMessage` while its first result is still performing, so a pending query is not presented as a confirmed empty result.
 

@@ -10,6 +10,10 @@ import { type IObservableQueryFor, type IQueryFor, QueryFor } from '@cratis/arc/
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
 import type { DataTableParts } from '../DataTables/DataTableCore';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
+import type {
+    TablePaginatorParts,
+    TablePaginatorProps,
+} from '../DataTables/TablePaginator';
 import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
 import { Allotment } from 'allotment';
@@ -309,6 +313,18 @@ export interface DataPageProps<
     /** Legacy renderer flag retained for source compatibility; ignored on the inner DataTable. */
     tableUnstyled?: boolean;
 
+    /** Extra CSS class name forwarded to the query table paginator. */
+    paginatorClassName?: string;
+
+    /** Cratis-owned attributes applied to the query table paginator. */
+    paginatorPt?: TablePaginatorParts;
+
+    /** Retained for source compatibility; Cratis parts always merge. */
+    paginatorPtOptions?: object;
+
+    /** Accessible paginator labels. Override any value to localize it. */
+    paginatorAriaLabels?: TablePaginatorProps['ariaLabels'];
+
     /**
      * Extra CSS class name forwarded to the action menubar root.
      */
@@ -426,6 +442,7 @@ export interface DataPageProps<
  *
  * The inner DataTable and action toolbar each have their own per-slot props:
  * `tablePt` / `tableUnstyled` / `tableClassName` for the table;
+ * `paginatorPt` / `paginatorClassName` / `paginatorAriaLabels` for paging;
  * `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` for
  * the action toolbar's stable button parts (the action bar is implemented as
  * a button toolbar, so `menubarPt` targets the stable Cratis button parts). See the

@@ -545,9 +545,20 @@ export const SchemaEditor = ({
                         {breadcrumbItems.map((item, index) => (
                             <span key={index}>
                                 {index > 0 && <span className='mx-2'>&gt;</span>}
-                                <span
+                                <button
+                                    type='button'
                                     onClick={() => navigateToBreadcrumb(index)}
+                                    aria-current={
+                                        index === breadcrumbItems.length - 1
+                                            ? 'location'
+                                            : undefined
+                                    }
                                     style={{
+                                        padding: 0,
+                                        border: 0,
+                                        background: 'transparent',
+                                        color: 'inherit',
+                                        font: 'inherit',
                                         cursor: 'pointer',
                                         textDecoration:
                                             index < breadcrumbItems.length - 1
@@ -556,7 +567,7 @@ export const SchemaEditor = ({
                                     }}
                                 >
                                     {item.name}
-                                </span>
+                                </button>
                             </span>
                         ))}
                     </div>

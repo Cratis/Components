@@ -70,7 +70,7 @@ export const Interactive: Story = {
 };
 ```
 
-- **Stateful only** — presentational atoms get no `play:`. Thin PrimeReact wrappers (overlay-portal components) are excluded — their behavior is the framework's.
+- **Stateful only** — presentational atoms get no `play:`. Low-level interaction details delegated to React Aria are excluded, but every Cratis-owned composition still needs specs for the behavior it promises.
 - Prefer role/structure queries over localized text. `play:` runs in the Interactions panel (documentation/QA); the enforced behavioral gate is the Vitest spec.
 
 ## Router-dependent components

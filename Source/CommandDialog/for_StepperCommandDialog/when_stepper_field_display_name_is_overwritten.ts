@@ -61,8 +61,11 @@ vi.mock('@cratis/arc.react/commands', () => ({
         React.createElement('div', { 'data-testid': 'field-wrapper' }, props.field),
 }));
 
-const overwriteDisplayName = (component: object, name: string): void => {
-    (component as { displayName?: string }).displayName = name;
+const overwriteDisplayName = (
+    component: { displayName?: string },
+    name: string,
+): void => {
+    component.displayName = name;
 };
 
 class TestCommand {
@@ -93,6 +96,8 @@ describe('when a stepper field displayName has been overwritten by a build trans
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {
+                // SAFETY: The local Arc module mock erases the generated command base type;
+                // TestCommand supplies the shape this StepperCommandDialog spec exercises.
                 command: TestCommand as unknown as new () => object,
                 visible: true,
                 title: 'Test Dialog',
@@ -119,12 +124,16 @@ describe('when a stepper field displayName has been overwritten by a build trans
     // Covers the read in extractFieldNamesFromNode: the step indicator can only
     // turn red if the field was recognized and its property name extracted.
     it('should still extract the field name for the step indicator', () => {
-        const step1Number = html.match(/<span data-part="number"[^>]*>1<\/span>|<div data-part="number"[^>]*>1<\/div>/);
+        const step1Number = html.match(
+            /<span[^>]*data-cratis-part="number"[^>]*>1<\/span>/,
+        );
         (step1Number?.[0] ?? '').should.include('red');
     });
 
     it('should not mark the step that has no fields', () => {
-        const step2Number = html.match(/<span data-part="number"[^>]*>2<\/span>|<div data-part="number"[^>]*>2<\/div>/);
+        const step2Number = html.match(
+            /<span[^>]*data-cratis-part="number"[^>]*>2<\/span>/,
+        );
         (step2Number?.[0] ?? '').should.not.include('red');
     });
 

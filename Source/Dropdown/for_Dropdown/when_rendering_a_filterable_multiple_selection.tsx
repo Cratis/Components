@@ -61,6 +61,12 @@ describe('when rendering a filterable multiple selection', () => {
         onChange.mockReset();
     });
 
+    it('should display the selected values while the popup is closed', () => {
+        expect(
+            container.querySelector('[data-cratis-part="value"]')?.textContent,
+        ).to.contain('One');
+    });
+
     it('should render the multi-value combobox filter', () => {
         expect(
             container.querySelector<HTMLInputElement>('[data-cratis-part="filter"]')

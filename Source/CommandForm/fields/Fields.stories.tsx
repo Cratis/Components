@@ -186,7 +186,7 @@ export const AllFields: Story = {
                             }
                         } else {
                             setValidationState((prev) => {
-                                const { [fieldName]: removed, ...rest } = prev.errors;
+                                const { [fieldName]: _removed, ...rest } = prev.errors;
                                 return {
                                     errors: rest,
                                     canSubmit: Object.keys(rest).length === 0,
@@ -339,7 +339,6 @@ export const AllFields: Story = {
                             description='Internationalized Cratis date picker'
                             placeholder='Select a date'
                             showIcon
-                            dateFormat='mm/dd/yy'
                         />
                     </StorySection>
 

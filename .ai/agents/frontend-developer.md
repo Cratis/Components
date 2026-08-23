@@ -155,7 +155,6 @@ Use this for dialogs that collect data and return it without executing a command
 import { useState } from 'react';
 import { DialogProps, DialogResult } from '@cratis/arc.react/dialogs';
 import { Dialog } from '@cratis/components/Dialogs';
-import { InputText } from 'primereact/inputtext';
 
 export const AddProject = ({ closeDialog }: DialogProps<{ name: string }>) => {
     const [name, setName] = useState('');
@@ -171,10 +170,11 @@ export const AddProject = ({ closeDialog }: DialogProps<{ name: string }>) => {
             onConfirm={() => closeDialog(DialogResult.Ok, { name })}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
-            <InputText
+            <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
                 placeholder='Enter a name'
+                className='cratis-field-input w-full'
                 autoFocus
             />
         </Dialog>
@@ -193,21 +193,22 @@ import { Page } from '@cratis/components/Common';
 import { AddProject } from './Registration/AddProject';
 import { Listing } from './Listing/Listing';
 import { DialogResult, useDialog } from '@cratis/arc.react/dialogs';
-import { Button } from 'primereact/button';
+import { Button } from '@cratis/components/Common';
 import * as mdIcons from 'react-icons/md';
 
 export const Projects = () => {
     const [AddProjectDialog, showAddProjectDialog] = useDialog(AddProject);
 
     // For a query-backed list page, prefer `DataPage` with `<DataPage.MenuItems>`
-    // (it owns the action bar). PrimeReact 11 removed the standalone `Menubar`;
-    // for a custom toolbar, compose `Button`s (content is children in v11).
+    // (it owns the action bar). For a custom toolbar, compose Cratis `Button`s.
     return (
         <Page title='Projects'>
-            <Button variant='text' onClick={() => showAddProjectDialog()}>
-                <mdIcons.MdAdd />
-                <span>Add Project</span>
-            </Button>
+            <Button
+                text
+                icon={<mdIcons.MdAdd />}
+                label='Add Project'
+                onClick={() => showAddProjectDialog()}
+            />
             <Listing />
             <AddProjectDialog />
         </Page>

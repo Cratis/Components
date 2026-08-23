@@ -7,6 +7,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
 import { Column } from '../../../DataTables/Column';
 import type { DataTableFilterMeta } from '../../../DataTables/DataTableFilterMeta';
+import type { TablePaginatorParts } from '../../../DataTables/TablePaginator';
 // Allotment lays its split view out entirely from this stylesheet, and a pane is only the
 // absolutely positioned, full-height box the page assumes once the rules are on the document.
 // `DataPage` no longer imports it — a CSS import inside the JS graph is what stopped the
@@ -44,6 +45,9 @@ export interface DataPageOptions {
 
     /** Observe selection changes. */
     onSelectionChange?: (event: { value: Person | null }) => void;
+
+    /** Customize paginator parts. */
+    paginatorPt?: TablePaginatorParts;
 }
 
 const PersonDetails = ({ item }: { item: Person }) =>
@@ -92,6 +96,7 @@ export const aDataPage = (options: DataPageOptions = {}) => {
             defaultFilters: options.defaultFilters,
             selection: options.selection,
             onSelectionChange: options.onSelectionChange,
+            paginatorPt: options.paginatorPt,
             children,
         },
     );

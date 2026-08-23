@@ -22,6 +22,7 @@ import {
 import {
     Button as ComboBoxButton,
     ComboBox,
+    ComboBoxValue,
     Input,
     ListBox as ComboBoxListBox,
     ListBoxItem as ComboBoxListBoxItem,
@@ -276,6 +277,15 @@ export const Dropdown = <T = unknown,>({
                         allowsEmptyCollection
                         className='cratis-dropdown__combobox'
                     >
+                        <ComboBoxValue
+                            {...pt?.value}
+                            placeholder={placeholder}
+                            className={classNames(
+                                'cratis-dropdown__value',
+                                pt?.value?.className,
+                            )}
+                            data-cratis-part='value'
+                        />
                         <Input
                             {...pt?.filter}
                             id={triggerId}
