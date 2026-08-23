@@ -51,7 +51,7 @@ describe('when StepperCommandDialog is in its initial state', () => {
             StepperCommandDialog<TestCommand>,
             {
                 // SAFETY: The test command implements the runtime command constructor contract.
-        command: TestCommand as unknown as new () => object,
+                command: TestCommand as unknown as new () => object,
                 visible: true,
                 title: 'Test Stepper Dialog',
             },
@@ -62,7 +62,7 @@ describe('when StepperCommandDialog is in its initial state', () => {
     });
 
     it('should_not_have_buttons_in_a_busy_state', () => {
-        html.should.not.include('pi-spinner');
+        html.should.not.include('cratis-dialog__spinner');
     });
 
     it('should_not_show_previous_button_on_first_step', () => {

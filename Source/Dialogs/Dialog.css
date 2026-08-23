@@ -91,6 +91,13 @@
     overflow: auto;
     flex: 1 1 auto;
 }
+.cratis-dialog__busy-scope {
+    display: contents;
+    min-inline-size: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
 .cratis-dialog__footer {
     display: flex;
     padding: 0.9rem 1.25rem;

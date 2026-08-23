@@ -278,13 +278,15 @@ export const AdaComponentsProvider = ({
 
 This preserves Ada's token and theme ownership while removing the circular Ada → Prime preset → Prime variables → Cratis translation.
 
+Ada's custom role filter must migrate in the same change: replace its Prime `FilterMatchMode` import with `DataTableFilterMatchMode`, replace `registerMatcher` with `registerDataTableFilterMatcher`, and store the returned `matchMode` in the role constraint. Built-in mode strings remain behaviorally compatible, but using the Cratis constants removes the renderer type dependency; custom registration never crosses registries automatically.
+
 ### Studio Liquid Glass migration
 
 Studio is the representative deeply customized consumer. Keep `LiquidGlassSurface` and product shaders in Studio; replace renderer types and selectors at the Components boundary:
 
 - Type dialog maps as `DialogParts`: `mask` → `backdrop`, `headerTitle` → `title`, and `closeButton` → `close`.
 - Type stepper maps as `StepperParts`: `nav` → `list`, `panelContainer` → `panels`, `stepperpanel.root` → `step`, `action` → `header`, and `content` → `panel`.
-- `Toolbar`, `ToolbarButton`, and fan-out controls now expose `ToolbarParts`, `ToolbarButtonParts`, and `ToolbarFanOutParts`. Use `pt.root` and documented `data-cratis-part` values rather than treating fixed `.toolbar*` classes as the public contract. Studio may keep its measurement wrapper and glass sibling; the wrapper remains product architecture.
+- Toolbar composition now exposes `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. Studio's measurement wrapper should identify boundaries through `toolbar-group`, `toolbar-separator`, `toolbar-layout`, `toolbar-section`, `toolbar-context`, and `toolbar-slot*` `data-cratis-part` values. It can keep its glass sibling and measurement algorithm as product architecture without depending on `.toolbar*` implementation classes.
 - For integrated Canvas controls, pass Studio's surface through `controlsGlassSurface` and localized actions through `controlsLabels`. Set `disableControlsGlass` only when Studio intentionally wants the low-cost CSS fallback.
 - Preserve `data-cratis-part` and product-owned `LAYER_ATTR` attributes through part props so capture exclusion remains explicit.
 
@@ -372,10 +374,22 @@ import { Tooltip } from '@cratis/components/Common';
 - Table styling uses `DataTableParts` and `data-cratis-part`.
 - Server totals remain authoritative for the paginator.
 
-Direct Prime `FilterMatchMode` values and `FilterService.register()` / `registerMatcher()` calls do **not** populate the Components registry. Replace both sides together:
+Prime's built-in match-mode **string values** continue to work because Components implements the same common predicates directly. Replace the renderer constants with Cratis constants to remove the type dependency:
+
+| Prime constant | Cratis constant |
+| --- | --- |
+| `FilterMatchMode.STARTS_WITH` | `DataTableFilterMatchMode.StartsWith` |
+| `FilterMatchMode.CONTAINS` | `DataTableFilterMatchMode.Contains` |
+| `FilterMatchMode.EQUALS` | `DataTableFilterMatchMode.Equals` |
+| `FilterMatchMode.IN` | `DataTableFilterMatchMode.In` |
+| `FilterMatchMode.DATE_BEFORE` | `DataTableFilterMatchMode.DateBefore` |
+| `FilterMatchMode.DATE_AFTER` | `DataTableFilterMatchMode.DateAfter` |
+
+Custom matcher registration is different: Prime `FilterService.register()` or an application helper around it does **not** populate the Components registry. Replace the registration and the constraint together:
 
 ```ts
 import {
+    DataTableFilterMatchMode,
     registerDataTableFilterMatcher,
     type DataTableFilterMeta,
 } from '@cratis/components/DataTables';
@@ -389,6 +403,7 @@ const roleMatcher = registerDataTableFilterMatcher(
 );
 
 const filters: DataTableFilterMeta = {
+    name: { value: 'Ada', matchMode: DataTableFilterMatchMode.Contains },
     role: { value: 'admin', matchMode: roleMatcher.matchMode },
 };
 

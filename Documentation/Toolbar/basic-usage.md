@@ -17,9 +17,10 @@ function MyToolbar() {
 }
 ```
 
-`ToolbarButton` supports either an icon, text, or both. For text-first controls such as zoom indicators, provide the `text` prop:
+`ToolbarButton` renders `text` when that prop is non-empty; otherwise it renders `icon`. Use `text` for text-first controls such as zoom indicators rather than expecting icon and text to appear together:
 
 ```tsx
+import { useState } from 'react';
 import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components/Toolbar';
 import { FaCircleQuestion, FaMinus, FaPlus } from 'react-icons/fa6';
 

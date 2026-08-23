@@ -81,7 +81,7 @@ jobs:
     # that issue's causes were still open: the bare `primereact/*` directory imports
     # (fixed by the PrimeReact 11 migration) and the CSS side-effect imports rollup
     # externalised via /\.css$/ (fixed by moving component CSS out of the JavaScript
-    # graph and into the `./styles` entry point). Both are resolved as of 3.0.0 - all 24
+    # graph and into the `./styles` entry point). Both are resolved as of 3.0.0; all 25
     # subpaths load cleanly - so `continue-on-error` is gone and this is now a real gate.
     verify-published-exports:
         runs-on: ubuntu-latest

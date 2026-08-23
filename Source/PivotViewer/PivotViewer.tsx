@@ -428,6 +428,7 @@ export function PivotViewer<TItem extends object>({
                     isZooming={isZooming}
                     viewMode={viewMode}
                     cardRenderer={cardRenderer}
+                    colorOverrides={colors}
                     detailRenderer={detailRenderer}
                     resolveId={resolveId}
                     emptyContent={emptyContent}

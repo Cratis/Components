@@ -348,7 +348,15 @@ export const Dialog = ({
                     style={{ ...pt?.content?.style, ...contentStyle }}
                     data-cratis-part='content'
                 >
-                    {children}
+                    <fieldset
+                        className='cratis-dialog__busy-scope'
+                        data-cratis-part='busy-scope'
+                        disabled={isBusy}
+                        inert={isBusy}
+                        aria-busy={isBusy || undefined}
+                    >
+                        {children}
+                    </fieldset>
                 </div>
                 {buttons !== null && (
                     <footer
@@ -360,7 +368,15 @@ export const Dialog = ({
                         style={pt?.footer?.style}
                         data-cratis-part='footer'
                     >
-                        {predefinedFooter()}
+                        <fieldset
+                            className='cratis-dialog__busy-scope cratis-dialog__busy-scope--footer'
+                            data-cratis-part='busy-scope'
+                            disabled={isBusy}
+                            inert={isBusy}
+                            aria-busy={isBusy || undefined}
+                        >
+                            {predefinedFooter()}
+                        </fieldset>
                     </footer>
                 )}
             </>

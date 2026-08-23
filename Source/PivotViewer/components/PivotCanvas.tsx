@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import type { ItemId, LayoutResult, GroupingResult } from '../engine/types';
 import type { ViewMode } from './Toolbar';
+import type { PivotViewerColors } from '../types';
 import { createCssColorResolver, resolveCardColors } from './pivot/colorResolver';
 import { createCardSprite as createCardSpriteExternal, updateCardContent as updateCardContentExternal } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
@@ -55,6 +56,9 @@ export interface PivotCanvasProps<TItem extends object> {
   /** Card renderer function - returns structured data for display */
   cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] };
 
+  /** Public color overrides; changes trigger a Pixi color refresh. */
+  colorOverrides?: Partial<PivotViewerColors>;
+
   /** ID resolver */
   resolveId: (item: TItem, index: number) => string | number;
 
@@ -94,6 +98,7 @@ export function PivotCanvas<TItem extends object>({
   onPanEnd,
   viewMode,
   cardRenderer,
+  colorOverrides,
   containerRef,
 }: PivotCanvasProps<TItem>) {
   // Use the containerRef passed from the parent viewport so we append the Pixi
@@ -142,9 +147,10 @@ export function PivotCanvas<TItem extends object>({
   useEffect(() => {
     cardColorsRef.current = resolveCardColors(
       cssColorResolver,
-      parentContainerRef.current ?? document.documentElement,
+      parentContainerRef.current ?? undefined,
     );
-  }, [cssColorResolver, parentContainerRef]);
+    needsRenderRef.current = true;
+  }, [cssColorResolver, parentContainerRef, colorOverrides]);
 
   useEffect(() => {
     // Reset mounted flag
@@ -412,7 +418,7 @@ export function PivotCanvas<TItem extends object>({
     updateGroupBackgroundsExternal(groupsContainerRef.current, parentContainerRef.current, grouping, layout, zoomLevel, cardColorsRef.current, viewMode);
     needsRenderRef.current = true;
     appRef.current?.renderer?.render(appRef.current.stage);
-  }, [grouping, layout, zoomLevel, viewMode, pixiReady]);
+  }, [grouping, layout, zoomLevel, viewMode, pixiReady, colorOverrides]);
 
   // Fade buckets background when switching view modes
   useEffect(() => {
@@ -546,7 +552,7 @@ export function PivotCanvas<TItem extends object>({
       spritesRef,
       isViewTransitionRef,
     });
-  }, [layout, visibleIds, items, cardWidth, cardHeight, pixiReady, zoomLevel, panX, panY, grouping, viewMode]);
+  }, [layout, visibleIds, items, cardWidth, cardHeight, pixiReady, zoomLevel, panX, panY, grouping, viewMode, colorOverrides]);
 
   // Update prevLayoutRef after processing layout changes
   useEffect(() => {

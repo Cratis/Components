@@ -29,8 +29,13 @@ describe('when rendered with is busy', () => {
     });
 
     it('should disable footer and header dismissal buttons', () => {
-        const disabledCount = (html.match(/disabled=""/g) || []).length;
-        expect(disabledCount).to.equal(3);
+        const disabledButtons = html.match(/<button[^>]*disabled=""/g) ?? [];
+        expect(disabledButtons).to.have.length(3);
+    });
+
+    it('should disable content and footer custom-action scopes', () => {
+        const disabledScopes = html.match(/<fieldset[^>]*disabled=""/g) ?? [];
+        expect(disabledScopes).to.have.length(2);
     });
 });
 

@@ -1,7 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Children, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Children,
+    type HTMLAttributes,
+    type ReactNode,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { useToolbarSlot } from './ToolbarSlot';
 
 /** How long the fade-out animation runs (ms). React unmounts exiting content after this. */
@@ -13,7 +21,15 @@ const LAYOUT_TRANSITION_MS = 220;
  * - The container resizes smoothly to fit incoming layout content.
  * - Outgoing content fades out while incoming content fades in.
  */
-const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass: string }) => {
+const LayoutTransition = ({
+    items,
+    flexClass,
+    pt,
+}: {
+    items: ReactNode[];
+    flexClass: string;
+    pt?: ToolbarLayoutParts;
+}) => {
     const [current, setCurrent] = useState<ReactNode[]>(items);
     const [exiting, setExiting] = useState<ReactNode[]>([]);
     const [exitRevision, setExitRevision] = useState(0);
@@ -69,19 +85,28 @@ const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass:
 
     return (
         <div
-            className={`toolbar-slot-section ${transitioningClass}`}
-            style={size ? { width: size.width, height: size.height } : undefined}
+            {...pt?.slot}
+            className={`toolbar-slot-section ${transitioningClass} ${pt?.slot?.className ?? ''}`}
+            style={{ ...pt?.slot?.style, ...(size ? { width: size.width, height: size.height } : {}) }}
+            data-cratis-part='toolbar-slot'
+            data-transitioning={exiting.length > 0 || undefined}
         >
             <div
+                {...pt?.incoming}
                 ref={incomingRef}
-                className={`toolbar-slot-incoming inline-flex ${flexClass} items-center gap-1`}
+                className={`toolbar-slot-incoming inline-flex ${flexClass} items-center gap-1 ${pt?.incoming?.className ?? ''}`}
+                data-cratis-part='toolbar-slot-incoming'
             >
                 {current}
             </div>
             {exiting.length > 0 && (
                 <div
+                    {...pt?.outgoing}
                     key={exitRevision}
-                    className={`toolbar-slot-outgoing inline-flex ${flexClass} items-center gap-1`}
+                    className={`toolbar-slot-outgoing inline-flex ${flexClass} items-center gap-1 ${pt?.outgoing?.className ?? ''}`}
+                    data-cratis-part='toolbar-slot-outgoing'
+                    aria-hidden='true'
+                    inert
                 >
                     {exiting}
                 </div>
@@ -89,6 +114,18 @@ const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass:
         </div>
     );
 };
+
+/** Stable part attributes for {@link ToolbarLayout}. */
+export interface ToolbarLayoutParts {
+    /** Named layout root. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Slot-transition measurement boundary. */
+    slot?: HTMLAttributes<HTMLDivElement>;
+    /** Current layout content. */
+    incoming?: HTMLAttributes<HTMLDivElement>;
+    /** Previous layout content while it exits. */
+    outgoing?: HTMLAttributes<HTMLDivElement>;
+}
 
 /** Props for the {@link ToolbarLayout} component. */
 export interface ToolbarLayoutProps {
@@ -108,6 +145,8 @@ export interface ToolbarLayoutProps {
     /** Layout direction matching the parent {@link Toolbar} (default: `'vertical'`). */
     orientation?: 'vertical' | 'horizontal';
 
+    /** Stable layout and transition attributes. */
+    pt?: ToolbarLayoutParts;
 }
 
 /**
@@ -155,7 +194,12 @@ export interface ToolbarLayoutProps {
  * );
  * ```
  */
-export const ToolbarLayout = ({ name, children, orientation = 'vertical' }: ToolbarLayoutProps) => {
+export const ToolbarLayout = ({
+    name,
+    children,
+    orientation = 'vertical',
+    pt,
+}: ToolbarLayoutProps) => {
     const slotItems = useToolbarSlot(name);
     const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
     const fallbackItems = useMemo(() => Children.toArray(children), [children]);
@@ -164,8 +208,14 @@ export const ToolbarLayout = ({ name, children, orientation = 'vertical' }: Tool
     if (items.length === 0) return null;
 
     return (
-        <div className={`toolbar-layout inline-flex ${flexClass} items-center gap-1`}>
-            <LayoutTransition items={items} flexClass={flexClass} />
+        <div
+            {...pt?.root}
+            className={`toolbar-layout inline-flex ${flexClass} items-center gap-1 ${pt?.root?.className ?? ''}`}
+            data-cratis-part='toolbar-layout'
+            data-layout-name={name}
+            data-orientation={orientation}
+        >
+            <LayoutTransition items={items} flexClass={flexClass} pt={pt} />
         </div>
     );
 };

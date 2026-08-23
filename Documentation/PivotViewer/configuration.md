@@ -22,7 +22,7 @@
 
 ## Example Configuration
 
-```typescript
+```tsx
 <PivotViewer
     data={items}
     dimensions={dimensions}
@@ -47,11 +47,12 @@
 
 Customize the color scheme:
 
-```typescript
+```tsx
 const customColors = {
     primaryColor: '#0066cc',     // Primary accent color
     surfaceGround: '#ffffff',    // Main background
-    surfaceCard: '#f5f5f5',      // Card backgrounds
+    surfaceCard: '#f5f5f5',      // Pixi card base and DOM card backgrounds
+    surfaceSection: '#e8e8e8',   // Pixi card secondary surface
     textColor: '#333333',        // Text color
     surfaceBorder: '#e0e0e0'     // Border color
 };
@@ -62,11 +63,13 @@ const customColors = {
 />
 ```
 
+Color props map to semantic `--cratis-*` variables and the Pixi renderer's card palette. Updating `colors` after mount refreshes both surfaces.
+
 ## Loading State
 
 Show a loading indicator while data is being fetched:
 
-```typescript
+```tsx
 const [data, setData] = useState([]);
 const [loading, setLoading] = useState(true);
 
@@ -88,11 +91,13 @@ useEffect(() => {
 
 Customize the message when filters return no results:
 
-```typescript
+```tsx
+import { FaInbox } from 'react-icons/fa6';
+
 <PivotViewer
     emptyContent={
         <div className="empty-state">
-            <i className="pi pi-inbox" style={{ fontSize: '3rem' }} />
+            <FaInbox aria-hidden='true' style={{ fontSize: '3rem' }} />
             <h3>No results found</h3>
             <p>Try adjusting your filters</p>
         </div>
@@ -105,7 +110,7 @@ Customize the message when filters return no results:
 
 Specify which fields should be searchable by passing accessor functions:
 
-```typescript
+```tsx
 <PivotViewer
     searchFields={[item => item.title, item => item.description, item => item.tags, item => item.author]}
     // ... other props

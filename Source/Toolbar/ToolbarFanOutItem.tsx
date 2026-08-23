@@ -151,6 +151,9 @@ export const ToolbarFanOutItem = ({
                 ref={panelRef}
                 className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass} ${pt?.panel?.className ?? ''}`}
                 data-cratis-part='fanout-panel'
+                data-expanded={isExpanded || undefined}
+                aria-hidden={!isExpanded}
+                inert={!isExpanded}
                 onTransitionEnd={handleTransitionEnd}
             >
                 {children}

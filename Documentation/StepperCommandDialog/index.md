@@ -123,7 +123,7 @@ function MyComponent() {
 - `start`: Content rendered before the stepper
 - `end`: Content rendered after the stepper
 - `pt`: Cratis-owned HTML attributes for the inner stepper's stable parts
-- `ptOptions`: Pass-through options controlling merge vs. replace for `pt`
+- `ptOptions`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge
 - `unstyled`: Legacy compatibility flag; ignored
 
 ## Callback Behavior

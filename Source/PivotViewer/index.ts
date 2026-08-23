@@ -4,5 +4,15 @@
 import { PivotViewer } from './PivotViewer';
 
 export { PivotViewer, PivotViewer as PivotViewerOptimized };
-export type { PivotViewerProps, PivotDimension, PivotFilter, PivotFilterOption, PivotGroup, PivotPrimitive, PropertyAccessor } from './types';
+export type {
+    PivotViewerProps,
+    PivotViewerColors,
+    PivotDimension,
+    PivotFilter,
+    PivotFilterOption,
+    PivotGroup,
+    PivotPrimitive,
+    PivotPropertyValue,
+    PropertyAccessor,
+} from './types';
 export { getPropertyPath, getValueByPath } from './types';

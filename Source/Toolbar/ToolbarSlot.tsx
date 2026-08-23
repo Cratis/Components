@@ -115,7 +115,7 @@ export const useToolbarSlot = (slotName: string): ReactNode[] => {
         return registry.subscribe(fn);
     }, [registry]);
     const getSnapshot = useCallback(() => registry?.getSnapshot(slotName) ?? _emptySnapshot, [registry, slotName]);
-    return useSyncExternalStore(subscribe, getSnapshot);
+    return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 };
 
 /** Props for the {@link ToolbarSlot} component. */

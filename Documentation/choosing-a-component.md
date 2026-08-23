@@ -39,7 +39,7 @@ actions.
 
 ## Spatial workspaces
 
-Use [`Canvas`](./Canvas/index.md) for a pan/zoom workspace containing positioned DOM or Pixi items, optional minimap/controls, notes, regions, or collaborative chat shapes. Canvas owns interaction and rendering primitives; the application still owns persistence and behavior through Arc commands, queries, and Chronicle read models.
+Use [`Canvas`](./Canvas/index.md) for a pan/zoom workspace containing positioned DOM or Pixi items, optional minimap/controls, notes, regions, or collaborative chat shapes. Canvas owns interaction and rendering primitives; the application owns persistence and behavior. Arc can provide commands, queries, validation, authorization, and generated bindings on its own. Applications using Arc plus Chronicle can additionally project event streams into read models.
 
 ## Putting it together
 

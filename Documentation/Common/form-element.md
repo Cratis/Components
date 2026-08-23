@@ -6,8 +6,11 @@ description: Add a leading icon to an application-owned input.
 `FormElement` places an icon beside ordinary form content using Cratis tokens and structural CSS.
 
 ```tsx
-<FormElement icon={<SearchIcon />}>
-    <input className='cratis-field-input' placeholder='Search' />
+import { FaMagnifyingGlass } from 'react-icons/fa6';
+import { FormElement } from '@cratis/components/Common';
+
+<FormElement icon={<FaMagnifyingGlass aria-hidden='true' />}>
+    <input className='cratis-field-input' aria-label='Search' placeholder='Search' />
 </FormElement>
 ```
 

@@ -6,10 +6,13 @@ import type { FilterEditorProps } from '../Filter/types';
 
 export type PivotPrimitive = string | number | boolean | Date | null | undefined;
 
+/** Value reachable through a searchable PivotViewer property path. */
+export type PivotPropertyValue = PivotPrimitive | object;
+
 /**
  * Type-safe property accessor for accessing properties, including nested ones
  */
-export type PropertyAccessor<TItem> = (item: TItem) => unknown;
+export type PropertyAccessor<TItem> = (item: TItem) => PivotPropertyValue;
 
 /**
  * Extract property path from a property accessor function
@@ -26,14 +29,15 @@ export function getPropertyPath<TItem>(accessor: PropertyAccessor<TItem>): strin
  * Get the value from an item using a property path string
  * Supports nested properties like "address.city"
  */
-export function getValueByPath<TItem>(item: TItem, path: string): unknown {
+export function getValueByPath<TItem>(item: TItem, path: string): PivotPropertyValue {
     const parts = path.split('.');
-    let value: unknown = item;
+    let value: PivotPropertyValue = item as PivotPropertyValue;
     for (const part of parts) {
-        if (value === null || value === undefined) {
+        if (value === null || value === undefined || typeof value !== 'object') {
             return undefined;
         }
-        value = value[part];
+        // SAFETY: Property paths are consumer-provided runtime keys over the current object.
+        value = (value as Record<string, PivotPropertyValue>)[part];
     }
     return value;
 }
@@ -76,6 +80,23 @@ export interface PivotFilter<TItem extends object> {
   renderEditor?: (props: FilterEditorProps) => ReactNode;
 }
 
+/** Semantic color overrides for DOM and Pixi PivotViewer surfaces. */
+export interface PivotViewerColors {
+  primaryColor: string;
+  primaryColorText: string;
+  primary500: string;
+  surfaceGround: string;
+  surfaceCard: string;
+  surfaceSection: string;
+  surfaceOverlay: string;
+  surfaceBorder: string;
+  textColor: string;
+  textColorSecondary: string;
+  highlightBg: string;
+  maskbg: string;
+  focusRing: string;
+}
+
 export interface PivotViewerProps<TItem extends object> {
   data: TItem[];
   dimensions: PivotDimension<TItem>[];
@@ -94,21 +115,7 @@ export interface PivotViewerProps<TItem extends object> {
    * Optional color overrides mapped to semantic CSS variables.
    * If omitted, values are taken from the global theme (Cratis defaults).
    */
-  colors?: Partial<{
-    primaryColor: string;
-    primaryColorText: string;
-    primary500: string;
-    surfaceGround: string;
-    surfaceCard: string;
-    surfaceSection: string;
-    surfaceOverlay: string;
-    surfaceBorder: string;
-    textColor: string;
-    textColorSecondary: string;
-    highlightBg: string;
-    maskbg: string;
-    focusRing: string;
-  }>;
+  colors?: Partial<PivotViewerColors>;
 }
 
 export type FilterState = Record<string, Set<string>>;

@@ -320,17 +320,18 @@ export const DataTableCore = <TData extends object>({
         }
     };
 
-    const keyOf = (row: TData, index: number) =>
+    const loadedPageKeyByRow = useMemo(
+        () => new Map(data.map((row, index) => [row, String(index)])),
+        [data],
+    );
+    const keyOf = (row: TData, filteredIndex: number) =>
         dataKey
             ? String(valueAtPath(row as Record<string, unknown>, dataKey))
-            : String(index);
+            : (loadedPageKeyByRow.get(row) ?? `filtered-${filteredIndex}`);
     const selectedKey = selection
         ? dataKey
             ? String(valueAtPath(selection as Record<string, unknown>, dataKey))
-            : (() => {
-                  const selectedIndex = data.indexOf(selection);
-                  return selectedIndex >= 0 ? String(selectedIndex) : undefined;
-              })()
+            : loadedPageKeyByRow.get(selection)
         : undefined;
 
     return (

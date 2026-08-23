@@ -44,7 +44,9 @@ The React Aria Components Toast API remains unstable, so Components 4 ships its 
 
 ## Table architecture
 
-Components 4 uses semantic HTML and Cratis-owned table state. Arc remains authoritative for server paging. Client filtering and sorting operate only on the loaded page. Complete-result filtering and sorting require consumer-defined query arguments and server query logic that applies them before paging; Components does not automatically forward table state to the server.
+Components 4 uses semantic React HTML and Cratis-owned table state. `DataTableCore` is a rendered React component, not a headless or framework-neutral table engine. Arc remains authoritative for server paging. Client filtering and sorting operate only on the loaded page. Complete-result filtering and sorting require consumer-defined query arguments and server query logic that applies them before paging; Components does not automatically forward table state to the server.
+
+The reusable cross-framework seam today is Arc's generated query/transport contract and explicit paging/query arguments—not Components' React table state. [Issue #109](https://github.com/Cratis/Components/issues/109) tracks a possible headless Arc React query/table binding. It should be designed in Arc React, separately from visual policy, and only after real consumer implementations establish the required sorting, filtering, selection, and observable-query state. A future Vue or Svelte binding would build framework-native state over the same Arc transport contract rather than reuse `DataTableCore`.
 
 [TanStack Table](https://tanstack.com/table/latest/docs/overview) was evaluated but is not a Components 4 dependency. It remains a possible future implementation tool if advanced grouping, pinning, faceting, or sizing creates enough state complexity to justify it. Adopting it would not change the Cratis public contract.
 

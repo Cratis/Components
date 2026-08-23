@@ -27,7 +27,7 @@ export interface ToolbarButtonProps {
     /** React icon node or consumer-owned icon-font class. Components installs no icon font. */
     icon?: Icon;
 
-    /** Optional text to render inside the button (e.g. '120%'). */
+    /** Optional text-first content (for example `120%`); when non-empty it renders instead of {@link icon}. */
     text?: string;
 
     /** Title text shown when the user hovers over the button. */

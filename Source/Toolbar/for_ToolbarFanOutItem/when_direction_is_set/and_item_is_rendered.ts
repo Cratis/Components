@@ -38,4 +38,9 @@ describe('when ToolbarFanOutItem direction is set and item is rendered', () => {
         const html = render('down');
         html.should.include('toolbar-fanout-panel--down');
     });
+
+    it('should_make_the_collapsed_panel_inert', () => {
+        const html = render();
+        html.should.match(/data-cratis-part="fanout-panel"[^>]*aria-hidden="true"[^>]*inert=""/);
+    });
 });

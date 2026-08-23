@@ -16,8 +16,8 @@ const parseHex = (value: string, fallback: number) => {
 describe('when semantic PivotViewer color tokens are defined', () => {
     it('should_resolve_them_from_the_viewer_element', () => {
         const element = document.createElement('div');
-        element.style.setProperty('--cratis-surface-100', '#112233');
-        element.style.setProperty('--cratis-surface-0', '#223344');
+        element.style.setProperty('--cratis-surface-card', '#112233');
+        element.style.setProperty('--cratis-surface-section', '#223344');
         element.style.setProperty('--cratis-surface-ground', '#334455');
         element.style.setProperty('--cratis-surface-border', '#445566');
         element.style.setProperty('--cratis-text-color', '#556677');

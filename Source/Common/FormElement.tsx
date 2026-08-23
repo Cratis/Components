@@ -22,13 +22,22 @@ export interface FormElementProps {
  * it to give input fields a leading icon without pulling in a renderer-specific input-group abstraction.
  *
  * ```tsx
- * <FormElement icon={<FaUser />}>
- *     <input
- *         className='cratis-field-input'
- *         value={name}
- *         onChange={(event) => setName(event.currentTarget.value)}
- *     />
- * </FormElement>
+ * import { useState } from 'react';
+ * import { FaUser } from 'react-icons/fa6';
+ * import { FormElement } from '@cratis/components/Common';
+ *
+ * function NameField() {
+ *     const [name, setName] = useState('');
+ *     return (
+ *         <FormElement icon={<FaUser aria-hidden='true' />}>
+ *             <input
+ *                 className='cratis-field-input'
+ *                 value={name}
+ *                 onChange={(event) => setName(event.currentTarget.value)}
+ *             />
+ *         </FormElement>
+ *     );
+ * }
  * ```
  */
 export const FormElement = (props: FormElementProps) => {

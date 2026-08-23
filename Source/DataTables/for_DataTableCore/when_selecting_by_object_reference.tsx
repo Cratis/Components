@@ -11,7 +11,7 @@ import { Column } from '../Column';
 import { DataTableCore } from '../DataTableCore';
 
 describe('when selecting by object reference', () => {
-    const selected = { name: 'Ada' };
+    const selected = { name: 'Grace' };
     let container: HTMLDivElement;
     let root: Root;
 
@@ -25,12 +25,13 @@ describe('when selecting by object reference', () => {
         await act(async () => {
             root.render(
                 <DataTableCore
-                    data={[selected, { name: 'Grace' }]}
+                    data={[selected, { name: 'Ada' }]}
                     emptyMessage='No people'
                     selectionMode='single'
                     selection={selected}
+                    globalFilterFields={['name']}
                 >
-                    <Column field='name' header='Name' />
+                    <Column field='name' header='Name' sortable />
                 </DataTableCore>,
             );
         });
@@ -41,11 +42,38 @@ describe('when selecting by object reference', () => {
         container.remove();
     });
 
+    const selectedRow = () =>
+        Array.from(container.querySelectorAll('[data-cratis-part="row"]')).find(
+            (row) => row.textContent?.includes('Grace'),
+        );
+
     it('should mark the referenced row selected without a data key', () => {
-        expect(
-            container.querySelector('[data-cratis-part="row"]')?.getAttribute(
-                'aria-selected',
-            ),
-        ).to.equal('true');
+        expect(selectedRow()?.getAttribute('aria-selected')).to.equal('true');
+    });
+
+    it('should_preserve_selection_after_loaded_page_search', async () => {
+        const search = container.querySelector<HTMLInputElement>(
+            '[data-cratis-part="search-input"]',
+        )!;
+        await act(async () => {
+            const setValue = Object.getOwnPropertyDescriptor(
+                HTMLInputElement.prototype,
+                'value',
+            )!.set!;
+            setValue.call(search, 'Grace');
+            search.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+
+        expect(container.querySelectorAll('[data-cratis-part="row"]')).to.have.length(1);
+        expect(selectedRow()?.getAttribute('aria-selected')).to.equal('true');
+    });
+
+    it('should_preserve_selection_after_loaded_page_sorting', async () => {
+        const sort = container.querySelector<HTMLButtonElement>(
+            '[data-cratis-part="sort"]',
+        )!;
+        await act(async () => sort.click());
+
+        expect(selectedRow()?.getAttribute('aria-selected')).to.equal('true');
     });
 });

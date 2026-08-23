@@ -118,7 +118,7 @@ const paging = new Paging(0, 20);
  * A paged data table bound to a snapshot Cratis Arc query
  * (`IQueryFor<TDataType, TArguments>`). Subscribes via
  * `useQueryWithPaging` from `@cratis/arc.react/queries`, renders the result
- * page through the headless {@link DataTableCore}, and shows a
+ * page through the semantic Cratis-owned {@link DataTableCore}, and shows a
  * {@link TablePaginator} when the result set exceeds one page.
  *
  * ## What `TQuery` is

@@ -120,7 +120,7 @@ const paging = new Paging(0, 20);
  * A paged data table bound to a real-time Cratis Arc observable query
  * (`IObservableQueryFor<TDataType, TArguments>`). Subscribes via
  * `useObservableQueryWithPaging`, so the table re-renders automatically as the
- * underlying read model changes server-side. Rows render through the headless
+ * underlying read model changes server-side. Rows render through the semantic Cratis-owned
  * {@link DataTableCore} inside an internally-scrolling region that resizes to
  * fill its container.
  *

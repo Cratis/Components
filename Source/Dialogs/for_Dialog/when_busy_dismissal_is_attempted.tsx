@@ -20,8 +20,14 @@ describe('when busy dismissal is attempted', () => {
     beforeEach(async () => {
         onCancel.mockReset();
         dialog = await render(
-            <Dialog title='Saving' isBusy dismissable onCancel={onCancel}>
-                Saving changes
+            <Dialog
+                title='Saving'
+                isBusy
+                dismissable
+                onCancel={onCancel}
+                buttons={<button type='button'>Custom footer action</button>}
+            >
+                <button type='button'>Content action</button>
             </Dialog>,
         );
     });
@@ -33,7 +39,7 @@ describe('when busy dismissal is attempted', () => {
     it('should keep every dialog action disabled', () => {
         const buttons = Array.from(document.querySelectorAll('button'));
         expect(buttons.length).to.be.greaterThan(0);
-        expect(buttons.every((button) => button.disabled)).to.equal(true);
+        expect(buttons.every((button) => button.matches(':disabled'))).to.equal(true);
     });
 
     it('should ignore escape while work is in flight', async () => {

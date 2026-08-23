@@ -36,6 +36,7 @@ describe('when CommandDialog is in its initial state', () => {
 
     beforeEach(() => {
         const element = React.createElement(CommandDialog, {
+            // SAFETY: The test command implements the runtime command constructor contract.
             command: TestCommand as unknown as new () => object,
             visible: true,
             title: 'Test Dialog',
@@ -44,7 +45,6 @@ describe('when CommandDialog is in its initial state', () => {
     });
 
     it('should_not_have_buttons_disabled_due_to_busy', () => {
-        // A busy dialog swaps the confirm icon for a spinner; a non-busy dialog shows none.
-        html.should.not.include('pi-spinner');
+        html.should.not.include('cratis-dialog__spinner');
     });
 });

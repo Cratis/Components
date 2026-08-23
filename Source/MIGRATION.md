@@ -224,9 +224,9 @@ The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item l
 
 ### Representative downstream migrations
 
-For an Ada-style design system, remove `styledMode`, `AdaPreset`, Prime locale types, and the PrimeUI license from the Components provider. Keep `--ada-*` as the canonical tokens and map them directly to `--cratis-*`. If the product still imports Prime directly, retain a separate Prime provider, preset, dependencies, and license until those imports are removed.
+For an Ada-style design system, remove `styledMode`, `AdaPreset`, Prime locale types, and the PrimeUI license from the Components provider. Keep `--ada-*` as the canonical tokens and map them directly to `--cratis-*`. If the product still imports Prime directly, retain a separate Prime provider, preset, dependencies, and license until those imports are removed. Migrate Ada's role filter from `registerMatcher` to `registerDataTableFilterMatcher` and use the returned `matchMode` in its constraint.
 
-For Studio Liquid Glass, replace renderer part types with `DialogParts`, `StepperParts`, `ToolbarParts`, `ToolbarButtonParts`, and `ToolbarFanOutParts`. Keep Studio's shaders and measurement wrappers product-owned. Use stable `pt` / `data-cratis-part` seams, pass the integrated Canvas surface through `controlsGlassSurface`, and localize its actions through `controlsLabels`.
+For Studio Liquid Glass, replace renderer part types with `DialogParts`, `StepperParts`, and the complete Toolbar part family: `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. Keep Studio's shaders and measurement wrappers product-owned. Measure `toolbar-group`, `toolbar-separator`, `toolbar-layout`, `toolbar-section`, `toolbar-context`, and `toolbar-slot*` `data-cratis-part` boundaries; pass the integrated Canvas surface through `controlsGlassSurface`; and localize its actions through `controlsLabels`.
 
 The published migration guide contains complete Ada provider/token and Studio Dialog/Stepper/Toolbar/Canvas mapping examples.
 
@@ -296,7 +296,7 @@ Multiple selection uses a native multiple-select when filtering is off and an ac
 - Table styling uses `DataTableParts` and `data-cratis-part`.
 - Server totals remain authoritative for the paginator.
 
-Direct Prime `FilterMatchMode` values and `FilterService.register()` / `registerMatcher()` calls do not register behavior in Components. Replace them with `DataTableFilterMatchMode` and `registerDataTableFilterMatcher()`, then use the returned `matchMode` in `DataTableFilterMeta`. Retaining an arbitrary string preserves source compatibility but an unregistered mode deliberately matches nothing.
+Common built-in Prime match-mode string values remain compatible because Components implements those predicates directly; replace the renderer constants with `DataTableFilterMatchMode` to remove the type dependency. Prime `FilterService.register()` / `registerMatcher()` custom registrations do not cross into Components: replace them with `registerDataTableFilterMatcher()` and use the returned `matchMode` in `DataTableFilterMeta`. An unregistered custom mode deliberately matches nothing.
 
 Separate `RadioButtonField` options bound to one property now require the same explicit `name` prop so native arrow-key radio-group navigation works. `RadioGroupField` and `RatingField` generate a shared internal name automatically.
 
