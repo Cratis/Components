@@ -1,5 +1,7 @@
 # Migration — `@cratis/components` 2.x → 3.0 (PrimeReact 10 → 11)
 
+> This is the historical Components 3 guide. Links to version-specific styling/provider pages use the immutable Components 3 merge commit so they cannot drift to Components 4 behavior.
+
 `@cratis/components` 3.0 moves the library from PrimeReact 10 to **PrimeReact 11**. Most wrapper APIs survive unchanged, so many apps upgrade with the find-and-replace in [Import moves](#import-moves-removed-primereact-paths) plus the install and import changes in [PrimeReact is now a peer dependency](#primereact-is-now-a-peer-dependency) and [Stylesheets are now an explicit import](#stylesheets-are-now-an-explicit-import). This guide lists every change a consuming app can feel.
 
 > [!IMPORTANT]
@@ -78,20 +80,20 @@ PrimeReact 11 is ESM-only, so `@cratis/components` dropped its CommonJS build. `
 
 PrimeReact 11 ships **80** modules where v10 shipped 117. Replace the removed ones with the Cratis-owned equivalents — the authoring model is unchanged:
 
-| Was (PrimeReact 10)                                                                                                       | Now (3.0)                                                                                                                                               |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `import { Column } from 'primereact/column'`                                                                              | `import { Column } from '@cratis/components/DataTables'` (also re-exported from `@cratis/components/DataPage`)                                          |
-| `import { StepperPanel } from 'primereact/stepperpanel'`                                                                  | `import { StepperPanel } from '@cratis/components/CommandDialog'`                                                                                       |
-| `import { Menubar } from 'primereact/menubar'`                                                                            | `<DataPage.MenuItems>` for list-page actions; a `Button` toolbar of your own otherwise                                                                  |
-| `import { Dropdown } from 'primereact/dropdown'`                                                                          | `import { Dropdown } from '@cratis/components/Dropdown'`                                                                                                |
-| `primereact/calendar`, `primereact/inputtextarea`, `primereact/multiselect`, `primereact/chips`, `primereact/colorpicker` | consume through the [CommandForm fields](CommandForm/index.md) (`CalendarField`, `TextAreaField`, `MultiSelectField`, `ChipsField`, `ColorPickerField`) |
-| `import { PrimeReactProvider } from 'primereact/api'`                                                                     | `import { PrimeReactProvider } from '@primereact/core'` — or just use [`CratisComponentsProvider`](Common/cratis-components-provider.md)                |
+| Was (PrimeReact 10)                                                                                                       | Now (3.0)                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `import { Column } from 'primereact/column'`                                                                              | `import { Column } from '@cratis/components/DataTables'` (also re-exported from `@cratis/components/DataPage`)                                                                                                                            |
+| `import { StepperPanel } from 'primereact/stepperpanel'`                                                                  | `import { StepperPanel } from '@cratis/components/CommandDialog'`                                                                                                                                                                         |
+| `import { Menubar } from 'primereact/menubar'`                                                                            | `<DataPage.MenuItems>` for list-page actions; a `Button` toolbar of your own otherwise                                                                                                                                                    |
+| `import { Dropdown } from 'primereact/dropdown'`                                                                          | `import { Dropdown } from '@cratis/components/Dropdown'`                                                                                                                                                                                  |
+| `primereact/calendar`, `primereact/inputtextarea`, `primereact/multiselect`, `primereact/chips`, `primereact/colorpicker` | consume through the [CommandForm fields](CommandForm/index.md) (`CalendarField`, `TextAreaField`, `MultiSelectField`, `ChipsField`, `ColorPickerField`)                                                                                   |
+| `import { PrimeReactProvider } from 'primereact/api'`                                                                     | `import { PrimeReactProvider } from '@primereact/core'` — or just use [`CratisComponentsProvider`](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Common/cratis-components-provider.md) |
 
 `<Column field="name" header="Name" sortable filter />` and `<StepperPanel header="…">` work exactly as before.
 
 ### If you import `primereact/*` directly anywhere
 
-The full rename table, the removed-with-no-replacement list, and the `Sidebar` trap are on [PrimeReact and Components](coming-from-primereact.md#the-v11-module-renames). The short version: **v11 is compositional**, so a rename is often not a one-line edit — `primereact/select` exports `Select.Root` / `Select.Trigger` / `Select.Value` / `Select.Portal` / `Select.Popup` / `Select.List` / `Select.Option`, and you assemble them. Prefer a Cratis wrapper where one exists.
+The full rename table, the removed-with-no-replacement list, and the `Sidebar` trap are on [PrimeReact and Components](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/coming-from-primereact.md#the-v11-module-renames). The short version: **v11 is compositional**, so a rename is often not a one-line edit — `primereact/select` exports `Select.Root` / `Select.Trigger` / `Select.Value` / `Select.Portal` / `Select.Popup` / `Select.List` / `Select.Option`, and you assemble them. Prefer a Cratis wrapper where one exists.
 
 > [!CAUTION]
 > **The `Sidebar` trap.** v10's `Sidebar` (an overlay drawer) is now **`primereact/drawer`**. `primereact/sidebar` still exists in v11 but is a **different, new app-shell primitive**. A name-preserving migration compiles cleanly and silently swaps your overlay for an app shell. Check every `Sidebar` usage by hand.
@@ -117,16 +119,16 @@ Per-column filter menus (`<Column filter dataType="…" />`), a global search bo
 
 The chain is: **preset (JS) → `--p-*` (runtime) → `--cratis-*` (our token layer) → component CSS**, and in styled mode also **`primeReactStyles` → `p-*` class names + PrimeReact's component CSS**. Our `--cratis-*` tokens resolve the v11 token first and fall back to the v10 variable, so an app that still has a compiled v10 theme on the page during its port keeps working, and nothing breaks the day it is removed.
 
-Pick one of three paths — the [Styling](Styling/index.md) section walks each one:
+Pick one of three paths — the [Components 3 Styling guide](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Styling/index.md) walks each one:
 
-**A. [The Cratis baseline theme](Styling/baseline-theme.md).** Cratis-authored MIT CSS that assigns the `--cratis-*` tokens directly, light and dark, for a polished default with no preset and no extra dependency. It defers to a preset's `--p-*` values when one is present.
+**A. [The Components 3 baseline theme](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Styling/baseline-theme.md).** Cratis-authored MIT CSS that assigns the `--cratis-*` tokens directly, light and dark, for a polished default with no preset and no extra dependency. It defers to a preset's `--p-*` values when one is present.
 
 ```diff
 - import 'primereact/resources/themes/lara-dark-blue/theme.css';
 + import '@cratis/components/theme';
 ```
 
-**B. [PrimeReact's styled mode](Styling/themed.md).** `styledMode()` from `@cratis/components/styled` returns `{ theme, defaults }` — a `@primeuix/themes` preset (default `CratisPreset`: Lara with the blue primary and gray surfaces of `lara-light-blue` / `lara-dark-blue`) plus `primeReactStyles`, PrimeReact's own component styles, which the provider applies to every primitive rendered under it — this library's and your own. Needs `@primereact/styles` and `@primeuix/themes` installed. Options: `preset` (any preset or `definePreset` result), `darkModeSelector` (default `.cratis-dark`), `cssLayer` (default the `primereact` layer, ordered between Tailwind's `base` and `components`, so a plain `.p-button { … }` in your CSS overrides the theme just as it did against v10's `@layer primereact` stylesheets; `false` emits unlayered).
+**B. [Components 3 PrimeReact styled mode](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Styling/themed.md).** `styledMode()` from `@cratis/components/styled` returns `{ theme, defaults }` — a `@primeuix/themes` preset (default `CratisPreset`: Lara with the blue primary and gray surfaces of `lara-light-blue` / `lara-dark-blue`) plus `primeReactStyles`, PrimeReact's own component styles, which the provider applies to every primitive rendered under it — this library's and your own. Needs `@primereact/styles` and `@primeuix/themes` installed. Options: `preset` (any preset or `definePreset` result), `darkModeSelector` (default `.cratis-dark`), `cssLayer` (default the `primereact` layer, ordered between Tailwind's `base` and `components`, so a plain `.p-button { … }` in your CSS overrides the theme just as it did against v10's `@layer primereact` stylesheets; `false` emits unlayered).
 
 ```diff
 - import 'primereact/resources/themes/lara-dark-blue/theme.css';
@@ -203,7 +205,7 @@ Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's 
 
 ### If you write `pt` definitions or CSS selectors against PrimeReact internals
 
-v11 is unstyled-first: outside [styled mode](Styling/themed.md), PrimeReact elements carry **no `p-*` class at all**. Parts are identified by data attributes instead — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`, and so on. Selectors written against v10 class names will silently match nothing there. In styled mode the `p-*` class names are back — `styledMode()` applies PrimeReact's component styles to every primitive — and the theme sits in the `primereact` cascade layer, so a plain `.p-button { … }` in your own CSS overrides it as it did on v10. (`pt` slot keys are unaffected either way.)
+v11 is unstyled-first: outside [Components 3 styled mode](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Styling/themed.md), PrimeReact elements carry **no `p-*` class at all**. Parts are identified by data attributes instead — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`, and so on. Selectors written against v10 class names will silently match nothing there. In styled mode the `p-*` class names are back — `styledMode()` applies PrimeReact's component styles to every primitive — and the theme sits in the `primereact` cascade layer, so a plain `.p-button { … }` in your own CSS overrides it as it did on v10. (`pt` slot keys are unaffected either way.)
 
 ## What's new (nothing to migrate — just available)
 
@@ -211,8 +213,8 @@ v11 is unstyled-first: outside [styled mode](Styling/themed.md), PrimeReact elem
 - **[Display](Display/index.md)** — `Tag`, `Badge`, `Chip`, `Skeleton`, `Avatar`, `ProgressBar`.
 - **CommandForm fields** — [PasswordField](CommandForm/password-field.md), [ToggleSwitchField](CommandForm/toggle-switch-field.md), [RatingField](CommandForm/rating-field.md).
 - **[AutoCommandForm](CommandForm/auto-command-form.md)** — generates a `CommandForm`'s fields from the command's own `propertyDescriptors`, with a `registerFieldTypeProvider` registry for custom types.
-- **[`@cratis/components/theme`](Styling/baseline-theme.md)** — the Cratis baseline theme (MIT CSS). It now positions the dialog backdrop and positioner itself; previously a baseline-theme dialog could render below the page content.
-- **[`@cratis/components/styled`](Styling/themed.md)** — `styledMode()`, `CratisPreset`, `primeReactStyles`, `primeReactCssLayer`, `primeReactCssLayerOrder` and `cratisDarkModeSelector`: PrimeReact's styled mode, wired for the provider.
+- **[`@cratis/components/theme`](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Styling/baseline-theme.md)** — the Cratis baseline theme (MIT CSS). It now positions the dialog backdrop and positioner itself; previously a baseline-theme dialog could render below the page content.
+- **[`@cratis/components/styled`](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Styling/themed.md)** — `styledMode()`, `CratisPreset`, `primeReactStyles`, `primeReactCssLayer`, `primeReactCssLayerOrder` and `cratisDarkModeSelector`: PrimeReact's styled mode, wired for the provider.
 - **`@cratis/components/primereact-v10-palette`** — the PrimeReact 10 theme variables (`--surface-*`, `--text-color`, `--primary-color`, the color scales, …) restored with the lara-blue values, for CSS already written against them.
 - **`Dropdown`** reads `label` / `value` off option objects when `optionLabel` / `optionValue` are omitted — the v10 `Dropdown` convention.
 
@@ -230,7 +232,7 @@ An earlier version of this page said unstyled rendering and the Cratis baseline 
 <CratisComponentsProvider value={{ license: '…' }}>
 ```
 
-What the styling choice changes is whether you additionally depend on `@primereact/styles` and `@primeuix/themes` — both PrimeUI-licensed too, and needed only for styled mode. [The Cratis baseline theme](Styling/baseline-theme.md) is Cratis-authored MIT CSS embedding no PrimeTek values, so that _stylesheet_ carries no PrimeTek terms — but rendering it still runs PrimeReact 11, which needs a key.
+What the styling choice changes is whether you additionally depend on `@primereact/styles` and `@primeuix/themes` - both PrimeUI-licensed too, and needed only for styled mode. [The Components 3 baseline theme](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/Styling/baseline-theme.md) is Cratis-authored MIT CSS embedding no PrimeTek values, so that _stylesheet_ carries no PrimeTek terms - but rendering it still runs PrimeReact 11, which needs a key.
 
 ### Which license you need
 

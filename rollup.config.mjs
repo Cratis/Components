@@ -4,7 +4,7 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 import { createRequire } from 'module';
 
@@ -158,6 +158,48 @@ function bundleStyles(sourceDir, esmPath) {
  * Rollup plugin to generate the package.json in the ESM output directory,
  * marking it as an ES module. The package ships a single ESM build.
  */
+function resolvedRelativeSpecifier(file, specifier) {
+    if (!specifier.startsWith('.') || /\.[a-z0-9]+$/i.test(specifier)) return specifier;
+    const target = resolve(dirname(file), specifier);
+    if (existsSync(`${target}.js`)) return `${specifier}.js`;
+    if (existsSync(join(target, 'index.js'))) return `${specifier}/index.js`;
+    return specifier;
+}
+
+function findEmittedModules(directory, found = []) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const file = join(directory, entry.name);
+        if (entry.isDirectory()) findEmittedModules(file, found);
+        else if (entry.name.endsWith('.js') || entry.name.endsWith('.d.ts'))
+            found.push(file);
+    }
+    return found;
+}
+
+/** Makes every relative ESM specifier directly executable by Node. */
+function fixRelativeEsmSpecifiers(esmPath) {
+    return {
+        name: 'fix-relative-esm-specifiers',
+        closeBundle() {
+            for (const file of findEmittedModules(esmPath)) {
+                const source = readFileSync(file, 'utf8');
+                const rewritten = source
+                    .replace(
+                        /((?:from\s*|import\s*)['"])(\.\.?\/[^'"]+)(['"])/g,
+                        (_match, before, specifier, after) =>
+                            `${before}${resolvedRelativeSpecifier(file, specifier)}${after}`,
+                    )
+                    .replace(
+                        /(import\(\s*['"])(\.\.?\/[^'"]+)(['"]\s*\))/g,
+                        (_match, before, specifier, after) =>
+                            `${before}${resolvedRelativeSpecifier(file, specifier)}${after}`,
+                    );
+                if (rewritten !== source) writeFileSync(file, rewritten);
+            }
+        },
+    };
+}
+
 function generatePackageJson(esmPath) {
     return {
         name: 'generate-package-json',
@@ -230,6 +272,7 @@ export function rollup(esmPath, tsconfigPath, pkg) {
             }),
             generatePackageJson(esmPath),
             bundleStyles(sourceDir, esmPath),
+            fixRelativeEsmSpecifiers(esmPath),
         ],
     };
 }

@@ -17,6 +17,7 @@ import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEv
 import {
     DataTableFilterMatchMode,
     type DataTableFilterConstraint,
+    type DataTableFilterEntry,
     type DataTableFilterMeta,
 } from './DataTableFilterMeta';
 import { resolveDataTableFilterMatcher } from './DataTableFilterMatcherRegistry';
@@ -115,6 +116,11 @@ const dateNumber = (value: unknown) => {
     return Number.isNaN(date.getTime()) ? undefined : date.setHours(0, 0, 0, 0);
 };
 
+const firstConstraint = (
+    entry: DataTableFilterEntry | undefined,
+): DataTableFilterConstraint | undefined =>
+    entry && 'constraints' in entry ? entry.constraints[0] : entry;
+
 const builtInMatches = (
     value: unknown,
     constraint: DataTableFilterConstraint,
@@ -171,6 +177,18 @@ const builtInMatches = (
     }
 };
 
+const matchesFilterEntry = (value: unknown, entry: DataTableFilterEntry) => {
+    if (!('constraints' in entry)) return builtInMatches(value, entry);
+    if (entry.constraints.length === 0) return true;
+
+    const matches = entry.constraints.map((constraint) =>
+        builtInMatches(value, constraint),
+    );
+    return entry.operator?.toLowerCase() === 'or'
+        ? matches.some(Boolean)
+        : matches.every(Boolean);
+};
+
 const compareValues = (left: unknown, right: unknown): number => {
     if (typeof left === 'number' && typeof right === 'number') return left - right;
     if (left instanceof Date && right instanceof Date)
@@ -218,8 +236,8 @@ export const DataTableCore = <TData extends object>({
         const term = globalFilter.trim().toLocaleLowerCase();
         const rows = data.filter((row) => {
             const rowValues = row as Record<string, unknown>;
-            const matchesColumns = Object.entries(filters).every(([field, constraint]) =>
-                builtInMatches(valueAtPath(rowValues, field), constraint),
+            const matchesColumns = Object.entries(filters).every(([field, entry]) =>
+                matchesFilterEntry(valueAtPath(rowValues, field), entry),
             );
             if (!matchesColumns) return false;
             if (!term || !globalFilterFields?.length) return true;
@@ -402,7 +420,9 @@ export const DataTableCore = <TData extends object>({
                                                         column.props.filterElement
                                                     }
                                                     labels={column.props.filterLabels}
-                                                    constraint={filters[field]}
+                                                    constraint={firstConstraint(
+                                                        filters[field],
+                                                    )}
                                                     onApply={(constraint) =>
                                                         updateFilter(field, constraint)
                                                     }

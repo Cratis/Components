@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 import { Dialog } from '../../Dialogs/Dialog';
 import { Dropdown } from '../Dropdown';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
@@ -22,6 +23,7 @@ describe('when a dropdown is opened inside a dialog', () => {
     let panelZIndex: number;
     let panelIsInsideTheDialog: boolean;
     let panelIsPortaledToTheBody: boolean;
+    let panelUsesTheLegacyClassName: boolean;
 
     beforeEach(async () => {
         // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
@@ -54,6 +56,7 @@ describe('when a dropdown is opened inside a dialog', () => {
                             optionLabel: 'name',
                             optionValue: 'id',
                             'aria-label': 'Pick value',
+                            panelClassName: 'product-dropdown-panel',
                         }),
                     }),
                 }),
@@ -91,6 +94,7 @@ describe('when a dropdown is opened inside a dialog', () => {
         panelIsInsideTheDialog = dialogPopup.contains(panel);
         panelIsPortaledToTheBody =
             document.body.contains(panel) && !container.contains(panel);
+        panelUsesTheLegacyClassName = panel.classList.contains('product-dropdown-panel');
     });
 
     afterEach(async () => {
@@ -110,5 +114,9 @@ describe('when a dropdown is opened inside a dialog', () => {
 
     it('should stack the panel above the dialog it was opened from', () => {
         expect(panelZIndex).to.be.greaterThan(dialogPositionerZIndex);
+    });
+
+    it('should map the legacy panel class to the Cratis popover', () => {
+        expect(panelUsesTheLegacyClassName).to.equal(true);
     });
 });

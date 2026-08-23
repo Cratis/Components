@@ -2,6 +2,7 @@
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
 /* Optional Cratis baseline values. Component structure lives in styles.css. */
+:root,
 .cratis-theme {
     color: var(--cratis-text-color);
     background-color: var(--cratis-surface-ground);
@@ -55,6 +56,7 @@
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+:root.cratis-dark,
 .cratis-dark .cratis-theme,
 .cratis-theme.cratis-dark {
     --cratis-primary-color: #60a5fa;
@@ -79,12 +81,14 @@
 }
 
 @media (prefers-color-scheme: dark) {
+    :root:not(.cratis-light),
     .cratis-theme:not(.cratis-light) {
         color-scheme: dark;
     }
 }
 
 @media (forced-colors: active) {
+    :root,
     .cratis-theme {
         --cratis-primary-color: Highlight;
         --cratis-primary-color-text: HighlightText;

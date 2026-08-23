@@ -1,9 +1,16 @@
 ---
 title: Stable component parts
-description: Customize Components through Cratis-owned parts and state attributes.
+description: Customize Components through typed Cratis part keys and documented DOM part values.
 ---
 
-Every component exposes meaningful elements through `data-cratis-part`. Components that need per-instance customization also accept a `pt` object whose values are ordinary HTML attributes.
+Components exposes two related styling surfaces:
+
+- **Typed `pt` keys** use camel case and accept ordinary HTML attributes for one component instance.
+- **DOM part values** appear in `data-cratis-part` and use kebab case where a name contains several words.
+
+They are documented separately because not every DOM part needs a `pt` key, and the spellings are intentionally different (`headerRow` versus `header-row`).
+
+## Typed pt keys
 
 ```tsx
 <Dialog
@@ -11,22 +18,69 @@ Every component exposes meaningful elements through `data-cratis-part`. Componen
     pt={{
         backdrop: { className: 'account-dialog-backdrop' },
         root: { className: 'account-dialog' },
-        header: { className: 'account-dialog-header' },
         content: { className: 'account-dialog-content' },
-        footer: { className: 'account-dialog-footer' },
     }}
 >
     Content
 </Dialog>
 ```
 
-`pt` classes merge with the component's structural classes. Named component props control behavior and take precedence over conflicting part attributes.
+| Component/type               | Typed `pt` keys                                                                                                                                                         | Element types                                                 |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `ButtonParts`                | `root`, `icon`, `label`, `spinner`                                                                                                                                      | button, spans                                                 |
+| `DialogParts`                | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                  | div/section/header/heading/footer/buttons                     |
+| `DropdownParts`              | `root`, `input`, `select`, `trigger`, `value`, `clear`, `indicator`, `popover`, `listbox`, `option`, `filter`, `multiple`                                               | wrapper, input/button, spans, popover/listbox/options, select |
+| `DatePickerInputPassThrough` | `root`, `group`, `input`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `buttonBar`, `today`, `clear` | divs, segmented field, buttons, calendar grid/cells           |
+| `DataTableParts`             | `root`, `search`, `searchInput`, `tableContainer`, `table`, `head`, `headerRow`, `headerCell`, `body`, `row`, `cell`, `emptyRow`, `emptyCell`                           | div/input/table sections/rows/cells                           |
+| `TablePaginatorParts`        | `root`, `range`, `info`, `first`, `previous`, `next`, `last`                                                                                                            | navigation div, spans, and Button parts                       |
+| `StepperParts`               | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                     | div, ordered list, list item, button, spans, section          |
+| `ToasterPassThrough`         | `region`, `toast`, `icon`, `content`, `title`, `description`, `close`, `action`                                                                                         | region/article/divs/spans/buttons                             |
+| `ActionMenubar` `pt`         | the `ButtonParts` keys applied to each action                                                                                                                           | button and spans                                              |
+| `DataPage` `tablePt`         | `DataTableParts`                                                                                                                                                        | table surface                                                 |
+| `DataPage` `menubarPt`       | `ButtonParts`                                                                                                                                                           | action buttons                                                |
 
-## CSS targeting
+Command field part keys:
+
+| Field                  | Typed keys                                    |
+| ---------------------- | --------------------------------------------- |
+| InputText / TextArea   | `root`                                        |
+| Number                 | `root`, `input`                               |
+| Checkbox               | `root`, `input`, `box`, `indicator`           |
+| ToggleSwitch           | `root`, `input`, `control`, `handle`          |
+| Password               | `root`, `input`, `toggle`                     |
+| RadioButton            | `root`, `input`, `box`, `indicator`           |
+| RadioGroup             | `root`, `option`, `input`, `box`, `indicator` |
+| Slider                 | `root`, `input`, `value`                      |
+| Chips                  | `root`, `item`, `remove`, `input`             |
+| ColorPicker            | `root`, `input`, `value`                      |
+| Rating                 | `root`, `option`, `input`, `star`             |
+| Calendar               | `DatePickerInputPassThrough` keys             |
+| Dropdown / MultiSelect | `DropdownParts` keys                          |
+
+Named behavior props override conflicting part attributes. Part classes and styles merge with component structure.
+
+## DOM part values
+
+Use the exact kebab-case value in CSS or tests:
+
+| Surface        | `data-cratis-part` values                                                                                                                                                                       |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Button         | `root`, `icon`, `label`, `spinner`                                                                                                                                                              |
+| Dialog         | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                                          |
+| Dropdown       | `root`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, `multiple`                                                                                          |
+| DatePicker     | `root`, `group`, `input`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `button-bar`, `today`, `clear`                        |
+| DataTable      | `root`, `search`, `search-input`, `table-container`, `table`, `head`, `header-row`, `header-cell`, `header-content`, `sort`, `filter-trigger`, `body`, `row`, `cell`, `empty-row`, `empty-cell` |
+| TablePaginator | `root`, `range`, `info`; paginator buttons expose the documented Button parts                                                                                                                   |
+| Stepper        | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                                             |
+| Toaster        | `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, `close`                                                                                                                 |
+| Display        | component roots plus `image`, `fallback`, `remove`, `indicator`, `range`, `track`, and labels where applicable                                                                                  |
+| Event timeline | `timeline`, `event`, `separator`, `marker`, `connector`, `content`                                                                                                                              |
+
+`header-content`, `sort`, and `filter-trigger` are DOM targets but are not `DataTableParts` keys. Customize them with CSS rather than claiming a nonexistent typed key.
 
 ```css
-.account-dialog[data-cratis-part='root'] {
-    border-radius: 1rem;
+[data-cratis-part='header-cell'] {
+    text-transform: uppercase;
 }
 
 [data-cratis-part='row'][data-selected='true'] {
@@ -34,35 +88,25 @@ Every component exposes meaningful elements through `data-cratis-part`. Componen
 }
 ```
 
-Use Cratis part names and state attributes. Do not target React Aria classes or undocumented descendants.
+## State attributes
 
-## Common state attributes
+State attributes are component-specific. Common values include:
 
-- `data-active`
-- `data-selected`
-- `data-invalid`
-- `data-disabled`
-- `data-readonly`
-- `data-loading`
-- `data-position`
-- `data-orientation`
-- `data-size`
-- `data-severity`
+| Attribute          | Meaning                                |
+| ------------------ | -------------------------------------- |
+| `data-active`      | Active filter, step, or action.        |
+| `data-selected`    | Selected row, option, or value.        |
+| `data-invalid`     | Validation error state.                |
+| `data-disabled`    | Disabled component state.              |
+| `data-readonly`    | Read-only date/control state.          |
+| `data-loading`     | Loading toast/action.                  |
+| `data-position`    | Overlay, timeline, or region position. |
+| `data-orientation` | Horizontal/vertical layout.            |
+| `data-size`        | Component size variant.                |
+| `data-severity`    | Semantic status tone.                  |
 
-## Part groups
-
-| Component       | Stable parts                                                                                                                                                                  |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Button          | `root`, `icon`, `label`, `spinner`                                                                                                                                            |
-| Dialog          | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                        |
-| Dropdown        | `root`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, `multiple`                                                                        |
-| DatePickerInput | `root`, `group`, `input`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `button-bar`, `today`, `clear`      |
-| DataTableCore   | `root`, `search`, `search-input`, `table-container`, `table`, `head`, `header-row`, `header-cell`, `header-content`, `sort`, `body`, `row`, `cell`, `empty-row`, `empty-cell` |
-| Stepper         | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                           |
-| Toaster         | `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, `close`                                                                                               |
-
-TypeScript exposes the exact part type for each component, so unknown keys fail compilation.
+Do not assume an attribute exists on every component; use its documented parts/type and inspect the rendered Cratis contract in tests.
 
 ## Legacy flags
 
-`ptOptions` and `unstyled` remain accepted temporarily for Components 3 source compatibility. They have no effect: Cratis parts always merge, and the component CSS is always consumer-owned.
+`ptOptions` and `unstyled` remain accepted temporarily for Components 3 source compatibility. They have no effect: typed Cratis attributes always merge, and styling is always CSS-owned.

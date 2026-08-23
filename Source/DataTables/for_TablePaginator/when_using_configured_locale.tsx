@@ -15,6 +15,7 @@ describe('when using the configured locale', () => {
     let root: Root;
     let navigation: HTMLElement;
     let buttonLabels: Array<string | null>;
+    let firstButton: HTMLButtonElement;
 
     beforeEach(async () => {
         // SAFETY: React's test-environment flag is an intentionally undocumented global absent from the DOM typings.
@@ -46,6 +47,13 @@ describe('when using the configured locale', () => {
                         pageCount={3}
                         onPageChange={() => undefined}
                         ariaLabels={{ next: 'Explicit next' }}
+                        pt={{
+                            root: { className: 'product-paginator' },
+                            info: { className: 'product-paginator-info' },
+                            first: {
+                                root: { className: 'product-paginator-button' },
+                            },
+                        }}
                     />
                 </CratisComponentsProvider>,
             );
@@ -58,9 +66,9 @@ describe('when using the configured locale', () => {
             throw new Error('TablePaginator did not render its navigation.');
         }
         navigation = renderedNavigation;
-        buttonLabels = Array.from(navigation.querySelectorAll('button'), (button) =>
-            button.getAttribute('aria-label'),
-        );
+        const buttons = Array.from(navigation.querySelectorAll('button'));
+        buttonLabels = buttons.map((button) => button.getAttribute('aria-label'));
+        [firstButton] = buttons;
     });
 
     afterEach(async () => {
@@ -79,5 +87,15 @@ describe('when using the configured locale', () => {
             'Explicit next',
             'Siste side',
         ]);
+    });
+
+    it('should apply Cratis-owned paginator parts', () => {
+        expect(navigation.classList.contains('product-paginator')).to.equal(true);
+        expect(
+            navigation
+                .querySelector('[data-cratis-part="info"]')
+                ?.classList.contains('product-paginator-info'),
+        ).to.equal(true);
+        expect(firstButton.classList.contains('product-paginator-button')).to.equal(true);
     });
 });

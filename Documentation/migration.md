@@ -160,6 +160,55 @@ Every meaningful element also carries `data-cratis-part`. Interactive states use
 
 See [Stable component parts](Styling/pass-through.md) for the complete contract.
 
+### Migrate a deeply customized product
+
+Keep the product's own tokens, Tailwind utilities, dark/high-contrast selectors, and accessibility preferences. Remove the renderer preset that translated those values into a third-party token system, then map the product values directly onto `--cratis-*`.
+
+For a custom dialog layer, change renderer part types to Cratis types and rename slots:
+
+```ts
+import type { DialogParts } from '@cratis/components/Dialogs';
+import type { StepperParts } from '@cratis/components/CommandDialog';
+
+export const productDialogParts: DialogParts = {
+    backdrop: { className: 'product-dialog-backdrop' },
+    root: { className: 'product-dialog' },
+    title: { className: 'product-dialog-title' },
+    close: { className: 'product-dialog-close' },
+    content: { className: 'product-dialog-content' },
+    footer: { className: 'product-dialog-footer' },
+};
+
+export const productStepperParts: StepperParts = {
+    root: { className: 'product-stepper' },
+    list: { className: 'product-stepper-list' },
+    header: { className: 'product-stepper-header' },
+    number: { className: 'product-stepper-number' },
+    title: { className: 'product-stepper-title' },
+    panels: { className: 'product-stepper-panels' },
+    panel: { className: 'product-stepper-panel' },
+};
+```
+
+Paginator callbacks that formerly returned classes from renderer context must become static Cratis parts plus CSS state selectors:
+
+```ts
+import type { TablePaginatorParts } from '@cratis/components/DataTables';
+
+export const productPaginatorParts: TablePaginatorParts = {
+    root: { className: 'product-paginator' },
+    first: { root: { className: 'product-paginator-button' } },
+    previous: { root: { className: 'product-paginator-button' } },
+    next: { root: { className: 'product-paginator-button' } },
+    last: { root: { className: 'product-paginator-button' } },
+    info: { className: 'product-paginator-info' },
+};
+```
+
+Use `:disabled`, `:focus-visible`, and the documented `data-cratis-*` states in CSS instead of renderer callback context. The numbered-page renderer is gone; the paginator reports the current page and provides first/previous/next/last actions.
+
+`Dropdown.inputId` and `Dropdown.panelClassName` remain migration aliases for `id` and `pt.popover.className`, but new code should use the current names.
+
 ## Update DatePicker integration
 
 `DatePickerInput` still accepts and emits `Date | null`, but its internal value uses `@internationalized/date`. Formatting now follows the active locale and calendar rather than a PrimeReact mask.
@@ -184,7 +233,8 @@ Multiple selection remains available through the native multiple-select path. Pr
 
 - Sorting and filtering apply to the currently loaded page.
 - Complete-result filtering belongs in query arguments and runs on the server before paging.
-- `clientFiltering` is removed; it was a deprecated no-op in Components 3.
+- `clientFiltering` remains temporarily accepted as a deprecated no-op so staged source migrations compile. Remove it: filtering is always scoped to the loaded page, and complete-result filtering belongs on the server before paging.
+- Legacy `{ operator, constraints }` filter entries remain accepted. `operator: 'or'` matches any constraint; all other values match every constraint.
 - `Column` remains the declarative column marker.
 - Table styling uses `DataTableParts` and `data-cratis-part`.
 - Server totals remain authoritative for the paginator.

@@ -2,11 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // @vitest-environment jsdom
 
+import { expect } from 'chai';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Dropdown } from '../Dropdown';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
+import { Dropdown } from '../Dropdown';
 
 /**
  * The Cratis convention displays `option.label` and compares `option.value` when no
@@ -58,6 +60,6 @@ describe('when options carry label and value', () => {
     });
 
     it('should show the label of the selected option', () => {
-        triggerText.should.equal('New project');
+        expect(triggerText).to.equal('New project');
     });
 });

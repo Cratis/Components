@@ -6,6 +6,7 @@ export * from './DataTableForQuery';
 export * from './DataTableForObservableQuery';
 export * from './Column';
 export * from './ColumnFilterMenu';
+export * from './TablePaginator';
 export * from './DataTableSelectionChangeEvent';
 export * from './DataTableFilterMeta';
 export {

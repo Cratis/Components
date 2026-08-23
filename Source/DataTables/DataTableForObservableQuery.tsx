@@ -7,7 +7,11 @@ import { type IObservableQueryFor, Paging } from '@cratis/arc/queries';
 import { useObservableQueryWithPaging } from '@cratis/arc.react/queries';
 import { type ReactNode, useState, useRef, useEffect } from 'react';
 import { DataTableCore } from './DataTableCore';
-import { TablePaginator, type TablePaginatorProps } from './TablePaginator';
+import {
+    TablePaginator,
+    type TablePaginatorParts,
+    type TablePaginatorProps,
+} from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
@@ -93,6 +97,12 @@ export interface DataTableForObservableQueryProps<
 
     /** Extra CSS class name forwarded to the paginator. */
     paginatorClassName?: string;
+
+    /** Cratis-owned attributes for paginator parts. */
+    paginatorPt?: TablePaginatorParts;
+
+    /** Retained for source compatibility; Cratis parts always merge. */
+    paginatorPtOptions?: object;
 
     /** Accessible names for the paginator controls. Override any to localize. */
     paginatorAriaLabels?: TablePaginatorProps['ariaLabels'];
@@ -259,8 +269,9 @@ export const DataTableForObservableQuery = <
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}
-
                         ariaLabels={props.paginatorAriaLabels}
+                        pt={props.paginatorPt}
+                        ptOptions={props.paginatorPtOptions}
                     />
                 </div>
             )}

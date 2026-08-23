@@ -11,11 +11,6 @@ export default defineConfig({
     optimizeDeps: {
         exclude: ['tslib'],
     },
-    esbuild: {
-        supported: {
-            'top-level-await': true,
-        },
-    },
     build: {
         outDir: './wwwroot',
         assetsDir: '',
@@ -72,7 +67,7 @@ export default defineConfig({
             '**/for_*/**/when_*.ts',
             '**/for_*/**/when_*.tsx',
         ],
-        setupFiles: `${__dirname}/vitest.setup.ts`,
+        setupFiles: `${import.meta.dirname}/vitest.setup.ts`,
     },
     plugins: [
         react(),

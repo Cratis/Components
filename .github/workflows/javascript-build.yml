@@ -142,7 +142,8 @@ jobs:
                     /tmp/cratis-components.tgz \
                     "@cratis/arc@${{ matrix.arc-version }}" \
                     "@cratis/arc.react@${{ matrix.arc-version }}" \
-                    @cratis/fundamentals react@19 react-dom@19
+                    @cratis/fundamentals react@19 react-dom@19 \
+                    reflect-metadata tsyringe
                   node --input-type=module - <<'NODE'
                   const commandDialog = await import('@cratis/components/CommandDialog');
                   const dataPage = await import('@cratis/components/DataPage');
@@ -155,4 +156,95 @@ jobs:
                   for (const [name, value] of Object.entries(required)) {
                       if (!value) throw new Error(`Missing ${name}`);
                   }
+                  for (const forbidden of ['primereact', '@primereact/core', '@primeuix/themes']) {
+                      try {
+                          import.meta.resolve(forbidden);
+                          throw new Error(`Unexpected renderer dependency: ${forbidden}`);
+                      } catch (error) {
+                          if (error instanceof Error && error.message.startsWith('Unexpected')) throw error;
+                      }
+                  }
                   NODE
+
+    verify-package-managers:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                manager: ['pnpm', 'yarn-pnp']
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Yarn install
+              run: yarn
+
+            - name: Build and pack Components
+              run: |
+                  yarn workspace @cratis/components prepare
+                  yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
+
+            - name: Create consumer fixture
+              run: |
+                  mkdir /tmp/components-consumer
+                  cat > /tmp/components-consumer/package.json <<'JSON'
+                  {"private":true,"type":"module"}
+                  JSON
+                  cat > /tmp/components-consumer/verify.mjs <<'NODE'
+                  const commandDialog = await import('@cratis/components/CommandDialog');
+                  const dataPage = await import('@cratis/components/DataPage');
+                  const notifications = await import('@cratis/components/Notifications');
+                  if (!commandDialog.CommandDialog || !dataPage.DataPage || !notifications.toast) {
+                      throw new Error('The packed Components surface is incomplete');
+                  }
+                  for (const forbidden of ['primereact', '@primereact/core', '@primeuix/themes']) {
+                      try {
+                          import.meta.resolve(forbidden);
+                          throw new Error(`Unexpected renderer dependency: ${forbidden}`);
+                      } catch (error) {
+                          if (error instanceof Error && error.message.startsWith('Unexpected')) throw error;
+                      }
+                  }
+                  NODE
+
+            - name: Verify pnpm consumer
+              if: matrix.manager == 'pnpm'
+              working-directory: /tmp/components-consumer
+              run: |
+                  corepack prepare pnpm@10.17.1 --activate
+                  pnpm add --ignore-scripts \
+                    /tmp/cratis-components.tgz \
+                    @cratis/arc@22.0.1 @cratis/arc.react@22.0.1 \
+                    @cratis/fundamentals react@19 react-dom@19 reflect-metadata tsyringe
+                  pnpm exec node verify.mjs
+
+            - name: Verify Yarn PnP consumer
+              if: matrix.manager == 'yarn-pnp'
+              working-directory: /tmp/components-consumer
+              run: |
+                  corepack prepare yarn@4.5.3 --activate
+                  cat > .yarnrc.yml <<'YAML'
+                  nodeLinker: pnp
+                  # Arc React 22 imports rxjs without declaring it. Keep that upstream
+                  # manifest issue explicit so this fixture can still isolate Components.
+                  packageExtensions:
+                    "@cratis/arc.react@*":
+                      dependencies:
+                        rxjs: "*"
+                  YAML
+                  yarn add \
+                    /tmp/cratis-components.tgz \
+                    @cratis/arc@22.0.1 @cratis/arc.react@22.0.1 \
+                    @cratis/fundamentals react@19 react-dom@19 \
+                    reflect-metadata tsyringe rxjs
+                  yarn node verify.mjs

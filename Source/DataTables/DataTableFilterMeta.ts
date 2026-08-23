@@ -57,5 +57,17 @@ export interface DataTableFilterConstraint {
     matchMode?: DataTableFilterMatchMode;
 }
 
+/** Legacy multi-constraint entry accepted during the Components 3 migration. */
+export interface DataTableOperatorFilterConstraint {
+    /** Combines constraints with `or`; every other value uses `and` semantics. */
+    operator?: string;
+    /** Constraints applied to the same field value. */
+    constraints: DataTableFilterConstraint[];
+}
+
+/** One simple or legacy operator-based filter entry. */
+export type DataTableFilterEntry =
+    DataTableFilterConstraint | DataTableOperatorFilterConstraint;
+
 /** Filter state for a Cratis data table, keyed by field name. */
-export type DataTableFilterMeta = Record<string, DataTableFilterConstraint>;
+export type DataTableFilterMeta = Record<string, DataTableFilterEntry>;

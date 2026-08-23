@@ -47,6 +47,10 @@ type DropdownOptionValue =
 /** Stable Cratis-owned parts for styling a {@link Dropdown}. */
 export interface DropdownParts {
     root?: HTMLAttributes<HTMLElement>;
+    /** Legacy visible-control part, mapped onto the current trigger/filter input. */
+    input?: HTMLAttributes<HTMLElement> & { id?: string };
+    /** Legacy select-root part retained for custom product wrappers. */
+    select?: HTMLAttributes<HTMLElement>;
     trigger?: DropdownTriggerAttributes;
     value?: HTMLAttributes<HTMLSpanElement>;
     clear?: ButtonHTMLAttributes<HTMLButtonElement>;
@@ -74,11 +78,20 @@ export interface DropdownProps<T = unknown> {
     className?: string;
     style?: CSSProperties;
     id?: string;
+    /** Legacy identity alias mapped to {@link id}. */
+    inputId?: string;
+    /** Legacy popup class alias mapped to the `popover` part. */
+    panelClassName?: string;
     name?: string;
     tabIndex?: number;
     'aria-label'?: string;
     'aria-labelledby'?: string;
     'aria-describedby'?: string;
+    /** Camel-case aliases retained for existing product wrappers. */
+    ariaLabel?: string;
+    ariaLabelledBy?: string;
+    ariaDescribedBy?: string;
+    ariaInvalid?: boolean;
     onChange?: (event: DropdownChangeEvent<T>) => void;
     onBlur?: FocusEventHandler<HTMLElement>;
     /** Cratis-owned per-part attributes. */
@@ -160,11 +173,17 @@ export const Dropdown = <T = unknown,>({
     className,
     style,
     id,
+    inputId,
+    panelClassName,
     name,
     tabIndex,
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledby,
     'aria-describedby': ariaDescribedby,
+    ariaLabel: ariaLabelAlias,
+    ariaLabelledBy,
+    ariaDescribedBy,
+    ariaInvalid,
     onChange,
     onBlur,
     pt,
@@ -174,12 +193,37 @@ export const Dropdown = <T = unknown,>({
         Object.is(option.value, value),
     );
     const selectedKey = selectedOption?.key ?? null;
-    const rootClassName = classNames('cratis-dropdown', pt?.root?.className, className);
-    const triggerId = id ?? pt?.trigger?.id;
+    const effectiveAriaLabel = ariaLabel ?? ariaLabelAlias ?? pt?.input?.['aria-label'];
+    const effectiveAriaLabelledby =
+        ariaLabelledby ?? ariaLabelledBy ?? pt?.input?.['aria-labelledby'];
+    const effectiveAriaDescribedby =
+        ariaDescribedby ?? ariaDescribedBy ?? pt?.input?.['aria-describedby'];
+    const inputAriaInvalid = pt?.input?.['aria-invalid'];
+    const effectiveInvalid =
+        invalid ??
+        ariaInvalid ??
+        (inputAriaInvalid === true ||
+            inputAriaInvalid === 'true' ||
+            inputAriaInvalid === 'grammar' ||
+            inputAriaInvalid === 'spelling');
+    const rootClassName = classNames(
+        'cratis-dropdown',
+        pt?.root?.className,
+        pt?.select?.className,
+        className,
+    );
+    const triggerId = id ?? inputId ?? pt?.trigger?.id ?? pt?.input?.id;
 
     const selectOption = (key: Key | null) => {
         const option = resolvedOptions.find((candidate) => candidate.key === String(key));
         onChange?.({ value: (option?.value ?? null) as T });
+    };
+    // React Aria's Select trigger context does not forward aria-invalid from its Button child.
+    // Keep the Cratis validation contract on the actual focusable control after context props merge.
+    const applyTriggerInvalidState = (element: HTMLButtonElement | null) => {
+        if (!element) return;
+        if (effectiveInvalid) element.setAttribute('aria-invalid', 'true');
+        else element.removeAttribute('aria-invalid');
     };
 
     if (multiple) {
@@ -195,25 +239,26 @@ export const Dropdown = <T = unknown,>({
                 {...pt?.root}
                 className={rootClassName}
                 data-cratis-part='root'
-                data-invalid={invalid || undefined}
+                data-invalid={effectiveInvalid || undefined}
                 data-disabled={disabled || undefined}
-                style={{ ...pt?.root?.style, ...style }}
+                style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
                 onBlur={onBlur}
             >
                 <select
                     {...pt?.multiple}
-                    id={id ?? pt?.multiple?.id}
+                    id={triggerId ?? pt?.multiple?.id}
                     name={name}
                     multiple
                     disabled={disabled}
                     value={selectedKeys}
                     tabIndex={tabIndex}
-                    aria-label={ariaLabel}
-                    aria-labelledby={ariaLabelledby}
-                    aria-describedby={ariaDescribedby}
-                    aria-invalid={invalid || undefined}
+                    aria-label={effectiveAriaLabel}
+                    aria-labelledby={effectiveAriaLabelledby}
+                    aria-describedby={effectiveAriaDescribedby}
+                    aria-invalid={effectiveInvalid || undefined}
                     className={classNames(
                         'cratis-dropdown__multiple',
+                        pt?.input?.className,
                         pt?.multiple?.className,
                     )}
                     data-cratis-part='multiple'
@@ -248,19 +293,20 @@ export const Dropdown = <T = unknown,>({
                 {...pt?.root}
                 className={rootClassName}
                 data-cratis-part='root'
-                data-invalid={invalid || undefined}
+                data-invalid={effectiveInvalid || undefined}
                 data-disabled={disabled || undefined}
-                style={{ ...pt?.root?.style, ...style }}
+                style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
                 onBlur={onBlur}
             >
                 <ComboBox
-                    selectedKey={selectedKey}
-                    onSelectionChange={selectOption}
+                    value={selectedKey}
+                    onChange={selectOption}
                     isDisabled={disabled}
+                    isInvalid={effectiveInvalid}
                     name={name}
-                    aria-label={ariaLabel}
-                    aria-labelledby={ariaLabelledby}
-                    aria-describedby={ariaDescribedby}
+                    aria-label={effectiveAriaLabel}
+                    aria-labelledby={effectiveAriaLabelledby}
+                    aria-describedby={effectiveAriaDescribedby}
                     allowsEmptyCollection
                     className='cratis-dropdown__combobox'
                 >
@@ -269,11 +315,13 @@ export const Dropdown = <T = unknown,>({
                         id={triggerId}
                         placeholder={filterPlaceholder ?? placeholder}
                         tabIndex={tabIndex}
-                        aria-invalid={invalid || undefined}
+                        aria-invalid={effectiveInvalid || undefined}
                         className={classNames(
                             'cratis-dropdown__filter',
+                            pt?.input?.className,
                             pt?.filter?.className,
                         )}
+                        style={{ ...pt?.input?.style, ...pt?.filter?.style }}
                         data-cratis-part='filter'
                     />
                     <ComboBoxButton
@@ -283,7 +331,11 @@ export const Dropdown = <T = unknown,>({
                             pt?.trigger?.className,
                         )}
                         data-cratis-part='trigger'
-                        aria-label={pt?.trigger?.['aria-label'] ?? 'Show options'}
+                        aria-label={
+                            pt?.trigger?.['aria-label'] ??
+                            pt?.select?.['aria-label'] ??
+                            'Show options'
+                        }
                     >
                         <span aria-hidden='true'>⌄</span>
                     </ComboBoxButton>
@@ -307,6 +359,7 @@ export const Dropdown = <T = unknown,>({
                         className={classNames(
                             'cratis-dropdown__popover',
                             pt?.popover?.className,
+                            panelClassName,
                         )}
                         style={{ zIndex: 1200, ...pt?.popover?.style }}
                         data-cratis-part='popover'
@@ -345,30 +398,34 @@ export const Dropdown = <T = unknown,>({
             {...pt?.root}
             className={rootClassName}
             data-cratis-part='root'
-            data-invalid={invalid || undefined}
+            data-invalid={effectiveInvalid || undefined}
             data-disabled={disabled || undefined}
-            style={{ ...pt?.root?.style, ...style }}
+            style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
             onBlur={onBlur}
         >
             <AriaSelect
-                selectedKey={selectedKey}
-                onSelectionChange={selectOption}
+                value={selectedKey}
+                onChange={selectOption}
                 isDisabled={disabled}
+                isInvalid={effectiveInvalid}
                 name={name}
-                aria-label={ariaLabel}
-                aria-labelledby={ariaLabelledby}
-                aria-describedby={ariaDescribedby}
+                aria-label={effectiveAriaLabel}
+                aria-labelledby={effectiveAriaLabelledby}
+                aria-describedby={effectiveAriaDescribedby}
                 className='cratis-dropdown__select'
             >
                 <AriaButton
                     {...pt?.trigger}
+                    ref={applyTriggerInvalidState}
                     id={triggerId}
                     excludeFromTabOrder={tabIndex === -1}
-                    aria-invalid={invalid || undefined}
+                    aria-invalid={effectiveInvalid || undefined}
                     className={classNames(
                         'cratis-dropdown__trigger',
+                        pt?.input?.className,
                         pt?.trigger?.className,
                     )}
+                    style={{ ...pt?.input?.style, ...pt?.trigger?.style }}
                     data-cratis-part='trigger'
                 >
                     <SelectValue
@@ -413,6 +470,7 @@ export const Dropdown = <T = unknown,>({
                     className={classNames(
                         'cratis-dropdown__popover',
                         pt?.popover?.className,
+                        panelClassName,
                     )}
                     style={{ zIndex: 1200, ...pt?.popover?.style }}
                     data-cratis-part='popover'

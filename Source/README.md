@@ -182,7 +182,7 @@ Do not target React Aria classes or internal DOM structure.
 
 ## Components 3 migration
 
-Components 4 removes the mandatory PrimeReact 11 foundation. Follow [MIGRATION.md](./MIGRATION.md) for dependency removal, provider changes, product token mapping, stable part names, DatePicker changes, table behavior, notifications, and direct Prime import replacements.
+Components 4 removes the mandatory PrimeReact 11 foundation. Follow the published [Components 3 to 4 migration guide](https://cratis.io/components/migration/) for dependency removal, provider changes, product token mapping, stable part names, DatePicker changes, table behavior, notifications, and direct Prime import replacements.
 
 The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeReactStyles` renderer exports are removed. Move styling to tokens and stable parts before upgrading.
 
