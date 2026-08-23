@@ -20,10 +20,26 @@ export interface ChipProps {
 }
 
 /** A labeled, optionally removable chip. */
-export const Chip = ({ label, icon, removable, onRemove, removeAriaLabel = 'Remove', className }: ChipProps) => (
-    <span className={['cratis-chip', className].filter(Boolean).join(' ')} data-cratis-part='root'>
-        {icon && <span className='cratis-chip__icon' data-cratis-part='icon'>{icon}</span>}
-        <span className='cratis-chip__label' data-cratis-part='label'>{label}</span>
+export const Chip = ({
+    label,
+    icon,
+    removable,
+    onRemove,
+    removeAriaLabel = 'Remove',
+    className,
+}: ChipProps) => (
+    <span
+        className={['cratis-chip', className].filter(Boolean).join(' ')}
+        data-cratis-part='root'
+    >
+        {icon && (
+            <span className='cratis-chip__icon' data-cratis-part='icon'>
+                {icon}
+            </span>
+        )}
+        <span className='cratis-chip__label' data-cratis-part='label'>
+            {label}
+        </span>
         {removable && (
             <button
                 type='button'

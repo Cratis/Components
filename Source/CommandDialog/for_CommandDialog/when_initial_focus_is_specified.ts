@@ -6,11 +6,22 @@ import { expect } from 'chai';
 import React from 'react';
 import { vi } from 'vitest';
 import { DialogInitialFocus } from '../../Dialogs/DialogInitialFocus';
-import { click, focusedElement, pressEnterOnFocusedElement, render, unmount, type DialogInTheDom } from '../../Dialogs/for_Dialog/given/a_dialog_in_the_dom';
+import {
+    click,
+    focusedElement,
+    pressEnterOnFocusedElement,
+    render,
+    unmount,
+    type DialogInTheDom,
+} from '../../Dialogs/for_Dialog/given/a_dialog_in_the_dom';
 
 const { executeCommand, succeeded } = vi.hoisted(() => ({
-    executeCommand: vi.fn(async () => ({ isSuccess: true, isValid: true, validationResults: [] })),
-    succeeded: vi.fn()
+    executeCommand: vi.fn(async () => ({
+        isSuccess: true,
+        isValid: true,
+        validationResults: [],
+    })),
+    succeeded: vi.fn(),
 }));
 
 vi.mock('@cratis/arc.react/commands', () => ({
@@ -18,12 +29,16 @@ vi.mock('@cratis/arc.react/commands', () => ({
         React.createElement('div', null, props.children),
     useCommandFormContext: () => ({
         isValid: true,
-        setCommandValues: () => { /* not part of this scenario */ },
-        setCommandResult: () => { /* not part of this scenario */ }
+        setCommandValues: () => {
+            /* not part of this scenario */
+        },
+        setCommandResult: () => {
+            /* not part of this scenario */
+        },
     }),
     useCommandInstance: () => ({ execute: executeCommand }),
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
-        React.createElement('div', null, props.field)
+        React.createElement('div', null, props.field),
 }));
 
 class DeletePersonalData {
@@ -40,14 +55,16 @@ describe('when a command dialog is given an initial focus', () => {
         const { CommandDialog } = await import('../CommandDialog');
 
         // SAFETY: The generated command proxy constructor is erased by this test harness only.
-        dialog = await render(React.createElement(CommandDialog, {
-            command: DeletePersonalData as unknown as new () => object,
-            title: 'Delete personal data',
-            visible: true,
-            initialFocus,
-            onSuccess: succeeded,
-            children: React.createElement('p', null, 'This cannot be undone')
-        }));
+        dialog = await render(
+            React.createElement(CommandDialog, {
+                command: DeletePersonalData as unknown as new () => object,
+                title: 'Delete personal data',
+                visible: true,
+                initialFocus,
+                onSuccess: succeeded,
+                children: React.createElement('p', null, 'This cannot be undone'),
+            }),
+        );
     };
 
     afterEach(async () => await unmount(dialog));

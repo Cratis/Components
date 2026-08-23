@@ -7,12 +7,7 @@ import { expect } from 'chai';
 import React from 'react';
 import { vi } from 'vitest';
 import { Dialog } from '../Dialog';
-import {
-    click,
-    render,
-    unmount,
-    type DialogInTheDom,
-} from './given/a_dialog_in_the_dom';
+import { click, render, unmount, type DialogInTheDom } from './given/a_dialog_in_the_dom';
 
 const { closeDialog } = vi.hoisted(() => ({ closeDialog: vi.fn() }));
 

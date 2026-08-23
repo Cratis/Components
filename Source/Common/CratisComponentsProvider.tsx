@@ -1,92 +1,178 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useMemo } from 'react';
-import { PrimeReactProvider } from '@primereact/core';
-import type { PrimeReactProps } from '@primereact/types/core';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications';
 
-/**
- * Configuration accepted by {@link CratisComponentsProvider}. Mirrors PrimeReact 11's
- * {@link PrimeReactProps} — the most commonly used members are `unstyled`, `pt`, `ptOptions`,
- * `ripple`, `inputVariant`, `zIndex`, `locale`, and `theme` (`{ preset, options }` for the
- * `@primeuix/themes` styled layer).
- */
-export type CratisComponentsConfig = Partial<PrimeReactProps>;
-
-export interface CratisComponentsProviderProps {
-    /**
-     * Cratis-wide and PrimeReact pass-through configuration. Merged on top of the
-     * library's defaults and made available to every Cratis component below in the tree.
-     */
-    value?: CratisComponentsConfig;
-
-    /**
-     * When set, mounts a {@link Toaster} inside the provider so the imperative
-     * `toast(...)` works app-wide with no extra setup. Pass `true` for the
-     * defaults, or a {@link ToasterProps} object to position/configure it.
-     */
-    toaster?: boolean | ToasterProps;
-
-    children: React.ReactNode;
+export interface CratisPaginatorMessages {
+    navigation?: string;
+    first?: string;
+    previous?: string;
+    next?: string;
+    last?: string;
 }
 
-/**
- * Default configuration applied to every consumer. Intentionally empty today —
- * reserved for Cratis-wide opinions we may want to ship in the future (for example,
- * a default pt preset that complements the --cratis-* token layer). Anything added
- * here is deep-merged with the consumer's `value` so consumer settings always win.
- *
- * Exported so specs can verify the merge contract without re-rendering React.
- */
-export const cratisDefaults: CratisComponentsConfig = {};
+export interface CratisDatePickerMessages {
+    today?: string;
+    clear?: string;
+    openCalendar?: string;
+    previousMonth?: string;
+    nextMonth?: string;
+}
 
-/**
- * Pure merge of {@link cratisDefaults} and consumer-supplied config. Exposed for
- * specs; the provider component uses the same logic inside its `useMemo`.
- */
-export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | undefined): CratisComponentsConfig =>
-    merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
+export interface CratisComponentsMessages {
+    paginator?: CratisPaginatorMessages;
+    datePicker?: CratisDatePickerMessages;
+}
 
-/**
- * Single setup point for Cratis Components. Wraps PrimeReact 11's
- * {@link PrimeReactProvider} so the library can layer Cratis-wide defaults on top of
- * PrimeReact's pass-through and unstyled mechanisms while still letting the consumer
- * take complete control. PrimeReact 11 is unstyled-first, so this library ships no
- * bundled theme — you choose the styling posture:
- *
- * Every option is passed through the single `value` prop (it is deep-merged onto
- * PrimeReact's provider config):
- *
- * - **Unstyled (default posture):** pass nothing, or `value={{ unstyled: true }}`, and
- *   style the structural markup yourself through the `--cratis-*` token layer, your own
- *   CSS, Tailwind, or `pt` definitions.
- * - **Styled:** spread `styledMode()` from `@cratis/components/styled` into `value` -
- *   PrimeReact's own component styles for every primitive plus a `@primeuix/themes`
- *   preset (the Cratis preset by default, `styledMode({ preset: Aura })` for another).
- *   A preset on `theme` alone only emits design tokens; the primitives render without
- *   `p-*` classes until `defaults` gives them their styles, which is what `styledMode()` does.
- * - Pass `value={{ pt, ptOptions }}` to apply global per-component pass-through.
- *
- * **PrimeUI license.** PrimeReact 11 is no longer MIT — its provider verifies a PrimeUI
- * license on mount and, without one, logs a warning and shows an "Invalid PrimeUI License"
- * banner (in development *and* production). Supply your key via `value={{ license: '…' }}`
- * (a free Community tier covers individuals, non-profits, non-commercial OSS, and small
- * orgs; otherwise a Commercial license is required — see primeui.store). The key flows
- * straight through to PrimeReact's provider.
- *
- * Consumers who want to talk to PrimeReact directly may still mount
- * {@link PrimeReactProvider} themselves — this component is an optional convenience,
- * not a requirement.
- */
-export const CratisComponentsProvider = ({ value, toaster, children }: CratisComponentsProviderProps) => {
-    const merged = useMemo<CratisComponentsConfig>(() => mergeCratisComponentsConfig(value), [value]);
+interface LegacyLocaleMessages {
+    today?: string;
+    clear?: string;
+    aria?: {
+        navigation?: string;
+        firstPageLabel?: string;
+        prevPageLabel?: string;
+        nextPageLabel?: string;
+        lastPageLabel?: string;
+    };
+    [message: string]: unknown;
+}
+
+/** Renderer-independent application configuration for Components. */
+export interface CratisComponentsConfig {
+    /** BCP 47 locale used by React Aria for dates, numbers, and interaction announcements. */
+    locale?: string;
+    /** Cratis-owned labels not supplied by the platform's internationalization APIs. */
+    messages?: CratisComponentsMessages;
+    /**
+     * Legacy locale map retained for source compatibility during the major migration.
+     * New code should use {@link messages}; React Aria supplies its own locale data.
+     */
+    locales?: Record<string, LegacyLocaleMessages>;
+    /** Legacy renderer options are accepted during migration but have no effect. */
+    [legacyRendererOption: string]: unknown;
+}
+
+export interface CratisComponentsProviderProps {
+    value?: CratisComponentsConfig;
+    toaster?: boolean | ToasterProps;
+    children: ReactNode;
+}
+
+export const cratisDefaults: CratisComponentsConfig = {
+    locale: 'en-US',
+    messages: {
+        paginator: {
+            navigation: 'Pagination',
+            first: 'First page',
+            previous: 'Previous page',
+            next: 'Next page',
+            last: 'Last page',
+        },
+        datePicker: {
+            today: 'Today',
+            clear: 'Clear',
+            openCalendar: 'Open calendar',
+            previousMonth: 'Previous month',
+            nextMonth: 'Next month',
+        },
+    },
+};
+
+export const mergeCratisComponentsConfig = (
+    value: CratisComponentsConfig | undefined,
+): CratisComponentsConfig => merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
+
+const CratisComponentsContext = createContext<CratisComponentsConfig>(cratisDefaults);
+
+/** Returns the resolved renderer-independent Components configuration. */
+export const useCratisComponentsConfig = (): CratisComponentsConfig =>
+    useContext(CratisComponentsContext);
+
+const withLegacyLocaleMessages = (
+    config: CratisComponentsConfig,
+    explicitMessages: CratisComponentsMessages | undefined,
+): CratisComponentsConfig => {
+    const legacy = config.locale ? config.locales?.[config.locale] : undefined;
+    if (!legacy) return config;
+    return {
+        ...config,
+        messages: {
+            ...config.messages,
+            paginator: {
+                navigation:
+                    explicitMessages?.paginator?.navigation ??
+                    legacy.aria?.navigation ??
+                    config.messages?.paginator?.navigation,
+                first:
+                    explicitMessages?.paginator?.first ??
+                    legacy.aria?.firstPageLabel ??
+                    config.messages?.paginator?.first,
+                previous:
+                    explicitMessages?.paginator?.previous ??
+                    legacy.aria?.prevPageLabel ??
+                    config.messages?.paginator?.previous,
+                next:
+                    explicitMessages?.paginator?.next ??
+                    legacy.aria?.nextPageLabel ??
+                    config.messages?.paginator?.next,
+                last:
+                    explicitMessages?.paginator?.last ??
+                    legacy.aria?.lastPageLabel ??
+                    config.messages?.paginator?.last,
+            },
+            datePicker: {
+                today:
+                    explicitMessages?.datePicker?.today ??
+                    legacy.today ??
+                    config.messages?.datePicker?.today,
+                clear:
+                    explicitMessages?.datePicker?.clear ??
+                    legacy.clear ??
+                    config.messages?.datePicker?.clear,
+                openCalendar:
+                    explicitMessages?.datePicker?.openCalendar ??
+                    config.messages?.datePicker?.openCalendar,
+                previousMonth:
+                    explicitMessages?.datePicker?.previousMonth ??
+                    config.messages?.datePicker?.previousMonth,
+                nextMonth:
+                    explicitMessages?.datePicker?.nextMonth ??
+                    config.messages?.datePicker?.nextMonth,
+            },
+        },
+    };
+};
+
+const validLocale = (locale: string | undefined) => {
+    if (!locale) return 'en-US';
+    try {
+        return new Intl.Locale(locale).toString();
+    } catch {
+        return 'en-US';
+    }
+};
+
+/** Application root for locale, labels, and the optional app-wide toaster. */
+export const CratisComponentsProvider = ({
+    value,
+    toaster,
+    children,
+}: CratisComponentsProviderProps) => {
+    const resolved = useMemo(
+        () =>
+            withLegacyLocaleMessages(mergeCratisComponentsConfig(value), value?.messages),
+        [value],
+    );
 
     return (
-        <PrimeReactProvider {...merged}>
-            {children}
-            {toaster && <Toaster {...(typeof toaster === 'object' ? toaster : {})} />}
-        </PrimeReactProvider>
+        <CratisComponentsContext.Provider value={resolved}>
+            <I18nProvider locale={validLocale(resolved.locale)}>
+                {children}
+                {toaster && <Toaster {...(typeof toaster === 'object' ? toaster : {})} />}
+            </I18nProvider>
+        </CratisComponentsContext.Provider>
     );
 };

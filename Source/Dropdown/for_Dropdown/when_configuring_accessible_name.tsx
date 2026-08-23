@@ -72,7 +72,9 @@ describe('when configuring the accessible name', () => {
     });
 
     it('should put the label reference on the combobox', () => {
-        expect(trigger.getAttribute('aria-labelledby')?.split(' ')).to.include('role-label');
+        expect(trigger.getAttribute('aria-labelledby')?.split(' ')).to.include(
+            'role-label',
+        );
     });
 
     it('should put the description reference on the combobox', () => {

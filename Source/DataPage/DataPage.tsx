@@ -8,7 +8,7 @@ import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
 import type { ButtonParts } from '../Common/Button';
 import { type IObservableQueryFor, type IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
-import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
+import type { DataTableParts } from '../DataTables/DataTableCore';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
 import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
@@ -300,11 +300,11 @@ export interface DataPageProps<
      */
     tableClassName?: string;
 
-    /** PrimeReact pass-through configuration applied to the inner DataTable. */
-    tablePt?: DataTableRootProps['pt'];
+    /** Cratis-owned per-part attributes applied to the inner table. */
+    tablePt?: DataTableParts;
 
-    /** PrimeReact pass-through options applied to the inner DataTable. */
-    tablePtOptions?: DataTableRootProps['ptOptions'];
+    /** Retained for source compatibility; Cratis parts always merge. */
+    tablePtOptions?: object;
 
     /** When true, disables every base PrimeReact style on the inner DataTable. */
     tableUnstyled?: boolean;

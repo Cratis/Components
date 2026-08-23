@@ -81,6 +81,6 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
     ),
     {
         defaultValue: null,
-        extractValue: (e: unknown) => e instanceof Date ? e : null
-    }
+        extractValue: (e: unknown) => (e instanceof Date ? e : null),
+    },
 );

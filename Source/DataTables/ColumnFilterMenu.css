@@ -18,8 +18,17 @@
     color: var(--cratis-text-color);
 }
 
-.cratis-filter-trigger--active {
+.cratis-filter-trigger[data-active='true'] {
     color: var(--cratis-primary-color);
+}
+
+.cratis-filter-trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+
+.cratis-filter-popover {
+    z-index: 1250;
 }
 
 .cratis-filter-menu {
@@ -32,6 +41,22 @@
     border: 1px solid var(--cratis-surface-border);
     border-radius: 0.375rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.cratis-filter-menu__input {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-surface-card);
+    color: var(--cratis-text-color);
+    font: inherit;
+}
+
+.cratis-filter-menu__input:focus-visible {
+    outline: none;
+    border-color: var(--cratis-primary-color);
+    box-shadow: var(--cratis-focus-ring);
 }
 
 .cratis-filter-menu-actions {

@@ -25,12 +25,14 @@ export interface DialogInTheDom {
  */
 export const render = async (element: React.ReactElement): Promise<DialogInTheDom> => {
     // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
-    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    (
+        globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
     // SAFETY: jsdom omits ResizeObserver; the overlay only calls these observer methods.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-        observe() { }
-        unobserve() { }
-        disconnect() { }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
     };
 
     const container = document.createElement('div');
@@ -42,7 +44,7 @@ export const render = async (element: React.ReactElement): Promise<DialogInTheDo
     });
 
     await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 400));
+        await new Promise((resolve) => setTimeout(resolve, 400));
     });
 
     return { container, root };
@@ -84,7 +86,11 @@ export const focusedElement = (): string => {
  */
 export const focusIsInsideTheDialog = (): boolean => {
     const dialog = document.querySelector('[role="dialog"]');
-    return !!dialog && dialog.contains(document.activeElement) && document.activeElement !== document.body;
+    return (
+        !!dialog &&
+        dialog.contains(document.activeElement) &&
+        document.activeElement !== document.body
+    );
 };
 
 /**
@@ -99,10 +105,13 @@ export const hasCloseButton = (): boolean =>
  * @returns The tab index as a string.
  */
 export const titleTabIndex = (): string =>
-    document.querySelector('[data-cratis-part="title"]')?.getAttribute('tabindex') ?? 'none';
+    document.querySelector('[data-cratis-part="title"]')?.getAttribute('tabindex') ??
+    'none';
 
 const buttonLabeled = (label: string) =>
-    Array.from(document.querySelectorAll('button')).find(button => button.textContent === label);
+    Array.from(document.querySelectorAll('button')).find(
+        (button) => button.textContent === label,
+    );
 
 /**
  * Presses `Enter` on whatever has focus, the way a browser does: the key event
@@ -115,7 +124,9 @@ export const pressEnterOnFocusedElement = async () => {
     const element = document.activeElement as HTMLElement;
 
     await act(async () => {
-        element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', repeat: true, bubbles: true }));
+        element.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter', repeat: true, bubbles: true }),
+        );
         if (element instanceof HTMLButtonElement) {
             element.click();
         }
@@ -128,7 +139,13 @@ export const pressEnterOnFocusedElement = async () => {
 export const pressEscape = async () => {
     await act(async () => {
         const target = document.activeElement ?? document;
-        target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
+        target.dispatchEvent(
+            new KeyboardEvent('keydown', {
+                key: 'Escape',
+                code: 'Escape',
+                bubbles: true,
+            }),
+        );
     });
 };
 

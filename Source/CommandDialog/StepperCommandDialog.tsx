@@ -4,14 +4,20 @@
 import React, { useState, type CSSProperties } from 'react';
 import { ICommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
-import { Button } from 'primereact/button';
+import { Button } from '../Common/Button';
 import {
     CommandForm,
     useCommandFormContext,
     useCommandInstance,
-    type CommandFormProps
+    type CommandFormProps,
 } from '@cratis/arc.react/commands';
-import { Dialog, type DialogProps, type CloseDialog, type ConfirmCallback, type CancelCallback } from '../Dialogs/Dialog';
+import {
+    Dialog,
+    type DialogProps,
+    type CloseDialog,
+    type ConfirmCallback,
+    type CancelCallback,
+} from '../Dialogs/Dialog';
 import { CommandStepperContent, type StepperCustomizationProps } from './CommandStepper';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
 import { getStepPanels } from './stepChildren';
@@ -29,7 +35,8 @@ import { getStepPanels } from './stepChildren';
  * @typeParam TResponse - The response payload type returned by a successful command.
  */
 export interface StepperCommandDialogProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
+    extends
+        Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
         StepperCustomizationProps {
     /**
      * A transformer invoked with the current command values immediately before
@@ -158,9 +165,14 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     dialogPt,
     dialogPtOptions,
     dialogUnstyled,
-    children
+    children,
 }: StepperCommandDialogWrapperProps<TCommand, TResponse>) => {
-    const { setCommandValues, setCommandResult, isValid: isCommandFormValid, getFieldError } = useCommandFormContext<TCommand>();
+    const {
+        setCommandValues,
+        setCommandResult,
+        isValid: isCommandFormValid,
+        getFieldError,
+    } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
     const [isBusy, setIsBusy] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
@@ -239,7 +251,12 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 setCommandValues(applied instanceof Promise ? await applied : applied);
             }
 
-            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
+            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
+            result = await (
+                commandInstance as unknown as {
+                    execute: () => Promise<ICommandResult<TResponse>>;
+                }
+            ).execute();
         } finally {
             setIsBusy(false);
         }
@@ -259,24 +276,31 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     };
 
     const footer = (
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.75rem' }}>
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                gap: '0.75rem',
+            }}
+        >
             {showCancel && (
                 <Button
-                    variant="outlined"
+                    outlined
                     onClick={() => handleClose(DialogResult.Cancelled)}
                     disabled={isBusy}
-                    style={{ width: 'auto' }}>
-                    <i className="pi pi-times" />
+                    style={{ width: 'auto' }}
+                >
                     <span>{cancelLabel}</span>
                 </Button>
             )}
             {!isFirstStep && (
                 <Button
-                    variant="outlined"
+                    outlined
                     onClick={() => setActiveStep(Math.max(0, currentStep - 1))}
                     disabled={isBusy}
-                    style={{ width: 'auto' }}>
-                    <i className="pi pi-arrow-left" />
+                    style={{ width: 'auto' }}
+                >
                     <span>{previousLabel}</span>
                 </Button>
             )}
@@ -284,13 +308,13 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             {!isLastStep && (
                 <Button
                     onClick={() => {
-                        setVisitedSteps(previous => new Set(previous).add(currentStep));
+                        setVisitedSteps((previous) => new Set(previous).add(currentStep));
                         setActiveStep(Math.min(stepCount - 1, currentStep + 1));
                     }}
                     disabled={isBusy || isCurrentStepInvalid}
-                    style={{ width: 'auto' }}>
+                    style={{ width: 'auto' }}
+                >
                     <span>{nextLabel}</span>
-                    <i className="pi pi-arrow-right" />
                 </Button>
             )}
             {isLastStep && isDialogValid && (
@@ -298,8 +322,11 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                     onClick={handleSubmit}
                     disabled={isBusy}
                     autoFocus
-                    style={{ width: 'auto' }}>
-                    <i className={isBusy ? 'pi pi-spin pi-spinner' : 'pi pi-check'} />
+                    style={{ width: 'auto' }}
+                >
+                    {isBusy && (
+                        <span className='cratis-dialog__spinner' aria-hidden='true' />
+                    )}
                     <span>{okLabel}</span>
                 </Button>
             )}
@@ -438,8 +465,11 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
  * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
  * @param props - {@link StepperCommandDialogProps}.
  */
-const StepperCommandDialogComponent = <TCommand extends object = object, TResponse = object>(
-    props: StepperCommandDialogProps<TCommand, TResponse>
+const StepperCommandDialogComponent = <
+    TCommand extends object = object,
+    TResponse = object,
+>(
+    props: StepperCommandDialogProps<TCommand, TResponse>,
 ) => {
     const {
         title,

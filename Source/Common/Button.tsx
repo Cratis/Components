@@ -11,7 +11,8 @@ import type {
 import { Tooltip, type TooltipPosition } from './Tooltip';
 
 /** Severity tone of a {@link Button}. */
-export type ButtonSeverity = 'secondary' | 'info' | 'success' | 'warn' | 'help' | 'danger' | 'contrast';
+export type ButtonSeverity =
+    'secondary' | 'info' | 'success' | 'warn' | 'help' | 'danger' | 'contrast';
 
 /** Stable Cratis-owned parts for styling a {@link Button}. */
 export interface ButtonParts {
@@ -122,14 +123,18 @@ export const Button = ({
             {loading ? (
                 <span
                     {...pt?.spinner}
-                    className={['cratis-button__spinner', pt?.spinner?.className].filter(Boolean).join(' ')}
+                    className={['cratis-button__spinner', pt?.spinner?.className]
+                        .filter(Boolean)
+                        .join(' ')}
                     data-cratis-part='spinner'
                     aria-hidden='true'
                 />
             ) : icon ? (
                 <span
                     {...pt?.icon}
-                    className={['cratis-button__icon', pt?.icon?.className].filter(Boolean).join(' ')}
+                    className={['cratis-button__icon', pt?.icon?.className]
+                        .filter(Boolean)
+                        .join(' ')}
                     data-cratis-part='icon'
                     aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
                 >
@@ -139,7 +144,9 @@ export const Button = ({
             {(label !== undefined || children) && (
                 <span
                     {...pt?.label}
-                    className={['cratis-button__label', pt?.label?.className].filter(Boolean).join(' ')}
+                    className={['cratis-button__label', pt?.label?.className]
+                        .filter(Boolean)
+                        .join(' ')}
                     data-cratis-part='label'
                 >
                     {label}
@@ -150,8 +157,14 @@ export const Button = ({
     );
 
     return tooltip ? (
-        <Tooltip content={tooltip} position={tooltipOptions?.position} className={tooltipOptions?.className}>
+        <Tooltip
+            content={tooltip}
+            position={tooltipOptions?.position}
+            className={tooltipOptions?.className}
+        >
             {button}
         </Tooltip>
-    ) : button;
+    ) : (
+        button
+    );
 };

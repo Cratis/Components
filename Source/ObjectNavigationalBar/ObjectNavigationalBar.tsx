@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useMemo } from 'react';
-import { Button } from 'primereact/button';
+import { Button } from '../Common/Button';
 import * as faIcons from 'react-icons/fa6';
 import { Tooltip } from '../Common/Tooltip';
 import { buildNavigationBreadcrumbs } from './breadcrumbHelpers';
@@ -39,8 +39,16 @@ export interface ObjectNavigationalBarProps {
  *
  * @param props - {@link ObjectNavigationalBarProps}.
  */
-export function ObjectNavigationalBar({ navigationPath, onNavigate, backLabel = 'Navigate back', className }: ObjectNavigationalBarProps) {
-    const breadcrumbItems = useMemo(() => buildNavigationBreadcrumbs(navigationPath), [navigationPath]);
+export function ObjectNavigationalBar({
+    navigationPath,
+    onNavigate,
+    backLabel = 'Navigate back',
+    className,
+}: ObjectNavigationalBarProps) {
+    const breadcrumbItems = useMemo(
+        () => buildNavigationBreadcrumbs(navigationPath),
+        [navigationPath],
+    );
     const rootClassName = className
         ? `cratis-object-navigational-bar px-4 py-2 mb-2 ${className}`
         : 'cratis-object-navigational-bar px-4 py-2 mb-2';
@@ -48,26 +56,33 @@ export function ObjectNavigationalBar({ navigationPath, onNavigate, backLabel = 
     return (
         <div className={rootClassName}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Tooltip content={backLabel} position="top">
+                <Tooltip content={backLabel} position='top'>
                     <Button
-                        variant="text"
-                        size="small"
-                        iconOnly
+                        text
+                        size='small'
+                        icon={<faIcons.FaArrowLeft />}
                         onClick={() => onNavigate(navigationPath.length - 1)}
                         disabled={navigationPath.length === 0}
-                        aria-label={backLabel}>
-                        <faIcons.FaArrowLeft />
-                    </Button>
+                        aria-label={backLabel}
+                    />
                 </Tooltip>
-                <div style={{ fontSize: '0.9rem', color: 'var(--cratis-text-color-secondary)' }}>
+                <div
+                    style={{
+                        fontSize: '0.9rem',
+                        color: 'var(--cratis-text-color-secondary)',
+                    }}
+                >
                     {breadcrumbItems.map((item, index) => (
                         <span key={index}>
-                            {index > 0 && <span className="mx-2">&gt;</span>}
+                            {index > 0 && <span className='mx-2'>&gt;</span>}
                             <span
                                 onClick={() => onNavigate(item.index)}
                                 style={{
                                     cursor: 'pointer',
-                                    textDecoration: index < breadcrumbItems.length - 1 ? 'underline' : 'none'
+                                    textDecoration:
+                                        index < breadcrumbItems.length - 1
+                                            ? 'underline'
+                                            : 'none',
                                 }}
                             >
                                 {item.name}

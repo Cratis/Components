@@ -25,7 +25,14 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
     (props) => (
         <div
             {...props.pt?.root}
-            className={['cratis-slider-field', 'w-full', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
+            className={[
+                'cratis-slider-field',
+                'w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
         >
@@ -38,12 +45,16 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
                 max={props.max ?? 100}
                 step={props.step ?? 1}
                 aria-invalid={props.invalid || undefined}
-                className={['cratis-slider-field__input', props.pt?.input?.className].filter(Boolean).join(' ')}
+                className={['cratis-slider-field__input', props.pt?.input?.className]
+                    .filter(Boolean)
+                    .join(' ')}
                 data-cratis-part='input'
             />
             <span
                 {...props.pt?.value}
-                className={['cratis-slider-field__value', props.pt?.value?.className].filter(Boolean).join(' ')}
+                className={['cratis-slider-field__value', props.pt?.value?.className]
+                    .filter(Boolean)
+                    .join(' ')}
                 data-cratis-part='value'
             >
                 {props.value}
@@ -52,6 +63,7 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
     ),
     {
         defaultValue: 0,
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) => event.target.valueAsNumber,
+        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
+            event.target.valueAsNumber,
     },
 );

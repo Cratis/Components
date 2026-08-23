@@ -4,7 +4,8 @@
 import type { ReactNode } from 'react';
 
 /** Severity tone of a {@link Badge}. */
-export type BadgeSeverity = 'secondary' | 'info' | 'success' | 'warn' | 'danger' | 'contrast';
+export type BadgeSeverity =
+    'secondary' | 'info' | 'success' | 'warn' | 'danger' | 'contrast';
 
 /** Props for {@link Badge}. */
 export interface BadgeProps {
@@ -23,7 +24,14 @@ export interface BadgeProps {
 }
 
 /** A compact count or status badge. */
-export const Badge = ({ value, severity = 'secondary', size = 'small', shape, className, children }: BadgeProps) => (
+export const Badge = ({
+    value,
+    severity = 'secondary',
+    size = 'small',
+    shape,
+    className,
+    children,
+}: BadgeProps) => (
     <span
         className={['cratis-badge', className].filter(Boolean).join(' ')}
         data-cratis-part='root'

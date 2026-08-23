@@ -6,7 +6,15 @@ import React from 'react';
 import { DialogButtons } from '@cratis/arc.react/dialogs';
 import { Dialog } from '../Dialog';
 import { DialogInitialFocus } from '../DialogInitialFocus';
-import { focusIsInsideTheDialog, focusedElement, pressEnterOnFocusedElement, render, titleTabIndex, unmount, type DialogInTheDom } from './given/a_dialog_in_the_dom';
+import {
+    focusIsInsideTheDialog,
+    focusedElement,
+    pressEnterOnFocusedElement,
+    render,
+    titleTabIndex,
+    unmount,
+    type DialogInTheDom,
+} from './given/a_dialog_in_the_dom';
 
 describe('when initial focus is content', () => {
     let dialog: DialogInTheDom;
@@ -16,15 +24,23 @@ describe('when initial focus is content', () => {
     const renderDialog = async (buttons: DialogButtons | React.ReactNode) => {
         confirmed = 0;
         cancelled = 0;
-        dialog = await render(React.createElement(Dialog, {
-            title: 'Delete personal data',
-            visible: true,
-            buttons,
-            initialFocus: DialogInitialFocus.Content,
-            onConfirm: () => { confirmed++; return true; },
-            onCancel: () => { cancelled++; return true; },
-            children: React.createElement('p', null, 'This cannot be undone')
-        }));
+        dialog = await render(
+            React.createElement(Dialog, {
+                title: 'Delete personal data',
+                visible: true,
+                buttons,
+                initialFocus: DialogInitialFocus.Content,
+                onConfirm: () => {
+                    confirmed++;
+                    return true;
+                },
+                onCancel: () => {
+                    cancelled++;
+                    return true;
+                },
+                children: React.createElement('p', null, 'This cannot be undone'),
+            }),
+        );
     };
 
     afterEach(async () => await unmount(dialog));

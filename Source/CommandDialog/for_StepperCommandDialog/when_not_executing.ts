@@ -33,7 +33,7 @@ vi.mock('primereact/stepper', () => {
 });
 
 // PrimeReact 11's Button renders its content as children (no label/loading props).
-vi.mock('primereact/button', () => ({
+vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),
 }));

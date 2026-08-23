@@ -10,13 +10,10 @@
 
 /* Timeline customization */
 .events-view-timeline {
+    display: flex;
     max-width: 1200px;
     margin: 0 auto;
     padding: 2.5rem 0 3rem;
-}
-
-.events-view-timeline .p-timeline {
-    display: flex;
     flex-direction: column;
 }
 
@@ -34,7 +31,9 @@
     justify-content: center;
     backdrop-filter: blur(8px);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
     z-index: 5;
     pointer-events: auto;
 }
@@ -105,7 +104,9 @@
     font-weight: 600;
     color: var(--tm-text);
     margin: 0 0 0.5rem 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+    font-family:
+        -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto,
+        sans-serif;
 }
 
 .events-view-event-timestamp {
@@ -157,57 +158,55 @@
     box-shadow: 0 0 10px var(--tm-accent-glow);
 }
 
-/* PrimeReact Timeline connector styling */
-.events-view-timeline .p-timeline-event-connector {
+.events-view-timeline-event {
+    display: grid;
+    min-height: 5rem;
+    grid-template-columns: minmax(0, 1fr) 2.5rem minmax(0, 1fr);
+    align-items: stretch;
+}
+
+.events-view-timeline-separator {
+    position: relative;
+    grid-column: 2;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.events-view-timeline-connector {
+    width: 2px;
+    min-height: 3rem;
+    flex: 1;
     background: linear-gradient(to bottom, var(--tm-accent-border), var(--tm-accent-bg));
 }
 
-.events-view-timeline .p-timeline-event:last-child .p-timeline-event-connector {
-    visibility: hidden;
-}
-
-/* Remove default padding from PrimeReact timeline content areas */
-.events-view-timeline .p-timeline-event-opposite,
-.events-view-timeline .p-timeline-event-content {
-    padding: 0 1.5rem;
+.events-view-timeline-content {
     display: flex;
-    align-items: center;
+    padding: 0 1.5rem 1.5rem;
+    align-items: flex-start;
 }
 
-/* Ensure cards hug the timeline on both sides */
-.events-view-timeline .p-timeline-event:nth-child(odd) .p-timeline-event-content {
+.events-view-timeline-event[data-position='right'] .events-view-timeline-content {
+    grid-column: 3;
     justify-content: flex-start;
 }
 
-.events-view-timeline .p-timeline-event:nth-child(even) .p-timeline-event-content {
+.events-view-timeline-event[data-position='left'] .events-view-timeline-content {
+    grid-column: 1;
+    grid-row: 1;
     justify-content: flex-end;
-}
-
-.events-view-timeline .p-timeline-event:nth-child(odd) .p-timeline-event-opposite {
-    justify-content: flex-end;
-}
-
-.events-view-timeline .p-timeline-event:nth-child(even) .p-timeline-event-opposite {
-    justify-content: flex-start;
+    text-align: right;
 }
 
 .events-view-event-card--left,
 .events-view-event-card--right {
     max-width: 380px;
 }
-
-/* Right-align content in left-side cards */
-.events-view-timeline .p-timeline-event-opposite .events-view-event-card {
-    text-align: right;
-}
-
-.events-view-timeline .p-timeline-event-opposite .events-view-event-card table {
+.events-view-event-card--left table {
     margin-left: auto;
     direction: rtl;
 }
-
-.events-view-timeline .p-timeline-event-opposite .events-view-event-card table td {
+.events-view-event-card--left table td {
     direction: ltr;
     text-align: right;
 }
-

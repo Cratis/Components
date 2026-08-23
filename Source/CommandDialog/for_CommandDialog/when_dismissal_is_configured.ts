@@ -11,15 +11,17 @@ import { CommandDialog } from '../CommandDialog';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 
 vi.mock('@cratis/arc.react/commands', async () => {
-    const actual = await vi.importActual<Record<string, unknown>>('@cratis/arc.react/commands');
+    const actual = await vi.importActual<Record<string, unknown>>(
+        '@cratis/arc.react/commands',
+    );
     return {
         ...actual,
         CommandForm: (props: { children?: React.ReactNode }) =>
             React.createElement('div', null, props.children),
         useCommandFormContext: () => ({
             isValid: true,
-            setCommandValues: () => { },
-            setCommandResult: () => { },
+            setCommandValues: () => {},
+            setCommandResult: () => {},
         }),
         useCommandInstance: () => ({}),
     };
@@ -43,12 +45,20 @@ describe('when dismissal is configured on a command dialog', () => {
     let root: Root;
     let container: HTMLDivElement;
 
-    const render = async (props: { dismissable?: boolean; closeAriaLabel?: string; buttons?: React.ReactNode }) => {
+    const render = async (props: {
+        dismissable?: boolean;
+        closeAriaLabel?: string;
+        buttons?: React.ReactNode;
+    }) => {
         // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
-        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        (
+            globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+        ).IS_REACT_ACT_ENVIRONMENT = true;
         // SAFETY: jsdom omits ResizeObserver; the overlay only calls these observer methods.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-            observe() { } unobserve() { } disconnect() { }
+            observe() {}
+            unobserve() {}
+            disconnect() {}
         };
 
         container = document.createElement('div');
@@ -57,27 +67,39 @@ describe('when dismissal is configured on a command dialog', () => {
 
         await act(async () => {
             // SAFETY: The generated command proxy constructor is erased by this test harness only.
-            root.render(React.createElement(CratisComponentsProvider, null,
-                React.createElement(CommandDialog<TestCommand>, {
-                    command: TestCommand as unknown as new () => object,
-                    title: 'Register',
-                    visible: true,
-                    ...props,
-                    children: React.createElement('p', null, 'Body')
-                })));
+            root.render(
+                React.createElement(
+                    CratisComponentsProvider,
+                    null,
+                    React.createElement(CommandDialog<TestCommand>, {
+                        command: TestCommand as unknown as new () => object,
+                        title: 'Register',
+                        visible: true,
+                        ...props,
+                        children: React.createElement('p', null, 'Body'),
+                    }),
+                ),
+            );
         });
-        await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+        });
     };
 
     const closeButton = () => document.querySelector('[data-cratis-part="close"]');
 
     afterEach(async () => {
-        await act(async () => { root.unmount(); });
+        await act(async () => {
+            root.unmount();
+        });
         container.remove();
     });
 
     it('should forward dismissable so a custom footer can keep its close button', async () => {
-        await render({ buttons: React.createElement('button', { type: 'button' }, 'Go'), dismissable: true });
+        await render({
+            buttons: React.createElement('button', { type: 'button' }, 'Go'),
+            dismissable: true,
+        });
 
         expect(Boolean(closeButton())).to.equal(true);
     });

@@ -47,7 +47,8 @@ export const ActionMenubar = ({ model, className, pt, ...rest }: ActionMenubarPr
         {...rest}
     >
         {model.map((item, index) => {
-            if (item.template) return <Fragment key={index}>{item.template(item)}</Fragment>;
+            if (item.template)
+                return <Fragment key={index}>{item.template(item)}</Fragment>;
 
             return (
                 <Button

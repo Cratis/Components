@@ -8,18 +8,31 @@ import { vi } from 'vitest';
 
 const { commandFormValidity, executeCommand, setCommandValues } = vi.hoisted(() => ({
     commandFormValidity: { isValid: false },
-    executeCommand: vi.fn(async () => ({ isSuccess: true, isValid: true, validationResults: [] })),
-    setCommandValues: vi.fn()
+    executeCommand: vi.fn(async () => ({
+        isSuccess: true,
+        isValid: true,
+        validationResults: [],
+    })),
+    setCommandValues: vi.fn(),
 }));
 
 vi.mock('primereact/dialog', () => {
     // PrimeReact 11's Dialog is compositional; each part is a pass-through that
     // renders its children so the footer buttons and content reach the markup.
-    const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
+    const part = (props: { children?: React.ReactNode }) =>
+        React.createElement('div', null, props.children);
     return {
         Dialog: {
-            Root: part, Portal: part, Backdrop: part, Positioner: part, Popup: part,
-            Header: part, Title: part, Close: part, Content: part, Footer: part,
+            Root: part,
+            Portal: part,
+            Backdrop: part,
+            Positioner: part,
+            Popup: part,
+            Header: part,
+            Title: part,
+            Close: part,
+            Content: part,
+            Footer: part,
         },
     };
 });
@@ -29,11 +42,24 @@ vi.mock('primereact/button', () => ({
     // dialog marks the button its focus trap should land on with `data-autofocus` rather
     // than React's autoFocus prop. That marker identifies the confirm button, whose click
     // this SSR render stands in for.
-    Button: (props: { 'data-autofocus'?: string; onClick?: () => Promise<void> | void; disabled?: boolean; children?: React.ReactNode }) => {
-        if (props['data-autofocus'] !== undefined && props.onClick && props.disabled !== true) {
+    Button: (props: {
+        'data-autofocus'?: string;
+        onClick?: () => Promise<void> | void;
+        disabled?: boolean;
+        children?: React.ReactNode;
+    }) => {
+        if (
+            props['data-autofocus'] !== undefined &&
+            props.onClick &&
+            props.disabled !== true
+        ) {
             void props.onClick();
         }
-        return React.createElement('button', { disabled: props.disabled }, props.children);
+        return React.createElement(
+            'button',
+            { disabled: props.disabled },
+            props.children,
+        );
     },
 }));
 
@@ -75,19 +101,26 @@ describe('when CommandDialog validity is gated', () => {
         CommandDialog = (await import('../CommandDialog')).CommandDialog;
     });
 
-    const renderDialog = (props?: { isValid?: boolean; onBeforeExecute?: (values: TestCommand) => TestCommand }) => renderToStaticMarkup(
-        React.createElement(CommandDialog, {
-            // SAFETY: The generated command proxy constructor is erased by this SSR harness only.
-            command: TestCommand as unknown as new () => object,
-            visible: true,
-            title: 'Test Dialog',
-            ...props
-        })
-    );
+    const renderDialog = (props?: {
+        isValid?: boolean;
+        onBeforeExecute?: (values: TestCommand) => TestCommand;
+    }) =>
+        renderToStaticMarkup(
+            React.createElement(CommandDialog, {
+                // SAFETY: The generated command proxy constructor is erased by this SSR harness only.
+                command: TestCommand as unknown as new () => object,
+                visible: true,
+                title: 'Test Dialog',
+                ...props,
+            }),
+        );
 
     // The PrimeReact 11 Button renders its content as children, so the Ok button's
     // markup is `<button ...><i .../><span>Ok</span></button>` — find it by its label span.
-    const getOkButton = (html: string) => (html.match(/<button[\s\S]*?<\/button>/g) ?? []).find(button => button.includes('>Ok<')) ?? '';
+    const getOkButton = (html: string) =>
+        (html.match(/<button[\s\S]*?<\/button>/g) ?? []).find((button) =>
+            button.includes('>Ok<'),
+        ) ?? '';
 
     afterEach(() => {
         commandFormValidity.isValid = true;
@@ -107,7 +140,7 @@ describe('when CommandDialog validity is gated', () => {
 
         const html = renderDialog({
             isValid: true,
-            onBeforeExecute: () => ({ name: 'External value' })
+            onBeforeExecute: () => ({ name: 'External value' }),
         });
 
         expect(getOkButton(html)).to.include('disabled');
@@ -138,7 +171,7 @@ describe('when CommandDialog validity is gated', () => {
 
         const html = renderDialog({
             isValid: true,
-            onBeforeExecute: () => ({ name: 'External value' })
+            onBeforeExecute: () => ({ name: 'External value' }),
         });
 
         expect(getOkButton(html)).not.to.include('disabled');

@@ -39,14 +39,14 @@ describe('when configuring column filter labels', () => {
         menu = await openFilterMenu(table);
 
         const booleanTrigger = menu.querySelector<HTMLButtonElement>(
-            '[data-scope="select"][data-part="trigger"]',
+            '[data-cratis-part="trigger"]',
         );
         if (!booleanTrigger) {
             throw new Error('Boolean filter did not render its dropdown.');
         }
         await act(async () => booleanTrigger.click());
         booleanOptions = Array.from(
-            document.querySelectorAll('[data-scope="select"][data-part="option"]'),
+            document.querySelectorAll('[data-cratis-part="option"]'),
             (option) => option.textContent ?? '',
         );
     });

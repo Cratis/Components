@@ -32,7 +32,7 @@ vi.mock('primereact/stepper', () => {
 // PrimeReact 11's Button takes its label as children, not a `label` prop, so the label a
 // button is recorded under is the text its children carry (the icon contributes none).
 // Only an enabled button is clickable, so only an enabled button is recorded.
-vi.mock('primereact/button', () => {
+vi.mock('../../../Common/Button', () => {
     const labelOf = (children: React.ReactNode): string => {
         let label = '';
         React.Children.forEach(children, child => {

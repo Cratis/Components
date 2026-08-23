@@ -25,10 +25,14 @@ describe('when a dropdown is opened inside a dialog', () => {
 
     beforeEach(async () => {
         // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
-        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        (
+            globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+        ).IS_REACT_ACT_ENVIRONMENT = true;
         // SAFETY: jsdom omits ResizeObserver; the overlay only calls these observer methods.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-            observe() { } unobserve() { } disconnect() { }
+            observe() {}
+            unobserve() {}
+            disconnect() {}
         };
 
         container = document.createElement('div');
@@ -36,37 +40,63 @@ describe('when a dropdown is opened inside a dialog', () => {
         root = createRoot(container);
 
         await act(async () => {
-            root.render(React.createElement(CratisComponentsProvider, {
-                children: React.createElement(Dialog, {
-                    title: 'Pick something',
-                    visible: true,
-                    buttons: null,
-                    children: React.createElement(Dropdown, {
-                        options: [{ id: '1', name: 'One' }, { id: '2', name: 'Two' }],
-                        optionLabel: 'name',
-                        optionValue: 'id'
-                    })
-                })
-            }));
+            root.render(
+                React.createElement(CratisComponentsProvider, {
+                    children: React.createElement(Dialog, {
+                        title: 'Pick something',
+                        visible: true,
+                        buttons: null,
+                        children: React.createElement(Dropdown, {
+                            options: [
+                                { id: '1', name: 'One' },
+                                { id: '2', name: 'Two' },
+                            ],
+                            optionLabel: 'name',
+                            optionValue: 'id',
+                            'aria-label': 'Pick value',
+                        }),
+                    }),
+                }),
+            );
         });
-        await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+        });
 
-        const trigger = document.querySelector('[data-cratis-part="trigger"]') as HTMLElement;
-        await act(async () => { trigger.click(); });
-        await act(async () => { await new Promise(resolve => setTimeout(resolve, 300)); });
+        const trigger = document.querySelector(
+            '[data-cratis-part="trigger"]',
+        ) as HTMLElement;
+        await act(async () => {
+            trigger.click();
+        });
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+        });
 
-        const dialogPositioner = document.querySelector('[data-scope="dialog"][data-part="positioner"]') as HTMLElement;
-        const dialogPopup = document.querySelector('[data-scope="dialog"][data-part="popup"]') as HTMLElement;
-        const panel = document.querySelector('[data-cratis-part="popover"]') as HTMLElement;
+        const dialogPositioner = document.querySelector(
+            '.cratis-dialog__backdrop[data-cratis-part="backdrop"]',
+        ) as HTMLElement;
+        const dialogPopup = document.querySelector(
+            '.cratis-dialog[data-cratis-part="root"]',
+        ) as HTMLElement;
+        const panel = document.querySelector(
+            '[data-cratis-part="popover"]',
+        ) as HTMLElement;
 
-        dialogPositionerZIndex = Number.parseInt(getComputedStyle(dialogPositioner).zIndex, 10);
+        dialogPositionerZIndex = Number.parseInt(
+            getComputedStyle(dialogPositioner).zIndex,
+            10,
+        );
         panelZIndex = Number.parseInt(getComputedStyle(panel).zIndex, 10);
         panelIsInsideTheDialog = dialogPopup.contains(panel);
-        panelIsPortaledToTheBody = document.body.contains(panel) && !container.contains(panel);
+        panelIsPortaledToTheBody =
+            document.body.contains(panel) && !container.contains(panel);
     });
 
     afterEach(async () => {
-        await act(async () => { root.unmount(); });
+        await act(async () => {
+            root.unmount();
+        });
         container.remove();
     });
 

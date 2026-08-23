@@ -29,13 +29,19 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
 
     const commit = () => {
         const candidates = (props.separator ? draft.split(props.separator) : [draft])
-            .map(value => value.trim())
+            .map((value) => value.trim())
             .filter(Boolean);
         if (candidates.length === 0) return;
-        const available = props.max === undefined ? candidates : candidates.slice(0, Math.max(0, props.max - props.value.length));
+        const available =
+            props.max === undefined
+                ? candidates
+                : candidates.slice(0, Math.max(0, props.max - props.value.length));
         const next = props.allowDuplicate
             ? [...props.value, ...available]
-            : [...props.value, ...available.filter(candidate => !props.value.includes(candidate))];
+            : [
+                  ...props.value,
+                  ...available.filter((candidate) => !props.value.includes(candidate)),
+              ];
         props.onChange(next);
         setDraft('');
     };
@@ -43,10 +49,18 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
     return (
         <div
             {...props.pt?.root}
-            className={['cratis-chips-field', 'w-full', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
-            onBlur={event => {
+            className={[
+                'cratis-chips-field',
+                'w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
+            onBlur={(event) => {
                 props.onBlur?.();
-                if (props.addOnBlur && !event.currentTarget.contains(event.relatedTarget)) commit();
+                if (props.addOnBlur && !event.currentTarget.contains(event.relatedTarget))
+                    commit();
             }}
             data-cratis-part='root'
             data-invalid={props.invalid || undefined}
@@ -55,25 +69,38 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                 <span
                     {...props.pt?.item}
                     key={`${item}-${index}`}
-                    className={['cratis-chips-field__item', props.pt?.item?.className].filter(Boolean).join(' ')}
+                    className={['cratis-chips-field__item', props.pt?.item?.className]
+                        .filter(Boolean)
+                        .join(' ')}
                     data-cratis-part='item'
                 >
                     <span>{item}</span>
                     <button
                         {...props.pt?.remove}
                         type='button'
-                        className={['cratis-chips-field__remove', props.pt?.remove?.className].filter(Boolean).join(' ')}
+                        className={[
+                            'cratis-chips-field__remove',
+                            props.pt?.remove?.className,
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
                         data-cratis-part='remove'
                         aria-label={props.removeAriaLabel ?? 'Remove'}
-                        onClick={() => props.onChange(props.value.filter((_, itemIndex) => itemIndex !== index))}
-                    >×</button>
+                        onClick={() =>
+                            props.onChange(
+                                props.value.filter((_, itemIndex) => itemIndex !== index),
+                            )
+                        }
+                    >
+                        ×
+                    </button>
                 </span>
             ))}
             <input
                 {...props.pt?.input}
                 value={draft}
-                onChange={event => setDraft(event.target.value)}
-                onKeyDown={event => {
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
                     if (event.key === 'Enter') {
                         event.preventDefault();
                         commit();
@@ -81,7 +108,9 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                 }}
                 placeholder={props.placeholder}
                 aria-invalid={props.invalid || undefined}
-                className={['cratis-chips-field__input', props.pt?.input?.className].filter(Boolean).join(' ')}
+                className={['cratis-chips-field__input', props.pt?.input?.className]
+                    .filter(Boolean)
+                    .join(' ')}
                 data-cratis-part='input'
             />
         </div>
@@ -89,12 +118,10 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
 };
 
 /** A token input bound to a string array property on an Arc command. */
-export const ChipsField = asCommandFormField<ChipsFieldComponentProps>(
-    ChipsControl,
-    {
-        defaultValue: [],
-        extractValue: (value: unknown) => Array.isArray(value)
+export const ChipsField = asCommandFormField<ChipsFieldComponentProps>(ChipsControl, {
+    defaultValue: [],
+    extractValue: (value: unknown) =>
+        Array.isArray(value)
             ? value.filter((item): item is string => typeof item === 'string')
             : [],
-    },
-);
+});

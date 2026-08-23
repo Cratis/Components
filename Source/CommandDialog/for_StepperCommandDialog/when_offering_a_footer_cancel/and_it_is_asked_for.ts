@@ -42,7 +42,7 @@ vi.mock('primereact/stepper', () => {
 
 // PrimeReact 11's Button takes its label as children, not a `label` prop — the button's
 // text content is what the given helpers read a button's label from.
-vi.mock('primereact/button', () => ({
+vi.mock('../../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean; onClick?: () => void }) =>
         React.createElement('button', { disabled: props.disabled, onClick: props.onClick }, props.children),
 }));

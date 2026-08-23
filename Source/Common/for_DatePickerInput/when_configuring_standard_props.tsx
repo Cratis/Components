@@ -22,16 +22,24 @@ interface MountedDatePicker {
     trigger: HTMLButtonElement;
 }
 
-const mountDatePicker = async (options: DatePickerOptions): Promise<MountedDatePicker> => {
+const mountDatePicker = async (
+    options: DatePickerOptions,
+): Promise<MountedDatePicker> => {
     // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
     (
         globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
     // SAFETY: jsdom omits ResizeObserver; the overlay only calls these observer methods.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-        observe() { return undefined; }
-        unobserve() { return undefined; }
-        disconnect() { return undefined; }
+        observe() {
+            return undefined;
+        }
+        unobserve() {
+            return undefined;
+        }
+        disconnect() {
+            return undefined;
+        }
     };
     const container = document.createElement('div');
     document.body.append(container);
@@ -53,7 +61,9 @@ const mountDatePicker = async (options: DatePickerOptions): Promise<MountedDateP
 
     const pickerRoot = container.querySelector<HTMLElement>('[data-cratis-part="root"]');
     const group = container.querySelector<HTMLElement>('[data-cratis-part="group"]');
-    const trigger = container.querySelector<HTMLButtonElement>('[data-cratis-part="trigger"]');
+    const trigger = container.querySelector<HTMLButtonElement>(
+        '[data-cratis-part="trigger"]',
+    );
     if (!pickerRoot || !group || !trigger) {
         throw new Error('DatePickerInput did not render its stable Cratis parts.');
     }

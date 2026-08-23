@@ -96,6 +96,11 @@ export const registerDataTableFilterMatcher = (
     return { matchMode, unregister };
 };
 
+/** Resolves a custom matcher registered for the given name. */
+export const resolveDataTableFilterMatcher = (
+    name: string,
+): DataTableFilterMatcher | undefined => registry.matchers.get(name)?.matcher;
+
 /** Removes a custom matcher registration. Safe to call more than once. */
 export const unregisterDataTableFilterMatcher = (
     registration: DataTableFilterMatcherRegistration,

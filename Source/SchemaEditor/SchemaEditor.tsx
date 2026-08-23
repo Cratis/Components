@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Button } from 'primereact/button';
+import { Button } from '../Common/Button';
 import { DataTableCore } from '../DataTables/DataTableCore';
 import { Column } from '../DataTables/Column';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
@@ -53,7 +53,7 @@ export const defaultSchemaEditorLabels: SchemaEditorLabels = {
     emptyMessage: 'No properties defined',
     navigateToItemDefinition: 'Navigate to item definition',
     navigateToProperties: 'Navigate to object properties',
-    deleteProperty: 'Delete property'
+    deleteProperty: 'Delete property',
 };
 
 /**
@@ -136,7 +136,7 @@ export const SchemaEditor = ({
     cancelDisabled = false,
     typeFormats = DEFAULT_TYPE_FORMATS,
     className,
-    labels
+    labels,
 }: SchemaEditorProps) => {
     const l = { ...defaultSchemaEditorLabels, ...labels };
     const [currentPath, setCurrentPath] = useState<string[]>([]);
@@ -152,20 +152,23 @@ export const SchemaEditor = ({
         }
     }, [isEditMode]);
 
-    const validateAllProperties = useCallback((properties: JsonSchemaProperty[]) => {
-        const errors: Record<string, string> = {};
+    const validateAllProperties = useCallback(
+        (properties: JsonSchemaProperty[]) => {
+            const errors: Record<string, string> = {};
 
-        properties.forEach(prop => {
-            if (!prop.name) return;
-            const error = validatePropertyName(prop.name, prop.id!, properties);
-            if (error) {
-                errors[prop.id!] = error;
-            }
-        });
+            properties.forEach((prop) => {
+                if (!prop.name) return;
+                const error = validatePropertyName(prop.name, prop.id!, properties);
+                if (error) {
+                    errors[prop.id!] = error;
+                }
+            });
 
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    }, [validatePropertyName]);
+            setValidationErrors(errors);
+            return Object.keys(errors).length === 0;
+        },
+        [validatePropertyName],
+    );
 
     useEffect(() => {
         setCurrentSchema(schema);
@@ -183,7 +186,8 @@ export const SchemaEditor = ({
             if (targetSchema.type === 'array' && segment === '$items') {
                 targetSchema = targetSchema.items || {};
             } else if (targetSchema.properties && targetSchema.properties[segment]) {
-                targetSchema = targetSchema.properties[segment] as JsonSchema | JsonSchemaProperty;
+                targetSchema = targetSchema.properties[segment] as
+                    JsonSchema | JsonSchemaProperty;
             } else {
                 return;
             }
@@ -201,7 +205,10 @@ export const SchemaEditor = ({
                     description: property.description,
                     items: property.items,
                     properties: property.properties,
-                    required: (currentSchema.required as string[] | undefined)?.includes(name) || false
+                    required:
+                        (currentSchema.required as string[] | undefined)?.includes(
+                            name,
+                        ) || false,
                 });
             }
         }
@@ -212,42 +219,47 @@ export const SchemaEditor = ({
         }
     };
 
-    const updateSchemaAtPath = useCallback((path: string[], updater: (schema: JsonSchema) => JsonSchema) => {
-        const newSchema = JSON.parse(JSON.stringify(currentSchema));
+    const updateSchemaAtPath = useCallback(
+        (path: string[], updater: (schema: JsonSchema) => JsonSchema) => {
+            const newSchema = JSON.parse(JSON.stringify(currentSchema));
 
-        if (path.length === 0) {
-            const updated = updater(newSchema);
-            setCurrentSchema(updated);
-            onChange?.(updated);
-            return;
-        }
+            if (path.length === 0) {
+                const updated = updater(newSchema);
+                setCurrentSchema(updated);
+                onChange?.(updated);
+                return;
+            }
 
-        let targetSchema = newSchema;
-        for (let i = 0; i < path.length - 1; i++) {
-            const segment = path[i];
-            if (targetSchema.type === 'array' && segment === '$items') {
-                if (!targetSchema.items) {
-                    targetSchema.items = { type: 'object', properties: {} };
+            let targetSchema = newSchema;
+            for (let i = 0; i < path.length - 1; i++) {
+                const segment = path[i];
+                if (targetSchema.type === 'array' && segment === '$items') {
+                    if (!targetSchema.items) {
+                        targetSchema.items = { type: 'object', properties: {} };
+                    }
+                    targetSchema = targetSchema.items;
+                } else if (targetSchema.properties && targetSchema.properties[segment]) {
+                    targetSchema = targetSchema.properties[segment];
                 }
-                targetSchema = targetSchema.items;
-            } else if (targetSchema.properties && targetSchema.properties[segment]) {
-                targetSchema = targetSchema.properties[segment];
             }
-        }
 
-        const lastSegment = path[path.length - 1];
-        if (targetSchema.type === 'array' && lastSegment === '$items') {
-            targetSchema.items = updater(targetSchema.items || {});
-        } else {
-            if (!targetSchema.properties) {
-                targetSchema.properties = {};
+            const lastSegment = path[path.length - 1];
+            if (targetSchema.type === 'array' && lastSegment === '$items') {
+                targetSchema.items = updater(targetSchema.items || {});
+            } else {
+                if (!targetSchema.properties) {
+                    targetSchema.properties = {};
+                }
+                targetSchema.properties[lastSegment] = updater(
+                    targetSchema.properties[lastSegment] || {},
+                );
             }
-            targetSchema.properties[lastSegment] = updater(targetSchema.properties[lastSegment] || {});
-        }
 
-        setCurrentSchema(newSchema);
-        onChange?.(newSchema);
-    }, [currentSchema, onChange]);
+            setCurrentSchema(newSchema);
+            onChange?.(newSchema);
+        },
+        [currentSchema, onChange],
+    );
 
     const addProperty = useCallback(() => {
         updateSchemaAtPath(currentPath, (schema) => {
@@ -262,87 +274,107 @@ export const SchemaEditor = ({
         });
     }, [currentPath, updateSchemaAtPath]);
 
-    const removeProperty = useCallback((propertyName: string) => {
-        updateSchemaAtPath(currentPath, (schema) => {
-            const newProps = { ...(schema.properties || {}) };
-            delete newProps[propertyName];
-            return { ...schema, properties: newProps };
-        });
-    }, [currentPath, updateSchemaAtPath]);
+    const removeProperty = useCallback(
+        (propertyName: string) => {
+            updateSchemaAtPath(currentPath, (schema) => {
+                const newProps = { ...(schema.properties || {}) };
+                delete newProps[propertyName];
+                return { ...schema, properties: newProps };
+            });
+        },
+        [currentPath, updateSchemaAtPath],
+    );
 
-    const updateProperty = useCallback((oldName: string, field: keyof JsonSchemaProperty, value: unknown, additionalUpdates?: Partial<JsonSchemaProperty>) => {
-        updateSchemaAtPath(currentPath, (schema) => {
-            const newProps = { ...(schema.properties || {}) };
-            const prop = { ...(newProps[oldName] || {}) };
+    const updateProperty = useCallback(
+        (
+            oldName: string,
+            field: keyof JsonSchemaProperty,
+            value: unknown,
+            additionalUpdates?: Partial<JsonSchemaProperty>,
+        ) => {
+            updateSchemaAtPath(currentPath, (schema) => {
+                const newProps = { ...(schema.properties || {}) };
+                const prop = { ...(newProps[oldName] || {}) };
 
-            if (field === 'name') {
-                if (value !== oldName && !newProps[value as string]) {
-                    newProps[value as string] = prop;
-                    delete newProps[oldName];
-                }
-            } else if (field === 'type') {
-                prop.type = value as string;
-                if (value === 'array') {
-                    prop.items = { type: 'string' };
-                    delete prop.format;
-                } else if (value === 'object') {
-                    prop.properties = {};
-                    delete prop.format;
-                    delete prop.items;
-                } else {
-                    delete prop.items;
-                    delete prop.properties;
-                }
+                if (field === 'name') {
+                    if (value !== oldName && !newProps[value as string]) {
+                        newProps[value as string] = prop;
+                        delete newProps[oldName];
+                    }
+                } else if (field === 'type') {
+                    prop.type = value as string;
+                    if (value === 'array') {
+                        prop.items = { type: 'string' };
+                        delete prop.format;
+                    } else if (value === 'object') {
+                        prop.properties = {};
+                        delete prop.format;
+                        delete prop.items;
+                    } else {
+                        delete prop.items;
+                        delete prop.properties;
+                    }
 
-                if (additionalUpdates) {
-                    if ('format' in additionalUpdates) {
-                        if (additionalUpdates.format) {
-                            prop.format = additionalUpdates.format as string;
-                        } else {
-                            delete prop.format;
+                    if (additionalUpdates) {
+                        if ('format' in additionalUpdates) {
+                            if (additionalUpdates.format) {
+                                prop.format = additionalUpdates.format as string;
+                            } else {
+                                delete prop.format;
+                            }
                         }
                     }
+
+                    newProps[oldName] = prop;
+                } else if (field === 'format') {
+                    if (value && value !== 'none') {
+                        prop.format = value as string;
+                    } else {
+                        delete prop.format;
+                    }
+                    newProps[oldName] = prop;
                 }
 
-                newProps[oldName] = prop;
-            } else if (field === 'format') {
-                if (value && value !== 'none') {
-                    prop.format = value as string;
+                return { ...schema, properties: newProps };
+            });
+        },
+        [currentPath, updateSchemaAtPath],
+    );
+
+    const updateArrayItemType = useCallback(
+        (propertyName: string, itemType: string) => {
+            updateSchemaAtPath(currentPath, (schema) => {
+                const newProps = { ...(schema.properties || {}) };
+                const prop = { ...(newProps[propertyName] || {}) };
+
+                if (itemType === 'object') {
+                    prop.items = { type: 'object', properties: {} };
+                } else if (itemType === 'array') {
+                    prop.items = { type: 'array', items: { type: 'string' } };
                 } else {
-                    delete prop.format;
+                    prop.items = { type: itemType };
                 }
-                newProps[oldName] = prop;
-            }
 
-            return { ...schema, properties: newProps };
-        });
-    }, [currentPath, updateSchemaAtPath]);
+                newProps[propertyName] = prop;
+                return { ...schema, properties: newProps };
+            });
+        },
+        [currentPath, updateSchemaAtPath],
+    );
 
-    const updateArrayItemType = useCallback((propertyName: string, itemType: string) => {
-        updateSchemaAtPath(currentPath, (schema) => {
-            const newProps = { ...(schema.properties || {}) };
-            const prop = { ...(newProps[propertyName] || {}) };
+    const navigateToProperty = useCallback(
+        (propertyName: string) => {
+            setCurrentPath([...currentPath, propertyName]);
+        },
+        [currentPath],
+    );
 
-            if (itemType === 'object') {
-                prop.items = { type: 'object', properties: {} };
-            } else if (itemType === 'array') {
-                prop.items = { type: 'array', items: { type: 'string' } };
-            } else {
-                prop.items = { type: itemType };
-            }
-
-            newProps[propertyName] = prop;
-            return { ...schema, properties: newProps };
-        });
-    }, [currentPath, updateSchemaAtPath]);
-
-    const navigateToProperty = useCallback((propertyName: string) => {
-        setCurrentPath([...currentPath, propertyName]);
-    }, [currentPath]);
-
-    const navigateToArrayItems = useCallback((propertyName: string) => {
-        setCurrentPath([...currentPath, propertyName, '$items']);
-    }, [currentPath]);
+    const navigateToArrayItems = useCallback(
+        (propertyName: string) => {
+            setCurrentPath([...currentPath, propertyName, '$items']);
+        },
+        [currentPath],
+    );
 
     const navigateBack = useCallback(() => {
         if (currentPath.length > 0) {
@@ -350,10 +382,13 @@ export const SchemaEditor = ({
         }
     }, [currentPath]);
 
-    const navigateToBreadcrumb = useCallback((index: number) => {
-        const items = getBreadcrumbItems();
-        setCurrentPath(items[index].path);
-    }, [currentPath, eventTypeName]);
+    const navigateToBreadcrumb = useCallback(
+        (index: number) => {
+            const items = getBreadcrumbItems();
+            setCurrentPath(items[index].path);
+        },
+        [currentPath, eventTypeName],
+    );
 
     const handleSave = useCallback(() => {
         onSave?.();
@@ -381,7 +416,8 @@ export const SchemaEditor = ({
             if (targetSchema.type === 'array' && segment === '$items') {
                 targetSchema = targetSchema.items || {};
             } else if (targetSchema.properties && targetSchema.properties[segment]) {
-                targetSchema = targetSchema.properties[segment] as JsonSchema | JsonSchemaProperty;
+                targetSchema = targetSchema.properties[segment] as
+                    JsonSchema | JsonSchemaProperty;
             } else {
                 return undefined;
             }
@@ -392,75 +428,129 @@ export const SchemaEditor = ({
 
     const hasValidationErrors = Object.keys(validationErrors).length > 0;
 
-    const menuItems = useMemo<ActionMenuItem[]>(() => [
-        ...(!isEditMode ? [{
-            label: l.edit,
-            icon: <faIcons.FaPencil className='mr-2' />,
-            command: canEdit ? handleEdit : undefined,
-            className: !canEdit ? 'edit-disabled-with-reason' : undefined,
-            template: !canEdit && canNotEditReason ? (item: ActionMenuItem) => (
-                <Tooltip content={canNotEditReason} position="bottom">
-                    <div
-                        style={{ cursor: 'not-allowed', opacity: 0.6, display: 'inline-flex', alignItems: 'center', padding: '0.5rem 0.75rem' }}
-                    >
-                        {item.icon}
-                        <span>{item.label}</span>
-                    </div>
-                </Tooltip>
-            ) : undefined
-        }] : []),
-        ...(isEditMode ? [
-            ...(!saveDisabled ? [{
-                label: l.save,
-                icon: <faIcons.FaCheck className='mr-2' />,
-                command: hasValidationErrors ? undefined : handleSave,
-                disabled: hasValidationErrors
-            }] : []),
-            ...(!cancelDisabled ? [{
-                label: l.cancel,
-                icon: <faIcons.FaXmark className='mr-2' />,
-                command: handleCancel
-            }] : []),
-            {
-                label: l.addProperty,
-                icon: <faIcons.FaPlus className='mr-2' />,
-                command: addProperty
-            }
-        ] : [])
-    ], [isEditMode, handleSave, handleCancel, handleEdit, addProperty, canEdit, canNotEditReason, hasValidationErrors, saveDisabled, cancelDisabled]);
+    const menuItems = useMemo<ActionMenuItem[]>(
+        () => [
+            ...(!isEditMode
+                ? [
+                      {
+                          label: l.edit,
+                          icon: <faIcons.FaPencil className='mr-2' />,
+                          command: canEdit ? handleEdit : undefined,
+                          className: !canEdit ? 'edit-disabled-with-reason' : undefined,
+                          template:
+                              !canEdit && canNotEditReason
+                                  ? (item: ActionMenuItem) => (
+                                        <Tooltip
+                                            content={canNotEditReason}
+                                            position='bottom'
+                                        >
+                                            <div
+                                                style={{
+                                                    cursor: 'not-allowed',
+                                                    opacity: 0.6,
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    padding: '0.5rem 0.75rem',
+                                                }}
+                                            >
+                                                {item.icon}
+                                                <span>{item.label}</span>
+                                            </div>
+                                        </Tooltip>
+                                    )
+                                  : undefined,
+                      },
+                  ]
+                : []),
+            ...(isEditMode
+                ? [
+                      ...(!saveDisabled
+                          ? [
+                                {
+                                    label: l.save,
+                                    icon: <faIcons.FaCheck className='mr-2' />,
+                                    command: hasValidationErrors ? undefined : handleSave,
+                                    disabled: hasValidationErrors,
+                                },
+                            ]
+                          : []),
+                      ...(!cancelDisabled
+                          ? [
+                                {
+                                    label: l.cancel,
+                                    icon: <faIcons.FaXmark className='mr-2' />,
+                                    command: handleCancel,
+                                },
+                            ]
+                          : []),
+                      {
+                          label: l.addProperty,
+                          icon: <faIcons.FaPlus className='mr-2' />,
+                          command: addProperty,
+                      },
+                  ]
+                : []),
+        ],
+        [
+            isEditMode,
+            handleSave,
+            handleCancel,
+            handleEdit,
+            addProperty,
+            canEdit,
+            canNotEditReason,
+            hasValidationErrors,
+            saveDisabled,
+            cancelDisabled,
+        ],
+    );
 
     const breadcrumbItems = getBreadcrumbItems();
     const isAtRoot = currentPath.length === 0;
     const currentDescription = getCurrentDescription();
 
     return (
-        <div className={className ? `schema-editor ${className}` : 'schema-editor'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <div className="px-4 py-4">
-                <div className="schema-editor-menubar">
+        <div
+            className={className ? `schema-editor ${className}` : 'schema-editor'}
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
+            <div className='px-4 py-4'>
+                <div className='schema-editor-menubar'>
                     <ActionMenubar aria-label={l.actions} model={menuItems} />
                 </div>
             </div>
 
             <div className='px-4 py-2 cratis-schema-editor-bottom-border'>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Tooltip content="Navigate back" position="top">
+                    <Tooltip content='Navigate back' position='top'>
                         <Button
-                            variant="text"
-                            size="small"
-                            iconOnly
+                            text
+                            size='small'
+                            icon={<faIcons.FaArrowLeft />}
                             onClick={navigateBack}
                             disabled={isAtRoot}
-                            aria-label={l.navigateBack}>
-                            <faIcons.FaArrowLeft />
-                        </Button>
+                            aria-label={l.navigateBack}
+                        />
                     </Tooltip>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--cratis-text-color-secondary)', cursor: 'pointer' }}>
+                    <div
+                        style={{
+                            fontSize: '0.9rem',
+                            color: 'var(--cratis-text-color-secondary)',
+                            cursor: 'pointer',
+                        }}
+                    >
                         {breadcrumbItems.map((item, index) => (
                             <span key={index}>
-                                {index > 0 && <span className="mx-2">&gt;</span>}
+                                {index > 0 && <span className='mx-2'>&gt;</span>}
                                 <span
                                     onClick={() => navigateToBreadcrumb(index)}
-                                    style={{ cursor: 'pointer', textDecoration: index < breadcrumbItems.length - 1 ? 'underline' : 'none' }}
+                                    style={{
+                                        cursor: 'pointer',
+                                        textDecoration:
+                                            index < breadcrumbItems.length - 1
+                                                ? 'underline'
+                                                : 'none',
+                                    }}
                                 >
                                     {item.name}
                                 </span>
@@ -469,7 +559,18 @@ export const SchemaEditor = ({
                     </div>
                 </div>
                 {currentDescription && (
-                    <div style={{ fontSize: '0.875rem', color: 'var(--cratis-text-color-secondary)', marginTop: '0.5rem', marginLeft: '2.5rem', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div
+                        style={{
+                            fontSize: '0.875rem',
+                            color: 'var(--cratis-text-color-secondary)',
+                            marginTop: '0.5rem',
+                            marginLeft: '2.5rem',
+                            fontStyle: 'italic',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                        }}
+                    >
                         <faIcons.FaCircleInfo />
                         <span>{currentDescription}</span>
                     </div>
@@ -480,10 +581,15 @@ export const SchemaEditor = ({
                 <DataTableCore<JsonSchemaProperty>
                     key={`${isEditMode}-${currentPath.join('/')}`}
                     data={properties}
-                    dataKey="id"
+                    dataKey='id'
                     emptyMessage={l.emptyMessage}
                     rowClassName={(rowData) => {
-                        if (!isEditMode && (rowData.type === 'object' || (rowData.type === 'array' && rowData.items?.type === 'object'))) {
+                        if (
+                            !isEditMode &&
+                            (rowData.type === 'object' ||
+                                (rowData.type === 'array' &&
+                                    rowData.items?.type === 'object'))
+                        ) {
                             return 'cratis-schema-editor-navigable-row';
                         }
                         return '';
@@ -494,7 +600,10 @@ export const SchemaEditor = ({
                             if (rowData.name) {
                                 if (rowData.type === 'object') {
                                     navigateToProperty(rowData.name);
-                                } else if (rowData.type === 'array' && rowData.items?.type === 'object') {
+                                } else if (
+                                    rowData.type === 'array' &&
+                                    rowData.items?.type === 'object'
+                                ) {
                                     navigateToArrayItems(rowData.name);
                                 }
                             }
@@ -502,12 +611,16 @@ export const SchemaEditor = ({
                     }}
                     pt={{
                         root: { style: { border: 'none' } },
-                        tbody: { style: { borderTop: '1px solid var(--cratis-surface-border)' } }
+                        body: {
+                            style: {
+                                borderTop: '1px solid var(--cratis-surface-border)',
+                            },
+                        },
                     }}
                 >
                     <Column
-                        field="name"
-                        header="Property"
+                        field='name'
+                        header='Property'
                         body={(rowData: JsonSchemaProperty) => (
                             <NameCell
                                 rowData={rowData}
@@ -519,7 +632,7 @@ export const SchemaEditor = ({
                         style={{ width: '30%' }}
                     />
                     <Column
-                        header="Type"
+                        header='Type'
                         body={(rowData: JsonSchemaProperty) => (
                             <TypeCell
                                 rowData={rowData}

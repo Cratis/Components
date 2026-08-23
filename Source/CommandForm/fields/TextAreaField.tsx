@@ -4,7 +4,9 @@
 import type { TextareaHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
-interface TextAreaParts { root?: TextareaHTMLAttributes<HTMLTextAreaElement>; }
+interface TextAreaParts {
+    root?: TextareaHTMLAttributes<HTMLTextAreaElement>;
+}
 
 interface TextAreaFieldComponentProps extends WrappedFieldProps<string> {
     placeholder?: string;
@@ -30,11 +32,20 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
             aria-invalid={props.invalid || undefined}
             data-invalid={props.invalid || undefined}
             data-cratis-part='textarea'
-            className={['cratis-field-input', 'cratis-field-textarea', 'w-full', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
+            className={[
+                'cratis-field-input',
+                'cratis-field-textarea',
+                'w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
         />
     ),
     {
         defaultValue: '',
-        extractValue: (event: React.ChangeEvent<HTMLTextAreaElement>) => event.target.value,
+        extractValue: (event: React.ChangeEvent<HTMLTextAreaElement>) =>
+            event.target.value,
     },
 );

@@ -4,7 +4,8 @@
 import type { ReactNode } from 'react';
 
 /** Severity tone of a {@link Message}. */
-export type MessageSeverity = 'info' | 'success' | 'warn' | 'error' | 'secondary' | 'contrast';
+export type MessageSeverity =
+    'info' | 'success' | 'warn' | 'error' | 'secondary' | 'contrast';
 
 /** Props for {@link Message}. */
 export interface MessageProps {
@@ -30,7 +31,13 @@ const severitySymbols: Record<MessageSeverity, string> = {
 };
 
 /** A declarative inline status message. */
-export const Message = ({ severity = 'info', text, children, className, icon }: MessageProps) => (
+export const Message = ({
+    severity = 'info',
+    text,
+    children,
+    className,
+    icon,
+}: MessageProps) => (
     <div
         className={['cratis-message', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
@@ -38,10 +45,16 @@ export const Message = ({ severity = 'info', text, children, className, icon }: 
         role={severity === 'error' ? 'alert' : 'status'}
     >
         {icon !== false && (
-            <span className='cratis-message__icon' data-cratis-part='icon' aria-hidden='true'>
+            <span
+                className='cratis-message__icon'
+                data-cratis-part='icon'
+                aria-hidden='true'
+            >
                 {icon ?? severitySymbols[severity]}
             </span>
         )}
-        <span className='cratis-message__text' data-cratis-part='text'>{children ?? text}</span>
+        <span className='cratis-message__text' data-cratis-part='text'>
+            {children ?? text}
+        </span>
     </div>
 );

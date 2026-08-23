@@ -25,11 +25,20 @@ const normalizeHex = (value: string, fallback: string) =>
 /** A native color picker bound to a bare six-digit hex string on an Arc command. */
 export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProps>(
     (props) => {
-        const value = normalizeHex(props.value, normalizeHex(props.defaultColor ?? '000000', '000000'));
+        const value = normalizeHex(
+            props.value,
+            normalizeHex(props.defaultColor ?? '000000', '000000'),
+        );
         return (
             <div
                 {...props.pt?.root}
-                className={['cratis-color-field', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
+                className={[
+                    'cratis-color-field',
+                    props.pt?.root?.className,
+                    props.className,
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
                 onBlur={props.onBlur}
                 data-cratis-part='root'
                 data-invalid={props.invalid || undefined}
@@ -41,19 +50,26 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
                     value={`#${value}`}
                     onChange={props.onChange}
                     aria-invalid={props.invalid || undefined}
-                    className={['cratis-color-field__input', props.pt?.input?.className].filter(Boolean).join(' ')}
+                    className={['cratis-color-field__input', props.pt?.input?.className]
+                        .filter(Boolean)
+                        .join(' ')}
                     data-cratis-part='input'
                 />
                 <output
                     {...props.pt?.value}
-                    className={['cratis-color-field__value', props.pt?.value?.className].filter(Boolean).join(' ')}
+                    className={['cratis-color-field__value', props.pt?.value?.className]
+                        .filter(Boolean)
+                        .join(' ')}
                     data-cratis-part='value'
-                >#{value}</output>
+                >
+                    #{value}
+                </output>
             </div>
         );
     },
     {
         defaultValue: '',
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) => event.target.value.replace('#', ''),
+        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
+            event.target.value.replace('#', ''),
     },
 );

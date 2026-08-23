@@ -33,7 +33,7 @@ vi.mock('primereact/stepper', () => {
 
 // The submit button is the only one carrying autoFocus — auto-activate it (when
 // enabled) so the spec can assert whether the command executes.
-vi.mock('primereact/button', () => ({
+vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; onClick?: () => Promise<void> | void; disabled?: boolean; autoFocus?: boolean }) => {
         if (props.autoFocus && props.onClick && props.disabled !== true) {
             void props.onClick();

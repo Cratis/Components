@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
+import type { DataTableParts } from './DataTableCore';
 import type { Constructor } from '@cratis/fundamentals';
 import { type IObservableQueryFor, Paging } from '@cratis/arc/queries';
 import { useObservableQueryWithPaging } from '@cratis/arc.react/queries';
@@ -82,11 +82,11 @@ export interface DataTableForObservableQueryProps<
      */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying DataTable. */
-    pt?: DataTableRootProps['pt'];
+    /** Cratis-owned per-part attributes applied to the underlying table. */
+    pt?: DataTableParts;
 
-    /** PrimeReact pass-through options applied to the underlying DataTable. */
-    ptOptions?: DataTableRootProps['ptOptions'];
+    /** Retained for source compatibility; Cratis parts always merge. */
+    ptOptions?: object;
 
     /** When true, disables every base PrimeReact style on the underlying DataTable. */
     unstyled?: boolean;

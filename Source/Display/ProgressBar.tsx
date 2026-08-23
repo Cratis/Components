@@ -14,7 +14,12 @@ export interface ProgressBarProps {
 }
 
 /** A horizontal determinate or indeterminate progress indicator. */
-export const ProgressBar = ({ value = 0, mode = 'determinate', showValue = true, className }: ProgressBarProps) => {
+export const ProgressBar = ({
+    value = 0,
+    mode = 'determinate',
+    showValue = true,
+    className,
+}: ProgressBarProps) => {
     const boundedValue = Math.min(100, Math.max(0, value));
     const ariaValue = mode === 'determinate' ? boundedValue : undefined;
 

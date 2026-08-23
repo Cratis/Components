@@ -1,93 +1,77 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import { DataTable as PrimeDataTable } from 'primereact/datatable';
-import { InputText } from 'primereact/inputtext';
-import { registerMatcher, unregisterMatcher } from '@primereact/hooks/use-filter';
-import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
-import type {
-    UseDataTableSelectionEvent,
-    UseDataTableRowMouseEvent,
-    UseDataTableFilterEvent,
-} from '@primereact/types/headless/datatable';
+import React, {
+    useMemo,
+    useState,
+    type CSSProperties,
+    type HTMLAttributes,
+    type ReactNode,
+    type TableHTMLAttributes,
+    type TdHTMLAttributes,
+    type ThHTMLAttributes,
+} from 'react';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
-import { selectionKeysForRow, rowFromSelectionKeys } from './selectionKeys';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
-import type { DataTableFilterMeta } from './DataTableFilterMeta';
-import { attachDataTableFilterMatcherAdapter } from './DataTableFilterMatcherRegistry';
-
-attachDataTableFilterMatcherAdapter({
-    register: registerMatcher,
-    unregister: unregisterMatcher,
-});
+import {
+    DataTableFilterMatchMode,
+    type DataTableFilterConstraint,
+    type DataTableFilterMeta,
+} from './DataTableFilterMeta';
+import { resolveDataTableFilterMatcher } from './DataTableFilterMatcherRegistry';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-/**
- * Row-click event surfaced by {@link DataTableCore}.
- *
- * @typeParam TData - The row type.
- */
 export interface DataTableRowClickEvent<TData> {
-    /** The clicked row. */
     data: TData;
-    /** The row's index in the current page. */
     index: number;
 }
 
-/**
- * Props for {@link DataTableCore}.
- *
- * @typeParam TData - The row type.
- */
+/** Stable Cratis-owned parts for styling a {@link DataTableCore}. */
+export interface DataTableParts {
+    root?: HTMLAttributes<HTMLDivElement>;
+    search?: HTMLAttributes<HTMLDivElement>;
+    searchInput?: React.InputHTMLAttributes<HTMLInputElement>;
+    tableContainer?: HTMLAttributes<HTMLDivElement>;
+    table?: TableHTMLAttributes<HTMLTableElement>;
+    head?: HTMLAttributes<HTMLTableSectionElement>;
+    headerRow?: HTMLAttributes<HTMLTableRowElement>;
+    headerCell?: ThHTMLAttributes<HTMLTableCellElement>;
+    body?: HTMLAttributes<HTMLTableSectionElement>;
+    row?: HTMLAttributes<HTMLTableRowElement>;
+    cell?: TdHTMLAttributes<HTMLTableCellElement>;
+    emptyRow?: HTMLAttributes<HTMLTableRowElement>;
+    emptyCell?: TdHTMLAttributes<HTMLTableCellElement>;
+}
+
 export interface DataTableCoreProps<TData extends object> {
-    /** The rows to render (already paged by the caller). */
     data: TData[];
-    /** `<Column>` elements describing the columns. */
     children?: ReactNode;
-    /** The row property uniquely identifying each row — required for selection. */
     dataKey?: string;
-    /** Content shown when there are no rows. */
     emptyMessage: ReactNode;
-    /** Enables single-row selection by clicking a row. */
     selectionMode?: 'single';
-    /** Accessible name for each row's selection control. Override to localize. Defaults to `'Select row'`. */
     selectionAriaLabel?: string;
-    /** The currently-selected row. */
     selection?: TData | null;
-    /** Invoked when the selected row changes. */
     onSelectionChange?: (event: DataTableSelectionChangeEvent<TData>) => void;
-    /** Invoked when a row is clicked. */
     onRowClick?: (event: DataTableRowClickEvent<TData>) => void;
-    /** Computes an extra class name for each row. */
     rowClassName?: (rowData: TData) => string;
-    /** The fields the global search term is matched against. When set, a search box is shown above the table. */
     globalFilterFields?: string[];
-    /** Placeholder for the global search box. */
     globalSearchPlaceholder?: string;
-    /** Initial per-column filter state. */
     defaultFilters?: DataTableFilterMeta;
-    /** Invoked whenever the per-column filter state changes. */
     onFilter?: (filters: DataTableFilterMeta) => void;
-    /** Renders the table body in a scroll region of {@link scrollHeight}. */
     scrollable?: boolean;
-    /** The height of the scroll region when {@link scrollable} is set. */
     scrollHeight?: string;
-    /** Extra class name for the table root. */
     className?: string;
-    /** Inline style for the table root. */
     style?: CSSProperties;
-    /** PrimeReact pass-through configuration for the underlying DataTable. */
-    pt?: DataTableRootProps['pt'];
-    /** PrimeReact pass-through options for the underlying DataTable. */
-    ptOptions?: DataTableRootProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the DataTable. */
+    /** Cratis-owned per-part attributes. */
+    pt?: DataTableParts;
+    /** Retained for source compatibility; Cratis parts always merge. */
+    ptOptions?: object;
+    /** Retained for source compatibility; consumers always own the CSS. */
     unstyled?: boolean;
 }
 
-/** Parses column definitions from `<Column>` children. */
 const useColumns = (children: ReactNode): React.ReactElement<ColumnProps<any>>[] =>
     useMemo(
         () =>
@@ -97,32 +81,110 @@ const useColumns = (children: ReactNode): React.ReactElement<ColumnProps<any>>[]
         [children],
     );
 
+type CellValue =
+    string | number | boolean | bigint | symbol | Date | object | null | undefined;
+
+const asCellValue = (value: unknown): CellValue =>
+    typeof value === 'function' ? String(value) : (value as CellValue);
+
+const valueAtPath = (
+    row: Record<string, unknown>,
+    path: string | undefined,
+): CellValue => {
+    if (!path) return undefined;
+    let current: CellValue = row;
+    for (const segment of path.split('.')) {
+        if (current === null || typeof current !== 'object' || !(segment in current))
+            return undefined;
+        current = asCellValue((current as Record<string, unknown>)[segment]);
+    }
+    return current;
+};
+
 const renderCellContent = (
     column: ColumnProps<any>,
     row: Record<string, unknown>,
 ): ReactNode => {
     if (column.body) return column.body(row);
-    if (column.field) {
-        const value = row[column.field];
-        return value == null ? '' : String(value);
-    }
-    return null;
+    const value = valueAtPath(row, column.field);
+    return value == null ? '' : String(value);
 };
 
-/**
- * The shared, query-agnostic table used by {@link DataTableForQuery},
- * {@link DataTableForObservableQuery}, and the schema editor. Rebuilds
- * PrimeReact 10's monolithic `DataTable` on PrimeReact 11's headless
- * compositional table: it reads `<Column>` children, renders the header and
- * per-row body cells, and translates PrimeReact 11's key-based selection back
- * to the row-object API callers expect.
- *
- * Paging is intentionally *not* handled here — the query wrappers own paging
- * through Arc and feed one page of rows in via `data`, so this component only
- * renders and sorts/filters the current page client-side.
- *
- * @typeParam TData - The row type.
- */
+const dateNumber = (value: unknown) => {
+    const date = value instanceof Date ? value : new Date(String(value));
+    return Number.isNaN(date.getTime()) ? undefined : date.setHours(0, 0, 0, 0);
+};
+
+const builtInMatches = (
+    value: unknown,
+    constraint: DataTableFilterConstraint,
+): boolean => {
+    const filter = constraint.value;
+    const mode = constraint.matchMode ?? DataTableFilterMatchMode.Contains;
+    if (filter === null || filter === undefined || filter === '') return true;
+
+    const valueText = String(value ?? '').toLocaleLowerCase();
+    const filterText = String(filter).toLocaleLowerCase();
+    const valueNumber = typeof value === 'number' ? value : Number(value);
+    const filterNumber = typeof filter === 'number' ? filter : Number(filter);
+
+    switch (mode) {
+        case DataTableFilterMatchMode.StartsWith:
+            return valueText.startsWith(filterText);
+        case DataTableFilterMatchMode.Contains:
+            return valueText.includes(filterText);
+        case DataTableFilterMatchMode.NotContains:
+            return !valueText.includes(filterText);
+        case DataTableFilterMatchMode.EndsWith:
+            return valueText.endsWith(filterText);
+        case DataTableFilterMatchMode.Equals:
+            return Object.is(value, filter) || valueText === filterText;
+        case DataTableFilterMatchMode.NotEquals:
+            return !(Object.is(value, filter) || valueText === filterText);
+        case DataTableFilterMatchMode.In:
+            return Array.isArray(filter) && filter.some((item) => Object.is(item, value));
+        case DataTableFilterMatchMode.Between:
+            return (
+                Array.isArray(filter) &&
+                filter.length >= 2 &&
+                valueNumber >= Number(filter[0]) &&
+                valueNumber <= Number(filter[1])
+            );
+        case DataTableFilterMatchMode.LessThan:
+            return valueNumber < filterNumber;
+        case DataTableFilterMatchMode.LessThanOrEqual:
+            return valueNumber <= filterNumber;
+        case DataTableFilterMatchMode.GreaterThan:
+            return valueNumber > filterNumber;
+        case DataTableFilterMatchMode.GreaterThanOrEqual:
+            return valueNumber >= filterNumber;
+        case DataTableFilterMatchMode.DateIs:
+            return dateNumber(value) === dateNumber(filter);
+        case DataTableFilterMatchMode.DateIsNot:
+            return dateNumber(value) !== dateNumber(filter);
+        case DataTableFilterMatchMode.DateBefore:
+            return (dateNumber(value) ?? Infinity) < (dateNumber(filter) ?? -Infinity);
+        case DataTableFilterMatchMode.DateAfter:
+            return (dateNumber(value) ?? -Infinity) > (dateNumber(filter) ?? Infinity);
+        default:
+            return resolveDataTableFilterMatcher(String(mode))?.(value, filter) ?? false;
+    }
+};
+
+const compareValues = (left: unknown, right: unknown): number => {
+    if (typeof left === 'number' && typeof right === 'number') return left - right;
+    if (left instanceof Date && right instanceof Date)
+        return left.getTime() - right.getTime();
+    return String(left ?? '').localeCompare(String(right ?? ''), undefined, {
+        numeric: true,
+        sensitivity: 'base',
+    });
+};
+
+const classNames = (...values: Array<string | undefined>) =>
+    values.filter(Boolean).join(' ');
+
+/** A semantic, renderer-independent data table over one already-loaded page. */
 export const DataTableCore = <TData extends object>({
     data,
     children,
@@ -143,119 +205,192 @@ export const DataTableCore = <TData extends object>({
     className,
     style,
     pt,
-    ptOptions,
-    unstyled,
 }: DataTableCoreProps<TData>) => {
     const columns = useColumns(children);
     const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters ?? {});
-    const [globalFilter, setGlobalFilter] = useState<string>('');
-    const showGlobalSearch = !!globalFilterFields && globalFilterFields.length > 0;
+    const [globalFilter, setGlobalFilter] = useState('');
+    const [sort, setSort] = useState<{
+        field: string;
+        direction: 'ascending' | 'descending';
+    }>();
 
-    const handleFilter = (event: UseDataTableFilterEvent) => {
-        // PrimeReact's headless filter meta is looser than the typed Cratis
-        // constraint the public API exposes; narrow at this one boundary.
-        // SAFETY: DataTableCore only configures one value/match-mode constraint per field.
-        const next = event.filters as unknown as DataTableFilterMeta;
+    const filteredRows = useMemo(() => {
+        const term = globalFilter.trim().toLocaleLowerCase();
+        const rows = data.filter((row) => {
+            const rowValues = row as Record<string, unknown>;
+            const matchesColumns = Object.entries(filters).every(([field, constraint]) =>
+                builtInMatches(valueAtPath(rowValues, field), constraint),
+            );
+            if (!matchesColumns) return false;
+            if (!term || !globalFilterFields?.length) return true;
+            return globalFilterFields.some((field) =>
+                String(valueAtPath(rowValues, field) ?? '')
+                    .toLocaleLowerCase()
+                    .includes(term),
+            );
+        });
+
+        if (!sort) return rows;
+        return [...rows].sort((left, right) => {
+            const comparison = compareValues(
+                valueAtPath(left as Record<string, unknown>, sort.field),
+                valueAtPath(right as Record<string, unknown>, sort.field),
+            );
+            return sort.direction === 'ascending' ? comparison : -comparison;
+        });
+    }, [data, filters, globalFilter, globalFilterFields, sort]);
+
+    const updateFilter = (
+        field: string,
+        constraint: DataTableFilterConstraint | undefined,
+    ) => {
+        const next = { ...filters };
+        if (constraint) next[field] = constraint;
+        else delete next[field];
         setFilters(next);
         onFilter?.(next);
     };
 
-    const keyOf = (row: TData): string | undefined =>
-        dataKey ? String((row as Record<string, unknown>)[dataKey]) : undefined;
-
-    const selectionKeys = useMemo(
-        () => selectionKeysForRow(selection, dataKey),
-        [selection, dataKey],
-    );
-
-    const handleSelectionChange = (event: UseDataTableSelectionEvent) => {
-        if (!onSelectionChange) return;
-        onSelectionChange({
-            value: rowFromSelectionKeys(event.value, data, dataKey),
-            originalEvent: event.originalEvent,
-        });
-    };
-
-    const handleRowClick = onRowClick
-        ? (event: UseDataTableRowMouseEvent) =>
-              onRowClick({ data: event.data as TData, index: event.index })
-        : undefined;
+    const keyOf = (row: TData, index: number) =>
+        dataKey
+            ? String(valueAtPath(row as Record<string, unknown>, dataKey))
+            : String(index);
+    const selectedKey =
+        selection && dataKey
+            ? String(valueAtPath(selection as Record<string, unknown>, dataKey))
+            : undefined;
 
     return (
-        <PrimeDataTable.Root
-            data={data as object[]}
-            dataKey={dataKey}
-            removableSort
-            selectionMode={selectionMode ?? null}
-            selectionKeys={selectionKeys}
-            onSelectionChange={onSelectionChange ? handleSelectionChange : undefined}
-            onRowClick={handleRowClick}
-            filters={filters}
-            onFilter={handleFilter}
-            globalFilter={globalFilter || null}
-            globalFilterFields={globalFilterFields}
-            scrollable={scrollable}
-            scrollHeight={scrollHeight}
-            className={className}
-            style={style}
-            pt={pt}
-            ptOptions={ptOptions}
-            unstyled={unstyled}
+        <div
+            {...pt?.root}
+            className={classNames('cratis-datatable', pt?.root?.className, className)}
+            style={{ ...pt?.root?.style, ...style }}
+            data-cratis-part='root'
         >
-            {showGlobalSearch && (
-                <div className='cratis-datatable-search'>
-                    <InputText
+            {!!globalFilterFields?.length && (
+                <div
+                    {...pt?.search}
+                    className={classNames(
+                        'cratis-datatable-search',
+                        pt?.search?.className,
+                    )}
+                    data-cratis-part='search'
+                >
+                    <input
+                        {...pt?.searchInput}
                         value={globalFilter}
                         placeholder={globalSearchPlaceholder}
-                        className='w-full'
+                        className={classNames(
+                            'cratis-datatable-search__input',
+                            pt?.searchInput?.className,
+                        )}
+                        data-cratis-part='search-input'
                         onChange={(event) => setGlobalFilter(event.target.value)}
                     />
                 </div>
             )}
-            <PrimeDataTable.TableContainer>
-                <PrimeDataTable.Table>
-                    <PrimeDataTable.THead>
-                        <PrimeDataTable.THeadRow>
-                            {columns.map((column, index) => (
-                                <PrimeDataTable.THeadCell
-                                    key={index}
-                                    style={column.props.headerStyle ?? column.props.style}
-                                    className={column.props.headerClassName}
-                                >
-                                    <div className='cratis-datatable-header-cell'>
-                                        {column.props.sortable && column.props.field ? (
-                                            // aria-sort belongs on the column header, not the sort button; PrimeReact 11's
-                                            // Sort part puts it on its role="button" element (invalid ARIA), so strip it here.
-                                            <PrimeDataTable.Sort
-                                                field={column.props.field}
-                                                pt={{ root: { 'aria-sort': undefined } }}
-                                            >
-                                                <PrimeDataTable.THeadTitle>
-                                                    {column.props.header}
-                                                </PrimeDataTable.THeadTitle>
-                                                <PrimeDataTable.SortIndicator match='asc'>
-                                                    {' '}
-                                                    ▲
-                                                </PrimeDataTable.SortIndicator>
-                                                <PrimeDataTable.SortIndicator match='desc'>
-                                                    {' '}
-                                                    ▼
-                                                </PrimeDataTable.SortIndicator>
-                                            </PrimeDataTable.Sort>
-                                        ) : (
-                                            // The title part, not a bare span, so a theme's column-title weight reaches it.
-                                            <PrimeDataTable.THeadTitle>
-                                                {column.props.header}
-                                            </PrimeDataTable.THeadTitle>
+            <div
+                {...pt?.tableContainer}
+                className={classNames(
+                    'cratis-datatable__container',
+                    pt?.tableContainer?.className,
+                )}
+                style={{
+                    ...pt?.tableContainer?.style,
+                    ...(scrollable
+                        ? { maxHeight: scrollHeight ?? '100%', overflow: 'auto' }
+                        : {}),
+                }}
+                data-cratis-part='table-container'
+            >
+                <table
+                    {...pt?.table}
+                    className={classNames(
+                        'cratis-datatable__table',
+                        pt?.table?.className,
+                    )}
+                    data-cratis-part='table'
+                >
+                    <thead
+                        {...pt?.head}
+                        className={classNames(
+                            'cratis-datatable__head',
+                            pt?.head?.className,
+                        )}
+                        data-cratis-part='head'
+                    >
+                        <tr
+                            {...pt?.headerRow}
+                            className={classNames(
+                                'cratis-datatable__header-row',
+                                pt?.headerRow?.className,
+                            )}
+                            data-cratis-part='header-row'
+                        >
+                            {columns.map((column, index) => {
+                                const field =
+                                    column.props.filterField ?? column.props.field;
+                                const ariaSort =
+                                    sort && sort.field === column.props.field
+                                        ? sort.direction
+                                        : undefined;
+                                return (
+                                    <th
+                                        {...pt?.headerCell}
+                                        key={index}
+                                        scope='col'
+                                        aria-sort={ariaSort}
+                                        style={{
+                                            ...pt?.headerCell?.style,
+                                            ...column.props.style,
+                                            ...column.props.headerStyle,
+                                        }}
+                                        className={classNames(
+                                            'cratis-datatable__header-cell',
+                                            pt?.headerCell?.className,
+                                            column.props.headerClassName,
                                         )}
-                                        {column.props.filter &&
-                                            (column.props.filterField ??
-                                                column.props.field) && (
-                                                <ColumnFilterMenu
-                                                    field={
-                                                        (column.props.filterField ??
-                                                            column.props.field) as string
+                                        data-cratis-part='header-cell'
+                                    >
+                                        <div
+                                            className='cratis-datatable-header-cell'
+                                            data-cratis-part='header-content'
+                                        >
+                                            {column.props.sortable &&
+                                            column.props.field ? (
+                                                <button
+                                                    type='button'
+                                                    className='cratis-datatable__sort'
+                                                    data-cratis-part='sort'
+                                                    onClick={() =>
+                                                        setSort((current) => ({
+                                                            field: column.props
+                                                                .field as string,
+                                                            direction:
+                                                                current?.field ===
+                                                                    column.props.field &&
+                                                                current?.direction ===
+                                                                    'ascending'
+                                                                    ? 'descending'
+                                                                    : 'ascending',
+                                                        }))
                                                     }
+                                                >
+                                                    <span>{column.props.header}</span>
+                                                    {ariaSort && (
+                                                        <span aria-hidden='true'>
+                                                            {ariaSort === 'ascending'
+                                                                ? '▲'
+                                                                : '▼'}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            ) : (
+                                                column.props.header
+                                            )}
+                                            {column.props.filter && field && (
+                                                <ColumnFilterMenu
+                                                    field={field}
                                                     dataType={column.props.dataType}
                                                     placeholder={
                                                         column.props.filterPlaceholder
@@ -267,62 +402,115 @@ export const DataTableCore = <TData extends object>({
                                                         column.props.filterElement
                                                     }
                                                     labels={column.props.filterLabels}
+                                                    constraint={filters[field]}
+                                                    onApply={(constraint) =>
+                                                        updateFilter(field, constraint)
+                                                    }
+                                                    onClear={() =>
+                                                        updateFilter(field, undefined)
+                                                    }
                                                 />
                                             )}
-                                    </div>
-                                </PrimeDataTable.THeadCell>
-                            ))}
-                        </PrimeDataTable.THeadRow>
-                    </PrimeDataTable.THead>
-                    <PrimeDataTable.TBody>
-                        {({ item, index }) => (
-                            <PrimeDataTable.Row
-                                index={index}
-                                className={rowClassName?.(item as TData)}
-                            >
-                                {columns.map((column, columnIndex) => (
-                                    <PrimeDataTable.Cell
-                                        key={columnIndex}
-                                        style={{
-                                            ...column.props.style,
-                                            ...column.props.bodyStyle,
-                                        }}
-                                        className={
-                                            column.props.bodyClassName ??
-                                            column.props.className
-                                        }
-                                    >
-                                        {column.props.selectionMode ? (
-                                            <input
-                                                type='radio'
-                                                readOnly
-                                                aria-label={selectionAriaLabel}
-                                                checked={
-                                                    !!selection &&
-                                                    keyOf(item as TData) ===
-                                                        keyOf(selection)
-                                                }
-                                            />
-                                        ) : (
-                                            renderCellContent(column.props, item)
-                                        )}
-                                    </PrimeDataTable.Cell>
-                                ))}
-                            </PrimeDataTable.Row>
+                                        </div>
+                                    </th>
+                                );
+                            })}
+                        </tr>
+                    </thead>
+                    <tbody
+                        {...pt?.body}
+                        className={classNames(
+                            'cratis-datatable__body',
+                            pt?.body?.className,
                         )}
-                    </PrimeDataTable.TBody>
-                    {/* v11 classes the empty body `p-datatable-empty-message` alone, so a theme's
-                        `.p-datatable-tbody > tr > td` cell rules never reach the message row; the
-                        body class puts the empty row on the same footing as a data row. */}
-                    <PrimeDataTable.EmptyTBody className='p-datatable-tbody'>
-                        <PrimeDataTable.Row>
-                            <PrimeDataTable.Cell colSpan={Math.max(columns.length, 1)}>
-                                {emptyMessage}
-                            </PrimeDataTable.Cell>
-                        </PrimeDataTable.Row>
-                    </PrimeDataTable.EmptyTBody>
-                </PrimeDataTable.Table>
-            </PrimeDataTable.TableContainer>
-        </PrimeDataTable.Root>
+                        data-cratis-part='body'
+                    >
+                        {filteredRows.length === 0 ? (
+                            <tr
+                                {...pt?.emptyRow}
+                                className={classNames(
+                                    'cratis-datatable__empty-row',
+                                    pt?.emptyRow?.className,
+                                )}
+                                data-cratis-part='empty-row'
+                            >
+                                <td
+                                    {...pt?.emptyCell}
+                                    colSpan={Math.max(columns.length, 1)}
+                                    className={classNames(
+                                        'cratis-datatable__empty-cell',
+                                        pt?.emptyCell?.className,
+                                    )}
+                                    data-cratis-part='empty-cell'
+                                >
+                                    {emptyMessage}
+                                </td>
+                            </tr>
+                        ) : (
+                            filteredRows.map((row, rowIndex) => {
+                                const rowKey = keyOf(row, rowIndex);
+                                const isSelected =
+                                    selectionMode === 'single' && selectedKey === rowKey;
+                                return (
+                                    <tr
+                                        {...pt?.row}
+                                        key={rowKey}
+                                        className={classNames(
+                                            'cratis-datatable__row',
+                                            pt?.row?.className,
+                                            rowClassName?.(row),
+                                        )}
+                                        data-cratis-part='row'
+                                        data-selected={isSelected || undefined}
+                                        onClick={(event) => {
+                                            onRowClick?.({ data: row, index: rowIndex });
+                                            if (selectionMode === 'single') {
+                                                onSelectionChange?.({
+                                                    value: row,
+                                                    originalEvent: event,
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        {columns.map((column, columnIndex) => (
+                                            <td
+                                                {...pt?.cell}
+                                                key={columnIndex}
+                                                style={{
+                                                    ...pt?.cell?.style,
+                                                    ...column.props.style,
+                                                    ...column.props.bodyStyle,
+                                                }}
+                                                className={classNames(
+                                                    'cratis-datatable__cell',
+                                                    pt?.cell?.className,
+                                                    column.props.bodyClassName ??
+                                                        column.props.className,
+                                                )}
+                                                data-cratis-part='cell'
+                                            >
+                                                {column.props.selectionMode ? (
+                                                    <input
+                                                        type='radio'
+                                                        readOnly
+                                                        aria-label={selectionAriaLabel}
+                                                        checked={isSelected}
+                                                    />
+                                                ) : (
+                                                    renderCellContent(
+                                                        column.props,
+                                                        row as Record<string, unknown>,
+                                                    )
+                                                )}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     );
 };

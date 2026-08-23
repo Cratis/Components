@@ -2,20 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ButtonHTMLAttributes, ReactElement, ReactNode } from 'react';
-import { toast as primeReactToast } from 'primereact/toaster';
-import type {
-    ToastPromiseType as PrimeReactToastPromiseType,
-    ToastType as PrimeReactToastType,
-} from '@primereact/types/primitive/toaster';
 
-/** Severity understood by the Cratis toast dispatch. */
 export type ToastSeverity =
     'normal' | 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast';
-
-/** Identifier returned by the toast dispatch. */
 export type ToastId = string | number;
 
-/** Cratis-owned toast options, independent of the active renderer. */
 export interface ToastOptions {
     id?: ToastId;
     title?: ReactNode | string;
@@ -34,17 +25,14 @@ export interface ToastOptions {
     onTimeout?: (toast: ToastOptions) => void;
 }
 
-/** Backward-compatible name for {@link ToastOptions}. */
 export type ToastType = ToastOptions;
 
-/** Toast states used while tracking a promise. */
 export interface ToastPromiseOptions<T = unknown> {
     loading: ToastOptions;
     success?: ToastOptions | ((data: T) => ToastOptions | void);
     error?: ToastOptions | ((error: unknown) => ToastOptions | void);
 }
 
-/** Renderer-independent toast dispatch contract. */
 export interface ToastDispatch {
     show(options: ToastOptions): ToastId;
     update(id: ToastId, updates: Partial<ToastOptions>): ToastId;
@@ -58,7 +46,6 @@ export interface ToastDispatch {
     contrast(options: ToastOptions): ToastId;
 }
 
-/** Callable Cratis toast API exposed to applications. */
 export interface ToastFunction {
     (options: ToastOptions): ToastId;
     update(id: ToastId, updates: Partial<ToastOptions>): ToastId;
@@ -72,53 +59,96 @@ export interface ToastFunction {
     contrast(options: ToastOptions): ToastId;
 }
 
-const toPrimeReactToast = (options: ToastOptions): PrimeReactToastType => {
-    // SAFETY: ToastOptions intentionally mirrors the renderer's value shape while
-    // keeping all public names owned by Cratis.
-    return options as PrimeReactToastType;
+export interface ToastRecord extends ToastOptions {
+    id: ToastId;
+}
+
+interface ToastStore {
+    items: ToastRecord[];
+    listeners: Set<() => void>;
+    nextId: number;
+}
+
+const storeKey = Symbol.for('@cratis/components/toast-store/v1');
+// SAFETY: Symbol.for lets multiple loaded Components copies share one app-wide queue.
+const storeHost = globalThis as unknown as Record<symbol, ToastStore | undefined>;
+const store = (storeHost[storeKey] ??= { items: [], listeners: new Set(), nextId: 1 });
+const emit = () => store.listeners.forEach((listener) => listener());
+
+/** Subscribes a mounted toaster to the app-wide queue. */
+export const subscribeToToasts = (listener: () => void): (() => void) => {
+    store.listeners.add(listener);
+    return () => store.listeners.delete(listener);
 };
 
-const toPrimeReactPromise = <T>(
+/** Returns the current immutable queue snapshot. */
+export const getToastSnapshot = (): ToastRecord[] => store.items;
+
+const show = (options: ToastOptions): ToastId => {
+    const id = options.id ?? store.nextId++;
+    const record = { ...options, id };
+    const existing = store.items.findIndex((item) => item.id === id);
+    store.items =
+        existing >= 0
+            ? store.items.map((item) => (item.id === id ? record : item))
+            : [...store.items, record];
+    emit();
+    return id;
+};
+
+const update = (id: ToastId, updates: Partial<ToastOptions>): ToastId => {
+    store.items = store.items.map((item) =>
+        item.id === id ? { ...item, ...updates, id } : item,
+    );
+    emit();
+    return id;
+};
+
+const dismiss = (id?: ToastId) => {
+    const removed =
+        id === undefined ? store.items : store.items.filter((item) => item.id === id);
+    removed.forEach((item) => item.onDismiss?.(item));
+    store.items = id === undefined ? [] : store.items.filter((item) => item.id !== id);
+    emit();
+};
+
+const promise = async <T>(
+    work: Promise<T>,
     options: ToastPromiseOptions<T>,
-): PrimeReactToastPromiseType<T> => {
-    const success = options.success;
-    const error = options.error;
-
-    return {
-        loading: toPrimeReactToast(options.loading),
-        success:
-            typeof success === 'function'
-                ? (data) => {
-                      const resolved = success(data);
-                      return resolved ? toPrimeReactToast(resolved) : undefined;
-                  }
-                : success
-                  ? toPrimeReactToast(success)
-                  : undefined,
-        error:
-            typeof error === 'function'
-                ? (failure) => {
-                      const resolved = error(failure);
-                      return resolved ? toPrimeReactToast(resolved) : undefined;
-                  }
-                : error
-                  ? toPrimeReactToast(error)
-                  : undefined,
-    };
+): Promise<T> => {
+    const id = show({ ...options.loading, loading: true });
+    try {
+        const data = await work;
+        const resolved =
+            typeof options.success === 'function'
+                ? options.success(data)
+                : options.success;
+        if (resolved) update(id, { ...resolved, loading: false });
+        else dismiss(id);
+        return data;
+    } catch (error) {
+        const resolved =
+            typeof options.error === 'function' ? options.error(error) : options.error;
+        if (resolved) update(id, { ...resolved, loading: false });
+        else dismiss(id);
+        throw error;
+    }
 };
 
-const primeReactToastDispatch: ToastDispatch = {
-    show: (options) => primeReactToast(toPrimeReactToast(options)),
-    update: (id, updates) => primeReactToast.update(id, toPrimeReactToast(updates)),
-    dismiss: (id) => primeReactToast.dismiss(id),
-    promise: (promise, options) =>
-        primeReactToast.promise(promise, toPrimeReactPromise(options)),
-    success: (options) => primeReactToast.success(toPrimeReactToast(options)),
-    info: (options) => primeReactToast.info(toPrimeReactToast(options)),
-    warn: (options) => primeReactToast.warn(toPrimeReactToast(options)),
-    error: (options) => primeReactToast.error(toPrimeReactToast(options)),
-    secondary: (options) => primeReactToast.secondary(toPrimeReactToast(options)),
-    contrast: (options) => primeReactToast.contrast(toPrimeReactToast(options)),
+const withSeverity = (severity: ToastSeverity) => (options: ToastOptions) =>
+    show({ ...options, severity });
+
+const defaultToastDispatch: ToastDispatch = {
+    show,
+    update,
+    dismiss,
+    promise,
+    success: withSeverity('success'),
+    info: withSeverity('info'),
+    warn: withSeverity('warn'),
+    error: withSeverity('error'),
+    secondary: withSeverity('secondary'),
+    contrast: withSeverity('contrast'),
 };
 
 interface ToastDispatchFrame {
@@ -131,18 +161,13 @@ interface ToastDispatchRegistry {
     active?: ToastDispatchFrame;
 }
 
-const toastDispatchRegistryKey = Symbol.for('@cratis/components/toast-dispatch/v1');
+const dispatchRegistryKey = Symbol.for('@cratis/components/toast-dispatch/v1');
 // SAFETY: Symbol.for gives every loaded Components copy the same isolated dispatch slot.
-const toastDispatchRegistryHost = globalThis as unknown as Record<symbol, unknown>;
-const existingToastDispatchRegistry = toastDispatchRegistryHost[toastDispatchRegistryKey];
-const toastDispatchRegistry: ToastDispatchRegistry =
-    typeof existingToastDispatchRegistry === 'object' &&
-    existingToastDispatchRegistry !== null &&
-    ('active' in existingToastDispatchRegistry ||
-        Object.keys(existingToastDispatchRegistry).length === 0)
-        ? (existingToastDispatchRegistry as ToastDispatchRegistry)
-        : {};
-toastDispatchRegistryHost[toastDispatchRegistryKey] = toastDispatchRegistry;
+const dispatchHost = globalThis as unknown as Record<
+    symbol,
+    ToastDispatchRegistry | undefined
+>;
+const dispatchRegistry = (dispatchHost[dispatchRegistryKey] ??= {});
 
 const nearestActiveFrame = (
     frame: ToastDispatchFrame | undefined,
@@ -152,36 +177,31 @@ const nearestActiveFrame = (
     return current;
 };
 
-/**
- * Replaces the active toast renderer and returns a scoped restore callback.
- * Applications normally use the default PrimeReact implementation.
- */
 export const setToastDispatch = (dispatch: ToastDispatch): (() => void) => {
     const frame: ToastDispatchFrame = {
         dispatch,
-        previous: toastDispatchRegistry.active,
+        previous: dispatchRegistry.active,
         removed: false,
     };
-    toastDispatchRegistry.active = frame;
+    dispatchRegistry.active = frame;
 
     return () => {
         if (frame.removed) return;
         frame.removed = true;
-        if (toastDispatchRegistry.active === frame) {
-            toastDispatchRegistry.active = nearestActiveFrame(frame.previous);
+        if (dispatchRegistry.active === frame) {
+            dispatchRegistry.active = nearestActiveFrame(frame.previous);
         }
     };
 };
 
 const activeToastDispatch = () =>
-    nearestActiveFrame(toastDispatchRegistry.active)?.dispatch ?? primeReactToastDispatch;
+    nearestActiveFrame(dispatchRegistry.active)?.dispatch ?? defaultToastDispatch;
 
 const callableToast = ((options: ToastOptions) =>
     activeToastDispatch().show(options)) as ToastFunction;
 callableToast.update = (id, updates) => activeToastDispatch().update(id, updates);
 callableToast.dismiss = (id) => activeToastDispatch().dismiss(id);
-callableToast.promise = (promise, options) =>
-    activeToastDispatch().promise(promise, options);
+callableToast.promise = (work, options) => activeToastDispatch().promise(work, options);
 callableToast.success = (options) => activeToastDispatch().success(options);
 callableToast.info = (options) => activeToastDispatch().info(options);
 callableToast.warn = (options) => activeToastDispatch().warn(options);
@@ -189,8 +209,5 @@ callableToast.error = (options) => activeToastDispatch().error(options);
 callableToast.secondary = (options) => activeToastDispatch().secondary(options);
 callableToast.contrast = (options) => activeToastDispatch().contrast(options);
 
-/**
- * Cratis-owned imperative toast API. Requires a {@link Toaster} for the default
- * renderer, or a custom dispatch installed through {@link setToastDispatch}.
- */
+/** Cratis-owned imperative toast API. Mount one {@link Toaster} in the application root. */
 export const toast: ToastFunction = callableToast;

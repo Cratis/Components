@@ -4,7 +4,8 @@
 import type { ReactNode } from 'react';
 
 /** Severity tone of a {@link Tag}. */
-export type TagSeverity = 'secondary' | 'success' | 'info' | 'warn' | 'danger' | 'contrast';
+export type TagSeverity =
+    'secondary' | 'success' | 'info' | 'warn' | 'danger' | 'contrast';
 
 /** Props for {@link Tag}. */
 export interface TagProps {
@@ -23,14 +24,27 @@ export interface TagProps {
 }
 
 /** A small colored status label. */
-export const Tag = ({ value, severity = 'secondary', rounded, icon, className, children }: TagProps) => (
+export const Tag = ({
+    value,
+    severity = 'secondary',
+    rounded,
+    icon,
+    className,
+    children,
+}: TagProps) => (
     <span
         className={['cratis-tag', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
         data-severity={severity}
         data-rounded={rounded || undefined}
     >
-        {icon && <span className='cratis-tag__icon' data-cratis-part='icon'>{icon}</span>}
-        <span className='cratis-tag__label' data-cratis-part='label'>{value ?? children}</span>
+        {icon && (
+            <span className='cratis-tag__icon' data-cratis-part='icon'>
+                {icon}
+            </span>
+        )}
+        <span className='cratis-tag__label' data-cratis-part='label'>
+            {value ?? children}
+        </span>
     </span>
 );

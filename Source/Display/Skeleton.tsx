@@ -16,7 +16,13 @@ export interface SkeletonProps {
 }
 
 /** A loading placeholder that reserves content layout. */
-export const Skeleton = ({ width = '100%', height = '1rem', borderRadius, circle, className }: SkeletonProps) => (
+export const Skeleton = ({
+    width = '100%',
+    height = '1rem',
+    borderRadius,
+    circle,
+    className,
+}: SkeletonProps) => (
     <span
         className={['cratis-skeleton', className].filter(Boolean).join(' ')}
         data-cratis-part='root'

@@ -13,10 +13,25 @@
     background: var(--cratis-surface-100);
     color: var(--cratis-text-color);
 }
-.cratis-avatar[data-size='large'] { width: 3rem; height: 3rem; }
-.cratis-avatar[data-size='xlarge'] { width: 4rem; height: 4rem; }
-.cratis-avatar__image { width: 100%; height: 100%; object-fit: cover; }
-.cratis-avatar__fallback { display: inline-flex; align-items: center; justify-content: center; font-weight: 600; }
+.cratis-avatar[data-size='large'] {
+    width: 3rem;
+    height: 3rem;
+}
+.cratis-avatar[data-size='xlarge'] {
+    width: 4rem;
+    height: 4rem;
+}
+.cratis-avatar__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.cratis-avatar__fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
 
 .cratis-badge,
 .cratis-tag,
@@ -30,19 +45,65 @@
     color: var(--cratis-text-color);
     line-height: 1;
 }
-.cratis-badge { min-width: 1.25rem; min-height: 1.25rem; padding: 0.2rem 0.35rem; font-size: 0.75rem; font-weight: 700; }
-.cratis-badge[data-size='large'] { min-width: 1.75rem; min-height: 1.75rem; font-size: 0.875rem; }
-.cratis-badge[data-size='xlarge'] { min-width: 2.25rem; min-height: 2.25rem; font-size: 1rem; }
-.cratis-badge[data-shape='circle'] { padding: 0; border-radius: 50%; }
-.cratis-tag { padding: 0.35rem 0.55rem; font-size: 0.75rem; font-weight: 600; }
-.cratis-tag[data-rounded='true'] { border-radius: 999px; }
-.cratis-chip { padding: 0.35rem 0.5rem; font-size: 0.875rem; }
+.cratis-badge {
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+    padding: 0.2rem 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.cratis-badge[data-size='large'] {
+    min-width: 1.75rem;
+    min-height: 1.75rem;
+    font-size: 0.875rem;
+}
+.cratis-badge[data-size='xlarge'] {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    font-size: 1rem;
+}
+.cratis-badge[data-shape='circle'] {
+    padding: 0;
+    border-radius: 50%;
+}
+.cratis-tag {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.cratis-tag[data-rounded='true'] {
+    border-radius: 999px;
+}
+.cratis-chip {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.875rem;
+}
 
-.cratis-badge[data-severity='info'], .cratis-tag[data-severity='info'] { background: color-mix(in srgb, var(--cratis-primary-color) 16%, transparent); color: var(--cratis-primary-color); }
-.cratis-badge[data-severity='success'], .cratis-tag[data-severity='success'] { background: color-mix(in srgb, var(--cratis-green-500) 16%, transparent); color: var(--cratis-green-500); }
-.cratis-badge[data-severity='warn'], .cratis-tag[data-severity='warn'] { background: color-mix(in srgb, var(--cratis-orange-500) 18%, transparent); color: var(--cratis-orange-500); }
-.cratis-badge[data-severity='danger'], .cratis-tag[data-severity='danger'] { background: color-mix(in srgb, var(--cratis-red-500) 16%, transparent); color: var(--cratis-red-500); }
-.cratis-badge[data-severity='contrast'], .cratis-tag[data-severity='contrast'] { background: var(--cratis-text-color); color: var(--cratis-surface-0); }
+.cratis-badge[data-severity='info'],
+.cratis-tag[data-severity='info'] {
+    background: color-mix(in srgb, var(--cratis-primary-color) 16%, transparent);
+    color: var(--cratis-primary-color);
+}
+.cratis-badge[data-severity='success'],
+.cratis-tag[data-severity='success'] {
+    background: color-mix(in srgb, var(--cratis-green-500) 16%, transparent);
+    color: var(--cratis-green-500);
+}
+.cratis-badge[data-severity='warn'],
+.cratis-tag[data-severity='warn'] {
+    background: color-mix(in srgb, var(--cratis-orange-500) 18%, transparent);
+    color: var(--cratis-orange-500);
+}
+.cratis-badge[data-severity='danger'],
+.cratis-tag[data-severity='danger'] {
+    background: color-mix(in srgb, var(--cratis-red-500) 16%, transparent);
+    color: var(--cratis-red-500);
+}
+.cratis-badge[data-severity='contrast'],
+.cratis-tag[data-severity='contrast'] {
+    background: var(--cratis-text-color);
+    color: var(--cratis-surface-0);
+}
 
 .cratis-chip__remove {
     display: inline-flex;
@@ -57,8 +118,13 @@
     color: inherit;
     cursor: pointer;
 }
-.cratis-chip__remove:hover { background: var(--cratis-surface-hover); }
-.cratis-chip__remove:focus-visible { outline: none; box-shadow: var(--cratis-focus-ring); }
+.cratis-chip__remove:hover {
+    background: var(--cratis-surface-hover);
+}
+.cratis-chip__remove:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
 
 .cratis-message {
     display: flex;
@@ -70,12 +136,24 @@
     background: var(--cratis-surface-section);
     color: var(--cratis-text-color);
 }
-.cratis-message[data-severity='info'] { border-color: var(--cratis-primary-color); }
-.cratis-message[data-severity='success'] { border-color: var(--cratis-green-500); }
-.cratis-message[data-severity='warn'] { border-color: var(--cratis-orange-500); }
-.cratis-message[data-severity='error'] { border-color: var(--cratis-red-500); }
-.cratis-message__icon { flex: 0 0 auto; }
-.cratis-message__text { min-width: 0; }
+.cratis-message[data-severity='info'] {
+    border-color: var(--cratis-primary-color);
+}
+.cratis-message[data-severity='success'] {
+    border-color: var(--cratis-green-500);
+}
+.cratis-message[data-severity='warn'] {
+    border-color: var(--cratis-orange-500);
+}
+.cratis-message[data-severity='error'] {
+    border-color: var(--cratis-red-500);
+}
+.cratis-message__icon {
+    flex: 0 0 auto;
+}
+.cratis-message__text {
+    min-width: 0;
+}
 
 .cratis-progress-bar {
     position: relative;
@@ -98,33 +176,88 @@
     width: 40%;
     animation: cratis-progress-indeterminate 1.2s ease-in-out infinite;
 }
-.cratis-progress-bar__label { padding-inline: 0.35rem; font-size: 0.7rem; }
+.cratis-progress-bar__label {
+    padding-inline: 0.35rem;
+    font-size: 0.7rem;
+}
 
-.cratis-progress-spinner { display: inline-flex; width: 2rem; height: 2rem; }
-.cratis-progress-spinner__svg { width: 100%; height: 100%; animation: cratis-spinner-rotate 1s linear infinite; }
+.cratis-progress-spinner {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+}
+.cratis-progress-spinner__svg {
+    width: 100%;
+    height: 100%;
+    animation: cratis-spinner-rotate 1s linear infinite;
+}
 .cratis-progress-spinner__track,
-.cratis-progress-spinner__range { fill: none; stroke-width: 4; }
-.cratis-progress-spinner__track { stroke: var(--cratis-surface-100); }
-.cratis-progress-spinner__range { stroke: var(--cratis-primary-color); stroke-linecap: round; stroke-dasharray: 90 150; }
+.cratis-progress-spinner__range {
+    fill: none;
+    stroke-width: 4;
+}
+.cratis-progress-spinner__track {
+    stroke: var(--cratis-surface-100);
+}
+.cratis-progress-spinner__range {
+    stroke: var(--cratis-primary-color);
+    stroke-linecap: round;
+    stroke-dasharray: 90 150;
+}
 
 .cratis-skeleton {
     display: block;
-    background: linear-gradient(90deg, var(--cratis-surface-100), var(--cratis-surface-hover), var(--cratis-surface-100));
+    background: linear-gradient(
+        90deg,
+        var(--cratis-surface-100),
+        var(--cratis-surface-hover),
+        var(--cratis-surface-100)
+    );
     background-size: 200% 100%;
     animation: cratis-skeleton-pulse 1.4s ease-in-out infinite;
 }
 
-@keyframes cratis-progress-indeterminate { from { transform: translateX(-120%); } to { transform: translateX(350%); } }
-@keyframes cratis-spinner-rotate { to { transform: rotate(360deg); } }
-@keyframes cratis-skeleton-pulse { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes cratis-progress-indeterminate {
+    from {
+        transform: translateX(-120%);
+    }
+    to {
+        transform: translateX(350%);
+    }
+}
+@keyframes cratis-spinner-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes cratis-skeleton-pulse {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
+}
 
 @media (prefers-reduced-motion: reduce) {
     .cratis-progress-bar__indicator,
     .cratis-progress-spinner__svg,
-    .cratis-skeleton { animation: none; transition: none; }
+    .cratis-skeleton {
+        animation: none;
+        transition: none;
+    }
 }
 
 @media (forced-colors: active) {
-    .cratis-message, .cratis-chip, .cratis-tag, .cratis-badge { border: 1px solid CanvasText; }
-    .cratis-progress-bar__indicator, .cratis-progress-spinner__range { background: Highlight; stroke: Highlight; }
+    .cratis-message,
+    .cratis-chip,
+    .cratis-tag,
+    .cratis-badge {
+        border: 1px solid CanvasText;
+    }
+    .cratis-progress-bar__indicator,
+    .cratis-progress-spinner__range {
+        background: Highlight;
+        stroke: Highlight;
+    }
 }

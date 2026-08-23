@@ -34,17 +34,21 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                 `cratis-radio-group--${props.layout ?? 'vertical'}`,
                 props.pt?.root?.className,
                 props.className,
-            ].filter(Boolean).join(' ')}
+            ]
+                .filter(Boolean)
+                .join(' ')}
             data-cratis-part='root'
         >
-            {props.options.map(option => {
+            {props.options.map((option) => {
                 const value = option[props.optionValue] as string | number;
                 const label = String(option[props.optionLabel] ?? value);
                 return (
                     <label
                         {...props.pt?.option}
                         key={String(value)}
-                        className={['cratis-choice-field', props.pt?.option?.className].filter(Boolean).join(' ')}
+                        className={['cratis-choice-field', props.pt?.option?.className]
+                            .filter(Boolean)
+                            .join(' ')}
                         onBlur={props.onBlur}
                         data-cratis-part='option'
                     >
@@ -52,22 +56,34 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                             {...props.pt?.input}
                             type='radio'
                             checked={props.value === value}
-                            onChange={event => {
+                            onChange={(event) => {
                                 if (event.target.checked) props.onChange(value);
                             }}
                             aria-invalid={props.invalid || undefined}
-                            className={['cratis-choice-field__native', props.pt?.input?.className].filter(Boolean).join(' ')}
+                            className={[
+                                'cratis-choice-field__native',
+                                props.pt?.input?.className,
+                            ]
+                                .filter(Boolean)
+                                .join(' ')}
                             data-cratis-part='input'
                         />
                         <span
                             {...props.pt?.box}
-                            className={['cratis-radio__box', props.pt?.box?.className].filter(Boolean).join(' ')}
+                            className={['cratis-radio__box', props.pt?.box?.className]
+                                .filter(Boolean)
+                                .join(' ')}
                             data-cratis-part='box'
                             aria-hidden='true'
                         >
                             <span
                                 {...props.pt?.indicator}
-                                className={['cratis-radio__indicator', props.pt?.indicator?.className].filter(Boolean).join(' ')}
+                                className={[
+                                    'cratis-radio__indicator',
+                                    props.pt?.indicator?.className,
+                                ]
+                                    .filter(Boolean)
+                                    .join(' ')}
                                 data-cratis-part='indicator'
                             />
                         </span>

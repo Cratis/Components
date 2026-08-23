@@ -47,9 +47,15 @@ describe('when configuring input pass-through', () => {
             );
         });
 
-        const renderedRoot = container.querySelector<HTMLElement>('[data-cratis-part="root"]');
-        const renderedGroup = container.querySelector<HTMLElement>('[data-cratis-part="group"]');
-        const renderedInput = container.querySelector<HTMLElement>('[data-cratis-part="input"]');
+        const renderedRoot = container.querySelector<HTMLElement>(
+            '[data-cratis-part="root"]',
+        );
+        const renderedGroup = container.querySelector<HTMLElement>(
+            '[data-cratis-part="group"]',
+        );
+        const renderedInput = container.querySelector<HTMLElement>(
+            '[data-cratis-part="input"]',
+        );
         if (!renderedRoot || !renderedGroup || !renderedInput) {
             throw new Error('DatePickerInput did not render its stable Cratis parts.');
         }
@@ -84,6 +90,8 @@ describe('when configuring input pass-through', () => {
     });
 
     it('should preserve the pass-through placeholder when the wrapper prop is omitted', () => {
-        expect(dateInput.getAttribute('data-placeholder')).to.equal('Pass-through placeholder');
+        expect(dateInput.getAttribute('data-placeholder')).to.equal(
+            'Pass-through placeholder',
+        );
     });
 });

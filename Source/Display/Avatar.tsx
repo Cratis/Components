@@ -20,16 +20,32 @@ export interface AvatarProps {
 }
 
 /** A user or entity avatar with an image and text/icon fallback. */
-export const Avatar = ({ image, label, icon, alt = '', size = 'normal', className }: AvatarProps) => (
+export const Avatar = ({
+    image,
+    label,
+    icon,
+    alt = '',
+    size = 'normal',
+    className,
+}: AvatarProps) => (
     <span
         className={['cratis-avatar', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
         data-size={size}
     >
         {image ? (
-            <img className='cratis-avatar__image' data-cratis-part='image' src={image} alt={alt} />
+            <img
+                className='cratis-avatar__image'
+                data-cratis-part='image'
+                src={image}
+                alt={alt}
+            />
         ) : (
-            <span className='cratis-avatar__fallback' data-cratis-part='fallback' aria-hidden={!label}>
+            <span
+                className='cratis-avatar__fallback'
+                data-cratis-part='fallback'
+                aria-hidden={!label}
+            >
                 {icon ?? label}
             </span>
         )}

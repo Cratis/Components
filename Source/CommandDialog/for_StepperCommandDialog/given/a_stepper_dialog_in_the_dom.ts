@@ -24,8 +24,13 @@ export interface StepperDialogInTheDom {
  * @param element - The element to render.
  * @returns The mounted dialog, to be passed to {@link unmount}.
  */
-export const render = async (element: React.ReactElement): Promise<StepperDialogInTheDom> => {
-    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+export const render = async (
+    element: React.ReactElement,
+): Promise<StepperDialogInTheDom> => {
+    // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
+    (
+        globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -44,7 +49,10 @@ export const render = async (element: React.ReactElement): Promise<StepperDialog
  * @param dialog - The mounted dialog.
  * @param element - The element to render in its place.
  */
-export const rerender = async (dialog: StepperDialogInTheDom, element: React.ReactElement) => {
+export const rerender = async (
+    dialog: StepperDialogInTheDom,
+    element: React.ReactElement,
+) => {
     await act(async () => {
         dialog.root.render(element);
     });
@@ -67,7 +75,9 @@ export const unmount = async (dialog: StepperDialogInTheDom) => {
  * @param label - The label of the button to click.
  */
 export const click = async (dialog: StepperDialogInTheDom, label: string) => {
-    const button = Array.from(dialog.container.querySelectorAll('button')).find(candidate => candidate.textContent === label);
+    const button = Array.from(dialog.container.querySelectorAll('button'))
+        .filter((candidate) => !candidate.matches('[data-cratis-part="header"]'))
+        .find((candidate) => candidate.textContent === label);
 
     await act(async () => {
         button?.click();
@@ -93,7 +103,9 @@ export const pressEscape = async () => {
  * @returns The button labels, in document order.
  */
 export const buttonLabels = (dialog: StepperDialogInTheDom): string[] =>
-    Array.from(dialog.container.querySelectorAll('button')).map(button => button.textContent ?? '');
+    Array.from(dialog.container.querySelectorAll('button'))
+        .filter((button) => !button.matches('[data-cratis-part="header"]'))
+        .map((button) => button.textContent ?? '');
 
 /**
  * The footer laid out the way it is composed: every button by its label, and the flexible spacer
@@ -104,10 +116,13 @@ export const buttonLabels = (dialog: StepperDialogInTheDom): string[] =>
  * @returns The footer's children, in document order.
  */
 export const footerLayout = (dialog: StepperDialogInTheDom): string[] => {
-    const footer = dialog.container.querySelector('[data-testid="dialog"]')?.firstElementChild;
+    const footer = dialog.container.querySelector(
+        '[data-testid="dialog"]',
+    )?.firstElementChild;
 
-    return Array.from(footer?.children ?? [])
-        .map(child => child.tagName === 'BUTTON' ? child.textContent ?? '' : 'spacer');
+    return Array.from(footer?.children ?? []).map((child) =>
+        child.tagName === 'BUTTON' ? (child.textContent ?? '') : 'spacer',
+    );
 };
 
 /**
@@ -119,8 +134,10 @@ export const footerLayout = (dialog: StepperDialogInTheDom): string[] => {
  */
 export const disabledButtonLabels = (dialog: StepperDialogInTheDom): string[] =>
     Array.from(dialog.container.querySelectorAll('button'))
-        .filter(button => button.disabled)
-        .map(button => button.textContent ?? '');
+        .filter(
+            (button) => !button.matches('[data-cratis-part="header"]') && button.disabled,
+        )
+        .map((button) => button.textContent ?? '');
 
 /**
  * Runs work that resolves a promise the spec itself holds - settling a command execution,
@@ -134,22 +151,20 @@ export const settle = async (work: () => void) => {
 };
 
 /**
- * The headers of the steps the wizard actually rendered, in render order. PrimeReact 11's
- * Stepper is compositional, so a step's header text is the `Stepper.Title` part inside its
- * header rather than an attribute on the panel — one title per rendered step either way.
+ * The headers of the steps the wizard actually rendered, in render order.
  * @param dialog - The mounted dialog.
  * @returns The step headers.
  */
 export const renderedSteps = (dialog: StepperDialogInTheDom): string[] =>
-    Array.from(dialog.container.querySelectorAll('[data-part="title"]'))
-        .map(title => title.textContent ?? '');
+    Array.from(dialog.container.querySelectorAll('[data-part="title"]')).map(
+        (title) => title.textContent ?? '',
+    );
 
 /**
- * The step index the wizard handed the Stepper, or `'none'` when no stepper was
- * rendered at all. PrimeReact 11 drives the Stepper by `value` — the step's index
- * as a string — on its root part, in place of v10's `activeStep`.
+ * The active step index on the stable Cratis stepper root, or `'none'`.
  * @param dialog - The mounted dialog.
  * @returns The active step index as a string.
  */
 export const activeStep = (dialog: StepperDialogInTheDom): string =>
-    dialog.container.querySelector('[data-part="root"]')?.getAttribute('data-value') ?? 'none';
+    dialog.container.querySelector('[data-part="root"]')?.getAttribute('data-value') ??
+    'none';

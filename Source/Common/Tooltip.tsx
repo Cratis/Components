@@ -2,10 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
-import {
-    Tooltip as AriaTooltip,
-    TooltipTrigger,
-} from 'react-aria-components/Tooltip';
+import { Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components/Tooltip';
 
 /** Position of the tooltip relative to its trigger element. */
 export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left';
@@ -25,13 +22,21 @@ export interface TooltipProps {
 }
 
 /** An accessible hover and keyboard-focus tooltip with stable Cratis parts. */
-export const Tooltip = ({ content, position = 'top', disabled = false, className, children }: TooltipProps) => {
+export const Tooltip = ({
+    content,
+    position = 'top',
+    disabled = false,
+    className,
+    children,
+}: TooltipProps) => {
     if (!content || disabled) return <>{children}</>;
 
     return (
         <TooltipTrigger delay={350} closeDelay={100}>
             <span
-                className={['cratis-tooltip-trigger', className].filter(Boolean).join(' ')}
+                className={['cratis-tooltip-trigger', className]
+                    .filter(Boolean)
+                    .join(' ')}
                 data-cratis-part='trigger'
                 tabIndex={0}
             >

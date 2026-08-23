@@ -3,7 +3,6 @@
 
 // @vitest-environment jsdom
 
-import { en } from '@primereact/core/locale';
 import { expect } from 'chai';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -31,17 +30,13 @@ describe('when using the configured locale', () => {
                 <CratisComponentsProvider
                     value={{
                         locale: 'test',
-                        locales: {
-                            test: {
-                                ...en,
-                                aria: {
-                                    ...en.aria,
-                                    navigation: 'Sidenavigasjon',
-                                    firstPageLabel: 'Første side',
-                                    prevPageLabel: 'Forrige side',
-                                    nextPageLabel: 'Neste side',
-                                    lastPageLabel: 'Siste side',
-                                },
+                        messages: {
+                            paginator: {
+                                navigation: 'Sidenavigasjon',
+                                first: 'Første side',
+                                previous: 'Forrige side',
+                                next: 'Neste side',
+                                last: 'Siste side',
                             },
                         },
                     }}

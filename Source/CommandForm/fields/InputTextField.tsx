@@ -4,10 +4,22 @@
 import type { InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
-interface InputTextParts { root?: InputHTMLAttributes<HTMLInputElement>; }
+interface InputTextParts {
+    root?: InputHTMLAttributes<HTMLInputElement>;
+}
 
 interface InputTextComponentProps extends WrappedFieldProps<string> {
-    type?: 'text' | 'email' | 'password' | 'color' | 'date' | 'datetime-local' | 'time' | 'url' | 'tel' | 'search';
+    type?:
+        | 'text'
+        | 'email'
+        | 'password'
+        | 'color'
+        | 'date'
+        | 'datetime-local'
+        | 'time'
+        | 'url'
+        | 'tel'
+        | 'search';
     placeholder?: string;
     className?: string;
     pt?: InputTextParts;
@@ -28,7 +40,14 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
             aria-invalid={props.invalid || undefined}
             data-invalid={props.invalid || undefined}
             data-cratis-part='input'
-            className={['cratis-field-input', 'w-full', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
+            className={[
+                'cratis-field-input',
+                'w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
         />
     ),
     {

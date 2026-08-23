@@ -20,10 +20,14 @@ describe('when options carry label and value', () => {
 
     beforeEach(async () => {
         // SAFETY: React's test-environment flag and ResizeObserver polyfill are test-only globals absent from jsdom typings.
-        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        (
+            globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+        ).IS_REACT_ACT_ENVIRONMENT = true;
         // SAFETY: The overlay implementation only needs the observer methods supplied by this jsdom polyfill.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-            observe() { } unobserve() { } disconnect() { }
+            observe() {}
+            unobserve() {}
+            disconnect() {}
         };
 
         container = document.createElement('div');
@@ -31,15 +35,21 @@ describe('when options carry label and value', () => {
         root = createRoot(container);
 
         await act(async () => {
-            root.render(React.createElement(CratisComponentsProvider, {
-                children: React.createElement(Dropdown, {
-                    value: 'new',
-                    options: [{ label: 'New project', value: 'new' }, { label: 'Sample', value: 'sample' }],
-                })
-            }));
+            root.render(
+                React.createElement(CratisComponentsProvider, {
+                    children: React.createElement(Dropdown, {
+                        value: 'new',
+                        options: [
+                            { label: 'New project', value: 'new' },
+                            { label: 'Sample', value: 'sample' },
+                        ],
+                    }),
+                }),
+            );
         });
 
-        triggerText = container.querySelector('[data-cratis-part="value"]')?.textContent ?? '';
+        triggerText =
+            container.querySelector('[data-cratis-part="value"]')?.textContent ?? '';
     });
 
     afterEach(async () => {

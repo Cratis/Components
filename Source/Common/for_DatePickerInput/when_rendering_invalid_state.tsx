@@ -40,10 +40,16 @@ import { DatePickerInput } from '../DatePickerInput';
                 );
             });
 
-            const renderedRoot = container.querySelector<HTMLElement>('[data-cratis-part="root"]');
-            const renderedGroup = container.querySelector<HTMLElement>('[data-cratis-part="group"]');
+            const renderedRoot = container.querySelector<HTMLElement>(
+                '[data-cratis-part="root"]',
+            );
+            const renderedGroup = container.querySelector<HTMLElement>(
+                '[data-cratis-part="group"]',
+            );
             if (!renderedRoot || !renderedGroup) {
-                throw new Error('DatePickerInput did not render its stable Cratis parts.');
+                throw new Error(
+                    'DatePickerInput did not render its stable Cratis parts.',
+                );
             }
             pickerRoot = renderedRoot;
             group = renderedGroup;

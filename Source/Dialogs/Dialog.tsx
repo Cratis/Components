@@ -2,16 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
-import {
-    Dialog as AriaDialog,
-    Heading,
-} from 'react-aria-components/Dialog';
+import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
-import type {
-    ButtonHTMLAttributes,
-    CSSProperties,
-    ReactNode,
-} from 'react';
+import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
 import { useEffect, useRef } from 'react';
 import { DialogInitialFocus } from './DialogInitialFocus';
 
@@ -83,7 +76,8 @@ export interface DialogProps {
     unstyled?: boolean;
 }
 
-const classNames = (...values: Array<string | undefined>) => values.filter(Boolean).join(' ');
+const classNames = (...values: Array<string | undefined>) =>
+    values.filter(Boolean).join(' ');
 
 /**
  * A modal dialog with Arc host integration, typed footer actions, busy/validity
@@ -125,7 +119,8 @@ export const Dialog = ({
     const cancelRef = useRef<HTMLButtonElement>(null);
 
     const isDialogValid = isValid !== false;
-    const hasDismissingButton = typeof buttons === 'number' && buttons !== DialogButtons.Ok;
+    const hasDismissingButton =
+        typeof buttons === 'number' && buttons !== DialogButtons.Ok;
     const resolvedInitialFocus =
         initialFocus === DialogInitialFocus.Cancel && !hasDismissingButton
             ? DialogInitialFocus.Content
@@ -140,8 +135,8 @@ export const Dialog = ({
         const target = focusesConfirmButton
             ? confirmRef.current
             : focusesDismissingButton
-                ? cancelRef.current
-                : titleRef.current;
+              ? cancelRef.current
+              : titleRef.current;
         const frame = requestAnimationFrame(() => target?.focus());
         return () => cancelAnimationFrame(frame);
     }, [focusesConfirmButton, focusesDismissingButton, visible]);
@@ -180,7 +175,9 @@ export const Dialog = ({
             type='button'
             className={classNames(
                 'cratis-dialog__button',
-                primary ? 'cratis-dialog__button--primary' : 'cratis-dialog__button--secondary',
+                primary
+                    ? 'cratis-dialog__button--primary'
+                    : 'cratis-dialog__button--secondary',
                 primary ? pt?.confirm?.className : pt?.cancel?.className,
             )}
             data-cratis-part={primary ? 'confirm' : 'cancel'}
@@ -190,7 +187,9 @@ export const Dialog = ({
             autoFocus={focused}
             aria-busy={primary && isBusy ? true : undefined}
         >
-            {primary && isBusy && <span className='cratis-dialog__spinner' aria-hidden='true' />}
+            {primary && isBusy && (
+                <span className='cratis-dialog__spinner' aria-hidden='true' />
+            )}
             <span>{label}</span>
         </button>
     );
@@ -204,23 +203,53 @@ export const Dialog = ({
             case DialogButtons.OkCancel:
                 return (
                     <>
-                        {footerButton(DialogResult.Ok, okLabel, true, focusesConfirmButton)}
-                        {footerButton(DialogResult.Cancelled, cancelLabel, false, focusesDismissingButton)}
+                        {footerButton(
+                            DialogResult.Ok,
+                            okLabel,
+                            true,
+                            focusesConfirmButton,
+                        )}
+                        {footerButton(
+                            DialogResult.Cancelled,
+                            cancelLabel,
+                            false,
+                            focusesDismissingButton,
+                        )}
                     </>
                 );
             case DialogButtons.YesNo:
                 return (
                     <>
-                        {footerButton(DialogResult.Yes, yesLabel, true, focusesConfirmButton)}
-                        {footerButton(DialogResult.No, noLabel, false, focusesDismissingButton)}
+                        {footerButton(
+                            DialogResult.Yes,
+                            yesLabel,
+                            true,
+                            focusesConfirmButton,
+                        )}
+                        {footerButton(
+                            DialogResult.No,
+                            noLabel,
+                            false,
+                            focusesDismissingButton,
+                        )}
                     </>
                 );
             case DialogButtons.YesNoCancel:
                 return (
                     <>
-                        {footerButton(DialogResult.Yes, yesLabel, true, focusesConfirmButton)}
+                        {footerButton(
+                            DialogResult.Yes,
+                            yesLabel,
+                            true,
+                            focusesConfirmButton,
+                        )}
                         {footerButton(DialogResult.No, noLabel, false, false)}
-                        {footerButton(DialogResult.Cancelled, cancelLabel, false, focusesDismissingButton)}
+                        {footerButton(
+                            DialogResult.Cancelled,
+                            cancelLabel,
+                            false,
+                            focusesDismissingButton,
+                        )}
                     </>
                 );
             default:
@@ -240,7 +269,10 @@ export const Dialog = ({
                         slot='title'
                         tabIndex={focusesTitle ? -1 : undefined}
                         ref={titleRef}
-                        className={classNames('cratis-dialog__title', pt?.title?.className)}
+                        className={classNames(
+                            'cratis-dialog__title',
+                            pt?.title?.className,
+                        )}
                         style={pt?.title?.style}
                         data-cratis-part='title'
                     >
@@ -250,7 +282,10 @@ export const Dialog = ({
                         <button
                             {...pt?.close}
                             type='button'
-                            className={classNames('cratis-dialog__close', pt?.close?.className)}
+                            className={classNames(
+                                'cratis-dialog__close',
+                                pt?.close?.className,
+                            )}
                             data-cratis-part='close'
                             aria-label={closeAriaLabel}
                             onClick={() => void handleClose(DialogResult.Cancelled)}
@@ -260,7 +295,10 @@ export const Dialog = ({
                     )}
                 </header>
                 <div
-                    className={classNames('cratis-dialog__content', pt?.content?.className)}
+                    className={classNames(
+                        'cratis-dialog__content',
+                        pt?.content?.className,
+                    )}
                     style={{ ...pt?.content?.style, ...contentStyle }}
                     data-cratis-part='content'
                 >
@@ -268,7 +306,10 @@ export const Dialog = ({
                 </div>
                 {buttons !== null && (
                     <footer
-                        className={classNames('cratis-dialog__footer', pt?.footer?.className)}
+                        className={classNames(
+                            'cratis-dialog__footer',
+                            pt?.footer?.className,
+                        )}
                         style={pt?.footer?.style}
                         data-cratis-part='footer'
                     >
@@ -284,10 +325,23 @@ export const Dialog = ({
     if (typeof document === 'undefined') {
         if (!visible) return null;
         return (
-            <div className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)} data-cratis-part='backdrop'>
-                <div className={classNames('cratis-dialog__positioner', pt?.positioner?.className)} data-cratis-part='positioner'>
+            <div
+                className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
+                data-cratis-part='backdrop'
+            >
+                <div
+                    className={classNames(
+                        'cratis-dialog__positioner',
+                        pt?.positioner?.className,
+                    )}
+                    data-cratis-part='positioner'
+                >
                     <section
-                        className={classNames('cratis-dialog', pt?.root?.className, className)}
+                        className={classNames(
+                            'cratis-dialog',
+                            pt?.root?.className,
+                            className,
+                        )}
                         style={dialogStyle}
                         data-cratis-part='root'
                     >
@@ -301,22 +355,29 @@ export const Dialog = ({
     return (
         <ModalOverlay
             isOpen={visible}
-            onOpenChange={open => {
+            onOpenChange={(open) => {
                 if (!open) void handleClose(DialogResult.Cancelled);
             }}
             isDismissable={isDismissable}
             isKeyboardDismissDisabled={!isDismissable}
             className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
-            style={pt?.backdrop?.style}
+            style={{ zIndex: 1100, ...pt?.backdrop?.style }}
             data-cratis-part='backdrop'
         >
             <div
-                className={classNames('cratis-dialog__positioner', pt?.positioner?.className)}
+                className={classNames(
+                    'cratis-dialog__positioner',
+                    pt?.positioner?.className,
+                )}
                 style={pt?.positioner?.style}
                 data-cratis-part='positioner'
             >
                 <Modal
-                    className={classNames('cratis-dialog', pt?.root?.className, className)}
+                    className={classNames(
+                        'cratis-dialog',
+                        pt?.root?.className,
+                        className,
+                    )}
                     style={dialogStyle}
                     data-cratis-part='root'
                 >
