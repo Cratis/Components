@@ -2,6 +2,8 @@
   href: index.mdx
 - name: Why Components
   href: why-components.md
+- name: UI foundation
+  href: ui-foundation.md
 - name: PrimeReact and Components
   href: coming-from-primereact.md
 - name: Getting started
