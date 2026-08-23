@@ -418,39 +418,53 @@ export const ObjectContentEditor = ({
 
         if (Array.isArray(value)) {
             return (
-                <div
+                <button
+                    type='button'
                     className='flex items-center gap-2 cursor-pointer'
                     onClick={() => navigateToProperty(propertyName)}
                     style={{
                         color: 'var(--cratis-primary-color)',
                         display: 'flex',
                         alignItems: 'center',
+                        padding: 0,
+                        border: 0,
+                        background: 'transparent',
+                        font: 'inherit',
                     }}
+                    aria-label={`Open ${propertyName}, ${value.length} items`}
                 >
                     <span>Array[{value.length}]</span>
                     <faIcons.FaArrowRight
                         style={{ fontSize: '0.875rem', display: 'inline-flex' }}
+                        aria-hidden='true'
                     />
-                </div>
+                </button>
             );
         }
 
         if (typeof value === 'object') {
             return (
-                <div
+                <button
+                    type='button'
                     className='flex items-center gap-2 cursor-pointer'
                     onClick={() => navigateToProperty(propertyName)}
                     style={{
                         color: 'var(--cratis-primary-color)',
                         display: 'flex',
                         alignItems: 'center',
+                        padding: 0,
+                        border: 0,
+                        background: 'transparent',
+                        font: 'inherit',
                     }}
+                    aria-label={`Open ${propertyName}`}
                 >
                     <span>Object</span>
                     <faIcons.FaArrowRight
                         style={{ fontSize: '0.875rem', display: 'inline-flex' }}
+                        aria-hidden='true'
                     />
-                </div>
+                </button>
             );
         }
 

@@ -138,7 +138,10 @@ export const SchemaEditor = ({
     className,
     labels,
 }: SchemaEditorProps) => {
-    const l = { ...defaultSchemaEditorLabels, ...labels };
+    const l = useMemo(
+        () => ({ ...defaultSchemaEditorLabels, ...labels }),
+        [labels],
+    );
     const [currentPath, setCurrentPath] = useState<string[]>([]);
     const [properties, setProperties] = useState<JsonSchemaProperty[]>([]);
     const [currentSchema, setCurrentSchema] = useState<JsonSchema>(schema);
@@ -502,6 +505,7 @@ export const SchemaEditor = ({
             hasValidationErrors,
             saveDisabled,
             cancelDisabled,
+            l,
         ],
     );
 

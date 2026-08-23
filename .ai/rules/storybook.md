@@ -17,7 +17,7 @@ Good candidates: a presentational card/list-item/form-field with multiple visual
 
 ## Preview infrastructure (what you get for free)
 
-A configured `.storybook/preview` should wrap every story in `CratisComponentsProvider` (from `@cratis/components/Common`) and import `@cratis/components/styles` so PrimeReact-based components render correctly. With that in place:
+A configured `.storybook/preview` should wrap every story in `CratisComponentsProvider` (from `@cratis/components/Common`) and import `@cratis/components/tokens`, `@cratis/components/styles`, and either the optional baseline `theme` or product token mappings. With that in place:
 
 - **Auto prop tables** via `react-docgen-typescript` — a component's `interface` + per-prop JSDoc renders as a Docs prop table, and union props become `select` controls automatically. Keep a JSDoc comment on every prop. **`argTypes` is an override layer** (change control type, group under `table.category`, disable a control) — don't re-list every prop.
 - **Accessibility panel** (`@storybook/addon-a11y`) scans each story with axe-core. Treat new violations as defects.

@@ -14,6 +14,8 @@ interface RadioParts {
 interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | number> {
     label?: string;
     buttonValue: string | number;
+    /** Native group name shared by every option bound to the same property. */
+    name: string;
     className?: string;
     pt?: RadioParts;
     ptOptions?: object;
@@ -35,6 +37,7 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
             <input
                 {...props.pt?.input}
                 type='radio'
+                name={props.name}
                 checked={props.value === props.buttonValue}
                 onChange={(event) => {
                     if (event.target.checked) props.onChange(props.buttonValue);

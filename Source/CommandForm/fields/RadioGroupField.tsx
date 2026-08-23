@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { useId, type HTMLAttributes, type InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
 interface RadioGroupParts {
@@ -17,6 +17,8 @@ interface RadioGroupFieldComponentProps extends WrappedFieldProps<string | numbe
     optionLabel: string;
     optionValue: string;
     layout?: 'horizontal' | 'vertical';
+    /** Native radio-group name. Generated automatically when omitted. */
+    name?: string;
     className?: string;
     pt?: RadioGroupParts;
     ptOptions?: object;
@@ -25,7 +27,11 @@ interface RadioGroupFieldComponentProps extends WrappedFieldProps<string | numbe
 
 /** A visible radio group bound to a string or number property on an Arc command. */
 export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const generatedName = useId();
+        const name = props.name ?? generatedName;
+
+        return (
         <div
             {...props.pt?.root}
             role='radiogroup'
@@ -55,6 +61,7 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                         <input
                             {...props.pt?.input}
                             type='radio'
+                            name={name}
                             checked={props.value === value}
                             onChange={(event) => {
                                 if (event.target.checked) props.onChange(value);
@@ -92,6 +99,7 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                 );
             })}
         </div>
-    ),
+        );
+    },
     { defaultValue: '', extractValue: (value: unknown) => value as string | number },
 );

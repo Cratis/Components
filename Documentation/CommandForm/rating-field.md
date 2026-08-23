@@ -19,6 +19,7 @@ import { RatingField } from '@cratis/components/CommandForm';
 |------|------|---------|-------------|
 | `value` | `(instance: TCommand) => unknown` | — | **Required.** Accessor that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
 | `stars` | `number` | `5` | Number of stars to display. |
+| `name` | `string` | generated | Optional native radio-group name. Every star in the component shares one name. |
 | `starAriaLabel` | `(starValue: number) => string` | `"1 star"`, `"2 stars"`, … | Builds the accessible name for each star, from the 1-based star value. Override to localize. |
 | `className` | `string` | — | Extra CSS class name. |
 | `pt` | component-specific parts | — | Cratis-owned HTML attributes for stable parts. |
@@ -29,4 +30,5 @@ import { RatingField } from '@cratis/components/CommandForm';
 
 - Default value is `0` (no rating selected).
 - The bound value is the selected star count (`1`–`stars`).
+- Stars use native arrow-key radio navigation with one tab stop.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.

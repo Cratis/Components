@@ -4,8 +4,13 @@
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
-import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react';
-import { useEffect, useRef } from 'react';
+import type {
+    ButtonHTMLAttributes,
+    CSSProperties,
+    HTMLAttributes,
+    ReactNode,
+} from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { DialogInitialFocus } from './DialogInitialFocus';
 
 export type CloseDialog = (
@@ -15,15 +20,9 @@ export type CloseDialog = (
 export type ConfirmCallback = () => boolean | void | Promise<boolean> | Promise<void>;
 export type CancelCallback = () => boolean | void | Promise<boolean> | Promise<void>;
 
-interface DialogPartAttributes {
-    id?: string;
-    className?: string;
-    style?: CSSProperties;
-    'aria-label'?: string;
-    'aria-labelledby'?: string;
-    'aria-describedby'?: string;
+type DialogPartAttributes<TElement> = HTMLAttributes<TElement> & {
     [attribute: `data-${string}`]: string | number | boolean | undefined;
-}
+};
 
 type DialogButtonAttributes = Omit<
     ButtonHTMLAttributes<HTMLButtonElement>,
@@ -32,14 +31,14 @@ type DialogButtonAttributes = Omit<
 
 /** Stable Cratis-owned parts for styling a {@link Dialog}. */
 export interface DialogParts {
-    backdrop?: DialogPartAttributes;
-    positioner?: DialogPartAttributes;
-    root?: DialogPartAttributes;
-    header?: DialogPartAttributes;
-    title?: DialogPartAttributes;
+    backdrop?: DialogPartAttributes<HTMLDivElement>;
+    positioner?: DialogPartAttributes<HTMLDivElement>;
+    root?: DialogPartAttributes<HTMLDivElement>;
+    header?: DialogPartAttributes<HTMLElement>;
+    title?: DialogPartAttributes<HTMLHeadingElement>;
     close?: DialogButtonAttributes;
-    content?: DialogPartAttributes;
-    footer?: DialogPartAttributes;
+    content?: DialogPartAttributes<HTMLDivElement>;
+    footer?: DialogPartAttributes<HTMLElement>;
     confirm?: DialogButtonAttributes;
     cancel?: DialogButtonAttributes;
 }
@@ -79,6 +78,14 @@ export interface DialogProps {
 const classNames = (...values: Array<string | undefined>) =>
     values.filter(Boolean).join(' ');
 
+const subscribeToBrowserEnvironment = () => () => undefined;
+const useIsBrowser = () =>
+    useSyncExternalStore(
+        subscribeToBrowserEnvironment,
+        () => true,
+        () => false,
+    );
+
 /**
  * A modal dialog with Arc host integration, typed footer actions, busy/validity
  * state, controlled dismissal, and stable Cratis-owned styling parts.
@@ -114,6 +121,7 @@ export const Dialog = ({
         contextCloseDialog = undefined;
     }
 
+    const isBrowser = useIsBrowser();
     const titleRef = useRef<HTMLHeadingElement>(null);
     const confirmRef = useRef<HTMLButtonElement>(null);
     const cancelRef = useRef<HTMLButtonElement>(null);
@@ -261,11 +269,13 @@ export const Dialog = ({
         <AriaDialog className='cratis-dialog__document'>
             <>
                 <header
+                    {...pt?.header}
                     className={classNames('cratis-dialog__header', pt?.header?.className)}
                     style={pt?.header?.style}
                     data-cratis-part='header'
                 >
                     <Heading
+                        {...pt?.title}
                         slot='title'
                         tabIndex={focusesTitle ? -1 : undefined}
                         ref={titleRef}
@@ -295,6 +305,7 @@ export const Dialog = ({
                     )}
                 </header>
                 <div
+                    {...pt?.content}
                     className={classNames(
                         'cratis-dialog__content',
                         pt?.content?.className,
@@ -306,6 +317,7 @@ export const Dialog = ({
                 </div>
                 {buttons !== null && (
                     <footer
+                        {...pt?.footer}
                         className={classNames(
                             'cratis-dialog__footer',
                             pt?.footer?.className,
@@ -322,21 +334,32 @@ export const Dialog = ({
 
     const dialogStyle = { width, ...pt?.root?.style, ...style };
 
-    if (typeof document === 'undefined') {
+    // useSyncExternalStore supplies the server snapshot during hydration, so this
+    // fallback is identical on the server and on the client's first render. React
+    // switches to the portaled React Aria modal only after hydration completes.
+    if (!isBrowser) {
         if (!visible) return null;
         return (
             <div
-                className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
+                {...pt?.backdrop}
+                className={classNames(
+                    'cratis-dialog__backdrop',
+                    pt?.backdrop?.className,
+                )}
+                style={{ zIndex: 1100, ...pt?.backdrop?.style }}
                 data-cratis-part='backdrop'
             >
                 <div
+                    {...pt?.positioner}
                     className={classNames(
                         'cratis-dialog__positioner',
                         pt?.positioner?.className,
                     )}
+                    style={pt?.positioner?.style}
                     data-cratis-part='positioner'
                 >
                     <section
+                        {...pt?.root}
                         className={classNames(
                             'cratis-dialog',
                             pt?.root?.className,
@@ -354,6 +377,7 @@ export const Dialog = ({
 
     return (
         <ModalOverlay
+            {...pt?.backdrop}
             isOpen={visible}
             onOpenChange={(open) => {
                 if (!open) void handleClose(DialogResult.Cancelled);
@@ -365,6 +389,7 @@ export const Dialog = ({
             data-cratis-part='backdrop'
         >
             <div
+                {...pt?.positioner}
                 className={classNames(
                     'cratis-dialog__positioner',
                     pt?.positioner?.className,
@@ -373,6 +398,7 @@ export const Dialog = ({
                 data-cratis-part='positioner'
             >
                 <Modal
+                    {...pt?.root}
                     className={classNames(
                         'cratis-dialog',
                         pt?.root?.className,

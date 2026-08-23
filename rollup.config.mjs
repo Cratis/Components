@@ -7,6 +7,7 @@ import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 import { createRequire } from 'module';
+import ts from 'typescript';
 
 /** Stylesheets that are entry points or token layers in their own right, not component rules. */
 const STANDALONE_STYLESHEETS = new Set([
@@ -176,6 +177,36 @@ function findEmittedModules(directory, found = []) {
     return found;
 }
 
+/** Returns module-specifier string literals without matching comments or runtime strings. */
+function moduleSpecifiers(sourceFile) {
+    const specifiers = [];
+    const visit = (node) => {
+        if (
+            (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+            node.moduleSpecifier &&
+            ts.isStringLiteralLike(node.moduleSpecifier)
+        ) {
+            specifiers.push(node.moduleSpecifier);
+        } else if (
+            ts.isCallExpression(node) &&
+            node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+            node.arguments.length === 1 &&
+            ts.isStringLiteralLike(node.arguments[0])
+        ) {
+            specifiers.push(node.arguments[0]);
+        } else if (
+            ts.isImportTypeNode(node) &&
+            ts.isLiteralTypeNode(node.argument) &&
+            ts.isStringLiteralLike(node.argument.literal)
+        ) {
+            specifiers.push(node.argument.literal);
+        }
+        ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
+    return specifiers;
+}
+
 /** Makes every relative ESM specifier directly executable by Node. */
 function fixRelativeEsmSpecifiers(esmPath) {
     return {
@@ -183,17 +214,30 @@ function fixRelativeEsmSpecifiers(esmPath) {
         closeBundle() {
             for (const file of findEmittedModules(esmPath)) {
                 const source = readFileSync(file, 'utf8');
-                const rewritten = source
-                    .replace(
-                        /((?:from\s*|import\s*)['"])(\.\.?\/[^'"]+)(['"])/g,
-                        (_match, before, specifier, after) =>
-                            `${before}${resolvedRelativeSpecifier(file, specifier)}${after}`,
-                    )
-                    .replace(
-                        /(import\(\s*['"])(\.\.?\/[^'"]+)(['"]\s*\))/g,
-                        (_match, before, specifier, after) =>
-                            `${before}${resolvedRelativeSpecifier(file, specifier)}${after}`,
-                    );
+                const sourceFile = ts.createSourceFile(
+                    file,
+                    source,
+                    ts.ScriptTarget.Latest,
+                    true,
+                    file.endsWith('.d.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS,
+                );
+                const replacements = moduleSpecifiers(sourceFile)
+                    .map((node) => ({
+                        start: node.getStart(sourceFile) + 1,
+                        end: node.getEnd() - 1,
+                        specifier: resolvedRelativeSpecifier(file, node.text),
+                        original: node.text,
+                    }))
+                    .filter(({ specifier, original }) => specifier !== original)
+                    .sort((left, right) => right.start - left.start);
+
+                let rewritten = source;
+                for (const replacement of replacements) {
+                    rewritten =
+                        rewritten.slice(0, replacement.start) +
+                        replacement.specifier +
+                        rewritten.slice(replacement.end);
+                }
                 if (rewritten !== source) writeFileSync(file, rewritten);
             }
         },

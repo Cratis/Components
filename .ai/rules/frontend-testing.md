@@ -88,17 +88,16 @@ The environment is `node`. For behavior that doesn't need browser events, use se
 ```ts
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { vi } from 'vitest';
-
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, props.footer, props.children),
-}));
+import { Button } from '@cratis/components/Common';
 
 describe('when rendered while busy', () => {
     let html: string;
-    beforeEach(() => { html = renderToStaticMarkup(React.createElement(MyDialog, { isBusy: true })); });
-    it('should disable the confirm button', () => { html.should.include('disabled'); });
+    beforeEach(() => {
+        html = renderToStaticMarkup(
+            React.createElement(Button, { loading: true, label: 'Save' }),
+        );
+    });
+    it('should disable the action', () => { html.should.include('disabled'); });
 });
 ```
 

@@ -38,7 +38,6 @@ export const Tooltip = ({
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='trigger'
-                tabIndex={0}
             >
                 {children}
             </span>

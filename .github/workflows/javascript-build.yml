@@ -17,11 +17,19 @@ on:
             - 'main'
         paths:
             - 'Source/**'
+            - 'package.json'
+            - 'rollup.config.mjs'
+            - 'yarn.lock'
+            - '.github/workflows/javascript-build.yml'
     pull_request:
         branches:
             - '**'
         paths:
             - 'Source/**'
+            - 'package.json'
+            - 'rollup.config.mjs'
+            - 'yarn.lock'
+            - '.github/workflows/javascript-build.yml'
 
 permissions:
     contents: read
@@ -57,6 +65,9 @@ jobs:
               run: |
                   export NODE_OPTIONS="--max-old-space-size=4096"
                   yarn ci
+
+            - name: Build Storybook
+              run: yarn workspace @cratis/components build-storybook
 
     # Builds the artifact that actually ships to npm (the `prepare` script: tsc -b +
     # rollup + copy-css) and loads every subpath of the `exports` map from it.

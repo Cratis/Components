@@ -31,6 +31,7 @@ addons.getChannel().on('STORY_RENDERED', () => {
 
 // Receive theme-sync messages from the embedding docs site (StorybookEmbed.astro).
 window.addEventListener('message', (event) => {
+    if (event.source !== window.parent || event.origin !== window.location.origin) return;
     if (event.data?.type !== 'STORYBOOK_THEME_CHANGE') return;
     const newTheme = event.data.theme;
     if (newTheme !== 'light' && newTheme !== 'dark') return;

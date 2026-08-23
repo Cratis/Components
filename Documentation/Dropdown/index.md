@@ -39,7 +39,7 @@ Filtered selection follows the combobox pattern. A non-filtered single select fo
 
 ## Multiple selection
 
-Set `multiple` and bind an array. Components uses the native multiple-select path for dependable keyboard and screen-reader behavior. Use a specialized collection picker when a large dataset needs virtualized search or chip collapsing.
+Set `multiple` and bind an array. Components uses native multiple selection when filtering is off and an accessible multi-value combobox when `filter` is enabled. Use a specialized collection picker when a large dataset needs virtualized search or chip collapsing.
 
 ## Props
 
@@ -59,6 +59,6 @@ Set `multiple` and bind an array. Components uses the native multiple-select pat
 
 ## Stable parts
 
-`root`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, and `multiple`.
+`root`, `input`, `select`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, and `multiple`.
 
 The popup is portaled outside modal clipping contexts and carries a z-index above Cratis dialogs. Styling uses the `--cratis-*` tokens and stable parts; no renderer selectors are required.

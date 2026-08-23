@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, {
+    useId,
     useMemo,
     useState,
     type CSSProperties,
@@ -225,6 +226,7 @@ export const DataTableCore = <TData extends object>({
     pt,
 }: DataTableCoreProps<TData>) => {
     const columns = useColumns(children);
+    const selectionGroupName = useId();
     const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters ?? {});
     const [globalFilter, setGlobalFilter] = useState('');
     const [sort, setSort] = useState<{
@@ -267,6 +269,17 @@ export const DataTableCore = <TData extends object>({
         else delete next[field];
         setFilters(next);
         onFilter?.(next);
+    };
+
+    const activateRow = (
+        row: TData,
+        index: number,
+        originalEvent: React.SyntheticEvent,
+    ) => {
+        onRowClick?.({ data: row, index });
+        if (selectionMode === 'single') {
+            onSelectionChange?.({ value: row, originalEvent });
+        }
     };
 
     const keyOf = (row: TData, index: number) =>
@@ -471,10 +484,18 @@ export const DataTableCore = <TData extends object>({
                                 const rowKey = keyOf(row, rowIndex);
                                 const isSelected =
                                     selectionMode === 'single' && selectedKey === rowKey;
+                                const isInteractive =
+                                    Boolean(onRowClick) || selectionMode === 'single';
                                 return (
                                     <tr
                                         {...pt?.row}
                                         key={rowKey}
+                                        tabIndex={isInteractive ? 0 : pt?.row?.tabIndex}
+                                        aria-selected={
+                                            selectionMode === 'single'
+                                                ? isSelected
+                                                : undefined
+                                        }
                                         className={classNames(
                                             'cratis-datatable__row',
                                             pt?.row?.className,
@@ -482,14 +503,18 @@ export const DataTableCore = <TData extends object>({
                                         )}
                                         data-cratis-part='row'
                                         data-selected={isSelected || undefined}
-                                        onClick={(event) => {
-                                            onRowClick?.({ data: row, index: rowIndex });
-                                            if (selectionMode === 'single') {
-                                                onSelectionChange?.({
-                                                    value: row,
-                                                    originalEvent: event,
-                                                });
+                                        onClick={(event) =>
+                                            activateRow(row, rowIndex, event)
+                                        }
+                                        onKeyDown={(event) => {
+                                            if (
+                                                event.target !== event.currentTarget ||
+                                                (event.key !== 'Enter' && event.key !== ' ')
+                                            ) {
+                                                return;
                                             }
+                                            event.preventDefault();
+                                            activateRow(row, rowIndex, event);
                                         }}
                                     >
                                         {columns.map((column, columnIndex) => (
@@ -512,7 +537,9 @@ export const DataTableCore = <TData extends object>({
                                                 {column.props.selectionMode ? (
                                                     <input
                                                         type='radio'
+                                                        name={selectionGroupName}
                                                         readOnly
+                                                        tabIndex={-1}
                                                         aria-label={selectionAriaLabel}
                                                         checked={isSelected}
                                                     />

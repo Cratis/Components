@@ -57,6 +57,10 @@ describe('when a dropdown is opened inside a dialog', () => {
                             optionValue: 'id',
                             'aria-label': 'Pick value',
                             panelClassName: 'product-dropdown-panel',
+                            pt: {
+                                listbox: { id: 'product-options' },
+                                option: { 'aria-label': 'Product option' },
+                            },
                         }),
                     }),
                 }),
@@ -118,5 +122,14 @@ describe('when a dropdown is opened inside a dialog', () => {
 
     it('should map the legacy panel class to the Cratis popover', () => {
         expect(panelUsesTheLegacyClassName).to.equal(true);
+    });
+
+    it('should apply ordinary attributes to listbox and option parts', () => {
+        expect(document.querySelector('#product-options')).not.to.equal(null);
+        expect(
+            document
+                .querySelector('[data-cratis-part="option"]')
+                ?.getAttribute('aria-label'),
+        ).to.equal('Product option');
     });
 });

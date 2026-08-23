@@ -10,6 +10,7 @@
     width: 100%;
 }
 .cratis-date-picker__group {
+    position: relative;
     display: flex;
     width: 100%;
     min-height: 2.5rem;
@@ -35,9 +36,18 @@
     min-width: 0;
     padding: 0.45rem 0.7rem;
 }
-.cratis-date-picker__input:empty::before {
-    content: attr(data-placeholder);
+.cratis-date-picker__group[data-empty='true']:not([data-focus-within])
+    .cratis-date-picker__input {
+    opacity: 0;
+}
+.cratis-date-picker__placeholder {
+    position: absolute;
+    inset-inline-start: 0.7rem;
     color: var(--cratis-text-color-secondary);
+    pointer-events: none;
+}
+.cratis-date-picker__group[data-focus-within] .cratis-date-picker__placeholder {
+    display: none;
 }
 .cratis-date-picker__segment {
     padding: 0 0.1rem;

@@ -1,15 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { expect } from 'chai';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../CratisComponentsProvider';
 import { Tooltip } from '../../Tooltip';
 
-// An enabled tooltip reaches PrimeReact 11's compositional Tooltip, which resolves its
-// configuration from a `PrimeReactProvider` and throws without one — so the trigger is
-// rendered inside the Cratis provider that supplies it. The disabled case needs none,
-// because it never renders a PrimeReact component at all.
+// The provider supplies the locale used by the internal accessible tooltip behavior.
 describe('when Tooltip is rendered and it is not disabled', () => {
     const html = renderToStaticMarkup(
         React.createElement(
@@ -24,10 +23,14 @@ describe('when Tooltip is rendered and it is not disabled', () => {
     );
 
     it('should attach a tooltip to the trigger', () => {
-        html.should.include('cratis-tooltip-trigger');
+        expect(html).to.include('cratis-tooltip-trigger');
     });
 
     it('should render the trigger element', () => {
-        html.should.include('Trigger');
+        expect(html).to.include('Trigger');
+    });
+
+    it('should not add a second tab stop around the trigger', () => {
+        expect(html).not.to.include('tabindex="0"');
     });
 });

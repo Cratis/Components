@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { useId, type HTMLAttributes, type InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
 interface RatingParts {
@@ -13,6 +13,8 @@ interface RatingParts {
 
 interface RatingFieldComponentProps extends WrappedFieldProps<number> {
     stars?: number;
+    /** Native radio-group name. Generated automatically when omitted. */
+    name?: string;
     starAriaLabel?: (starValue: number) => string;
     className?: string;
     pt?: RatingParts;
@@ -22,7 +24,11 @@ interface RatingFieldComponentProps extends WrappedFieldProps<number> {
 
 /** A star rating bound to a number property on an Arc command. */
 export const RatingField = asCommandFormField<RatingFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const generatedName = useId();
+        const name = props.name ?? generatedName;
+
+        return (
         <div
             {...props.pt?.root}
             role='radiogroup'
@@ -54,6 +60,7 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                         <input
                             {...props.pt?.input}
                             type='radio'
+                            name={name}
                             checked={props.value === starValue}
                             onChange={(event) => {
                                 if (event.target.checked) props.onChange(starValue);
@@ -85,7 +92,8 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                 );
             })}
         </div>
-    ),
+        );
+    },
     {
         defaultValue: 0,
         extractValue: (value: unknown) => (typeof value === 'number' ? value : 0),

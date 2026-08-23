@@ -47,9 +47,11 @@ With horizontal layout:
 | `optionLabel` | `string` | — | **Required.** Key in each option object to use as the display label. |
 | `optionValue` | `string` | — | **Required.** Key in each option object to use as the submitted value. |
 | `layout` | `'horizontal' \| 'vertical'` | `'vertical'` | Controls whether the radio buttons are stacked vertically or laid out in a horizontal row. |
+| `name` | `string` | generated | Optional native radio-group name. All options in the component always share one name. |
 
 ## Behavior
 
 - Default value is an empty string.
 - A radio button is checked when the current field value equals its `optionValue`.
+- The options share one native name for arrow-key navigation and a single tab stop.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.

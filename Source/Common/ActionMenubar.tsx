@@ -39,12 +39,17 @@ export interface ActionMenubarProps {
 }
 
 /** A horizontal, accessible toolbar of command actions. */
-export const ActionMenubar = ({ model, className, pt, ...rest }: ActionMenubarProps) => (
+export const ActionMenubar = ({
+    model,
+    className,
+    pt,
+    'aria-label': ariaLabel,
+}: ActionMenubarProps) => (
     <div
         role='toolbar'
         className={['cratis-action-menubar', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
-        {...rest}
+        aria-label={ariaLabel}
     >
         {model.map((item, index) => {
             if (item.template)

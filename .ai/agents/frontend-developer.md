@@ -58,7 +58,7 @@ Confirm that the TypeScript proxies exist in the slice folder before writing any
 - Place `.tsx` files in the **same folder** as the corresponding `.cs` file.
 - Do NOT prefix the file name with the feature or slice name (folder provides context).
 - Each component has its own `.css` file for static styles.
-- Use PrimeReact CSS variables for all colors, backgrounds, and borders — never hard-code hex values. The default stack is Cratis Components on PrimeReact theming — not Tailwind.
+- Use Cratis semantic CSS variables (`--cratis-*`) for colors, backgrounds, borders, and focus treatment — never hard-code hex values. Style component-specific surfaces through typed `pt` and documented `data-cratis-part` values.
 - Use `const` over `let`.
 - Use full descriptive names (never abbreviations like `e`, `idx`, `prev`).
 - **Move non-trivial state out of the render function** into a `withViewModel` view model (or a tested state module) — see `react.md`. Extract as soon as a component has 3+ `useState`, a state-syncing `useEffect`, or derived values. A view model is a plain class with no React hooks, constructible in a spec.
@@ -232,7 +232,7 @@ Before handing back:
 - [ ] `npx tsc -b` passes with zero errors
 - [ ] Components are in the correct slice folder
 - [ ] If the app has a localization convention, user-visible text is routed through it (product policy — not a Cratis rule)
-- [ ] No hard-coded hex/rgb color values — PrimeReact CSS variables used throughout
+- [ ] No hard-coded hex/rgb color values — Cratis semantic CSS variables used throughout
 - [ ] All variable/parameter names are fully descriptive (no abbreviations)
 - [ ] No `any` types — `unknown` with type guards where needed
 - [ ] Composition page updated to include the new component

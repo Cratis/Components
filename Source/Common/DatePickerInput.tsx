@@ -51,6 +51,7 @@ export interface DatePickerInputPassThrough {
     root?: DatePickerPartAttributes;
     group?: DatePickerPartAttributes;
     input?: DatePickerPartAttributes;
+    placeholder?: DatePickerPartAttributes;
     segment?: DatePickerPartAttributes;
     trigger?: DatePickerButtonAttributes;
     popover?: DatePickerPartAttributes;
@@ -204,6 +205,7 @@ export const DatePickerInput = ({
                         pt?.group?.className,
                     )}
                     data-cratis-part='group'
+                    data-empty={value === null || undefined}
                 >
                     <DateInput
                         className={classNames(
@@ -226,6 +228,19 @@ export const DatePickerInput = ({
                             />
                         )}
                     </DateInput>
+                    {value === null && effectivePlaceholder && (
+                        <span
+                            {...pt?.placeholder}
+                            className={classNames(
+                                'cratis-date-picker__placeholder',
+                                pt?.placeholder?.className,
+                            )}
+                            data-cratis-part='placeholder'
+                            aria-hidden='true'
+                        >
+                            {effectivePlaceholder}
+                        </span>
+                    )}
                     {showIcon && (
                         <Button
                             {...pt?.trigger}

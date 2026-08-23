@@ -88,6 +88,19 @@ describe('when configuring standard DatePickerInput props', () => {
         }
     });
 
+    it('should show the configured placeholder while empty', async () => {
+        const mounted = await mountDatePicker({ placeholder: 'Choose a date' });
+        try {
+            expect(
+                mounted.container.querySelector('[data-cratis-part="placeholder"]')
+                    ?.textContent,
+            ).to.equal('Choose a date');
+            expect(mounted.group.getAttribute('data-empty')).to.equal('true');
+        } finally {
+            await unmountDatePicker(mounted);
+        }
+    });
+
     it('should disable the model and trigger', async () => {
         const mounted = await mountDatePicker({ disabled: true });
         try {

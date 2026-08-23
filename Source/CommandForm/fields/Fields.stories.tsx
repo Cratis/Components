@@ -8,6 +8,7 @@ import { Command, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { StoryContainer, StorySection, StoryDivider } from '@cratis/arc.react/stories';
 import '@cratis/arc/validation';
+import { Button } from '../../Common/Button';
 import {
     InputTextField,
     NumberField,
@@ -24,7 +25,7 @@ import {
 } from './index';
 
 const meta: Meta = {
-    title: 'CommandForm/PrimeReact Fields',
+    title: 'CommandForm/Fields',
     parameters: {
         layout: 'centered',
     },
@@ -131,9 +132,9 @@ export const AllFields: Story = {
 
         return (
             <StoryContainer size="md" asCard>
-                <h1>PrimeReact Form Fields</h1>
+                <h1>Cratis Command Form Fields</h1>
                 <p>
-                    This showcase demonstrates all available PrimeReact-based form fields integrated with CommandForm from @cratis/arc.react.
+                    This showcase demonstrates the Cratis-owned fields integrated with CommandForm from @cratis/arc.react.
                 </p>
 
                 <StoryDivider />
@@ -268,7 +269,7 @@ export const AllFields: Story = {
                             value={c => c.dropdown}
                             title="Dropdown Field"
                             placeholder="Select an option"
-                            description="PrimeReact dropdown component"
+                            description="Accessible Cratis dropdown component"
                             options={dropdownOptions}
                             optionValue="id"
                             optionLabel="name"
@@ -288,7 +289,7 @@ export const AllFields: Story = {
                         <CalendarField<FormFieldsCommand>
                             value={c => c.calendarDate}
                             title="Calendar Field"
-                            description="PrimeReact Calendar component for selecting dates"
+                            description="Internationalized Cratis date picker"
                             placeholder="Select a date"
                             showIcon
                             dateFormat="mm/dd/yy"
@@ -303,7 +304,7 @@ export const AllFields: Story = {
                         <ColorPickerField<FormFieldsCommand>
                             value={c => c.color}
                             title="Color Picker Field"
-                            description="PrimeReact ColorPicker for selecting hex colors"
+                            description="Cratis color picker for selecting hex colors"
                         />
                     </StorySection>
 
@@ -315,12 +316,11 @@ export const AllFields: Story = {
                         <MultiSelectField<FormFieldsCommand>
                             value={c => c.multiSelect}
                             title="MultiSelect Field"
-                            description="PrimeReact MultiSelect for selecting multiple options"
+                            description="Filterable Cratis multi-select"
                             placeholder="Choose one or more features"
                             options={multiSelectOptions}
                             optionValue="id"
                             optionLabel="name"
-                            display="chip"
                             filter
                             showClear
                         />
@@ -334,7 +334,7 @@ export const AllFields: Story = {
                         <ChipsField<FormFieldsCommand>
                             value={c => c.chips}
                             title="Chips Field"
-                            description="PrimeReact Chips for entering multiple text values"
+                            description="Cratis chips field for entering multiple text values"
                             placeholder="Add tags and press Enter"
                             separator=","
                         />
@@ -372,16 +372,19 @@ export const AllFields: Story = {
                         <h3>Radio Button</h3>
 
                         <RadioButtonField<FormFieldsCommand>
+                            name="radio-button-options"
                             value={c => c.radioButton}
                             buttonValue="option1"
                             label="Option 1"
                         />
                         <RadioButtonField<FormFieldsCommand>
+                            name="radio-button-options"
                             value={c => c.radioButton}
                             buttonValue="option2"
                             label="Option 2"
                         />
                         <RadioButtonField<FormFieldsCommand>
+                            name="radio-button-options"
                             value={c => c.radioButton}
                             buttonValue="option3"
                             label="Option 3"
@@ -406,13 +409,11 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <button
+                        <Button
                             type="submit"
                             disabled={!validationState.canSubmit}
-                            className="p-button p-component"
-                        >
-                            Submit Form
-                        </button>
+                            label="Submit Form"
+                        />
                         {!validationState.canSubmit && Object.keys(validationState.errors).length > 0 && (
                             <span style={{ color: 'var(--cratis-orange-500)', fontSize: '0.875rem' }}>
                                 Please fix validation errors
@@ -430,7 +431,7 @@ export const InputTextFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>InputTextField</h2>
-                <p>PrimeReact InputText component wrapped for CommandForm.</p>
+                <p>Cratis text inputs wrapped for CommandForm.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -466,7 +467,7 @@ export const NumberFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>NumberField</h2>
-                <p>PrimeReact InputNumber component with spinners and constraints.</p>
+                <p>Cratis number input with native constraints.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -491,7 +492,7 @@ export const TextAreaFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>TextAreaField</h2>
-                <p>PrimeReact InputTextarea for multi-line text input.</p>
+                <p>Cratis textarea for multi-line text input.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -514,7 +515,7 @@ export const DropdownFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>DropdownField</h2>
-                <p>PrimeReact Dropdown for selecting from a list of options.</p>
+                <p>Cratis Dropdown for selecting from a list of options.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -539,7 +540,7 @@ export const SliderFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>SliderField</h2>
-                <p>PrimeReact Slider for selecting numeric values visually.</p>
+                <p>Cratis Slider for selecting numeric values visually.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -563,7 +564,7 @@ export const CheckboxFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>CheckboxField</h2>
-                <p>PrimeReact Checkbox for boolean values.</p>
+                <p>Cratis Checkbox for boolean values.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -589,7 +590,7 @@ export const CalendarFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>CalendarField</h2>
-                <p>PrimeReact Calendar for selecting date values.</p>
+                <p>Cratis internationalized date picker for selecting date values.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -612,7 +613,7 @@ export const ColorPickerFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>ColorPickerField</h2>
-                <p>PrimeReact ColorPicker for selecting hex colors.</p>
+                <p>Cratis ColorPicker for selecting hex colors.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -633,7 +634,7 @@ export const MultiSelectFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>MultiSelectField</h2>
-                <p>PrimeReact MultiSelect for selecting multiple options from a list.</p>
+                <p>Cratis filterable multi-select for selecting several options.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -646,7 +647,6 @@ export const MultiSelectFieldExample: Story = {
                         options={multiSelectOptions}
                         optionValue="id"
                         optionLabel="name"
-                        display="chip"
                         filter
                     />
                 </CommandForm>
@@ -660,7 +660,7 @@ export const ChipsFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>ChipsField</h2>
-                <p>PrimeReact Chips for entering and managing multiple text values.</p>
+                <p>Cratis Chips field for entering and managing multiple text values.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
@@ -683,23 +683,26 @@ export const RadioButtonFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>RadioButtonField</h2>
-                <p>PrimeReact RadioButton for selecting a single value. Multiple RadioButtonFields bound to the same property form a radio group.</p>
+                <p>Cratis native radio options form one keyboard-navigable group when they share a name.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ radioButton: 'apple' }}
                 >
                     <RadioButtonField<FormFieldsCommand>
+                        name="fruit"
                         value={c => c.radioButton}
                         buttonValue="apple"
                         label="Apple"
                     />
                     <RadioButtonField<FormFieldsCommand>
+                        name="fruit"
                         value={c => c.radioButton}
                         buttonValue="banana"
                         label="Banana"
                     />
                     <RadioButtonField<FormFieldsCommand>
+                        name="fruit"
                         value={c => c.radioButton}
                         buttonValue="cherry"
                         label="Cherry"
@@ -722,7 +725,7 @@ export const RadioGroupFieldExample: Story = {
         return (
             <StoryContainer size="sm" asCard>
                 <h2>RadioGroupField</h2>
-                <p>PrimeReact RadioButton group rendered from an options array.</p>
+                <p>Cratis native radio group rendered from an options array.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}

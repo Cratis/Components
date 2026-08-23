@@ -1,6 +1,6 @@
 # MultiSelectField
 
-`MultiSelectField` lets the user pick several values through the Cratis [`Dropdown`](../Dropdown/index.md) native multiple-selection path.
+`MultiSelectField` lets the user pick several values through the Cratis [`Dropdown`](../Dropdown/index.md). It uses native multiple selection by default and an accessible multi-value combobox when filtering is enabled.
 
 ## Usage
 
@@ -40,7 +40,7 @@ const categoryOptions = [
 | `filter`                        | `boolean`                         | `false` | Shows a filter input in the options popup.                                                                                                                      |
 | `showClear`                     | `boolean`                         | `false` | Displays a clear icon to reset selected values.                                                                                                                 |
 | `className`                     | `string`                          | -       | Extra CSS class combined with the default `w-full`.                                                                                                             |
-| `pt` / `ptOptions` / `unstyled` | -                                 | -       | Pass-through styling for the underlying `Select`.                                                                                                               |
+| `pt` / `ptOptions` / `unstyled` | -                                 | -       | Pass-through styling for the underlying `Dropdown`; `ptOptions` and `unstyled` are compatibility no-ops.                                                       |
 
 ## Behavior
 

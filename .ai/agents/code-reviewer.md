@@ -101,7 +101,7 @@ When checking for unused code, missing references, or naming consistency, prefer
 
 ## TypeScript Styling checklist
 
-- [ ] No hard-coded hex/rgb values — PrimeReact CSS variables used
+- [ ] No hard-coded hex/rgb values — Cratis semantic CSS variables used
 - [ ] CSS co-located with component (`.css` file in same folder)
 - [ ] No `!important` unless absolutely required and justified with a comment
 

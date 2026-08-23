@@ -188,4 +188,4 @@ The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeRea
 
 ## License
 
-Cratis Components is MIT licensed. Its default runtime dependencies are Apache-2.0 or MIT licensed. Components 4 does not require PrimeUI licensing.
+Cratis Components is MIT licensed. Its default runtime dependencies use permissive open-source licenses, including Apache-2.0, MIT, and ISC. Components 4 does not require PrimeUI licensing.

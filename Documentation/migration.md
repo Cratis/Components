@@ -46,7 +46,7 @@ A custom product design can omit `theme`, define the `--cratis-*` variables itse
 
 ## Simplify the provider
 
-The provider now owns locale and Components-specific labels. It no longer accepts a PrimeUI key, renderer preset, global Prime pass-through map, ripple setting, or renderer defaults.
+The provider now owns locale and Components-specific labels. It temporarily accepts unknown legacy renderer keys so staged source migrations compile, but ignores them. Remove PrimeUI keys, renderer presets, global Prime pass-through maps, ripple settings, and renderer defaults.
 
 ```tsx
 import { CratisComponentsProvider } from '@cratis/components';
@@ -158,7 +158,7 @@ Every meaningful element also carries `data-cratis-part`. Interactive states use
 | Dropdown `option`              | `option`                                       |
 | DatePicker `input`             | segmented `input`; identity belongs on `group` |
 
-See [Stable component parts](Styling/pass-through.md) for the complete contract.
+See [Stable component parts](Styling/pass-through.md) for the documented foundation surfaces.
 
 ### Migrate a deeply customized product
 
@@ -182,6 +182,7 @@ export const productDialogParts: DialogParts = {
 export const productStepperParts: StepperParts = {
     root: { className: 'product-stepper' },
     list: { className: 'product-stepper-list' },
+    step: { className: 'product-stepper-step' },
     header: { className: 'product-stepper-header' },
     number: { className: 'product-stepper-number' },
     title: { className: 'product-stepper-title' },
@@ -189,6 +190,20 @@ export const productStepperParts: StepperParts = {
     panel: { className: 'product-stepper-panel' },
 };
 ```
+
+For an existing nested Prime stepper preset, map the slots by rendered responsibility:
+
+| Components 3 Prime slot | Components 4 part |
+| ----------------------- | ----------------- |
+| `nav` | `list` |
+| `panelContainer` | `panels` |
+| `stepperpanel.root` | `step` (`<li>`) |
+| `stepperpanel.action` | `header` (`<button>`) |
+| `stepperpanel.number` | `number` |
+| `stepperpanel.title` | `title` |
+| `stepperpanel.content` | `panel` (`<section>`) |
+
+The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item layout on `step`, and interactive-header styling on `header`. Replace `data-p-active` selectors with `[data-cratis-part='step'][data-active='true']`.
 
 Paginator callbacks that formerly returned classes from renderer context must become static Cratis parts plus CSS state selectors:
 
@@ -205,7 +220,19 @@ export const productPaginatorParts: TablePaginatorParts = {
 };
 ```
 
-Use `:disabled`, `:focus-visible`, and the documented `data-cratis-*` states in CSS instead of renderer callback context. The numbered-page renderer is gone; the paginator reports the current page and provides first/previous/next/last actions.
+Pass the parts to either query-backed table:
+
+```tsx
+<DataTableForQuery
+    query={AllProducts}
+    paginatorPt={productPaginatorParts}
+    emptyMessage='No products'
+>
+    <Column field='name' header='Name' />
+</DataTableForQuery>
+```
+
+`DataTableForObservableQuery` uses the same `paginatorPt` prop. Use `:disabled`, `:focus-visible`, and the documented `data-cratis-*` states in CSS instead of renderer callback context. The numbered-page renderer is gone; the paginator reports the current page and provides first/previous/next/last actions.
 
 `Dropdown.inputId` and `Dropdown.panelClassName` remain migration aliases for `id` and `pt.popover.className`, but new code should use the current names.
 
@@ -225,14 +252,14 @@ Use `:disabled`, `:focus-visible`, and the documented `data-cratis-*` states in 
 
 Do not assume every Dropdown trigger has `role="combobox"`. Query it by its accessible name or `data-cratis-part="trigger"` in tests.
 
-Multiple selection remains available through the native multiple-select path. Prefer a dedicated collection picker for a large or highly customized multi-select experience.
+Multiple selection uses a native multiple-select when filtering is off and an accessible multi-value combobox when `filter` is enabled. Prefer a dedicated collection picker for a large or highly customized multi-select experience.
 
 ## Update tables
 
 `DataTableCore` now renders semantic HTML. Query-backed paging remains owned by Arc.
 
 - Sorting and filtering apply to the currently loaded page.
-- Complete-result filtering belongs in query arguments and runs on the server before paging.
+- Complete-result filtering and sorting are not automatic table state. Model them in query arguments and implement them in the server query before paging.
 - `clientFiltering` remains temporarily accepted as a deprecated no-op so staged source migrations compile. Remove it: filtering is always scoped to the loaded page, and complete-result filtering belongs on the server before paging.
 - Legacy `{ operator, constraints }` filter entries remain accepted. `operator: 'or'` matches any constraint; all other values match every constraint.
 - `Column` remains the declarative column marker.
@@ -240,6 +267,8 @@ Multiple selection remains available through the native multiple-select path. Pr
 - Server totals remain authoritative for the paginator.
 
 Custom matchers registered with `registerDataTableFilterMatcher()` continue to work.
+
+Separate `RadioButtonField` options bound to one property now require the same explicit `name` prop so native arrow-key radio-group navigation works. `RadioGroupField` and `RatingField` generate a shared internal name automatically.
 
 ## Update dialogs and steppers
 

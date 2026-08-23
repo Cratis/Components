@@ -8,7 +8,7 @@ paths:
 
 # React + Arc + Cratis Components
 
-The frontend is React + TypeScript in MVVM style, composed from **Cratis Components** on top of **Arc-generated proxies**. Cratis Components is PrimeReact-based; you reach PrimeReact almost exclusively through the Cratis wrappers. For component structure, styling, and icons see [components.md](./components.md); for dialogs see [dialogs.md](./dialogs.md). This rule covers MVVM, queries, and commands.
+The frontend is React + TypeScript in MVVM style, composed from **Cratis Components** on top of **Arc-generated proxies**. Components owns its markup, public types, semantic tokens, and stable parts; React Aria is an internal implementation detail. For component structure, styling, and icons see [components.md](./components.md); for dialogs see [dialogs.md](./dialogs.md). This rule covers MVVM, queries, and commands.
 
 ## The proxy boundary
 
@@ -185,11 +185,11 @@ Top-level provider for microservice name and API base path. Config props (with d
 
 ## Styling default
 
-Default to **Cratis Components on PrimeReact theming/tokens** (`var(--surface-*)`, `var(--primary-color)`, `var(--text-color)`, `pt`/unstyled where needed) — see [components.md](./components.md). Tailwind is **not** the Cratis default (it's one supported unstyled path). Never hard-code hex/`rgb()` for chrome.
+Default to **Cratis Components semantic tokens and stable parts** (`var(--cratis-surface-*)`, `var(--cratis-primary-color)`, `var(--cratis-text-color)`, typed `pt`, and `data-cratis-part`) — see [components.md](./components.md). Import the token and structural stylesheet entry points; use the optional baseline theme or map a product design system directly. Never hard-code hex/`rgb()` for chrome.
 
 ## See also
 
-- [components.md](./components.md) — component structure, CSS, PrimeReact tokens, icons, Storybook.
+- [components.md](./components.md) — component structure, Cratis tokens and parts, icons, Storybook.
 - [dialogs.md](./dialogs.md) — `CommandDialog` / `Dialog` / `StepperCommandDialog` rules.
 - [frontend-quality.md](./frontend-quality.md) — engineering bar; [frontend-testing.md](./frontend-testing.md) — BDD specs.
 - [typescript.md](./typescript.md) — TS style.

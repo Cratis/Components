@@ -3,6 +3,7 @@
 
 import { addons } from 'storybook/preview-api';
 import React from 'react';
+import '../tokens.css';
 import '../styles.css';
 import './preview.css';
 import '../theme.css';

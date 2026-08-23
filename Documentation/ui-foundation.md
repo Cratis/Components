@@ -42,7 +42,7 @@ The React Aria Components Toast API remains unstable, so Components 4 ships its 
 
 ## Table architecture
 
-Components 4 uses semantic HTML and Cratis-owned table state. Arc remains authoritative for server paging. Client filtering and sorting operate only on the loaded page; complete-result filtering and sorting run on the server before paging.
+Components 4 uses semantic HTML and Cratis-owned table state. Arc remains authoritative for server paging. Client filtering and sorting operate only on the loaded page. Complete-result filtering and sorting require consumer-defined query arguments and server query logic that applies them before paging; Components does not automatically forward table state to the server.
 
 [TanStack Table](https://tanstack.com/table/latest/docs/overview) was evaluated but is not a Components 4 dependency. It remains a possible future implementation tool if advanced grouping, pinning, faceting, or sizing creates enough state complexity to justify it. Adopting it would not change the Cratis public contract.
 

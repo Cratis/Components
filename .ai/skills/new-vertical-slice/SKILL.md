@@ -61,7 +61,7 @@ Place `.tsx` files in the slice folder `<Feature>/<Slice>/`.
 - Import the auto-generated command/query proxy from the same folder
 - Use `CommandDialog` from `@cratis/components/CommandDialog` for command dialogs
 - Use `Dialog` from `@cratis/components/Dialogs` for data-only dialogs — NEVER import from `primereact/dialog`
-- Use PrimeReact CSS variables for all colors — never hard-code hex values
+- Use Cratis semantic CSS variables (`--cratis-*`) for all colors — never hard-code hex values
 - Use full descriptive variable names — never abbreviations (`event` not `e`, `index` not `idx`)
 - No `any` types — use `unknown` with type guards
 
