@@ -13,7 +13,7 @@ set -euo pipefail
 
 mkdir -p dist/esm
 
-for stylesheet in tokens.css theme.css primereact-v10-palette.css; do
+for stylesheet in tokens.css theme.css; do
     cp "$stylesheet" "dist/esm/$stylesheet"
     echo "Copied $stylesheet"
 done

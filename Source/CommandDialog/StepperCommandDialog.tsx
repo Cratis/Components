@@ -95,11 +95,11 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
      * Use the inherited `pt`/`ptOptions`/`unstyled` props to customize the Stepper.
      */
     dialogClassName?: string;
-    /** PrimeReact pass-through configuration applied to the outer Dialog. */
+    /** Cratis-owned per-part attributes applied to the outer Dialog. */
     dialogPt?: DialogProps['pt'];
-    /** PrimeReact pass-through options applied to the outer Dialog. */
+    /** Legacy part merge options applied to the outer Dialog. */
     dialogPtOptions?: DialogProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the outer Dialog. */
+    /** Legacy renderer flag retained for source compatibility; ignored on the outer Dialog. */
     dialogUnstyled?: boolean;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
@@ -336,7 +336,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     // The header X and the Escape key are withdrawn on the same flag as the footer Cancel. A
     // dismissal that still worked mid-flight would close the dialog and then let onSuccess fire on
     // a dialog that is already gone. `dismissable` is the single switch on the Cratis Dialog that
-    // governs all three affordances in PrimeReact 11 — the header close button, the backdrop click
+    // governs all three affordances — the header close button, the backdrop click
     // and `closeOnEscape` — so withdrawing it withdraws every dismissal at once.
     return (
         <Dialog
@@ -382,7 +382,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
 
 /**
  * A multi-step wizard dialog backed by a single Cratis Arc command. Wraps
- * PrimeReact's `Stepper` inside a Cratis {@link Dialog}, tracks per-step
+ * the Cratis-owned Stepper inside a Cratis {@link Dialog}, tracks per-step
  * visit state, surfaces inline error indicators on steps with invalid
  * fields, and executes the bound command when the user submits the last
  * step. Use it when one command has enough fields that they should be

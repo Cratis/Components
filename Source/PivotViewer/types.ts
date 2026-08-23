@@ -91,8 +91,8 @@ export interface PivotViewerProps<TItem extends object> {
   emptyContent?: ReactNode;
   isLoading?: boolean;
   /**
-   * Optional color overrides mapped to PrimeReact-like CSS variables.
-   * If omitted, values are taken from the global theme (PrimeReact defaults).
+   * Optional color overrides mapped to semantic CSS variables.
+   * If omitted, values are taken from the global theme (Cratis defaults).
    */
   colors?: Partial<{
     primaryColor: string;

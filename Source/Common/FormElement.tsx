@@ -20,8 +20,7 @@ export interface FormElementProps {
 /**
  * Lightweight wrapper that places an icon addon to the left of a form input,
  * styled with the `--cratis-*` token layer (background, border, radius). Use
- * it to give input fields a leading icon without pulling in PrimeReact's
- * `InputGroup` chrome.
+ * it to give input fields a leading icon without pulling in a renderer-specific input-group abstraction.
  *
  * ```tsx
  * <FormElement icon={<i className="pi pi-user" />}>

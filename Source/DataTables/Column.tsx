@@ -58,9 +58,8 @@ export interface ColumnProps<TData = unknown> {
 /**
  * Declares one column of a Cratis data table (`DataTableForQuery`,
  * `DataTableForObservableQuery`, `DataPage.Columns`). This is the Cratis-owned
- * replacement for the removed `primereact/column` — the same `<Column field
- * header body sortable />` authoring model, mapped internally onto PrimeReact
- * 11's headless DataTable header/body cells.
+ * renderer-independent `<Column field header body sortable />` authoring model,
+ * mapped internally onto semantic table header/body cells.
  *
  * It is a pure marker: the surrounding table reads its props to build the
  * header and per-row cells, so it renders nothing when mounted on its own.

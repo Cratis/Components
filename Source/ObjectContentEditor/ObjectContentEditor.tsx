@@ -49,7 +49,7 @@ export interface ObjectContentEditorProps {
     /**
      * Extra CSS class names appended to the editor root, combined with the
      * default `order-content` class. For fine-grained styling of the internal
-     * PrimeReact inputs, use a global `pt` preset on `CratisComponentsProvider`.
+     * Components inputs, use product tokens and stable Cratis parts.
      */
     className?: string;
 }
@@ -61,7 +61,7 @@ export interface ObjectContentEditorProps {
  * edit mode it switches to the appropriate input type for each property
  * (`InputText`, `InputNumber`, `Checkbox`, `Calendar`, `InputTextarea`).
  *
- * The component composes many PrimeReact widgets internally; for fine-grained
+ * The component composes Cratis-owned controls internally; for fine-grained
  * pass-through styling use a global `pt` preset on `CratisComponentsProvider`.
  *
  * @param props - {@link ObjectContentEditorProps}.

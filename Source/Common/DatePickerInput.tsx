@@ -78,7 +78,7 @@ export interface DatePickerInputProps {
     id?: string;
     showButtonBar?: boolean;
     placeholder?: string;
-    /** Deprecated mask from the PrimeReact implementation; locale controls formatting now. */
+    /** Deprecated renderer mask; locale controls formatting now. */
     dateFormat?: string;
     showIcon?: boolean;
     showTime?: boolean;

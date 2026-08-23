@@ -24,17 +24,15 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
     /**
      * How the selection is displayed in the field: comma-separated or as chips.
      *
-     * PrimeReact 11's `Select` (in `multiple` mode) renders the selection through
-     * its value slot rather than v10 MultiSelect's chip/comma modes, so this is
-     * currently accepted for API compatibility and does not change rendering.
+     * Legacy display mode retained for source compatibility; native multiple
+     * selection does not change presentation based on this value.
      */
     display?: 'comma' | 'chip';
 
     /**
      * Maximum number of selected labels to show before collapsing into a count.
      *
-     * Accepted for API compatibility; not applied under the PrimeReact 11
-     * `Select` value rendering.
+     * Accepted for API compatibility; not applied by native multiple selection.
      */
     maxSelectedLabels?: number;
 
@@ -47,13 +45,13 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying Select. */
+    /** Cratis-owned per-part attributes applied to the underlying Select. */
     pt?: DropdownProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying Select. */
+    /** Legacy part merge options applied to the underlying Select. */
     ptOptions?: DropdownProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying Select. */
+    /** Legacy renderer flag retained for source compatibility; ignored on the underlying Select. */
     unstyled?: boolean;
 }
 

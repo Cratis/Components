@@ -8,7 +8,7 @@ export const CARD_PADDING = 10;
 export const CARD_RADIUS = 12;
 export const CARD_GAP = 8; // Gap between cards (must match layout gap)
 
-// Fallbacks tuned to PrimeReact lara-dark-blue aesthetic; actual values resolved from CSS variables
+// Fallbacks tuned to the Cratis dark baseline; actual values resolved from CSS variables
 export const DEFAULT_COLORS = {
   base: 0x0f2745,        // surface-b-ish deep blue
   mid: 0x163359,         // surface-a-ish

@@ -15,7 +15,7 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
     /** Placeholder text shown when no date is selected. */
     placeholder?: string;
 
-    /** PrimeReact-style date format mask (e.g. `'yy-mm-dd'`). */
+    /** legacy date format mask (e.g. `'yy-mm-dd'`). */
     dateFormat?: string;
 
     /** When true, renders a trailing calendar icon button. */

@@ -30,8 +30,7 @@ export interface TablePaginatorProps {
 }
 
 /**
- * A minimal first/previous/next/last paginator. PrimeReact 11's `Paginator`
- * is a headless compositional slot rather than a ready-made control, and the
+ * A minimal first/previous/next/last paginator. The
  * Cratis data tables drive paging through Arc's paging hook rather than the
  * table's internal pagination — so this renders the page controls wired to a
  * simple `onPageChange(pageIndex)` callback.

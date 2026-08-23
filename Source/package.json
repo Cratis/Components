@@ -106,22 +106,17 @@
             "types": "./dist/esm/Toolbar/index.d.ts",
             "import": "./dist/esm/Toolbar/index.js"
         },
-        "./styled": {
-            "types": "./dist/esm/Styled/index.d.ts",
-            "import": "./dist/esm/Styled/index.js"
-        },
         "./types": {
             "types": "./dist/esm/types/index.d.ts",
             "import": "./dist/esm/types/index.js"
         },
         "./styles": "./dist/esm/styles.css",
         "./tokens": "./dist/esm/tokens.css",
-        "./theme": "./dist/esm/theme.css",
-        "./primereact-v10-palette": "./dist/esm/primereact-v10-palette.css"
+        "./theme": "./dist/esm/theme.css"
     },
     "scripts": {
-        "prepare": "yarn g:build",
-        "clean": "yarn g:clean",
+        "prepare": "yarn clean && yarn g:build",
+        "clean": "rm -rf dist && yarn g:clean",
         "build": "tsc -p tsconfig.json",
         "compile": "tsc -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",

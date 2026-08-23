@@ -103,7 +103,7 @@ export interface SchemaEditorProps {
     /**
      * Extra CSS class names appended to the editor root. Combined with the
      * default `schema-editor` class. For fine-grained styling of internal
-     * PrimeReact components, use a global `pt` preset on `CratisComponentsProvider`.
+     * Components controls, use product tokens and stable Cratis parts.
      */
     className?: string;
 
@@ -117,7 +117,7 @@ export interface SchemaEditorProps {
  * types and formats, and validate naming rules in place. Designed to drive
  * UIs around event payload schemas and similar structural documents.
  *
- * The editor composes a PrimeReact `DataTable`, `Menubar`, and several form
+ * The editor composes a Cratis data table, action toolbar, and form
  * widgets internally; for restyling, use a global `pt` preset on
  * `CratisComponentsProvider`.
  *

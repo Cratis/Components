@@ -24,13 +24,13 @@ interface DropdownFieldComponentProps extends WrappedFieldProps<string | number>
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying Dropdown. */
+    /** Cratis-owned per-part attributes applied to the underlying Dropdown. */
     pt?: DropdownProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying Dropdown. */
+    /** Legacy part merge options applied to the underlying Dropdown. */
     ptOptions?: DropdownProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying Dropdown. */
+    /** Legacy renderer flag retained for source compatibility; ignored on the underlying Dropdown. */
     unstyled?: boolean;
 }
 

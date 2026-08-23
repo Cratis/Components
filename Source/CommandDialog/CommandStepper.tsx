@@ -40,10 +40,9 @@ export type StepperHeaderPosition = 'top' | 'bottom';
 /**
  * Stepper-specific customization surface exposed by {@link CommandStepper} and
  * {@link StepperCommandDialog}. This is a Cratis-owned type — it no longer
- * leaks PrimeReact's `StepperProps` — so PrimeReact 11's compositional Stepper
- * can be rebuilt underneath without changing the public API. PrimeReact 11's
- * Stepper has no built-in `orientation` / `start` / `end` / `headerPosition`,
- * so the wrapper re-implements them over the compositional parts.
+ * leaks renderer-specific stepper props — so the Cratis-owned Stepper
+ * can evolve underneath without changing the public API. Orientation, start/end
+ * content, and header position are implemented over stable Cratis parts.
  */
 export interface StepperParts {
     root?: HTMLAttributes<HTMLDivElement>;
@@ -186,6 +185,7 @@ const processChildren = (nodes: React.ReactNode): React.ReactNode => {
         const component = child.type as React.ComponentType<unknown>;
         if ((component as { displayName?: string }).displayName === 'CommandFormField') {
             type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
+            // SAFETY: displayName identifies the Arc command field shape before it reaches the wrapper.
             return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
         }
 
@@ -628,7 +628,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
  *
  * ## Mechanics
  *
- * - Wraps PrimeReact's `Stepper` inside an Arc `CommandForm` so each
+ * - Wraps the Cratis-owned Stepper inside an Arc `CommandForm` so each
  *   `<StepperPanel>` becomes a logical grouping of fields that all bind to
  *   the same single command.
  * - Provides a built-in Previous / Next / Submit footer. The Submit button

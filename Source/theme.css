@@ -1,79 +1,48 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/*
- * Cratis baseline theme — a token-based default look for the unstyled
- * PrimeReact 11 components, built entirely on the `--cratis-*` / `--surface-*`
- * token layer. It requires **no PrimeUI license** (unlike the styled
- * `@primeuix/themes` presets).
- *
- * Usage: run the components `unstyled`, `import '@cratis/components/theme'`, and
- * add `class="cratis-theme"` to an ancestor (e.g. <body> or your app root). The
- * rules are scoped under `.cratis-theme` so it can also theme a subtree.
- *
- * It intentionally styles all buttons as filled primary (the unstyled DOM
- * carries no variant/severity); component-owned CSS (ActionMenubar, paginator,
- * toast, tooltip, filter menu) refines specific button roles on top.
- */
-
-/* Concrete palette. The Cratis tokens normally resolve from a `@primeuix/themes`
-   preset's `--p-*` variables; with no preset (the license-free path) that chain
-   is empty, so the baseline theme supplies real colors here — deferring to a
-   preset's `--p-*` when one *is* present, and falling back to these otherwise. */
+/* Optional Cratis baseline values. Component structure lives in styles.css. */
 .cratis-theme {
-    /* Paint the base surface, not just the text color — so the theme is
-       self-contained on any host background. Applied to <body> it fills the
-       viewport; applied to a subtree (a documented use) it establishes the
-       themed backdrop instead of letting the dark text fall on whatever is
-       behind it. The surface token flips light/dark with the palette below. */
     color: var(--cratis-text-color);
-    background-color: var(--cratis-surface-section);
+    background-color: var(--cratis-surface-ground);
 
-    --cratis-primary-color:      var(--p-primary-color, #3b82f6);
-    --cratis-primary-color-text: var(--p-primary-contrast-color, #ffffff);
-    --cratis-primary-300:        var(--p-primary-300, #93c5fd);
-    --cratis-primary-400:        var(--p-primary-400, #60a5fa);
-    --cratis-primary-500:        var(--p-primary-500, #3b82f6);
-    --cratis-primary-600:        var(--p-primary-600, #2563eb);
-    --cratis-green-500:          var(--p-green-500, #22c55e);
-    --cratis-orange-500:         var(--p-orange-500, #f59e0b);
-    --cratis-red-500:            var(--p-red-500, #ef4444);
+    --cratis-primary-color: #3b82f6;
+    --cratis-primary-color-text: #ffffff;
+    --cratis-primary-300: #93c5fd;
+    --cratis-primary-400: #60a5fa;
+    --cratis-primary-500: #3b82f6;
+    --cratis-primary-600: #2563eb;
+    --cratis-green-500: #16a34a;
+    --cratis-orange-500: #d97706;
+    --cratis-red-500: #dc2626;
 
-    --cratis-surface-0:          var(--p-form-field-background, #ffffff);
-    --cratis-surface-100:        var(--p-content-hover-background, #f1f5f9);
-    --cratis-surface-section:    var(--p-surface-50, #f8fafc);
-    --cratis-surface-card:       var(--p-surface-0, #ffffff);
-    --cratis-surface-overlay:    var(--p-surface-0, #ffffff);
-    --cratis-surface-hover:      var(--p-surface-100, #f1f5f9);
-    --cratis-surface-border:     var(--p-surface-200, #e2e8f0);
+    --cratis-surface-0: #ffffff;
+    --cratis-surface-100: #f1f5f9;
+    --cratis-surface-ground: #f8fafc;
+    --cratis-surface-section: #f8fafc;
+    --cratis-surface-card: #ffffff;
+    --cratis-surface-overlay: #ffffff;
+    --cratis-surface-hover: #f1f5f9;
+    --cratis-surface-border: #e2e8f0;
 
-    --cratis-text-color:           var(--p-text-color, #1e293b);
-    --cratis-text-color-secondary: var(--p-text-muted-color, #475569);
-    --cratis-highlight-bg:         var(--p-highlight-background, #dbeafe);
-    --cratis-highlight-text-color: var(--p-highlight-color, #1e40af);
-    --cratis-maskbg:               rgba(0, 0, 0, 0.4);
-    --cratis-border-radius:        6px;
+    --cratis-text-color: #1e293b;
+    --cratis-text-color-secondary: #475569;
+    --cratis-highlight-bg: #dbeafe;
+    --cratis-highlight-text-color: #1e40af;
+    --cratis-maskbg: rgba(15, 23, 42, 0.45);
+    --cratis-border-radius: 6px;
+    --cratis-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.35);
 
-    /* Arc component chrome. @cratis/arc.react's field wrappers, form errors, and
-       dialogs read this `--color-*` token family; map it onto the palette so the
-       baseline theme also themes the Arc surface (labels, borders, field errors),
-       not only the PrimeReact components. The chrome/text tokens reference the
-       `--cratis-*` vars so they flip automatically in dark; the semantic colors
-       are WCAG-AA-safe on the light surface and re-declared for dark below. */
-    --color-text:                 var(--cratis-text-color);
-    --color-text-secondary:       var(--cratis-text-color-secondary);
-    --color-text-muted:           var(--cratis-text-color-secondary);
-    --color-border:               var(--cratis-surface-border);
+    --color-text: var(--cratis-text-color);
+    --color-text-secondary: var(--cratis-text-color-secondary);
+    --color-text-muted: var(--cratis-text-color-secondary);
+    --color-border: var(--cratis-surface-border);
     --color-background-secondary: var(--cratis-surface-section);
-    --color-background-tertiary:  var(--cratis-surface-100);
-    --color-error:                #b91c1c;
-    --color-error-bg:             #fef2f2;
-    --color-success:              #15803d;
-    --color-warning:              #b45309;
-
-    /* Arc also reads these radius/spacing/font tokens (with no fallbacks of its
-       own); supply a scale so Arc chrome keeps its corners, padding, and gaps
-       under the baseline theme instead of collapsing to the initial value. */
+    --color-background-tertiary: var(--cratis-surface-100);
+    --color-error: #b91c1c;
+    --color-error-bg: #fef2f2;
+    --color-success: #15803d;
+    --color-warning: #b45309;
     --radius-sm: 4px;
     --radius-md: 6px;
     --radius-lg: 10px;
@@ -83,301 +52,47 @@
     --space-lg: 1.5rem;
     --space-xl: 2rem;
     --space-2xl: 3rem;
-    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-
-    /* Concrete values for two tokens tokens.css leaves preset-only. Filter/
-       FilterPanel.css (shipped via @cratis/components/Filter) consumes both
-       without inline fallbacks, so with no preset the Filter panel would lose its
-       sub-surface backgrounds and focus rings. */
-    --cratis-surface-ground: var(--p-surface-50, #f8fafc);
-    --cratis-focus-ring:     0 0 0 0.2rem rgba(59, 130, 246, 0.45);
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-/* Dark palette — applied when the `cratis-dark` class is on an ancestor. */
 .cratis-dark .cratis-theme,
 .cratis-theme.cratis-dark {
-    --cratis-surface-0:       #1e293b;
-    --cratis-surface-100:     #334155;
+    --cratis-primary-color: #60a5fa;
+    --cratis-primary-color-text: #0f172a;
+    --cratis-surface-0: #1e293b;
+    --cratis-surface-100: #334155;
+    --cratis-surface-ground: #020617;
     --cratis-surface-section: #0f172a;
-    --cratis-surface-card:    #1e293b;
+    --cratis-surface-card: #1e293b;
     --cratis-surface-overlay: #1e293b;
-    --cratis-surface-hover:   #334155;
-    --cratis-surface-border:  #334155;
-
-    --cratis-text-color:           #f8fafc;
+    --cratis-surface-hover: #334155;
+    --cratis-surface-border: #475569;
+    --cratis-text-color: #f8fafc;
     --cratis-text-color-secondary: #cbd5e1;
-    --cratis-highlight-bg:         #1e3a8a;
+    --cratis-highlight-bg: #1e3a8a;
     --cratis-highlight-text-color: #ffffff;
-    --cratis-maskbg:               rgba(0, 0, 0, 0.6);
-    --cratis-surface-ground:       #020617;
-
-    /* Lighter semantic colors that stay AA-legible on the dark surface. The
-       chrome/text `--color-*` tokens follow the `--cratis-*` vars redefined
-       above, so only the concrete semantic colors are re-declared here. The
-       error-bg is deepened (red-950) so the #f87171 error text clears AA (~6.4:1)
-       on the exception banner, not just on the section surface. */
-    --color-error:    #f87171;
+    --cratis-maskbg: rgba(0, 0, 0, 0.65);
+    --color-error: #f87171;
     --color-error-bg: #450a0a;
-    --color-success:  #4ade80;
-    --color-warning:  #fbbf24;
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
 }
 
-/* ── Buttons ─────────────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='button'] {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid transparent;
-    border-radius: var(--cratis-border-radius, 6px);
-    /* A WCAG-AA-safe filled shade against the white label. */
-    background: #1d4ed8;
-    color: #fff;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s, opacity 0.15s;
-}
-.cratis-theme [data-scope='button']:not([disabled]):hover { background: #1e40af; }
-.cratis-theme [data-scope='button']:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--cratis-primary-300, var(--cratis-primary-color)); }
-.cratis-theme [data-scope='button'][disabled] { opacity: 0.5; cursor: not-allowed; }
-
-/* ── Text inputs ─────────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='inputtext'],
-.cratis-theme [data-scope='textarea'],
-.cratis-theme [data-scope='inputnumber'][data-part='input'],
-.cratis-theme [data-scope='datepicker'][data-part='input'],
-.cratis-theme [data-scope='inputtags'][data-part='control'],
-.cratis-theme [data-scope='select'][data-part='root'] {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    background: var(--cratis-surface-0);
-    color: var(--cratis-text-color);
-    border: 1px solid var(--cratis-surface-border);
-    border-radius: var(--cratis-border-radius, 6px);
-    box-sizing: border-box;
-}
-.cratis-theme [data-scope='textarea'] { resize: vertical; min-height: 4rem; }
-.cratis-theme [data-scope='select'][data-part='root'] {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    cursor: pointer;
-}
-.cratis-theme [data-scope='select'][data-part='value'] { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; }
-.cratis-theme [data-scope='select'][data-part='arrow'],
-.cratis-theme [data-scope='datepicker'][data-part='trigger'] { color: var(--cratis-text-color-secondary); }
-.cratis-theme [data-scope='inputtext']:focus-visible,
-.cratis-theme [data-scope='textarea']:focus-visible,
-.cratis-theme [data-scope='inputnumber'][data-part='input']:focus-visible {
-    outline: none;
-    border-color: var(--cratis-primary-color);
-    box-shadow: 0 0 0 2px var(--cratis-primary-300, transparent);
-}
-.cratis-theme [aria-invalid='true'],
-.cratis-theme [data-invalid] > [data-scope='inputtext'],
-.cratis-theme [data-scope='inputtext'][aria-invalid='true'] { border-color: var(--cratis-red-500); }
-
-/* ── Select / datepicker popup ───────────────────────────────────────────── */
-.cratis-theme [data-scope='select'][data-part='list'],
-.cratis-theme [data-scope='select'][data-part='popup'] {
-    background: var(--cratis-surface-overlay);
-    border: 1px solid var(--cratis-surface-border);
-    border-radius: var(--cratis-border-radius, 6px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
-}
-.cratis-theme [data-scope='select'][data-part='option'] { padding: 0.5rem 0.75rem; cursor: pointer; }
-.cratis-theme [data-scope='select'][data-part='option']:hover,
-.cratis-theme [data-scope='select'][data-part='option'][data-selected] { background: var(--cratis-surface-hover); }
-
-/* ── Checkbox / radio ────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='checkboxbox'],
-.cratis-theme [data-scope='radiobutton'][data-part='box'] {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.15rem;
-    height: 1.15rem;
-    background: var(--cratis-surface-0);
-    border: 1px solid var(--cratis-surface-border);
-    color: var(--cratis-primary-color-text);
-}
-.cratis-theme [data-scope='checkboxbox'] { border-radius: 4px; }
-.cratis-theme [data-scope='radiobutton'][data-part='box'] { border-radius: 50%; }
-.cratis-theme [data-scope='checkbox'][data-part='root'][data-checked] [data-scope='checkboxbox'],
-.cratis-theme [data-scope='radiobutton'][data-part='root'][data-checked] [data-part='box'] {
-    background: var(--cratis-primary-color);
-    border-color: var(--cratis-primary-color);
+@media (prefers-color-scheme: dark) {
+    .cratis-theme:not(.cratis-light) {
+        color-scheme: dark;
+    }
 }
 
-/* ── Toggle switch ───────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='toggleswitch'][data-part='control'] {
-    display: inline-flex;
-    align-items: center;
-    width: 2.5rem;
-    height: 1.4rem;
-    padding: 0.15rem;
-    background: var(--cratis-surface-border);
-    border-radius: 999px;
-    transition: background-color 0.15s;
+@media (forced-colors: active) {
+    .cratis-theme {
+        --cratis-primary-color: Highlight;
+        --cratis-primary-color-text: HighlightText;
+        --cratis-surface-card: Canvas;
+        --cratis-surface-overlay: Canvas;
+        --cratis-surface-border: CanvasText;
+        --cratis-text-color: CanvasText;
+        --cratis-text-color-secondary: CanvasText;
+        --cratis-focus-ring: 0 0 0 2px Highlight;
+    }
 }
-.cratis-theme [data-scope='toggleswitch'][data-part='root'][data-checked] [data-part='control'] { background: var(--cratis-primary-color); }
-.cratis-theme [data-scope='toggleswitch'][data-part='handle'] {
-    width: 1.1rem;
-    height: 1.1rem;
-    background: var(--cratis-surface-0);
-    border-radius: 50%;
-    transition: transform 0.15s;
-}
-.cratis-theme [data-scope='toggleswitch'][data-part='root'][data-checked] [data-part='handle'] { transform: translateX(1.1rem); }
-
-/* ── Slider ──────────────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='slider'][data-part='track'] { height: 0.35rem; background: var(--cratis-surface-border); border-radius: 999px; }
-.cratis-theme [data-scope='slider'][data-part='range'] { height: 0.35rem; background: var(--cratis-primary-color); border-radius: 999px; }
-.cratis-theme [data-scope='slider'][data-part='handle'] { width: 1.1rem; height: 1.1rem; background: var(--cratis-primary-color); border-radius: 50%; }
-
-/* ── Dialog ──────────────────────────────────────────────────────────────── */
-/* PrimeReact 11 renders the backdrop and the positioner as siblings under the portal,
-   and leaves placing them to CSS: without these two rules the backdrop is a zero-height
-   block and the popup flows in after the page content, below the fold. The layout is
-   the one PrimeReact's own dialog style applies (`@primereact/styles/dialog`). */
-.cratis-theme [data-scope='dialog'][data-part='backdrop'],
-.cratis-theme [data-scope='dialog'][data-part='mask'] {
-    position: fixed;
-    inset: 0;
-    background: var(--cratis-maskbg, rgba(0, 0, 0, 0.5));
-}
-.cratis-theme [data-scope='dialog'][data-part='positioner'] {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    pointer-events: none;
-}
-.cratis-theme [data-scope='dialog'][data-part='positioner'][data-modal] { pointer-events: auto; }
-.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='top'] { align-items: flex-start; }
-.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='bottom'] { align-items: flex-end; }
-.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='left'] { justify-content: flex-start; }
-.cratis-theme [data-scope='dialog'][data-part='positioner'][data-position='right'] { justify-content: flex-end; }
-.cratis-theme [data-scope='dialog'][data-part='popup'] {
-    display: flex;
-    flex-direction: column;
-    max-height: 100%;
-    pointer-events: auto;
-    background: var(--cratis-surface-overlay);
-    color: var(--cratis-text-color);
-    border-radius: 0.75rem;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
-    overflow: hidden;
-}
-.cratis-theme [data-scope='dialog'][data-part='header'] {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--cratis-surface-border);
-    font-weight: 600;
-}
-.cratis-theme [data-scope='dialog'][data-part='content'] { padding: 1.25rem; overflow-y: auto; }
-.cratis-theme [data-scope='dialog'][data-part='footer'] { padding: 1rem 1.25rem; border-top: 1px solid var(--cratis-surface-border); }
-.cratis-theme [data-scope='dialog'][data-part='close'] {
-    border: none; background: transparent; color: var(--cratis-text-color-secondary);
-    cursor: pointer; padding: 0.25rem; border-radius: 0.25rem;
-}
-.cratis-theme [data-scope='dialog'][data-part='close']:hover { color: var(--cratis-text-color); background: var(--cratis-surface-hover); }
-
-/* ── DataTable ───────────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='datatable'][data-part='table'] { width: 100%; border-collapse: collapse; }
-.cratis-theme [data-scope='datatable'][data-part='thead'] { background: var(--cratis-surface-section); }
-.cratis-theme [data-scope='datatable'][data-part='theadcell'] {
-    padding: 0.625rem 0.75rem; text-align: left; font-weight: 600;
-    color: var(--cratis-text-color-secondary); border-bottom: 1px solid var(--cratis-surface-border);
-}
-.cratis-theme [data-scope='datatable'][data-part='cell'] { padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--cratis-surface-border); }
-.cratis-theme [data-scope='datatable'][data-part='row']:hover { background: var(--cratis-surface-hover); }
-.cratis-theme [data-scope='datatable'][data-part='row'][data-selected] { background: var(--cratis-highlight-bg); color: var(--cratis-highlight-text-color); }
-
-/* ── Tag / Badge ─────────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='tag'] {
-    display: inline-flex; align-items: center; gap: 0.25rem;
-    padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.8125rem; font-weight: 500;
-    background: var(--cratis-surface-hover); color: var(--cratis-text-color);
-}
-.cratis-theme [data-scope='badge'] {
-    display: inline-flex; align-items: center; justify-content: center;
-    min-width: 1.4rem; height: 1.4rem; padding: 0 0.4rem; border-radius: 999px;
-    font-size: 0.75rem; font-weight: 600; background: #1d4ed8; color: #fff;
-}
-/* Filled severity backgrounds use WCAG-AA-safe (darker) shades against white text. */
-.cratis-theme [data-severity='success'] { background: #15803d; color: #fff; }
-.cratis-theme [data-severity='info'] { background: #1d4ed8; color: #fff; }
-.cratis-theme [data-severity='warn'] { background: #b45309; color: #fff; }
-.cratis-theme [data-severity='danger'] { background: #b91c1c; color: #fff; }
-.cratis-theme [data-severity='secondary'] { background: var(--cratis-surface-hover); color: var(--cratis-text-color); }
-
-/* ── Chip / Avatar ───────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='chip'][data-part='root'] {
-    display: inline-flex; align-items: center; gap: 0.375rem;
-    padding: 0.25rem 0.625rem; border-radius: 999px; background: var(--cratis-surface-hover); color: var(--cratis-text-color);
-}
-.cratis-theme [data-scope='chip'][data-part='remove'] { cursor: pointer; color: var(--cratis-text-color-secondary); }
-.cratis-theme [data-scope='avatar'][data-part='root'] {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 2.25rem; height: 2.25rem; border-radius: 50%; overflow: hidden;
-    background: var(--cratis-surface-hover); color: var(--cratis-text-color); font-weight: 600;
-}
-.cratis-theme [data-scope='avatar'][data-part='root'][data-size='large'] { width: 3rem; height: 3rem; }
-
-/* ── ProgressBar / Skeleton ──────────────────────────────────────────────── */
-.cratis-theme [data-scope='progressbar'][data-part='root'] {
-    height: 1.25rem; background: var(--cratis-surface-border); border-radius: 999px; overflow: hidden;
-}
-.cratis-theme [data-scope='progressbar'][data-part='indicator'] {
-    display: flex; align-items: center; justify-content: center; height: 100%;
-    background: #1d4ed8; color: #fff; font-size: 0.75rem;
-    transition: width 0.2s;
-}
-.cratis-theme [data-scope='skeleton'] {
-    display: block; background: var(--cratis-surface-hover); border-radius: 4px;
-    animation: cratis-skeleton-pulse 1.4s ease-in-out infinite;
-}
-@keyframes cratis-skeleton-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-/* ── Stepper ─────────────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='stepper'][data-part='number'] {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 1.75rem; height: 1.75rem; border-radius: 50%;
-    background: var(--cratis-surface-hover); color: var(--cratis-text-color); font-weight: 600;
-}
-.cratis-theme [data-scope='stepper'][data-part='step'][data-active] [data-part='number'] {
-    background: var(--cratis-primary-color); color: var(--cratis-primary-color-text);
-}
-.cratis-theme [data-scope='stepper'][data-part='separator'] { background: var(--cratis-surface-border); }
-.cratis-theme [data-scope='stepper'][data-part='header'] {
-    display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; border: none; cursor: pointer; color: inherit;
-}
-
-/* ── Rating ──────────────────────────────────────────────────────────────── */
-.cratis-theme [data-scope='rating'][data-part='root'] { display: inline-flex; gap: 0.25rem; }
-.cratis-theme [data-scope='rating'] .pi { font-size: 1.25rem; cursor: pointer; }
-.cratis-theme [data-scope='rating'] .pi-star { color: var(--cratis-surface-border); }
-.cratis-theme [data-scope='rating'] .pi-star-fill { color: var(--cratis-orange-500, #f59e0b); }
-
-/* ── ProgressSpinner (BusyIndicatorDialog) ───────────────────────────────────
-   The unstyled primitive is a bare SVG circle with no stroke or motion; give it
-   a visible ring and spin it so the busy indicator actually shows. */
-.cratis-theme [data-scope='progressspinner'][data-part='root'] {
-    display: inline-block; width: 2.5rem; height: 2.5rem;
-    animation: cratis-spin 1s linear infinite;
-}
-.cratis-theme [data-scope='progressspinner'] svg { width: 100%; height: 100%; }
-.cratis-theme [data-scope='progressspinner'] circle {
-    fill: none; stroke: var(--cratis-primary-color, #3b82f6); stroke-width: 4;
-    stroke-linecap: round; stroke-dasharray: 80 200;
-}
-@keyframes cratis-spin { to { transform: rotate(360deg); } }

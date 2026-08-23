@@ -4,12 +4,12 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 import { createRequire } from 'module';
 
 /** Stylesheets that are entry points or token layers in their own right, not component rules. */
-const STANDALONE_STYLESHEETS = new Set(['tailwind.css', 'tailwind-utilities.css', 'tokens.css', 'theme.css', 'primereact-v10-palette.css', 'styles.css']);
+const STANDALONE_STYLESHEETS = new Set(['tailwind.css', 'tailwind-utilities.css', 'tokens.css', 'theme.css', 'styles.css']);
 
 /** Directories that never hold shipped component CSS. */
 const NON_SOURCE_DIRECTORIES = new Set(['node_modules', 'dist', 'storybook-static', '.storybook', 'wwwroot']);
@@ -123,8 +123,7 @@ function bundleStyles(sourceDir, esmPath) {
 
 /**
  * Rollup plugin to generate the package.json in the ESM output directory,
- * marking it as an ES module. PrimeReact 11 is ESM-only, so the package ships
- * a single ESM build — there is no CJS output.
+ * marking it as an ES module. The package ships a single ESM build.
  */
 function generatePackageJson(esmPath) {
     return {
@@ -143,19 +142,10 @@ function generatePackageJson(esmPath) {
     };
 }
 
-/**
- * Entry points that are deliberately NOT reachable from `index.ts`. The root re-exports every
- * component namespace, so anything imported there lands in every consumer's graph — and the
- * styled-mode entry pulls in `@primereact/styles` and `@primeuix/themes`, which are optional
- * peers a consumer that runs unstyled never installs. Listing them here gives them their own
- * bundle without touching the root.
- */
-const STANDALONE_ENTRIES = ['Styled/index.ts'];
-
 export function rollup(esmPath, tsconfigPath, pkg) {
     const sourceDir = dirname(tsconfigPath);
     return {
-        input: ['index.ts', ...STANDALONE_ENTRIES.filter((entry) => existsSync(resolve(sourceDir, entry)))],
+        input: ['index.ts'],
 
         output: [
             {
@@ -172,10 +162,8 @@ export function rollup(esmPath, tsconfigPath, pkg) {
             ...Object.keys(pkg.peerDependencies || {}),
             /^@cratis\/components/,
             /^@cratis\/arc/,
-            /^primereact\//,
-            /^@primereact\//,
-            /^@primeuix\//,
-            /^primeicons/,
+            /^react-aria-components(?:\/|$)/,
+            /^@internationalized\/date(?:\/|$)/,
             /^react-icons\//,
             /\.css$/,
             'react',

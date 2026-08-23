@@ -68,7 +68,7 @@ export interface MenuItemsProps {
  * Props for {@link Columns}.
  */
 export interface ColumnProps {
-    /** PrimeReact `<Column>` elements describing each visible column. */
+    /** Cratis-owned `<Column>` markers describing each visible column. */
     children: ReactNode;
 }
 
@@ -145,7 +145,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
  * {@link DataTableForObservableQuery} (real-time observable) based on the
  * `query` type provided to the surrounding `<DataPage>`.
  *
- * Use as `<DataPage.Columns>` inside a `<DataPage>`, with PrimeReact `<Column>`
+ * Use as `<DataPage.Columns>` inside a `<DataPage>`, with Cratis-owned `<Column>`
  * children defining the table columns.
  */
 export const Columns = ({ children }: ColumnProps) => {
@@ -306,7 +306,7 @@ export interface DataPageProps<
     /** Retained for source compatibility; Cratis parts always merge. */
     tablePtOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the inner DataTable. */
+    /** Legacy renderer flag retained for source compatibility; ignored on the inner DataTable. */
     tableUnstyled?: boolean;
 
     /**
@@ -320,7 +320,7 @@ export interface DataPageProps<
     /** Retained for source compatibility; Cratis parts always merge. */
     menubarPtOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the action menubar's buttons. */
+    /** Legacy renderer flag retained for source compatibility; ignored on the action menubar's buttons. */
     menubarUnstyled?: boolean;
 
     /**
@@ -363,9 +363,9 @@ export interface DataPageProps<
  *   `disableOnUnselected` so they automatically grey out until the user
  *   picks a row — useful for Edit / Delete actions that need a target.
  *
- * - **`<DataPage.Columns>`** wraps PrimeReact `<Column>` elements that
+ * - **`<DataPage.Columns>`** wraps Cratis-owned `<Column>` markers that
  *   describe the visible columns. The columns themselves are
- *   PrimeReact's — anything supported by their `DataTable` `<Column>` is
+ *   Cratis-owned — the documented `ColumnProps` surface is
  *   supported here (sorting, filtering, custom body templates, …).
  *
  * - **`detailsComponent`** (optional) is a React component rendered in a
@@ -427,7 +427,7 @@ export interface DataPageProps<
  * The inner DataTable and action toolbar each have their own per-slot props:
  * `tablePt` / `tableUnstyled` / `tableClassName` for the table;
  * `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` for
- * the action toolbar's buttons (in PrimeReact 11 the v10 Menubar is replaced by
+ * the action toolbar's stable button parts (the action bar is implemented as
  * a button toolbar, so `menubarPt` targets the stable Cratis button parts). See the
  * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md) for
  * the full slot reference.

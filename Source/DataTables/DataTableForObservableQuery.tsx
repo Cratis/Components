@@ -88,7 +88,7 @@ export interface DataTableForObservableQueryProps<
     /** Retained for source compatibility; Cratis parts always merge. */
     ptOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the underlying DataTable. */
+    /** Legacy renderer flag retained for source compatibility; ignored on the underlying DataTable. */
     unstyled?: boolean;
 
     /** Extra CSS class name forwarded to the paginator. */
