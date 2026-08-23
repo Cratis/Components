@@ -6,10 +6,7 @@
         "skipLibCheck": true,
         "types": []
     },
-    "include": [
-        "./**/*.ts",
-        "./**/*.tsx"
-    ],
+    "include": ["./**/*.ts", "./**/*.tsx"],
     "references": [],
     "exclude": [
         "dist",

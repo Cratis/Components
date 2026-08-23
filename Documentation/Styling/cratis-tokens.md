@@ -7,38 +7,38 @@ The `--cratis-*` variables are the supported theming boundary. The optional base
 
 ## Core colors
 
-| Token | Purpose |
-|---|---|
-| `--cratis-primary-color` | Primary actions and selected controls. |
-| `--cratis-primary-color-text` | Content on the primary color. |
+| Token                                           | Purpose                                    |
+| ----------------------------------------------- | ------------------------------------------ |
+| `--cratis-primary-color`                        | Primary actions and selected controls.     |
+| `--cratis-primary-color-text`                   | Content on the primary color.              |
 | `--cratis-primary-300` … `--cratis-primary-600` | Accent scale used by specialized surfaces. |
-| `--cratis-green-500` | Success state. |
-| `--cratis-orange-500` | Warning state. |
-| `--cratis-red-500` | Error/destructive state. |
+| `--cratis-green-500`                            | Success state.                             |
+| `--cratis-orange-500`                           | Warning state.                             |
+| `--cratis-red-500`                              | Error/destructive state.                   |
 
 ## Surfaces
 
-| Token | Purpose |
-|---|---|
-| `--cratis-surface-ground` | Application/page background. |
-| `--cratis-surface-section` | Grouped section background. |
-| `--cratis-surface-card` | Cards and inputs. |
-| `--cratis-surface-overlay` | Dialogs, dropdowns, popovers, and toasts. |
-| `--cratis-surface-hover` | Hovered or quiet selected state. |
-| `--cratis-surface-border` | Borders and dividers. |
+| Token                                         | Purpose                                        |
+| --------------------------------------------- | ---------------------------------------------- |
+| `--cratis-surface-ground`                     | Application/page background.                   |
+| `--cratis-surface-section`                    | Grouped section background.                    |
+| `--cratis-surface-card`                       | Cards and inputs.                              |
+| `--cratis-surface-overlay`                    | Dialogs, dropdowns, popovers, and toasts.      |
+| `--cratis-surface-hover`                      | Hovered or quiet selected state.               |
+| `--cratis-surface-border`                     | Borders and dividers.                          |
 | `--cratis-surface-0` / `--cratis-surface-100` | Small neutral ramp used by display components. |
 
 ## Text and interaction
 
-| Token | Purpose |
-|---|---|
-| `--cratis-text-color` | Primary text. |
+| Token                           | Purpose                           |
+| ------------------------------- | --------------------------------- |
+| `--cratis-text-color`           | Primary text.                     |
 | `--cratis-text-color-secondary` | Supporting text and placeholders. |
-| `--cratis-highlight-bg` | Selected/highlighted background. |
+| `--cratis-highlight-bg`         | Selected/highlighted background.  |
 | `--cratis-highlight-text-color` | Text on a highlighted background. |
-| `--cratis-focus-ring` | Keyboard-visible focus treatment. |
-| `--cratis-maskbg` | Modal backdrop. |
-| `--cratis-border-radius` | Default component radius. |
+| `--cratis-focus-ring`           | Keyboard-visible focus treatment. |
+| `--cratis-maskbg`               | Modal backdrop.                   |
+| `--cratis-border-radius`        | Default component radius.         |
 
 ## Map a product system
 

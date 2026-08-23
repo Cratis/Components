@@ -257,4 +257,4 @@ Read `viewModel.property` inside JSX (never destructure observables at the top o
 | `detailsComponent`                      | `React.FC<IDetailsComponentProps<T>>` rendered for the selected row |
 | `globalFilterFields` / `defaultFilters` | filtering                                                           |
 | `onRefresh`                             | invoked to re-fetch a standard query                                |
-| `tablePt` / `menubarPt`                 | Cratis-owned stable part styling                                     |
+| `tablePt` / `menubarPt`                 | Cratis-owned stable part styling                                    |

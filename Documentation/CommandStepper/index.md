@@ -29,12 +29,13 @@ export const ProjectWizard = () => {
             autoServerValidate={false}
             validateOnInit
         >
-            <StepperPanel header="Basic Info">
-                <InputTextField<CreateProject> value={c => c.name} title="Project Name" />
+            <StepperPanel header='Basic Info'>
+                <InputTextField<CreateProject>
+                    value={(c) => c.name}
+                    title='Project Name'
+                />
             </StepperPanel>
-            <StepperPanel header="Details">
-                {/* CommandForm fields */}
-            </StepperPanel>
+            <StepperPanel header='Details'>{/* CommandForm fields */}</StepperPanel>
         </CommandStepper>
     );
 };

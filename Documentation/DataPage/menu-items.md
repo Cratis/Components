@@ -11,17 +11,20 @@ import { DataPage, MenuItem } from '@cratis/components/DataPage';
 import { Column } from '@cratis/components/DataPage';
 import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa6';
 
-<DataPage title="Products" query={ProductsQuery} emptyMessage="No products">
+<DataPage title='Products' query={ProductsQuery} emptyMessage='No products'>
     <DataPage.MenuItems>
-        <MenuItem label="Create Product" icon={FaPlus} command={handleCreate} />
-        <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={handleEdit} />
-        <MenuItem label="Delete" icon={FaTrash} disableOnUnselected command={handleDelete} />
+        <MenuItem label='Create Product' icon={FaPlus} command={handleCreate} />
+        <MenuItem label='Edit' icon={FaPencil} disableOnUnselected command={handleEdit} />
+        <MenuItem
+            label='Delete'
+            icon={FaTrash}
+            disableOnUnselected
+            command={handleDelete}
+        />
     </DataPage.MenuItems>
 
-    <DataPage.Columns>
-        {/* ... columns */}
-    </DataPage.Columns>
-</DataPage>
+    <DataPage.Columns>{/* ... columns */}</DataPage.Columns>
+</DataPage>;
 ```
 
 ## MenuItem Props
@@ -49,21 +52,21 @@ import { FaPlus, FaPencil, FaTrash, FaBoxArchive } from 'react-icons/fa6';
 <DataPage.MenuItems>
     {/* Always enabled */}
     <MenuItem
-        label="Create New"
+        label='Create New'
         icon={FaPlus}
         command={() => setShowCreateDialog(true)}
     />
 
     {/* Disabled when no selection */}
     <MenuItem
-        label="Edit Selected"
+        label='Edit Selected'
         icon={FaPencil}
         disableOnUnselected={true}
         command={() => setShowEditDialog(true)}
     />
 
     <MenuItem
-        label="Delete Selected"
+        label='Delete Selected'
         icon={FaTrash}
         disableOnUnselected={true}
         command={() => handleDelete()}
@@ -71,12 +74,12 @@ import { FaPlus, FaPencil, FaTrash, FaBoxArchive } from 'react-icons/fa6';
 
     {/* Conditional actions */}
     <MenuItem
-        label="Archive"
+        label='Archive'
         icon={FaBoxArchive}
         disableOnUnselected={true}
         command={() => handleArchive()}
     />
-</DataPage.MenuItems>
+</DataPage.MenuItems>;
 ```
 
 ## Icons
@@ -120,11 +123,11 @@ const handleEdit = () => {
 import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa6';
 
 <DataPage.MenuItems>
-    <MenuItem label="New" icon={FaPlus} command={handleNew} />
-    <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={handleEdit} />
-    <MenuItem label="Delete" icon={FaTrash} disableOnUnselected command={handleDelete} />
-    <MenuItem label="Export" icon={FaFileExport} command={handleExport} />
-</DataPage.MenuItems>
+    <MenuItem label='New' icon={FaPlus} command={handleNew} />
+    <MenuItem label='Edit' icon={FaPencil} disableOnUnselected command={handleEdit} />
+    <MenuItem label='Delete' icon={FaTrash} disableOnUnselected command={handleDelete} />
+    <MenuItem label='Export' icon={FaFileExport} command={handleExport} />
+</DataPage.MenuItems>;
 ```
 
 There are no separators and no submenus. A `MenuItem` with `MenuItem` children does not nest — the children are simply ignored, with no error to tell you — and `<MenuItem separator />` is not a thing.

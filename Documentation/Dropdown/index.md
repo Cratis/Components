@@ -43,19 +43,19 @@ Set `multiple` and bind an array. Components uses the native multiple-select pat
 
 ## Props
 
-| Prop | Purpose |
-|---|---|
-| `value` | Selected value or array for multiple selection. |
-| `options` | Option collection. |
-| `optionLabel` / `optionValue` | Field names for object options. |
-| `placeholder` | Empty trigger text. |
-| `filter` / `filterPlaceholder` | Searchable combobox mode. |
-| `multiple` | Native multiple-selection mode. |
-| `showClear` | Clear action for a single selection. |
-| `invalid` / `disabled` | Control state. |
-| `id`, `name`, `tabIndex`, `aria-*` | Identity, form, and accessibility attributes. |
-| `onChange` / `onBlur` | Selection and focus callbacks. |
-| `pt` | Cratis-owned stable part attributes. |
+| Prop                               | Purpose                                         |
+| ---------------------------------- | ----------------------------------------------- |
+| `value`                            | Selected value or array for multiple selection. |
+| `options`                          | Option collection.                              |
+| `optionLabel` / `optionValue`      | Field names for object options.                 |
+| `placeholder`                      | Empty trigger text.                             |
+| `filter` / `filterPlaceholder`     | Searchable combobox mode.                       |
+| `multiple`                         | Native multiple-selection mode.                 |
+| `showClear`                        | Clear action for a single selection.            |
+| `invalid` / `disabled`             | Control state.                                  |
+| `id`, `name`, `tabIndex`, `aria-*` | Identity, form, and accessibility attributes.   |
+| `onChange` / `onBlur`              | Selection and focus callbacks.                  |
+| `pt`                               | Cratis-owned stable part attributes.            |
 
 ## Stable parts
 

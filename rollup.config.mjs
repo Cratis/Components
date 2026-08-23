@@ -9,10 +9,22 @@ import { dirname, join, relative, resolve } from 'path';
 import { createRequire } from 'module';
 
 /** Stylesheets that are entry points or token layers in their own right, not component rules. */
-const STANDALONE_STYLESHEETS = new Set(['tailwind.css', 'tailwind-utilities.css', 'tokens.css', 'theme.css', 'styles.css']);
+const STANDALONE_STYLESHEETS = new Set([
+    'tailwind.css',
+    'tailwind-utilities.css',
+    'tokens.css',
+    'theme.css',
+    'styles.css',
+]);
 
 /** Directories that never hold shipped component CSS. */
-const NON_SOURCE_DIRECTORIES = new Set(['node_modules', 'dist', 'storybook-static', '.storybook', 'wwwroot']);
+const NON_SOURCE_DIRECTORIES = new Set([
+    'node_modules',
+    'dist',
+    'storybook-static',
+    '.storybook',
+    'wwwroot',
+]);
 
 /** Every `.css` file under the package source that is expected to reach the published bundle. */
 function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) {
@@ -20,7 +32,11 @@ function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) 
         if (entry.isDirectory()) {
             if (NON_SOURCE_DIRECTORIES.has(entry.name)) continue;
             findComponentStylesheets(sourceDir, join(directory, entry.name), found);
-        } else if (entry.name.endsWith('.css') && !entry.name.endsWith('.module.css') && !STANDALONE_STYLESHEETS.has(entry.name)) {
+        } else if (
+            entry.name.endsWith('.css') &&
+            !entry.name.endsWith('.module.css') &&
+            !STANDALONE_STYLESHEETS.has(entry.name)
+        ) {
             found.push(join(directory, entry.name));
         }
     }
@@ -43,17 +59,26 @@ function inlineStyleImports(manifestFile, sourceDir) {
     const inlined = new Set();
 
     // Keep the manifest's own header comment, then replace each @import with the file it names.
-    const body = manifest.replace(/@import\s+['"]([^'"]+)['"]\s*;/g, (_match, specifier) => {
-        const file = specifier.startsWith('.')
-            ? resolve(dirname(manifestFile), specifier)
-            : require.resolve(specifier);
-        if (specifier.startsWith('.')) inlined.add(resolve(dirname(manifestFile), specifier));
-        parts.push(`/* ── ${specifier} ─────────────────────────────────────── */\n${readFileSync(file, 'utf8')}`);
-        return `@__CRATIS_STYLE_${parts.length - 1}__@`;
-    });
+    const body = manifest.replace(
+        /@import\s+['"]([^'"]+)['"]\s*;/g,
+        (_match, specifier) => {
+            const file = specifier.startsWith('.')
+                ? resolve(dirname(manifestFile), specifier)
+                : require.resolve(specifier);
+            if (specifier.startsWith('.'))
+                inlined.add(resolve(dirname(manifestFile), specifier));
+            parts.push(
+                `/* ── ${specifier} ─────────────────────────────────────── */\n${readFileSync(file, 'utf8')}`,
+            );
+            return `@__CRATIS_STYLE_${parts.length - 1}__@`;
+        },
+    );
 
     return {
-        css: body.replace(/@__CRATIS_STYLE_(\d+)__@/g, (_match, index) => parts[Number(index)]),
+        css: body.replace(
+            /@__CRATIS_STYLE_(\d+)__@/g,
+            (_match, index) => parts[Number(index)],
+        ),
         inlined,
     };
 }
@@ -93,13 +118,19 @@ function bundleStyles(sourceDir, esmPath) {
             const { default: autoprefixer } = await import('autoprefixer');
 
             const tailwindEntry = resolve(sourceDir, 'tailwind.css');
-            const tailwind = await postcss([tailwindcss({ base: sourceDir }), autoprefixer]).process(
-                readFileSync(tailwindEntry, 'utf8'),
-                { from: tailwindEntry, to: resolve(esmPath, 'styles.css') }
-            );
+            const tailwind = await postcss([
+                tailwindcss({ base: sourceDir }),
+                autoprefixer,
+            ]).process(readFileSync(tailwindEntry, 'utf8'), {
+                from: tailwindEntry,
+                to: resolve(esmPath, 'styles.css'),
+            });
 
             const manifestFile = resolve(sourceDir, 'styles.css');
-            const { css: components, inlined } = inlineStyleImports(manifestFile, sourceDir);
+            const { css: components, inlined } = inlineStyleImports(
+                manifestFile,
+                sourceDir,
+            );
 
             const missing = findComponentStylesheets(sourceDir)
                 .filter((file) => !inlined.has(file))
@@ -108,15 +139,17 @@ function bundleStyles(sourceDir, esmPath) {
             if (missing.length > 0) {
                 this.error(
                     `${missing.length} component stylesheet(s) are not imported by Source/styles.css, so their rules ` +
-                    `would not ship in @cratis/components/styles:\n  ${missing.join('\n  ')}\n` +
-                    'Add an @import for each to Source/styles.css.'
+                        `would not ship in @cratis/components/styles:\n  ${missing.join('\n  ')}\n` +
+                        'Add an @import for each to Source/styles.css.',
                 );
             }
 
             const outputFile = resolve(esmPath, 'styles.css');
             mkdirSync(dirname(outputFile), { recursive: true });
             writeFileSync(outputFile, `${tailwind.css}\n${components}`);
-            console.log(`✓ Bundled Tailwind utilities + ${inlined.size} component stylesheet(s) → dist/esm/styles.css`);
+            console.log(
+                `✓ Bundled Tailwind utilities + ${inlined.size} component stylesheet(s) → dist/esm/styles.css`,
+            );
         },
     };
 }
@@ -134,11 +167,11 @@ function generatePackageJson(esmPath) {
             writeFileSync(
                 join(esmDir, 'package.json'),
                 JSON.stringify({ type: 'module' }, null, 2),
-                'utf-8'
+                'utf-8',
             );
 
             console.log('✓ Generated package.json for ESM output');
-        }
+        },
     };
 }
 
@@ -150,12 +183,12 @@ export function rollup(esmPath, tsconfigPath, pkg) {
         output: [
             {
                 dir: esmPath,
-                format: "es",
-                exports: "named",
+                format: 'es',
+                exports: 'named',
                 sourcemap: true,
                 preserveModules: true,
-                preserveModulesRoot: "."
-            }
+                preserveModulesRoot: '.',
+            },
         ],
         external: [
             ...Object.keys(pkg.dependencies || {}),
@@ -172,26 +205,31 @@ export function rollup(esmPath, tsconfigPath, pkg) {
         plugins: [
             peerDepsExternal(),
             nodeResolve({
-                extensions: ['.mjs', '.js', '.json', '.node', '.ts', '.tsx']
+                extensions: ['.mjs', '.js', '.json', '.node', '.ts', '.tsx'],
             }),
             typescript({
                 tsconfig: false,
-                exclude: ["node_modules", "../node_modules", "**/for_*/**/*", "**/when_*/**/*"],
+                exclude: [
+                    'node_modules',
+                    '../node_modules',
+                    '**/for_*/**/*',
+                    '**/when_*/**/*',
+                ],
                 compilerOptions: {
-                    target: "ES2022",
-                    module: "ESNext",
-                    moduleResolution: "bundler",
-                    jsx: "react-jsx",
+                    target: 'ES2022',
+                    module: 'ESNext',
+                    moduleResolution: 'bundler',
+                    jsx: 'react-jsx',
                     sourceMap: true,
                     importHelpers: false,
                     noCheck: true,
                     declaration: false,
                     declarationMap: false,
                     composite: false,
-                }
+                },
             }),
             generatePackageJson(esmPath),
             bundleStyles(sourceDir, esmPath),
-        ]
+        ],
     };
 }

@@ -1,5 +1,5 @@
 ---
-title: "1. List the authors"
+title: '1. List the authors'
 description: Put the library's authors on screen with a data table that binds to the AllAuthors query and updates itself when the read model changes.
 ---
 
@@ -11,20 +11,20 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
 
 1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with the Cratis-owned `Column` marker — `field` matches a property on the read model, typed against the generated `Author`:
 
-   ```tsx title="Authors.tsx"
-   import { Page } from '@cratis/components/Common';
-   import { DataTableForObservableQuery } from '@cratis/components/DataTables';
-   import { Column } from '@cratis/components/DataTables';
-   import { AllAuthors } from './Authors/Author';   // generated observable query proxy
+    ```tsx title="Authors.tsx"
+    import { Page } from '@cratis/components/Common';
+    import { DataTableForObservableQuery } from '@cratis/components/DataTables';
+    import { Column } from '@cratis/components/DataTables';
+    import { AllAuthors } from './Authors/Author'; // generated observable query proxy
 
-   export const Authors = () => (
-       <Page title="Authors" panel>
-           <DataTableForObservableQuery query={AllAuthors} emptyMessage="No authors yet">
-               <Column field="name" header="Name" sortable />
-           </DataTableForObservableQuery>
-       </Page>
-   );
-   ```
+    export const Authors = () => (
+        <Page title='Authors' panel>
+            <DataTableForObservableQuery query={AllAuthors} emptyMessage='No authors yet'>
+                <Column field='name' header='Name' sortable />
+            </DataTableForObservableQuery>
+        </Page>
+    );
+    ```
 
 </Steps>
 
@@ -32,10 +32,13 @@ That's the whole screen. The `Page` wrapper gives you the titled, panelled chrom
 
 ## What you didn't write
 
-Notice everything that's *absent*. There's no `fetch`, no `useEffect`, no loading flag, no `useState` holding the rows, and — the part that matters most — **no subscription code**. `DataTableForObservableQuery` opened the observable for you. The moment something else in the app registers a new author, the backend pushes the new read-model value down, and this table re-renders with the extra row. You'll see that happen for real in the next chapter, when we add the form.
+Notice everything that's _absent_. There's no `fetch`, no `useEffect`, no loading flag, no `useState` holding the rows, and — the part that matters most — **no subscription code**. `DataTableForObservableQuery` opened the observable for you. The moment something else in the app registers a new author, the backend pushes the new read-model value down, and this table re-renders with the extra row. You'll see that happen for real in the next chapter, when we add the form.
 
-<Aside type="note" title="Live, because the query is observable">
-The liveness comes from the query being observable on the C# side (it returns `collection.Observe()`). If you only need the data once — to summarize or render custom markup — use `DataTableForQuery` instead, or call `AllAuthors.use()` to get the values directly. Same proxy, different consumption.
+<Aside type='note' title='Live, because the query is observable'>
+    The liveness comes from the query being observable on the C# side (it returns
+    `collection.Observe()`). If you only need the data once — to summarize or render
+    custom markup — use `DataTableForQuery` instead, or call `AllAuthors.use()` to get the
+    values directly. Same proxy, different consumption.
 </Aside>
 
 ## Type safety reaches the column
@@ -48,4 +51,4 @@ The liveness comes from the query being observable on the C# side (it returns `c
 - bound to the `AllAuthors` query with **no subscription or fetch code**,
 - that will update itself the instant the data behind it changes.
 
-A read-only list isn't a back office, though — a librarian needs to *add* authors. Next we'll give the screen a command. [Let's act on the list →](./act-on-it)
+A read-only list isn't a back office, though — a librarian needs to _add_ authors. Next we'll give the screen a command. [Let's act on the list →](./act-on-it)

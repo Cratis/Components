@@ -40,13 +40,17 @@ CommandForm fields are used as children of `CommandDialog`:
 
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
-import { InputTextField, NumberField, CheckboxField } from '@cratis/components/CommandForm';
+import {
+    InputTextField,
+    NumberField,
+    CheckboxField,
+} from '@cratis/components/CommandForm';
 
 <CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
-    <InputTextField<MyCommand> value={c => c.title} />
-    <NumberField<MyCommand> value={c => c.quantity} />
-    <CheckboxField<MyCommand> value={c => c.active} label="Active" />
-</CommandDialog>
+    <InputTextField<MyCommand> value={(c) => c.title} />
+    <NumberField<MyCommand> value={(c) => c.quantity} />
+    <CheckboxField<MyCommand> value={(c) => c.active} label='Active' />
+</CommandDialog>;
 ```
 
 ## Populating Initial Values from a Query
@@ -59,10 +63,14 @@ import { InputTextField } from '@cratis/components/CommandForm';
 import { GetUserProfile } from './queries';
 import { UpdateProfile } from './commands';
 
-<CommandForm command={UpdateProfile} populateFromQuery={GetUserProfile} populateFromQueryArgs={{ userId }}>
-    <InputTextField<UpdateProfile> value={c => c.firstName} title="First name" />
-    <InputTextField<UpdateProfile> value={c => c.lastName} title="Last name" />
-</CommandForm>
+<CommandForm
+    command={UpdateProfile}
+    populateFromQuery={GetUserProfile}
+    populateFromQueryArgs={{ userId }}
+>
+    <InputTextField<UpdateProfile> value={(c) => c.firstName} title='First name' />
+    <InputTextField<UpdateProfile> value={(c) => c.lastName} title='Last name' />
+</CommandForm>;
 ```
 
 Two field props refine this per field - both work on every field type in this package, since they come from the shared `asCommandFormField` wrapper:

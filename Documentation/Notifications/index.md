@@ -56,11 +56,11 @@ Custom content replaces only the body. The frame, severity indicator, timeout, a
 
 ## Toaster props
 
-| Prop | Purpose |
-|---|---|
-| `position` | One of the six viewport edges/corners. |
-| `limit` | Maximum visible frames. |
-| `timeout` | Default timeout in milliseconds. |
-| `dismissAriaLabel` | Accessible name for close controls. |
-| `regionAriaLabel` | Accessible name for the notification region. |
-| `pt` | Stable `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, and `close` parts. |
+| Prop               | Purpose                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| `position`         | One of the six viewport edges/corners.                                                            |
+| `limit`            | Maximum visible frames.                                                                           |
+| `timeout`          | Default timeout in milliseconds.                                                                  |
+| `dismissAriaLabel` | Accessible name for close controls.                                                               |
+| `regionAriaLabel`  | Accessible name for the notification region.                                                      |
+| `pt`               | Stable `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, and `close` parts. |

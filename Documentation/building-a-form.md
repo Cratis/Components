@@ -1,8 +1,8 @@
 ---
-title: "Recipe: Building a form"
+title: 'Recipe: Building a form'
 description: Execute a command from a typed form using CommandDialog and CommandForm fields, with validation handled for you.
 sidebar:
-  order: 3
+    order: 3
 ---
 
 **Goal:** collect input and run an Arc command — with the confirm button disabled while it executes, validation wired up, and no manual fetch.
@@ -15,17 +15,22 @@ sidebar:
 import { CommandDialog } from '@cratis/components/CommandDialog';
 import { InputTextField, TextAreaField } from '@cratis/components/CommandForm';
 import { DialogProps, DialogResult } from '@cratis/arc.react/dialogs';
-import { RegisterAuthor } from './RegisterAuthor';   // generated proxy
+import { RegisterAuthor } from './RegisterAuthor'; // generated proxy
 
 export const AddAuthor = ({ closeDialog }: DialogProps) => (
     <CommandDialog<RegisterAuthor>
         command={RegisterAuthor}
-        title="Add author"
-        okLabel="Add"
-        validateOn="blur"
-        onConfirm={() => closeDialog(DialogResult.Ok)}>
-        <InputTextField<RegisterAuthor> value={i => i.name} title="Name" placeholder="Jane Austen" />
-        <TextAreaField<RegisterAuthor> value={i => i.bio} title="Bio" />
+        title='Add author'
+        okLabel='Add'
+        validateOn='blur'
+        onConfirm={() => closeDialog(DialogResult.Ok)}
+    >
+        <InputTextField<RegisterAuthor>
+            value={(i) => i.name}
+            title='Name'
+            placeholder='Jane Austen'
+        />
+        <TextAreaField<RegisterAuthor> value={(i) => i.bio} title='Bio' />
     </CommandDialog>
 );
 ```
@@ -44,12 +49,18 @@ const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
 
 // in your component
 <>
-    <button onClick={async () => {
-        const [result] = await showAddAuthor();
-        if (result === DialogResult.Ok) { /* command executed successfully */ }
-    }}>Add author</button>
+    <button
+        onClick={async () => {
+            const [result] = await showAddAuthor();
+            if (result === DialogResult.Ok) {
+                /* command executed successfully */
+            }
+        }}
+    >
+        Add author
+    </button>
     <AddAuthorDialog />
-</>
+</>;
 ```
 
 ## Tips

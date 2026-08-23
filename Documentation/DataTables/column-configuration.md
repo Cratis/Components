@@ -14,14 +14,14 @@ description: Define data, selection, sorting, filtering, and custom rendering co
 
 ## Data and custom cells
 
-| Prop | Purpose |
-|---|---|
-| `field` | Dot-separated row path used for display, sorting, and default filtering. |
-| `header` | Header content. |
-| `body` | Custom cell renderer receiving the row. |
-| `style` / `className` | Body-cell treatment. |
-| `headerStyle` / `headerClassName` | Header-cell treatment. |
-| `bodyStyle` / `bodyClassName` | Body-only override. |
+| Prop                              | Purpose                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `field`                           | Dot-separated row path used for display, sorting, and default filtering. |
+| `header`                          | Header content.                                                          |
+| `body`                            | Custom cell renderer receiving the row.                                  |
+| `style` / `className`             | Body-cell treatment.                                                     |
+| `headerStyle` / `headerClassName` | Header-cell treatment.                                                   |
+| `bodyStyle` / `bodyClassName`     | Body-only override.                                                      |
 
 Nested paths such as `personalDetails.displayName` are resolved by Components.
 

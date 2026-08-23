@@ -8,7 +8,9 @@ import React from 'react';
 /**
  * Component-level props for {@link MultiSelectField}.
  */
-interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string | number>> {
+interface MultiSelectFieldComponentProps extends WrappedFieldProps<
+    Array<string | number>
+> {
     /** Source array of objects to populate the multi-select options. */
     options: Array<Record<string, unknown>>;
 
@@ -94,7 +96,10 @@ export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProp
                 return [];
             }
 
-            return e.filter((item): item is string | number => typeof item === 'string' || typeof item === 'number');
-        }
-    }
+            return e.filter(
+                (item): item is string | number =>
+                    typeof item === 'string' || typeof item === 'number',
+            );
+        },
+    },
 );

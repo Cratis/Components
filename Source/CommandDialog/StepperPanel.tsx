@@ -37,5 +37,6 @@ export interface StepperPanelProps {
  *
  * @param props - {@link StepperPanelProps}.
  */
-export const StepperPanel = (_props: StepperPanelProps): React.ReactElement | null => null;
+export const StepperPanel = (_props: StepperPanelProps): React.ReactElement | null =>
+    null;
 StepperPanel.displayName = 'StepperPanel';
