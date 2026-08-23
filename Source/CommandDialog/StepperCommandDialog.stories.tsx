@@ -123,17 +123,14 @@ export const Default: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={async () => {
-                        const [dialogResult, commandResult] = await showCreateProjectDialog();
-                        if (dialogResult === DialogResult.Ok && commandResult) {
-                            setResult(JSON.stringify(commandResult));
-                        } else {
-                            setResult('Cancelled');
-                        }
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={async () => {
+                    const [dialogResult, commandResult] = await showCreateProjectDialog();
+                    if (dialogResult === DialogResult.Ok && commandResult) {
+                        setResult(JSON.stringify(commandResult));
+                    } else {
+                        setResult('Cancelled');
+                    }
+                }}>
                     Open Dialog
                 </button>
 
@@ -156,13 +153,10 @@ export const ThreeSteps: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setVisible(true);
-                        setResult('');
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setVisible(true);
+                    setResult('');
+                }}>
                     Open Three-Step Dialog
                 </button>
 
@@ -228,10 +222,7 @@ export const WithValidationIndicators: Story = {
                     <code>validateOnInit</code> triggers validation immediately — step indicators appear on
                     any step whose fields are invalid right from the start.
                 </p>
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => setVisible(true)}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
 
@@ -286,10 +277,7 @@ export const WithBusyState: Story = {
                 <p className="mb-3 text-sm text-color-secondary">
                     Simulates a 2-second server delay. Fill all fields and click Submit to see the busy state.
                 </p>
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => setVisible(true)}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
 
@@ -392,14 +380,11 @@ export const WithResponseTypeAndCallbacks: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setResult('');
-                        setError('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setResult('');
+                    setError('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
@@ -484,13 +469,10 @@ export const WithFooterCancel: Story = {
                     The footer leads with a renamed Cancel. Fill both steps and click Create to run a 2-second
                     command — while it runs, neither the footer Cancel nor the header X can dismiss the dialog.
                 </p>
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setOutcome('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setOutcome('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
@@ -562,19 +544,11 @@ export const ConditionalSteps: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => setIncludeBudgetStep(current => !current)}
-                >
-                    {includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}
-                </button>
-                <button
-                    className="p-button p-component mb-3 ml-2"
-                    onClick={() => {
-                        setResult('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
+                <button className="cratis-button mb-3 ml-2" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setResult('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
                 <p className="mb-3 text-sm text-color-secondary">

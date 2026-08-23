@@ -216,15 +216,12 @@ export const EditModeWithValidation: Story = {
                     onValidationChange={setHasErrors}
                 />
                 <div className="mt-4">
-                    <button
-                        className="p-button p-component"
-                        disabled={hasErrors}
-                        onClick={() => alert('Saved: ' + JSON.stringify(obj, null, 2))}
-                    >
+                    <button className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" disabled={hasErrors}
+                    onClick={() => alert('Saved: ' + JSON.stringify(obj, null, 2))}>
                         Save
                     </button>
                     {hasErrors && (
-                        <span className="p-error ml-3">Please fix validation errors before saving.</span>
+                        <span className="ml-3 text-[var(--cratis-red-500)]">Please fix validation errors before saving.</span>
                     )}
                 </div>
             </div>

@@ -10,14 +10,15 @@ import { normalizeIconClass } from './normalizeIconClass';
 declare const process: { env: Record<string, string | undefined> };
 
 /**
- * Represents an icon that can be either a PrimeIcons CSS class string (e.g. `'pi pi-home'`)
- * or any React node (e.g. an SVG element or a third-party icon component).
+ * Represents either a React icon node or a consumer-owned icon-font class string.
+ * PrimeIcons strings remain compatible when the consumer installs that font separately;
+ * Components does not install an icon font.
  */
 export type Icon = string | ReactNode;
 
 /** Props for the {@link IconDisplay} component. */
 export interface IconDisplayProps {
-    /** The icon to render — either a PrimeIcons CSS class or a React node. */
+    /** React node or consumer-owned icon-font CSS class. */
     icon: Icon;
 
     /** Optional additional CSS classes applied to the wrapping `<i>` when the icon is a string. */
@@ -27,7 +28,7 @@ export interface IconDisplayProps {
 /**
  * Renders an {@link Icon} value.
  *
- * - When `icon` is a non-empty string it is treated as a PrimeIcons (or other icon-font)
+ * - When `icon` is a non-empty string it is treated as a consumer-owned icon-font
  *   CSS class and rendered as `<i className={icon} />`. A lone PrimeIcons class missing its
  *   base `pi` class (`'pi-home'`) is repaired to `'pi pi-home'`, and a bare icon name
  *   (`'plus'`) that would silently render nothing logs a development warning.

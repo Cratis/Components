@@ -65,6 +65,7 @@ export interface StepperParts {
     panel?: HTMLAttributes<HTMLElement>;
 }
 
+/** Public layout, navigation, and stable-part customization shared by both steppers. */
 export interface StepperCustomizationProps {
     /**
      * Whether the wizard is linear. In linear mode the step headers are not
@@ -91,6 +92,7 @@ export interface StepperCustomizationProps {
     unstyled?: boolean;
 }
 
+/** Controlled state and validation props for the visual stepper content. */
 export interface CommandStepperContentProps extends StepperCustomizationProps {
     /** The active step index. */
     activeStep: number;
@@ -126,6 +128,7 @@ export interface CommandStepperContentProps extends StepperCustomizationProps {
     onSubmit?: () => void | Promise<void>;
 }
 
+/** Props for a standalone stepper bound to one Arc command form. */
 export interface CommandStepperProps<TCommand extends object, TResponse = object>
     extends
         Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,

@@ -1,33 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { expect } from 'chai';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { vi } from 'vitest';
+import { beforeEach, describe, it, vi } from 'vitest';
 import { Dialog } from '../Dialog';
-
-vi.mock('primereact/dialog', () => {
-    // PrimeReact 11's Dialog is compositional; each part is a pass-through that
-    // renders its children so the footer buttons and content reach the markup.
-    const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
-    return {
-        Dialog: {
-            Root: part, Portal: part, Backdrop: part, Positioner: part, Popup: part,
-            Header: part, Title: part, Close: part, Content: part, Footer: part,
-        },
-    };
-});
-
-vi.mock('primereact/button', () => ({
-    // PrimeReact 11 Button renders children (the v10 label/icon props are gone); the
-    // confirm button carries autoFocus, which stands in for the click in this SSR render.
-    Button: (props: { autoFocus?: boolean; onClick?: () => void | Promise<void>; disabled?: boolean; children?: React.ReactNode }) => {
-        if (props.autoFocus && props.onClick) {
-            void props.onClick();
-        }
-        return React.createElement('button', { disabled: props.disabled }, props.children);
-    },
-}));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },
@@ -50,9 +28,9 @@ describe('when rendered with is busy', () => {
         html = renderToStaticMarkup(element);
     });
 
-    it('should_disable_all_buttons', () => {
+    it('should disable footer and header dismissal buttons', () => {
         const disabledCount = (html.match(/disabled=""/g) || []).length;
-        disabledCount.should.equal(2);
+        expect(disabledCount).to.equal(3);
     });
 });
 

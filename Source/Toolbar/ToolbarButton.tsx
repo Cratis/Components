@@ -10,7 +10,7 @@ import { useToolbarFolderMode } from './ToolbarFolderContext';
 
 /** Props for the {@link ToolbarButton} component. */
 export interface ToolbarButtonProps {
-    /** The icon to display — either a PrimeIcons CSS class string (e.g. `'pi pi-home'`) or a React node. */
+    /** React icon node or consumer-owned icon-font class. Components installs no icon font. */
     icon?: Icon;
 
     /** Optional text to render inside the button (e.g. '120%'). */

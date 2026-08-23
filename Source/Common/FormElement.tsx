@@ -10,9 +10,9 @@ export interface FormElementProps {
     children: React.ReactNode;
 
     /**
-     * Icon node displayed inside the leading addon. Can be any React node —
-     * a PrimeIcons `<i className="pi pi-…" />`, an `<svg>`, or a `react-icons`
-     * component.
+     * Icon node displayed inside the leading addon. Prefer an SVG or React icon
+     * component. Consumer-owned icon-font elements also work when their stylesheet
+     * is installed separately.
      */
     icon: React.ReactNode;
 }
@@ -23,8 +23,8 @@ export interface FormElementProps {
  * it to give input fields a leading icon without pulling in a renderer-specific input-group abstraction.
  *
  * ```tsx
- * <FormElement icon={<i className="pi pi-user" />}>
- *     <InputText value={name} onChange={…} />
+ * <FormElement icon={<FaUser />}>
+ *     <input className='cratis-field-input' value={name} onChange={…} />
  * </FormElement>
  * ```
  */

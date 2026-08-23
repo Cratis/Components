@@ -157,15 +157,12 @@ export const Default: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={async () => {
-                        const [dialogResult, commandResult] = await showUpdateUserDialog();
-                        if (dialogResult === DialogResult.Ok && commandResult) {
-                            setResult(JSON.stringify(commandResult));
-                        }
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={async () => {
+                    const [dialogResult, commandResult] = await showUpdateUserDialog();
+                    if (dialogResult === DialogResult.Ok && commandResult) {
+                        setResult(JSON.stringify(commandResult));
+                    }
+                }}>
                     Open Dialog
                 </button>
 
@@ -189,14 +186,11 @@ export const WithServerValidation: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setVisible(true);
-                        setValidationErrors([]);
-                        setResult('');
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setVisible(true);
+                    setValidationErrors([]);
+                    setResult('');
+                }}>
                     Open Dialog
                 </button>
 
@@ -267,13 +261,8 @@ export const WithInitialValues: Story = {
             <div className="storybook-wrapper">
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                     {users.map(user => (
-                        <button
-                            key={user.email}
-                            className="p-button p-component"
-                            onClick={() => handleEdit(user)}
-                        >
-                            Edit {user.name}
-                        </button>
+                        <button key={user.email} className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => handleEdit(user)}>
+                            Edit {user.name}</button>
                     ))}
                 </div>
 
@@ -314,13 +303,10 @@ export const WithCustomValidation: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setResult('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setResult('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
@@ -376,7 +362,7 @@ export const ValidationOnBlur: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -405,7 +391,7 @@ export const ValidationOnChange: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -434,7 +420,7 @@ export const ValidateOnInit: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -464,7 +450,7 @@ export const ValidateAllFieldsOnChange: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -495,7 +481,7 @@ export const BeforeExecute: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => { setVisible(true); setPreprocessedData(''); }}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => { setVisible(true); setPreprocessedData(''); }}>
                     Open Dialog
                 </button>
 
@@ -538,7 +524,7 @@ export const WithIcons: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -631,7 +617,7 @@ export const MultiColumnLayout: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateProfileCommand>
@@ -668,7 +654,7 @@ export const MixedChildren: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateProfileCommand>
@@ -704,13 +690,10 @@ export const WithBusyState: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setResult('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setResult('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
@@ -798,14 +781,11 @@ export const WithResponseTypeAndCallbacks: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setResult('');
-                        setError('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                    setResult('');
+                    setError('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
@@ -923,13 +903,10 @@ export const DestructiveCommandFocusesDismiss: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={async () => {
-                        const [dialogResult] = await showDeletePersonalDataDialog();
-                        setResult(dialogResult === DialogResult.Ok ? 'Deleted' : 'Kept');
-                    }}
-                >
+                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={async () => {
+                    const [dialogResult] = await showDeletePersonalDataDialog();
+                    setResult(dialogResult === DialogResult.Ok ? 'Deleted' : 'Kept');
+                }}>
                     Delete
                 </button>
 

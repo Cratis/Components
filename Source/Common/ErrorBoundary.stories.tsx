@@ -24,10 +24,7 @@ const ErrorThrowingComponent = () => {
     return (
         <div className="p-4">
             <h2 className="text-xl mb-3">Click the button to trigger an error</h2>
-            <button 
-                className="p-button p-component"
-                onClick={() => setShouldThrow(true)}
-            >
+            <button className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setShouldThrow(true)}>
                 Throw Error
             </button>
         </div>

@@ -12,21 +12,7 @@ const { buttonClicks } = vi.hoisted(() => ({ buttonClicks: new Map<string, () =>
 // PrimeReact 11's Stepper is compositional: each part renders its children, so every step
 // the wizard renders shows up as one `data-part="panel"` element, and the Number part
 // forwards the inline `style` carrying the per-step indicator color.
-vi.mock('primereact/stepper', () => {
-    const part = (name: string) => {
-        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
-            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
-        Component.displayName = name;
-        return Component;
-    };
-    return {
-        Stepper: {
-            Root: part('root'), List: part('list'), Step: part('step'),
-            Header: part('header'), Number: part('number'), Title: part('title'),
-            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
-        },
-    };
-});
+;
 
 
 // PrimeReact 11's Button takes its label as children, not a `label` prop, so the label a

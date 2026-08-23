@@ -16,52 +16,9 @@ const { commandFormValidity, executeCommand, setCommandValues } = vi.hoisted(() 
     setCommandValues: vi.fn(),
 }));
 
-vi.mock('primereact/dialog', () => {
-    // PrimeReact 11's Dialog is compositional; each part is a pass-through that
-    // renders its children so the footer buttons and content reach the markup.
-    const part = (props: { children?: React.ReactNode }) =>
-        React.createElement('div', null, props.children);
-    return {
-        Dialog: {
-            Root: part,
-            Portal: part,
-            Backdrop: part,
-            Positioner: part,
-            Popup: part,
-            Header: part,
-            Title: part,
-            Close: part,
-            Content: part,
-            Footer: part,
-        },
-    };
-});
+;
 
-vi.mock('primereact/button', () => ({
-    // PrimeReact 11 Button renders children (the v10 label/icon props are gone), and the
-    // dialog marks the button its focus trap should land on with `data-autofocus` rather
-    // than React's autoFocus prop. That marker identifies the confirm button, whose click
-    // this SSR render stands in for.
-    Button: (props: {
-        'data-autofocus'?: string;
-        onClick?: () => Promise<void> | void;
-        disabled?: boolean;
-        children?: React.ReactNode;
-    }) => {
-        if (
-            props['data-autofocus'] !== undefined &&
-            props.onClick &&
-            props.disabled !== true
-        ) {
-            void props.onClick();
-        }
-        return React.createElement(
-            'button',
-            { disabled: props.disabled },
-            props.children,
-        );
-    },
-}));
+;
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },

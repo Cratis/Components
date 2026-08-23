@@ -9,7 +9,7 @@ import type { TooltipPosition } from '../Common/Tooltip';
 
 /** Props for the {@link ToolbarFanOutItem} component. */
 export interface ToolbarFanOutItemProps {
-    /** The icon to display on the trigger button — either a PrimeIcons CSS class string (e.g. `'pi pi-home'`) or a React node. */
+    /** React icon node or consumer-owned icon-font class for the trigger. */
     icon: Icon;
 
     /** Tooltip text shown when hovering over the trigger button. */

@@ -164,7 +164,7 @@ export const WithForm: Story = {
                             placeholder='Enter name…'
                         />
                         {name.trim().length === 0 && (
-                            <small className='p-error'>Name is required</small>
+                            <small className='text-[var(--cratis-red-500)]'>Name is required</small>
                         )}
                     </div>
                 </Dialog>

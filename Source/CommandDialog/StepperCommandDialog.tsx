@@ -119,6 +119,8 @@ type StepperCommandDialogWrapperProps<TCommand extends object, TResponse = objec
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
+    onException?: CommandFormProps<TCommand, TResponse>['onException'];
+    onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     okLabel?: string;
     nextLabel?: string;
@@ -146,6 +148,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     onSuccess,
     onValidationFailure,
     onFailed,
+    onException,
+    onUnauthorized,
     onBeforeExecute,
     okLabel = 'Submit',
     nextLabel = 'Next',
@@ -262,10 +266,16 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         }
 
         if (!result.isSuccess) {
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(
+                    result.exceptionMessages,
+                    result.exceptionStackTrace,
+                );
+            }
+            if (!result.isAuthorized) await onUnauthorized?.();
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
-            } else {
-                await onFailed?.(result);
             }
             setCommandResult(result);
             return;
@@ -521,6 +531,8 @@ const StepperCommandDialogComponent = <
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
+                onException={props.onException}
+                onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
                 okLabel={okLabel}
                 nextLabel={nextLabel}

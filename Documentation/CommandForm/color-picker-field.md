@@ -28,4 +28,4 @@ import { ColorPickerField } from '@cratis/components/CommandForm';
 
 - Default value is an empty string.
 - Values are persisted as six-digit hex strings without the leading `#`.
-- Validation state is reflected by applying the `p-invalid` class when the field is invalid.
+- Validation state is exposed through `aria-invalid` on the native color input and `data-invalid` on the stable root part.

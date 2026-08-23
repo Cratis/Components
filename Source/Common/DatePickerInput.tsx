@@ -1,7 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ButtonHTMLAttributes, CSSProperties, FocusEventHandler } from 'react';
+import type {
+    ButtonHTMLAttributes,
+    CSSProperties,
+    FocusEventHandler,
+    HTMLAttributes,
+} from 'react';
 import {
     Button,
     Calendar,
@@ -27,7 +32,11 @@ import {
     toCalendarDate,
 } from '@internationalized/date';
 
-interface DatePickerPartAttributes {
+interface DatePickerPartAttributes
+    extends Omit<
+        HTMLAttributes<HTMLElement>,
+        'defaultValue' | 'onChange' | 'role'
+    > {
     id?: string;
     className?: string;
     style?: CSSProperties;

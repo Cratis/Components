@@ -303,13 +303,10 @@ const PersonDetailsWithRefresh = ({
                     <strong>Role:</strong> {item.role}
                 </div>
             </div>
-            <button
-                className='p-button p-component'
-                onClick={() => {
-                    alert(`Saved changes for ${item.name}`);
-                    onRefresh?.();
-                }}
-            >
+            <button className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                alert(`Saved changes for ${item.name}`);
+                onRefresh?.();
+            }}>
                 Save &amp; Refresh
             </button>
         </div>

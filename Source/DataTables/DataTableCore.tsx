@@ -69,7 +69,7 @@ export interface DataTableCoreProps<TData extends object> {
     data: TData[];
     /** Declarative {@link Column} markers. */
     children?: ReactNode;
-    /** Row property used as stable identity. */
+    /** Row property used as stable identity. Required to preserve selection across refreshed row objects. */
     dataKey?: string;
     /** Content shown when the loaded page has no matching rows. */
     emptyMessage: ReactNode;
@@ -324,10 +324,14 @@ export const DataTableCore = <TData extends object>({
         dataKey
             ? String(valueAtPath(row as Record<string, unknown>, dataKey))
             : String(index);
-    const selectedKey =
-        selection && dataKey
+    const selectedKey = selection
+        ? dataKey
             ? String(valueAtPath(selection as Record<string, unknown>, dataKey))
-            : undefined;
+            : (() => {
+                  const selectedIndex = data.indexOf(selection);
+                  return selectedIndex >= 0 ? String(selectedIndex) : undefined;
+              })()
+        : undefined;
 
     return (
         <div

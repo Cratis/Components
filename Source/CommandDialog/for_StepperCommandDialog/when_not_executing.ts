@@ -16,21 +16,7 @@ vi.mock('../../Dialogs/Dialog', () => ({
 
 // PrimeReact 11's Stepper is a set of compositional parts — each just renders its
 // children so the footer/navigation behavior can be asserted.
-vi.mock('primereact/stepper', () => {
-    const part = (name: string) => {
-        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
-            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
-        Component.displayName = name;
-        return Component;
-    };
-    return {
-        Stepper: {
-            Root: part('root'), List: part('list'), Step: part('step'),
-            Header: part('header'), Number: part('number'), Title: part('title'),
-            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
-        },
-    };
-});
+;
 
 // PrimeReact 11's Button renders its content as children (no label/loading props).
 vi.mock('../../Common/Button', () => ({

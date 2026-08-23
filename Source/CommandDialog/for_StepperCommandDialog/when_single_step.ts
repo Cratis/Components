@@ -12,21 +12,7 @@ vi.mock('../../Dialogs/Dialog', () => ({
         React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-vi.mock('primereact/stepper', () => {
-    const part = (name: string) => {
-        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
-            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
-        Component.displayName = name;
-        return Component;
-    };
-    return {
-        Stepper: {
-            Root: part('root'), List: part('list'), Step: part('step'),
-            Header: part('header'), Number: part('number'), Title: part('title'),
-            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
-        },
-    };
-});
+;
 
 vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>

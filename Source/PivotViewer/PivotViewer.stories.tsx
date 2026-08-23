@@ -205,7 +205,7 @@ export const Default: Story = {
                                     <h3 style={{ margin: 0 }}>{item.name}</h3>
                                     <p style={{ margin: 0, opacity: 0.8 }}>Department • {item.department}</p>
                                 </div>
-                                <button type="button" onClick={onClose} title="Close" className="p-button p-button-text">
+                                <button type="button" onClick={onClose} title="Close" className="cratis-button" data-variant="text" data-severity="secondary" data-size="normal" >
                                     Close
                                 </button>
                             </header>
@@ -350,7 +350,7 @@ export const LargeDataset: Story = {
                                     <h3 style={{ margin: 0 }}>{item.name}</h3>
                                     <p style={{ margin: 0, opacity: 0.7 }}>{item.seniority} · {item.department}</p>
                                 </div>
-                                <button type="button" onClick={onClose} title="Close" className="p-button p-button-text">
+                                <button type="button" onClick={onClose} title="Close" className="cratis-button" data-variant="text" data-severity="secondary" data-size="normal" >
                                     Close
                                 </button>
                             </header>
