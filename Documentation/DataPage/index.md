@@ -84,7 +84,7 @@ function Authors() {
 }
 ```
 
-Selection is managed for you; to drive it yourself, pass `selection` and `onSelectionChange`.
+Selection is managed for you; to drive it yourself, pass `selection` and `onSelectionChange`. In controlled mode, clear the selection with `null`. Omitting `selection`/passing `undefined` selects uncontrolled mode. Provide `dataKey` when query refreshes can replace row object instances.
 
 ## Props
 

@@ -117,7 +117,7 @@ export interface DatePickerInputProps {
     placeholder?: string;
     /** Deprecated renderer mask; locale controls formatting now. */
     dateFormat?: string;
-    /** Shows the calendar trigger button. */
+    /** Shows the calendar trigger button. Defaults to `true`. */
     showIcon?: boolean;
     /** Adds hour/minute segments. */
     showTime?: boolean;
@@ -178,7 +178,7 @@ export const DatePickerInput = ({
     id,
     showButtonBar,
     placeholder,
-    showIcon = false,
+    showIcon = true,
     showTime,
     hourFormat,
     minDate,

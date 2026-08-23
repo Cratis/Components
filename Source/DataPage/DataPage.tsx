@@ -28,8 +28,6 @@ import { DataPageLayout } from './DataPageLayout';
 // which the build concatenates from every component stylesheet plus this third-party one — so a
 // consumer still gets a working split view, from the single stylesheet they already import.
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 /**
  * Props for {@link MenuItem} — a single action in a {@link DataPage}'s
  * action bar.
@@ -155,12 +153,21 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
 export const Columns = ({ children }: ColumnProps) => {
     const context = useDataPageContext();
     const isSnapshotQuery = context.query.prototype instanceof QueryFor;
+    // SAFETY: The runtime prototype check above narrows a constructor shape that
+    // TypeScript cannot discriminate after the generic DataPage context is erased.
+    const snapshotQuery = context.query as Constructor<
+        IQueryFor<object, object> | IQueryFor<object[], object>
+    >;
+    const observableQuery = context.query as Constructor<
+        IObservableQueryFor<object, object> | IObservableQueryFor<object[], object>
+    >;
 
     return (
         <div className='cratis-data-page-table' style={tableRegionStyle}>
             {isSnapshotQuery ? (
                 <DataTableForQuery
                     {...context}
+                    query={snapshotQuery}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
                     className={context.tableClassName}
@@ -173,6 +180,7 @@ export const Columns = ({ children }: ColumnProps) => {
             ) : (
                 <DataTableForObservableQuery
                     {...context}
+                    query={observableQuery}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
                     className={context.tableClassName}
@@ -205,9 +213,14 @@ export interface IDetailsComponentProps<TDataType> {
     onRefresh?: () => void;
 }
 
-interface IDataPageContext extends DataPageProps<any, any, any> {
-    selectedItem: any;
-    onSelectionChanged: (e: DataTableSelectionChangeEvent<any>) => void;
+interface IDataPageContext
+    extends DataPageProps<
+        IQueryFor<object, object> | IObservableQueryFor<object, object>,
+        object,
+        object
+    > {
+    selectedItem: object | null | undefined;
+    onSelectionChanged: (event: DataTableSelectionChangeEvent<object>) => void;
 }
 
 const DataPageContext = React.createContext<IDataPageContext | null>(null);
@@ -478,7 +491,14 @@ const DataPage = <
         props.onSelectionChange?.(event);
     };
 
-    const context = { ...props, selectedItem, onSelectionChanged: selectionChanged };
+    // SAFETY: React context cannot retain this component's generic parameters. The
+    // provider and every consumer are nested in the same DataPage invocation, so the
+    // erased object-level context never crosses between differently typed pages.
+    const context = {
+        ...props,
+        selectedItem,
+        onSelectionChanged: selectionChanged,
+    } as unknown as IDataPageContext;
 
     return (
         <DataPageContext.Provider value={context}>

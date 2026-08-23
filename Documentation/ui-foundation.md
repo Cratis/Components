@@ -20,6 +20,8 @@ graph TD
 
 Consumers import `@cratis/components/*`. React Aria does not appear in public prop types, declarations, or styling contracts. Arc command, query, and dialog bindings remain owned by `@cratis/arc.react`; Components builds visual behavior around them.
 
+“Renderer-independent” here means that React applications depend on Cratis-owned contracts rather than one internal React renderer. `@cratis/components` is still a React package. A future Vue, Svelte, or other frontend should use Arc's transport/client contracts and framework-native bindings; genuinely cross-framework behavior belongs in Arc only after a second implementation proves that seam.
+
 ## Consumer contract
 
 The shipped styling contract contains:

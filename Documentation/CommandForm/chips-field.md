@@ -24,12 +24,12 @@ import { ChipsField } from '@cratis/components/CommandForm';
 | `value`                         | `(instance: TCommand) => unknown` | -          | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
 | `placeholder`                   | `string`                          | -          | Advisory text shown when no chip values exist.                                                                                                                  |
 | `max`                           | `number`                          | -          | Maximum number of chips allowed.                                                                                                                                |
-| `separator`                     | `string`                          | -          | **No effect.** See below.                                                                                                                                       |
+| `separator`                     | `string`                          | -          | Splits the draft on this literal string when the value is committed.                                                                                            |
 | `addOnBlur`                     | `boolean`                         | `false`    | Adds the current input as a chip when the field loses focus.                                                                                                    |
-| `allowDuplicate`                | `boolean`                         | `true`     | Controls whether duplicate chip values are allowed.                                                                                                             |
-| `removeAriaLabel`               | `string`                          | `'Remove'` | Accessible name for each chip's remove button. Override to localize.                                                                                            |
+| `allowDuplicate`                | `boolean`                         | `false`    | Controls whether duplicate chip values are allowed.                                                                                                             |
+| `removeAriaLabel`               | `string \| (item, index) => string` | `Remove <item>` | Accessible name for remove buttons. Use a callback for localized item-specific labels.                                                                     |
 | `className`                     | `string`                          | -          | Extra CSS class combined with the default `w-full`.                                                                                                             |
-| `pt` / `ptOptions` / `unstyled` | -                                 | -          | Pass-through styling for the underlying `InputTags`.                                                                                                            |
+| `pt` / `ptOptions` / `unstyled` | -                                 | -          | Stable Cratis chip/item/remove/input parts; compatibility flags are no-ops.                                                                                      |
 
 ## Behavior
 

@@ -83,7 +83,15 @@ export const ApplicationRoot = ({ children }: { children: React.ReactNode }) => 
 
 ## Replace renderer presets with tokens
 
-Remove `styledMode()`, `CratisPreset`, and `primeReactStyles` before upgrading. The `@cratis/components/styled` renderer-specific entry point is removed in Components 4.
+Remove `styledMode()`, `CratisPreset`, and `primeReactStyles` before upgrading. Components 4 removes three renderer-specific subpaths:
+
+| Removed subpath | Migration |
+| --- | --- |
+| `@cratis/components/styled` | Import Cratis tokens/styles and map product tokens directly as shown below. |
+| `@cratis/components/compatibility` | Replace Prime slot types/sentinel presets with each component's Cratis-owned `*Parts` type. The root `Compatibility` namespace is also removed. |
+| `@cratis/components/primereact-v10-palette` | Remove legacy Prime variable dependencies; define product tokens and map them to `--cratis-*`, or use the baseline theme. |
+
+There is no compatibility-package replacement in Components 4. Stay on Components 3 while renderer-specific types or selectors remain.
 
 Before:
 
@@ -243,6 +251,7 @@ Pass the parts to either query-backed table:
 - Replace `dateFormat` with locale configuration where possible. The prop remains accepted but is ignored.
 - Use `aria-label` or `aria-labelledby` for the segmented date group.
 - `id` identifies the focus group rather than a native text input.
+- The accessible calendar trigger is shown by default; set `showIcon={false}` only for segment-entry-only experiences.
 - `todayLabel` and `clearLabel` override the provider messages for one picker.
 - `showTime` and `hourFormat` remain supported.
 

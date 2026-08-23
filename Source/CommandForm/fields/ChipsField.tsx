@@ -28,7 +28,8 @@ interface ChipsFieldComponentProps
     separator?: string;
     addOnBlur?: boolean;
     allowDuplicate?: boolean;
-    removeAriaLabel?: string;
+    /** Builds a remove-button label, or supplies one shared localized label. */
+    removeAriaLabel?: string | ((item: string, index: number) => string);
     className?: string;
     pt?: ChipsParts;
     ptOptions?: object;
@@ -101,7 +102,11 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                             .filter(Boolean)
                             .join(' ')}
                         data-cratis-part='remove'
-                        aria-label={props.removeAriaLabel ?? 'Remove'}
+                        aria-label={
+                            typeof props.removeAriaLabel === 'function'
+                                ? props.removeAriaLabel(item, index)
+                                : (props.removeAriaLabel ?? `Remove ${item}`)
+                        }
                         onClick={() =>
                             props.onChange(
                                 props.value.filter((_, itemIndex) => itemIndex !== index),

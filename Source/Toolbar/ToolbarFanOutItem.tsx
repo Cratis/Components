@@ -1,11 +1,29 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+    type ButtonHTMLAttributes,
+    type HTMLAttributes,
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { IconDisplay } from '../Common/Icon';
 import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
+
+/** Stable part attributes for {@link ToolbarFanOutItem}. */
+export interface ToolbarFanOutParts {
+    /** Fan-out composition root. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Native trigger button. */
+    trigger?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Expanded tool panel. */
+    panel?: HTMLAttributes<HTMLDivElement>;
+}
 
 /** Props for the {@link ToolbarFanOutItem} component. */
 export interface ToolbarFanOutItemProps {
@@ -20,6 +38,12 @@ export interface ToolbarFanOutItemProps {
 
     /** Direction the panel fans out from the trigger button (default: 'right'). */
     fanOutDirection?: 'right' | 'left' | 'up' | 'down';
+
+    /** Extra class name for the fan-out root. */
+    className?: string;
+
+    /** Stable fan-out part attributes. */
+    pt?: ToolbarFanOutParts;
 
     /** The toolbar items to render inside the fan-out panel. */
     children: ReactNode;
@@ -40,6 +64,8 @@ export const ToolbarFanOutItem = ({
     tooltip,
     tooltipPosition = 'right',
     fanOutDirection = 'right',
+    className,
+    pt,
     children,
 }: ToolbarFanOutItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
@@ -101,21 +127,30 @@ export const ToolbarFanOutItem = ({
     const directionClass = `toolbar-fanout-panel--${fanOutDirection}`;
 
     return (
-        <div className='toolbar-fanout-item' ref={containerRef}>
+        <div
+            {...pt?.root}
+            className={`toolbar-fanout-item ${pt?.root?.className ?? ''} ${className ?? ''}`}
+            data-cratis-part='fanout-root'
+            ref={containerRef}
+        >
             <Tooltip content={tooltip} position={tooltipPosition} disabled={isExpanded}>
                 <button
+                    {...pt?.trigger}
                     type='button'
                     aria-label={tooltip}
                     aria-expanded={isExpanded}
                     onClick={handleToggle}
-                    className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
+                    className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
+                    data-cratis-part='fanout-trigger'
                 >
                     <IconDisplay icon={icon} className='text-lg' />
                 </button>
             </Tooltip>
             <div
+                {...pt?.panel}
                 ref={panelRef}
-                className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass}`}
+                className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass} ${pt?.panel?.className ?? ''}`}
+                data-cratis-part='fanout-panel'
                 onTransitionEnd={handleTransitionEnd}
             >
                 {children}
