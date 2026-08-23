@@ -32,73 +32,76 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
         const name = props.name ?? generatedName;
 
         return (
-        <div
-            {...props.pt?.root}
-            role='radiogroup'
-            className={[
-                'cratis-radio-group',
-                `cratis-radio-group--${props.layout ?? 'vertical'}`,
-                props.pt?.root?.className,
-                props.className,
-            ]
-                .filter(Boolean)
-                .join(' ')}
-            data-cratis-part='root'
-        >
-            {props.options.map((option) => {
-                const value = option[props.optionValue] as string | number;
-                const label = String(option[props.optionLabel] ?? value);
-                return (
-                    <label
-                        {...props.pt?.option}
-                        key={String(value)}
-                        className={['cratis-choice-field', props.pt?.option?.className]
-                            .filter(Boolean)
-                            .join(' ')}
-                        onBlur={props.onBlur}
-                        data-cratis-part='option'
-                    >
-                        <input
-                            {...props.pt?.input}
-                            type='radio'
-                            name={name}
-                            checked={props.value === value}
-                            onChange={(event) => {
-                                if (event.target.checked) props.onChange(value);
-                            }}
-                            aria-invalid={props.invalid || undefined}
+            <div
+                {...props.pt?.root}
+                role='radiogroup'
+                className={[
+                    'cratis-radio-group',
+                    `cratis-radio-group--${props.layout ?? 'vertical'}`,
+                    props.pt?.root?.className,
+                    props.className,
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='root'
+            >
+                {props.options.map((option) => {
+                    const value = option[props.optionValue] as string | number;
+                    const label = String(option[props.optionLabel] ?? value);
+                    return (
+                        <label
+                            {...props.pt?.option}
+                            key={String(value)}
                             className={[
-                                'cratis-choice-field__native',
-                                props.pt?.input?.className,
+                                'cratis-choice-field',
+                                props.pt?.option?.className,
                             ]
                                 .filter(Boolean)
                                 .join(' ')}
-                            data-cratis-part='input'
-                        />
-                        <span
-                            {...props.pt?.box}
-                            className={['cratis-radio__box', props.pt?.box?.className]
-                                .filter(Boolean)
-                                .join(' ')}
-                            data-cratis-part='box'
-                            aria-hidden='true'
+                            onBlur={props.onBlur}
+                            data-cratis-part='option'
                         >
-                            <span
-                                {...props.pt?.indicator}
+                            <input
+                                {...props.pt?.input}
+                                type='radio'
+                                name={name}
+                                checked={props.value === value}
+                                onChange={(event) => {
+                                    if (event.target.checked) props.onChange(value);
+                                }}
+                                aria-invalid={props.invalid || undefined}
                                 className={[
-                                    'cratis-radio__indicator',
-                                    props.pt?.indicator?.className,
+                                    'cratis-choice-field__native',
+                                    props.pt?.input?.className,
                                 ]
                                     .filter(Boolean)
                                     .join(' ')}
-                                data-cratis-part='indicator'
+                                data-cratis-part='input'
                             />
-                        </span>
-                        <span className='cratis-choice-field__label'>{label}</span>
-                    </label>
-                );
-            })}
-        </div>
+                            <span
+                                {...props.pt?.box}
+                                className={['cratis-radio__box', props.pt?.box?.className]
+                                    .filter(Boolean)
+                                    .join(' ')}
+                                data-cratis-part='box'
+                                aria-hidden='true'
+                            >
+                                <span
+                                    {...props.pt?.indicator}
+                                    className={[
+                                        'cratis-radio__indicator',
+                                        props.pt?.indicator?.className,
+                                    ]
+                                        .filter(Boolean)
+                                        .join(' ')}
+                                    data-cratis-part='indicator'
+                                />
+                            </span>
+                            <span className='cratis-choice-field__label'>{label}</span>
+                        </label>
+                    );
+                })}
+            </div>
         );
     },
     { defaultValue: '', extractValue: (value: unknown) => value as string | number },

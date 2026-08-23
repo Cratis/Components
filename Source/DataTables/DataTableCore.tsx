@@ -509,7 +509,8 @@ export const DataTableCore = <TData extends object>({
                                         onKeyDown={(event) => {
                                             if (
                                                 event.target !== event.currentTarget ||
-                                                (event.key !== 'Enter' && event.key !== ' ')
+                                                (event.key !== 'Enter' &&
+                                                    event.key !== ' ')
                                             ) {
                                                 return;
                                             }

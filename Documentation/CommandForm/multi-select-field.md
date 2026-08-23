@@ -40,7 +40,7 @@ const categoryOptions = [
 | `filter`                        | `boolean`                         | `false` | Shows a filter input in the options popup.                                                                                                                      |
 | `showClear`                     | `boolean`                         | `false` | Displays a clear icon to reset selected values.                                                                                                                 |
 | `className`                     | `string`                          | -       | Extra CSS class combined with the default `w-full`.                                                                                                             |
-| `pt` / `ptOptions` / `unstyled` | -                                 | -       | Pass-through styling for the underlying `Dropdown`; `ptOptions` and `unstyled` are compatibility no-ops.                                                       |
+| `pt` / `ptOptions` / `unstyled` | -                                 | -       | Pass-through styling for the underlying `Dropdown`; `ptOptions` and `unstyled` are compatibility no-ops.                                                        |
 
 ## Behavior
 

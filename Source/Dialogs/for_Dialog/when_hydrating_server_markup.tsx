@@ -69,8 +69,6 @@ describe('when hydrating server markup', () => {
 
     it('should preserve the server tree through the first client render', () => {
         expect(hydrationErrors).to.deep.equal([]);
-        expect(document.querySelector('[data-cratis-part="root"]')).not.to.equal(
-            null,
-        );
+        expect(document.querySelector('[data-cratis-part="root"]')).not.to.equal(null);
     });
 });

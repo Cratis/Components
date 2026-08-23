@@ -65,9 +65,8 @@ describe('when activating a row with the keyboard', () => {
 
     it('should make the interactive row keyboard focusable', () => {
         expect(
-            container.querySelector<HTMLTableRowElement>(
-                '[data-cratis-part="row"]',
-            )?.tabIndex,
+            container.querySelector<HTMLTableRowElement>('[data-cratis-part="row"]')
+                ?.tabIndex,
         ).to.equal(0);
     });
 

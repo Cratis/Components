@@ -70,14 +70,15 @@ Classify findings: 🔴 measurable degradation at moderate load (fix before merg
 Start with: **Review result: ✅ Approved / ⚠️ Approved with comments / ❌ Changes requested**
 
 Then list issues:
-```
+
+````
 ### <file path>
 
 **[BLOCKING]** Line N: `problematic code`
 Because: explanation
 Fix:
 ```corrected code```
-```
+````
 
 End with a concise summary of what passed and what must change.
 

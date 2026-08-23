@@ -35,8 +35,9 @@ class ChooseOptions extends Command {
 }
 
 const radioNames = (html: string) =>
-    Array.from(html.matchAll(/<input[^>]+type="radio"[^>]+name="([^"]+)"/g), (match) =>
-        match[1],
+    Array.from(
+        html.matchAll(/<input[^>]+type="radio"[^>]+name="([^"]+)"/g),
+        (match) => match[1],
     );
 
 describe('when rendering native radio groups', () => {

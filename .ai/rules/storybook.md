@@ -1,8 +1,8 @@
 ---
-applyTo: "**/*.stories.tsx"
+applyTo: '**/*.stories.tsx'
 profile: application
 paths:
-  - "**/*.stories.tsx"
+    - '**/*.stories.tsx'
 ---
 
 # Storybook Story Conventions
@@ -29,10 +29,10 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { MyComponent } from './MyComponent';
 
 const meta = {
-    title: 'Components/MyComponent',          // sidebar path
+    title: 'Components/MyComponent', // sidebar path
     component: MyComponent,
-    parameters: { layout: 'centered' },       // 'centered' | 'padded' | 'fullscreen'
-    tags: ['autodocs'],                       // always include
+    parameters: { layout: 'centered' }, // 'centered' | 'padded' | 'fullscreen'
+    tags: ['autodocs'], // always include
 } satisfies Meta<typeof MyComponent>;
 
 export default meta;
@@ -62,7 +62,10 @@ export const Interactive: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getAllByRole('tab')[1]);
-        await expect(canvas.getAllByRole('tab')[1]).toHaveAttribute('aria-selected', 'true');
+        await expect(canvas.getAllByRole('tab')[1]).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
     },
 };
 ```

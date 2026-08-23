@@ -1,9 +1,9 @@
 ---
-applyTo: "**/*.tsx, **/Components/**/*.ts"
+applyTo: '**/*.tsx, **/Components/**/*.ts'
 profile: application
 paths:
-  - "**/*.tsx"
-  - "**/Components/**/*.ts"
+    - '**/*.tsx'
+    - '**/Components/**/*.ts'
 ---
 
 # React + Arc + Cratis Components
@@ -42,6 +42,7 @@ export const Listing = withViewModel(<Entity>ListingViewModel, ({ viewModel }) =
 ```
 
 **View-model rules:**
+
 - Pure TypeScript classes — no JSX, never store React state, never call React hooks (`useIdentity`, `useNavigate`) inside one — inject the Cratis abstraction instead.
 - Fields are auto-observable (`makeAutoObservable` is applied by `withViewModel`); no `@observable` on plain assignments.
 - Inject services via the primary constructor (`@injectable` / tsyringe).
@@ -53,31 +54,31 @@ Extract as soon as a component has **any** of: 3+ `useState`, any `useCallback` 
 
 ### MobX reactivity
 
-- **Dereference late** — read `viewModel.property` *inside* JSX; never destructure observables at the top of the component body (the captured value won't track changes).
+- **Dereference late** — read `viewModel.property` _inside_ JSX; never destructure observables at the top of the component body (the captured value won't track changes).
 - **Computed getters** for derived state (auto-`computed`) — not `useMemo` in the component.
-- **`useCallback`/`useMemo` are unnecessary in `withViewModel` components** — the render is wrapped in `Observer`. Their presence signals state that belongs in the view model. (This does *not* apply to plain functional components using proxy hooks directly. A plain component reaching for `useCallback` to stabilize a handler is a signal that handler belongs in a view model or tested state module.)
-- **Observable arrays into raw children** — passing `viewModel.items` (an observable array) to a *raw non-observer* child needs `viewModel.items.slice()` to materialize a plain array. Uncommon in practice — prefer `DataTableForObservableQuery`, which handles reactivity internally.
+- **`useCallback`/`useMemo` are unnecessary in `withViewModel` components** — the render is wrapped in `Observer`. Their presence signals state that belongs in the view model. (This does _not_ apply to plain functional components using proxy hooks directly. A plain component reaching for `useCallback` to stabilize a handler is a signal that handler belongs in a view model or tested state module.)
+- **Observable arrays into raw children** — passing `viewModel.items` (an observable array) to a _raw non-observer_ child needs `viewModel.items.slice()` to materialize a plain array. Uncommon in practice — prefer `DataTableForObservableQuery`, which handles reactivity internally.
 
 ### Props / route / query params in view models
 
-| Need | Mechanism |
-|---|---|
+| Need                          | Mechanism                                                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Props that change after mount | implement `IHandleProps<TProps>` → `handleProps(props)` (called on initial mount **and** every props change) |
-| Props set once at mount | `@props readonly componentProps: TProps` |
-| Route params | `@params readonly routeParams: RouteParams` — put `@field` on each property |
-| Query-string params | `@queryParams` |
+| Props set once at mount       | `@props readonly componentProps: TProps`                                                                     |
+| Route params                  | `@params readonly routeParams: RouteParams` — put `@field` on each property                                  |
+| Query-string params           | `@queryParams`                                                                                               |
 
 `@field` on each route/query-param property is what makes Arc's JSON serializer convert the URL **strings** to the property's real type — **without `@field`, the values stay strings**.
 
 ### Injectable abstractions (never touch browser/React globals in a view model)
 
-| Interface | Package | Replaces |
-|---|---|---|
-| `IMessenger` | `@cratis/arc.react.mvvm/messaging` | cross-component selection (list↔detail) — not React Context |
-| `IDialogs` | `@cratis/arc.react.mvvm/dialogs` | imperative confirmation/busy dialogs from a view model |
-| `IIdentityProvider` | `@cratis/arc/identity` | identity in a view model (not the `useIdentity` hook) |
-| `ILocalStorage`, `INavigation` | `@cratis/arc.react.mvvm/browser` | `localStorage`, URL navigation |
-| `IViewModelDetached` | `@cratis/arc.react.mvvm` | teardown (`detached()`) for subscriptions/timers |
+| Interface                      | Package                            | Replaces                                                    |
+| ------------------------------ | ---------------------------------- | ----------------------------------------------------------- |
+| `IMessenger`                   | `@cratis/arc.react.mvvm/messaging` | cross-component selection (list↔detail) — not React Context |
+| `IDialogs`                     | `@cratis/arc.react.mvvm/dialogs`   | imperative confirmation/busy dialogs from a view model      |
+| `IIdentityProvider`            | `@cratis/arc/identity`             | identity in a view model (not the `useIdentity` hook)       |
+| `ILocalStorage`, `INavigation` | `@cratis/arc.react.mvvm/browser`   | `localStorage`, URL navigation                              |
+| `IViewModelDetached`           | `@cratis/arc.react.mvvm`           | teardown (`detached()`) for subscriptions/timers            |
 
 These are registered automatically by `withViewModel` and injected via the primary constructor. Concrete usage:
 
@@ -92,26 +93,26 @@ These are registered automatically by `withViewModel` and injected via the prima
 
 A typed proxy class is generated per query. Pick the hook:
 
-| Hook | When |
-|---|---|
-| `<Query>.use(args?, sorting?)` | standard — returns `[result]`, re-renders on change |
-| `<Query>.useSuspense(...)` | suspense-aware — throws while loading; wrap in `<QueryBoundary>` |
-| `<Query>.when(condition).use(args)` | conditional — only fires when `condition` is true (don't wrap a hook in `if`) |
-| `<Query>.useWithPaging(pageSize, args?, sorting?)` | server-side paging (backend returns `IQueryable<T>`) |
-| `<Query>.useSuspenseWithPaging(pageSize, ...)` | suspense + paging |
-| `<ObservableQuery>.use(...)` | live observable (`ISubject<T>` backend) pushed over SSE/WebSocket |
-| `<ObservableQuery>.useChangeStream(args?, getKey?, ...)` | item-level add/replace/remove deltas |
+| Hook                                                     | When                                                                          |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `<Query>.use(args?, sorting?)`                           | standard — returns `[result]`, re-renders on change                           |
+| `<Query>.useSuspense(...)`                               | suspense-aware — throws while loading; wrap in `<QueryBoundary>`              |
+| `<Query>.when(condition).use(args)`                      | conditional — only fires when `condition` is true (don't wrap a hook in `if`) |
+| `<Query>.useWithPaging(pageSize, args?, sorting?)`       | server-side paging (backend returns `IQueryable<T>`)                          |
+| `<Query>.useSuspenseWithPaging(pageSize, ...)`           | suspense + paging                                                             |
+| `<ObservableQuery>.use(...)`                             | live observable (`ISubject<T>` backend) pushed over SSE/WebSocket             |
+| `<ObservableQuery>.useChangeStream(args?, getKey?, ...)` | item-level add/replace/remove deltas                                          |
 
 **Return-tuple shapes** (load-bearing — the observable variants have no `perform`):
 
-| Hook | Returns |
-|---|---|
-| `<Query>.use(args?, sorting?)` | `[result, perform]` |
-| `<Query>.useSuspense(...)` | `[result, perform, setSorting]` |
-| `<Query>.useWithPaging(pageSize, args?, sorting?)` | `[result, perform, setSorting, setPage, setPageSize]` |
-| `<Query>.useSuspenseWithPaging(pageSize, ...)` | `[result, perform, setSorting, setPage, setPageSize]` |
-| `<ObservableQuery>.use(...)` | `[result, setSorting]` — **no `perform`** |
-| `<ObservableQuery>.useChangeStream(args?, getKey?, sorting?, isEnabled?)` | `ChangeSet<T> { added, replaced, removed }` |
+| Hook                                                                      | Returns                                               |
+| ------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `<Query>.use(args?, sorting?)`                                            | `[result, perform]`                                   |
+| `<Query>.useSuspense(...)`                                                | `[result, perform, setSorting]`                       |
+| `<Query>.useWithPaging(pageSize, args?, sorting?)`                        | `[result, perform, setSorting, setPage, setPageSize]` |
+| `<Query>.useSuspenseWithPaging(pageSize, ...)`                            | `[result, perform, setSorting, setPage, setPageSize]` |
+| `<ObservableQuery>.use(...)`                                              | `[result, setSorting]` — **no `perform`**             |
+| `<ObservableQuery>.useChangeStream(args?, getKey?, sorting?, isEnabled?)` | `ChangeSet<T> { added, replaced, removed }`           |
 
 `result.paging` = `{ page, size, totalItems, totalPages }` (zero-based `page`). Read models returning `IQueryable<TReadModel>` get automatic server-side paging/sorting — use it whenever a list can grow.
 
@@ -125,8 +126,8 @@ A typed proxy class is generated per query. Pick the hook:
 A typed proxy class is generated per command. For programmatic execution:
 
 ```tsx
-const [command, setCommandValues, clearCommandValues] = Command.use();   // 3-tuple
-command.someField = value;                  // or setCommandValues({ ... })
+const [command, setCommandValues, clearCommandValues] = Command.use(); // 3-tuple
+command.someField = value; // or setCommandValues({ ... })
 const result = await command.execute();
 ```
 
@@ -134,11 +135,11 @@ Inside dialogs, use `CommandDialog` + CommandForm fields rather than driving the
 
 ### Read `CommandResult` by the granular flag — not just `isSuccess`
 
-| Flag | Meaning | UX response |
-|---|---|---|
-| `isSuccess` | `isAuthorized && isValid && !hasExceptions` | happy path |
-| `isAuthorized` | `[Roles]`/policy rejected | redirect to login / "not allowed" |
-| `isValid` | validation failed — `validationResults` has per-field messages | render inline field errors |
+| Flag            | Meaning                                                              | UX response                                        |
+| --------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| `isSuccess`     | `isAuthorized && isValid && !hasExceptions`                          | happy path                                         |
+| `isAuthorized`  | `[Roles]`/policy rejected                                            | redirect to login / "not allowed"                  |
+| `isValid`       | validation failed — `validationResults` has per-field messages       | render inline field errors                         |
 | `hasExceptions` | `Provide()`/`Handle()` threw — `exceptionMessages` carry diagnostics | generic error toast + log; never show stack traces |
 
 `CommandDialog` handles all of this automatically; the flags matter most when executing a command **outside** a dialog. `validate()` returns the same shape with `response == null` (handler did not run). `result.validationResults` is a `ValidationResult[]` of `{ property, message }` — render per-field UI from it, but **never branch on raw `.message` text**. `exceptionMessages`/`exceptionStackTrace` are for logging, never for users.
@@ -147,9 +148,18 @@ Out-of-dialog execution branches in this order:
 
 ```tsx
 const result = await command.execute();
-if (!result.isAuthorized) { redirectToLogin(); return; }
-if (!result.isValid)      { /* validationResults → inline field errors */ return; }
-if (result.hasExceptions) { toast.error('Something went wrong'); console.error(result.exceptionMessages); return; }
+if (!result.isAuthorized) {
+    redirectToLogin();
+    return;
+}
+if (!result.isValid) {
+    /* validationResults → inline field errors */ return;
+}
+if (result.hasExceptions) {
+    toast.error('Something went wrong');
+    console.error(result.exceptionMessages);
+    return;
+}
 // happy path — refresh queries, close, etc.
 ```
 
@@ -167,13 +177,13 @@ if (result.hasExceptions) { toast.error('Something went wrong'); console.error(r
 
 Top-level provider for microservice name and API base path. Config props (with defaults):
 
-| Prop | Default | Notes |
-|---|---|---|
-| `httpHeadersCallback` | — | returns `HeadersInit` merged into every request (bearer/tenant headers) |
-| `queryTransportMethod` | `ServerSentEvents` | SSE is capped at 4 connections on HTTP/1.1 |
-| `observableQueryTransferMode` | `Delta` | `Delta` = server ChangeSet/client diff; `Full` = all items as `added` |
-| `queryConnectionCount` | `1` | hub connection slots |
-| `queryDirectMode` | `false` | direct per-query connection — dev use only |
+| Prop                          | Default            | Notes                                                                   |
+| ----------------------------- | ------------------ | ----------------------------------------------------------------------- |
+| `httpHeadersCallback`         | —                  | returns `HeadersInit` merged into every request (bearer/tenant headers) |
+| `queryTransportMethod`        | `ServerSentEvents` | SSE is capped at 4 connections on HTTP/1.1                              |
+| `observableQueryTransferMode` | `Delta`            | `Delta` = server ChangeSet/client diff; `Full` = all items as `added`   |
+| `queryConnectionCount`        | `1`                | hub connection slots                                                    |
+| `queryDirectMode`             | `false`            | direct per-query connection — dev use only                              |
 
 `QueryTransportMethod`/`ObservableQueryTransferMode` import from `@cratis/arc`; `Arc` from `@cratis/arc.react`. Reach `arc.reconnectQueries()` via `useContext(ArcContext)` and call it after login/logout to re-establish observable connections.
 

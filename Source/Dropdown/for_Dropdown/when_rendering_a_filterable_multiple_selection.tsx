@@ -63,9 +63,8 @@ describe('when rendering a filterable multiple selection', () => {
 
     it('should render the multi-value combobox filter', () => {
         expect(
-            container.querySelector<HTMLInputElement>(
-                '[data-cratis-part="filter"]',
-            )?.placeholder,
+            container.querySelector<HTMLInputElement>('[data-cratis-part="filter"]')
+                ?.placeholder,
         ).to.equal('Filter choices');
     });
 

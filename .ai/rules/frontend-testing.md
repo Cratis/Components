@@ -1,9 +1,9 @@
 ---
-applyTo: "**/for_*/**/*.{ts,tsx}"
+applyTo: '**/for_*/**/*.{ts,tsx}'
 profile: application
 paths:
-  - "**/for_*/**/*.ts"
-  - "**/for_*/**/*.tsx"
+    - '**/for_*/**/*.ts'
+    - '**/for_*/**/*.tsx'
 ---
 
 # Frontend Testing
@@ -30,10 +30,10 @@ Tests live next to the unit they specify:
             and_<extra_context>.ts
 ```
 
-| Shape | Use for |
-|---|---|
+| Shape                                         | Use for                                                       |
+| --------------------------------------------- | ------------------------------------------------------------- |
 | `for_<Subject>/when_<context>/and_<extra>.ts` | default — view models, helpers with branches, component specs |
-| `for_<Subject>/when_<context>.ts` | tiny pure-helper spec with no useful extra context |
+| `for_<Subject>/when_<context>.ts`             | tiny pure-helper spec with no useful extra context            |
 
 snake_case file/folder names so the path reads as a scenario sentence. Use `should` in `it()` descriptions (spaces, not underscores — TS specs read as human sentences). Don't add `.test.ts`/`.spec.ts` files unless the config changes intentionally.
 
@@ -97,7 +97,9 @@ describe('when rendered while busy', () => {
             React.createElement(Button, { loading: true, label: 'Save' }),
         );
     });
-    it('should disable the action', () => { html.should.include('disabled'); });
+    it('should disable the action', () => {
+        html.should.include('disabled');
+    });
 });
 ```
 

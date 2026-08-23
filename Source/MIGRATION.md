@@ -190,15 +190,15 @@ export const productStepperParts: StepperParts = {
 
 For an existing nested Prime stepper preset, map the slots by rendered responsibility:
 
-| Components 3 Prime slot | Components 4 part |
-| ----------------------- | ----------------- |
-| `nav` | `list` |
-| `panelContainer` | `panels` |
-| `stepperpanel.root` | `step` (`<li>`) |
-| `stepperpanel.action` | `header` (`<button>`) |
-| `stepperpanel.number` | `number` |
-| `stepperpanel.title` | `title` |
-| `stepperpanel.content` | `panel` (`<section>`) |
+| Components 3 Prime slot | Components 4 part     |
+| ----------------------- | --------------------- |
+| `nav`                   | `list`                |
+| `panelContainer`        | `panels`              |
+| `stepperpanel.root`     | `step` (`<li>`)       |
+| `stepperpanel.action`   | `header` (`<button>`) |
+| `stepperpanel.number`   | `number`              |
+| `stepperpanel.title`    | `title`               |
+| `stepperpanel.content`  | `panel` (`<section>`) |
 
 The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item layout on `step`, and interactive-header styling on `header`. Replace `data-p-active` selectors with `[data-cratis-part='step'][data-active='true']`.
 

@@ -342,10 +342,7 @@ export const Dialog = ({
         return (
             <div
                 {...pt?.backdrop}
-                className={classNames(
-                    'cratis-dialog__backdrop',
-                    pt?.backdrop?.className,
-                )}
+                className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
                 style={{ zIndex: 1100, ...pt?.backdrop?.style }}
                 data-cratis-part='backdrop'
             >

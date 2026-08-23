@@ -16,38 +16,38 @@ const sizeOptions = [
 
 <CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <RadioGroupField<MyCommand>
-        value={c => c.size}
+        value={(c) => c.size}
         options={sizeOptions}
-        optionLabel="label"
-        optionValue="id"
-        title="Size"
+        optionLabel='label'
+        optionValue='id'
+        title='Size'
     />
-</CommandDialog>
+</CommandDialog>;
 ```
 
 With horizontal layout:
 
 ```tsx
 <RadioGroupField<MyCommand>
-    value={c => c.priority}
+    value={(c) => c.priority}
     options={priorityOptions}
-    optionLabel="label"
-    optionValue="id"
-    title="Priority"
-    layout="horizontal"
+    optionLabel='label'
+    optionValue='id'
+    title='Priority'
+    layout='horizontal'
 />
 ```
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | `(instance: TCommand) => unknown` | — | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
-| `options` | `Array<Record<string, unknown>>` | — | **Required.** Array of option objects. |
-| `optionLabel` | `string` | — | **Required.** Key in each option object to use as the display label. |
-| `optionValue` | `string` | — | **Required.** Key in each option object to use as the submitted value. |
-| `layout` | `'horizontal' \| 'vertical'` | `'vertical'` | Controls whether the radio buttons are stacked vertically or laid out in a horizontal row. |
-| `name` | `string` | generated | Optional native radio-group name. All options in the component always share one name. |
+| Prop          | Type                              | Default      | Description                                                                                                                                                     |
+| ------------- | --------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`       | `(instance: TCommand) => unknown` | —            | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
+| `options`     | `Array<Record<string, unknown>>`  | —            | **Required.** Array of option objects.                                                                                                                          |
+| `optionLabel` | `string`                          | —            | **Required.** Key in each option object to use as the display label.                                                                                            |
+| `optionValue` | `string`                          | —            | **Required.** Key in each option object to use as the submitted value.                                                                                          |
+| `layout`      | `'horizontal' \| 'vertical'`      | `'vertical'` | Controls whether the radio buttons are stacked vertically or laid out in a horizontal row.                                                                      |
+| `name`        | `string`                          | generated    | Optional native radio-group name. All options in the component always share one name.                                                                           |
 
 ## Behavior
 

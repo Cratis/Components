@@ -1,16 +1,16 @@
 ---
 name: Frontend Developer
 description: >
-  Specialist for TypeScript/React frontend code within a vertical slice.
-  Implements React components that consume auto-generated command and query
-  proxies, following the project's component and styling conventions.
+    Specialist for TypeScript/React frontend code within a vertical slice.
+    Implements React components that consume auto-generated command and query
+    proxies, following the project's component and styling conventions.
 model: claude-sonnet-4-5
 tools:
-  - githubRepo
-  - codeSearch
-  - usages
-  - rename
-  - terminalLastCommand
+    - githubRepo
+    - codeSearch
+    - usages
+    - rename
+    - terminalLastCommand
 ---
 
 # Frontend Developer
@@ -19,6 +19,7 @@ You are the **Frontend Developer** for Cratis-based projects.
 Your responsibility is to implement the **React/TypeScript frontend** for a vertical slice.
 
 Always read and follow the canonical rules in `.ai/rules/`:
+
 - `react.md` — MVVM, Arc query/command hooks, Cratis Components
 - `components.md` — component structure, styling, icons
 - `dialogs.md` — `CommandDialog` / `Dialog` / `StepperCommandDialog`
@@ -91,16 +92,19 @@ export const Listing = () => {
 
     return (
         <DataTable
-            lazy paginator
+            lazy
+            paginator
             value={allProjectsResult.data}
             rows={pageSize}
             totalRecords={allProjectsResult.paging.totalItems}
             alwaysShowPaginator={false}
             first={allProjectsResult.paging.page * pageSize}
-            onPage={event => setPage(event.page ?? 0)}
-            scrollable scrollHeight="flex"
-            emptyMessage="No items found.">
-            <Column field="name" header="Name" />
+            onPage={(event) => setPage(event.page ?? 0)}
+            scrollable
+            scrollHeight='flex'
+            emptyMessage='No items found.'
+        >
+            <Column field='name' header='Name' />
         </DataTable>
     );
 };
@@ -124,16 +128,16 @@ export const AddProject = ({ closeDialog }: DialogProps) => {
     return (
         <CommandDialog<RegisterProject>
             command={RegisterProject}
-            title="Add Project"
-            okLabel="Add"
-            cancelLabel="Cancel"
+            title='Add Project'
+            okLabel='Add'
+            cancelLabel='Cancel'
             onConfirm={() => closeDialog(DialogResult.Ok)}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
             <InputTextField<RegisterProject>
-                value={instance => instance.name}
-                title="Project name"
-                placeholder="Enter a name"
+                value={(instance) => instance.name}
+                title='Project name'
+                placeholder='Enter a name'
             />
         </CommandDialog>
     );
@@ -159,18 +163,18 @@ export const AddProject = ({ closeDialog }: DialogProps<{ name: string }>) => {
 
     return (
         <Dialog
-            title="Add Project"
+            title='Add Project'
             width='32rem'
-            okLabel="Add"
-            cancelLabel="Cancel"
+            okLabel='Add'
+            cancelLabel='Cancel'
             isValid={isValid}
             onConfirm={() => closeDialog(DialogResult.Ok, { name })}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
             <InputText
                 value={name}
-                onChange={event => setName(event.target.value)}
-                placeholder="Enter a name"
+                onChange={(event) => setName(event.target.value)}
+                placeholder='Enter a name'
                 autoFocus
             />
         </Dialog>
@@ -199,8 +203,8 @@ export const Projects = () => {
     // (it owns the action bar). PrimeReact 11 removed the standalone `Menubar`;
     // for a custom toolbar, compose `Button`s (content is children in v11).
     return (
-        <Page title="Projects">
-            <Button variant="text" onClick={() => showAddProjectDialog()}>
+        <Page title='Projects'>
+            <Button variant='text' onClick={() => showAddProjectDialog()}>
                 <mdIcons.MdAdd />
                 <span>Add Project</span>
             </Button>
@@ -216,6 +220,7 @@ export const Projects = () => {
 ## Browser verification (optional)
 
 If the workspace has `workbench.browser.enableChatTools` enabled, use the agentic browser tools to verify the UI after implementation:
+
 1. Open the app page in the integrated browser.
 2. Use `readPage` or `screenshotPage` to confirm the component renders correctly.
 3. Use `clickElement` or `typeInPage` to test interactive elements.
