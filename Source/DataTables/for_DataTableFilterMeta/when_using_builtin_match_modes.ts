@@ -14,9 +14,19 @@ describe('when using built-in match modes', () => {
             value: 'Ada',
             matchMode: DataTableFilterMatchMode.Contains,
         },
+        legacyCustomField: {
+            value: 'Grace',
+            matchMode: 'matcherRegisteredByTheConsumer',
+        },
     };
 
     it('should provide the adapter-independent runtime value', () => {
         expect(filters.name.matchMode).to.equal('contains');
+    });
+
+    it('should retain source compatibility with existing custom matcher names', () => {
+        expect(filters.legacyCustomField.matchMode).to.equal(
+            'matcherRegisteredByTheConsumer',
+        );
     });
 });

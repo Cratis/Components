@@ -46,7 +46,7 @@ library too. `@primereact/types` is an **optional** peer — needed only if your
 code imports the prop types the wrappers re-export.
 
 The other **peer dependencies** you provide are `react` / `react-dom` (**19+**), the
-`@cratis/arc*` packages (`>=20.3.1 <22` — Arc 20 and 21 both work), `reflect-metadata`
+`@cratis/arc*` packages (`>=20.3.1 <23` — Arc 20, 21 and 22 work), `reflect-metadata`
 and `tsyringe`; you typically already have these in a Cratis app. `pixi.js`,
 `framer-motion`, `allotment` and `react-icons` remain regular dependencies and are
 installed for you. `@primereact/styles` and `@primeuix/themes` are **optional** peers,

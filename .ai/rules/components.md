@@ -54,7 +54,7 @@ indicators and loading states in tables and detail views.
 
 ### `DataPage` — query list pages
 
-`DataPage` (from `@cratis/components/DataPage`) owns the data table's subscription, paging, selection, action menubar, and details split — **do not pre-fetch rows and pass an `items` array**. Required props: `title`, `query` (`Constructor<TQuery>`; snapshot and observable queries are auto-detected), `emptyMessage`, and `children`. Other props: `queryArguments`, `dataKey` (pass whenever the read model has an identity), `selection` / `onSelectionChange`, `globalFilterFields` / `defaultFilters` / `clientFiltering`, `detailsComponent` (`React.FC<IDetailsComponentProps<T>>` = `{ item, onRefresh? }`), `onRefresh`, and PrimeReact pass-through `tablePt`/`tableClassName`/`menubarPt`/`menubarClassName`.
+`DataPage` (from `@cratis/components/DataPage`) owns the data table's subscription, paging, selection, action menubar, and details split — **do not pre-fetch rows and pass an `items` array**. Required props: `title`, `query` (`Constructor<TQuery>`; snapshot and observable queries are auto-detected), `emptyMessage`, and `children`. Other props: `queryArguments`, `dataKey` (pass whenever the read model has an identity), `selection` / `onSelectionChange`, `globalFilterFields` / `defaultFilters`, `detailsComponent` (`React.FC<IDetailsComponentProps<T>>` = `{ item, onRefresh? }`), `onRefresh`, and PrimeReact pass-through `tablePt`/`tableClassName`/`menubarPt`/`menubarClassName`.
 
 Columns and toolbar actions are compositional children:
 

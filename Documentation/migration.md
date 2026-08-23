@@ -43,7 +43,7 @@ Notes:
 
 ### Arc peer range is unchanged
 
-`@cratis/arc` and `@cratis/arc.react` remain `>=20.3.1 <22`. Arc 20 and Arc 21 are both supported; 3.0 does **not** narrow this.
+`@cratis/arc` and `@cratis/arc.react` now support `>=20.3.1 <23`. Arc 20, Arc 21 and Arc 22 are supported.
 
 > [!WARNING]
 > **Keep `@cratis/arc`, `@cratis/arc.react` and `@cratis/arc.vite` on the same version.** `@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if your own `@cratis/arc` drifts by even a patch your installer nests a second copy. `ObservableQuerySubscription` has a `private` field, which makes it nominally typed, so two copies produce a type error like *"types have separate declarations of a private property `_connection`"* in any code touching an observable query. This is an Arc packaging issue, not a Components one; `DataTableForObservableQuery` is hardened against it internally so the library itself still compiles either way ([#135](https://github.com/Cratis/Components/issues/135)).
@@ -192,7 +192,7 @@ A few v10 features have no v11 equivalent. The props are **kept so your code sti
 | `Dialog` `resizable` | v11's headless dialog has no resize handle — no effect. |
 | `ChipsField` `separator` | v11 `InputTags` commits one tag per Enter; pasted input is no longer auto-split. |
 | `MultiSelectField` `display` / `maxSelectedLabels` | v11 `Select` renders the selection through its value slot; the v10 comma/chip modes and label-collapse are gone. |
-| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Deprecated — filtering is always applied client-side to the loaded page; the toggle has no effect. |
+| `DataTableForQuery` / `DataTableForObservableQuery` / `DataPage` `clientFiltering` | Retained as a deprecated no-op for source compatibility. Filtering always affects only the loaded page and pagination retains server totals. For complete-result filtering, pass filters as query arguments and apply them on the server before paging. |
 
 Some wrappers also **narrowed their surface** (they no longer leak PrimeReact's full API):
 

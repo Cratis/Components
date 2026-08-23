@@ -159,8 +159,8 @@
         "primereact": "11.1.0"
     },
     "peerDependencies": {
-        "@cratis/arc": ">=20.3.1 <22",
-        "@cratis/arc.react": ">=20.3.1 <22",
+        "@cratis/arc": ">=20.3.1 <23",
+        "@cratis/arc.react": ">=20.3.1 <23",
         "@cratis/fundamentals": "^7.10.3",
         "@primereact/core": "^11.0.0",
         "@primereact/headless": "^11.0.0",

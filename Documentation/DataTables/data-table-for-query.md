@@ -52,6 +52,7 @@ function MyTable() {
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
+- `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
 - `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
 - `children`: Column definitions
 
@@ -80,6 +81,14 @@ Add `filter` to a `<Column>` for a per-column filter menu, and/or `globalFilterF
 ```
 
 Each filtered `Column` can localize its overlay through `filterLabels` or replace the built-in value editor through `filterElement`. See [Column Configuration](column-configuration.md#column-filters) for the callback contract and draft/apply behavior.
+
+Filtering affects the currently loaded page while the paginator continues to report the server's total result set.
+
+### Filtering scope and server pagination
+
+`clientFiltering` remains accepted so existing applications continue to compile, but it is deprecated and does not toggle behavior. A browser cannot correctly filter the complete result set when the query has supplied only one server page. Replacing the server total with the number of matches on that page would make later pages unreachable, while caching visited pages would still produce an incomplete result.
+
+For complete-result filtering, put the filter values in `queryArguments`, apply them to the server query before paging, and return the filtered total from the server. For a genuinely small dataset that is intentionally loaded in full, use a non-paged query and render that complete collection locally. Do not use `clientFiltering` in new code.
 
 ## Selection
 

@@ -28,10 +28,17 @@ export type DataTableCustomFilterMatchMode = string & {
     readonly [customFilterMatchMode]: true;
 };
 
-/** Built-in or explicitly defined custom match-mode name. */
+/**
+ * Built-in or custom match-mode name.
+ *
+ * Arbitrary strings remain accepted for source compatibility with renderers
+ * whose matcher was registered outside Components. New custom matchers should
+ * use `registerDataTableFilterMatcher()`, which returns a branded name.
+ */
 export type DataTableFilterMatchMode =
     | (typeof DataTableFilterMatchMode)[keyof typeof DataTableFilterMatchMode]
-    | DataTableCustomFilterMatchMode;
+    | DataTableCustomFilterMatchMode
+    | (string & Record<never, never>);
 
 /** Function used to match one row-field value against a filter value. */
 export type DataTableFilterMatcher = (

@@ -127,18 +127,33 @@ interface ToastDispatchFrame {
     removed: boolean;
 }
 
-const defaultToastDispatchFrame: ToastDispatchFrame = {
-    dispatch: primeReactToastDispatch,
-    removed: false,
-};
-let activeToastDispatchFrame = defaultToastDispatchFrame;
+interface ToastDispatchRegistry {
+    active?: ToastDispatchFrame;
+}
+
+const toastDispatchRegistryKey = Symbol.for(
+    '@cratis/components/toast-dispatch/v1',
+);
+// SAFETY: Symbol.for gives every loaded Components copy the same isolated dispatch slot.
+const toastDispatchRegistryHost = globalThis as unknown as Record<symbol, unknown>;
+const existingToastDispatchRegistry = toastDispatchRegistryHost[
+    toastDispatchRegistryKey
+];
+const toastDispatchRegistry: ToastDispatchRegistry =
+    typeof existingToastDispatchRegistry === 'object' &&
+    existingToastDispatchRegistry !== null &&
+    ('active' in existingToastDispatchRegistry ||
+        Object.keys(existingToastDispatchRegistry).length === 0)
+        ? (existingToastDispatchRegistry as ToastDispatchRegistry)
+        : {};
+toastDispatchRegistryHost[toastDispatchRegistryKey] = toastDispatchRegistry;
 
 const nearestActiveFrame = (
     frame: ToastDispatchFrame | undefined,
-): ToastDispatchFrame => {
+): ToastDispatchFrame | undefined => {
     let current = frame;
     while (current?.removed) current = current.previous;
-    return current ?? defaultToastDispatchFrame;
+    return current;
 };
 
 /**
@@ -148,21 +163,23 @@ const nearestActiveFrame = (
 export const setToastDispatch = (dispatch: ToastDispatch): (() => void) => {
     const frame: ToastDispatchFrame = {
         dispatch,
-        previous: activeToastDispatchFrame,
+        previous: toastDispatchRegistry.active,
         removed: false,
     };
-    activeToastDispatchFrame = frame;
+    toastDispatchRegistry.active = frame;
 
     return () => {
         if (frame.removed) return;
         frame.removed = true;
-        if (activeToastDispatchFrame === frame) {
-            activeToastDispatchFrame = nearestActiveFrame(frame.previous);
+        if (toastDispatchRegistry.active === frame) {
+            toastDispatchRegistry.active = nearestActiveFrame(frame.previous);
         }
     };
 };
 
-const activeToastDispatch = () => nearestActiveFrame(activeToastDispatchFrame).dispatch;
+const activeToastDispatch = () =>
+    nearestActiveFrame(toastDispatchRegistry.active)?.dispatch ??
+    primeReactToastDispatch;
 
 const callableToast = ((options: ToastOptions) =>
     activeToastDispatch().show(options)) as ToastFunction;
