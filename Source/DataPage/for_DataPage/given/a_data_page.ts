@@ -38,29 +38,39 @@ export interface DataPageOptions {
 
     /** Seed the data table's per-field filters. */
     defaultFilters?: DataTableFilterMeta;
+
+    /** Controlled row selection. */
+    selection?: Person | null;
+
+    /** Observe selection changes. */
+    onSelectionChange?: (event: { value: Person | null }) => void;
 }
 
 const PersonDetails = ({ item }: { item: Person }) =>
     React.createElement('div', { className: 'person-details' }, item.name);
 
 const columns = () =>
-    React.createElement(
-        DataPage.Columns,
-        { key: 'columns' },
-        React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
-        React.createElement(Column, { key: 'name', field: 'name', header: 'Name' }),
-    );
+    React.createElement(DataPage.Columns, {
+        key: 'columns',
+        children: [
+            React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
+            React.createElement(Column, {
+                key: 'name',
+                field: 'name',
+                header: 'Name',
+            }),
+        ],
+    });
 
 const menuItems = () =>
-    React.createElement(
-        DataPage.MenuItems,
-        { key: 'menuItems' },
-        React.createElement(MenuItem, {
+    React.createElement(DataPage.MenuItems, {
+        key: 'menuItems',
+        children: React.createElement(MenuItem, {
             key: 'add',
             label: 'Add',
             icon: () => React.createElement('i', { className: 'pi pi-plus' }),
         }),
-    );
+    });
 
 /**
  * Builds the `DataPage` element the specs render.
@@ -69,9 +79,10 @@ const menuItems = () =>
  */
 export const aDataPage = (options: DataPageOptions = {}) => {
     const children = options.withMenuItems ? [menuItems(), columns()] : [columns()];
+    const PersonDataPage = DataPage<PersonsQuery, Person, object>;
 
     return React.createElement(
-        DataPage,
+        PersonDataPage,
         {
             title: 'Persons',
             query: PersonsQuery,
@@ -79,8 +90,10 @@ export const aDataPage = (options: DataPageOptions = {}) => {
             dataKey: 'id',
             detailsComponent: options.withDetails ? PersonDetails : undefined,
             defaultFilters: options.defaultFilters,
+            selection: options.selection,
+            onSelectionChange: options.onSelectionChange,
+            children,
         },
-        ...children,
     );
 };
 
@@ -88,9 +101,8 @@ export const aDataPage = (options: DataPageOptions = {}) => {
  * Renders an element into a real document and lets React settle, so the specs
  * look at the tree a browser would have built.
  *
- * PrimeReact 11 components resolve their configuration from a `PrimeReactProvider`
- * and throw without one, so the element is mounted inside the Cratis provider that
- * supplies it. `ResizeObserver` is stubbed because Allotment observes its container
+ * The element is mounted inside the Cratis provider to supply locale and component
+ * messages. `ResizeObserver` is stubbed because Allotment observes its container
  * for size changes and jsdom has no layout engine to report any.
  * @param element - The element to render.
  * @returns The mounted page, to be passed to {@link unmount}.

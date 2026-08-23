@@ -117,9 +117,9 @@ export interface SchemaEditorProps {
  * types and formats, and validate naming rules in place. Designed to drive
  * UIs around event payload schemas and similar structural documents.
  *
- * The editor composes a Cratis data table, action toolbar, and form
- * widgets internally; for restyling, use a global `pt` preset on
- * `CratisComponentsProvider`.
+ * The editor composes a Cratis data table, action toolbar, and form widgets
+ * internally. Restyle it through semantic tokens, the editor root `className`,
+ * and documented `data-cratis-part` values rather than a provider preset.
  *
  * @param props - {@link SchemaEditorProps}.
  */
@@ -444,7 +444,9 @@ export const SchemaEditor = ({
                                             content={canNotEditReason}
                                             position='bottom'
                                         >
-                                            <div
+                                            <span
+                                                tabIndex={0}
+                                                role='note'
                                                 style={{
                                                     cursor: 'not-allowed',
                                                     opacity: 0.6,
@@ -455,7 +457,7 @@ export const SchemaEditor = ({
                                             >
                                                 {item.icon}
                                                 <span>{item.label}</span>
-                                            </div>
+                                            </span>
                                         </Tooltip>
                                     )
                                   : undefined,

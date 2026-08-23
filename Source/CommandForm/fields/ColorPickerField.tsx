@@ -3,6 +3,10 @@
 
 import type { HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface ColorPickerParts {
     root?: HTMLAttributes<HTMLDivElement>;
@@ -10,7 +14,9 @@ interface ColorPickerParts {
     value?: HTMLAttributes<HTMLOutputElement>;
 }
 
-interface ColorPickerFieldComponentProps extends WrappedFieldProps<string> {
+interface ColorPickerFieldComponentProps
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     inline?: boolean;
     defaultColor?: string;
     className?: string;
@@ -25,6 +31,11 @@ const normalizeHex = (value: string, fallback: string) =>
 /** A native color picker bound to a bare six-digit hex string on an Arc command. */
 export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProps>(
     (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
         const value = normalizeHex(
             props.value,
             normalizeHex(props.defaultColor ?? '000000', '000000'),
@@ -46,6 +57,9 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
             >
                 <input
                     {...props.pt?.input}
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
                     type='color'
                     value={`#${value}`}
                     onChange={props.onChange}
@@ -64,6 +78,7 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
                 >
                     #{value}
                 </output>
+                {accessibility.hiddenError}
             </div>
         );
     },

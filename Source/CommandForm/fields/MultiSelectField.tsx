@@ -4,13 +4,17 @@
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
 import { Dropdown, type DropdownProps } from '../../Dropdown/Dropdown';
 import React from 'react';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 /**
  * Component-level props for {@link MultiSelectField}.
  */
-interface MultiSelectFieldComponentProps extends WrappedFieldProps<
-    Array<string | number>
-> {
+interface MultiSelectFieldComponentProps
+    extends WrappedFieldProps<Array<string | number>>,
+        FieldAccessibilityProps {
     /** Source array of objects to populate the multi-select options. */
     options: Array<Record<string, unknown>>;
 
@@ -70,8 +74,18 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<
  * ```
  */
 export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
         <Dropdown<Array<string | number>>
+            id={accessibility.controlId}
+            aria-label={accessibility.ariaLabel}
+            aria-describedby={accessibility.ariaDescribedBy}
             multiple
             value={props.value}
             onChange={(e) => props.onChange(e.value ?? [])}
@@ -88,7 +102,10 @@ export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProp
             ptOptions={props.ptOptions}
             unstyled={props.unstyled}
         />
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: [],
         extractValue: (e: unknown) => {

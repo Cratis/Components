@@ -7,11 +7,17 @@ import {
     type DatePickerInputPassThrough,
 } from '../../Common/DatePickerInput';
 import React from 'react';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 /**
  * Component-level props for {@link CalendarField}.
  */
-interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
+interface CalendarFieldComponentProps
+    extends WrappedFieldProps<Date | null>,
+        FieldAccessibilityProps {
     /** Placeholder text shown when no date is selected. */
     placeholder?: string;
 
@@ -60,8 +66,18 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
  * ```
  */
 export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
         <DatePickerInput
+            id={accessibility.controlId}
+            aria-label={accessibility.ariaLabel}
+            aria-describedby={accessibility.ariaDescribedBy}
             value={props.value}
             onChange={props.onChange}
             onBlur={props.onBlur}
@@ -78,7 +94,10 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
             ptOptions={props.ptOptions}
             unstyled={props.unstyled}
         />
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: null,
         extractValue: (e: unknown) => (e instanceof Date ? e : null),

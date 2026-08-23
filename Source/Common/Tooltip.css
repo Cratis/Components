@@ -1,11 +1,6 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* ── Tooltip trigger ─────────────────────────────────────────────────────── */
-.cratis-tooltip-trigger {
-    display: inline-flex;
-}
-
 /* ── Tooltip bubble ──────────────────────────────────────────────────────── */
 .cratis-tooltip-popup {
     background: var(--cratis-surface-100);

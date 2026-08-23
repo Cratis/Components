@@ -3,6 +3,10 @@
 
 import type { HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface CheckboxParts {
     root?: HTMLAttributes<HTMLLabelElement>;
@@ -11,7 +15,9 @@ interface CheckboxParts {
     indicator?: HTMLAttributes<HTMLSpanElement>;
 }
 
-interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
+interface CheckboxFieldComponentProps
+    extends WrappedFieldProps<boolean>,
+        FieldAccessibilityProps {
     label?: string;
     className?: string;
     pt?: CheckboxParts;
@@ -21,7 +27,14 @@ interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
 
 /** A checkbox field bound to a boolean property on an Arc command. */
 export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'] ?? props.label,
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
         <label
             {...props.pt?.root}
             className={['cratis-choice-field', props.pt?.root?.className, props.className]
@@ -33,6 +46,9 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
         >
             <input
                 {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
                 type='checkbox'
                 checked={props.value}
                 onChange={props.onChange}
@@ -67,7 +83,10 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
                 <span className='cratis-choice-field__label'>{props.label}</span>
             )}
         </label>
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: false,
         extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>

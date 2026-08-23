@@ -3,12 +3,18 @@
 
 import type { TextareaHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface TextAreaParts {
     root?: TextareaHTMLAttributes<HTMLTextAreaElement>;
 }
 
-interface TextAreaFieldComponentProps extends WrappedFieldProps<string> {
+interface TextAreaFieldComponentProps
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     placeholder?: string;
     rows?: number;
     cols?: number;
@@ -20,9 +26,19 @@ interface TextAreaFieldComponentProps extends WrappedFieldProps<string> {
 
 /** A multi-line text field bound to a string property on an Arc command. */
 export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.root?.id,
+            ariaLabel: props.pt?.root?.['aria-label'],
+            ariaDescribedBy: props.pt?.root?.['aria-describedby'],
+        });
+        return (
+            <>
         <textarea
             {...props.pt?.root}
+            id={accessibility.controlId}
+            aria-label={accessibility.ariaLabel}
+            aria-describedby={accessibility.ariaDescribedBy}
             value={props.value}
             onChange={props.onChange}
             onBlur={props.onBlur}
@@ -42,7 +58,10 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
                 .filter(Boolean)
                 .join(' ')}
         />
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: '',
         extractValue: (event: React.ChangeEvent<HTMLTextAreaElement>) =>

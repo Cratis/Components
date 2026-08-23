@@ -3,6 +3,10 @@
 
 import { useId, type HTMLAttributes, type InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface RatingParts {
     root?: HTMLAttributes<HTMLDivElement>;
@@ -11,7 +15,9 @@ interface RatingParts {
     star?: HTMLAttributes<HTMLSpanElement>;
 }
 
-interface RatingFieldComponentProps extends WrappedFieldProps<number> {
+interface RatingFieldComponentProps
+    extends WrappedFieldProps<number>,
+        FieldAccessibilityProps {
     stars?: number;
     /** Native radio-group name. Generated automatically when omitted. */
     name?: string;
@@ -27,11 +33,20 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
     (props) => {
         const generatedName = useId();
         const name = props.name ?? generatedName;
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.root?.id,
+            ariaLabel: props.pt?.root?.['aria-label'],
+            ariaDescribedBy: props.pt?.root?.['aria-describedby'],
+        });
 
         return (
             <div
                 {...props.pt?.root}
+                id={accessibility.controlId}
                 role='radiogroup'
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
+                aria-invalid={props.invalid || undefined}
                 className={[
                     'cratis-rating-field',
                     props.pt?.root?.className,
@@ -95,6 +110,7 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                         </label>
                     );
                 })}
+                {accessibility.hiddenError}
             </div>
         );
     },

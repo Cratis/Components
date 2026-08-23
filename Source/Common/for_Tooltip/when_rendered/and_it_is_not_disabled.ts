@@ -14,11 +14,10 @@ describe('when Tooltip is rendered and it is not disabled', () => {
         React.createElement(
             CratisComponentsProvider,
             null,
-            React.createElement(
-                Tooltip,
-                { content: 'Shapes' },
-                React.createElement('button', null, 'Trigger'),
-            ),
+            React.createElement(Tooltip, {
+                content: 'Shapes',
+                children: React.createElement('button', null, 'Trigger'),
+            }),
         ),
     );
 
@@ -30,7 +29,8 @@ describe('when Tooltip is rendered and it is not disabled', () => {
         expect(html).to.include('Trigger');
     });
 
-    it('should not add a second tab stop around the trigger', () => {
-        expect(html).not.to.include('tabindex="0"');
+    it('should apply focus behavior to the actual trigger without a wrapper', () => {
+        expect(html).to.match(/^<button[^>]+data-cratis-part="trigger"/);
+        expect(html.match(/tabindex="0"/g)).to.have.lengthOf(1);
     });
 });

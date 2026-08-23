@@ -44,13 +44,24 @@ type DropdownTriggerAttributes = Omit<
 type DropdownOptionValue =
     string | number | boolean | bigint | symbol | object | null | undefined;
 
+/** Narrow migration aliases shared by the legacy `input` and `select` keys. */
+interface DropdownLegacyControlAttributes {
+    id?: string;
+    className?: string;
+    style?: CSSProperties;
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean | 'true' | 'false' | 'grammar' | 'spelling';
+}
+
 /** Stable Cratis-owned parts for styling a {@link Dropdown}. */
 export interface DropdownParts {
     root?: HTMLAttributes<HTMLElement>;
     /** Legacy visible-control part, mapped onto the current trigger/filter input. */
-    input?: HTMLAttributes<HTMLElement> & { id?: string };
-    /** Legacy select-root part retained for custom product wrappers. */
-    select?: HTMLAttributes<HTMLElement>;
+    input?: DropdownLegacyControlAttributes;
+    /** Legacy select-root alias for class, style, identity, and ARIA migration. */
+    select?: DropdownLegacyControlAttributes;
     trigger?: DropdownTriggerAttributes;
     value?: HTMLAttributes<HTMLSpanElement>;
     clear?: ButtonHTMLAttributes<HTMLButtonElement>;

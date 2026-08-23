@@ -4,11 +4,17 @@
 import { Dropdown, type DropdownProps } from '../../Dropdown/Dropdown';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 /**
  * Component-level props for {@link DropdownField}.
  */
-interface DropdownFieldComponentProps extends WrappedFieldProps<string | number> {
+interface DropdownFieldComponentProps
+    extends WrappedFieldProps<string | number>,
+        FieldAccessibilityProps {
     /** Source array of objects to populate the dropdown options. */
     options: Array<{ [key: string]: unknown }>;
 
@@ -50,8 +56,18 @@ interface DropdownFieldComponentProps extends WrappedFieldProps<string | number>
  * ```
  */
 export const DropdownField = asCommandFormField<DropdownFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
         <Dropdown
+            id={accessibility.controlId}
+            aria-label={accessibility.ariaLabel}
+            aria-describedby={accessibility.ariaDescribedBy}
             value={props.value}
             onChange={(e) => props.onChange(e.value)}
             onBlur={props.onBlur}
@@ -65,7 +81,10 @@ export const DropdownField = asCommandFormField<DropdownFieldComponentProps>(
             ptOptions={props.ptOptions}
             unstyled={props.unstyled}
         />
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: '',
         extractValue: (e: unknown) => e as string | number

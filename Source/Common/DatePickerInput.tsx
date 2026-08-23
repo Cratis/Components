@@ -167,6 +167,19 @@ export const DatePickerInput = ({
         ariaLabel ?? pt?.input?.['aria-label'] ?? effectivePlaceholder ?? 'Date';
     const effectiveAriaLabelledby = ariaLabelledby ?? pt?.input?.['aria-labelledby'];
     const effectiveAriaDescribedby = ariaDescribedby ?? pt?.input?.['aria-describedby'];
+    const inputPartAttributes = {
+        ...pt?.input,
+        id: undefined,
+        className: undefined,
+        style: undefined,
+        disabled: undefined,
+        readOnly: undefined,
+        placeholder: undefined,
+        'aria-label': undefined,
+        'aria-labelledby': undefined,
+        'aria-describedby': undefined,
+        'aria-invalid': undefined,
+    };
 
     return (
         <div
@@ -208,6 +221,7 @@ export const DatePickerInput = ({
                     data-empty={value === null || undefined}
                 >
                     <DateInput
+                        {...inputPartAttributes}
                         className={classNames(
                             'cratis-date-picker__input',
                             pt?.input?.className,
@@ -335,6 +349,7 @@ export const DatePickerInput = ({
                                 </Button>
                             </header>
                             <CalendarGrid
+                                {...pt?.grid}
                                 className={classNames(
                                     'cratis-date-picker__grid',
                                     pt?.grid?.className,

@@ -40,6 +40,7 @@ describe('when configuring input pass-through', () => {
                                 'aria-invalid': true,
                                 disabled: true,
                                 placeholder: 'Pass-through placeholder',
+                                'data-product-control': 'appointment',
                             },
                         }}
                     />
@@ -87,6 +88,10 @@ describe('when configuring input pass-through', () => {
 
     it('should disable the picker', () => {
         expect(pickerRoot.getAttribute('data-disabled')).to.equal('true');
+    });
+
+    it('should forward ordinary data attributes to the segmented input', () => {
+        expect(dateInput.getAttribute('data-product-control')).to.equal('appointment');
     });
 
     it('should preserve the pass-through placeholder when the wrapper prop is omitted', () => {

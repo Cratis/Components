@@ -110,57 +110,47 @@ export const TypeCell = ({
             const itemType = rowData.items?.type || 'string';
             const isNavigable = itemType === 'object';
             return (
-                <Tooltip
-                    content={
+                <div
+                    className='flex items-center gap-2 w-full'
+                    style={{ height: '100%' }}
+                    title={
                         isNavigable ? 'Click to navigate to item definition' : undefined
                     }
-                    position='top'
-                    className='w-full'
                 >
-                    <div
-                        className='flex items-center gap-2 w-full'
-                        style={{ height: '100%' }}
-                    >
-                        <span>Array of {itemType}</span>
-                        {isNavigable && (
-                            <>
-                                <div style={{ flex: 1 }} />
-                                <span style={{ display: 'flex', alignItems: 'center' }}>
-                                    <faIcons.FaArrowRight
-                                        style={{
-                                            fontSize: '1rem',
-                                            color: 'var(--cratis-primary-color)',
-                                        }}
-                                    />
-                                </span>
-                            </>
-                        )}
-                    </div>
-                </Tooltip>
+                    <span>Array of {itemType}</span>
+                    {isNavigable && (
+                        <>
+                            <div style={{ flex: 1 }} />
+                            <span style={{ display: 'flex', alignItems: 'center' }}>
+                                <faIcons.FaArrowRight
+                                    style={{
+                                        fontSize: '1rem',
+                                        color: 'var(--cratis-primary-color)',
+                                    }}
+                                />
+                            </span>
+                        </>
+                    )}
+                </div>
             );
         } else if (rowData.type === 'object') {
             return (
-                <Tooltip
-                    content='Click to navigate to object properties'
-                    position='top'
-                    className='w-full'
+                <div
+                    className='flex items-center gap-2 w-full'
+                    style={{ height: '100%' }}
+                    title='Click to navigate to object properties'
                 >
-                    <div
-                        className='flex items-center gap-2 w-full'
-                        style={{ height: '100%' }}
-                    >
-                        <span>Object</span>
-                        <div style={{ flex: 1 }} />
-                        <span style={{ display: 'flex', alignItems: 'center' }}>
-                            <faIcons.FaArrowRight
-                                style={{
-                                    fontSize: '1rem',
-                                    color: 'var(--cratis-primary-color)',
-                                }}
-                            />
-                        </span>
-                    </div>
-                </Tooltip>
+                    <span>Object</span>
+                    <div style={{ flex: 1 }} />
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                        <faIcons.FaArrowRight
+                            style={{
+                                fontSize: '1rem',
+                                color: 'var(--cratis-primary-color)',
+                            }}
+                        />
+                    </span>
+                </div>
             );
         }
         return displayValue;

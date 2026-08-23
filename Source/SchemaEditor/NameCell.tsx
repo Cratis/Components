@@ -29,20 +29,24 @@ export const NameCell = ({
 
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Tooltip
-                    content={isNavigable ? navigationTooltipText : undefined}
-                    position='top'
-                >
-                    <span>{rowData.name}</span>
-                </Tooltip>
+                <span title={isNavigable ? navigationTooltipText : undefined}>
+                    {rowData.name}
+                </span>
                 {rowData.description && (
                     <Tooltip content={rowData.description} position='right'>
-                        <faIcons.FaCircleInfo
-                            style={{
-                                color: 'var(--cratis-text-color-secondary)',
-                                fontSize: '0.875rem',
-                            }}
-                        />
+                        <span
+                            tabIndex={0}
+                            role='img'
+                            aria-label='Property description'
+                        >
+                            <faIcons.FaCircleInfo
+                                aria-hidden='true'
+                                style={{
+                                    color: 'var(--cratis-text-color-secondary)',
+                                    fontSize: '0.875rem',
+                                }}
+                            />
+                        </span>
                     </Tooltip>
                 )}
             </div>

@@ -131,12 +131,16 @@ describe('when configuring standard DatePickerInput props', () => {
             value: new Date(2026, 7, 22),
             todayLabel: 'Translated today',
             clearLabel: 'Translated clear',
+            pt: { grid: { id: 'appointment-calendar-grid' } },
         });
         try {
             await act(async () => mounted.trigger.click());
             const buttonBar = document.querySelector('[data-cratis-part="button-bar"]');
             expect(buttonBar?.textContent).to.contain('Translated today');
             expect(buttonBar?.textContent).to.contain('Translated clear');
+            expect(document.querySelector('#appointment-calendar-grid')).not.to.equal(
+                null,
+            );
         } finally {
             await unmountDatePicker(mounted);
         }

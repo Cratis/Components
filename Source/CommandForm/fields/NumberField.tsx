@@ -3,13 +3,19 @@
 
 import type { HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface NumberFieldParts {
     root?: HTMLAttributes<HTMLDivElement>;
     input?: InputHTMLAttributes<HTMLInputElement>;
 }
 
-interface NumberFieldComponentProps extends WrappedFieldProps<number> {
+interface NumberFieldComponentProps
+    extends WrappedFieldProps<number>,
+        FieldAccessibilityProps {
     placeholder?: string;
     min?: number;
     max?: number;
@@ -22,7 +28,13 @@ interface NumberFieldComponentProps extends WrappedFieldProps<number> {
 
 /** A numeric field bound to a number property on an Arc command. */
 export const NumberField = asCommandFormField<NumberFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
         <div
             {...props.pt?.root}
             onBlur={props.onBlur}
@@ -38,6 +50,9 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
         >
             <input
                 {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
                 type='number'
                 value={props.value}
                 onChange={props.onChange}
@@ -52,8 +67,10 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
                     .filter(Boolean)
                     .join(' ')}
             />
+            {accessibility.hiddenError}
         </div>
-    ),
+        );
+    },
     {
         defaultValue: 0,
         extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>

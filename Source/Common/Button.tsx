@@ -1,12 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type {
-    ButtonHTMLAttributes,
-    CSSProperties,
-    HTMLAttributes,
-    MouseEventHandler,
-    ReactNode,
+import {
+    forwardRef,
+    type ButtonHTMLAttributes,
+    type CSSProperties,
+    type HTMLAttributes,
+    type ReactNode,
 } from 'react';
 import { Tooltip, type TooltipPosition } from './Tooltip';
 
@@ -23,7 +23,11 @@ export interface ButtonParts {
 }
 
 /** Props for {@link Button}. */
-export interface ButtonProps {
+export interface ButtonProps
+    extends Omit<
+        ButtonHTMLAttributes<HTMLButtonElement>,
+        'children' | 'className' | 'disabled' | 'size' | 'style' | 'type'
+    > {
     /** The button's text. */
     label?: ReactNode;
     /** The button's icon, rendered before the label. */
@@ -56,8 +60,6 @@ export interface ButtonProps {
     title?: string;
     /** Focuses the button when it mounts. */
     autoFocus?: boolean;
-    /** Called when the button is activated. */
-    onClick?: MouseEventHandler<HTMLButtonElement>;
     /** Applied to the button element. */
     className?: string;
     /** Applied to the button element. */
@@ -72,7 +74,7 @@ const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
 
 /** A Cratis-owned button with stable parts and renderer-independent styling. */
-export const Button = ({
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({
     label,
     icon,
     loading,
@@ -94,7 +96,8 @@ export const Button = ({
     style,
     'aria-label': ariaLabel,
     children,
-}: ButtonProps) => {
+    ...nativeProps
+}, ref) {
     const variant = link ? 'link' : text ? 'text' : outlined ? 'outlined' : 'filled';
     const iconOnly = Boolean(icon) && label === undefined && !children;
     const rootClassName = ['cratis-button', pt?.root?.className, className]
@@ -104,6 +107,8 @@ export const Button = ({
     const button = (
         <button
             {...pt?.root}
+            {...nativeProps}
+            ref={ref}
             type={type}
             title={title}
             autoFocus={autoFocus}
@@ -167,4 +172,4 @@ export const Button = ({
     ) : (
         button
     );
-};
+});

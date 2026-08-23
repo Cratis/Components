@@ -3,6 +3,10 @@
 
 import { useState, type HTMLAttributes, type InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface ChipsParts {
     root?: HTMLAttributes<HTMLDivElement>;
@@ -11,7 +15,9 @@ interface ChipsParts {
     input?: InputHTMLAttributes<HTMLInputElement>;
 }
 
-interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
+interface ChipsFieldComponentProps
+    extends WrappedFieldProps<string[]>,
+        FieldAccessibilityProps {
     placeholder?: string;
     max?: number;
     separator?: string;
@@ -26,6 +32,11 @@ interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
 
 const ChipsControl = (props: ChipsFieldComponentProps) => {
     const [draft, setDraft] = useState('');
+    const accessibility = useFieldAccessibility(props, {
+        id: props.pt?.input?.id,
+        ariaLabel: props.pt?.input?.['aria-label'],
+        ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+    });
 
     const commit = () => {
         const candidates = (props.separator ? draft.split(props.separator) : [draft])
@@ -98,6 +109,9 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
             ))}
             <input
                 {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
                 onKeyDown={(event) => {
@@ -113,6 +127,7 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                     .join(' ')}
                 data-cratis-part='input'
             />
+            {accessibility.hiddenError}
         </div>
     );
 };

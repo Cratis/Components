@@ -3,6 +3,10 @@
 
 import type { HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface SliderParts {
     root?: HTMLAttributes<HTMLDivElement>;
@@ -10,7 +14,9 @@ interface SliderParts {
     value?: HTMLAttributes<HTMLSpanElement>;
 }
 
-interface SliderFieldComponentProps extends WrappedFieldProps<number> {
+interface SliderFieldComponentProps
+    extends WrappedFieldProps<number>,
+        FieldAccessibilityProps {
     min?: number;
     max?: number;
     step?: number;
@@ -22,7 +28,13 @@ interface SliderFieldComponentProps extends WrappedFieldProps<number> {
 
 /** A range slider bound to a number property on an Arc command. */
 export const SliderField = asCommandFormField<SliderFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
         <div
             {...props.pt?.root}
             className={[
@@ -38,6 +50,9 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
         >
             <input
                 {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
                 type='range'
                 value={props.value}
                 onChange={props.onChange}
@@ -59,8 +74,10 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
             >
                 {props.value}
             </span>
+            {accessibility.hiddenError}
         </div>
-    ),
+        );
+    },
     {
         defaultValue: 0,
         extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>

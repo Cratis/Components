@@ -58,7 +58,7 @@ Command field part keys:
 | Calendar               | `DatePickerInputPassThrough` keys             |
 | Dropdown / MultiSelect | `DropdownParts` keys                          |
 
-Named behavior props override conflicting part attributes. Part classes and styles merge with component structure.
+Named behavior props override conflicting part attributes. Part classes and styles merge with component structure. `DropdownParts.input` and `select` are narrow Components 3 migration aliases for class, style, id, and ARIA values; attach event handlers and other ordinary attributes to the current `trigger`, `filter`, `multiple`, `listbox`, or `option` part instead.
 
 ## DOM part values
 

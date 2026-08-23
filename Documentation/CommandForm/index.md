@@ -47,11 +47,22 @@ import {
 } from '@cratis/components/CommandForm';
 
 <CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
-    <InputTextField<MyCommand> value={(c) => c.title} />
-    <NumberField<MyCommand> value={(c) => c.quantity} />
+    <InputTextField<MyCommand> value={(c) => c.title} title='Title' />
+    <NumberField<MyCommand> value={(c) => c.quantity} title='Quantity' />
     <CheckboxField<MyCommand> value={(c) => c.active} label='Active' />
 </CommandDialog>;
 ```
+
+## Accessible names and validation errors
+
+Every Components field associates its primary native control or semantic group with Arc's `title` and validation messages:
+
+- `title` becomes the default accessible name while Arc continues rendering the visible field title.
+- Validation messages are referenced through `aria-describedby` and remain visible through Arc's normal error presentation.
+- `id`, `aria-label`, and `aria-describedby` can override or extend the generated values on every field.
+- Component-specific `pt` attributes remain fallback values; named accessibility props take precedence.
+
+Checkboxes and switches prefer their inline `label`; radio options use their option labels while the `RadioGroupField` / `RatingField` group uses `title`.
 
 ## Populating Initial Values from a Query
 

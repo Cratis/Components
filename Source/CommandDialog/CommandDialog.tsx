@@ -26,7 +26,7 @@ import { isCommandFormField, markAsCommandFormColumn } from '../CommandForm/comm
  */
 export interface CommandDialogProps<TCommand extends object, TResponse = object>
     extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
-        Omit<DialogProps, 'children'> {
+        Omit<DialogProps, 'children' | 'isBusy'> {
     /**
      * A transformer invoked with the current command values immediately before
      * the command executes on confirm. It **must return** the values to run with
@@ -72,6 +72,8 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onSuccess,
     onValidationFailure,
     onFailed,
+    onException,
+    onUnauthorized,
     onBeforeExecute,
     className,
     pt,
@@ -100,6 +102,8 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
+    onException?: CommandFormProps<TCommand, TResponse>['onException'];
+    onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     className?: DialogProps['className'];
     pt?: DialogProps['pt'];
@@ -126,10 +130,16 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
         }
 
         if (!result.isSuccess) {
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(
+                    result.exceptionMessages,
+                    result.exceptionStackTrace,
+                );
+            }
+            if (!result.isAuthorized) await onUnauthorized?.();
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
-            } else {
-                await onFailed?.(result);
             }
             setCommandResult(result);
             return false;
@@ -376,6 +386,8 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
+                onException={props.onException}
+                onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
                 className={className}
                 pt={pt}

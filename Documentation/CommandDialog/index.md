@@ -116,7 +116,7 @@ function MyComponent() {
 - `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the underlying dialog
 
 > [!NOTE]
-> `CommandDialog` inherits `Dialog`'s prop type, so `dismissable`, `closeAriaLabel` and `isBusy` type-check here — but they are not plumbed through. `isBusy` is owned by the dialog (it is raised while the command executes), and `dismissable` / `closeAriaLabel` currently fall back to `Dialog`'s own defaults. Use [`Dialog`](../Dialogs/dialog.md) directly when you need to control them.
+> `dismissable` and `closeAriaLabel` are forwarded to the underlying `Dialog`. `isBusy` is managed internally while the command executes, so consumers should not set it directly.
 
 ## Callback Behavior
 

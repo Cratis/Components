@@ -3,6 +3,10 @@
 
 import { useId, type HTMLAttributes, type InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface RadioGroupParts {
     root?: HTMLAttributes<HTMLDivElement>;
@@ -12,7 +16,9 @@ interface RadioGroupParts {
     indicator?: HTMLAttributes<HTMLSpanElement>;
 }
 
-interface RadioGroupFieldComponentProps extends WrappedFieldProps<string | number> {
+interface RadioGroupFieldComponentProps
+    extends WrappedFieldProps<string | number>,
+        FieldAccessibilityProps {
     options: Array<Record<string, unknown>>;
     optionLabel: string;
     optionValue: string;
@@ -30,11 +36,20 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
     (props) => {
         const generatedName = useId();
         const name = props.name ?? generatedName;
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.root?.id,
+            ariaLabel: props.pt?.root?.['aria-label'],
+            ariaDescribedBy: props.pt?.root?.['aria-describedby'],
+        });
 
         return (
             <div
                 {...props.pt?.root}
+                id={accessibility.controlId}
                 role='radiogroup'
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
+                aria-invalid={props.invalid || undefined}
                 className={[
                     'cratis-radio-group',
                     `cratis-radio-group--${props.layout ?? 'vertical'}`,
@@ -101,6 +116,7 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                         </label>
                     );
                 })}
+                {accessibility.hiddenError}
             </div>
         );
     },

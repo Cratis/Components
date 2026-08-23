@@ -3,12 +3,18 @@
 
 import type { InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface InputTextParts {
     root?: InputHTMLAttributes<HTMLInputElement>;
 }
 
-interface InputTextComponentProps extends WrappedFieldProps<string> {
+interface InputTextComponentProps
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     type?:
         | 'text'
         | 'email'
@@ -29,9 +35,19 @@ interface InputTextComponentProps extends WrappedFieldProps<string> {
 
 /** A single-line text field bound to a string property on an Arc command. */
 export const InputTextField = asCommandFormField<InputTextComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.root?.id,
+            ariaLabel: props.pt?.root?.['aria-label'],
+            ariaDescribedBy: props.pt?.root?.['aria-describedby'],
+        });
+        return (
+            <>
         <input
             {...props.pt?.root}
+            id={accessibility.controlId}
+            aria-label={accessibility.ariaLabel}
+            aria-describedby={accessibility.ariaDescribedBy}
             type={props.type ?? 'text'}
             value={props.value}
             onChange={props.onChange}
@@ -49,7 +65,10 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
                 .filter(Boolean)
                 .join(' ')}
         />
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: '',
         extractValue: (event: React.ChangeEvent<HTMLInputElement>) => event.target.value,

@@ -8,6 +8,10 @@ import {
     type InputHTMLAttributes,
 } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface PasswordParts {
     root?: HTMLAttributes<HTMLDivElement>;
@@ -15,7 +19,9 @@ interface PasswordParts {
     toggle?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
-interface PasswordFieldComponentProps extends WrappedFieldProps<string> {
+interface PasswordFieldComponentProps
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     placeholder?: string;
     className?: string;
     pt?: PasswordParts;
@@ -27,6 +33,11 @@ interface PasswordFieldComponentProps extends WrappedFieldProps<string> {
 
 const PasswordControl = (props: PasswordFieldComponentProps) => {
     const [visible, setVisible] = useState(false);
+    const accessibility = useFieldAccessibility(props, {
+        id: props.pt?.input?.id,
+        ariaLabel: props.pt?.input?.['aria-label'],
+        ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+    });
     return (
         <div
             {...props.pt?.root}
@@ -43,6 +54,9 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
         >
             <input
                 {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
                 type={visible ? 'text' : 'password'}
                 value={props.value}
                 onChange={props.onChange}
@@ -70,6 +84,7 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
             >
                 <span aria-hidden='true'>{visible ? '◉' : '○'}</span>
             </button>
+            {accessibility.hiddenError}
         </div>
     );
 };

@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ReactNode } from 'react';
+import { cloneElement, type DOMAttributes, type ReactElement } from 'react';
+import { Pressable } from 'react-aria-components/Pressable';
 import { Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components/Tooltip';
 
 /** Position of the tooltip relative to its trigger element. */
@@ -11,14 +12,14 @@ export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left';
 export interface TooltipProps {
     /** Text displayed inside the tooltip. Empty content disables the tooltip. */
     content?: string;
-    /** Where the tooltip appears relative to the trigger. */
+    /** Where the tooltip appears relative to its trigger. */
     position?: TooltipPosition;
     /** When true, suppresses the tooltip. */
     disabled?: boolean;
-    /** Extra class name for the trigger wrapper. */
+    /** Extra class name applied to the actual trigger element. */
     className?: string;
-    /** Element that triggers the tooltip. */
-    children: ReactNode;
+    /** One focusable element that triggers the tooltip. */
+    children: ReactElement<{ className?: string }>;
 }
 
 /** An accessible hover and keyboard-focus tooltip with stable Cratis parts. */
@@ -29,18 +30,20 @@ export const Tooltip = ({
     className,
     children,
 }: TooltipProps) => {
-    if (!content || disabled) return <>{children}</>;
+    if (!content || disabled) return children;
+
+    const trigger = cloneElement(children, {
+        className: ['cratis-tooltip-trigger', children.props.className, className]
+            .filter(Boolean)
+            .join(' '),
+        'data-cratis-part': 'trigger',
+    } as { className: string });
 
     return (
         <TooltipTrigger delay={350} closeDelay={100}>
-            <span
-                className={['cratis-tooltip-trigger', className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='trigger'
-            >
-                {children}
-            </span>
+            <Pressable>
+                {trigger as unknown as ReactElement<DOMAttributes<HTMLElement>, string>}
+            </Pressable>
             <AriaTooltip
                 placement={position}
                 offset={8}

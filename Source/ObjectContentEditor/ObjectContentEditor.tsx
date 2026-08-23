@@ -61,8 +61,9 @@ export interface ObjectContentEditorProps {
  * edit mode it switches to the appropriate input type for each property
  * (`InputText`, `InputNumber`, `Checkbox`, `Calendar`, `InputTextarea`).
  *
- * The component composes Cratis-owned controls internally; for fine-grained
- * pass-through styling use a global `pt` preset on `CratisComponentsProvider`.
+ * The component composes Cratis-owned controls internally. Restyle it through
+ * semantic tokens, its root `className`, and documented descendant
+ * `data-cratis-part` values rather than a provider-level renderer preset.
  *
  * @param props - {@link ObjectContentEditorProps}.
  */
@@ -585,10 +586,17 @@ export const ObjectContentEditor = ({
                                                     content={description}
                                                     position='right'
                                                 >
-                                                    <faIcons.FaCircleInfo
-                                                        className='property-info-icon'
-                                                        style={infoIconStyle}
-                                                    />
+                                                    <span
+                                                        tabIndex={0}
+                                                        role='img'
+                                                        aria-label='Property description'
+                                                    >
+                                                        <faIcons.FaCircleInfo
+                                                            aria-hidden='true'
+                                                            className='property-info-icon'
+                                                            style={infoIconStyle}
+                                                        />
+                                                    </span>
                                                 </Tooltip>
                                             )}
                                         </span>

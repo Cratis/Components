@@ -241,7 +241,7 @@ export interface DataPageProps<
     /**
      * Component to render when the selection changes
      */
-    detailsComponent?: React.FC<IDetailsComponentProps<any>>;
+    detailsComponent?: React.FC<IDetailsComponentProps<TDataType>>;
 
     /**
      * The type of query to use
@@ -266,12 +266,12 @@ export interface DataPageProps<
     /**
      * The current selection.
      */
-    selection?: any | undefined | null;
+    selection?: TDataType | undefined | null;
 
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionChangeEvent<any>): void;
+    onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
 
     /**
      * Fields to use for global filtering
@@ -444,13 +444,15 @@ const DataPage = <
 >(
     props: DataPageProps<TQuery, TDataType, TArguments>,
 ) => {
-    const [selectedItem, setSelectedItem] = React.useState(undefined);
+    const [internalSelection, setInternalSelection] = React.useState<
+        TDataType | null | undefined
+    >(props.selection);
+    const selectedItem =
+        props.selection !== undefined ? props.selection : internalSelection;
 
-    const selectionChanged = (e: DataTableSelectionChangeEvent<any>) => {
-        setSelectedItem(e.value);
-        if (props.onSelectionChange) {
-            props.onSelectionChange(e);
-        }
+    const selectionChanged = (event: DataTableSelectionChangeEvent<TDataType>) => {
+        if (props.selection === undefined) setInternalSelection(event.value);
+        props.onSelectionChange?.(event);
     };
 
     const context = { ...props, selectedItem, onSelectionChanged: selectionChanged };
@@ -480,6 +482,7 @@ const DataPage = <
     );
 };
 
+DataPage.MenuItem = MenuItem;
 DataPage.MenuItems = MenuItems;
 DataPage.Columns = Columns;
 

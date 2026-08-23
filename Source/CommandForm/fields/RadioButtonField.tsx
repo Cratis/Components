@@ -3,6 +3,10 @@
 
 import type { HTMLAttributes, InputHTMLAttributes } from 'react';
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 interface RadioParts {
     root?: HTMLAttributes<HTMLLabelElement>;
@@ -11,7 +15,9 @@ interface RadioParts {
     indicator?: HTMLAttributes<HTMLSpanElement>;
 }
 
-interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | number> {
+interface RadioButtonFieldComponentProps
+    extends WrappedFieldProps<string | number>,
+        FieldAccessibilityProps {
     label?: string;
     buttonValue: string | number;
     /** Native group name shared by every option bound to the same property. */
@@ -24,7 +30,14 @@ interface RadioButtonFieldComponentProps extends WrappedFieldProps<string | numb
 
 /** A single radio option bound to a string or number property on an Arc command. */
 export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProps>(
-    (props) => (
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'] ?? props.label,
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
         <label
             {...props.pt?.root}
             className={['cratis-choice-field', props.pt?.root?.className, props.className]
@@ -36,6 +49,9 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
         >
             <input
                 {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
                 type='radio'
                 name={props.name}
                 checked={props.value === props.buttonValue}
@@ -68,6 +84,9 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                 <span className='cratis-choice-field__label'>{props.label}</span>
             )}
         </label>
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     { defaultValue: '', extractValue: (value: unknown) => value as string | number },
 );
