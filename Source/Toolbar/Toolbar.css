@@ -378,4 +378,8 @@
         transition: none !important;
         animation: none !important;
     }
+
+    .toolbar-fanout-panel--visible {
+        clip-path: none !important;
+    }
 }

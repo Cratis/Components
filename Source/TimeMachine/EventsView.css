@@ -210,3 +210,12 @@
     direction: ltr;
     text-align: right;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .events-view-container,
+    .events-view-container * {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+    }
+}

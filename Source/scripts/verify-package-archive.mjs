@@ -52,6 +52,8 @@ for (const expected of [
     'John Walley',
     'Gobalsky Labs Ltd.',
     'Microsoft Corporation',
+    'Tailwind CSS generated theme and utility output',
+    'Tailwind Labs, Inc.',
     'Patrick Hand font',
 ]) {
     if (!notices.includes(expected)) {

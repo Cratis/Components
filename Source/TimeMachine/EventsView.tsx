@@ -6,7 +6,8 @@ import type { Event } from './types';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { Properties } from './Properties';
 
-interface EventsViewParts {
+/** Stable part attributes for {@link EventsView}. */
+export interface EventsViewParts {
     timeline?: HTMLAttributes<HTMLDivElement>;
     event?: HTMLAttributes<HTMLElement>;
     separator?: HTMLAttributes<HTMLDivElement>;
@@ -15,7 +16,8 @@ interface EventsViewParts {
     content?: HTMLAttributes<HTMLDivElement>;
 }
 
-interface EventsViewProps {
+/** Props for the standalone, localized event timeline. */
+export interface EventsViewProps {
     events: Event[];
     className?: string;
     pt?: EventsViewParts;
@@ -58,12 +60,17 @@ export const EventsView = ({
         return () => container.removeEventListener('scroll', updateScrollState);
     }, [events.length]);
 
+    const scrollBehavior = (): ScrollBehavior =>
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
     const scrollToTop = () =>
-        containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        containerRef.current?.scrollTo({ top: 0, behavior: scrollBehavior() });
     const scrollToBottom = () => {
         const container = containerRef.current;
         if (container)
-            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: scrollBehavior(),
+            });
     };
 
     return (
