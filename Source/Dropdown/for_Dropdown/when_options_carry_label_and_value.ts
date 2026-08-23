@@ -9,10 +9,9 @@ import { Dropdown } from '../Dropdown';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 
 /**
- * PrimeReact 10's `Dropdown` displayed `option.label` and compared `option.value` when no
- * `optionLabel` / `optionValue` was given, so `[{ label, value }]` with a scalar `value` was
- * the everyday shape. v11's `Select` matches the option object itself against the value, which
- * shows the raw scalar in the trigger. The wrapper keeps the v10 convention.
+ * The Cratis convention displays `option.label` and compares `option.value` when no
+ * explicit field names are supplied, preserving the everyday `{ label, value }` shape
+ * independently of the internal select implementation.
  */
 describe('when options carry label and value', () => {
     let root: Root;
@@ -20,7 +19,9 @@ describe('when options carry label and value', () => {
     let triggerText: string;
 
     beforeEach(async () => {
+        // SAFETY: React's test-environment flag and ResizeObserver polyfill are test-only globals absent from jsdom typings.
         (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        // SAFETY: The overlay implementation only needs the observer methods supplied by this jsdom polyfill.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
             observe() { } unobserve() { } disconnect() { }
         };
@@ -38,7 +39,7 @@ describe('when options carry label and value', () => {
             }));
         });
 
-        triggerText = container.querySelector('[data-scope="select"][data-part="value"]')?.textContent ?? '';
+        triggerText = container.querySelector('[data-cratis-part="value"]')?.textContent ?? '';
     });
 
     afterEach(async () => {
