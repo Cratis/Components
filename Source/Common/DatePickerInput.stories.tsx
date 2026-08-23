@@ -52,7 +52,7 @@ export const StateMatrix: Story = {
 };
 
 export const OpenCalendar: Story = {
-    render: () => <ControlledPicker />,
+    render: () => <ControlledPicker initialValue={new Date(2024, 5, 15)} />,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByRole('button', { name: 'Open calendar' }));

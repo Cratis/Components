@@ -37,6 +37,14 @@
 .cratis-dropdown__filter {
     padding: 0.625rem 4rem 0.625rem 0.75rem;
 }
+.cratis-dropdown:not([data-disabled='true'])
+    :is(.cratis-dropdown__trigger, .cratis-dropdown__filter):hover {
+    border-color: var(--cratis-primary-300);
+    background: var(--cratis-surface-hover);
+}
+.cratis-dropdown__trigger[data-pressed] {
+    background: var(--cratis-highlight-bg);
+}
 .cratis-dropdown__multiple {
     padding: 0.4rem;
 }

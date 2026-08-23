@@ -61,8 +61,8 @@
 }
 .cratis-command-stepper__step[data-active='true'] .cratis-command-stepper__number {
     border-color: var(--cratis-primary-color);
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
 }
 .cratis-command-stepper__step[data-visited='true']:not([data-invalid='true'])
     .cratis-command-stepper__number {

@@ -457,3 +457,11 @@
     right: 1.25rem;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.pv-filter-panel, .pv-filter-dropdown),
+  :where(.pv-filter-panel, .pv-filter-dropdown) * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

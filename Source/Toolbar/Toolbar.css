@@ -24,13 +24,13 @@
 }
 
 .toolbar-button--active {
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
 }
 
 .toolbar-button--active:hover {
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background-hover);
+    color: var(--cratis-action-text);
 }
 
 .toolbar-button--draggable {

@@ -16,6 +16,14 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const matrixRowStyle = {
+    display: 'grid',
+    width: '100%',
+    minWidth: 0,
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 6rem), 1fr))',
+    gap: '0.75rem',
+} as const;
+
 export const Label: Story = { args: { label: 'Save' } };
 export const LabelAndIcon: Story = {
     args: { label: 'Save', icon: <span aria-hidden='true'>◆</span> },
@@ -43,14 +51,8 @@ export const WithTooltip: Story = {
 
 export const VisualMatrix: Story = {
     render: () => (
-        <div style={{ display: 'grid', gap: '1rem' }}>
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(6rem, 1fr))',
-                    gap: '0.75rem',
-                }}
-            >
+        <div style={{ display: 'grid', width: '100%', minWidth: 0, gap: '1rem' }}>
+            <div style={matrixRowStyle}>
                 <Button label='Primary' />
                 <Button label='Secondary' severity='secondary' />
                 <Button label='Info' severity='info' />
@@ -60,26 +62,14 @@ export const VisualMatrix: Story = {
                 <Button label='Help' severity='help' />
                 <Button label='Contrast' severity='contrast' />
             </div>
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(6rem, 1fr))',
-                    gap: '0.75rem',
-                }}
-            >
+            <div style={matrixRowStyle}>
                 <Button label='Small' size='small' />
                 <Button label='Normal' />
                 <Button label='Large' size='large' />
                 <Button label='Disabled' disabled />
                 <Button label='Loading' loading />
             </div>
-            <div
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(6rem, 1fr))',
-                    gap: '0.75rem',
-                }}
-            >
+            <div style={matrixRowStyle}>
                 <Button label='Filled' />
                 <Button label='Outlined' outlined />
                 <Button label='Text' text />

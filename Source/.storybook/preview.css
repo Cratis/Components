@@ -25,9 +25,9 @@ body.storybook-product-theme {
     --cratis-primary-400: #38bdf8;
     --cratis-primary-500: #0ea5e9;
     --cratis-primary-600: #0284c7;
-    --cratis-action-background: #0284c7;
-    --cratis-action-background-hover: #0369a1;
-    --cratis-action-background-active: #075985;
+    --cratis-action-background: #0369a1;
+    --cratis-action-background-hover: #075985;
+    --cratis-action-background-active: #0c4a6e;
     --cratis-action-text: #ffffff;
     --cratis-highlight-bg: #1e40af;
     --cratis-highlight-text-color: #ffffff;
