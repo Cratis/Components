@@ -29,6 +29,20 @@
    reason as everything else in this file. */
 @import 'allotment/dist/style.css';
 
+@import './Canvas/Canvas.css';
+@import './Canvas/shapes/ChatBubble/Avatar/PersonAvatarCircle.css';
+@import './Canvas/shapes/ChatBubble/Chat.css';
+@import './Canvas/shapes/ChatBubble/ChatBubble.css';
+@import './Canvas/shapes/ChatBubble/ChatComposer.css';
+@import './Canvas/shapes/ChatBubble/ChatMessageBubble.css';
+@import './Canvas/shapes/ChatBubble/Emoji/EmojiPicker.css';
+@import './Canvas/shapes/ChatBubble/FailedReply.css';
+@import './Canvas/shapes/ChatBubble/Mentions/MentionSuggestions.css';
+@import './Canvas/shapes/ChatBubble/MessageReactions.css';
+@import './Canvas/shapes/ChatBubble/ReactionPicker.css';
+@import './Canvas/shapes/ChatBubble/TypingIndicator.css';
+@import './Canvas/shapes/Note/Note.css';
+@import './Canvas/shapes/Region/Region.css';
 @import './CommandDialog/CommandStepper.css';
 @import './Common/ActionMenubar.css';
 @import './Common/FormElement.css';

@@ -1,0 +1,68 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* ── Thinking bubbles (small dots at top-right of avatar) ────────────────── */
+
+@keyframes thinking-bubble-pop-in {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.3);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes thinking-bubble-pop-out {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+.thinking-bubbles {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+}
+
+.thinking-dot {
+    border-radius: 50%;
+    position: absolute;
+    transform: scale(0);
+    opacity: 0;
+}
+
+/* ── Enter animation ─────────────────────────────────────────────────────── */
+
+.thinking-bubbles--entering .thinking-dot--1 {
+    animation: thinking-bubble-pop-in 0.25s ease-out forwards;
+}
+
+.thinking-bubbles--entering .thinking-dot--2 {
+    animation: thinking-bubble-pop-in 0.25s ease-out 0.1s forwards;
+}
+
+/* ── Exit animation ──────────────────────────────────────────────────────── */
+
+.thinking-bubbles--exiting .thinking-dot--2 {
+    transform: scale(1);
+    opacity: 1;
+    animation: thinking-bubble-pop-out 0.2s ease-in forwards;
+}
+
+.thinking-bubbles--exiting .thinking-dot--1 {
+    transform: scale(1);
+    opacity: 1;
+    animation: thinking-bubble-pop-out 0.2s ease-in 0.06s forwards;
+}

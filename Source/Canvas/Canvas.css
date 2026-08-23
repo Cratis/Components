@@ -1,0 +1,96 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* ── Canvas surface ──────────────────────────────────────────────────────── */
+
+/* The canvas owns every touch on it: without this the browser claims one- and two-finger gestures
+   for its own page scroll and pinch-zoom, so on a tablet the board could neither be panned nor
+   zoomed. Inner scroll containers (the fixed editor overlays) still scroll — the browser stops
+   combining touch-action at the element that actually scrolls. */
+.canvas-surface {
+    touch-action: none;
+    /* Individual items opt out of this where they need to (an editable textarea sets
+       user-select: text explicitly), but the canvas as a whole must never let a drag start a native
+       text/element selection instead of a move or resize — a freshly created item can be dragged
+       before its own CSS has had a chance to matter to a gesture that started a pixel outside its
+       still-settling bounds, and the resulting native selection is what StudioIssues#227 reports. */
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ── Canvas control bar ──────────────────────────────────────────────────── */
+.canvas-controls-glass {
+    position: relative;
+    display: inline-flex;
+}
+
+/* Fallback for large boards where the LiquidGlass capture is too expensive: a frosted pill using the
+   GPU-composited backdrop-filter instead of an html2canvas re-rasterization every frame. */
+.canvas-controls-glass--plain {
+    background: color-mix(in srgb, var(--surface-card) 78%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--surface-border);
+    border-radius: 999px;
+}
+
+/* The glass surface behind supplies the chrome - the bar itself stays clear. */
+.canvas-controls-bar {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: 1px solid transparent;
+}
+
+.canvas-controls-separator {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    background: var(--surface-border);
+    border-radius: 1px;
+    margin-inline: 2px;
+    flex-shrink: 0;
+}
+
+/* ── Canvas control icon button ──────────────────────────────────────────── */
+.canvas-controls-icon-btn {
+    color: var(--text-color-secondary);
+    background: transparent;
+    border: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.canvas-controls-icon-btn:hover {
+    background: var(--surface-100);
+    color: var(--text-color);
+}
+
+.canvas-controls-icon-btn--active {
+    background: var(--surface-100);
+    color: var(--text-color);
+}
+
+/* ── Canvas control zoom percentage button ───────────────────────────────── */
+.canvas-controls-zoom-btn {
+    color: var(--text-color-secondary);
+    background: transparent;
+    border: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.canvas-controls-zoom-btn:hover {
+    background: var(--surface-100);
+    color: var(--text-color);
+}
+
+/* ── Canvas minimap ──────────────────────────────────────────────────────── */
+.canvas-minimap {
+    background: var(--surface-50);
+    border: 1px solid var(--surface-border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.canvas-minimap-viewport {
+    border: 2px solid var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+}

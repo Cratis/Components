@@ -1,0 +1,83 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* The compose row lives inside the chat panel, which is a dark surface of its own — these colors
+   match that panel deliberately rather than following the light/dark theme tokens. */
+.chat-composer {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 8px 10px 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.chat-composer__input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+    padding: 6px 8px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.4;
+    transition: border-color 0.12s;
+}
+
+.chat-composer__input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.chat-composer__input:focus {
+    border-color: rgba(99, 102, 241, 0.6);
+}
+
+.chat-composer__emoji-toggle {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s;
+}
+
+.chat-composer__emoji-toggle:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.chat-composer__send {
+    background: #6366f1;
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    flex-shrink: 0;
+    transition: background 0.12s, opacity 0.12s;
+}
+
+.chat-composer__send:hover:not(:disabled) {
+    background: #4f46e5;
+}
+
+.chat-composer__send:disabled {
+    opacity: 0.35;
+    cursor: default;
+}

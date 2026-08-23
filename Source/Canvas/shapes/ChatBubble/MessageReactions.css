@@ -1,0 +1,81 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Sits inside a chat bubble's dark panel — colors match that panel deliberately, the same convention
+   ReactionPicker.css and MentionSuggestions.css follow. */
+.message-reactions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.message-reactions__badge-wrapper {
+    position: relative;
+}
+
+.message-reactions__badge {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 6px 2px 4px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+}
+
+.message-reactions__badge:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* A stack of the same emoji from different people overlaps slightly rather than repeating flat. */
+.message-reactions__stack {
+    display: flex;
+}
+
+.message-reactions__glyph {
+    font-size: 12px;
+    line-height: 1;
+}
+
+.message-reactions__glyph + .message-reactions__glyph {
+    margin-left: -7px;
+}
+
+.message-reactions__count {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Positioned by AnchoredOverlay, which portals it to <body> — so this only describes the bubble
+   itself, never where it sits. */
+.message-reactions__tooltip {
+    min-width: 120px;
+    background: #262637;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.message-reactions__tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.message-reactions__tooltip-emoji {
+    font-size: 13px;
+    line-height: 1;
+}
+
+.message-reactions__tooltip-name {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+}

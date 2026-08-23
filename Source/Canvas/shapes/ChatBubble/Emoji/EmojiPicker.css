@@ -1,0 +1,86 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Sits over the dark chat panel, so its colors match that panel deliberately rather than the
+   light/dark theme tokens — the same convention ReactionPicker.css and MentionSuggestions.css follow. */
+.emoji-picker {
+    display: flex;
+    flex-direction: column;
+    width: 296px;
+    background: #262637;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+}
+
+.emoji-picker__grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    height: 232px;
+    overflow-y: auto;
+    padding: 8px;
+    overscroll-behavior: contain;
+}
+
+.emoji-picker__emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 0;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.emoji-picker__emoji:hover,
+.emoji-picker__emoji:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.emoji-picker__emoji--selected {
+    background: rgba(99, 102, 241, 0.35);
+}
+
+.emoji-picker__tabs {
+    display: flex;
+    gap: 2px;
+    padding: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.emoji-picker__tab {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    /* Muted until it is the section being shown, so the row reads as one control rather than nine
+       competing emojis. */
+    filter: grayscale(1);
+    opacity: 0.55;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.emoji-picker__tab:hover {
+    opacity: 0.85;
+}
+
+.emoji-picker__tab--current {
+    background: rgba(255, 255, 255, 0.12);
+    filter: none;
+    opacity: 1;
+}
