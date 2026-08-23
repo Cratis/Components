@@ -1,8 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
-import { Badge as PrimeBadge } from 'primereact/badge';
+import type { ReactNode } from 'react';
 
 /** Severity tone of a {@link Badge}. */
 export type BadgeSeverity = 'secondary' | 'info' | 'success' | 'warn' | 'danger' | 'contrast';
@@ -10,7 +9,7 @@ export type BadgeSeverity = 'secondary' | 'info' | 'success' | 'warn' | 'danger'
 /** Props for {@link Badge}. */
 export interface BadgeProps {
     /** The value shown inside the badge (e.g. a count). */
-    value?: React.ReactNode;
+    value?: ReactNode;
     /** Severity tone (drives the color). */
     severity?: BadgeSeverity;
     /** Badge size. */
@@ -20,15 +19,18 @@ export interface BadgeProps {
     /** Extra class name. */
     className?: string;
     /** Badge content (alternative to {@link value}). */
-    children?: React.ReactNode;
+    children?: ReactNode;
 }
 
-/**
- * A compact count/status badge built on PrimeReact 11's `Badge`. Use for
- * unread counts, notification indicators, and small numeric overlays.
- */
-export const Badge = ({ value, severity, size, shape, className, children }: BadgeProps) => (
-    <PrimeBadge severity={severity} size={size} shape={shape} className={className} data-severity={severity}>
+/** A compact count or status badge. */
+export const Badge = ({ value, severity = 'secondary', size = 'small', shape, className, children }: BadgeProps) => (
+    <span
+        className={['cratis-badge', className].filter(Boolean).join(' ')}
+        data-cratis-part='root'
+        data-severity={severity}
+        data-size={size}
+        data-shape={shape}
+    >
         {value ?? children}
-    </PrimeBadge>
+    </span>
 );

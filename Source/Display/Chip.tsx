@@ -1,15 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
-import { Chip as PrimeChip } from 'primereact/chip';
+import type { ReactNode } from 'react';
 
 /** Props for {@link Chip}. */
 export interface ChipProps {
     /** The chip label. */
     label?: string;
     /** An icon rendered before the label. */
-    icon?: React.ReactNode;
+    icon?: ReactNode;
     /** When true, shows a remove control. */
     removable?: boolean;
     /** Invoked when the remove control is activated. */
@@ -20,18 +19,21 @@ export interface ChipProps {
     className?: string;
 }
 
-/**
- * A labeled, optionally-removable chip built on PrimeReact 11's compositional
- * `Chip`. Use for filter pills, selected tokens, and tag-like affordances.
- */
+/** A labeled, optionally removable chip. */
 export const Chip = ({ label, icon, removable, onRemove, removeAriaLabel = 'Remove', className }: ChipProps) => (
-    <PrimeChip.Root className={className}>
-        {icon && <PrimeChip.Start>{icon}</PrimeChip.Start>}
-        <PrimeChip.Label>{label}</PrimeChip.Label>
+    <span className={['cratis-chip', className].filter(Boolean).join(' ')} data-cratis-part='root'>
+        {icon && <span className='cratis-chip__icon' data-cratis-part='icon'>{icon}</span>}
+        <span className='cratis-chip__label' data-cratis-part='label'>{label}</span>
         {removable && (
-            <PrimeChip.Remove onClick={onRemove} role="button" aria-label={removeAriaLabel}>
-                <i className="pi pi-times" />
-            </PrimeChip.Remove>
+            <button
+                type='button'
+                className='cratis-chip__remove'
+                data-cratis-part='remove'
+                onClick={onRemove}
+                aria-label={removeAriaLabel}
+            >
+                <span aria-hidden='true'>×</span>
+            </button>
         )}
-    </PrimeChip.Root>
+    </span>
 );

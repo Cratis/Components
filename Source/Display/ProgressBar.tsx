@@ -1,8 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ProgressBar as PrimeProgressBar } from 'primereact/progressbar';
-
 /** Props for {@link ProgressBar}. */
 export interface ProgressBarProps {
     /** Completion value, 0–100. Ignored in `indeterminate` mode. */
@@ -15,17 +13,32 @@ export interface ProgressBarProps {
     className?: string;
 }
 
-/**
- * A horizontal progress indicator built on PrimeReact 11's compositional
- * `ProgressBar`. Use `indeterminate` for unknown-duration work and
- * `determinate` with a `value` for measurable progress (e.g. an upload).
- */
-export const ProgressBar = ({ value, mode = 'determinate', showValue = true, className }: ProgressBarProps) => (
-    <PrimeProgressBar.Root value={value} mode={mode} className={className}>
-        <PrimeProgressBar.Indicator>
-            {showValue && mode === 'determinate' && (
-                <PrimeProgressBar.Label>{value ?? 0}%</PrimeProgressBar.Label>
-            )}
-        </PrimeProgressBar.Indicator>
-    </PrimeProgressBar.Root>
-);
+/** A horizontal determinate or indeterminate progress indicator. */
+export const ProgressBar = ({ value = 0, mode = 'determinate', showValue = true, className }: ProgressBarProps) => {
+    const boundedValue = Math.min(100, Math.max(0, value));
+    const ariaValue = mode === 'determinate' ? boundedValue : undefined;
+
+    return (
+        <div
+            className={['cratis-progress-bar', className].filter(Boolean).join(' ')}
+            data-cratis-part='root'
+            data-mode={mode}
+            role='progressbar'
+            aria-valuemin={mode === 'determinate' ? 0 : undefined}
+            aria-valuemax={mode === 'determinate' ? 100 : undefined}
+            aria-valuenow={ariaValue}
+        >
+            <span
+                className='cratis-progress-bar__indicator'
+                data-cratis-part='indicator'
+                style={mode === 'determinate' ? { width: `${boundedValue}%` } : undefined}
+            >
+                {showValue && mode === 'determinate' && (
+                    <span className='cratis-progress-bar__label' data-cratis-part='label'>
+                        {boundedValue}%
+                    </span>
+                )}
+            </span>
+        </div>
+    );
+};
