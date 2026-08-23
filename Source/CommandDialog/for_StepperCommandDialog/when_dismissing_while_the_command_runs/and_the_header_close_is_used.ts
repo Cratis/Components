@@ -29,11 +29,6 @@ const { execution } = vi.hoisted(() => {
 
 const { closeDialog } = vi.hoisted(() => ({ closeDialog: vi.fn() }));
 
-// The Cratis Dialog renders the header close control only while `dismissable` — the single switch
-// governing the header close, the backdrop and Escape in PrimeReact 11 — and routes it through the
-// same `onCancel` arm the footer uses. The mock renders that control on the same condition instead
-// of handing the prop back, so the spec presses the X the operator would press rather than reading
-// what the dialog asked for.
 vi.mock('../../../Dialogs/Dialog', () => ({
     Dialog: (props: {
         dismissable?: boolean;
@@ -48,10 +43,7 @@ vi.mock('../../../Dialogs/Dialog', () => ({
         props.children),
 }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children.
-;
 
-// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('../../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean; onClick?: () => void }) =>
         React.createElement('button', { disabled: props.disabled, onClick: props.onClick }, props.children),

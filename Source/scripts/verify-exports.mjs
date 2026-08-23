@@ -104,7 +104,17 @@ function loadInChildProcess(specifier, mode) {
     };
 }
 
-const pkg = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+const readPackageManifest = async () => {
+    try {
+        return JSON.parse(await readFile(packageJsonPath, 'utf8'));
+    } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        console.error(`Could not read ${packageJsonPath}: ${detail}`);
+        process.exit(1);
+    }
+};
+
+const pkg = await readPackageManifest();
 const exportsMap = pkg.exports ?? {};
 const subpaths = Object.keys(exportsMap);
 
@@ -119,6 +129,15 @@ if (!existsSync(esmRoot)) {
     console.error(`Built output not found at ${esmRoot}.`);
     console.error('Run the publish build first: `yarn workspace @cratis/components run prepare`.');
     process.exit(1);
+}
+
+const requiredPackageAssets = ['PatrickHand-OFL.txt'];
+for (const asset of requiredPackageAssets) {
+    const assetPath = path.join(esmRoot, asset);
+    if (!existsSync(assetPath)) {
+        console.error(`Required packaged asset is missing: ${assetPath}`);
+        process.exit(1);
+    }
 }
 
 const modes = [...(checkEsm ? ['import'] : []), ...(checkCjs ? ['require'] : [])];

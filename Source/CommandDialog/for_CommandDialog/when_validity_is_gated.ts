@@ -16,9 +16,7 @@ const { commandFormValidity, executeCommand, setCommandValues } = vi.hoisted(() 
     setCommandValues: vi.fn(),
 }));
 
-;
 
-;
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },
@@ -72,8 +70,6 @@ describe('when CommandDialog validity is gated', () => {
             }),
         );
 
-    // The PrimeReact 11 Button renders its content as children, so the Ok button's
-    // markup is `<button ...><i .../><span>Ok</span></button>` — find it by its label span.
     const getOkButton = (html: string) =>
         (html.match(/<button[\s\S]*?<\/button>/g) ?? []).find((button) =>
             button.includes('>Ok<'),

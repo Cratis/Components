@@ -54,15 +54,16 @@ export const aDataTableOverAGeneratedProxy = (onSelectionChange: (product: Produ
 /**
  * Renders an element into a real document and lets React settle.
  *
- * PrimeReact 11 components resolve their configuration from a `PrimeReactProvider` and
- * throw without one, so the element is mounted inside the Cratis provider that supplies
- * it. `ResizeObserver` is stubbed because PrimeReact observes its containers for size
- * changes and jsdom has no layout engine to report any.
+ * The element is mounted inside the Cratis provider so locale and component messages follow
+ * the same path as production. `ResizeObserver` is stubbed because jsdom has no layout engine
+ * to report container size changes.
  * @param element - The element to render.
  * @returns The mounted table, to be passed to {@link unmount}.
  */
 export const render = async (element: React.ReactElement): Promise<DataTableInTheDom> => {
+    // SAFETY: React reads this process-wide test flag from globalThis.
     (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: jsdom has no ResizeObserver, so this process-wide test shim supplies its contract.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
         observe() { }
         unobserve() { }
@@ -93,9 +94,7 @@ export const unmount = async (table: DataTableInTheDom) => {
 };
 
 /**
- * Whether the table rendered its paginator. PrimeReact 11 has no Paginator, so the
- * paging controls are the Cratis `TablePaginator` and carry its own class rather than
- * PrimeReact's `.p-paginator`.
+ * Whether the table rendered its Cratis-owned paginator.
  * @param table - The mounted table.
  * @returns True when a paginator is present.
  */

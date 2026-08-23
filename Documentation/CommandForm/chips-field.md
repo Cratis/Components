@@ -34,6 +34,11 @@ import { ChipsField } from '@cratis/components/CommandForm';
 ## Behavior
 
 - Default value is an empty array.
+- Enter commits the current draft; `addOnBlur` can also commit when focus leaves the field.
+- Candidates are trimmed and empty candidates are ignored.
+- With `allowDuplicate={false}`, duplicates are removed against both existing values and other candidates in the same draft **before** `max` is applied. An existing duplicate therefore cannot consume the final slot ahead of a later unique value.
+- With `allowDuplicate`, repeated values are preserved until `max` is reached.
+- Each remove action defaults to the item-specific accessible name `Remove <item>`; localize it with the callback form of `removeAriaLabel`.
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
 

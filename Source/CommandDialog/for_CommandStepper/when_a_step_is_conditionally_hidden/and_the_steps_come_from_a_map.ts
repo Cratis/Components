@@ -9,15 +9,8 @@ import { StepperPanel } from '../../StepperPanel';
 
 const { buttonClicks } = vi.hoisted(() => ({ buttonClicks: new Map<string, () => void>() }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, so every step
-// the wizard renders shows up as one `data-part="panel"` element, and the Number part
-// forwards the inline `style` carrying the per-step indicator color.
-;
 
 
-// PrimeReact 11's Button takes its label as children, not a `label` prop, so the label a
-// button is recorded under is the text its children carry (the icon contributes none).
-// Only an enabled button is clickable, so only an enabled button is recorded.
 vi.mock('../../../Common/Button', () => {
     const labelOf = (children: React.ReactNode): string => {
         let label = '';

@@ -5,11 +5,11 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { IconDisplay } from '../../Icon';
 
-describe('when IconDisplay is given a pi class missing its base class and rendered', () => {
+describe('when IconDisplay is given one provider-specific class and rendered', () => {
     let html: string;
 
     beforeEach(() => {
-        const element = React.createElement(IconDisplay, { icon: 'pi-home' });
+        const element = React.createElement(IconDisplay, { icon: 'product-home' });
         html = renderToStaticMarkup(element);
     });
 
@@ -17,7 +17,7 @@ describe('when IconDisplay is given a pi class missing its base class and render
         html.should.include('<i');
     });
 
-    it('should_apply_the_repaired_class_with_base_pi', () => {
-        html.should.include('pi pi-home');
+    it('should_not_infer_or_prepend_a_provider_base_class', () => {
+        html.should.include('class="product-home"');
     });
 });

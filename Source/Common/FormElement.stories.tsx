@@ -15,7 +15,7 @@ type Story = StoryObj<typeof FormElement>;
 
 export const Default: Story = {
     args: {
-        icon: <i className='pi pi-user' />,
+        icon: <span aria-hidden='true'>◆</span>,
     },
     render: (args) => (
         <div className='p-4'>
@@ -28,7 +28,7 @@ export const Default: Story = {
 
 export const WithEmailIcon: Story = {
     args: {
-        icon: <i className='pi pi-envelope' />,
+        icon: <span aria-hidden='true'>◆</span>,
     },
     render: (args) => (
         <div className='p-4'>
@@ -45,7 +45,7 @@ export const WithEmailIcon: Story = {
 
 export const WithSearchIcon: Story = {
     args: {
-        icon: <i className='pi pi-search' />,
+        icon: <span aria-hidden='true'>◆</span>,
     },
     render: (args) => (
         <div className='p-4'>

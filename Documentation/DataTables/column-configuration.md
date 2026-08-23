@@ -31,7 +31,7 @@ Set `selectionMode='single'` on a selection column and configure the table's `da
 
 ## Sorting
 
-Set `sortable`. Sorting applies to the currently loaded page. Query-backed complete-result sorting belongs on the server and should be expressed through the Arc paging/sorting contract.
+Set `sortable` for client-side sorting of the currently loaded page. These table components do not automatically forward sort state to Arc. For complete-result sorting, add explicit sort arguments to the generated query, apply them on the server before paging, and connect the product's sort controls to those arguments.
 
 ## Column filters
 

@@ -23,11 +23,11 @@ import { ToolbarSlotProvider, ToolbarSlot } from '@cratis/components/Toolbar';
 export const AppShell = () => (
     <ToolbarSlotProvider>
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
             <ToolbarLayout name='canvas-tools'>
                 {/* Fallback — shown when no slot content is registered */}
                 <ToolbarGroup>
-                    <ToolbarButton icon='pi pi-pencil' title='Draw (default)' />
+                    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw (default)' />
                 </ToolbarGroup>
             </ToolbarLayout>
         </Toolbar>
@@ -41,12 +41,12 @@ const CanvasFeature = () => {
     const content = useMemo(() => (
         <>
             <ToolbarGroup>
-                <ToolbarButton icon='pi pi-star' title='Favorite' />
-                <ToolbarButton icon='pi pi-heart' title='Like' />
+                <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Favorite' />
+                <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Like' />
             </ToolbarGroup>
             <ToolbarSeparator />
             <ToolbarGroup>
-                <ToolbarButton icon='pi pi-bolt' title='Quick action' />
+                <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Quick action' />
             </ToolbarGroup>
         </>
     ), []);
@@ -74,7 +74,7 @@ Multiple components can each register a `ToolbarSlot` with the same `slotName`. 
 // Feature A — appears first
 <ToolbarSlot slotName='shared-tools' order={10}>
     <ToolbarGroup>
-        <ToolbarButton icon='pi pi-star' title='Feature A' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Feature A' />
     </ToolbarGroup>
 </ToolbarSlot>
 
@@ -83,7 +83,7 @@ Multiple components can each register a `ToolbarSlot` with the same `slotName`. 
     <>
         <ToolbarSeparator />
         <ToolbarGroup>
-            <ToolbarButton icon='pi pi-cog' title='Feature B' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Feature B' />
         </ToolbarGroup>
     </>
 </ToolbarSlot>

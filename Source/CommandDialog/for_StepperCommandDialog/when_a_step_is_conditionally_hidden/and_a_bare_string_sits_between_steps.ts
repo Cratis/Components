@@ -12,12 +12,8 @@ vi.mock('../../../Dialogs/Dialog', () => ({
         React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, so the
-// steps the wizard actually renders show up as one `data-part="panel"` element each.
-;
 
 
-// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('../../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),

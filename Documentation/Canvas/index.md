@@ -120,7 +120,7 @@ The Canvas entry point also exports:
 - `AnchoredOverlay` and its side/alignment types for body-level overlays attached to a control.
 - `canvasGesture`, `canvasTransformActivity`, and `createSelfSuspendingFrameLoop` for advanced canvas integrations.
 
-These shapes are optional conveniences, not domain models. Applications own persistence, commands, read models, authorization, and collaboration policy through Arc/Chronicle. Pass typed data and callbacks into the shapes rather than coupling them to generated proxies.
+These shapes are optional conveniences, not domain models. Applications own persistence, authorization, and collaboration policy. Arc can own commands, queries, validation, authorization, and generated React bindings without Chronicle. Applications that choose Arc plus Chronicle additionally own event streams, projections, and read models. Pass typed data and callbacks into Canvas shapes rather than coupling them to generated proxies.
 
 ## Styling
 
@@ -130,4 +130,4 @@ Canvas structure uses the standard semantic token seam:
 - `--cratis-text-color`, `--cratis-text-color-secondary`
 - `--cratis-primary-color`, `--cratis-green-500`, `--cratis-red-500`
 
-Use `className` on Canvas roots and product CSS for shape-specific treatment. Components does not install PrimeIcons; library-owned actions use bundled React icon components.
+Use `className` on Canvas roots and product CSS for shape-specific treatment. Components does not install an icon font; library-owned actions use bundled React icon components.

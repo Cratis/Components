@@ -12,7 +12,6 @@ vi.mock('../../Dialogs/Dialog', () => ({
         React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-;
 
 vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>

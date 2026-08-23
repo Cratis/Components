@@ -164,7 +164,9 @@ export const WithForm: Story = {
                             placeholder='Enter name…'
                         />
                         {name.trim().length === 0 && (
-                            <small className='text-[var(--cratis-red-500)]'>Name is required</small>
+                            <small className='text-[var(--cratis-red-500)]'>
+                                Name is required
+                            </small>
                         )}
                     </div>
                 </Dialog>
@@ -252,14 +254,14 @@ export const CustomButtons: Story = {
                                     closeDialog(DialogResult.Ok, { action: 'draft' })
                                 }
                             >
-                                <i className='pi pi-save' /> Save Draft
+                                <span aria-hidden='true'>◆</span> Save Draft
                             </Button>
                             <Button
                                 onClick={() =>
                                     closeDialog(DialogResult.Ok, { action: 'publish' })
                                 }
                             >
-                                <i className='pi pi-send' /> Publish
+                                <span aria-hidden='true'>◆</span> Publish
                             </Button>
                         </>
                     }

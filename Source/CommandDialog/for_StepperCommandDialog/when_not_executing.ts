@@ -7,18 +7,12 @@ import { vi } from 'vitest';
 import { StepperCommandDialog } from '../StepperCommandDialog';
 import { StepperPanel } from '../StepperPanel';
 
-// StepperCommandDialog now composes the Cratis Dialog wrapper (not primereact/dialog
-// directly) — render its custom footer (`buttons`) and body.
+// Render the Cratis Dialog wrapper's custom footer and body.
 vi.mock('../../Dialogs/Dialog', () => ({
     Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
         React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-// PrimeReact 11's Stepper is a set of compositional parts — each just renders its
-// children so the footer/navigation behavior can be asserted.
-;
-
-// PrimeReact 11's Button renders its content as children (no label/loading props).
 vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),
@@ -56,7 +50,8 @@ describe('when StepperCommandDialog is in its initial state', () => {
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {
-                command: TestCommand as unknown as new () => object,
+                // SAFETY: The test command implements the runtime command constructor contract.
+        command: TestCommand as unknown as new () => object,
                 visible: true,
                 title: 'Test Stepper Dialog',
             },

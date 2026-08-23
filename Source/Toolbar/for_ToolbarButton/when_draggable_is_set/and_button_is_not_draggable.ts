@@ -15,7 +15,7 @@ describe('when ToolbarButton does not have draggable set and is rendered', () =>
 
     beforeEach(() => {
         const element = React.createElement(ToolbarButton, {
-            icon: 'pi pi-pencil',
+            icon: 'product-icons product-pencil',
             title: 'Draw',
         });
         html = renderToStaticMarkup(element);

@@ -57,6 +57,6 @@ The `--cratis-*` variables are the supported theming boundary. The optional base
 }
 ```
 
-The token layer retains fallbacks to the generic `--surface-*`, `--text-color`, and `--primary-color` names for a staged migration from Components 3. New product code should define `--cratis-*` directly.
+The token layer has renderer-independent baseline values and does not read legacy `--surface-*`, `--text-color`, `--primary-color`, or `--p-*` names. Import `@cratis/components/tokens` first, then assign product values to `--cratis-*` directly. This keeps product theming independent of any renderer token vocabulary.
 
 Use [Stable component parts](pass-through.md) when token changes are not enough for a product-specific component treatment.

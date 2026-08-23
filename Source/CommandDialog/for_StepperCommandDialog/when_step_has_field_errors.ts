@@ -15,11 +15,6 @@ vi.mock('../../Dialogs/Dialog', () => ({
         ),
 }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, and
-// the Number part forwards its inline `style` so specs can assert the per-step
-// red/green indicator the wrapper applies directly to each step's number.
-;
-
 vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),

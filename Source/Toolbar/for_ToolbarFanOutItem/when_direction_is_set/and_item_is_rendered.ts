@@ -16,7 +16,7 @@ describe('when ToolbarFanOutItem direction is set and item is rendered', () => {
             React.createElement(
                 ToolbarFanOutItem,
                 {
-                    icon: 'pi pi-th-large',
+                    icon: 'product-icons product-th-large',
                     tooltip: 'Shapes',
                     fanOutDirection,
                 },

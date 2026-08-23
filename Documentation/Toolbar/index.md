@@ -2,7 +2,7 @@
 
 The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, fan-out sub-panels, and drag & drop onto surfaces.
 
-Pass React icon nodes or product-owned SVGs for a dependency-free toolbar. Legacy icon-font class strings remain accepted, but Components does not install PrimeIcons or any other icon font; string examples require the consumer to install the matching stylesheet separately.
+Pass React icon nodes or product-owned SVGs for a dependency-free toolbar. Consumer-owned icon-font class strings remain accepted, but Components does not install an icon font or infer provider base classes; the product must load the matching stylesheet and pass the complete class string.
 
 ## Components
 

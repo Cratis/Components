@@ -189,4 +189,4 @@ The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeRea
 
 ## License
 
-Cratis Components is MIT licensed. Its default runtime dependencies use permissive open-source licenses, including Apache-2.0, MIT, and ISC. Components 4 does not require PrimeUI licensing.
+Cratis Components is MIT licensed. Its default runtime dependencies use permissive open-source licenses, including Apache-2.0, MIT, and ISC. The bundled Patrick Hand font used by Canvas notes is distributed under the SIL Open Font License 1.1; its `PatrickHand-OFL.txt` notice is included in the package. Components 4 does not require PrimeUI licensing.

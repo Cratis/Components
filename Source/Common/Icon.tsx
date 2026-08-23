@@ -4,16 +4,7 @@
 import { ReactNode } from 'react';
 import { normalizeIconClass } from './normalizeIconClass';
 
-// Module-scoped ambient so the dev-only warning below type-checks without pulling in Node
-// types (the library's tsconfig sets `types: []`). Bundlers replace `process.env.NODE_ENV`
-// with a literal; the `typeof` guard keeps it safe where `process` is genuinely absent.
-declare const process: { env: Record<string, string | undefined> };
-
-/**
- * Represents either a React icon node or a consumer-owned icon-font class string.
- * PrimeIcons strings remain compatible when the consumer installs that font separately;
- * Components does not install an icon font.
- */
+/** Represents either a React icon node or a consumer-owned icon-font class string. */
 export type Icon = string | ReactNode;
 
 /** Props for the {@link IconDisplay} component. */
@@ -28,20 +19,14 @@ export interface IconDisplayProps {
 /**
  * Renders an {@link Icon} value.
  *
- * - When `icon` is a non-empty string it is treated as a consumer-owned icon-font
- *   CSS class and rendered as `<i className={icon} />`. A lone PrimeIcons class missing its
- *   base `pi` class (`'pi-home'`) is repaired to `'pi pi-home'`, and a bare icon name
- *   (`'plus'`) that would silently render nothing logs a development warning.
+ * - When `icon` is a non-empty string it is treated as a complete consumer-owned
+ *   icon-font CSS class and rendered as `<i className={icon} />`.
  * - Otherwise the value is rendered as-is, allowing any React node (SVG, component, etc.)
  *   to be used as an icon.
  */
 export const IconDisplay = ({ icon, className }: IconDisplayProps) => {
     if (typeof icon === 'string') {
-        const { className: resolved, warning } = normalizeIconClass(icon);
-        const isDevelopment = typeof process === 'undefined' || process.env.NODE_ENV !== 'production';
-        if (warning && isDevelopment) {
-            console.warn(warning);
-        }
+        const { className: resolved } = normalizeIconClass(icon);
         if (resolved.length === 0) {
             return <></>;
         }

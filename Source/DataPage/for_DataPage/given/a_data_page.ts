@@ -72,7 +72,7 @@ const menuItems = () =>
         children: React.createElement(MenuItem, {
             key: 'add',
             label: 'Add',
-            icon: () => React.createElement('i', { className: 'pi pi-plus' }),
+            icon: () => React.createElement('span', { 'aria-hidden': true }, '◆'),
         }),
     });
 
@@ -85,21 +85,18 @@ export const aDataPage = (options: DataPageOptions = {}) => {
     const children = options.withMenuItems ? [menuItems(), columns()] : [columns()];
     const PersonDataPage = DataPage<PersonsQuery, Person, object>;
 
-    return React.createElement(
-        PersonDataPage,
-        {
-            title: 'Persons',
-            query: PersonsQuery,
-            emptyMessage: 'No persons found',
-            dataKey: 'id',
-            detailsComponent: options.withDetails ? PersonDetails : undefined,
-            defaultFilters: options.defaultFilters,
-            selection: options.selection,
-            onSelectionChange: options.onSelectionChange,
-            paginatorPt: options.paginatorPt,
-            children,
-        },
-    );
+    return React.createElement(PersonDataPage, {
+        title: 'Persons',
+        query: PersonsQuery,
+        emptyMessage: 'No persons found',
+        dataKey: 'id',
+        detailsComponent: options.withDetails ? PersonDetails : undefined,
+        defaultFilters: options.defaultFilters,
+        selection: options.selection,
+        onSelectionChange: options.onSelectionChange,
+        paginatorPt: options.paginatorPt,
+        children,
+    });
 };
 
 /**

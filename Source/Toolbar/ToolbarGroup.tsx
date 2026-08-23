@@ -143,7 +143,7 @@ export interface ToolbarGroupProps {
  * ```tsx
  * <Toolbar>
  *     <ToolbarGroup slotName="canvas-tools">
- *         <ToolbarButton icon="pi pi-pencil" title="Draw" />
+ *         <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Draw" />
  *     </ToolbarGroup>
  * </Toolbar>
  * ```

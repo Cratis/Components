@@ -356,19 +356,19 @@ export function PivotViewer<TItem extends object>({
     const cssVariables = useMemo(() => {
         const vars: Record<string, string> = {};
         if (!colors) return vars;
-        if (colors.primaryColor) vars['--primary-color'] = colors.primaryColor;
-        if (colors.primaryColorText) vars['--primary-color-text'] = colors.primaryColorText;
-        if (colors.primary500) vars['--primary-500'] = colors.primary500;
-        if (colors.surfaceGround) vars['--surface-ground'] = colors.surfaceGround;
-        if (colors.surfaceCard) vars['--surface-card'] = colors.surfaceCard;
-        if (colors.surfaceSection) vars['--surface-section'] = colors.surfaceSection;
-        if (colors.surfaceOverlay) vars['--surface-overlay'] = colors.surfaceOverlay;
-        if (colors.surfaceBorder) vars['--surface-border'] = colors.surfaceBorder;
-        if (colors.textColor) vars['--text-color'] = colors.textColor;
-        if (colors.textColorSecondary) vars['--text-color-secondary'] = colors.textColorSecondary;
-        if (colors.highlightBg) vars['--highlight-bg'] = colors.highlightBg;
-        if (colors.maskbg) vars['--maskbg'] = colors.maskbg;
-        if (colors.focusRing) vars['--focus-ring'] = colors.focusRing;
+        if (colors.primaryColor) vars['--cratis-primary-color'] = colors.primaryColor;
+        if (colors.primaryColorText) vars['--cratis-primary-color-text'] = colors.primaryColorText;
+        if (colors.primary500) vars['--cratis-primary-500'] = colors.primary500;
+        if (colors.surfaceGround) vars['--cratis-surface-ground'] = colors.surfaceGround;
+        if (colors.surfaceCard) vars['--cratis-surface-card'] = colors.surfaceCard;
+        if (colors.surfaceSection) vars['--cratis-surface-section'] = colors.surfaceSection;
+        if (colors.surfaceOverlay) vars['--cratis-surface-overlay'] = colors.surfaceOverlay;
+        if (colors.surfaceBorder) vars['--cratis-surface-border'] = colors.surfaceBorder;
+        if (colors.textColor) vars['--cratis-text-color'] = colors.textColor;
+        if (colors.textColorSecondary) vars['--cratis-text-color-secondary'] = colors.textColorSecondary;
+        if (colors.highlightBg) vars['--cratis-highlight-bg'] = colors.highlightBg;
+        if (colors.maskbg) vars['--cratis-maskbg'] = colors.maskbg;
+        if (colors.focusRing) vars['--cratis-focus-ring'] = colors.focusRing;
         return vars;
     }, [colors]);
 

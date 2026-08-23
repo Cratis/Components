@@ -154,18 +154,18 @@ export const Default: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Add Person'
-                        icon={() => <i className='pi pi-plus' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Add person clicked')}
                     />
                     <MenuItem
                         label='Edit Person'
-                        icon={() => <i className='pi pi-pencil' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Edit person clicked')}
                         disableOnUnselected
                     />
                     <MenuItem
                         label='Delete Person'
-                        icon={() => <i className='pi pi-trash' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Delete person clicked')}
                         disableOnUnselected
                     />
@@ -209,7 +209,7 @@ export const WithoutDetails: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Refresh'
-                        icon={() => <i className='pi pi-refresh' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Refresh clicked')}
                     />
                 </DataPage.MenuItems>
@@ -368,7 +368,7 @@ export const MultiplePages: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Add Person'
-                        icon={() => <i className='pi pi-plus' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Add person clicked')}
                     />
                 </DataPage.MenuItems>
@@ -496,7 +496,7 @@ export const MultiplePagesWithDetails: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Edit Person'
-                        icon={() => <i className='pi pi-pencil' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Edit person clicked')}
                         disableOnUnselected
                     />

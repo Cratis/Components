@@ -6,13 +6,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { CommandStepperContent } from '../CommandStepper';
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, so every step
-// the wizard renders shows up as one `data-part="panel"` element, and the Number part
-// forwards the inline `style` carrying the per-step indicator color.
-;
 
 
-// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),

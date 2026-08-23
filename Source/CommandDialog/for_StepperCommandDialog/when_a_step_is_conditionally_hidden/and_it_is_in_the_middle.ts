@@ -17,12 +17,6 @@ vi.mock('../../../Dialogs/Dialog', () => ({
         ),
 }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, and the
-// Number part forwards the inline `style` the wrapper computes for each step — which
-// is where the red / green indicator now lives (v10 read it off pt.stepperpanel.number).
-;
-
-// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('../../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),
@@ -61,8 +55,9 @@ const NameField = (props: { value?: (command: TestCommand) => unknown }) => {
 NameField.displayName = 'CommandFormField';
 
 const stepStateOf = (html: string, header: string) =>
-    (html.match(/<li[^>]*data-cratis-part="step"[^>]*>[\s\S]*?<\/li>/g) ?? [])
-        .find((step) => step.includes(`>${header}</span>`)) ?? '';
+    (html.match(/<li[^>]*data-cratis-part="step"[^>]*>[\s\S]*?<\/li>/g) ?? []).find(
+        (step) => step.includes(`>${header}</span>`),
+    ) ?? '';
 
 // Exactly how a conditional step is written in an application: `{condition && <StepperPanel/>}`.
 const showOptionalStep: boolean = false;

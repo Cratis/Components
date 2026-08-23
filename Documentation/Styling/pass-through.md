@@ -47,7 +47,7 @@ Command field part keys:
 
 | Field                  | Typed keys                                    |
 | ---------------------- | --------------------------------------------- |
-| InputText / TextArea   | `root`                                        |
+| InputText / TextArea   | `root` (the native control; see the DOM note below) |
 | Number                 | `root`, `input`                               |
 | Checkbox               | `root`, `input`, `box`, `indicator`           |
 | ToggleSwitch           | `root`, `input`, `control`, `handle`          |
@@ -60,6 +60,8 @@ Command field part keys:
 | Rating                 | `root`, `option`, `input`, `star`             |
 | Calendar               | `DatePickerInputPassThrough` keys             |
 | Dropdown / MultiSelect | `DropdownParts` keys                          |
+
+`InputTextParts.root` applies to the native element carrying `data-cratis-part='input'`; `TextAreaParts.root` applies to `data-cratis-part='textarea'`. The typed key is retained for source compatibility, but there is no extra field-root DOM wrapper.
 
 Named behavior props override conflicting part attributes. Part classes and styles merge with component structure. `DropdownParts.input` and `select` are narrow Components 3 migration aliases for class, style, id, and ARIA values; attach event handlers and other ordinary attributes to the current `trigger`, `filter`, `multiple`, `listbox`, or `option` part instead.
 

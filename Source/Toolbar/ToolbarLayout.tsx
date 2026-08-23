@@ -130,10 +130,10 @@ export interface ToolbarLayoutProps {
  * // Application shell — define the layout region with optional fallback content:
  * <ToolbarSlotProvider>
  *     <Toolbar>
- *         <ToolbarButton icon="pi pi-arrow-up-left" title="Select" />
+ *         <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Select" />
  *         <ToolbarLayout name="canvas-tools">
  *             <ToolbarGroup>
- *                 <ToolbarButton icon="pi pi-pencil" title="Draw (default)" />
+ *                 <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Draw (default)" />
  *             </ToolbarGroup>
  *         </ToolbarLayout>
  *     </Toolbar>
@@ -145,11 +145,11 @@ export interface ToolbarLayoutProps {
  * const CanvasFeature = () => (
  *     <ToolbarSlot slotName="canvas-tools">
  *         <ToolbarGroup>
- *             <ToolbarButton icon="pi pi-star" title="Feature tool" />
+ *             <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Feature tool" />
  *         </ToolbarGroup>
  *         <ToolbarSeparator />
  *         <ToolbarGroup>
- *             <ToolbarButton icon="pi pi-bolt" title="Quick action" />
+ *             <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Quick action" />
  *         </ToolbarGroup>
  *     </ToolbarSlot>
  * );

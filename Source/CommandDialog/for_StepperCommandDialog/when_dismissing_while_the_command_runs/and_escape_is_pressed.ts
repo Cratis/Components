@@ -29,10 +29,6 @@ const { execution } = vi.hoisted(() => {
 
 const { closeDialog } = vi.hoisted(() => ({ closeDialog: vi.fn() }));
 
-// The Cratis Dialog is what the wizard now dismisses through, and `dismissable` is the single
-// switch it exposes: in PrimeReact 11 it governs the header close, the backdrop and Escape alike,
-// and a dismissal arrives on the same `onCancel` arm the footer uses. The mock reproduces that
-// gate so Escape is exercised as a dismissal rather than read back as a prop value.
 vi.mock('../../../Dialogs/Dialog', () => ({
     Dialog: (props: {
         dismissable?: boolean;
@@ -62,10 +58,7 @@ vi.mock('../../../Dialogs/Dialog', () => ({
     },
 }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children.
-;
 
-// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('../../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean; onClick?: () => void }) =>
         React.createElement('button', { disabled: props.disabled, onClick: props.onClick }, props.children),
@@ -116,6 +109,7 @@ const onCancel = vi.fn(() => true);
 const aWizard = () => React.createElement(
     StepperCommandDialog<TestCommand>,
     {
+        // SAFETY: The test command implements the runtime command constructor contract.
         command: TestCommand as unknown as new () => object,
         visible: true,
         title: 'Test Dialog',
@@ -123,10 +117,8 @@ const aWizard = () => React.createElement(
     },
     React.createElement(StepperPanel, { header: 'Only Step' }, 'Only Step content'));
 
-// Escape is the dismissal with no control to disable - the dialog can only refuse it by telling
-// PrimeReact not to listen while the command runs. Pressing it in both states is what separates
-// "refused for now" from "never listened at all": the second press, after the command has returned,
-// has to be honored, or the silence during the run says nothing about the guard.
+// Escape has no visible control to disable. Pressing it in both states separates "refused while
+// busy" from "never listened at all": the second press, after the command returns, must be honored.
 describe('when escape is pressed on a wizard whose command has not returned', () => {
     let dialog: StepperDialogInTheDom;
     let cancelCallsWhileRunning: number;

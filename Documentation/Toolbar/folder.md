@@ -6,12 +6,12 @@ The grid automatically balances rows and columns based on item count, keeping th
 
 ```tsx
 <Toolbar>
-    <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-    <ToolbarFolder icon='pi pi-th-large' title='More tools'>
-        <ToolbarButton icon='pi pi-exclamation-circle' title='Info' />
-        <ToolbarButton icon='pi pi-eye' title='Preview' />
-        <ToolbarButton icon='pi pi-cog' title='Settings' />
-        <ToolbarButton icon='pi pi-external-link' title='Open' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
+    <ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='More tools'>
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Info' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Preview' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Settings' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Open' />
     </ToolbarFolder>
 </Toolbar>
 ```
@@ -19,7 +19,7 @@ The grid automatically balances rows and columns based on item count, keeping th
 By default the folder opens to the right. Use `folderDirection='left'` when the toolbar is positioned on the right side of the screen:
 
 ```tsx
-<ToolbarFolder icon='pi pi-th-large' title='More tools' folderDirection='left'>
+<ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='More tools' folderDirection='left'>
     ...
 </ToolbarFolder>
 ```
@@ -36,7 +36,7 @@ The folder automatically computes the number of columns based on the item count:
 Use `maxColumns` to customize the maximum column count:
 
 ```tsx
-<ToolbarFolder icon='pi pi-th-large' title='More tools' maxColumns={4}>
+<ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='More tools' maxColumns={4}>
     ...
 </ToolbarFolder>
 ```
@@ -49,8 +49,8 @@ Like `ToolbarButton`, the `icon` prop accepts a `string | ReactNode`. Pass any R
 import { FaFolder } from 'react-icons/fa6';
 
 <ToolbarFolder icon={<FaFolder />} title='More tools'>
-    <ToolbarButton icon='pi pi-cog' title='Settings' />
-    <ToolbarButton icon='pi pi-external-link' title='Open' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Settings' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Open' />
 </ToolbarFolder>
 ```
 
@@ -61,11 +61,11 @@ See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` compo
 Set `mode='list'` to change the folder's panel layout from a grid into a vertical list. In list mode, each button renders its icon and tooltip text side by side as a labeled row — no tooltip hover needed.
 
 ```tsx
-<ToolbarFolder icon='pi pi-list' title='Tools' mode='list'>
-    <ToolbarButton icon='pi pi-pencil' title='Draw freehand' />
-    <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-    <ToolbarButton icon='pi pi-circle' title='Ellipse' />
-    <ToolbarButton icon='pi pi-minus' title='Straight line' />
+<ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='Tools' mode='list'>
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw freehand' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Rectangle' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Ellipse' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Straight line' />
 </ToolbarFolder>
 ```
 

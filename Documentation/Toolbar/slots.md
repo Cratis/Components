@@ -13,13 +13,13 @@ export const MyCanvas = () => (
     <ToolbarSlotProvider>
         <Toolbar>
             <ToolbarGroup slotName='canvas-tools'>
-                <ToolbarButton icon='pi pi-pencil' title='Draw' />
+                <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw' />
             </ToolbarGroup>
         </Toolbar>
 
         {/* The feature injects its own button — no prop drilling */}
         <ToolbarSlot slotName='canvas-tools' order={10}>
-            <ToolbarButton icon='pi pi-star' title='Feature: Favorite' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Feature: Favorite' />
         </ToolbarSlot>
 
         <MyFeatureComponent />
@@ -45,7 +45,7 @@ Renders nothing in the DOM — its only purpose is to register its `children` in
 
 ```tsx
 <ToolbarSlot slotName='my-slot' order={5}>
-    <ToolbarButton icon='pi pi-cog' title='Settings' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Settings' />
 </ToolbarSlot>
 ```
 
@@ -69,12 +69,12 @@ Both `ToolbarGroup` and `ToolbarContext` can act as slot hosts via the `slotName
 <ToolbarSlotProvider>
     <Toolbar>
         <ToolbarGroup slotName='drawing'>
-            <ToolbarButton icon='pi pi-pencil' title='Draw' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw' />
         </ToolbarGroup>
     </Toolbar>
 
     <ToolbarSlot slotName='drawing' order={20}>
-        <ToolbarButton icon='pi pi-minus' title='Line' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Line' />
     </ToolbarSlot>
 </ToolbarSlotProvider>
 ```
@@ -88,13 +88,13 @@ Items injected into a `ToolbarContext` slot are only visible when that context i
     <Toolbar>
         <ToolbarSection activeContext={currentContext}>
             <ToolbarContext name='drawing' slotName='drawing-extras'>
-                <ToolbarButton icon='pi pi-pencil' title='Draw' />
+                <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw' />
             </ToolbarContext>
         </ToolbarSection>
     </Toolbar>
 
     <ToolbarSlot slotName='drawing-extras' order={5}>
-        <ToolbarButton icon='pi pi-star' title='Injected tool' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Injected tool' />
     </ToolbarSlot>
 </ToolbarSlotProvider>
 ```
@@ -111,17 +111,17 @@ Any number of independent components can register into the same slot. They are r
 
     {/* order 5 — appears first */}
     <ToolbarSlot slotName='shared' order={5}>
-        <ToolbarButton icon='pi pi-heart' title='Likes' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Likes' />
     </ToolbarSlot>
 
     {/* order 10 — appears second */}
     <ToolbarSlot slotName='shared' order={10}>
-        <ToolbarButton icon='pi pi-star' title='Favorites' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Favorites' />
     </ToolbarSlot>
 
     {/* order 20 — appears last */}
     <ToolbarSlot slotName='shared' order={20}>
-        <ToolbarButton icon='pi pi-bell' title='Notifications' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Notifications' />
     </ToolbarSlot>
 </ToolbarSlotProvider>
 ```

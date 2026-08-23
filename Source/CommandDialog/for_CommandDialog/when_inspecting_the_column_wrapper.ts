@@ -5,9 +5,7 @@ import React from 'react';
 import { vi } from 'vitest';
 import { CommandFormColumnDisplayName, isCommandFormColumn } from '../../CommandForm/commandFormMarkers';
 
-;
 
-;
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },

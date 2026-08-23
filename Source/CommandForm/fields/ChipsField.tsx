@@ -7,6 +7,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { appendChipCandidates } from './chipValues';
 
 /** Stable part attributes for {@link ChipsField}. */
 export interface ChipsParts {
@@ -21,8 +22,7 @@ export interface ChipsParts {
 }
 
 interface ChipsFieldComponentProps
-    extends WrappedFieldProps<string[]>,
-        FieldAccessibilityProps {
+    extends WrappedFieldProps<string[]>, FieldAccessibilityProps {
     placeholder?: string;
     max?: number;
     separator?: string;
@@ -49,17 +49,14 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
             .map((value) => value.trim())
             .filter(Boolean);
         if (candidates.length === 0) return;
-        const available =
-            props.max === undefined
-                ? candidates
-                : candidates.slice(0, Math.max(0, props.max - props.value.length));
-        const next = props.allowDuplicate
-            ? [...props.value, ...available]
-            : [
-                  ...props.value,
-                  ...available.filter((candidate) => !props.value.includes(candidate)),
-              ];
-        props.onChange(next);
+        props.onChange(
+            appendChipCandidates(
+                props.value,
+                candidates,
+                props.max,
+                props.allowDuplicate ?? false,
+            ),
+        );
         setDraft('');
     };
 

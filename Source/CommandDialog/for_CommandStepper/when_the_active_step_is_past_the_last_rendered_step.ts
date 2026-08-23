@@ -7,13 +7,7 @@ import { vi } from 'vitest';
 import { CommandStepperContent } from '../CommandStepper';
 import { StepperPanel } from '../StepperPanel';
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, so every step
-// the wizard renders shows up as one `data-part="panel"` element. The step the wizard is on
-// is no longer an `activeStep` prop — the Root is driven by `value`, the step's index as a
-// string — so the Root part surfaces that value for the spec to read.
-;
 
-// PrimeReact 11's Button takes its label as children, not a `label` prop.
 vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),

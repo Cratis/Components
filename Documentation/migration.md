@@ -85,13 +85,25 @@ export const ApplicationRoot = ({ children }: { children: React.ReactNode }) => 
 
 Remove `styledMode()`, `CratisPreset`, and `primeReactStyles` before upgrading. Components 4 removes three renderer-specific subpaths:
 
-| Removed subpath | Migration |
-| --- | --- |
-| `@cratis/components/styled` | Import Cratis tokens/styles and map product tokens directly as shown below. |
-| `@cratis/components/compatibility` | Replace Prime slot types/sentinel presets with each component's Cratis-owned `*Parts` type. The root `Compatibility` namespace is also removed. |
-| `@cratis/components/primereact-v10-palette` | Remove legacy Prime variable dependencies; define product tokens and map them to `--cratis-*`, or use the baseline theme. |
+| Removed subpath                             | Migration                                                                                                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@cratis/components/styled`                 | Import Cratis tokens/styles and map product tokens directly as shown below.                                                                     |
+| `@cratis/components/compatibility`          | Replace Prime slot types/sentinel presets with each component's Cratis-owned `*Parts` type. The root `Compatibility` namespace is also removed. |
+| `@cratis/components/primereact-v10-palette` | Remove legacy Prime variable dependencies; define product tokens and map them to `--cratis-*`, or use the baseline theme.                       |
 
 There is no compatibility-package replacement in Components 4. Stay on Components 3 while renderer-specific types or selectors remain.
+
+### Removed symbol mapping
+
+| Removed Components 3 export | Components 4 action |
+| --- | --- |
+| `styledMode`, `StyledModeOptions`, `CratisPreset`, `primeReactStyles` | Remove the renderer configuration. Pass locale/messages to `CratisComponentsProvider`, import the Cratis stylesheet layers, and map product values directly to `--cratis-*`. |
+| `primeReactCssLayer`, `primeReactCssLayerOrder` | Delete unless the product still owns direct Prime CSS. Product cascade-layer ordering now belongs in product CSS. |
+| `cratisDarkModeSelector` | Use the product's own theme selector and assign the corresponding `--cratis-*` values under it. |
+| `assertPrimeReact11PassThroughCompatibility` | Delete after migrating every renderer slot to a typed Cratis `*Parts` surface. Package export verification replaces the old renderer-sentinel check. |
+| `components3PrimeReact11PassThroughContract`, `PrimeReact11PassThroughComponent` | Replace with the component-specific `DialogParts`, `DataTableParts`, `TablePaginatorParts`, `StepperParts`, `ToolbarParts`, and related public types. |
+| `primeReact11PassThroughSentinelAttribute`, `primeReact11PassThroughSentinelPreset` | Replace sentinel selectors with documented `data-cratis-part` and state attributes. |
+| `@cratis/components/primereact-v10-palette` variables | Map the product's canonical tokens directly to `--cratis-*`; do not preserve a product → Prime → Cratis bridge. |
 
 Before:
 
@@ -213,6 +225,76 @@ For an existing nested Prime stepper preset, map the slots by rendered responsib
 
 The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item layout on `step`, and interactive-header styling on `header`. Replace `data-p-active` selectors with `[data-cratis-part='step'][data-active='true']`.
 
+### Ada-style preset migration
+
+Ada is the representative migration for a product that previously supplied `styledMode({ preset: AdaPreset })`, Prime locale types, a PrimeUI license, and a legacy token bridge:
+
+1. Remove `styledMode`, `AdaPreset`, and the license from the **Components provider**. If Ada still renders Prime directly, keep its Prime provider, preset, dependencies, and license beside Components until those direct imports are removed.
+2. Replace `LocaleProps['locales']` with product-owned message input and map only Components labels into `CratisComponentsMessages`.
+3. Keep `--ada-*` as the canonical design tokens. Replace the `--p-*` and `--surface-*` bridge with direct `--cratis-*` assignments.
+4. Keep Ada's `data-theme` selector and map both light and dark values there; Components does not own Ada's theme lifecycle.
+
+```tsx
+import type { ReactNode } from 'react';
+import {
+    CratisComponentsProvider,
+    type CratisComponentsMessages,
+} from '@cratis/components/Common';
+
+interface AdaComponentsProviderProps {
+    children: ReactNode;
+    locale?: string;
+    messages?: CratisComponentsMessages;
+}
+
+export const AdaComponentsProvider = ({
+    children,
+    locale = 'en-US',
+    messages,
+}: AdaComponentsProviderProps) => (
+    <CratisComponentsProvider value={{ locale, messages }} toaster>
+        {children}
+    </CratisComponentsProvider>
+);
+```
+
+```css
+:root {
+    --cratis-primary-color: var(--ada-accent-700);
+    --cratis-primary-color-text: var(--ada-text-inverse);
+    --cratis-primary-400: var(--ada-accent-400);
+    --cratis-primary-500: var(--ada-accent-500);
+    --cratis-surface-ground: var(--ada-canvas);
+    --cratis-surface-card: var(--ada-surface);
+    --cratis-surface-section: var(--ada-subtle);
+    --cratis-surface-overlay: var(--ada-surface);
+    --cratis-surface-border: var(--ada-border-default);
+    --cratis-text-color: var(--ada-text-primary);
+    --cratis-text-color-secondary: var(--ada-text-secondary);
+    --cratis-highlight-bg: var(--ada-accent-50);
+    --cratis-focus-ring: var(--ada-ring-focus);
+}
+```
+
+This preserves Ada's token and theme ownership while removing the circular Ada → Prime preset → Prime variables → Cratis translation.
+
+### Studio Liquid Glass migration
+
+Studio is the representative deeply customized consumer. Keep `LiquidGlassSurface` and product shaders in Studio; replace renderer types and selectors at the Components boundary:
+
+- Type dialog maps as `DialogParts`: `mask` → `backdrop`, `headerTitle` → `title`, and `closeButton` → `close`.
+- Type stepper maps as `StepperParts`: `nav` → `list`, `panelContainer` → `panels`, `stepperpanel.root` → `step`, `action` → `header`, and `content` → `panel`.
+- `Toolbar`, `ToolbarButton`, and fan-out controls now expose `ToolbarParts`, `ToolbarButtonParts`, and `ToolbarFanOutParts`. Use `pt.root` and documented `data-cratis-part` values rather than treating fixed `.toolbar*` classes as the public contract. Studio may keep its measurement wrapper and glass sibling; the wrapper remains product architecture.
+- For integrated Canvas controls, pass Studio's surface through `controlsGlassSurface` and localized actions through `controlsLabels`. Set `disableControlsGlass` only when Studio intentionally wants the low-cost CSS fallback.
+- Preserve `data-cratis-part` and product-owned `LAYER_ATTR` attributes through part props so capture exclusion remains explicit.
+
+```tsx
+<Canvas
+    controlsGlassSurface={<LiquidGlassSurface /* Studio-owned shader props */ />}
+    controlsLabels={canvasControlLabels}
+/>
+```
+
 Paginator callbacks that formerly returned classes from renderer context must become static Cratis parts plus CSS state selectors:
 
 ```ts
@@ -263,6 +345,21 @@ Do not assume every Dropdown trigger has `role="combobox"`. Query it by its acce
 
 Multiple selection uses a native multiple-select when filtering is off and an accessible multi-value combobox when `filter` is enabled. Prefer a dedicated collection picker for a large or highly customized multi-select experience.
 
+## Update Tooltip triggers
+
+`Tooltip` now enhances the actual trigger so focus, hover, and `aria-describedby` stay on one element. Its `children` contract is one React element rather than an arbitrary node list. Wrap text, fragments, multiple siblings, or conditional content in one appropriate native control before passing it to `Tooltip`. `className` is merged onto that trigger instead of an extra wrapper.
+
+```tsx
+import { FaGear } from 'react-icons/fa6';
+import { Tooltip } from '@cratis/components/Common';
+
+<Tooltip content='Account settings'>
+    <button type='button' aria-label='Account settings'>
+        <FaGear aria-hidden='true' />
+    </button>
+</Tooltip>
+```
+
 ## Update tables
 
 `DataTableCore` now renders semantic HTML. Query-backed paging remains owned by Arc.
@@ -271,11 +368,34 @@ Multiple selection uses a native multiple-select when filtering is off and an ac
 - Complete-result filtering and sorting are not automatic table state. Model them in query arguments and implement them in the server query before paging.
 - `clientFiltering` remains temporarily accepted as a deprecated no-op so staged source migrations compile. Remove it: filtering is always scoped to the loaded page, and complete-result filtering belongs on the server before paging.
 - Legacy `{ operator, constraints }` filter entries remain accepted. `operator: 'or'` matches any constraint; all other values match every constraint.
-- `Column` remains the declarative column marker.
+- `Column` remains the declarative column marker. Its selection-column contract is explicitly single-row (`selectionMode='single'`); the old `'multiple'` type advertised checkbox behavior that the implementation never provided. Build multiple selection as an explicit product interaction rather than relying on that removed value.
 - Table styling uses `DataTableParts` and `data-cratis-part`.
 - Server totals remain authoritative for the paginator.
 
-Custom matchers registered with `registerDataTableFilterMatcher()` continue to work.
+Direct Prime `FilterMatchMode` values and `FilterService.register()` / `registerMatcher()` calls do **not** populate the Components registry. Replace both sides together:
+
+```ts
+import {
+    registerDataTableFilterMatcher,
+    type DataTableFilterMeta,
+} from '@cratis/components/DataTables';
+
+const roleMatcher = registerDataTableFilterMatcher(
+    'product.roleContains',
+    (value, filter) =>
+        String(value ?? '').toLocaleLowerCase().includes(
+            String(filter ?? '').toLocaleLowerCase(),
+        ),
+);
+
+const filters: DataTableFilterMeta = {
+    role: { value: 'admin', matchMode: roleMatcher.matchMode },
+};
+
+// Call roleMatcher.unregister() when the owning integration is permanently removed.
+```
+
+A retained arbitrary match-mode string keeps source compatibility but does not register behavior. Unknown modes deliberately match nothing rather than silently applying the wrong predicate.
 
 Separate `RadioButtonField` options bound to one property now require the same explicit `name` prop so native arrow-key radio-group navigation works. `RadioGroupField` and `RatingField` generate a shared internal name automatically.
 
@@ -316,7 +436,7 @@ Typical replacements:
 | `primereact/tag`, `badge`, `message` | `@cratis/components/Display`               |
 | `primereact/toast` / `toaster`       | `@cratis/components/Notifications`         |
 
-PrimeIcons class strings are still accepted where a component takes an icon node/string, but Components no longer installs PrimeIcons. Prefer a React icon component or product-owned SVG.
+Complete PrimeIcons class strings remain usable where a component accepts the public `Icon` type, but Components no longer installs the font or adds a missing provider base class. A consumer that intentionally retains PrimeIcons must load its stylesheet and pass the complete class string. Prefer a React icon component or product-owned SVG. `DataPage.MenuItem.icon` remains a React component type rather than the shared `Icon` union.
 
 ## Verify the migration
 

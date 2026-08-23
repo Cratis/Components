@@ -140,8 +140,11 @@ export function PivotCanvas<TItem extends object>({
   }, [onPanStart, onPanMove, onPanEnd, onCardClick]);
 
   useEffect(() => {
-    cardColorsRef.current = resolveCardColors(cssColorResolver);
-  }, [cssColorResolver]);
+    cardColorsRef.current = resolveCardColors(
+      cssColorResolver,
+      parentContainerRef.current ?? document.documentElement,
+    );
+  }, [cssColorResolver, parentContainerRef]);
 
   useEffect(() => {
     // Reset mounted flag

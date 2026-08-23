@@ -32,4 +32,9 @@ while IFS= read -r font; do
     echo "Copied $(basename "$font")"
 done
 
+# Patrick Hand is distributed under the SIL Open Font License. Keep its notice beside the
+# packaged font binaries so every redistributed archive carries the required license text.
+cp Canvas/shapes/Note/PatrickHand-OFL.txt dist/esm/PatrickHand-OFL.txt
+echo "Copied PatrickHand-OFL.txt"
+
 echo "Stylesheet layers copied successfully"

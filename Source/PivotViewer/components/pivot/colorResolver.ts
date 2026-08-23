@@ -50,18 +50,20 @@ export function createCssColorResolver() {
   };
 }
 
-export function resolveCardColors(cssColorResolver: (s: string, f: number) => number): CardColors {
-  const root = document.documentElement;
-  const style = getComputedStyle(root);
+export function resolveCardColors(
+  cssColorResolver: (s: string, f: number) => number,
+  element: Element = document.documentElement,
+): CardColors {
+  const style = getComputedStyle(element);
   const getVar = (name: string, fallback: number) =>
     cssColorResolver(style.getPropertyValue(name) || name, fallback);
 
   return {
-    base: getVar('--surface-b', DEFAULT_COLORS.base),
-    mid: getVar('--surface-a', DEFAULT_COLORS.mid),
-    gradient: getVar('--surface-ground', DEFAULT_COLORS.gradient),
-    border: getVar('--surface-border', DEFAULT_COLORS.border),
-    text: getVar('--text-color', DEFAULT_COLORS.text),
-    textSecondary: getVar('--text-color-secondary', DEFAULT_COLORS.textSecondary),
+    base: getVar('--cratis-surface-100', DEFAULT_COLORS.base),
+    mid: getVar('--cratis-surface-0', DEFAULT_COLORS.mid),
+    gradient: getVar('--cratis-surface-ground', DEFAULT_COLORS.gradient),
+    border: getVar('--cratis-surface-border', DEFAULT_COLORS.border),
+    text: getVar('--cratis-text-color', DEFAULT_COLORS.text),
+    textSecondary: getVar('--cratis-text-color-secondary', DEFAULT_COLORS.textSecondary),
   };
 }

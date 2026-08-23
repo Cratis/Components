@@ -15,7 +15,6 @@ vi.mock('../../Dialogs/Dialog', () => ({
         React.createElement('div', null, props.buttons, props.children),
 }));
 
-;
 
 // The submit button is the only one carrying autoFocus — auto-activate it (when
 // enabled) so the spec can assert whether the command executes.

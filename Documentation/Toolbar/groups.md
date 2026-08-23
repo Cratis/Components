@@ -5,17 +5,17 @@
 ```tsx
 <Toolbar>
     <ToolbarGroup>
-        <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-        <ToolbarButton icon='pi pi-hand-paper' title='Pan' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Pan' />
     </ToolbarGroup>
     <ToolbarGroup>
-        <ToolbarButton icon='pi pi-pencil' title='Draw' />
-        <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-        <ToolbarButton icon='pi pi-circle' title='Circle' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Rectangle' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Circle' />
     </ToolbarGroup>
     <ToolbarGroup>
-        <ToolbarButton icon='pi pi-undo' title='Undo' />
-        <ToolbarButton icon='pi pi-refresh' title='Redo' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Undo' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Redo' />
     </ToolbarGroup>
 </Toolbar>
 ```
@@ -26,8 +26,8 @@ Use the `orientation` prop to control how the group lays out its children. The d
 
 ```tsx
 <ToolbarGroup orientation='horizontal'>
-    <ToolbarButton icon='pi pi-minus' title='Zoom out' />
-    <ToolbarButton icon='pi pi-plus' title='Zoom in' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Zoom out' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Zoom in' />
 </ToolbarGroup>
 ```
 
@@ -45,13 +45,13 @@ A group can act as a **slot host**: other components anywhere in the React tree 
 <ToolbarSlotProvider>
     <Toolbar>
         <ToolbarGroup slotName='canvas-tools'>
-            <ToolbarButton icon='pi pi-pencil' title='Draw' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw' />
         </ToolbarGroup>
     </Toolbar>
 
     {/* anywhere else in the tree */}
     <ToolbarSlot slotName='canvas-tools' order={10}>
-        <ToolbarButton icon='pi pi-star' title='Favorite' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Favorite' />
     </ToolbarSlot>
 </ToolbarSlotProvider>
 ```

@@ -39,11 +39,8 @@ export interface ColumnProps<TData = unknown> {
     filterLabels?: Partial<ColumnFilterMenuLabels>;
     /** Stable part attributes for this column's filter popup. */
     filterPt?: ColumnFilterMenuParts;
-    /**
-     * Renders a selection control column (a radio for `single`, a checkbox for
-     * `multiple`) instead of a data column.
-     */
-    selectionMode?: 'single' | 'multiple';
+    /** Renders a single-row selection radio instead of a data column. */
+    selectionMode?: 'single';
     /** Inline style for every body cell in the column. */
     style?: React.CSSProperties;
     /** Class name for every body cell in the column. */

@@ -7,33 +7,33 @@
  * variables directly or map them onto an existing token family.
  */
 :root {
-    --cratis-surface-0: var(--surface-0, #ffffff);
-    --cratis-surface-100: var(--surface-100, #f1f5f9);
-    --cratis-surface-ground: var(--surface-ground, #f8fafc);
-    --cratis-surface-section: var(--surface-section, #f8fafc);
-    --cratis-surface-card: var(--surface-card, #ffffff);
-    --cratis-surface-overlay: var(--surface-overlay, #ffffff);
-    --cratis-surface-hover: var(--surface-hover, #f1f5f9);
-    --cratis-surface-border: var(--surface-border, #e2e8f0);
+    --cratis-surface-0: #ffffff;
+    --cratis-surface-100: #f1f5f9;
+    --cratis-surface-ground: #f8fafc;
+    --cratis-surface-section: #f8fafc;
+    --cratis-surface-card: #ffffff;
+    --cratis-surface-overlay: #ffffff;
+    --cratis-surface-hover: #f1f5f9;
+    --cratis-surface-border: #e2e8f0;
 
-    --cratis-text-color: var(--text-color, #1e293b);
-    --cratis-text-color-secondary: var(--text-color-secondary, #475569);
+    --cratis-text-color: #1e293b;
+    --cratis-text-color-secondary: #475569;
 
-    --cratis-primary-color: var(--primary-color, #3b82f6);
-    --cratis-primary-color-text: var(--primary-color-text, #ffffff);
-    --cratis-primary-300: var(--primary-300, #93c5fd);
-    --cratis-primary-400: var(--primary-400, #60a5fa);
-    --cratis-primary-500: var(--primary-500, #3b82f6);
-    --cratis-primary-600: var(--primary-600, #2563eb);
+    --cratis-primary-color: #3b82f6;
+    --cratis-primary-color-text: #ffffff;
+    --cratis-primary-300: #93c5fd;
+    --cratis-primary-400: #60a5fa;
+    --cratis-primary-500: #3b82f6;
+    --cratis-primary-600: #2563eb;
 
-    --cratis-highlight-bg: var(--highlight-bg, #dbeafe);
-    --cratis-highlight-text-color: var(--highlight-text-color, #1e40af);
+    --cratis-highlight-bg: #dbeafe;
+    --cratis-highlight-text-color: #1e40af;
 
-    --cratis-green-500: var(--green-500, #16a34a);
-    --cratis-orange-500: var(--orange-500, #d97706);
-    --cratis-red-500: var(--red-500, #dc2626);
+    --cratis-green-500: #16a34a;
+    --cratis-orange-500: #d97706;
+    --cratis-red-500: #dc2626;
 
-    --cratis-border-radius: var(--border-radius, 6px);
-    --cratis-focus-ring: var(--focus-ring, 0 0 0 3px rgba(59, 130, 246, 0.35));
-    --cratis-maskbg: var(--maskbg, rgba(15, 23, 42, 0.45));
+    --cratis-border-radius: 6px;
+    --cratis-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.35);
+    --cratis-maskbg: rgba(15, 23, 42, 0.45);
 }

@@ -1,12 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
 /**
  * Props for {@link FormElement}.
  */
 export interface FormElementProps {
-    /** The form input rendered to the right of the icon addon (typically an `InputText`, `Dropdown`, etc.). */
+    /** The form control rendered to the right of the icon addon. */
     children: React.ReactNode;
 
     /**
@@ -24,17 +23,19 @@ export interface FormElementProps {
  *
  * ```tsx
  * <FormElement icon={<FaUser />}>
- *     <input className='cratis-field-input' value={name} onChange={…} />
+ *     <input
+ *         className='cratis-field-input'
+ *         value={name}
+ *         onChange={(event) => setName(event.currentTarget.value)}
+ *     />
  * </FormElement>
  * ```
  */
 export const FormElement = (props: FormElementProps) => {
     return (
-        <div className="flex flex-col md:flex-row gap-3">
-            <div className="cratis-form-element">
-                <span className="cratis-form-element__addon">
-                    {props.icon}
-                </span>
+        <div className='flex flex-col md:flex-row gap-3'>
+            <div className='cratis-form-element'>
+                <span className='cratis-form-element__addon'>{props.icon}</span>
                 {props.children}
             </div>
         </div>
