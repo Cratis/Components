@@ -62,7 +62,9 @@ const handleReady = (handle: CanvasHandle) => {
 | `className` / `style` | standard React values | — | Canvas root customization. |
 | `onHelp` | `() => void` | — | Adds and handles the help action. |
 | `helpTitle` | `string` | provider-independent English fallback | Help action label. |
-| `disableControlsGlass` | `boolean` | `false` | Uses the lower-cost CSS frosted pill for large scenes. |
+| `controlsLabels` | `CanvasControlsLabels` | English fallbacks | Localizes integrated minimap, zoom, reset, and help controls. |
+| `controlsGlassSurface` | `ReactNode` | — | Product-owned glass/acrylic surface rendered behind integrated controls. |
+| `disableControlsGlass` | `boolean` | `false` | Forces the low-cost CSS frosted pill. The same fallback is used automatically when no `controlsGlassSurface` is supplied. |
 | `onHandleReady` | `(handle: CanvasHandle) => void` | — | Provides imperative camera/item-bound operations. |
 | `readOnly` | `boolean` | `false` | Keeps pan/zoom but absorbs content interaction. |
 | `backgroundDragPans` | `boolean` | `true` | Set `false` when the product owns empty-background drag selection. Wheel, middle-button, and touch panning remain available. |

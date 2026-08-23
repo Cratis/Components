@@ -248,6 +248,8 @@ export const DataTableForObservableQuery = <
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
                     globalFilterFields={props.globalFilterFields}
+                    globalSearchPlaceholder={props.globalSearchPlaceholder}
+                    globalSearchAriaLabel={props.globalSearchAriaLabel}
                     defaultFilters={props.defaultFilters}
                     scrollable
                     scrollHeight='100%'

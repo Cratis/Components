@@ -285,10 +285,11 @@ export const Dropdown = <T = unknown,>({
     };
     // React Aria's Select trigger context does not forward aria-invalid from its Button child.
     // Keep the Cratis validation contract on the actual focusable control after context props merge.
-    const applyTriggerInvalidState = (element: HTMLButtonElement | null) => {
+    const applyTriggerState = (element: HTMLButtonElement | null) => {
         if (!element) return;
         if (effectiveInvalid) element.setAttribute('aria-invalid', 'true');
         else element.removeAttribute('aria-invalid');
+        if (tabIndex !== undefined) element.tabIndex = tabIndex;
     };
 
     if (multiple) {
@@ -621,7 +622,7 @@ export const Dropdown = <T = unknown,>({
             >
                 <AriaButton
                     {...pt?.trigger}
-                    ref={applyTriggerInvalidState}
+                    ref={applyTriggerState}
                     id={triggerId}
                     excludeFromTabOrder={tabIndex === -1}
                     aria-invalid={effectiveInvalid || undefined}

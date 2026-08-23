@@ -124,6 +124,7 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
     }, [getZoom]);
 
     const refreshDisplayZoom = () => setDisplayZoom(getZoom());
+    const usesPlainSurface = disableGlass || !glassSurface;
 
     return (
         <div
@@ -147,8 +148,11 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                 is only set when the glass surface exists: with the plain pill nothing refracts this
                 subtree, and the marker would make every zoom-label update trigger a whole-page
                 content-layer capture. */}
-            <div className={`canvas-controls-glass${disableGlass ? ' canvas-controls-glass--plain' : ''}`} {...(disableGlass ? {} : { [CONTENT_ATTR]: 'true' })}>
-                {!disableGlass && glassSurface}
+            <div
+                className={`canvas-controls-glass${usesPlainSurface ? ' canvas-controls-glass--plain' : ''}`}
+                {...(usesPlainSurface ? {} : { [CONTENT_ATTR]: 'true' })}
+            >
+                {!usesPlainSurface && glassSurface}
             <div className='canvas-controls-bar inline-flex flex-row items-center gap-1 px-2 py-1.5 rounded-2xl'>
                 {showMinimapToggle && (
                     <>

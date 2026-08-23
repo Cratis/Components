@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { LAYER_ATTR, TRANSFORM_HOST_ATTR } from './glassAttributes';
-import { CanvasControls } from './CanvasControls';
+import { CanvasControls, type CanvasControlsLabels } from './CanvasControls';
 import { CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
 import { canvasGesture } from './canvasGesture';
 import { canvasTransformActivity } from './canvasTransformActivity';
@@ -142,6 +142,10 @@ export interface CanvasProps<T extends CanvasItemData = CanvasItemData> {
     onHelp?: () => void;
     /** Accessible label and tooltip for the help action. */
     helpTitle?: string;
+    /** Localized labels for integrated zoom/minimap/help controls. */
+    controlsLabels?: CanvasControlsLabels;
+    /** Optional product-owned glass/acrylic surface behind integrated controls. */
+    controlsGlassSurface?: React.ReactNode;
     /** Uses a low-cost CSS frosted pill instead of a consumer-supplied glass surface. */
     disableControlsGlass?: boolean;
     /** Receives imperative camera and measurement operations. */
@@ -200,6 +204,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     style,
     onHelp,
     helpTitle,
+    controlsLabels,
+    controlsGlassSurface,
     disableControlsGlass = false,
     readOnly = false,
     backgroundDragPans = true,
@@ -1067,6 +1073,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                     placement={controlsPlacement}
                     onHelp={onHelp}
                     helpTitle={helpTitle}
+                    labels={controlsLabels}
+                    glassSurface={controlsGlassSurface}
                     disableGlass={disableControlsGlass}
                 />
             )}

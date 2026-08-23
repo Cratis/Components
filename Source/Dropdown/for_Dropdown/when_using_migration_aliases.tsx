@@ -101,6 +101,24 @@ describe('when using migration aliases', () => {
         );
     });
 
+    it('should apply an explicit positive tab index to the primary control', async () => {
+        await act(async () => {
+            root.render(
+                <CratisComponentsProvider>
+                    <Dropdown
+                        options={[{ label: 'Developer', value: 'developer' }]}
+                        tabIndex={3}
+                    />
+                </CratisComponentsProvider>,
+            );
+        });
+        expect(
+            container.querySelector<HTMLButtonElement>(
+                '[data-cratis-part="trigger"]',
+            )?.tabIndex,
+        ).to.equal(3);
+    });
+
     it('should map legacy input and select classes to stable Cratis elements', () => {
         expect(trigger.classList.contains('product-dropdown-input')).to.equal(true);
         expect(dropdownRoot.classList.contains('product-dropdown-select')).to.equal(true);
