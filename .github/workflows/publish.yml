@@ -36,8 +36,6 @@ on:
     # branch that is released.
     branches:
       - main
-    paths:
-      - main
 
 permissions:
   contents: write
