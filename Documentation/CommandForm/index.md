@@ -71,3 +71,11 @@ Two field props refine this per field - both work on every field type in this pa
 - `initialValue` - override how the field's value is derived from the query result, either a property accessor matched by name or a function composing a value from the whole result.
 
 See Arc's [Populating a Form from a Query](https://github.com/Cratis/Arc/blob/main/Documentation/frontend/react/command-form/data-loading.md) for the full behavior, including how the populated data becomes the form's change-tracking baseline.
+
+## How a child is recognized as a field
+
+`CommandForm`, `CommandDialog`, and `CommandStepper` inspect each child's component type. A field carries `isCommandFormField: true`; a column carries `isCommandFormColumn: true`. The legacy `displayName` values remain permanent fallbacks so independently versioned Components and Arc packages interoperate in either upgrade order.
+
+Use `asCommandFormField` from `@cratis/arc.react/commands` for custom fields; it stamps the marker automatically. For a hand-rolled field or column, use `markAsCommandFormField` or `markAsCommandFormColumn` from `@cratis/components/CommandForm`.
+
+The marker is a plain shared property rather than a package-private symbol, so a component marked by Arc is recognized by Components and vice versa. Build transforms may rewrite `displayName` without silently breaking binding.
