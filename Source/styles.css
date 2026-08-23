@@ -32,6 +32,7 @@
 @import './CommandDialog/CommandStepper.css';
 @import './Common/ActionMenubar.css';
 @import './Common/Button.css';
+@import './Common/DatePickerInput.css';
 @import './Common/FormElement.css';
 @import './Common/Tooltip.css';
 @import './DataTables/ColumnFilterMenu.css';

@@ -13,10 +13,12 @@ import { DatePickerInput } from '../DatePickerInput';
 describe('when configuring input pass-through', () => {
     let container: HTMLDivElement;
     let root: Root;
-    let input: HTMLInputElement;
+    let group: HTMLElement;
+    let dateInput: HTMLElement;
+    let pickerRoot: HTMLElement;
 
     beforeEach(async () => {
-        // SAFETY: React's test-environment flag is an intentionally undocumented global absent from the DOM typings.
+        // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
         (
             globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
         ).IS_REACT_ACT_ENVIRONMENT = true;
@@ -45,13 +47,15 @@ describe('when configuring input pass-through', () => {
             );
         });
 
-        const renderedInput = container.querySelector<HTMLInputElement>(
-            '[data-scope="datepicker"][data-part="input"]',
-        );
-        if (!renderedInput) {
-            throw new Error('DatePickerInput did not render its input element.');
+        const renderedRoot = container.querySelector<HTMLElement>('[data-cratis-part="root"]');
+        const renderedGroup = container.querySelector<HTMLElement>('[data-cratis-part="group"]');
+        const renderedInput = container.querySelector<HTMLElement>('[data-cratis-part="input"]');
+        if (!renderedRoot || !renderedGroup || !renderedInput) {
+            throw new Error('DatePickerInput did not render its stable Cratis parts.');
         }
-        input = renderedInput;
+        pickerRoot = renderedRoot;
+        group = renderedGroup;
+        dateInput = renderedInput;
     });
 
     afterEach(async () => {
@@ -59,27 +63,27 @@ describe('when configuring input pass-through', () => {
         container.remove();
     });
 
-    it('should set the input id', () => {
-        expect(input.id).to.equal('appointment-date');
+    it('should set the group id', () => {
+        expect(group.id).to.equal('appointment-date');
     });
 
     it('should set the accessible name', () => {
-        expect(input.getAttribute('aria-label')).to.equal('Appointment date');
+        expect(group.getAttribute('aria-label')).to.equal('Appointment date');
     });
 
     it('should set the description reference', () => {
-        expect(input.getAttribute('aria-describedby')).to.equal('appointment-date-help');
+        expect(group.getAttribute('aria-describedby')).to.equal('appointment-date-help');
     });
 
     it('should preserve pass-through invalid state when the wrapper prop is omitted', () => {
-        expect(input.getAttribute('aria-invalid')).to.equal('true');
+        expect(pickerRoot.getAttribute('data-invalid')).to.equal('true');
     });
 
-    it('should disable the input', () => {
-        expect(input.disabled).to.equal(true);
+    it('should disable the picker', () => {
+        expect(pickerRoot.getAttribute('data-disabled')).to.equal('true');
     });
 
     it('should preserve the pass-through placeholder when the wrapper prop is omitted', () => {
-        expect(input.placeholder).to.equal('Pass-through placeholder');
+        expect(dateInput.getAttribute('data-placeholder')).to.equal('Pass-through placeholder');
     });
 });

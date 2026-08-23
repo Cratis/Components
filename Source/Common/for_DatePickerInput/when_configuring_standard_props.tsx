@@ -3,15 +3,11 @@
 
 // @vitest-environment jsdom
 
-import { en } from '@primereact/core/locale';
 import { expect } from 'chai';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { describe, it } from 'vitest';
-import {
-    CratisComponentsProvider,
-    type CratisComponentsConfig,
-} from '../CratisComponentsProvider';
+import { CratisComponentsProvider } from '../CratisComponentsProvider';
 import { DatePickerInput, type DatePickerInputProps } from '../DatePickerInput';
 
 type DatePickerOptions = Partial<Omit<DatePickerInputProps, 'value' | 'onChange'>> & {
@@ -21,29 +17,21 @@ type DatePickerOptions = Partial<Omit<DatePickerInputProps, 'value' | 'onChange'
 interface MountedDatePicker {
     container: HTMLDivElement;
     root: Root;
-    input: HTMLInputElement;
+    pickerRoot: HTMLElement;
+    group: HTMLElement;
     trigger: HTMLButtonElement;
 }
 
-const mountDatePicker = async (
-    options: DatePickerOptions,
-    configuration?: CratisComponentsConfig,
-): Promise<MountedDatePicker> => {
-    // SAFETY: React's test-environment flag is an intentionally undocumented global absent from the DOM typings.
+const mountDatePicker = async (options: DatePickerOptions): Promise<MountedDatePicker> => {
+    // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
     (
         globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
-    // SAFETY: jsdom omits ResizeObserver, while PrimeReact only calls its three observer methods.
+    // SAFETY: jsdom omits ResizeObserver; the overlay only calls these observer methods.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-        observe() {
-            return undefined;
-        }
-        unobserve() {
-            return undefined;
-        }
-        disconnect() {
-            return undefined;
-        }
+        observe() { return undefined; }
+        unobserve() { return undefined; }
+        disconnect() { return undefined; }
     };
     const container = document.createElement('div');
     document.body.append(container);
@@ -51,28 +39,26 @@ const mountDatePicker = async (
 
     await act(async () => {
         root.render(
-            <CratisComponentsProvider value={configuration}>
+            <CratisComponentsProvider>
                 <DatePickerInput
                     value={options.value ?? null}
                     onChange={() => undefined}
                     showIcon
+                    aria-label='Appointment date'
                     {...options}
                 />
             </CratisComponentsProvider>,
         );
     });
 
-    const input = container.querySelector<HTMLInputElement>(
-        '[data-scope="datepicker"][data-part="input"]',
-    );
-    const trigger = container.querySelector<HTMLButtonElement>(
-        '[data-scope="datepicker"][data-part="trigger"]',
-    );
-    if (!input || !trigger) {
-        throw new Error('DatePickerInput did not render its input and trigger.');
+    const pickerRoot = container.querySelector<HTMLElement>('[data-cratis-part="root"]');
+    const group = container.querySelector<HTMLElement>('[data-cratis-part="group"]');
+    const trigger = container.querySelector<HTMLButtonElement>('[data-cratis-part="trigger"]');
+    if (!pickerRoot || !group || !trigger) {
+        throw new Error('DatePickerInput did not render its stable Cratis parts.');
     }
 
-    return { container, root, input, trigger };
+    return { container, root, pickerRoot, group, trigger };
 };
 
 const unmountDatePicker = async (mounted: MountedDatePicker) => {
@@ -80,33 +66,24 @@ const unmountDatePicker = async (mounted: MountedDatePicker) => {
     mounted.container.remove();
 };
 
-const popup = () =>
-    document.querySelector('[data-scope="datepicker"][data-part="popup"]');
+const popup = () => document.querySelector('[data-cratis-part="popover"]');
 
 describe('when configuring standard DatePickerInput props', () => {
-    it('should put the id directly on the input', async () => {
+    it('should put the id directly on the focus group', async () => {
         const mounted = await mountDatePicker({ id: 'appointment-date' });
         try {
-            expect(mounted.input.id).to.equal('appointment-date');
+            expect(mounted.group.id).to.equal('appointment-date');
         } finally {
             await unmountDatePicker(mounted);
         }
     });
 
-    it('should disable the model and prevent keyboard activation', async () => {
+    it('should disable the model and trigger', async () => {
         const mounted = await mountDatePicker({ disabled: true });
         try {
-            expect(mounted.input.disabled).to.equal(true);
+            expect(mounted.pickerRoot.getAttribute('data-disabled')).to.equal('true');
             expect(mounted.trigger.disabled).to.equal(true);
-            await act(async () => {
-                mounted.input.dispatchEvent(
-                    new KeyboardEvent('keydown', {
-                        bubbles: true,
-                        code: 'ArrowDown',
-                        key: 'ArrowDown',
-                    }),
-                );
-            });
+            await act(async () => mounted.trigger.click());
             expect(popup()).to.equal(null);
         } finally {
             await unmountDatePicker(mounted);
@@ -116,19 +93,9 @@ describe('when configuring standard DatePickerInput props', () => {
     it('should make the date model read-only', async () => {
         const mounted = await mountDatePicker({ readOnly: true });
         try {
-            expect(mounted.input.readOnly).to.equal(true);
+            expect(mounted.pickerRoot.getAttribute('data-readonly')).to.equal('true');
             expect(mounted.trigger.disabled).to.equal(true);
-            await act(async () => {
-                mounted.input.focus();
-                mounted.input.click();
-                mounted.input.dispatchEvent(
-                    new KeyboardEvent('keydown', {
-                        bubbles: true,
-                        code: 'ArrowDown',
-                        key: 'ArrowDown',
-                    }),
-                );
-            });
+            await act(async () => mounted.trigger.click());
             expect(popup()).to.equal(null);
         } finally {
             await unmountDatePicker(mounted);
@@ -136,27 +103,15 @@ describe('when configuring standard DatePickerInput props', () => {
     });
 
     it('should render the localized button bar', async () => {
-        const mounted = await mountDatePicker(
-            {
-                showButtonBar: true,
-                value: new Date(2026, 7, 22),
-            },
-            {
-                locale: 'test',
-                locales: {
-                    test: {
-                        ...en,
-                        today: 'Translated today',
-                        clear: 'Translated clear',
-                    },
-                },
-            },
-        );
+        const mounted = await mountDatePicker({
+            showButtonBar: true,
+            value: new Date(2026, 7, 22),
+            todayLabel: 'Translated today',
+            clearLabel: 'Translated clear',
+        });
         try {
             await act(async () => mounted.trigger.click());
-            const buttonBar = document.querySelector(
-                '[data-scope="datepicker"][data-part="buttonbar"]',
-            );
+            const buttonBar = document.querySelector('[data-cratis-part="button-bar"]');
             expect(buttonBar?.textContent).to.contain('Translated today');
             expect(buttonBar?.textContent).to.contain('Translated clear');
         } finally {

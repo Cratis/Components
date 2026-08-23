@@ -2,104 +2,126 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type {
+    ButtonHTMLAttributes,
     CSSProperties,
     FocusEventHandler,
-    InputHTMLAttributes,
-    KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { DatePicker, useDatePickerContext } from 'primereact/datepicker';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import type {
-    DatePickerRootPassThrough,
-    DatePickerRootPassThroughType,
-    DatePickerRootProps,
-    DatePickerRootValueChangeEvent,
-} from '@primereact/types/primitive/datepicker';
+import {
+    Button,
+    Calendar,
+    CalendarCell,
+    CalendarGrid,
+    CalendarGridBody,
+    CalendarGridHeader,
+    CalendarHeaderCell,
+    DateInput,
+    DatePicker as AriaDatePicker,
+    DateSegment,
+    Group,
+    Popover,
+    type DateValue,
+} from 'react-aria-components/DatePicker';
+import { Dialog } from 'react-aria-components/Dialog';
+import { Heading } from 'react-aria-components/Heading';
+import {
+    fromDate,
+    getLocalTimeZone,
+    today,
+    toCalendarDate,
+} from '@internationalized/date';
 
-/**
- * Pass-through configuration for {@link DatePickerInput}.
- *
- * PrimeReact 11 routes the rendered input through `input`; its published
- * `pcInputText` declaration is not used by the runtime composition.
- */
-export type DatePickerInputPassThrough = Omit<
-    DatePickerRootPassThrough,
-    'pcInputText'
-> & {
-    /** Attributes applied to the rendered input element. */
-    input?: DatePickerRootPassThroughType<InputHTMLAttributes<HTMLInputElement>>;
-};
+interface DatePickerPartAttributes {
+    id?: string;
+    className?: string;
+    style?: CSSProperties;
+    disabled?: boolean;
+    readOnly?: boolean;
+    placeholder?: string;
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean;
+    [attribute: `data-${string}`]: string | number | boolean | undefined;
+}
 
-const stopDatePickerKeyboardOpening = (event: ReactKeyboardEvent) => {
-    if (event.code === 'ArrowDown') {
-        event.stopPropagation();
-    }
-};
+type DatePickerButtonAttributes = Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'value'
+>;
 
-const DatePickerInputButtonBar = () => {
-    const datePicker = useDatePickerContext();
-
-    return (
-        <DatePicker.Buttonbar>
-            <DatePicker.Today>{datePicker?.todayLabel}</DatePicker.Today>
-            <DatePicker.Clear>{datePicker?.clearLabel}</DatePicker.Clear>
-        </DatePicker.Buttonbar>
-    );
-};
+/** Stable Cratis-owned parts for styling a {@link DatePickerInput}. */
+export interface DatePickerInputPassThrough {
+    root?: DatePickerPartAttributes;
+    group?: DatePickerPartAttributes;
+    input?: DatePickerPartAttributes;
+    segment?: DatePickerPartAttributes;
+    trigger?: DatePickerButtonAttributes;
+    popover?: DatePickerPartAttributes;
+    dialog?: DatePickerPartAttributes;
+    calendar?: DatePickerPartAttributes;
+    header?: DatePickerPartAttributes;
+    heading?: DatePickerPartAttributes;
+    previous?: DatePickerButtonAttributes;
+    next?: DatePickerButtonAttributes;
+    grid?: DatePickerPartAttributes;
+    cell?: DatePickerPartAttributes;
+    buttonBar?: DatePickerPartAttributes;
+    today?: DatePickerButtonAttributes;
+    clear?: DatePickerButtonAttributes;
+}
 
 /** Props for {@link DatePickerInput}. */
 export interface DatePickerInputProps {
-    /** The selected date, or `null` when nothing is selected. */
     value: Date | null;
-    /** Invoked with the newly-selected date (or `null`). */
     onChange: (value: Date | null) => void;
-    /** Invoked when focus leaves the control. */
     onBlur?: FocusEventHandler<HTMLElement>;
-    /** Renders the control in an invalid (error) state. */
     invalid?: boolean;
-    /** Disables the date model, input and trigger. */
     disabled?: boolean;
-    /** Prevents manual input and date selection. */
     readOnly?: boolean;
-    /** DOM id applied to the rendered input element. */
     id?: string;
-    /** When true, shows the localized Today and Clear button bar in the popup. */
     showButtonBar?: boolean;
-    /** Placeholder text shown when no date is selected. */
     placeholder?: string;
-    /** PrimeReact-style date format mask (e.g. `'yy-mm-dd'`). */
+    /** Deprecated mask from the PrimeReact implementation; locale controls formatting now. */
     dateFormat?: string;
-    /** When true, renders a trailing calendar icon button. */
     showIcon?: boolean;
-    /** When true, includes time selection alongside the date. */
     showTime?: boolean;
-    /** Hour format used when {@link showTime} is true. */
     hourFormat?: '12' | '24';
-    /** Earliest selectable date. */
     minDate?: Date;
-    /** Latest selectable date. */
     maxDate?: Date;
-    /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
-    /** Inline style for the wrapping element. */
     style?: CSSProperties;
-    /** PrimeReact pass-through configuration applied to the underlying DatePicker. */
+    /** Cratis-owned per-part attributes. */
     pt?: DatePickerInputPassThrough;
-    /** PrimeReact pass-through options applied to the underlying DatePicker. */
-    ptOptions?: DatePickerRootProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the underlying DatePicker. */
+    /** Retained for source compatibility; Cratis parts always merge. */
+    ptOptions?: object;
+    /** Retained for source compatibility; consumers always own the CSS. */
     unstyled?: boolean;
+    /** Localized label for the Today action. */
+    todayLabel?: string;
+    /** Localized label for the Clear action. */
+    clearLabel?: string;
+    /** Accessible name when no external label is supplied. */
+    'aria-label'?: string;
+    /** Id of the element that labels the picker. */
+    'aria-labelledby'?: string;
+    /** Id of the element that describes the picker. */
+    'aria-describedby'?: string;
 }
 
+const classNames = (...values: Array<string | undefined>) => values.filter(Boolean).join(' ');
+
+const asDateValue = (value: Date | null, showTime: boolean | undefined): DateValue | null => {
+    if (!value) return null;
+    const zoned = fromDate(value, getLocalTimeZone());
+    return showTime ? zoned : toCalendarDate(zoned);
+};
+
+const asDate = (value: DateValue | null): Date | null =>
+    value ? value.toDate(getLocalTimeZone()) : null;
+
 /**
- * A wrapper-owned date (or date-time) picker with a simple `value` / `onChange`
- * (`Date | null`) surface, assembling PrimeReact 11's compositional
- * `DatePicker` (Root owns the date model, Input is the text field, and the
- * popup Calendar/Table auto-render the grid). Shared by {@link CalendarField}
- * (the command-bound field) and other editors that need a raw date input.
- *
- * `onBlur` rides the wrapping `<div>` because React blur bubbles (focusout).
+ * An internationalized date or date-time picker with Cratis-owned markup parts.
+ * The public boundary remains `Date | null`; React Aria's calendar values stay internal.
  */
 export const DatePickerInput = ({
     value,
@@ -111,8 +133,7 @@ export const DatePickerInput = ({
     id,
     showButtonBar,
     placeholder,
-    dateFormat,
-    showIcon,
+    showIcon = false,
     showTime,
     hourFormat,
     minDate,
@@ -120,96 +141,175 @@ export const DatePickerInput = ({
     className,
     style,
     pt,
-    ptOptions,
-    unstyled,
-}: DatePickerInputProps) => (
-    <div
-        className={className ? `w-full ${className}` : 'w-full'}
-        style={style}
-        onBlur={onBlur}
-    >
-        <DatePicker.Root
-            value={value}
-            onValueChange={(e: DatePickerRootValueChangeEvent) =>
-                onChange(e.value instanceof Date ? e.value : null)
-            }
-            disabled={disabled}
-            readOnly={readOnly}
-            showOnFocus={!disabled && !readOnly}
-            dateFormat={dateFormat}
-            showTime={showTime}
-            hourFormat={hourFormat}
-            minDate={minDate}
-            maxDate={maxDate}
-            pt={pt}
-            ptOptions={ptOptions}
-            unstyled={unstyled}
+    todayLabel = 'Today',
+    clearLabel = 'Clear',
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledby,
+    'aria-describedby': ariaDescribedby,
+}: DatePickerInputProps) => {
+    const rootClassName = classNames('cratis-date-picker', pt?.root?.className, className);
+    const inputId = id ?? pt?.input?.id;
+    const effectiveDisabled = disabled ?? pt?.input?.disabled ?? false;
+    const effectiveReadOnly = readOnly ?? pt?.input?.readOnly ?? false;
+    const effectiveInvalid = invalid ?? pt?.input?.['aria-invalid'] ?? false;
+    const effectivePlaceholder = placeholder ?? pt?.input?.placeholder;
+    const effectiveAriaLabel = ariaLabel ?? pt?.input?.['aria-label'] ?? effectivePlaceholder ?? 'Date';
+    const effectiveAriaLabelledby = ariaLabelledby ?? pt?.input?.['aria-labelledby'];
+    const effectiveAriaDescribedby = ariaDescribedby ?? pt?.input?.['aria-describedby'];
+
+    return (
+        <div
+            {...pt?.root}
+            className={rootClassName}
+            style={{ ...pt?.root?.style, ...style }}
+            data-cratis-part='root'
+            data-invalid={effectiveInvalid || undefined}
+            data-disabled={effectiveDisabled || undefined}
+            data-readonly={effectiveReadOnly || undefined}
+            onBlur={onBlur}
         >
-            <DatePicker.Input
-                as={InputText}
-                {...(id === undefined ? {} : { id })}
-                {...(disabled === undefined ? {} : { disabled })}
-                {...(readOnly === undefined ? {} : { readOnly })}
-                {...(disabled || readOnly
-                    ? { onKeyDownCapture: stopDatePickerKeyboardOpening }
-                    : {})}
-                {...(placeholder === undefined ? {} : { placeholder })}
-                {...(invalid === undefined
-                    ? {}
-                    : {
-                          'aria-invalid': invalid || undefined,
-                          'data-invalid': invalid ? '' : undefined,
-                      })}
-                className='w-full'
-            />
-            {showIcon && (
-                <DatePicker.Trigger disabled={disabled || readOnly}>
-                    <i className='pi pi-calendar' />
-                </DatePicker.Trigger>
-            )}
-            <DatePicker.Portal>
-                <DatePicker.Positioner align='start'>
-                    <DatePicker.Popup>
-                        <DatePicker.Calendar>
-                            <DatePicker.Header>
-                                <DatePicker.Prev
-                                    as={Button}
-                                    iconOnly
-                                    variant='text'
-                                    rounded
-                                    severity='secondary'
-                                    size='small'
+            <AriaDatePicker
+                value={asDateValue(value, showTime)}
+                onChange={next => onChange(asDate(next))}
+                isDisabled={effectiveDisabled}
+                isReadOnly={effectiveReadOnly}
+                isInvalid={effectiveInvalid}
+                minValue={asDateValue(minDate ?? null, showTime) ?? undefined}
+                maxValue={asDateValue(maxDate ?? null, showTime) ?? undefined}
+                granularity={showTime ? 'minute' : 'day'}
+                hourCycle={hourFormat === '12' ? 12 : hourFormat === '24' ? 24 : undefined}
+                aria-label={effectiveAriaLabel}
+                aria-labelledby={effectiveAriaLabelledby}
+                aria-describedby={effectiveAriaDescribedby}
+                className='cratis-date-picker__picker'
+            >
+                <Group
+                    {...pt?.group}
+                    id={inputId}
+                    aria-invalid={effectiveInvalid || undefined}
+                    className={classNames('cratis-date-picker__group', pt?.group?.className)}
+                    data-cratis-part='group'
+                >
+                    <DateInput
+                        className={classNames('cratis-date-picker__input', pt?.input?.className)}
+                        style={pt?.input?.style}
+                        data-cratis-part='input'
+                        data-placeholder={effectivePlaceholder}
+                    >
+                        {segment => (
+                            <DateSegment
+                                {...pt?.segment}
+                                segment={segment}
+                                className={classNames('cratis-date-picker__segment', pt?.segment?.className)}
+                                data-cratis-part='segment'
+                            />
+                        )}
+                    </DateInput>
+                    {showIcon && (
+                        <Button
+                            {...pt?.trigger}
+                            isDisabled={effectiveDisabled || effectiveReadOnly}
+                            className={classNames('cratis-date-picker__trigger', pt?.trigger?.className)}
+                            data-cratis-part='trigger'
+                            aria-label={pt?.trigger?.['aria-label'] ?? 'Open calendar'}
+                        >
+                            <span aria-hidden='true'>▦</span>
+                        </Button>
+                    )}
+                </Group>
+                <Popover
+                    {...pt?.popover}
+                    className={classNames('cratis-date-picker__popover', pt?.popover?.className)}
+                    data-cratis-part='popover'
+                    placement='bottom start'
+                >
+                    <Dialog
+                        {...pt?.dialog}
+                        className={classNames('cratis-date-picker__dialog', pt?.dialog?.className)}
+                        data-cratis-part='dialog'
+                    >
+                        <Calendar
+                            {...pt?.calendar}
+                            className={classNames('cratis-date-picker__calendar', pt?.calendar?.className)}
+                            data-cratis-part='calendar'
+                        >
+                            <header
+                                {...pt?.header}
+                                className={classNames('cratis-date-picker__header', pt?.header?.className)}
+                                data-cratis-part='header'
+                            >
+                                <Button
+                                    {...pt?.previous}
+                                    slot='previous'
+                                    className={classNames('cratis-date-picker__nav', pt?.previous?.className)}
+                                    data-cratis-part='previous'
+                                    aria-label={pt?.previous?.['aria-label'] ?? 'Previous month'}
                                 >
-                                    <i className='pi pi-chevron-left' />
-                                </DatePicker.Prev>
-                                <DatePicker.Title>
-                                    <DatePicker.SelectMonth />
-                                    <DatePicker.SelectYear />
-                                    <DatePicker.Decade />
-                                </DatePicker.Title>
-                                <DatePicker.Next
-                                    as={Button}
-                                    iconOnly
-                                    variant='text'
-                                    rounded
-                                    severity='secondary'
-                                    size='small'
+                                    <span aria-hidden='true'>‹</span>
+                                </Button>
+                                <Heading
+                                    {...pt?.heading}
+                                    className={classNames('cratis-date-picker__heading', pt?.heading?.className)}
+                                    data-cratis-part='heading'
+                                />
+                                <Button
+                                    {...pt?.next}
+                                    slot='next'
+                                    className={classNames('cratis-date-picker__nav', pt?.next?.className)}
+                                    data-cratis-part='next'
+                                    aria-label={pt?.next?.['aria-label'] ?? 'Next month'}
                                 >
-                                    <i className='pi pi-chevron-right' />
-                                </DatePicker.Next>
-                            </DatePicker.Header>
-                            <DatePicker.Table>
-                                <DatePicker.TableHead />
-                                <DatePicker.TableBody />
-                                <DatePicker.TableBody view='month' />
-                                <DatePicker.TableBody view='year' />
-                            </DatePicker.Table>
-                        </DatePicker.Calendar>
-                        {showTime && <DatePicker.Time />}
-                        {showButtonBar && <DatePickerInputButtonBar />}
-                    </DatePicker.Popup>
-                </DatePicker.Positioner>
-            </DatePicker.Portal>
-        </DatePicker.Root>
-    </div>
-);
+                                    <span aria-hidden='true'>›</span>
+                                </Button>
+                            </header>
+                            <CalendarGrid
+                                className={classNames('cratis-date-picker__grid', pt?.grid?.className)}
+                                data-cratis-part='grid'
+                            >
+                                <CalendarGridHeader>
+                                    {day => <CalendarHeaderCell>{day}</CalendarHeaderCell>}
+                                </CalendarGridHeader>
+                                <CalendarGridBody>
+                                    {date => (
+                                        <CalendarCell
+                                            {...pt?.cell}
+                                            date={date}
+                                            className={classNames('cratis-date-picker__cell', pt?.cell?.className)}
+                                            data-cratis-part='cell'
+                                        />
+                                    )}
+                                </CalendarGridBody>
+                            </CalendarGrid>
+                        </Calendar>
+                        {showButtonBar && (
+                            <div
+                                {...pt?.buttonBar}
+                                className={classNames('cratis-date-picker__button-bar', pt?.buttonBar?.className)}
+                                data-cratis-part='button-bar'
+                            >
+                                <button
+                                    {...pt?.today}
+                                    type='button'
+                                    className={classNames('cratis-date-picker__action', pt?.today?.className)}
+                                    data-cratis-part='today'
+                                    onClick={() => onChange(today(getLocalTimeZone()).toDate(getLocalTimeZone()))}
+                                >
+                                    {todayLabel}
+                                </button>
+                                <button
+                                    {...pt?.clear}
+                                    type='button'
+                                    className={classNames('cratis-date-picker__action', pt?.clear?.className)}
+                                    data-cratis-part='clear'
+                                    onClick={() => onChange(null)}
+                                >
+                                    {clearLabel}
+                                </button>
+                            </div>
+                        )}
+                    </Dialog>
+                </Popover>
+            </AriaDatePicker>
+        </div>
+    );
+};

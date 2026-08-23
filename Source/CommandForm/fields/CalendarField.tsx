@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { DatePickerInput } from '../../Common/DatePickerInput';
-import type { DatePickerRootProps } from '@primereact/types/primitive/datepicker';
+import {
+    DatePickerInput,
+    type DatePickerInputPassThrough,
+} from '../../Common/DatePickerInput';
 import React from 'react';
 
 /**
@@ -34,13 +36,13 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying DatePicker. */
-    pt?: DatePickerRootProps['pt'];
+    /** Cratis-owned per-part attributes applied to the date picker. */
+    pt?: DatePickerInputPassThrough;
 
-    /** PrimeReact pass-through options applied to the underlying DatePicker. */
-    ptOptions?: DatePickerRootProps['ptOptions'];
+    /** Retained for source compatibility; Cratis parts always merge. */
+    ptOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the underlying DatePicker. */
+    /** Retained for source compatibility; consumers always own the CSS. */
     unstyled?: boolean;
 }
 
