@@ -14,17 +14,17 @@ const config: StorybookConfig = {
     core: { builder: '@storybook/builder-vite' },
     staticDirs: ['../public'],
     // Ensure Vite dev server does not open the browser when Storybook starts
-    async viteFinal(existingConfig: ViteConfig) {
-        const cfg: ViteConfig = { ...existingConfig };
-        cfg.server = { ...(cfg.server || {}), open: false };
-        cfg.build = {
-            ...(cfg.build || {}),
+    viteFinal(existingConfig: ViteConfig) {
+        const config: ViteConfig = { ...existingConfig };
+        config.server = { ...(config.server || {}), open: false };
+        config.build = {
+            ...(config.build || {}),
             cssMinify: false,
             // The preview index includes Storybook's manager runtime and every story entry;
             // it is documentation output rather than a consumer package chunk.
             chunkSizeWarningLimit: 1200,
         };
-        return cfg;
+        return config;
     },
 };
 

@@ -9,6 +9,7 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 | `no-primereact-dialog` | Disallows importing `Dialog` from `primereact/dialog`. Use `CommandDialog` from `@cratis/components/CommandDialog`, or `Dialog` from `@cratis/components/Dialogs` — the wrappers add Arc command binding, overlay/focus fixes, and theming. |
 | `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. `onBeforeExecute` is a transformer — a body that can complete without returning executes the command with `undefined` (silent data loss). |
 | `no-hooks-in-view-model` | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions. |
+| `no-raw-command-form-marker` | Disallows identifying a CommandForm field or column by a hand-written `displayName` string, in either direction. Use `markAsCommandFormField`/`markAsCommandFormColumn` and `isCommandFormField`/`isCommandFormColumn` from `@cratis/components/CommandForm` — they go through a marker a build transform cannot rewrite. |
 
 The two import rules cover `import` and re-`export … from` forms.
 
@@ -44,7 +45,7 @@ export default [
 }],
 ```
 
-`onbeforeexecute-must-return` and `no-hooks-in-view-model` take no options.
+`onbeforeexecute-must-return`, `no-hooks-in-view-model` and `no-raw-command-form-marker` take no options.
 
 ## Rules
 
@@ -96,3 +97,38 @@ A class is treated as a view model when it is registered via `withViewModel(...)
 with `@injectable`, or named `*ViewModel`. Both bare hooks (`useState`, `useIdentity`, …) and
 proxy member hooks (`.use()`, `.useSuspense()`, `.useChangeStream()`) are flagged. Hooks
 inside a nested non–view-model class are not.
+
+### `no-raw-command-form-marker`
+
+`CommandForm`, `CommandDialog` and `CommandStepper` decide which children are fields by
+inspecting the child's component type. Historically that test was a single string
+comparison against `displayName` — and `displayName` is React's public, writable
+*diagnostic* name, a routine target for build tooling. Storybook's
+`reactDocgen: 'react-docgen-typescript'` setting rewrites it by default.
+
+When it is rewritten, the child stops being recognized as a field: it renders with no
+container, so no label, no bound value and no change handler. There is no error and no
+warning, and every gate stays green.
+
+The helpers go through an `isCommandFormField` / `isCommandFormColumn` marker that a rename
+does not touch, while still setting and honoring the legacy `displayName` — so they are strictly
+more permissive than the literal, never less. `@cratis/arc.react` marks and reads the same two
+properties, and that shared shape is what carries the contract across the two packages.
+
+```ts
+// ❌ a build transform that rewrites displayName silently unbinds this field
+MyField.displayName = 'CommandFormField';
+if (component.displayName === 'CommandFormField') { wrap(component); }
+
+// ✅ marker first, legacy displayName still set and still honoured
+import { markAsCommandFormField, isCommandFormField } from '@cratis/components/CommandForm';
+
+markAsCommandFormField(MyField);
+if (isCommandFormField(component)) { wrap(component); }
+```
+
+Flagged in both directions: assignment (`C.displayName = '…'`, including computed and
+object-literal forms) and comparison (`===`, `!==`, either operand order). Referring to the
+exported `CommandFormFieldDisplayName` / `CommandFormColumnDisplayName` constants is not
+flagged, so the declarations themselves and any deliberate legacy-path code stay clean.
+Prefer `asCommandFormField` from `@cratis/arc.react` where it applies — it marks for you.

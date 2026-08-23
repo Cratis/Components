@@ -1,0 +1,67 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* The positioning context for the corner buttons — the message panel itself, so they straddle its
+   bottom edge rather than sitting below whatever else the bubble carries. */
+.chat-bubble-panel {
+    position: relative;
+}
+
+/* Room below the panel for the half of the buttons that hangs outside it, so they never land on the
+   timestamp or the reactions underneath. Only when there are buttons: a bubble without them keeps its
+   old height. */
+.chat-bubble-panel--with-actions {
+    margin-bottom: 13px;
+}
+
+/* And a little room inside, so the half that overlaps the panel sits on its padding rather than on
+   the last line of the message. */
+.chat-bubble-panel--with-actions .chat-bubble-text {
+    padding-bottom: 14px;
+}
+
+/* Straddling the panel's bottom edge in its lower-right corner — half in, half out, so they read as
+   belonging to the message without taking a line of their own inside it. */
+.chat-bubble-actions {
+    position: absolute;
+    right: 10px;
+    bottom: -11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* A stroke around a solid fill: the button lies across the bubble's edge, so a translucent fill would
+   let that edge run straight through it and stop it reading as one round control. The fill is the
+   panel's own color, which is what the half hanging outside is sitting on. */
+.chat-bubble-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 999px;
+    background: #24243a;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.chat-bubble-action:hover,
+.chat-bubble-action:focus-visible {
+    border-color: rgba(255, 255, 255, 0.55);
+    background: #32324e;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* Once a person has reacted, the button shows their emoji as real state rather than a hover-only
+   affordance, so it stays visible without hovering. */
+.chat-bubble-action--own-reaction {
+    border-color: rgba(255, 255, 255, 0.45);
+    background: #32324e;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+}

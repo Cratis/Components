@@ -1,0 +1,47 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Sits above the compose row inside the chat panel, which is a dark surface of its own — the colors
+   here match that panel deliberately rather than following the light/dark theme tokens. */
+.mention-suggestions {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 8px;
+    right: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: #262637;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 400;
+}
+
+.mention-suggestions__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 5px 8px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.mention-suggestions__item--highlighted {
+    background: rgba(99, 102, 241, 0.35);
+}
+
+.mention-suggestions__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

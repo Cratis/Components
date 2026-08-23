@@ -13,6 +13,7 @@ import {
     type CommandFormProps
 } from '@cratis/arc.react/commands';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import { isCommandFormField, markAsCommandFormColumn } from '../CommandForm/commandFormMarkers';
 
 /**
  * Props for {@link CommandDialog}. Combines the props of a `CommandForm`
@@ -154,7 +155,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             if (!React.isValidElement(child)) return child;
 
             const component = child.type as React.ComponentType<unknown>;
-            if (component.displayName === 'CommandFormField') {
+            if (isCommandFormField(component)) {
                 type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
                 return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
             }
@@ -390,7 +391,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
 const CommandDialogColumnWrapper = ({ children }: { children: React.ReactNode }) => (
     <CommandForm.Column>{children}</CommandForm.Column>
 );
-CommandDialogColumnWrapper.displayName = 'CommandFormColumn';
+markAsCommandFormColumn(CommandDialogColumnWrapper);
 
 CommandDialogComponent.Column = CommandDialogColumnWrapper;
 

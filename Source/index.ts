@@ -1,6 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import * as Canvas from './Canvas';
 import * as CommandDialog from './CommandDialog';
 import * as CommandStepper from './CommandDialog';
 import * as CommandForm from './CommandForm';
@@ -21,6 +22,7 @@ import * as Toolbar from './Toolbar';
 import * as Types from './types';
 
 export {
+    Canvas,
     CommandDialog,
     CommandStepper,
     CommandForm,

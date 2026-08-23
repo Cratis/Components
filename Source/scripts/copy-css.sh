@@ -18,4 +18,18 @@ for stylesheet in tokens.css theme.css; do
     echo "Copied $stylesheet"
 done
 
+# Font files a component's own CSS reaches via a relative `url(...)` (e.g. Canvas's Note face) - the
+# `bundle-styles` plugin concatenates component stylesheets into dist/esm/styles.css verbatim, with no
+# url() rewriting, so a relative reference only keeps resolving once the asset sits next to that file
+# at the same relative depth. Copied flat (basename only) because styles.css itself is flat in dist/esm;
+# every component's font `url()` is a bare `./file.ext` for the same reason. Collisions across
+# components would need a rethink (a subfolder plus matching url() rewrite), but nothing ships one yet.
+# `find`, not a bash 4+ `globstar` glob, because macOS ships bash 3.2 as `/bin/bash`.
+find . -path ./dist -prune -o -path ./node_modules -prune -o \
+    \( -iname '*.woff2' -o -iname '*.woff' -o -iname '*.ttf' -o -iname '*.otf' \) -print |
+while IFS= read -r font; do
+    cp "$font" "dist/esm/$(basename "$font")"
+    echo "Copied $(basename "$font")"
+done
+
 echo "Stylesheet layers copied successfully"
