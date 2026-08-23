@@ -116,7 +116,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
                 menuItems.push({
                     label: child.props.label,
                     command: child.props.command,
-                    icon: Icon ? <Icon className='mr-2' /> : undefined,
+                    icon: Icon ? <Icon className='cratis:mr-2' /> : undefined,
                     disabled:
                         (child.props.disabled ?? false) ||
                         (isDisabled && (child.props.disableOnUnselected ?? false)),
@@ -128,7 +128,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
     }, [children, isDisabled]);
 
     return (
-        <div className='cratis-data-page-actions px-4 py-2' style={actionsStyle}>
+        <div className='cratis-data-page-actions cratis:px-4 cratis:py-2' style={actionsStyle}>
             <ActionMenubar
                 aria-label={context.actionsAriaLabel ?? 'Actions'}
                 model={items}
@@ -504,7 +504,7 @@ const DataPage = <
         <DataPageContext.Provider value={context}>
             <Page title={props.title} panel={true} style={pageStyle}>
                 {props.detailsComponent ? (
-                    <Allotment className='h-full' proportionalLayout={false}>
+                    <Allotment className='cratis:h-full' proportionalLayout={false}>
                         <Allotment.Pane>
                             <DataPageLayout>{props.children}</DataPageLayout>
                         </Allotment.Pane>

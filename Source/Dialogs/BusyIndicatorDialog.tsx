@@ -66,11 +66,11 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             initialFocus={DialogInitialFocus.Content}
             className='cratis-busy-indicator-dialog'
         >
-            <div className='flex flex-col items-center justify-center gap-4 py-4'>
+            <div className='cratis:flex cratis:flex-col cratis:items-center cratis:justify-center cratis:gap-4 cratis:py-4'>
                 {/* The spinner's role="progressbar" needs an accessible name; use the
                     consumer-supplied message/title (already localized), never a baked-in string. */}
                 <ProgressSpinner aria-label={props.message || props.title || 'Loading'} />
-                <p className='m-0 text-center'>{props.message}</p>
+                <p className='cratis:m-0 cratis:text-center'>{props.message}</p>
             </div>
         </Dialog>
     );

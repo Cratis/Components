@@ -13,12 +13,13 @@
     position: relative;
     display: flex;
     width: 100%;
-    min-height: 2.5rem;
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
     align-items: center;
     overflow: hidden;
-    border: 1px solid var(--cratis-surface-border);
+    border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
 }
 .cratis-date-picker__group[data-focus-within] {
     border-color: var(--cratis-primary-color);
@@ -28,13 +29,13 @@
     border-color: var(--cratis-red-500);
 }
 .cratis-date-picker[data-disabled='true'] {
-    opacity: 0.6;
+    opacity: var(--cratis-disabled-opacity);
 }
 .cratis-date-picker__input {
     display: flex;
     flex: 1;
     min-width: 0;
-    padding: 0.45rem 0.7rem;
+    padding: 0.625rem 0.75rem;
 }
 .cratis-date-picker__group[data-empty='true']:not([data-focus-within])
     .cratis-date-picker__input {
@@ -64,9 +65,9 @@
 }
 .cratis-date-picker__trigger {
     align-self: stretch;
-    min-width: 2.5rem;
+    min-width: var(--cratis-control-height);
     border: 0;
-    border-inline-start: 1px solid var(--cratis-surface-border);
+    border-inline-start: 1px solid var(--cratis-control-border);
     background: transparent;
     color: var(--cratis-text-color-secondary);
     cursor: pointer;
@@ -80,14 +81,13 @@
     box-shadow: inset var(--cratis-focus-ring);
 }
 .cratis-date-picker__popover {
-    z-index: 1200;
+    z-index: var(--cratis-z-index-overlay);
     overflow: auto;
     border: 1px solid var(--cratis-surface-border);
     border-radius: var(--cratis-border-radius);
     background: var(--cratis-surface-overlay);
     color: var(--cratis-text-color);
-    box-shadow: 0 0.75rem 2rem
-        color-mix(in srgb, var(--cratis-text-color) 18%, transparent);
+    box-shadow: var(--cratis-shadow-overlay);
 }
 .cratis-date-picker__dialog {
     padding: 0.75rem;
@@ -138,8 +138,8 @@
 }
 .cratis-date-picker__cell {
     display: flex;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.5rem;
+    height: 2.5rem;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -150,8 +150,8 @@
     background: var(--cratis-surface-hover);
 }
 .cratis-date-picker__cell[data-selected] {
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
 }
 .cratis-date-picker__cell[data-focused] {
     box-shadow: var(--cratis-focus-ring);

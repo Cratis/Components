@@ -120,9 +120,9 @@ class ManyPersonsQuery extends QueryFor<Person, object> {
 
 const PersonDetails = ({ item }: { item: Person }) => {
     return (
-        <div className='p-4'>
-            <h2 className='text-2xl font-bold mb-4'>Person Details</h2>
-            <div className='space-y-2'>
+        <div className='cratis:p-4'>
+            <h2 className='cratis:text-2xl cratis:font-bold cratis:mb-4'>Person Details</h2>
+            <div className='cratis:space-y-2'>
                 <div>
                     <strong>ID:</strong> {item.id}
                 </div>
@@ -290,9 +290,9 @@ const PersonDetailsWithRefresh = ({
     onRefresh?: () => void;
 }) => {
     return (
-        <div className='p-4'>
-            <h2 className='text-2xl font-bold mb-4'>Person Details</h2>
-            <div className='space-y-2 mb-4'>
+        <div className='cratis:p-4'>
+            <h2 className='cratis:text-2xl cratis:font-bold cratis:mb-4'>Person Details</h2>
+            <div className='cratis:space-y-2 cratis:mb-4'>
                 <div>
                     <strong>Name:</strong> {item.name}
                 </div>

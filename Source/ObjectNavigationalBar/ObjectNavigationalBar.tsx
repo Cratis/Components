@@ -50,8 +50,8 @@ export function ObjectNavigationalBar({
         [navigationPath],
     );
     const rootClassName = className
-        ? `cratis-object-navigational-bar px-4 py-2 mb-2 ${className}`
-        : 'cratis-object-navigational-bar px-4 py-2 mb-2';
+        ? `cratis-object-navigational-bar cratis:px-4 cratis:py-2 cratis:mb-2 ${className}`
+        : 'cratis-object-navigational-bar cratis:px-4 cratis:py-2 cratis:mb-2';
 
     return (
         <div className={rootClassName}>
@@ -74,7 +74,7 @@ export function ObjectNavigationalBar({
                 >
                     {breadcrumbItems.map((item, index) => (
                         <span key={index}>
-                            {index > 0 && <span className='mx-2'>&gt;</span>}
+                            {index > 0 && <span className='cratis:mx-2'>&gt;</span>}
                             <button
                                 type='button'
                                 onClick={() => onNavigate(item.index)}

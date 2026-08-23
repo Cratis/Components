@@ -143,6 +143,7 @@ jobs:
               run: |
                   yarn workspace @cratis/components prepare
                   yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
+                  yarn workspace @cratis/components verify-package-archive /tmp/cratis-components.tgz
 
             - name: Verify Arc ${{ matrix.arc-version }} rendering consumer
               run: |
@@ -204,6 +205,7 @@ jobs:
               run: |
                   yarn workspace @cratis/components prepare
                   yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
+                  yarn workspace @cratis/components verify-package-archive /tmp/cratis-components.tgz
 
             - name: Create consumer fixture
               run: |

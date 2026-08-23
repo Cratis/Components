@@ -7,6 +7,7 @@ import {
     type HTMLAttributes,
     type ReactNode,
     useEffect,
+    useId,
     useMemo,
     useRef,
     useState,
@@ -85,8 +86,17 @@ export const ToolbarFolder = ({
 }: ToolbarFolderProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
+    const generatedPanelId = useId();
+    const panelId = pt?.panel?.id ?? generatedPanelId;
 
-    const items = useMemo(() => Children.toArray(children).filter(child => child !== null && child !== undefined), [children]);
+    const items = useMemo(
+        () =>
+            Children.toArray(children).filter(
+                (child) => child !== null && child !== undefined,
+            ),
+        [children],
+    );
     const itemCount = Math.max(1, items.length);
 
     const columns = useMemo(() => {
@@ -96,7 +106,7 @@ export const ToolbarFolder = ({
     }, [itemCount, maxColumns]);
 
     const toggleExpanded = () => {
-        setIsExpanded(current => !current);
+        setIsExpanded((current) => !current);
     };
 
     useEffect(() => {
@@ -105,14 +115,26 @@ export const ToolbarFolder = ({
         }
 
         const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target as Node)
+            ) {
                 setIsExpanded(false);
             }
         };
 
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            setIsExpanded(false);
+            triggerRef.current?.focus();
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
         };
     }, [isExpanded]);
 
@@ -132,27 +154,35 @@ export const ToolbarFolder = ({
                 <Tooltip content={title} position={tooltipPosition} disabled={isExpanded}>
                     <button
                         {...pt?.trigger}
+                        ref={triggerRef}
                         type='button'
                         aria-label={title}
                         aria-expanded={isExpanded}
+                        aria-controls={panelId}
                         onClick={toggleExpanded}
-                        className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
+                        className={`toolbar-button cratis:w-10 cratis:h-10 cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
                         data-cratis-part='toolbar-folder-trigger'
                     >
-                        <IconDisplay icon={icon} className='text-lg' />
+                        <IconDisplay icon={icon} className='cratis:text-lg' />
                     </button>
                 </Tooltip>
                 <div
                     {...pt?.panel}
+                    id={panelId}
+                    role='group'
+                    aria-label={title}
                     className={`toolbar-folder-panel ${directionClass} ${panelVisibleClass} ${modeClass} ${pt?.panel?.className ?? ''}`}
                     style={{
                         ...pt?.panel?.style,
-                        ...(mode === 'grid' ? {
-                            gridTemplateColumns: `repeat(${columns}, minmax(2.5rem, 2.5rem))`,
-                        } : {}),
+                        ...(mode === 'grid'
+                            ? {
+                                  gridTemplateColumns: `repeat(${columns}, minmax(2.5rem, 2.5rem))`,
+                              }
+                            : {}),
                     }}
                     data-cratis-part='toolbar-folder-panel'
                     data-expanded={isExpanded || undefined}
+                    data-direction={folderDirection}
                     data-mode={mode}
                     aria-hidden={!isExpanded}
                     inert={!isExpanded}

@@ -15,6 +15,10 @@ import './product-components.css';
 ```css
 :root {
     --cratis-primary-color: var(--product-accent);
+    --cratis-action-background: var(--product-action);
+    --cratis-action-background-hover: var(--product-action-hover);
+    --cratis-action-background-active: var(--product-action-active);
+    --cratis-action-text: var(--product-on-action);
 }
 
 .product-toolbar[data-cratis-part='root'] {
@@ -22,4 +26,4 @@ import './product-components.css';
 }
 ```
 
-All three layers are Cratis-owned. There is no provider theme or renderer cascade layer to coordinate.
+All three entries are Cratis-owned. Structural rules live in the low-priority `cratis-components` layer and internal utilities in `cratis-utilities`; the unlayered `product-components.css` import wins over both. There is no provider theme or renderer cascade layer to coordinate.

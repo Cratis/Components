@@ -12,6 +12,7 @@ import {
     Canvas,
     CanvasItem,
     CanvasOverlay,
+    type CanvasCaptureAttributes,
     type CanvasHandle,
 } from '@cratis/components/Canvas';
 ```
@@ -43,59 +44,82 @@ const handleReady = (handle: CanvasHandle) => {
 
 `T` extends `CanvasItemData` (`id`, `x`, `y`) when the optional Pixi item renderer is used.
 
-| Prop | Type | Default | Meaning |
-| --- | --- | --- | --- |
-| `children` | `ReactNode` | — | DOM canvas content, normally positioned with `CanvasItem`. |
-| `items` | `T[]` | `[]` | Optional Pixi-backed item data. |
-| `renderItem` | `(item: T) => PIXI.Container` | — | Builds one Pixi display object. |
-| `onItemPointerDown` | `(item, event) => void` | — | Receives Pixi item pointer activation. |
-| `onReady` | `(context: CanvasContext) => void` | — | Provides the Pixi `app` and `world` container. |
-| `onTransformChange` | `(zoom, pan) => void` | — | Reports camera changes. |
-| `initialZoom` | `number` | `1` | Initial zoom factor. |
-| `initialPan` | `{ x: number; y: number }` | `{ x: 0, y: 0 }` | Initial viewport translation. |
-| `minZoom` / `maxZoom` | `number` | `0.1` / `5` | Zoom limits. |
-| `showControls` | `boolean` | `true` | Shows zoom controls. |
-| `showMinimap` | `boolean` | `false` | Adds the minimap toggle/control. |
-| `minimapWorldWidth` / `minimapWorldHeight` | `number` | `4000` / `3000` in the minimap | World dimensions represented by the minimap. |
-| `minimapItems` | `MinimapItem[]` | measured items | Explicit minimap rectangles. |
-| `controlsPlacement` | `'bottom-left' \| 'bottom-right'` | `'bottom-left'` | Control-bar edge. |
-| `className` / `style` | standard React values | — | Canvas root customization. |
-| `onHelp` | `() => void` | — | Adds and handles the help action. |
-| `helpTitle` | `string` | provider-independent English fallback | Help action label. |
-| `controlsLabels` | `CanvasControlsLabels` | English fallbacks | Localizes integrated minimap, zoom, reset, and help controls. |
-| `controlsGlassSurface` | `ReactNode` | — | Product-owned glass/acrylic surface rendered behind integrated controls. |
-| `disableControlsGlass` | `boolean` | `false` | Forces the low-cost CSS frosted pill. The same fallback is used automatically when no `controlsGlassSurface` is supplied. |
-| `onHandleReady` | `(handle: CanvasHandle) => void` | — | Provides imperative camera/item-bound operations. |
-| `readOnly` | `boolean` | `false` | Keeps pan/zoom but absorbs content interaction. |
-| `backgroundDragPans` | `boolean` | `true` | Set `false` when the product owns empty-background drag selection. Wheel, middle-button, and touch panning remain available. |
+| Prop                                       | Type                               | Default                               | Meaning                                                                                                                           |
+| ------------------------------------------ | ---------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `children`                                 | `ReactNode`                        | —                                     | DOM canvas content, normally positioned with `CanvasItem`.                                                                        |
+| `items`                                    | `T[]`                              | `[]`                                  | Optional Pixi-backed item data.                                                                                                   |
+| `renderItem`                               | `(item: T) => PIXI.Container`      | —                                     | Builds one Pixi display object.                                                                                                   |
+| `onItemPointerDown`                        | `(item, event) => void`            | —                                     | Receives Pixi item pointer activation.                                                                                            |
+| `onReady`                                  | `(context: CanvasContext) => void` | —                                     | Provides the Pixi `app` and `world` container.                                                                                    |
+| `onTransformChange`                        | `(zoom, pan) => void`              | —                                     | Reports camera changes.                                                                                                           |
+| `initialZoom`                              | `number`                           | `1`                                   | Initial zoom factor.                                                                                                              |
+| `initialPan`                               | `{ x: number; y: number }`         | `{ x: 0, y: 0 }`                      | Initial viewport translation.                                                                                                     |
+| `minZoom` / `maxZoom`                      | `number`                           | `0.1` / `5`                           | Zoom limits.                                                                                                                      |
+| `showControls`                             | `boolean`                          | `true`                                | Shows zoom controls.                                                                                                              |
+| `showMinimap`                              | `boolean`                          | `false`                               | Adds the minimap toggle/control.                                                                                                  |
+| `minimapWorldWidth` / `minimapWorldHeight` | `number`                           | `4000` / `3000` in the minimap        | World dimensions represented by the minimap.                                                                                      |
+| `minimapItems`                             | `MinimapItem[]`                    | measured items                        | Explicit minimap rectangles.                                                                                                      |
+| `controlsPlacement`                        | `'bottom-left' \| 'bottom-right'`  | `'bottom-left'`                       | Control-bar edge.                                                                                                                 |
+| `className` / `style`                      | standard React values              | —                                     | Canvas root customization.                                                                                                        |
+| `onHelp`                                   | `() => void`                       | —                                     | Adds and handles the help action.                                                                                                 |
+| `helpTitle`                                | `string`                           | provider-independent English fallback | Help action label.                                                                                                                |
+| `controlsLabels`                           | `CanvasControlsLabels`             | English fallbacks                     | Localizes integrated minimap, zoom, reset, and help controls.                                                                     |
+| `controlsGlassSurface`                     | `ReactNode`                        | —                                     | Product-owned glass/acrylic surface rendered behind integrated controls.                                                          |
+| `disableControlsGlass`                     | `boolean`                          | `false`                               | Forces the low-cost CSS frosted pill. The same fallback is used automatically when no `controlsGlassSurface` is supplied.         |
+| `captureAttributes`                        | `CanvasCaptureAttributes`          | —                                     | Product-owned layer/content/transform-host attribute names for a capture or compositor pipeline. Nothing is hardcoded by default. |
+| `onHandleReady`                            | `(handle: CanvasHandle) => void`   | —                                     | Provides imperative camera/item-bound operations.                                                                                 |
+| `readOnly`                                 | `boolean`                          | `false`                               | Keeps pan/zoom but absorbs content interaction.                                                                                   |
+| `backgroundDragPans`                       | `boolean`                          | `true`                                | Set `false` when the product owns empty-background drag selection. Wheel, middle-button, and touch panning remain available.      |
 
 ### `CanvasHandle`
 
-| Method | Meaning |
-| --- | --- |
-| `smoothPanToWorld(x, y, durationMs?)` | Centers a world point with an animated pan. |
-| `smoothPanZoomToWorld(x, y, zoom?, durationMs?)` | Animates pan and zoom together. |
-| `getContainerRect()` | Returns the current viewport rectangle or `null`. |
-| `getItemBounds()` | Returns measured world-space rectangles as `MinimapItem[]`. |
+| Method                                           | Meaning                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------- |
+| `smoothPanToWorld(x, y, durationMs?)`            | Centers a world point with an animated pan.                 |
+| `smoothPanZoomToWorld(x, y, zoom?, durationMs?)` | Animates pan and zoom together.                             |
+| `getContainerRect()`                             | Returns the current viewport rectangle or `null`.           |
+| `getItemBounds()`                                | Returns measured world-space rectangles as `MinimapItem[]`. |
 
 ## CanvasItem
 
 `CanvasItem` positions and measures DOM content inside a `Canvas`.
 
-| Prop | Type | Meaning |
-| --- | --- | --- |
-| `x` / `y` | `number` | World position. |
-| `zIndex` | `number` | Item-root stacking order. Use this rather than a descendant z-index because each transformed item is its own stacking context. |
-| `onSize` | `(width, height) => void` | Reports measured size changes. |
-| `children` | `ReactNode` | Item content. |
+| Prop       | Type                      | Meaning                                                                                                                        |
+| ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `x` / `y`  | `number`                  | World position.                                                                                                                |
+| `zIndex`   | `number`                  | Item-root stacking order. Use this rather than a descendant z-index because each transformed item is its own stacking context. |
+| `onSize`   | `(width, height) => void` | Reports measured size changes.                                                                                                 |
+| `children` | `ReactNode`               | Item content.                                                                                                                  |
 
 ## Controls and minimap
 
-`CanvasControls` is exported for products that compose controls separately. Its callbacks are `getZoom`, `onZoomIn`, `onZoomOut`, and `onZoomReset`; optional minimap, placement, help, label, glass-surface, and low-cost fallback props match the integrated Canvas controls.
+`CanvasControls` is exported for products that compose controls separately. Its callbacks are `getZoom`, `onZoomIn`, `onZoomOut`, and `onZoomReset`; optional minimap, placement, help, label, glass-surface, and low-cost fallback props match the integrated Canvas controls. Standalone controls can set `contentCaptureAttribute` when a product compositor needs to mark their non-plain surface.
 
 `CanvasControlsLabels` localizes `toggleMinimap`, `zoomOut`, `resetZoom`, `zoomIn`, and `help`.
 
 `CanvasMinimap` accepts `worldWidth`, `worldHeight`, `items`, and `onRequestPan`. A `MinimapItem` contains `x`, `y`, `width`, `height`, and optional `color`. Its ref exposes `CanvasMinimapHandle.update(pan, zoom, canvasWidth, canvasHeight)`.
+
+### Product capture/compositor integration
+
+Components does not know Studio's Liquid Glass attribute vocabulary. A product opts into its own markers explicitly:
+
+```tsx
+import { Canvas, type CanvasCaptureAttributes } from '@cratis/components/Canvas';
+import LiquidGlassSurface from './LiquidGlassSurface'; // product-owned surface
+
+const captureAttributes: CanvasCaptureAttributes = {
+    layer: 'data-liquid-glass-layer',
+    content: 'data-liquid-glass-content',
+    transformHost: 'data-liquid-glass-transform-host',
+};
+
+<Canvas
+    captureAttributes={captureAttributes}
+    controlsGlassSurface={<LiquidGlassSurface cornerRadius={999} />}
+/>;
+```
+
+`layer` marks the Pixi canvas, `content` marks non-plain integrated controls, and `transformHost` marks both pan/zoom hosts. Omit the prop when the product has no capture pipeline. This keeps provider-specific names and update ownership outside Components.
 
 ## Overlays and SSR
 

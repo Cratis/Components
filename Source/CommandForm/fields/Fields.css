@@ -14,14 +14,15 @@
 }
 
 .cratis-field-input {
-    min-height: 2.5rem;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid var(--cratis-surface-border);
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
     color: var(--cratis-text-color);
     font: inherit;
-    box-shadow: 0 1px 2px color-mix(in srgb, var(--cratis-text-color) 5%, transparent);
+    box-shadow: var(--cratis-shadow-subtle);
 }
 .cratis-field-input::placeholder {
     color: var(--cratis-text-color-secondary);
@@ -30,6 +31,10 @@
     outline: none;
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
+}
+.cratis-field-input:disabled {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
 }
 .cratis-field-input[data-invalid='true'],
 .cratis-field-input[aria-invalid='true'] {
@@ -78,6 +83,10 @@
     gap: 0.5rem;
     cursor: pointer;
 }
+.cratis-choice-field:has(.cratis-choice-field__native:disabled) {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
 .cratis-choice-field__native {
     position: absolute;
     width: 1px;
@@ -91,9 +100,9 @@
     height: 1.25rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--cratis-surface-border);
-    border-radius: calc(var(--cratis-border-radius) * 0.65);
-    background: var(--cratis-surface-card);
+    border: 1px solid var(--cratis-control-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-control-background);
 }
 .cratis-checkbox__indicator {
     opacity: 0;
@@ -122,7 +131,7 @@
     height: 1.4rem;
     padding: 0.15rem;
     align-items: center;
-    border: 1px solid var(--cratis-surface-border);
+    border: 1px solid var(--cratis-control-border);
     border-radius: 999px;
     background: var(--cratis-surface-100);
     transition: background-color 140ms ease;
@@ -131,8 +140,8 @@
     width: 1rem;
     height: 1rem;
     border-radius: 50%;
-    background: var(--cratis-surface-card);
-    box-shadow: 0 1px 3px color-mix(in srgb, var(--cratis-text-color) 25%, transparent);
+    background: var(--cratis-control-background);
+    box-shadow: var(--cratis-shadow-subtle);
     transition: transform 140ms ease;
 }
 .cratis-choice-field__native:checked + .cratis-switch__control {
@@ -149,9 +158,9 @@
     height: 1.25rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--cratis-surface-border);
+    border: 1px solid var(--cratis-control-border);
     border-radius: 50%;
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
 }
 .cratis-radio__indicator {
     width: 0.65rem;
@@ -202,14 +211,15 @@
 
 .cratis-chips-field {
     display: flex;
-    min-height: 2.5rem;
-    padding: 0.3rem;
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.4rem;
     align-items: center;
     flex-wrap: wrap;
     gap: 0.35rem;
-    border: 1px solid var(--cratis-surface-border);
+    border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
 }
 .cratis-chips-field:focus-within {
     border-color: var(--cratis-primary-color);
@@ -255,11 +265,11 @@
 }
 .cratis-color-field__input {
     width: 3rem;
-    height: 2.5rem;
+    height: var(--cratis-control-height);
     padding: 0.2rem;
-    border: 1px solid var(--cratis-surface-border);
+    border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
 }
 .cratis-color-field__input:focus-visible {
     outline: none;

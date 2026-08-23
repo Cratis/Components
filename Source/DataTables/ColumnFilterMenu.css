@@ -28,7 +28,7 @@
 }
 
 .cratis-filter-popover {
-    z-index: 1250;
+    z-index: var(--cratis-z-index-filter);
 }
 
 .cratis-filter-menu {
@@ -39,16 +39,17 @@
     padding: 0.5rem;
     background: var(--cratis-surface-overlay);
     border: 1px solid var(--cratis-surface-border);
-    border-radius: 0.375rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    border-radius: var(--cratis-border-radius);
+    box-shadow: var(--cratis-shadow-overlay);
 }
 
 .cratis-filter-menu__input {
-    min-height: 2.5rem;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid var(--cratis-surface-border);
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
     color: var(--cratis-text-color);
     font: inherit;
 }

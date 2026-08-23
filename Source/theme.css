@@ -1,89 +1,145 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* Optional Cratis baseline values. Component structure lives in styles.css. */
+/*
+ * Optional baseline scheme behavior. Light root defaults live in tokens.css so a custom product can
+ * import tokens + structure and override the seam directly. This file adds document/subtree color,
+ * scoped light defaults, automatic/explicit dark values, and forced-colors values.
+ */
 :root,
 .cratis-theme {
     color: var(--cratis-text-color);
     background-color: var(--cratis-surface-ground);
+}
 
+/* A themed subtree needs its own light defaults because tokens.css is rooted at :root. */
+.cratis-theme {
     --cratis-primary-color: #3b82f6;
     --cratis-primary-color-text: #ffffff;
     --cratis-primary-300: #93c5fd;
     --cratis-primary-400: #60a5fa;
     --cratis-primary-500: #3b82f6;
     --cratis-primary-600: #2563eb;
+    --cratis-action-background: #2563eb;
+    --cratis-action-background-hover: #1d4ed8;
+    --cratis-action-background-active: #1e40af;
+    --cratis-action-text: #ffffff;
     --cratis-green-500: #16a34a;
     --cratis-orange-500: #d97706;
     --cratis-red-500: #dc2626;
-
+    --cratis-info-background: #0369a1;
+    --cratis-info-text: #ffffff;
+    --cratis-success-background: #15803d;
+    --cratis-success-text: #ffffff;
+    --cratis-warning-background: #c2410c;
+    --cratis-warning-text: #ffffff;
+    --cratis-danger-background: #b91c1c;
+    --cratis-danger-text: #ffffff;
     --cratis-surface-0: #ffffff;
-    --cratis-surface-100: #f1f5f9;
-    --cratis-surface-ground: #f8fafc;
-    --cratis-surface-section: #f8fafc;
+    --cratis-surface-100: #f3f4f6;
+    --cratis-surface-ground: #f9fafb;
+    --cratis-surface-section: #ffffff;
     --cratis-surface-card: #ffffff;
     --cratis-surface-overlay: #ffffff;
-    --cratis-surface-hover: #f1f5f9;
-    --cratis-surface-border: #e2e8f0;
-
-    --cratis-text-color: #1e293b;
-    --cratis-text-color-secondary: #475569;
-    --cratis-highlight-bg: #dbeafe;
-    --cratis-highlight-text-color: #1e40af;
-    --cratis-maskbg: rgba(15, 23, 42, 0.45);
+    --cratis-surface-hover: #f6f9fc;
+    --cratis-surface-border: #dfe7ef;
+    --cratis-control-background: #ffffff;
+    --cratis-control-border: #8492a6;
+    --cratis-text-color: #4b5563;
+    --cratis-text-color-secondary: #6b7280;
+    --cratis-highlight-bg: #eff6ff;
+    --cratis-highlight-text-color: #1d4ed8;
+    --cratis-maskbg: rgb(0 0 0 / 40%);
     --cratis-border-radius: 6px;
-    --cratis-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.35);
-
-    --color-text: var(--cratis-text-color);
-    --color-text-secondary: var(--cratis-text-color-secondary);
-    --color-text-muted: var(--cratis-text-color-secondary);
-    --color-border: var(--cratis-surface-border);
-    --color-background-secondary: var(--cratis-surface-section);
-    --color-background-tertiary: var(--cratis-surface-100);
-    --color-error: #b91c1c;
-    --color-error-bg: #fef2f2;
-    --color-success: #15803d;
-    --color-warning: #b45309;
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 10px;
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
-    --space-xl: 2rem;
-    --space-2xl: 3rem;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --cratis-control-height: 2.75rem;
+    --cratis-control-height-small: 2.25rem;
+    --cratis-control-height-large: 3.25rem;
+    --cratis-disabled-opacity: 0.55;
+    --cratis-focus-ring: 0 0 0 3px #2563eb;
+    --cratis-shadow-subtle: 0 1px 2px rgb(0 0 0 / 5%);
+    --cratis-shadow-overlay: 0 2px 12px rgb(0 0 0 / 10%);
+    --cratis-shadow-dialog: 0 1rem 3rem rgb(0 0 0 / 22%);
+    --cratis-shadow-toast: 0 2px 12px rgb(0 0 0 / 10%);
 }
 
 :root.cratis-dark,
 .cratis-dark .cratis-theme,
 .cratis-theme.cratis-dark {
+    color-scheme: dark;
     --cratis-primary-color: #60a5fa;
-    --cratis-primary-color-text: #0f172a;
-    --cratis-surface-0: #1e293b;
-    --cratis-surface-100: #334155;
-    --cratis-surface-ground: #020617;
-    --cratis-surface-section: #0f172a;
-    --cratis-surface-card: #1e293b;
-    --cratis-surface-overlay: #1e293b;
-    --cratis-surface-hover: #334155;
-    --cratis-surface-border: #475569;
-    --cratis-text-color: #f8fafc;
-    --cratis-text-color-secondary: #cbd5e1;
-    --cratis-highlight-bg: #1e3a8a;
-    --cratis-highlight-text-color: #ffffff;
-    --cratis-maskbg: rgba(0, 0, 0, 0.65);
-    --color-error: #f87171;
-    --color-error-bg: #450a0a;
-    --color-success: #4ade80;
-    --color-warning: #fbbf24;
+    --cratis-primary-color-text: #030712;
+    --cratis-action-background: #60a5fa;
+    --cratis-action-background-hover: #93c5fd;
+    --cratis-action-background-active: #bfdbfe;
+    --cratis-action-text: #030712;
+    --cratis-info-background: #38bdf8;
+    --cratis-info-text: #082f49;
+    --cratis-success-background: #4ade80;
+    --cratis-success-text: #052e16;
+    --cratis-warning-background: #fb923c;
+    --cratis-warning-text: #431407;
+    --cratis-danger-background: #f87171;
+    --cratis-danger-text: #450a0a;
+    --cratis-surface-0: #111827;
+    --cratis-surface-100: #374151;
+    --cratis-surface-ground: #111827;
+    --cratis-surface-section: #1f2937;
+    --cratis-surface-card: #1f2937;
+    --cratis-surface-overlay: #1f2937;
+    --cratis-surface-hover: rgb(255 255 255 / 3%);
+    --cratis-surface-border: rgb(255 255 255 / 10%);
+    --cratis-control-background: #111827;
+    --cratis-control-border: #64748b;
+    --cratis-text-color: rgb(255 255 255 / 87%);
+    --cratis-text-color-secondary: rgb(255 255 255 / 60%);
+    --cratis-highlight-bg: rgb(96 165 250 / 16%);
+    --cratis-highlight-text-color: rgb(255 255 255 / 87%);
+    --cratis-maskbg: rgb(0 0 0 / 40%);
+    --cratis-focus-ring: 0 0 0 3px #93c5fd;
+    --cratis-shadow-subtle: none;
+    --cratis-shadow-overlay: 0 2px 4px -1px rgb(0 0 0 / 20%), 0 4px 5px rgb(0 0 0 / 14%), 0 1px 10px rgb(0 0 0 / 12%);
+    --cratis-shadow-dialog: 0 11px 15px -7px rgb(0 0 0 / 20%), 0 24px 38px 3px rgb(0 0 0 / 14%), 0 9px 46px 8px rgb(0 0 0 / 12%);
+    --cratis-shadow-toast: none;
 }
 
 @media (prefers-color-scheme: dark) {
     :root:not(.cratis-light),
     .cratis-theme:not(.cratis-light) {
         color-scheme: dark;
+        --cratis-primary-color: #60a5fa;
+        --cratis-primary-color-text: #030712;
+        --cratis-action-background: #60a5fa;
+        --cratis-action-background-hover: #93c5fd;
+        --cratis-action-background-active: #bfdbfe;
+        --cratis-action-text: #030712;
+        --cratis-info-background: #38bdf8;
+        --cratis-info-text: #082f49;
+        --cratis-success-background: #4ade80;
+        --cratis-success-text: #052e16;
+        --cratis-warning-background: #fb923c;
+        --cratis-warning-text: #431407;
+        --cratis-danger-background: #f87171;
+        --cratis-danger-text: #450a0a;
+        --cratis-surface-0: #111827;
+        --cratis-surface-100: #374151;
+        --cratis-surface-ground: #111827;
+        --cratis-surface-section: #1f2937;
+        --cratis-surface-card: #1f2937;
+        --cratis-surface-overlay: #1f2937;
+        --cratis-surface-hover: rgb(255 255 255 / 3%);
+        --cratis-surface-border: rgb(255 255 255 / 10%);
+        --cratis-control-background: #111827;
+        --cratis-control-border: #64748b;
+        --cratis-text-color: rgb(255 255 255 / 87%);
+        --cratis-text-color-secondary: rgb(255 255 255 / 60%);
+        --cratis-highlight-bg: rgb(96 165 250 / 16%);
+        --cratis-highlight-text-color: rgb(255 255 255 / 87%);
+        --cratis-maskbg: rgb(0 0 0 / 40%);
+        --cratis-focus-ring: 0 0 0 3px #93c5fd;
+        --cratis-shadow-subtle: none;
+        --cratis-shadow-overlay: 0 2px 4px -1px rgb(0 0 0 / 20%), 0 4px 5px rgb(0 0 0 / 14%), 0 1px 10px rgb(0 0 0 / 12%);
+        --cratis-shadow-dialog: 0 11px 15px -7px rgb(0 0 0 / 20%), 0 24px 38px 3px rgb(0 0 0 / 14%), 0 9px 46px 8px rgb(0 0 0 / 12%);
+        --cratis-shadow-toast: none;
     }
 }
 
@@ -92,9 +148,13 @@
     .cratis-theme {
         --cratis-primary-color: Highlight;
         --cratis-primary-color-text: HighlightText;
+        --cratis-action-background: Highlight;
+        --cratis-action-text: HighlightText;
         --cratis-surface-card: Canvas;
         --cratis-surface-overlay: Canvas;
         --cratis-surface-border: CanvasText;
+        --cratis-control-background: Canvas;
+        --cratis-control-border: CanvasText;
         --cratis-text-color: CanvasText;
         --cratis-text-color-secondary: CanvasText;
         --cratis-focus-ring: 0 0 0 2px Highlight;

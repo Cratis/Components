@@ -7,7 +7,15 @@ The slot system lets any component in the React tree inject toolbar items into a
 Wrap the relevant part of the tree in a `ToolbarSlotProvider`, give a `ToolbarGroup` a `slotName`, and use `ToolbarSlot` anywhere inside the provider to inject items:
 
 ```tsx
-import { ToolbarSlotProvider, ToolbarSlot } from '@cratis/components/Toolbar';
+import {
+    Toolbar,
+    ToolbarButton,
+    ToolbarContext,
+    ToolbarGroup,
+    ToolbarSection,
+    ToolbarSlot,
+    ToolbarSlotProvider,
+} from '@cratis/components/Toolbar';
 
 export const MyCanvas = () => (
     <ToolbarSlotProvider>
@@ -19,7 +27,10 @@ export const MyCanvas = () => (
 
         {/* The feature injects its own button — no prop drilling */}
         <ToolbarSlot slotName='canvas-tools' order={10}>
-            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Feature: Favorite' />
+            <ToolbarButton
+                icon={<span aria-hidden='true'>◆</span>}
+                title='Feature: Favorite'
+            />
         </ToolbarSlot>
 
         <MyFeatureComponent />
@@ -34,9 +45,7 @@ export const MyCanvas = () => (
 Creates the slot registry and makes it available to the rest of the tree. Place it as high as needed so that both the toolbar and all contributing components fall inside it.
 
 ```tsx
-<ToolbarSlotProvider>
-    {children}
-</ToolbarSlotProvider>
+<ToolbarSlotProvider>{children}</ToolbarSlotProvider>
 ```
 
 ### `ToolbarSlot`
@@ -53,11 +62,11 @@ The component registers on mount and unregisters on unmount, so conditional rend
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `slotName` | `string` | required | The slot to inject into |
-| `order` | `number` | `0` | Determines render position relative to other slot items — lower values appear first |
-| `children` | `ReactNode` | required | The toolbar item(s) to inject |
+| Prop       | Type        | Default  | Description                                                                         |
+| ---------- | ----------- | -------- | ----------------------------------------------------------------------------------- |
+| `slotName` | `string`    | required | The slot to inject into                                                             |
+| `order`    | `number`    | `0`      | Determines render position relative to other slot items — lower values appear first |
+| `children` | `ReactNode` | required | The toolbar item(s) to inject                                                       |
 
 ## Slot Hosts
 

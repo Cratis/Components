@@ -66,8 +66,6 @@ export interface CratisComponentsConfig {
      * New code should use {@link messages}; React Aria supplies its own locale data.
      */
     locales?: Record<string, LegacyLocaleMessages>;
-    /** Legacy renderer options are accepted during migration but have no effect. */
-    [legacyRendererOption: string]: unknown;
 }
 
 /** Props for the application-root Components provider. */

@@ -394,7 +394,10 @@ export const Dialog = ({
             <div
                 {...pt?.backdrop}
                 className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
-                style={{ zIndex: 1100, ...pt?.backdrop?.style }}
+                style={{
+                    zIndex: 'var(--cratis-z-index-dialog)',
+                    ...pt?.backdrop?.style,
+                }}
                 data-cratis-part='backdrop'
             >
                 <div
@@ -433,7 +436,10 @@ export const Dialog = ({
             isDismissable={isDismissable}
             isKeyboardDismissDisabled={!isDismissable}
             className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
-            style={{ zIndex: 1100, ...pt?.backdrop?.style }}
+            style={{
+                zIndex: 'var(--cratis-z-index-dialog)',
+                ...pt?.backdrop?.style,
+            }}
             data-cratis-part='backdrop'
         >
             <div

@@ -5,6 +5,7 @@ import type React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect } from 'chai';
 import { describe, it, vi } from 'vitest';
+import { Toolbar } from '../Toolbar';
 import { ToolbarContext } from '../ToolbarContext';
 import { ToolbarFolder } from '../ToolbarFolder';
 import { ToolbarGroup } from '../ToolbarGroup';
@@ -18,7 +19,7 @@ vi.mock('../../Common/Tooltip', () => ({
 
 describe('when rendering Toolbar composition parts', () => {
     const html = renderToStaticMarkup(
-        <>
+        <Toolbar aria-label='Canvas tools'>
             <ToolbarGroup pt={{ root: { id: 'group' } }}>
                 Group
             </ToolbarGroup>
@@ -54,8 +55,13 @@ describe('when rendering Toolbar composition parts', () => {
             >
                 <button type='button'>Nested action</button>
             </ToolbarFolder>
-        </>,
+        </Toolbar>,
     );
+
+    it('should_render_an_accessibly_named_toolbar', () => {
+        expect(html).to.contain('role="toolbar"');
+        expect(html).to.contain('aria-label="Canvas tools"');
+    });
 
     it('should_expose_each_composition_boundary', () => {
         for (const part of [

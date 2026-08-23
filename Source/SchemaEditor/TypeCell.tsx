@@ -111,7 +111,7 @@ export const TypeCell = ({
             const isNavigable = itemType === 'object';
             return (
                 <div
-                    className='flex items-center gap-2 w-full'
+                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full'
                     style={{ height: '100%' }}
                     title={
                         isNavigable ? 'Click to navigate to item definition' : undefined
@@ -136,7 +136,7 @@ export const TypeCell = ({
         } else if (rowData.type === 'object') {
             return (
                 <div
-                    className='flex items-center gap-2 w-full'
+                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full'
                     style={{ height: '100%' }}
                     title='Click to navigate to object properties'
                 >
@@ -157,14 +157,14 @@ export const TypeCell = ({
     }
 
     return (
-        <div className='flex items-center gap-2 w-full' style={{ minHeight: '2.5rem' }}>
+        <div className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full' style={{ minHeight: '2.5rem' }}>
             <Dropdown<string>
                 value={currentValue}
                 options={allTypeOptions}
                 optionLabel='label'
                 optionValue='value'
                 onChange={(e) => handleTypeChange(e.value, rowData.name || '')}
-                className='flex-1'
+                className='cratis:flex-1'
             />
             {rowData.type === 'array' && rowData.items && (
                 <>
@@ -185,7 +185,7 @@ export const TypeCell = ({
                         onChange={(e) =>
                             handleTypeChange(e.value, rowData.name || '', true)
                         }
-                        className='flex-1'
+                        className='cratis:flex-1'
                     />
                 </>
             )}

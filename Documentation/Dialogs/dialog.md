@@ -86,8 +86,8 @@ const MyComponent = () => {
 - `isBusy`: When `true`, disables all buttons, blocks Escape/backdrop dismissal, and shows a loading spinner on the primary action button
 - `initialFocus`: Where keyboard focus lands when the dialog opens (see below)
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels. Footer icons are decorative and hidden from accessibility APIs, so each button's accessible name is exactly its configured label
-- `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the
-  Cratis-owned dialog parts — see the [pass-through cheat sheet](../Styling/pass-through.md)
+- `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts — see the [pass-through cheat sheet](../Styling/pass-through.md)
+- `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
 
 ## Dismissing
 

@@ -3,21 +3,23 @@
 
 /*
  * Stable semantic seam between Components structure and product design systems.
- * The optional theme.css supplies concrete values; products may define these
- * variables directly or map them onto an existing token family.
+ * Conservative light defaults keep an unthemed surface usable. Products may override
+ * these variables directly; optional theme.css adds dark, forced-color, and subtree behavior.
  */
 :root {
     --cratis-surface-0: #ffffff;
-    --cratis-surface-100: #f1f5f9;
-    --cratis-surface-ground: #f8fafc;
-    --cratis-surface-section: #f8fafc;
+    --cratis-surface-100: #f3f4f6;
+    --cratis-surface-ground: #f9fafb;
+    --cratis-surface-section: #ffffff;
     --cratis-surface-card: #ffffff;
     --cratis-surface-overlay: #ffffff;
-    --cratis-surface-hover: #f1f5f9;
-    --cratis-surface-border: #e2e8f0;
+    --cratis-surface-hover: #f6f9fc;
+    --cratis-surface-border: #dfe7ef;
+    --cratis-control-background: #ffffff;
+    --cratis-control-border: #8492a6;
 
-    --cratis-text-color: #1e293b;
-    --cratis-text-color-secondary: #475569;
+    --cratis-text-color: #4b5563;
+    --cratis-text-color-secondary: #6b7280;
 
     --cratis-primary-color: #3b82f6;
     --cratis-primary-color-text: #ffffff;
@@ -25,15 +27,41 @@
     --cratis-primary-400: #60a5fa;
     --cratis-primary-500: #3b82f6;
     --cratis-primary-600: #2563eb;
+    --cratis-action-background: #2563eb;
+    --cratis-action-background-hover: #1d4ed8;
+    --cratis-action-background-active: #1e40af;
+    --cratis-action-text: #ffffff;
 
-    --cratis-highlight-bg: #dbeafe;
-    --cratis-highlight-text-color: #1e40af;
+    --cratis-highlight-bg: #eff6ff;
+    --cratis-highlight-text-color: #1d4ed8;
 
     --cratis-green-500: #16a34a;
     --cratis-orange-500: #d97706;
     --cratis-red-500: #dc2626;
+    --cratis-info-background: #0369a1;
+    --cratis-info-text: #ffffff;
+    --cratis-success-background: #15803d;
+    --cratis-success-text: #ffffff;
+    --cratis-warning-background: #c2410c;
+    --cratis-warning-text: #ffffff;
+    --cratis-danger-background: #b91c1c;
+    --cratis-danger-text: #ffffff;
 
     --cratis-border-radius: 6px;
-    --cratis-focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.35);
-    --cratis-maskbg: rgba(15, 23, 42, 0.45);
+    --cratis-control-height: 2.75rem;
+    --cratis-control-height-small: 2.25rem;
+    --cratis-control-height-large: 3.25rem;
+    --cratis-disabled-opacity: 0.55;
+    --cratis-focus-ring: 0 0 0 3px #2563eb;
+    --cratis-maskbg: rgb(0 0 0 / 40%);
+    --cratis-shadow-subtle: 0 1px 2px rgb(0 0 0 / 5%);
+    --cratis-shadow-overlay: 0 2px 12px rgb(0 0 0 / 10%);
+    --cratis-shadow-dialog: 0 1rem 3rem rgb(0 0 0 / 22%);
+    --cratis-shadow-toast: 0 2px 12px rgb(0 0 0 / 10%);
+
+    --cratis-z-index-dialog: 1100;
+    --cratis-z-index-overlay: 1200;
+    --cratis-z-index-filter: 1250;
+    --cratis-z-index-tooltip: 1300;
+    --cratis-z-index-toast: 1400;
 }

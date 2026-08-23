@@ -8,6 +8,12 @@ import { Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components/To
 /** Position of the tooltip relative to its trigger element. */
 export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left';
 
+interface TooltipTriggerElementProps {
+    className?: string;
+    'data-cratis-part'?: string;
+    'data-cratis-tooltip-trigger'?: string;
+}
+
 /** Props for the {@link Tooltip} component. */
 export interface TooltipProps {
     /** Text displayed inside the tooltip. Empty content disables the tooltip. */
@@ -19,7 +25,7 @@ export interface TooltipProps {
     /** Extra class name applied to the actual trigger element. */
     className?: string;
     /** One focusable element that triggers the tooltip. */
-    children: ReactElement<{ className?: string }>;
+    children: ReactElement<TooltipTriggerElementProps>;
 }
 
 /** An accessible hover and keyboard-focus tooltip with stable Cratis parts. */
@@ -36,8 +42,9 @@ export const Tooltip = ({
         className: ['cratis-tooltip-trigger', children.props.className, className]
             .filter(Boolean)
             .join(' '),
-        'data-cratis-part': 'trigger',
-    } as { className: string });
+        'data-cratis-part': children.props['data-cratis-part'] ?? 'trigger',
+        'data-cratis-tooltip-trigger': '',
+    } as TooltipTriggerElementProps);
 
     return (
         <TooltipTrigger delay={350} closeDelay={100}>

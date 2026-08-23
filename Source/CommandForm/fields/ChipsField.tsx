@@ -65,7 +65,7 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
             {...props.pt?.root}
             className={[
                 'cratis-chips-field',
-                'w-full',
+                'cratis:w-full',
                 props.pt?.root?.className,
                 props.className,
             ]

@@ -52,7 +52,7 @@ export interface ButtonProps
     outlined?: boolean;
     /** Renders the button fully rounded. */
     rounded?: boolean;
-    /** Controls the button's coloring. */
+    /** Controls the button's coloring. Omit for the familiar primary action. */
     severity?: ButtonSeverity;
     /** Sizes the button. */
     size?: 'small' | 'normal' | 'large';
@@ -89,7 +89,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     link,
     outlined,
     rounded,
-    severity = 'secondary',
+    severity,
     size = 'normal',
     disabled,
     type = 'button',

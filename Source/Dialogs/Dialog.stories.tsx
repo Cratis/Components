@@ -154,7 +154,7 @@ export const WithForm: Story = {
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
                     isValid={name.trim().length > 0}
                 >
-                    <div className='flex flex-col gap-2'>
+                    <div className='cratis:flex cratis:flex-col cratis:gap-2'>
                         <label htmlFor='name'>Name</label>
                         <input
                             id='name'
@@ -164,7 +164,7 @@ export const WithForm: Story = {
                             placeholder='Enter name…'
                         />
                         {name.trim().length === 0 && (
-                            <small className='text-[var(--cratis-red-500)]'>
+                            <small className='cratis:text-[var(--cratis-red-500)]'>
                                 Name is required
                             </small>
                         )}

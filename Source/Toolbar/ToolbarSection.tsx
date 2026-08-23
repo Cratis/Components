@@ -97,7 +97,7 @@ export const ToolbarSection = ({
     // Default to the first context if activeContext is not provided
     const effectiveContext = activeContext ?? (contexts[0]?.props as ToolbarContextProps)?.name ?? '';
 
-    const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
+    const flexClass = orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col';
 
     /** Measure the given context's natural dimensions and update the section size. */
     const measureAndSetSize = useCallback((contextName: string) => {
@@ -205,7 +205,7 @@ export const ToolbarSection = ({
                         {...pt?.context}
                         key={name}
                         ref={(element) => { contextRefs.current[name] = element; }}
-                        className={`toolbar-context inline-flex ${flexClass} items-center gap-1 ${
+                        className={`toolbar-context cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${
                             isActive ? 'toolbar-context--active' : 'toolbar-context--inactive'
                         } ${pt?.context?.className ?? ''}`}
                         data-cratis-part='toolbar-context'

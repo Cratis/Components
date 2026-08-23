@@ -37,6 +37,8 @@ describe('when a dropdown is opened inside a dialog', () => {
             disconnect() {}
         };
 
+        document.documentElement.style.setProperty('--cratis-z-index-dialog', '1100');
+        document.documentElement.style.setProperty('--cratis-z-index-overlay', '1200');
         container = document.createElement('div');
         document.body.appendChild(container);
         root = createRoot(container);
@@ -90,11 +92,16 @@ describe('when a dropdown is opened inside a dialog', () => {
             '[data-cratis-part="popover"]',
         ) as HTMLElement;
 
-        dialogPositionerZIndex = Number.parseInt(
-            getComputedStyle(dialogPositioner).zIndex,
-            10,
-        );
-        panelZIndex = Number.parseInt(getComputedStyle(panel).zIndex, 10);
+        const resolvedZIndex = (element: HTMLElement) => {
+            const declaration = element.style.zIndex || getComputedStyle(element).zIndex;
+            const variable = declaration.match(/var\((--[^)]+)\)/u)?.[1];
+            const value = variable
+                ? getComputedStyle(document.documentElement).getPropertyValue(variable)
+                : declaration;
+            return Number.parseInt(value, 10);
+        };
+        dialogPositionerZIndex = resolvedZIndex(dialogPositioner);
+        panelZIndex = resolvedZIndex(panel);
         panelIsInsideTheDialog = dialogPopup.contains(panel);
         panelIsPortaledToTheBody =
             document.body.contains(panel) && !container.contains(panel);
@@ -106,6 +113,8 @@ describe('when a dropdown is opened inside a dialog', () => {
             root.unmount();
         });
         container.remove();
+        document.documentElement.style.removeProperty('--cratis-z-index-dialog');
+        document.documentElement.style.removeProperty('--cratis-z-index-overlay');
     });
 
     it('should render the panel outside the dialog rather than inside its stacking context', () => {

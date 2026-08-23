@@ -1,22 +1,22 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import type React from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Version } from './types';
 import { ReadModelView } from './ReadModelView';
 import { EventsView } from './EventsView';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { FaBoxArchive, FaList } from 'react-icons/fa6';
-
-export type { TimeMachineLabels } from './TimeMachineLabels';
-export { defaultTimeMachineLabels } from './TimeMachineLabels';
+import { useLocale } from 'react-aria-components/I18nProvider';
 
 enum ViewModes {
   ReadModel = 'ReadModel',
   Events = 'Events',
 }
 
-interface TimeMachineProps {
+/** Props for the localized, keyboard-accessible event/read-model timeline. */
+export interface TimeMachineProps {
   versions: Version[];
   currentVersionIndex?: number;
   onVersionChange?: (index: number) => void;
@@ -196,6 +196,8 @@ const Timeline: React.FC<TimelineProps> = ({
   onSelect,
   onHover,
 }) => {
+  const { locale } = useLocale();
+
   const getMagnification = (index: number, hoverIdx: number | null): number => {
     if (hoverIdx === null) return 1;
     const distance = Math.abs(index - hoverIdx);
@@ -208,7 +210,7 @@ const Timeline: React.FC<TimelineProps> = ({
   };
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(locale, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -216,18 +218,14 @@ const Timeline: React.FC<TimelineProps> = ({
   };
 
   const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString(locale, {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true,
     });
   };
 
   return (
-    <div
-      className="timeline"
-      onMouseLeave={() => onHover(null)}
-    >
+    <div className="timeline">
       <div className="timeline-track">
         {versions.map((version, index) => {
           const magnification = getMagnification(index, hoveredIndex);
@@ -235,21 +233,27 @@ const Timeline: React.FC<TimelineProps> = ({
           const isHovered = index === hoveredIndex;
 
           return (
-            <div
+            <button
               key={version.id}
+              type='button'
               className={`timeline-entry ${isSelected ? 'selected' : ''} ${isHovered ? 'hovered' : ''}`}
               style={{
                 '--magnification': magnification,
               } as React.CSSProperties}
               onMouseEnter={() => onHover(index)}
+              onMouseLeave={() => onHover(null)}
+              onFocus={() => onHover(index)}
+              onBlur={() => onHover(null)}
               onClick={() => onSelect(index)}
+              aria-pressed={isSelected}
+              aria-label={`${formatDate(version.timestamp)} ${formatTime(version.timestamp)}`}
             >
               <div className="timeline-tick"></div>
               <div className="timeline-label">
                 <span className="timeline-date">{formatDate(version.timestamp)}</span>
                 <span className="timeline-time">{formatTime(version.timestamp)}</span>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

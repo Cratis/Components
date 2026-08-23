@@ -25,44 +25,44 @@ They are documented separately because not every DOM part needs a `pt` key, and 
 </Dialog>
 ```
 
-| Component/type                         | Typed `pt` keys                                                                                                                                                                        | Element types                                                 |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `ButtonParts`                          | `root`, `icon`, `label`, `spinner`                                                                                                                                                     | button, spans                                                 |
-| `DialogParts`                          | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                                 | divs/header/heading/footer/buttons                            |
-| `DropdownParts`                        | `root`, `input`, `select`, `trigger`, `value`, `clear`, `indicator`, `popover`, `listbox`, `option`, `filter`, `multiple`                                                              | wrapper, input/button, spans, popover/listbox/options, select |
-| `DatePickerInputPassThrough`           | `root`, `group`, `input`, `placeholder`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `buttonBar`, `today`, `clear` | divs, segmented field, buttons, calendar grid/cells           |
-| `DataTableParts`                       | `root`, `search`, `searchInput`, `tableContainer`, `table`, `head`, `headerRow`, `headerCell`, `body`, `row`, `cell`, `emptyRow`, `emptyCell`                                          | div/input/table sections/rows/cells                           |
-| `ColumnFilterMenuParts` (`Column.filterPt`) | `trigger`, `popover`, `menu`, `matchMode`, `input`, `actions`, `clear`, `apply`                                                                                             | button, overlay/menu, inputs, actions                         |
-| `TablePaginatorParts`                  | `root`, `range`, `info`, `first`, `previous`, `next`, `last`                                                                                                                           | navigation div, spans, and Button parts                       |
-| `StepperParts`                         | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                                    | div, ordered list, list item, button, spans, section          |
-| `ToasterPassThrough`                   | `region`, `toast`, `icon`, `content`, `title`, `description`, `close`, `action`                                                                                                        | region/article/divs/spans/buttons                             |
-| `ToolbarParts` / `ToolbarButtonParts`  | toolbar `root`; button `root`, `icon`, `label`                                                                                                                                         | toolbar div and native buttons/spans                          |
-| `ToolbarGroupParts` / `ToolbarLayoutParts` | `root`, `slot`, `incoming`, `outgoing`                                                                                                                                              | group/layout and transition measurement divs                 |
-| `ToolbarSectionParts`                  | `root`, `context`                                                                                                                                                                      | animated section and named context divs                      |
-| `ToolbarSeparatorParts`                | `root`                                                                                                                                                                                 | native separator div                                         |
-| `ToolbarFolderParts` / `ToolbarFanOutParts` | `root`, `trigger`, `panel`                                                                                                                                                         | composition div, native trigger, and inert collapsed panel   |
-| `ActionMenubar` `pt`                   | the `ButtonParts` keys applied to each action                                                                                                                                          | button and spans                                              |
-| Query table / `DataPage` `paginatorPt` | `TablePaginatorParts`                                                                                                                                                                  | paginator surface                                             |
-| `DataPage` `tablePt`                   | `DataTableParts`                                                                                                                                                                       | table surface                                                 |
-| `DataPage` `menubarPt`                 | `ButtonParts`                                                                                                                                                                          | action buttons                                                |
+| Component/type                              | Typed `pt` keys                                                                                                                                                                        | Element types                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `ButtonParts`                               | `root`, `icon`, `label`, `spinner`                                                                                                                                                     | button, spans                                                 |
+| `DialogParts`                               | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                                 | divs/header/heading/footer/buttons                            |
+| `DropdownParts`                             | `root`, `input`, `select`, `trigger`, `value`, `clear`, `indicator`, `popover`, `listbox`, `option`, `filter`, `multiple`                                                              | wrapper, input/button, spans, popover/listbox/options, select |
+| `DatePickerInputPassThrough`                | `root`, `group`, `input`, `placeholder`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `buttonBar`, `today`, `clear` | divs, segmented field, buttons, calendar grid/cells           |
+| `DataTableParts`                            | `root`, `search`, `searchInput`, `tableContainer`, `table`, `head`, `headerRow`, `headerCell`, `body`, `row`, `cell`, `emptyRow`, `emptyCell`                                          | div/input/table sections/rows/cells                           |
+| `ColumnFilterMenuParts` (`Column.filterPt`) | `trigger`, `popover`, `menu`, `matchMode`, `input`, `actions`, `clear`, `apply`                                                                                                        | button, overlay/menu, inputs, actions                         |
+| `TablePaginatorParts`                       | `root`, `range`, `info`, `first`, `previous`, `next`, `last`                                                                                                                           | navigation div, spans, and Button parts                       |
+| `StepperParts`                              | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                                    | div, ordered list, list item, button, spans, section          |
+| `ToasterPassThrough`                        | `region`, `toast`, `icon`, `content`, `title`, `description`, `close`, `action`                                                                                                        | region/article/divs/spans/buttons                             |
+| `ToolbarParts` / `ToolbarButtonParts`       | toolbar `root`; button `root`, `icon`, `label`                                                                                                                                         | toolbar div and native buttons/spans                          |
+| `ToolbarGroupParts` / `ToolbarLayoutParts`  | `root`, `slot`, `incoming`, `outgoing`                                                                                                                                                 | group/layout and transition measurement divs                  |
+| `ToolbarSectionParts`                       | `root`, `context`                                                                                                                                                                      | animated section and named context divs                       |
+| `ToolbarSeparatorParts`                     | `root`                                                                                                                                                                                 | native separator div                                          |
+| `ToolbarFolderParts` / `ToolbarFanOutParts` | `root`, `trigger`, `panel`                                                                                                                                                             | composition div, native trigger, and inert collapsed panel    |
+| `ActionMenubar` `pt`                        | the `ButtonParts` keys applied to each action                                                                                                                                          | button and spans                                              |
+| Query table / `DataPage` `paginatorPt`      | `TablePaginatorParts`                                                                                                                                                                  | paginator surface                                             |
+| `DataPage` `tablePt`                        | `DataTableParts`                                                                                                                                                                       | table surface                                                 |
+| `DataPage` `menubarPt`                      | `ButtonParts`                                                                                                                                                                          | action buttons                                                |
 
 Command field part keys:
 
-| Field                  | Typed keys                                    |
-| ---------------------- | --------------------------------------------- |
+| Field                  | Typed keys                                          |
+| ---------------------- | --------------------------------------------------- |
 | InputText / TextArea   | `root` (the native control; see the DOM note below) |
-| Number                 | `root`, `input`                               |
-| Checkbox               | `root`, `input`, `box`, `indicator`           |
-| ToggleSwitch           | `root`, `input`, `control`, `handle`          |
-| Password               | `root`, `input`, `toggle`                     |
-| RadioButton            | `root`, `input`, `box`, `indicator`           |
-| RadioGroup             | `root`, `option`, `input`, `box`, `indicator` |
-| Slider                 | `root`, `input`, `value`                      |
-| Chips                  | `root`, `item`, `remove`, `input`             |
-| ColorPicker            | `root`, `input`, `value`                      |
-| Rating                 | `root`, `option`, `input`, `star`             |
-| Calendar               | `DatePickerInputPassThrough` keys             |
-| Dropdown / MultiSelect | `DropdownParts` keys                          |
+| Number                 | `root`, `input`                                     |
+| Checkbox               | `root`, `input`, `box`, `indicator`                 |
+| ToggleSwitch           | `root`, `input`, `control`, `handle`                |
+| Password               | `root`, `input`, `toggle`                           |
+| RadioButton            | `root`, `input`, `box`, `indicator`                 |
+| RadioGroup             | `root`, `option`, `input`, `box`, `indicator`       |
+| Slider                 | `root`, `input`, `value`                            |
+| Chips                  | `root`, `item`, `remove`, `input`                   |
+| ColorPicker            | `root`, `input`, `value`                            |
+| Rating                 | `root`, `option`, `input`, `star`                   |
+| Calendar               | `DatePickerInputPassThrough` keys                   |
+| Dropdown / MultiSelect | `DropdownParts` keys                                |
 
 `InputTextParts.root` applies to the native element carrying `data-cratis-part='input'`; `TextAreaParts.root` applies to `data-cratis-part='textarea'`. The typed key is retained for source compatibility, but there is no extra field-root DOM wrapper.
 
@@ -72,23 +72,25 @@ Named behavior props override conflicting part attributes. Part classes and styl
 
 Use the exact kebab-case value in CSS or tests:
 
-| Surface        | `data-cratis-part` values                                                                                                                                                                       |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Button         | `root`, `icon`, `label`, `spinner`                                                                                                                                                              |
-| Dialog         | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                                          |
-| Dropdown       | `root`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, `multiple`                                                                                          |
-| DatePicker     | `root`, `group`, `input`, `placeholder`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `button-bar`, `today`, `clear`         |
-| DataTable      | `root`, `search`, `search-input`, `table-container`, `table`, `head`, `header-row`, `header-cell`, `header-content`, `sort`, `filter-trigger`, `filter-popover`, `filter-menu`, `filter-actions`, `body`, `row`, `cell`, `empty-row`, `empty-cell` |
-| TablePaginator | `root`, `range`, `info`; paginator buttons expose the documented Button parts                                                                                                                   |
-| Stepper        | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                                             |
-| Toaster        | `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, `close`                                                                                                                 |
-| Tooltip        | `trigger`, `popup`                                                                                                                                                                              |
-| Command fields | `root`, plus the typed field-specific values listed above (`input`, `textarea`, `box`, `control`, `handle`, `indicator`, `option`, `item`, `remove`, `value`, `star`, `toggle`)                 |
-| Display        | component roots plus `image`, `fallback`, `remove`, `indicator`, `range`, `track`, and labels where applicable                                                                                  |
-| Event timeline | `timeline`, `event`, `separator`, `marker`, `connector`, `content`                                                                                                                              |
+| Surface        | `data-cratis-part` values                                                                                                                                                                                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Button         | `root`, `icon`, `label`, `spinner`                                                                                                                                                                                                                                                                                     |
+| Dialog         | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                                                                                                                                                                 |
+| Dropdown       | `root`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, `multiple`                                                                                                                                                                                                                 |
+| DatePicker     | `root`, `group`, `input`, `placeholder`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `button-bar`, `today`, `clear`                                                                                                                                |
+| DataTable      | `root`, `search`, `search-input`, `table-container`, `table`, `head`, `header-row`, `header-cell`, `header-content`, `sort`, `filter-trigger`, `filter-popover`, `filter-menu`, `filter-actions`, `body`, `row`, `cell`, `empty-row`, `empty-cell`                                                                     |
+| TablePaginator | `root`, `range`, `info`; paginator buttons expose the documented Button parts                                                                                                                                                                                                                                          |
+| Stepper        | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                                                                                                                                                                    |
+| Toaster        | `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, `close`                                                                                                                                                                                                                                        |
+| Tooltip        | `popup`; a standalone trigger uses `trigger`, while a composed child preserves its own component part and gains `data-cratis-tooltip-trigger`                                                                                                                                                                          |
+| Command fields | `root`, plus the typed field-specific values listed above (`input`, `textarea`, `box`, `control`, `handle`, `indicator`, `option`, `item`, `remove`, `value`, `star`, `toggle`)                                                                                                                                        |
+| Display        | component roots plus `image`, `fallback`, `remove`, `indicator`, `range`, `track`, and labels where applicable                                                                                                                                                                                                         |
+| Event timeline | `timeline`, `event`, `separator`, `marker`, `connector`, `content`                                                                                                                                                                                                                                                     |
 | Toolbar        | `root`, `button`, `icon`, `label`, `fanout-root`, `fanout-trigger`, `fanout-panel`, `toolbar-group`, `toolbar-separator`, `toolbar-layout`, `toolbar-section`, `toolbar-context`, `toolbar-slot`, `toolbar-slot-incoming`, `toolbar-slot-outgoing`, `toolbar-folder`, `toolbar-folder-trigger`, `toolbar-folder-panel` |
 
 `header-content`, `sort`, and `filter-trigger` are DOM targets but are not `DataTableParts` keys. Customize them with CSS rather than claiming a nonexistent typed key.
+
+`Tooltip` enhances the actual focusable child. If that child already has a component-specific `data-cratis-part` (for example `button`, `toolbar-folder-trigger`, or `fanout-trigger`), Tooltip preserves it and adds `data-cratis-tooltip-trigger`. It uses `data-cratis-part='trigger'` only for a child without its own stable part.
 
 ```css
 [data-cratis-part='header-cell'] {

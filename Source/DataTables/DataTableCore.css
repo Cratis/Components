@@ -18,11 +18,12 @@
 }
 .cratis-datatable-search__input {
     width: 100%;
-    min-height: 2.5rem;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid var(--cratis-surface-border);
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
     color: var(--cratis-text-color);
     font: inherit;
 }
@@ -44,12 +45,12 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    padding: 0.65rem 0.75rem;
+    padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--cratis-surface-border);
     background: var(--cratis-surface-section);
     color: var(--cratis-text-color);
     text-align: start;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     font-weight: 700;
 }
 .cratis-datatable__sort {
@@ -70,15 +71,20 @@
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-datatable__cell {
-    padding: 0.65rem 0.75rem;
+    padding: 0.875rem 1rem;
     border-bottom: 1px solid var(--cratis-surface-border);
     vertical-align: middle;
 }
 .cratis-datatable__row {
+    background: var(--cratis-surface-card);
     transition: background-color 100ms ease;
 }
-.cratis-datatable__row:hover {
+.cratis-datatable__row[data-interactive='true']:hover {
     background: var(--cratis-surface-hover);
+}
+.cratis-datatable__row:focus-visible {
+    outline: none;
+    box-shadow: inset var(--cratis-focus-ring);
 }
 .cratis-datatable__row[data-selected='true'] {
     background: var(--cratis-highlight-bg);

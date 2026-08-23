@@ -3,7 +3,7 @@
 
 .cratis-toaster {
     position: fixed;
-    z-index: 1400;
+    z-index: var(--cratis-z-index-toast);
     display: flex;
     width: min(26rem, calc(100vw - 2rem));
     flex-direction: column;
@@ -36,11 +36,10 @@
     gap: 0.625rem;
     border: 1px solid var(--cratis-surface-border);
     border-inline-start: 4px solid var(--cratis-surface-border);
-    border-radius: calc(var(--cratis-border-radius) * 1.25);
+    border-radius: var(--cratis-border-radius);
     background: var(--cratis-surface-overlay);
     color: var(--cratis-text-color);
-    box-shadow: 0 0.5rem 1.5rem
-        color-mix(in srgb, var(--cratis-text-color) 24%, transparent);
+    box-shadow: var(--cratis-shadow-toast);
     pointer-events: auto;
 }
 .cratis-toast__content {

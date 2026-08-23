@@ -7,6 +7,7 @@ import React, {
     type ReactNode,
     useCallback,
     useEffect,
+    useId,
     useRef,
     useState,
 } from 'react';
@@ -71,7 +72,10 @@ export const ToolbarFanOutItem = ({
     const [isExpanded, setIsExpanded] = useState(false);
     const [isSettled, setIsSettled] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
+    const generatedPanelId = useId();
+    const panelId = pt?.panel?.id ?? generatedPanelId;
 
     // A settled panel has `clip-path: none`, which cannot interpolate — closing
     // straight from it would snap the panel shut instead of wiping it closed.
@@ -100,7 +104,11 @@ export const ToolbarFanOutItem = ({
     };
 
     const handleTransitionEnd = (event: React.TransitionEvent<HTMLDivElement>) => {
-        if (event.target === panelRef.current && event.propertyName === 'clip-path' && isExpanded) {
+        if (
+            event.target === panelRef.current &&
+            event.propertyName === 'clip-path' &&
+            isExpanded
+        ) {
             setIsSettled(true);
         }
     };
@@ -110,20 +118,33 @@ export const ToolbarFanOutItem = ({
         if (!isExpanded) return;
 
         const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target as Node)
+            ) {
                 collapse();
             }
         };
 
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            collapse();
+            triggerRef.current?.focus();
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
         };
     }, [isExpanded, collapse]);
 
     const activeClass = isExpanded ? 'toolbar-button--active' : '';
     const panelVisibleClass = isExpanded ? 'toolbar-fanout-panel--visible' : '';
-    const panelSettledClass = isExpanded && isSettled ? 'toolbar-fanout-panel--settled' : '';
+    const panelSettledClass =
+        isExpanded && isSettled ? 'toolbar-fanout-panel--settled' : '';
     const directionClass = `toolbar-fanout-panel--${fanOutDirection}`;
 
     return (
@@ -136,22 +157,29 @@ export const ToolbarFanOutItem = ({
             <Tooltip content={tooltip} position={tooltipPosition} disabled={isExpanded}>
                 <button
                     {...pt?.trigger}
+                    ref={triggerRef}
                     type='button'
                     aria-label={tooltip}
                     aria-expanded={isExpanded}
+                    aria-controls={panelId}
                     onClick={handleToggle}
-                    className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
+                    className={`toolbar-button cratis:w-10 cratis:h-10 cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
                     data-cratis-part='fanout-trigger'
                 >
-                    <IconDisplay icon={icon} className='text-lg' />
+                    <IconDisplay icon={icon} className='cratis:text-lg' />
                 </button>
             </Tooltip>
             <div
                 {...pt?.panel}
+                id={panelId}
+                role='group'
+                aria-label={tooltip}
                 ref={panelRef}
                 className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass} ${pt?.panel?.className ?? ''}`}
                 data-cratis-part='fanout-panel'
                 data-expanded={isExpanded || undefined}
+                data-direction={fanOutDirection}
+                data-settled={isSettled || undefined}
                 aria-hidden={!isExpanded}
                 inert={!isExpanded}
                 onTransitionEnd={handleTransitionEnd}

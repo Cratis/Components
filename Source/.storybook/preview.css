@@ -1,8 +1,6 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-@import 'tailwindcss';
-
 /*
  * A representative product-owned design system mapping directly onto the
  * stable Cratis token seam. It deliberately has no renderer preset or
@@ -17,6 +15,8 @@ body.storybook-product-theme {
     --cratis-surface-overlay: #1e293b;
     --cratis-surface-hover: #334155;
     --cratis-surface-border: #334155;
+    --cratis-control-background: #0f172a;
+    --cratis-control-border: #64748b;
     --cratis-text-color: #f8fafc;
     --cratis-text-color-secondary: #94a3b8;
     --cratis-primary-color: #38bdf8;
@@ -25,14 +25,30 @@ body.storybook-product-theme {
     --cratis-primary-400: #38bdf8;
     --cratis-primary-500: #0ea5e9;
     --cratis-primary-600: #0284c7;
+    --cratis-action-background: #0284c7;
+    --cratis-action-background-hover: #0369a1;
+    --cratis-action-background-active: #075985;
+    --cratis-action-text: #ffffff;
     --cratis-highlight-bg: #1e40af;
     --cratis-highlight-text-color: #ffffff;
     --cratis-green-500: #22c55e;
     --cratis-orange-500: #f97316;
     --cratis-red-500: #ef4444;
+    --cratis-info-background: #38bdf8;
+    --cratis-info-text: #082f49;
+    --cratis-success-background: #4ade80;
+    --cratis-success-text: #052e16;
+    --cratis-warning-background: #fb923c;
+    --cratis-warning-text: #431407;
+    --cratis-danger-background: #f87171;
+    --cratis-danger-text: #450a0a;
     --cratis-border-radius: 10px;
-    --cratis-focus-ring: 0 0 0 3px rgb(56 189 248 / 45%);
-    --cratis-maskbg: rgb(2 6 23 / 70%);
+    --cratis-focus-ring: 0 0 0 3px #7dd3fc;
+    --cratis-maskbg: rgb(2 6 23 / 55%);
+    --cratis-shadow-subtle: none;
+    --cratis-shadow-overlay: 0 8px 24px rgb(0 0 0 / 35%);
+    --cratis-shadow-dialog: 0 24px 64px rgb(0 0 0 / 45%);
+    --cratis-shadow-toast: 0 8px 24px rgb(0 0 0 / 35%);
 }
 
 html,

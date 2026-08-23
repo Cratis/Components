@@ -254,8 +254,7 @@ export const Dropdown = <T = unknown,>({
         ariaDescribedBy ??
         pt?.input?.['aria-describedby'] ??
         pt?.select?.['aria-describedby'];
-    const inputAriaInvalid =
-        pt?.input?.['aria-invalid'] ?? pt?.select?.['aria-invalid'];
+    const inputAriaInvalid = pt?.input?.['aria-invalid'] ?? pt?.select?.['aria-invalid'];
     const effectiveInvalid =
         invalid ??
         ariaInvalid ??
@@ -269,8 +268,7 @@ export const Dropdown = <T = unknown,>({
         pt?.select?.className,
         className,
     );
-    const triggerId =
-        id ?? inputId ?? pt?.trigger?.id ?? pt?.input?.id ?? pt?.select?.id;
+    const triggerId = id ?? inputId ?? pt?.trigger?.id ?? pt?.input?.id ?? pt?.select?.id;
 
     const selectOption = (key: Key | null) => {
         const option = resolvedOptions.find((candidate) => candidate.key === String(key));
@@ -387,7 +385,10 @@ export const Dropdown = <T = unknown,>({
                                 pt?.popover?.className,
                                 panelClassName,
                             )}
-                            style={{ zIndex: 1200, ...pt?.popover?.style }}
+                            style={{
+                                zIndex: 'var(--cratis-z-index-overlay)',
+                                ...pt?.popover?.style,
+                            }}
                             data-cratis-part='popover'
                         >
                             <ComboBoxListBox
@@ -565,7 +566,10 @@ export const Dropdown = <T = unknown,>({
                             pt?.popover?.className,
                             panelClassName,
                         )}
-                        style={{ zIndex: 1200, ...pt?.popover?.style }}
+                        style={{
+                            zIndex: 'var(--cratis-z-index-overlay)',
+                            ...pt?.popover?.style,
+                        }}
                         data-cratis-part='popover'
                     >
                         <ComboBoxListBox
@@ -679,7 +683,10 @@ export const Dropdown = <T = unknown,>({
                         pt?.popover?.className,
                         panelClassName,
                     )}
-                    style={{ zIndex: 1200, ...pt?.popover?.style }}
+                    style={{
+                        zIndex: 'var(--cratis-z-index-overlay)',
+                        ...pt?.popover?.style,
+                    }}
                     data-cratis-part='popover'
                 >
                     <ListBox

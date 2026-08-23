@@ -4,7 +4,14 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import {
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+    unlinkSync,
+    writeFileSync,
+} from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 import { createRequire } from 'module';
 import ts from 'typescript';
@@ -53,7 +60,7 @@ function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) 
  *
  * @returns The concatenated CSS, and the set of relative specifiers that were inlined.
  */
-function inlineStyleImports(manifestFile, sourceDir) {
+function inlineStyleImports(manifestFile) {
     const require = createRequire(manifestFile);
     const manifest = readFileSync(manifestFile, 'utf8');
     const parts = [];
@@ -128,10 +135,7 @@ function bundleStyles(sourceDir, esmPath) {
             });
 
             const manifestFile = resolve(sourceDir, 'styles.css');
-            const { css: components, inlined } = inlineStyleImports(
-                manifestFile,
-                sourceDir,
-            );
+            const { css: components, inlined } = inlineStyleImports(manifestFile);
 
             const missing = findComponentStylesheets(sourceDir)
                 .filter((file) => !inlined.has(file))
@@ -147,7 +151,10 @@ function bundleStyles(sourceDir, esmPath) {
 
             const outputFile = resolve(esmPath, 'styles.css');
             mkdirSync(dirname(outputFile), { recursive: true });
-            writeFileSync(outputFile, `${tailwind.css}\n${components}`);
+            writeFileSync(
+                outputFile,
+                `${tailwind.css}\n@layer cratis-components {\n${components}\n}\n`,
+            );
             console.log(
                 `✓ Bundled Tailwind utilities + ${inlined.size} component stylesheet(s) → dist/esm/styles.css`,
             );
@@ -207,7 +214,15 @@ function moduleSpecifiers(sourceFile) {
     return specifiers;
 }
 
-/** Makes every relative ESM specifier directly executable by Node. */
+const sourceMapReference = /\n?\/\/# sourceMappingURL=[^\r\n]+(?:\r?\n)?$/u;
+
+/**
+ * Makes every relative ESM specifier directly executable by Node.
+ *
+ * Rewriting changes generated columns, so a pre-rewrite JavaScript/declaration map would be
+ * dishonest. Files that need a rewrite have their map reference and corresponding map removed;
+ * untouched files retain their valid maps. A future source-aware emit can preserve all maps.
+ */
 function fixRelativeEsmSpecifiers(esmPath) {
     return {
         name: 'fix-relative-esm-specifiers',
@@ -238,7 +253,11 @@ function fixRelativeEsmSpecifiers(esmPath) {
                         replacement.specifier +
                         rewritten.slice(replacement.end);
                 }
-                if (rewritten !== source) writeFileSync(file, rewritten);
+                if (rewritten !== source) {
+                    writeFileSync(file, rewritten.replace(sourceMapReference, '\n'));
+                    const mapFile = `${file}.map`;
+                    if (existsSync(mapFile)) unlinkSync(mapFile);
+                }
             }
         },
     };

@@ -54,13 +54,13 @@ export const NameCell = ({
     }
 
     return (
-        <Tooltip content={validationError} position='top' className='w-full'>
+        <Tooltip content={validationError} position='top' className='cratis:w-full'>
             <input
                 value={rowData.name || ''}
                 onChange={(event) =>
                     onUpdate(rowData.name || '', 'name', event.target.value)
                 }
-                className='cratis-field-input w-full'
+                className='cratis-field-input cratis:w-full'
                 aria-invalid={Boolean(validationError) || undefined}
                 data-invalid={Boolean(validationError) || undefined}
             />

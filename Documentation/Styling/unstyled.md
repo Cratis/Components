@@ -14,12 +14,20 @@ import '@cratis/components/styles';
 :root {
     --cratis-primary-color: var(--product-accent);
     --cratis-primary-color-text: var(--product-on-accent);
+    --cratis-action-background: var(--product-action);
+    --cratis-action-background-hover: var(--product-action-hover);
+    --cratis-action-background-active: var(--product-action-active);
+    --cratis-action-text: var(--product-on-action);
     --cratis-surface-card: var(--product-surface);
     --cratis-surface-overlay: var(--product-surface-raised);
     --cratis-surface-border: var(--product-border);
+    --cratis-control-background: var(--product-control);
+    --cratis-control-border: var(--product-control-border);
     --cratis-text-color: var(--product-text);
     --cratis-text-color-secondary: var(--product-text-muted);
     --cratis-focus-ring: 0 0 0 3px var(--product-focus-ring);
+    --cratis-shadow-overlay: var(--product-overlay-shadow);
+    --cratis-shadow-dialog: var(--product-dialog-shadow);
 }
 ```
 

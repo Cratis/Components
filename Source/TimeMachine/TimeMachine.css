@@ -452,6 +452,10 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
   transform-origin: right center;
   transform: scale(var(--magnification, 1));
@@ -467,6 +471,12 @@
     width 0.15s ease,
     height 0.15s ease,
     background 0.15s ease;
+}
+
+.timeline-entry:focus-visible {
+  outline: none;
+  border-radius: var(--cratis-border-radius);
+  box-shadow: var(--cratis-focus-ring);
 }
 
 .timeline-entry.selected .timeline-tick {
@@ -509,6 +519,16 @@
   font-size: 10px;
   color: var(--tm-text-dim);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-entry,
+  .timeline-tick,
+  .timeline-label,
+  .time-machine * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* Navigation Controls */

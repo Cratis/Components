@@ -31,9 +31,10 @@ export type DataTableCustomFilterMatchMode = string & {
 /**
  * Built-in or custom match-mode name.
  *
- * Arbitrary strings remain accepted for source compatibility with renderers
- * whose matcher was registered outside Components. New custom matchers should
- * use `registerDataTableFilterMatcher()`, which returns a branded name.
+ * Arbitrary strings remain accepted only for source compatibility. Components does
+ * not consult an external renderer's matcher registry, and an unregistered custom mode
+ * deliberately matches nothing. Register new custom matchers with
+ * `registerDataTableFilterMatcher()`, which returns a branded name.
  */
 export type DataTableFilterMatchMode =
     | (typeof DataTableFilterMatchMode)[keyof typeof DataTableFilterMatchMode]

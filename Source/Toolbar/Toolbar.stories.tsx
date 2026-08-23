@@ -169,7 +169,7 @@ export const WithContexts: Story = {
             const [currentContext, setCurrentContext] = useState<string>('drawing');
 
             return (
-                <div className='flex flex-col items-center gap-6'>
+                <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                     <Toolbar>
                         <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
                         <ToolbarSection activeContext={currentContext}>
@@ -187,13 +187,13 @@ export const WithContexts: Story = {
                         <ToolbarButton icon={<ToolGlyph name='undo' />} title='Undo' />
                     </Toolbar>
 
-                    <div className='flex gap-2'>
+                    <div className='cratis:flex cratis:gap-2'>
                         <button
                             type='button'
                             onClick={() => setCurrentContext('drawing')}
-                            className={`px-3 py-1 rounded text-sm transition-colors ${currentContext === 'drawing'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${currentContext === 'drawing'
+                                ? 'cratis:bg-blue-600 cratis:text-white'
+                                : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                 }`}
                         >
                             Drawing tools
@@ -201,9 +201,9 @@ export const WithContexts: Story = {
                         <button
                             type='button'
                             onClick={() => setCurrentContext('text')}
-                            className={`px-3 py-1 rounded text-sm transition-colors ${currentContext === 'text'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${currentContext === 'text'
+                                ? 'cratis:bg-blue-600 cratis:text-white'
+                                : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                 }`}
                         >
                             Text tools
@@ -279,7 +279,7 @@ export const WithFanOut: Story = {
             const [activeTool, setActiveTool] = useState<string>('select');
 
             return (
-                <div className='flex flex-col gap-2'>
+                <div className='cratis:flex cratis:flex-col cratis:gap-2'>
                     <Toolbar>
                         <ToolbarButton
                             icon={<ToolGlyph name='arrow-up-left' />}
@@ -401,7 +401,7 @@ export const DragAndDrop: Story = {
             const [isDragOver, setIsDragOver] = useState(false);
 
             return (
-                <div className='flex gap-6 items-start'>
+                <div className='cratis:flex cratis:gap-6 cratis:items-start'>
                     <Toolbar
                         draggable
                         onItemDragStart={(data) =>
@@ -424,7 +424,7 @@ export const DragAndDrop: Story = {
                             const data = JSON.parse(raw) as { tool: string } | null;
                             setDropped(data ? `Dropped: ${data.tool}` : 'Dropped: (no data)');
                         }}
-                        className='flex items-center justify-center rounded-xl border-2 border-dashed transition-colors'
+                        className='cratis:flex cratis:items-center cratis:justify-center cratis:rounded-xl cratis:border-2 cratis:border-dashed cratis:transition-colors'
                         style={{
                             width: 240,
                             height: 180,
@@ -503,8 +503,8 @@ export const WithFolderListMode: Story = {
  */
 export const FolderGridVsList: Story = {
     render: () => (
-        <div className='flex gap-8 items-start'>
-            <div className='flex flex-col items-center gap-2'>
+        <div className='cratis:flex cratis:gap-8 cratis:items-start'>
+            <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
                 <span style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.75rem' }}>Grid (default)</span>
                 <Toolbar>
                     <ToolbarFolder icon={<ToolGlyph name='th-large' />} title='Tools' mode='grid'>
@@ -517,7 +517,7 @@ export const FolderGridVsList: Story = {
                     </ToolbarFolder>
                 </Toolbar>
             </div>
-            <div className='flex flex-col items-center gap-2'>
+            <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
                 <span style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.75rem' }}>List</span>
                 <Toolbar>
                     <ToolbarFolder icon={<ToolGlyph name='list' />} title='Tools' mode='list'>
@@ -631,7 +631,7 @@ export const WithSlotInContext: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
+                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                         <Toolbar>
                             <ToolbarSection activeContext={currentContext}>
                                 <ToolbarContext name='drawing' slotName='drawing-extras'>
@@ -649,19 +649,19 @@ export const WithSlotInContext: Story = {
                         {slotContent === 'favorite' && <ToolbarSlot slotName='drawing-extras' order={5}>{favoriteBtn}</ToolbarSlot>}
                         {slotContent === 'bookmark' && <ToolbarSlot slotName='drawing-extras' order={5}>{bookmarkBtn}</ToolbarSlot>}
 
-                        <div className='flex flex-col gap-4 items-center'>
-                            <div className='flex flex-col gap-2 items-center'>
-                                <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Context</span>
-                                <div className='flex gap-2'>
+                        <div className='cratis:flex cratis:flex-col cratis:gap-4 cratis:items-center'>
+                            <div className='cratis:flex cratis:flex-col cratis:gap-2 cratis:items-center'>
+                                <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Context</span>
+                                <div className='cratis:flex cratis:gap-2'>
                                     {(['drawing', 'text'] as const).map(ctx => (
                                         <button
                                             key={ctx}
                                             type='button'
                                             onClick={() => setCurrentContext(ctx)}
-                                            className={`px-3 py-1 rounded text-sm transition-colors ${
+                                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
                                                 currentContext === ctx
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                                    ? 'cratis:bg-blue-600 cratis:text-white'
+                                                    : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                             }`}
                                         >
                                             {ctx}
@@ -670,18 +670,18 @@ export const WithSlotInContext: Story = {
                                 </div>
                             </div>
 
-                            <div className='flex flex-col gap-2 items-center'>
-                                <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Slot content (drawing-extras)</span>
-                                <div className='flex gap-2'>
+                            <div className='cratis:flex cratis:flex-col cratis:gap-2 cratis:items-center'>
+                                <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Slot content (drawing-extras)</span>
+                                <div className='cratis:flex cratis:gap-2'>
                                     {(['none', 'favorite', 'bookmark'] as const).map(s => (
                                         <button
                                             key={s}
                                             type='button'
                                             onClick={() => setSlotContent(s)}
-                                            className={`px-3 py-1 rounded text-sm transition-colors ${
+                                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
                                                 slotContent === s
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                                    ? 'cratis:bg-blue-600 cratis:text-white'
+                                                    : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                             }`}
                                         >
                                             {s === 'none' ? 'None' : s === 'favorite' ? 'Favorite ★' : 'Bookmark 🔖'}
@@ -720,7 +720,7 @@ export const WithMultipleSlotContributors: Story = {
 
         return (
             <ToolbarSlotProvider>
-                <div className='flex gap-6 items-start'>
+                <div className='cratis:flex cratis:gap-6 cratis:items-start'>
                     <Toolbar>
                         <ToolbarGroup slotName='shared'>
                             <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw (always first)' />
@@ -728,7 +728,7 @@ export const WithMultipleSlotContributors: Story = {
                     </Toolbar>
 
                     <div
-                        className='flex flex-col gap-1 p-4 rounded-lg border text-sm'
+                        className='cratis:flex cratis:flex-col cratis:gap-1 cratis:p-4 cratis:rounded-lg cratis:border cratis:text-sm'
                         style={{ borderColor: 'var(--cratis-surface-border)', background: 'var(--cratis-surface-ground)', color: 'var(--cratis-text-color-secondary)' }}
                     >
                         <strong style={{ color: 'var(--cratis-text-color)' }}>Three independent contributors</strong>
@@ -781,7 +781,7 @@ export const LayoutForEditorModules: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
+                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                         <Toolbar orientation='horizontal'>
                             <ToolbarButton icon={<ToolGlyph name='file-edit' />} title='Open Editor' tooltipPosition='bottom' />
                             <ToolbarSeparator orientation='horizontal' />
@@ -807,18 +807,18 @@ export const LayoutForEditorModules: Story = {
                             </ToolbarSlot>
                         )}
 
-                        <div className='flex gap-6'>
+                        <div className='cratis:flex cratis:gap-6'>
                             {[
                                 { label: 'Asset tools', enabled: assetToolsEnabled, toggle: () => setAssetToolsEnabled(v => !v) },
                                 { label: 'Review tools', enabled: reviewToolsEnabled, toggle: () => setReviewToolsEnabled(v => !v) },
                             ].map(({ label, enabled, toggle }) => (
-                                <div key={label} className='flex flex-col items-center gap-2'>
-                                    <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>{label}</span>
+                                <div key={label} className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
+                                    <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>{label}</span>
                                     <button
                                         type='button'
                                         onClick={toggle}
-                                        className={`px-3 py-1 rounded text-sm transition-colors ${
-                                            enabled ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                        className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
+                                            enabled ? 'cratis:bg-blue-600 cratis:text-white' : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                         }`}
                                     >
                                         {enabled ? 'Disable' : 'Enable'}
@@ -893,7 +893,7 @@ export const LayoutWithSmoothEditorTransitions: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
+                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                         <Toolbar orientation='horizontal'>
                             <ToolbarButton icon={<ToolGlyph name='home' />} title='Workspace Home' tooltipPosition='bottom' />
                             <ToolbarSeparator orientation='horizontal' />
@@ -910,18 +910,18 @@ export const LayoutWithSmoothEditorTransitions: Story = {
                             {editorTools[activeEditor]}
                         </ToolbarSlot>
 
-                        <div className='flex flex-col items-center gap-3'>
-                            <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Active editor</span>
-                            <div className='flex gap-2'>
+                        <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-3'>
+                            <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Active editor</span>
+                            <div className='cratis:flex cratis:gap-2'>
                                 {(['canvas', 'text', 'schema'] as const).map(editor => (
                                     <button
                                         key={editor}
                                         type='button'
                                         onClick={() => setActiveEditor(editor)}
-                                        className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
+                                        className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:capitalize cratis:transition-colors ${
                                             activeEditor === editor
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                                ? 'cratis:bg-blue-600 cratis:text-white'
+                                                : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                         }`}
                                     >
                                         {editor}
@@ -985,7 +985,7 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
+                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                         <Toolbar orientation='horizontal'>
                             <ToolbarLayout name='global-region' orientation='horizontal' />
                             <ToolbarSeparator orientation='horizontal' />
@@ -1000,16 +1000,16 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
                             {editorRegionTools[activeEditor]}
                         </ToolbarSlot>
 
-                        <div className='flex gap-2'>
+                        <div className='cratis:flex cratis:gap-2'>
                             {(['page', 'workflow'] as const).map(editor => (
                                 <button
                                     key={editor}
                                     type='button'
                                     onClick={() => setActiveEditor(editor)}
-                                    className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
+                                    className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:capitalize cratis:transition-colors ${
                                         activeEditor === editor
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                            ? 'cratis:bg-blue-600 cratis:text-white'
+                                            : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                     }`}
                                 >
                                     {editor} editor

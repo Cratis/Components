@@ -293,7 +293,7 @@ export const ObjectContentEditor = ({
                         checked={Boolean(value)}
                         onChange={(event) => handleChange(event.target.checked)}
                         aria-invalid={Boolean(error) || undefined}
-                        className='size-5 accent-[var(--cratis-primary-color)]'
+                        className='cratis:size-5 cratis:accent-[var(--cratis-primary-color)]'
                     />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
@@ -314,7 +314,7 @@ export const ObjectContentEditor = ({
                             )
                         }
                         aria-invalid={Boolean(error) || undefined}
-                        className='cratis-field-input w-full'
+                        className='cratis-field-input cratis:w-full'
                     />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
@@ -359,7 +359,7 @@ export const ObjectContentEditor = ({
         if (property.type === 'array') {
             return (
                 <div
-                    className='flex items-center gap-2'
+                    className='cratis:flex cratis:items-center cratis:gap-2'
                     style={{
                         color: 'var(--cratis-text-color-secondary)',
                         fontStyle: 'italic',
@@ -373,7 +373,7 @@ export const ObjectContentEditor = ({
         if (property.type === 'object') {
             return (
                 <div
-                    className='flex items-center gap-2'
+                    className='cratis:flex cratis:items-center cratis:gap-2'
                     style={{
                         color: 'var(--cratis-text-color-secondary)',
                         fontStyle: 'italic',
@@ -394,7 +394,7 @@ export const ObjectContentEditor = ({
                         onChange={(event) => handleChange(event.target.value)}
                         rows={3}
                         aria-invalid={Boolean(error) || undefined}
-                        className='cratis-field-input cratis-field-textarea w-full'
+                        className='cratis-field-input cratis-field-textarea cratis:w-full'
                     />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
@@ -407,7 +407,7 @@ export const ObjectContentEditor = ({
                     value={String(value ?? '')}
                     onChange={(event) => handleChange(event.target.value)}
                     aria-invalid={Boolean(error) || undefined}
-                    className='cratis-field-input w-full'
+                    className='cratis-field-input cratis:w-full'
                 />
                 {error && <small style={fieldErrorStyle}>{error}</small>}
             </div>
@@ -421,7 +421,7 @@ export const ObjectContentEditor = ({
             return (
                 <button
                     type='button'
-                    className='flex items-center gap-2 cursor-pointer'
+                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
                     onClick={() => navigateToProperty(propertyName)}
                     style={{
                         color: 'var(--cratis-primary-color)',
@@ -447,7 +447,7 @@ export const ObjectContentEditor = ({
             return (
                 <button
                     type='button'
-                    className='flex items-center gap-2 cursor-pointer'
+                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
                     onClick={() => navigateToProperty(propertyName)}
                     style={{
                         color: 'var(--cratis-primary-color)',

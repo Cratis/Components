@@ -14,6 +14,8 @@
     "type": "module",
     "files": [
         "dist",
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md",
         "!dist/**/*.stories.*",
         "!dist/**/given.*",
         "!dist/**/storybook-static/**",
@@ -125,6 +127,7 @@
         "compile": "tsc -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
+        "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",

@@ -117,7 +117,7 @@ const SlotTransition = ({
             <div
                 {...pt?.incoming}
                 ref={incomingRef}
-                className={`toolbar-slot-incoming inline-flex ${flexClass} items-center gap-1 ${pt?.incoming?.className ?? ''}`}
+                className={`toolbar-slot-incoming cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.incoming?.className ?? ''}`}
                 data-cratis-part='toolbar-slot-incoming'
             >
                 {current}
@@ -127,7 +127,7 @@ const SlotTransition = ({
                 <div
                     {...pt?.outgoing}
                     key={exitRevision}
-                    className={`toolbar-slot-outgoing inline-flex ${flexClass} items-center gap-1 ${pt?.outgoing?.className ?? ''}`}
+                    className={`toolbar-slot-outgoing cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.outgoing?.className ?? ''}`}
                     data-cratis-part='toolbar-slot-outgoing'
                     aria-hidden='true'
                     inert
@@ -194,12 +194,12 @@ export const ToolbarGroup = ({
     orientation = 'vertical',
     pt,
 }: ToolbarGroupProps) => {
-    const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
+    const flexClass = orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col';
 
     return (
         <div
             {...pt?.root}
-            className={`toolbar-group inline-flex ${flexClass} items-center gap-1 p-2 rounded-2xl ${pt?.root?.className ?? ''}`}
+            className={`toolbar-group cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl ${pt?.root?.className ?? ''}`}
             data-cratis-part='toolbar-group'
             data-orientation={orientation}
         >

@@ -10,8 +10,13 @@ import { afterEach, beforeEach, describe, it } from 'vitest';
 import { Column } from '../Column';
 import { DataTableCore } from '../DataTableCore';
 
+interface Person {
+    id?: string;
+    name: string;
+}
+
 describe('when selecting by object reference', () => {
-    const selected = { name: 'Grace' };
+    const selected: Person = { name: 'Grace' };
     let container: HTMLDivElement;
     let root: Root;
 
@@ -22,19 +27,7 @@ describe('when selecting by object reference', () => {
         container = document.createElement('div');
         document.body.append(container);
         root = createRoot(container);
-        await act(async () => {
-            root.render(
-                <DataTableCore
-                    data={[selected, { name: 'Ada' }]}
-                    emptyMessage='No people'
-                    selectionMode='single'
-                    selection={selected}
-                    globalFilterFields={['name']}
-                >
-                    <Column field='name' header='Name' sortable />
-                </DataTableCore>,
-            );
-        });
+        await render([selected, { name: 'Ada' }], selected);
     });
 
     afterEach(async () => {
@@ -42,9 +35,29 @@ describe('when selecting by object reference', () => {
         container.remove();
     });
 
+    const render = async (data: Person[], selection: Person, dataKey?: string) => {
+        await act(async () => {
+            root.render(
+                <DataTableCore
+                    data={data}
+                    dataKey={dataKey}
+                    emptyMessage='No people'
+                    selectionMode='single'
+                    selection={selection}
+                    globalFilterFields={['name']}
+                >
+                    <Column field='name' header='Name' sortable />
+                </DataTableCore>,
+            );
+        });
+    };
+
+    const rows = () => Array.from(container.querySelectorAll('[data-cratis-part="row"]'));
+    const selectedRows = () =>
+        rows().filter((row) => row.getAttribute('aria-selected') === 'true');
     const selectedRow = () =>
-        Array.from(container.querySelectorAll('[data-cratis-part="row"]')).find(
-            (row) => row.textContent?.includes('Grace'),
+        Array.from(container.querySelectorAll('[data-cratis-part="row"]')).find((row) =>
+            row.textContent?.includes('Grace'),
         );
 
     it('should mark the referenced row selected without a data key', () => {
@@ -66,6 +79,31 @@ describe('when selecting by object reference', () => {
 
         expect(container.querySelectorAll('[data-cratis-part="row"]')).to.have.length(1);
         expect(selectedRow()?.getAttribute('aria-selected')).to.equal('true');
+    });
+
+    it('should_select_only_the_first_occurrence_of_a_repeated_reference', async () => {
+        await render([selected, selected], selected);
+
+        expect(rows()).to.have.length(2);
+        expect(selectedRows()).to.have.length(1);
+    });
+
+    it('should_select_the_exact_row_when_data_keys_are_duplicated', async () => {
+        const first = { id: 'same', name: 'First' };
+        const second = { id: 'same', name: 'Second' };
+        await render([first, second], second, 'id');
+
+        expect(selectedRows()).to.have.length(1);
+        expect(selectedRows()[0].textContent).to.contain('Second');
+    });
+
+    it('should_select_the_exact_row_when_data_keys_are_missing', async () => {
+        const first = { name: 'First' };
+        const second = { name: 'Second' };
+        await render([first, second], second, 'id');
+
+        expect(selectedRows()).to.have.length(1);
+        expect(selectedRows()[0].textContent).to.contain('Second');
     });
 
     it('should_preserve_selection_after_loaded_page_sorting', async () => {

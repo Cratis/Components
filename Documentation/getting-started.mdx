@@ -36,7 +36,7 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
     import '@cratis/components/theme'; // optional baseline appearance
     ```
 
-    `tokens` declares the stable `--cratis-*` variables. `styles` supplies component structure. `theme` provides the optional baseline light/dark values.
+    `tokens` defines stable `--cratis-*` variables with conservative light defaults. `styles` supplies no-Preflight component structure in low-priority Cratis layers. `theme` adds automatic/explicit dark mode, forced colors, and themed subtrees.
 
     A product with its own design system can omit `theme`, map its own variables onto `--cratis-*`, and customize stable `data-cratis-part` elements or `pt` attributes.
 
@@ -48,7 +48,7 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 3. **Mount the provider** around your application:
 
     ```tsx title="App.tsx"
-    import { CratisComponentsProvider } from '@cratis/components';
+    import { CratisComponentsProvider } from '@cratis/components/Common';
 
     export const App = () => (
         <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>

@@ -6,11 +6,11 @@
     background: var(--cratis-surface-100);
     color: var(--cratis-text-color);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    border-radius: 0.25rem;
+    box-shadow: var(--cratis-shadow-overlay);
+    border-radius: var(--cratis-border-radius);
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
-    font-family: system-ui, sans-serif;
+    font-family: inherit;
     max-width: 24rem;
-    z-index: 1100;
+    z-index: var(--cratis-z-index-tooltip);
 }

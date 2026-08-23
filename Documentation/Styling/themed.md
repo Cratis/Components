@@ -11,15 +11,23 @@ A Components theme is CSS. It does not require a JavaScript preset or provider c
 :root {
     --cratis-primary-color: var(--brand-accent-700);
     --cratis-primary-color-text: var(--brand-text-inverse);
+    --cratis-action-background: var(--brand-action);
+    --cratis-action-background-hover: var(--brand-action-hover);
+    --cratis-action-background-active: var(--brand-action-active);
+    --cratis-action-text: var(--brand-on-action);
     --cratis-surface-ground: var(--brand-canvas);
     --cratis-surface-card: var(--brand-surface);
     --cratis-surface-overlay: var(--brand-surface);
     --cratis-surface-hover: var(--brand-subtle);
     --cratis-surface-border: var(--brand-border);
+    --cratis-control-background: var(--brand-control);
+    --cratis-control-border: var(--brand-control-border);
     --cratis-text-color: var(--brand-text-primary);
     --cratis-text-color-secondary: var(--brand-text-secondary);
     --cratis-border-radius: 0.5rem;
     --cratis-focus-ring: var(--brand-focus-ring);
+    --cratis-shadow-overlay: var(--brand-overlay-shadow);
+    --cratis-shadow-dialog: var(--brand-dialog-shadow);
 }
 ```
 

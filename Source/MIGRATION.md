@@ -43,10 +43,10 @@ A custom product design can omit `theme`, define the `--cratis-*` variables itse
 
 ## Simplify the provider
 
-The provider now owns locale and Components-specific labels. It temporarily accepts unknown legacy renderer keys so staged source migrations compile, but ignores them. Remove PrimeUI keys, renderer presets, global Prime pass-through maps, ripple settings, and renderer defaults.
+The provider now owns locale and Components-specific labels. Unknown renderer keys are a type error so a migrated app cannot silently lose its theme, license, global pass-through, ripple, or z-index behavior. Remove those keys from `CratisComponentsProvider` and configure any remaining direct Prime provider independently.
 
 ```tsx
-import { CratisComponentsProvider } from '@cratis/components';
+import { CratisComponentsProvider } from '@cratis/components/Common';
 
 export const ApplicationRoot = ({ children }: { children: React.ReactNode }) => (
     <CratisComponentsProvider
@@ -76,31 +76,31 @@ export const ApplicationRoot = ({ children }: { children: React.ReactNode }) => 
 );
 ```
 
-`locales` remains temporarily accepted and maps the old paginator/date labels, but new code should use `messages`. Unknown renderer keys are ignored and should be removed.
+`locales` remains temporarily accepted and maps the old paginator/date labels, but new code should use `messages`. Renderer keys such as `license`, `theme`, `defaults`, `pt`, `ripple`, `unstyled`, and z-index settings are not part of this provider.
 
 ## Replace renderer presets with tokens
 
 Remove `styledMode()`, `CratisPreset`, and `primeReactStyles` before upgrading. Components 4 removes three renderer-specific subpaths:
 
-| Removed subpath | Migration |
-| --- | --- |
-| `@cratis/components/styled` | Import Cratis tokens/styles and map product tokens directly as shown below. |
-| `@cratis/components/compatibility` | Replace Prime slot types/sentinel presets with each component's Cratis-owned `*Parts` type. The root `Compatibility` namespace is also removed. |
-| `@cratis/components/primereact-v10-palette` | Remove legacy Prime variable dependencies; define product tokens and map them to `--cratis-*`, or use the baseline theme. |
+| Removed subpath                             | Migration                                                                                                                                       |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@cratis/components/styled`                 | Import Cratis tokens/styles and map product tokens directly as shown below.                                                                     |
+| `@cratis/components/compatibility`          | Replace Prime slot types/sentinel presets with each component's Cratis-owned `*Parts` type. The root `Compatibility` namespace is also removed. |
+| `@cratis/components/primereact-v10-palette` | Remove legacy Prime variable dependencies; define product tokens and map them to `--cratis-*`, or use the baseline theme.                       |
 
 There is no compatibility-package replacement in Components 4. Stay on Components 3 while renderer-specific types or selectors remain.
 
 ### Removed symbol mapping
 
-| Removed Components 3 export | Components 4 action |
-| --- | --- |
-| `styledMode`, `StyledModeOptions`, `CratisPreset`, `primeReactStyles` | Remove renderer configuration; use provider locale/messages and direct `--cratis-*` token mappings. |
-| `primeReactCssLayer`, `primeReactCssLayerOrder` | Delete unless the product still owns direct Prime CSS; product layer ordering belongs in product CSS. |
-| `cratisDarkModeSelector` | Use the product's own theme selector and assign `--cratis-*` values under it. |
-| `assertPrimeReact11PassThroughCompatibility` | Delete after moving renderer slots to typed Cratis `*Parts` surfaces. |
-| `components3PrimeReact11PassThroughContract`, `PrimeReact11PassThroughComponent` | Replace with component-specific public part types. |
-| `primeReact11PassThroughSentinelAttribute`, `primeReact11PassThroughSentinelPreset` | Replace with documented `data-cratis-part` and state attributes. |
-| `@cratis/components/primereact-v10-palette` variables | Map canonical product tokens directly to `--cratis-*`. |
+| Removed Components 3 export                                                         | Components 4 action                                                                                   |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `styledMode`, `StyledModeOptions`, `CratisPreset`, `primeReactStyles`               | Remove renderer configuration; use provider locale/messages and direct `--cratis-*` token mappings.   |
+| `primeReactCssLayer`, `primeReactCssLayerOrder`                                     | Delete unless the product still owns direct Prime CSS; product layer ordering belongs in product CSS. |
+| `cratisDarkModeSelector`                                                            | Use the product's own theme selector and assign `--cratis-*` values under it.                         |
+| `assertPrimeReact11PassThroughCompatibility`                                        | Delete after moving renderer slots to typed Cratis `*Parts` surfaces.                                 |
+| `components3PrimeReact11PassThroughContract`, `PrimeReact11PassThroughComponent`    | Replace with component-specific public part types.                                                    |
+| `primeReact11PassThroughSentinelAttribute`, `primeReact11PassThroughSentinelPreset` | Replace with documented `data-cratis-part` and state attributes.                                      |
+| `@cratis/components/primereact-v10-palette` variables                               | Map canonical product tokens directly to `--cratis-*`.                                                |
 
 Before:
 
@@ -226,9 +226,13 @@ The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item l
 
 For an Ada-style design system, remove `styledMode`, `AdaPreset`, Prime locale types, and the PrimeUI license from the Components provider. Keep `--ada-*` as the canonical tokens and map them directly to `--cratis-*`. If the product still imports Prime directly, retain a separate Prime provider, preset, dependencies, and license until those imports are removed. Migrate Ada's role filter from `registerMatcher` to `registerDataTableFilterMatcher` and use the returned `matchMode` in its constraint.
 
-For Studio Liquid Glass, replace renderer part types with `DialogParts`, `StepperParts`, and the complete Toolbar part family: `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. Keep Studio's shaders and measurement wrappers product-owned. Measure `toolbar-group`, `toolbar-separator`, `toolbar-layout`, `toolbar-section`, `toolbar-context`, and `toolbar-slot*` `data-cratis-part` boundaries; pass the integrated Canvas surface through `controlsGlassSurface`; and localize its actions through `controlsLabels`.
+A Components 2 / PrimeReact 10 product such as Stagehand can migrate directly to Components 4 without an intermediate Prime 11 conversion. Keep its Prime 10 provider/theme for direct Prime surfaces, mount Components independently, move `DataPage` children to the Cratis `Column`, and migrate direct controls in batches.
 
-The published migration guide contains complete Ada provider/token and Studio Dialog/Stepper/Toolbar/Canvas mapping examples.
+A Components 3 / PrimeReact 11 product such as Chronicle Workbench can start with the Components baseline theme while keeping a separate licensed Prime provider. Retain application-owned grouped/lazy tables and ordinary action rows when Components does not claim those behaviors.
+
+For Studio Liquid Glass, replace renderer part types with `DialogParts`, `StepperParts`, and the complete Toolbar part family: `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. Keep Studio's shaders and measurement wrappers product-owned. Measure stable `data-cratis-part` and state boundaries; pass the integrated Canvas surface through `controlsGlassSurface`; pass Studio's layer/content/transform-host marker names through `captureAttributes`; and localize actions through `controlsLabels`.
+
+The published migration guide contains the complete Ada, Stagehand, Workbench, and Studio mappings and stop conditions.
 
 Paginator callbacks that formerly returned classes from renderer context must become static Cratis parts plus CSS state selectors:
 
@@ -351,3 +355,5 @@ Complete PrimeIcons class strings remain usable where a component accepts `Icon`
 8. Run TypeScript, specs, Storybook, and the production build.
 
 For the decision, trade-offs, and validation gates, read the published [UI foundation](https://cratis.io/components/ui-foundation/) explanation. For the older 2.x → 3.x PrimeReact migration, see [Migrate from Components 2 to 3](https://cratis.io/components/migration-from-2/).
+
+Tracked follow-up remains explicit: [#109](https://github.com/Cratis/Components/issues/109) covers a future Arc React table-state binding, [#159](https://github.com/Cratis/Components/issues/159) covers complete-result server filtering before paging, [#173](https://github.com/Cratis/Components/issues/173) covers the package-export/TSDoc audit, [#174](https://github.com/Cratis/Components/issues/174) covers remaining provider-localized labels, and [#175](https://github.com/Cratis/Components/issues/175) covers locale-aware number input. None is silently implemented by a compatibility flag in Components 4.

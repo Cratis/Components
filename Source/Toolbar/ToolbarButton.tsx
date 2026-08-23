@@ -112,7 +112,7 @@ export const ToolbarButton = ({
                 onClick={onClick}
                 draggable={isDraggable}
                 onDragStart={isDraggable ? handleDragStart : undefined}
-                className={`toolbar-button toolbar-button--list h-10 px-3 w-full flex items-center justify-start gap-2 rounded-lg cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
+                className={`toolbar-button toolbar-button--list cratis:h-10 cratis:px-3 cratis:w-full cratis:flex cratis:items-center cratis:justify-start cratis:gap-2 cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='button'
                 data-active={active || undefined}
             >
@@ -124,7 +124,7 @@ export const ToolbarButton = ({
                     >
                         <IconDisplay
                             icon={resolvedIcon}
-                            className='text-lg flex-shrink-0'
+                            className='cratis:text-lg cratis:flex-shrink-0'
                         />
                     </span>
                 )}
@@ -139,7 +139,7 @@ export const ToolbarButton = ({
         );
     }
 
-    const buttonSizeClass = hasText ? 'h-10 px-3 min-w-[4rem]' : 'w-10 h-10';
+    const buttonSizeClass = hasText ? 'cratis:h-10 cratis:px-3 cratis:min-w-[4rem]' : 'cratis:w-10 cratis:h-10';
     const buttonContent = hasText ? (
         <span
             {...pt?.label}
@@ -154,7 +154,7 @@ export const ToolbarButton = ({
             className={pt?.icon?.className}
             data-cratis-part='icon'
         >
-            <IconDisplay icon={resolvedIcon} className='text-lg' />
+            <IconDisplay icon={resolvedIcon} className='cratis:text-lg' />
         </span>
     );
 
@@ -167,7 +167,7 @@ export const ToolbarButton = ({
                 onClick={onClick}
                 draggable={isDraggable}
                 onDragStart={isDraggable ? handleDragStart : undefined}
-                className={`toolbar-button ${buttonSizeClass} flex items-center justify-center rounded-lg cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
+                className={`toolbar-button ${buttonSizeClass} cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='button'
                 data-active={active || undefined}
             >

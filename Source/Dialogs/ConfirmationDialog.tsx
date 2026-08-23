@@ -19,7 +19,7 @@ export const ConfirmationDialog = () => {
             onClose={handleClose}
             buttons={request.buttons}
         >
-            <p className="m-0">
+            <p className="cratis:m-0">
                 {request.message}
             </p>
         </Dialog>

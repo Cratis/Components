@@ -29,7 +29,7 @@ export const StringIconWithExtraClass: Story = {
     render: () => (
         <>
             <style>{'.story-product-home::before { content: "⌂"; font-size: 1.5rem; }'}</style>
-            <IconDisplay icon='story-product-home' className='text-3xl' />
+            <IconDisplay icon='story-product-home' className='cratis:text-3xl' />
         </>
     ),
 };

@@ -18,7 +18,7 @@ export const Default: Story = {
         icon: <span aria-hidden='true'>◆</span>,
     },
     render: (args) => (
-        <div className='p-4'>
+        <div className='cratis:p-4'>
             <FormElement {...args}>
                 <input className='cratis-field-input' placeholder='Username' />
             </FormElement>
@@ -31,7 +31,7 @@ export const WithEmailIcon: Story = {
         icon: <span aria-hidden='true'>◆</span>,
     },
     render: (args) => (
-        <div className='p-4'>
+        <div className='cratis:p-4'>
             <FormElement {...args}>
                 <input
                     className='cratis-field-input'
@@ -48,7 +48,7 @@ export const WithSearchIcon: Story = {
         icon: <span aria-hidden='true'>◆</span>,
     },
     render: (args) => (
-        <div className='p-4'>
+        <div className='cratis:p-4'>
             <FormElement {...args}>
                 <input className='cratis-field-input' placeholder='Search…' />
             </FormElement>

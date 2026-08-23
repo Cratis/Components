@@ -53,7 +53,7 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
             className={[
                 'cratis-field-input',
                 'cratis-field-textarea',
-                'w-full',
+                'cratis:w-full',
                 props.pt?.root?.className,
                 props.className,
             ]

@@ -28,12 +28,14 @@ import '@cratis/components/styles';
 import '@cratis/components/theme'; // optional baseline appearance
 ```
 
-A custom product design omits `theme` and defines the semantic `--cratis-*` variables itself.
+`tokens` supplies conservative light defaults. `styles` contains structural rules and internal utilities in low-priority Cratis cascade layers, with no Tailwind Preflight/reset or token duplication. `theme` adds automatic/explicit dark mode, forced colors, and themed subtrees.
+
+A custom product design omits `theme`, imports product CSS after `tokens` and `styles`, and maps its canonical values directly to `--cratis-*`.
 
 ## Provider
 
 ```tsx
-import { CratisComponentsProvider } from '@cratis/components';
+import { CratisComponentsProvider } from '@cratis/components/Common';
 
 export const App = () => (
     <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
@@ -143,9 +145,15 @@ Every meaningful component element carries a stable `data-cratis-part`. Componen
 ```css
 :root {
     --cratis-primary-color: var(--product-accent);
+    --cratis-action-background: var(--product-action);
+    --cratis-action-background-hover: var(--product-action-hover);
+    --cratis-action-background-active: var(--product-action-active);
+    --cratis-action-text: var(--product-on-action);
     --cratis-surface-card: var(--product-surface);
     --cratis-surface-overlay: var(--product-surface-raised);
     --cratis-surface-border: var(--product-border);
+    --cratis-control-background: var(--product-control);
+    --cratis-control-border: var(--product-control-border);
     --cratis-text-color: var(--product-text);
     --cratis-focus-ring: var(--product-focus-ring);
 }
@@ -181,6 +189,8 @@ Do not target React Aria classes or internal DOM structure.
 - `@cratis/components/Toolbar`
 - `@cratis/components/types`
 
+The root entry retains the existing namespace exports for source compatibility with established consumers. New code should import the narrow subpath it uses—especially `Common` for provider setup—so bundlers and readers do not traverse unrelated component families. Components 4 intentionally retains the existing namespace symbols; [#173](https://github.com/Cratis/Components/issues/173) tracks declaration-level TSDoc and API-reference coverage, not silent 4.x export removal.
+
 ## Components 3 migration
 
 Components 4 removes the mandatory PrimeReact 11 foundation. Follow the published [Components 3 to 4 migration guide](https://cratis.io/components/migration/) for dependency removal, provider changes, product token mapping, stable part names, DatePicker changes, table behavior, notifications, and direct Prime import replacements.
@@ -189,4 +199,4 @@ The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeRea
 
 ## License
 
-Cratis Components is MIT licensed. Its default runtime dependencies use permissive open-source licenses, including Apache-2.0, MIT, and ISC. The bundled Patrick Hand font used by Canvas notes is distributed under the SIL Open Font License 1.1; its `PatrickHand-OFL.txt` notice is included in the package. Components 4 does not require PrimeUI licensing.
+Cratis Components is MIT licensed. Its default runtime dependencies use permissive open-source licenses, including Apache-2.0, MIT, and ISC. The package includes its `LICENSE`, an Allotment notice in `THIRD_PARTY_NOTICES.md`, and the Patrick Hand SIL Open Font License as `dist/esm/PatrickHand-OFL.txt`. Components 4 does not require PrimeUI licensing.

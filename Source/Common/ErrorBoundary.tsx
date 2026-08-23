@@ -70,8 +70,8 @@ export class ErrorBoundary extends Component<Props, State> {
     public render() {
         if (this.state.hasError) {
             return (
-                <div className='p-4'>
-                    <h1 className='text-3xl m-3'>Error</h1>
+                <div className='cratis:p-4'>
+                    <h1 className='cratis:text-3xl cratis:m-3'>Error</h1>
                     <p>{this.state.error.message}</p>
                     <p>{this.state.error.stack}</p>
                 </div>

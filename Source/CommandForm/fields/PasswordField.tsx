@@ -48,7 +48,7 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
             onBlur={props.onBlur}
             className={[
                 'cratis-password-field',
-                'w-full',
+                'cratis:w-full',
                 props.pt?.root?.className,
                 props.className,
             ]
@@ -67,7 +67,7 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                 placeholder={props.placeholder}
                 aria-invalid={props.invalid || undefined}
                 data-invalid={props.invalid || undefined}
-                className={['cratis-field-input', 'w-full', props.pt?.input?.className]
+                className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='input'

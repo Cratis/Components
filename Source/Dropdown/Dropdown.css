@@ -17,16 +17,17 @@
 .cratis-dropdown__filter,
 .cratis-dropdown__multiple {
     width: 100%;
-    min-height: 2.5rem;
-    border: 1px solid var(--cratis-surface-border);
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
-    background: var(--cratis-surface-card);
+    background: var(--cratis-control-background);
     color: var(--cratis-text-color);
     font: inherit;
 }
 .cratis-dropdown__trigger {
     display: flex;
-    padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+    padding: 0.625rem 2.25rem 0.625rem 0.75rem;
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
@@ -34,7 +35,7 @@
     cursor: pointer;
 }
 .cratis-dropdown__filter {
-    padding: 0.5rem 4rem 0.5rem 0.75rem;
+    padding: 0.625rem 4rem 0.625rem 0.75rem;
 }
 .cratis-dropdown__multiple {
     padding: 0.4rem;
@@ -51,7 +52,7 @@
     border-color: var(--cratis-red-500);
 }
 .cratis-dropdown[data-disabled='true'] {
-    opacity: 0.6;
+    opacity: var(--cratis-disabled-opacity);
 }
 .cratis-dropdown__value {
     min-width: 0;
@@ -101,7 +102,7 @@
     box-shadow: var(--cratis-focus-ring);
 }
 .cratis-dropdown__popover {
-    z-index: 1200;
+    z-index: var(--cratis-z-index-overlay);
     min-width: var(--trigger-width);
     max-height: min(20rem, var(--available-height));
     overflow: auto;
@@ -109,8 +110,7 @@
     border-radius: var(--cratis-border-radius);
     background: var(--cratis-surface-overlay);
     color: var(--cratis-text-color);
-    box-shadow: 0 0.5rem 1.5rem
-        color-mix(in srgb, var(--cratis-text-color) 18%, transparent);
+    box-shadow: var(--cratis-shadow-overlay);
 }
 .cratis-dropdown__listbox {
     padding: 0.3rem;
@@ -118,8 +118,8 @@
 }
 .cratis-dropdown__option {
     display: flex;
-    min-height: 2.25rem;
-    padding: 0.45rem 0.65rem;
+    min-height: var(--cratis-control-height);
+    padding: 0.75rem 1.25rem;
     align-items: center;
     border-radius: calc(var(--cratis-border-radius) * 0.75);
     cursor: default;

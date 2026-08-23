@@ -274,25 +274,27 @@ export const DataTableCore = <TData extends object>({
 
     const filteredRows = useMemo(() => {
         const term = globalFilter.trim().toLocaleLowerCase();
-        const rows = data.filter((row) => {
-            const rowValues = row as Record<string, unknown>;
-            const matchesColumns = Object.entries(filters).every(([field, entry]) =>
-                matchesFilterEntry(valueAtPath(rowValues, field), entry),
-            );
-            if (!matchesColumns) return false;
-            if (!term || !globalFilterFields?.length) return true;
-            return globalFilterFields.some((field) =>
-                String(valueAtPath(rowValues, field) ?? '')
-                    .toLocaleLowerCase()
-                    .includes(term),
-            );
-        });
+        const rows = data
+            .map((row, loadedIndex) => ({ row, loadedIndex }))
+            .filter(({ row }) => {
+                const rowValues = row as Record<string, unknown>;
+                const matchesColumns = Object.entries(filters).every(([field, entry]) =>
+                    matchesFilterEntry(valueAtPath(rowValues, field), entry),
+                );
+                if (!matchesColumns) return false;
+                if (!term || !globalFilterFields?.length) return true;
+                return globalFilterFields.some((field) =>
+                    String(valueAtPath(rowValues, field) ?? '')
+                        .toLocaleLowerCase()
+                        .includes(term),
+                );
+            });
 
         if (!sort) return rows;
         return [...rows].sort((left, right) => {
             const comparison = compareValues(
-                valueAtPath(left as Record<string, unknown>, sort.field),
-                valueAtPath(right as Record<string, unknown>, sort.field),
+                valueAtPath(left.row as Record<string, unknown>, sort.field),
+                valueAtPath(right.row as Record<string, unknown>, sort.field),
             );
             return sort.direction === 'ascending' ? comparison : -comparison;
         });
@@ -320,19 +322,38 @@ export const DataTableCore = <TData extends object>({
         }
     };
 
-    const loadedPageKeyByRow = useMemo(
-        () => new Map(data.map((row, index) => [row, String(index)])),
-        [data],
-    );
-    const keyOf = (row: TData, filteredIndex: number) =>
-        dataKey
-            ? String(valueAtPath(row as Record<string, unknown>, dataKey))
-            : (loadedPageKeyByRow.get(row) ?? `filtered-${filteredIndex}`);
-    const selectedKey = selection
-        ? dataKey
-            ? String(valueAtPath(selection as Record<string, unknown>, dataKey))
-            : loadedPageKeyByRow.get(selection)
-        : undefined;
+    const dataKeyIdentity = (row: TData) =>
+        String(valueAtPath(row as Record<string, unknown>, dataKey!));
+    const dataKeyCounts = useMemo(() => {
+        const counts = new Map<string, number>();
+        if (!dataKey) return counts;
+        for (const row of data) {
+            const identity = String(valueAtPath(row as Record<string, unknown>, dataKey));
+            counts.set(identity, (counts.get(identity) ?? 0) + 1);
+        }
+        return counts;
+    }, [data, dataKey]);
+    const firstLoadedIndexByDataKey = useMemo(() => {
+        const indices = new Map<string, number>();
+        if (!dataKey) return indices;
+        data.forEach((row, loadedIndex) => {
+            const identity = String(valueAtPath(row as Record<string, unknown>, dataKey));
+            if (!indices.has(identity)) indices.set(identity, loadedIndex);
+        });
+        return indices;
+    }, [data, dataKey]);
+    const selectedLoadedIndex = selection ? data.indexOf(selection) : -1;
+    const selectedDataKey = selection && dataKey ? dataKeyIdentity(selection) : undefined;
+    const isSelectedRow = (row: TData, loadedIndex: number) => {
+        if (!selection) return false;
+        if (!dataKey) return loadedIndex === selectedLoadedIndex;
+
+        const identity = dataKeyIdentity(row);
+        if (identity !== selectedDataKey) return false;
+        if ((dataKeyCounts.get(identity) ?? 0) <= 1) return true;
+        if (selectedLoadedIndex >= 0) return loadedIndex === selectedLoadedIndex;
+        return loadedIndex === firstLoadedIndexByDataKey.get(identity);
+    };
 
     return (
         <div
@@ -525,10 +546,14 @@ export const DataTableCore = <TData extends object>({
                                 </td>
                             </tr>
                         ) : (
-                            filteredRows.map((row, rowIndex) => {
-                                const rowKey = keyOf(row, rowIndex);
+                            filteredRows.map(({ row, loadedIndex }, filteredIndex) => {
+                                const identity = dataKey
+                                    ? dataKeyIdentity(row)
+                                    : 'loaded-row';
+                                const rowKey = `${identity}::${loadedIndex}`;
                                 const isSelected =
-                                    selectionMode === 'single' && selectedKey === rowKey;
+                                    selectionMode === 'single' &&
+                                    isSelectedRow(row, loadedIndex);
                                 const isInteractive =
                                     Boolean(onRowClick) || selectionMode === 'single';
                                 return (
@@ -548,8 +573,9 @@ export const DataTableCore = <TData extends object>({
                                         )}
                                         data-cratis-part='row'
                                         data-selected={isSelected || undefined}
+                                        data-interactive={isInteractive || undefined}
                                         onClick={(event) =>
-                                            activateRow(row, rowIndex, event)
+                                            activateRow(row, filteredIndex, event)
                                         }
                                         onKeyDown={(event) => {
                                             if (
@@ -560,7 +586,7 @@ export const DataTableCore = <TData extends object>({
                                                 return;
                                             }
                                             event.preventDefault();
-                                            activateRow(row, rowIndex, event);
+                                            activateRow(row, filteredIndex, event);
                                         }}
                                     >
                                         {columns.map((column, columnIndex) => (

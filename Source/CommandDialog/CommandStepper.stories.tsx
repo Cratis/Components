@@ -112,7 +112,7 @@ export const Default: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -166,7 +166,7 @@ export const InDialogFrame: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                            <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
@@ -229,7 +229,7 @@ export const InDialogFrameWithCenteredHeader: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                            <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
@@ -287,7 +287,7 @@ export const Vertical: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -341,7 +341,7 @@ export const WithValidationIndicators: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -362,8 +362,8 @@ export const ConditionalSteps: Story = {
 
         return (
             <div style={{ width: '600px', padding: '1.5rem' }}>
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
-                <p className="mb-3 text-sm text-color-secondary">
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
+                <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
                     The Budget step is currently <strong>{includeBudgetStep ? 'shown' : 'hidden'}</strong>, so the
                     wizard has {includeBudgetStep ? 'three' : 'two'} steps.
                 </p>
@@ -401,7 +401,7 @@ export const ConditionalSteps: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}

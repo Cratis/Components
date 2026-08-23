@@ -113,7 +113,8 @@ function MyComponent() {
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `width`: Dialog width
-- `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the underlying dialog
+- `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts
+- `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
 
 > [!NOTE]
 > `dismissable` and `closeAriaLabel` are forwarded to the underlying `Dialog`. `isBusy` is managed internally while the command executes, so consumers should not set it directly.
@@ -159,12 +160,13 @@ import { DialogInitialFocus } from '@cratis/components/Dialogs';
 
 <CommandDialog<DeletePersonalData>
     command={DeletePersonalData}
-    title="Delete personal data?"
-    okLabel="Delete"
+    title='Delete personal data?'
+    okLabel='Delete'
     initialFocus={DialogInitialFocus.Cancel}
-    onSuccess={() => closeDialog(DialogResult.Ok)}>
+    onSuccess={() => closeDialog(DialogResult.Ok)}
+>
     This cannot be undone.
-</CommandDialog>
+</CommandDialog>;
 ```
 
 ## Busy State

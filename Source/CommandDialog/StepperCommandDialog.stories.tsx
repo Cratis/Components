@@ -123,7 +123,7 @@ export const Default: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={async () => {
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={async () => {
                     const [dialogResult, commandResult] = await showCreateProjectDialog();
                     if (dialogResult === DialogResult.Ok && commandResult) {
                         setResult(JSON.stringify(commandResult));
@@ -135,7 +135,7 @@ export const Default: Story = {
                 </button>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Result:</strong> {result}
                     </div>
                 )}
@@ -153,7 +153,7 @@ export const ThreeSteps: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
                     setVisible(true);
                     setResult('');
                 }}>
@@ -161,7 +161,7 @@ export const ThreeSteps: Story = {
                 </button>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Submitted:</strong> {result}
                     </div>
                 )}
@@ -218,11 +218,11 @@ export const WithValidationIndicators: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <p className="mb-3 text-sm text-color-secondary">
+                <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
                     <code>validateOnInit</code> triggers validation immediately — step indicators appear on
                     any step whose fields are invalid right from the start.
                 </p>
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
 
@@ -274,10 +274,10 @@ export const WithBusyState: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <p className="mb-3 text-sm text-color-secondary">
+                <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
                     Simulates a 2-second server delay. Fill all fields and click Submit to see the busy state.
                 </p>
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
 
@@ -380,7 +380,7 @@ export const WithResponseTypeAndCallbacks: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
                     setResult('');
                     setError('');
                     setVisible(true);
@@ -389,13 +389,13 @@ export const WithResponseTypeAndCallbacks: Story = {
                 </button>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Success:</strong> {result}
                     </div>
                 )}
 
                 {error && (
-                    <div className="p-3 mt-3 bg-red-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-red-100 border-round">
                         <strong>Error:</strong> {error}
                     </div>
                 )}
@@ -465,11 +465,11 @@ export const WithFooterCancel: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <p className="mb-3 text-sm text-color-secondary">
+                <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
                     The footer leads with a renamed Cancel. Fill both steps and click Create to run a 2-second
                     command — while it runs, neither the footer Cancel nor the header X can dismiss the dialog.
                 </p>
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
                     setOutcome('');
                     setVisible(true);
                 }}>
@@ -477,7 +477,7 @@ export const WithFooterCancel: Story = {
                 </button>
 
                 {outcome && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Outcome:</strong> {outcome}
                     </div>
                 )}
@@ -544,20 +544,20 @@ export const ConditionalSteps: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
-                <button className="cratis-button mb-3 ml-2" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
+                <button className="cratis-button cratis:mb-3 cratis:ml-2" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
                     setResult('');
                     setVisible(true);
                 }}>
                     Open Dialog
                 </button>
-                <p className="mb-3 text-sm text-color-secondary">
+                <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
                     The Budget step is currently <strong>{includeBudgetStep ? 'shown' : 'hidden'}</strong>, so the
                     wizard has {includeBudgetStep ? 'three' : 'two'} steps.
                 </p>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Submitted:</strong> {result}
                     </div>
                 )}

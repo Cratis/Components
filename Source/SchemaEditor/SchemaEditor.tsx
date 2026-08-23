@@ -434,7 +434,7 @@ export const SchemaEditor = ({
                 ? [
                       {
                           label: l.edit,
-                          icon: <faIcons.FaPencil className='mr-2' />,
+                          icon: <faIcons.FaPencil className='cratis:mr-2' />,
                           command: canEdit ? handleEdit : undefined,
                           className: !canEdit ? 'edit-disabled-with-reason' : undefined,
                           template:
@@ -470,7 +470,7 @@ export const SchemaEditor = ({
                           ? [
                                 {
                                     label: l.save,
-                                    icon: <faIcons.FaCheck className='mr-2' />,
+                                    icon: <faIcons.FaCheck className='cratis:mr-2' />,
                                     command: hasValidationErrors ? undefined : handleSave,
                                     disabled: hasValidationErrors,
                                 },
@@ -480,14 +480,14 @@ export const SchemaEditor = ({
                           ? [
                                 {
                                     label: l.cancel,
-                                    icon: <faIcons.FaXmark className='mr-2' />,
+                                    icon: <faIcons.FaXmark className='cratis:mr-2' />,
                                     command: handleCancel,
                                 },
                             ]
                           : []),
                       {
                           label: l.addProperty,
-                          icon: <faIcons.FaPlus className='mr-2' />,
+                          icon: <faIcons.FaPlus className='cratis:mr-2' />,
                           command: addProperty,
                       },
                   ]
@@ -517,13 +517,13 @@ export const SchemaEditor = ({
             className={className ? `schema-editor ${className}` : 'schema-editor'}
             style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
         >
-            <div className='px-4 py-4'>
+            <div className='cratis:px-4 cratis:py-4'>
                 <div className='schema-editor-menubar'>
                     <ActionMenubar aria-label={l.actions} model={menuItems} />
                 </div>
             </div>
 
-            <div className='px-4 py-2 cratis-schema-editor-bottom-border'>
+            <div className='cratis:px-4 cratis:py-2 cratis-schema-editor-bottom-border'>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Tooltip content='Navigate back' position='top'>
                         <Button
@@ -544,7 +544,7 @@ export const SchemaEditor = ({
                     >
                         {breadcrumbItems.map((item, index) => (
                             <span key={index}>
-                                {index > 0 && <span className='mx-2'>&gt;</span>}
+                                {index > 0 && <span className='cratis:mx-2'>&gt;</span>}
                                 <button
                                     type='button'
                                     onClick={() => navigateToBreadcrumb(index)}

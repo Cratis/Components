@@ -60,7 +60,7 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
             data-cratis-part='input'
             className={[
                 'cratis-field-input',
-                'w-full',
+                'cratis:w-full',
                 props.pt?.root?.className,
                 props.className,
             ]

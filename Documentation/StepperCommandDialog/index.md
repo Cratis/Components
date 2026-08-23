@@ -107,7 +107,8 @@ function MyComponent() {
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `dialogClassName`: Extra CSS class name for the outer dialog root
-- `dialogPt` / `dialogPtOptions` / `dialogUnstyled`: Pass-through styling for the **outer** dialog (the inherited `pt` / `ptOptions` / `unstyled` target the **inner** stepper)
+- `dialogPt`: Cratis-owned stable part attributes for the **outer** dialog; inherited `pt` targets the **inner** stepper
+- `dialogPtOptions` / `dialogUnstyled` / inherited `ptOptions` / inherited `unstyled`: Retained temporarily for source compatibility; ignored because part attributes always merge and styling is CSS-owned
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with. It runs only on submit, after every step has been validated, so a value produced here can never satisfy required-field validation; seed required values through `initialValues` instead.

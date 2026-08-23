@@ -3,10 +3,8 @@
 
 import { addons } from 'storybook/preview-api';
 import React from 'react';
-import '../tokens.css';
-import '../styles.css';
+import './foundation.css';
 import './preview.css';
-import '../theme.css';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 
 const DARK_SELECTOR = 'cratis-dark';
@@ -83,6 +81,7 @@ export const decorators = [
 export const parameters = {
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: { expanded: true },
+    a11y: { test: 'error' },
     backgrounds: {
         default: 'dark',
         values: [

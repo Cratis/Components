@@ -43,7 +43,7 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
             {...props.pt?.root}
             className={[
                 'cratis-slider-field',
-                'w-full',
+                'cratis:w-full',
                 props.pt?.root?.className,
                 props.className,
             ]

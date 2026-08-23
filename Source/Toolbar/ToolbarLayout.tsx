@@ -94,7 +94,7 @@ const LayoutTransition = ({
             <div
                 {...pt?.incoming}
                 ref={incomingRef}
-                className={`toolbar-slot-incoming inline-flex ${flexClass} items-center gap-1 ${pt?.incoming?.className ?? ''}`}
+                className={`toolbar-slot-incoming cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.incoming?.className ?? ''}`}
                 data-cratis-part='toolbar-slot-incoming'
             >
                 {current}
@@ -103,7 +103,7 @@ const LayoutTransition = ({
                 <div
                     {...pt?.outgoing}
                     key={exitRevision}
-                    className={`toolbar-slot-outgoing inline-flex ${flexClass} items-center gap-1 ${pt?.outgoing?.className ?? ''}`}
+                    className={`toolbar-slot-outgoing cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.outgoing?.className ?? ''}`}
                     data-cratis-part='toolbar-slot-outgoing'
                     aria-hidden='true'
                     inert
@@ -201,7 +201,7 @@ export const ToolbarLayout = ({
     pt,
 }: ToolbarLayoutProps) => {
     const slotItems = useToolbarSlot(name);
-    const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
+    const flexClass = orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col';
     const fallbackItems = useMemo(() => Children.toArray(children), [children]);
     const items = slotItems.length > 0 ? slotItems : fallbackItems;
 
@@ -210,7 +210,7 @@ export const ToolbarLayout = ({
     return (
         <div
             {...pt?.root}
-            className={`toolbar-layout inline-flex ${flexClass} items-center gap-1 ${pt?.root?.className ?? ''}`}
+            className={`toolbar-layout cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.root?.className ?? ''}`}
             data-cratis-part='toolbar-layout'
             data-layout-name={name}
             data-orientation={orientation}

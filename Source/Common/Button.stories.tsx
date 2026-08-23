@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { Button } from './Button';
 
 const meta = {
@@ -24,3 +24,38 @@ export const Text: Story = { args: { label: 'Cancel', text: true } };
 export const Link: Story = { args: { label: 'Learn more', link: true } };
 export const Outlined: Story = { args: { label: 'Details', outlined: true, severity: 'secondary' } };
 export const WithTooltip: Story = { args: { icon: <span aria-hidden='true'>◆</span>, 'aria-label': 'Info', tooltip: 'More information' } };
+
+export const VisualMatrix: Story = {
+    render: () => (
+        <div style={{ display: 'grid', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(6rem, 1fr))', gap: '0.75rem' }}>
+                <Button label='Primary' />
+                <Button label='Secondary' severity='secondary' />
+                <Button label='Info' severity='info' />
+                <Button label='Success' severity='success' />
+                <Button label='Warning' severity='warn' />
+                <Button label='Danger' severity='danger' />
+                <Button label='Help' severity='help' />
+                <Button label='Contrast' severity='contrast' />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(6rem, 1fr))', gap: '0.75rem' }}>
+                <Button label='Small' size='small' />
+                <Button label='Normal' />
+                <Button label='Large' size='large' />
+                <Button label='Disabled' disabled />
+                <Button label='Loading' loading />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(6rem, 1fr))', gap: '0.75rem' }}>
+                <Button label='Filled' />
+                <Button label='Outlined' outlined />
+                <Button label='Text' text />
+                <Button label='Link' link />
+            </div>
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'Primary' })).toHaveFocus();
+    },
+};

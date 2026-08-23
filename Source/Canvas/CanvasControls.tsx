@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useEffect, useState } from 'react';
-import { CONTENT_ATTR } from './glassAttributes';
 import { CanvasMinimap, CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
 import { FaCircleQuestion, FaMap, FaMinus, FaPlus } from 'react-icons/fa6';
 
@@ -73,9 +72,12 @@ export interface CanvasControlsProps {
      */
     glassSurface?: React.ReactNode;
 
+    /** Optional product capture/compositor attribute placed on non-plain glass content. */
+    contentCaptureAttribute?: string;
+
     /**
      * Disables the glass surface behind the control bar, falling back to a CSS backdrop-filter pill:
-     * `glassSurface` is not rendered, and the `CONTENT_ATTR` marker is not set. A full-scene glass
+     * `glassSurface` is not rendered, and the product content marker is not set. A full-scene glass
      * capture (like LiquidGlass's) re-rasterizes the content behind it on every interaction frame; on a
      * very large canvas that costs hundreds of ms and stalls pan/zoom, so large boards opt out.
      */
@@ -99,23 +101,31 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
     helpTitle,
     labels,
     glassSurface,
+    contentCaptureAttribute,
     disableGlass = false,
 }) => {
     const [minimapOpen, setMinimapOpen] = useState(false);
     const [displayZoom, setDisplayZoom] = useState(getZoom);
-    const alignClass = placement === 'bottom-right' ? 'items-end' : 'items-start';
+    const alignClass = placement === 'bottom-right' ? 'cratis:items-end' : 'cratis:items-start';
 
     // The controls step aside for whatever the canvas viewport is inset by at their own edge — the docked
     // right panel for the bottom-right placement, the project drawer for the bottom-left one — exactly like
     // the top toolbars do. See Components/Viewport.
-    const alignStyle: React.CSSProperties = placement === 'bottom-right'
-        ? { right: 'calc(1rem + var(--canvas-viewport-right, 0px))', transition: 'right 0.25s cubic-bezier(0.4, 0, 0.2, 1)' }
-        : { left: 'calc(1rem + var(--canvas-viewport-left, 0px))', transition: 'left 0.25s cubic-bezier(0.4, 0, 0.2, 1)' };
+    const alignStyle: React.CSSProperties =
+        placement === 'bottom-right'
+            ? {
+                  right: 'calc(1rem + var(--canvas-viewport-right, 0px))',
+                  transition: 'right 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+              }
+            : {
+                  left: 'calc(1rem + var(--canvas-viewport-left, 0px))',
+                  transition: 'left 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+              };
 
     // Poll the live zoom for the readout — only this small component re-renders, never the canvas.
     useEffect(() => {
         const timer = setInterval(() => {
-            setDisplayZoom(previous => {
+            setDisplayZoom((previous) => {
                 const current = getZoom();
                 return current === previous ? previous : current;
             });
@@ -128,9 +138,9 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
 
     return (
         <div
-            className={`absolute bottom-4 ${alignClass} z-10 flex flex-col gap-2`}
+            className={`cratis:absolute cratis:bottom-4 ${alignClass} cratis:z-10 cratis:flex cratis:flex-col cratis:gap-2`}
             style={alignStyle}
-            onPointerDown={e => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
         >
             {/* Minimap panel — pops up above the bar */}
             {showMinimapToggle && minimapOpen && (
@@ -150,58 +160,84 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                 content-layer capture. */}
             <div
                 className={`canvas-controls-glass${usesPlainSurface ? ' canvas-controls-glass--plain' : ''}`}
-                {...(usesPlainSurface ? {} : { [CONTENT_ATTR]: 'true' })}
+                {...(!usesPlainSurface && contentCaptureAttribute
+                    ? { [contentCaptureAttribute]: 'true' }
+                    : {})}
             >
                 {!usesPlainSurface && glassSurface}
-            <div className='canvas-controls-bar inline-flex flex-row items-center gap-1 px-2 py-1.5 rounded-2xl'>
-                {showMinimapToggle && (
-                    <>
-                        <button
-                            type='button'
-                            title={labels?.toggleMinimap ?? 'Toggle minimap'}
-                            aria-label={labels?.toggleMinimap ?? 'Toggle minimap'}
-                            className={`canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none${minimapOpen ? ' canvas-controls-icon-btn--active' : ''}`}
-                            onClick={() => setMinimapOpen(v => !v)}
-                        >
-                            <FaMap className='text-base' aria-hidden='true' />
-                        </button>
-                        <span className='canvas-controls-separator' />
-                    </>
-                )}
+                <div className='canvas-controls-bar cratis:inline-flex cratis:flex-row cratis:items-center cratis:gap-1 cratis:px-2 cratis:py-1.5 cratis:rounded-2xl'>
+                    {showMinimapToggle && (
+                        <>
+                            <button
+                                type='button'
+                                title={labels?.toggleMinimap ?? 'Toggle minimap'}
+                                aria-label={labels?.toggleMinimap ?? 'Toggle minimap'}
+                                className={`canvas-controls-icon-btn cratis:flex cratis:items-center cratis:justify-center cratis:w-9 cratis:h-9 cratis:rounded-lg cratis:cursor-pointer cratis:select-none${minimapOpen ? ' canvas-controls-icon-btn--active' : ''}`}
+                                onClick={() => setMinimapOpen((v) => !v)}
+                            >
+                                <FaMap className='cratis:text-base' aria-hidden='true' />
+                            </button>
+                            <span className='canvas-controls-separator' />
+                        </>
+                    )}
 
-                {/* Zoom controls */}
-                <button type='button' title={labels?.zoomOut ?? 'Zoom Out'} aria-label={labels?.zoomOut ?? 'Zoom Out'} className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none' onClick={() => { onZoomOut(); refreshDisplayZoom(); }}>
-                    <FaMinus className='text-base' aria-hidden='true' />
-                </button>
-                <button
-                    type='button'
-                    title={labels?.resetZoom ?? 'Reset Zoom'}
-                    aria-label={labels?.resetZoom ?? 'Reset Zoom'}
-                    onClick={() => { onZoomReset(); refreshDisplayZoom(); }}
-                    className='canvas-controls-zoom-btn flex items-center justify-center h-9 min-w-[3.25rem] px-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none tabular-nums'
-                >
-                    {Math.round(displayZoom * 100)}%
-                </button>
-                <button type='button' title={labels?.zoomIn ?? 'Zoom In'} aria-label={labels?.zoomIn ?? 'Zoom In'} className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none' onClick={() => { onZoomIn(); refreshDisplayZoom(); }}>
-                    <FaPlus className='text-base' aria-hidden='true' />
-                </button>
+                    {/* Zoom controls */}
+                    <button
+                        type='button'
+                        title={labels?.zoomOut ?? 'Zoom Out'}
+                        aria-label={labels?.zoomOut ?? 'Zoom Out'}
+                        className='canvas-controls-icon-btn cratis:flex cratis:items-center cratis:justify-center cratis:w-9 cratis:h-9 cratis:rounded-lg cratis:cursor-pointer cratis:select-none'
+                        onClick={() => {
+                            onZoomOut();
+                            refreshDisplayZoom();
+                        }}
+                    >
+                        <FaMinus className='cratis:text-base' aria-hidden='true' />
+                    </button>
+                    <button
+                        type='button'
+                        title={labels?.resetZoom ?? 'Reset Zoom'}
+                        aria-label={labels?.resetZoom ?? 'Reset Zoom'}
+                        onClick={() => {
+                            onZoomReset();
+                            refreshDisplayZoom();
+                        }}
+                        className='canvas-controls-zoom-btn cratis:flex cratis:items-center cratis:justify-center cratis:h-9 cratis:min-w-[3.25rem] cratis:px-1.5 cratis:rounded-lg cratis:text-xs cratis:font-semibold cratis:cursor-pointer cratis:select-none cratis:tabular-nums'
+                    >
+                        {Math.round(displayZoom * 100)}%
+                    </button>
+                    <button
+                        type='button'
+                        title={labels?.zoomIn ?? 'Zoom In'}
+                        aria-label={labels?.zoomIn ?? 'Zoom In'}
+                        className='canvas-controls-icon-btn cratis:flex cratis:items-center cratis:justify-center cratis:w-9 cratis:h-9 cratis:rounded-lg cratis:cursor-pointer cratis:select-none'
+                        onClick={() => {
+                            onZoomIn();
+                            refreshDisplayZoom();
+                        }}
+                    >
+                        <FaPlus className='cratis:text-base' aria-hidden='true' />
+                    </button>
 
-                {/* Help - only where there is something to explain; a button that does nothing is worse than none. */}
-                {onHelp && (
-                    <>
-                        <span className='canvas-controls-separator' />
-                        <button
-                            type='button'
-                            title={helpTitle ?? labels?.help ?? 'Help'}
-                            aria-label={helpTitle ?? labels?.help ?? 'Help'}
-                            className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none'
-                            onClick={onHelp}
-                        >
-                            <FaCircleQuestion className='text-base' aria-hidden='true' />
-                        </button>
-                    </>
-                )}
-            </div>
+                    {/* Help - only where there is something to explain; a button that does nothing is worse than none. */}
+                    {onHelp && (
+                        <>
+                            <span className='canvas-controls-separator' />
+                            <button
+                                type='button'
+                                title={helpTitle ?? labels?.help ?? 'Help'}
+                                aria-label={helpTitle ?? labels?.help ?? 'Help'}
+                                className='canvas-controls-icon-btn cratis:flex cratis:items-center cratis:justify-center cratis:w-9 cratis:h-9 cratis:rounded-lg cratis:cursor-pointer cratis:select-none'
+                                onClick={onHelp}
+                            >
+                                <FaCircleQuestion
+                                    className='cratis:text-base'
+                                    aria-hidden='true'
+                                />
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -18,6 +18,10 @@ export interface ToolbarProps {
     orientation?: 'vertical' | 'horizontal';
     /** Extra class name for the toolbar root. */
     className?: string;
+    /** Accessible toolbar name. Defaults to `'Tools'`; localize for the product. */
+    'aria-label'?: string;
+    /** Identifies an external element that names the toolbar. Takes precedence over `aria-label`. */
+    'aria-labelledby'?: string;
     /** Stable toolbar part attributes. */
     pt?: ToolbarParts;
     /**
@@ -44,15 +48,21 @@ export const Toolbar = ({
     draggable = false,
     onItemDragStart,
     className,
+    'aria-label': ariaLabel = 'Tools',
+    'aria-labelledby': ariaLabelledBy,
     pt,
 }: ToolbarProps) => (
     <ToolbarDragContext.Provider value={{ draggable, onItemDragStart }}>
         <div
             {...pt?.root}
+            role='toolbar'
+            aria-orientation={orientation}
+            aria-label={ariaLabelledBy ? undefined : ariaLabel}
+            aria-labelledby={ariaLabelledBy}
             className={[
-                'toolbar inline-flex',
-                orientation === 'horizontal' ? 'flex-row' : 'flex-col',
-                'items-center gap-1 p-2 rounded-2xl',
+                'toolbar cratis:inline-flex',
+                orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col',
+                'cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl',
                 pt?.root?.className,
                 className,
             ]

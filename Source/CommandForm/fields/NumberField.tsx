@@ -44,7 +44,7 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
             data-cratis-part='root'
             className={[
                 'cratis-number-field',
-                'w-full',
+                'cratis:w-full',
                 props.pt?.root?.className,
                 props.className,
             ]
@@ -66,7 +66,7 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
                 aria-invalid={props.invalid || undefined}
                 data-invalid={props.invalid || undefined}
                 data-cratis-part='input'
-                className={['cratis-field-input', 'w-full', props.pt?.input?.className]
+                className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
                     .filter(Boolean)
                     .join(' ')}
             />

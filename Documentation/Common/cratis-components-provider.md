@@ -8,7 +8,7 @@ description: Configure locale, Components-owned labels, and the app-wide toast r
 ## Basic setup
 
 ```tsx
-import { CratisComponentsProvider } from '@cratis/components';
+import { CratisComponentsProvider } from '@cratis/components/Common';
 
 export const App = () => (
     <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
@@ -26,7 +26,7 @@ export const App = () => (
 | `messages.datePicker` | Components-owned date-picker action/navigation labels.                                     |
 | `locales`             | Temporary Components 3 compatibility map; migrate to `messages`.                           |
 
-Unknown Components 3 renderer options remain accepted during the major migration so applications can update incrementally, but they have no effect. Remove `license`, `theme`, `defaults`, `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings from the provider.
+Unknown Components 3 renderer options are intentionally a type error. Remove `license`, `theme`, `defaults`, global `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings rather than compiling a provider whose visual configuration does nothing. Configure any remaining direct Prime provider independently.
 
 ## Localize owned labels
 
