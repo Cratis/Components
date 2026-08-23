@@ -23,7 +23,7 @@ import { useDialog, DialogProps } from '@cratis/arc.react/dialogs';
 
 ### Step 2 — Basic DataPage setup
 
-`DataPage` combines a toolbar/menu, a data table, and an optional details component. `title`, `query`, `emptyMessage`, and `children` are required; columns are declared compositionally inside `<DataPage.Columns>` using PrimeReact `<Column>`.
+`DataPage` combines a toolbar/menu, a data table, and an optional details component. `title`, `query`, `emptyMessage`, and `children` are required; columns are declared compositionally inside `<DataPage.Columns>` using the Cratis-owned `<Column>` marker.
 
 ```tsx
 import { DataPage } from '@cratis/components/DataPage';
@@ -44,7 +44,7 @@ export const AccountsPage = () => (
 
 ### Step 3 — Add menu actions
 
-Toolbar actions go in `<DataPage.MenuItems>`. `MenuItem` is a PrimeReact menu item (use `command`, not `onClick`); the `disableOnUnselected` flag greys it out until a row is selected. Create a separate dialog component using `DialogProps`, then wire it up with `useDialog`.
+Toolbar actions go in `<DataPage.MenuItems>`. `MenuItem` is a Cratis-owned action marker (use `command`, not `onClick`); the `disableOnUnselected` flag greys it out until a row is selected. Create a separate dialog component using `DialogProps`, then wire it up with `useDialog`.
 
 **Dialog component (`CreateAccountDialog.tsx`):**
 
@@ -257,4 +257,4 @@ Read `viewModel.property` inside JSX (never destructure observables at the top o
 | `detailsComponent`                      | `React.FC<IDetailsComponentProps<T>>` rendered for the selected row |
 | `globalFilterFields` / `defaultFilters` | filtering                                                           |
 | `onRefresh`                             | invoked to re-fetch a standard query                                |
-| `tablePt` / `menubarPt` / `*Unstyled`   | PrimeReact pass-through styling                                     |
+| `tablePt` / `menubarPt`                 | Cratis-owned stable part styling                                     |

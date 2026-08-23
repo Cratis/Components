@@ -1,6 +1,6 @@
 # StepperCommandDialog
 
-The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of `CommandStepper` and [PrimeReact](https://primereact.org/)'s compositional Stepper.
+The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of the Cratis-owned `CommandStepper`.
 
 ## Purpose
 
@@ -103,7 +103,7 @@ function MyComponent() {
 - `cancelLabel`: Label for the footer cancel button (default: `'Cancel'`)
 - `isValid`: Additional validity gate combined with command form validity
 - `width`: Dialog width (default: `'600px'`)
-- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle. Existing call sites keep compiling; the prop simply has no effect.
+- `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle. Existing call sites keep compiling; the prop simply has no effect.
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `dialogClassName`: Extra CSS class name for the outer dialog root
@@ -114,7 +114,7 @@ function MyComponent() {
 
 ### Stepper Props
 
-`StepperCustomizationProps` is Cratis-owned — it no longer aliases PrimeReact's `StepperProps`, so the surface below is the whole of it. PrimeReact 11's Stepper has no built-in `orientation` / `headerPosition` / `start` / `end`; the wrapper re-implements them over the compositional parts.
+`StepperCustomizationProps` is Cratis-owned. The surface below is complete and maps onto stable stepper parts rather than renderer props.
 
 - `orientation`: `'horizontal'` (default) or `'vertical'`
 - `headerPosition`: `'top'` (default) or `'bottom'`
@@ -122,9 +122,9 @@ function MyComponent() {
 - `onChangeStep`: Callback when the active step changes, receiving `{ index }` (zero-based)
 - `start`: Content rendered before the stepper
 - `end`: Content rendered after the stepper
-- `pt`: PrimeReact pass-through configuration for the inner stepper's parts
+- `pt`: Cratis-owned HTML attributes for the inner stepper's stable parts
 - `ptOptions`: Pass-through options controlling merge vs. replace for `pt`
-- `unstyled`: Removes every base PrimeReact style on the inner stepper
+- `unstyled`: Legacy compatibility flag; ignored
 
 ## Callback Behavior
 
@@ -228,7 +228,7 @@ Each step is defined by a `StepperPanel` from `@cratis/components/CommandDialog`
 
 CommandForm fields placed inside a `StepperPanel` are automatically bound to the same command instance, regardless of which step they are on.
 
-`StepperPanel` is Cratis-owned — it replaces PrimeReact 10's `primereact/stepperpanel`, which no longer exists in PrimeReact 11. It is a pure marker: the stepper consumes its props, so rendering one on its own produces nothing.
+`StepperPanel` is a pure Cratis marker: the stepper consumes its props, so rendering one on its own produces nothing.
 
 ## Conditional steps
 
@@ -263,7 +263,7 @@ The count is not fixed for the lifetime of the dialog either. A late-resolving q
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- [PrimeReact](https://primereact.org/)'s compositional Stepper, plus the Cratis-owned `StepperPanel`, for the wizard UI
+- the Cratis-owned Stepper and `StepperPanel` for the wizard UI
 - The Cratis [`Dialog`](../Dialogs/dialog.md) for the modal wrapper
 
 ## See Also

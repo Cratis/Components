@@ -20,7 +20,7 @@ The question is whether confirming the form **runs a command**, and whether it's
 
 Rule of thumb: **if confirming the dialog executes a generated command, it's a `CommandDialog`** (or its
 stepper variant). If it just gathers values and returns them, it's a `Dialog`. Never reach for
-PrimeReact's raw `Dialog` — these wrappers handle validation timing, loading state, and footers
+an application-owned modal — these wrappers handle validation timing, loading state, focus, and footers
 consistently.
 
 ## Displaying data

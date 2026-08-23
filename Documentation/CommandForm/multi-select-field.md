@@ -1,6 +1,6 @@
 # MultiSelectField
 
-`MultiSelectField` lets the user pick several values from a list. PrimeReact 11 removed `MultiSelect` entirely, so the field is now built on the Cratis [`Dropdown`](../Dropdown/index.md) wrapper in `multiple` mode — the binding and the props below are unchanged, but two of them no longer have an effect (see the note at the end).
+`MultiSelectField` lets the user pick several values through the Cratis [`Dropdown`](../Dropdown/index.md) native multiple-selection path.
 
 ## Usage
 
@@ -46,7 +46,7 @@ const categoryOptions = [
 
 - Default value is an empty array.
 - The field spans full width within its container.
-- Validation state is reflected via the PrimeReact `invalid` flag.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.
 
 > [!IMPORTANT]
-> **`display` and `maxSelectedLabels` no longer do anything.** PrimeReact 11's `Select` renders the selection through its value slot, so v10 MultiSelect's comma/chip display modes and its label-collapse threshold have no equivalent. Both props are still accepted so existing call sites compile — remove them, and restyle the value slot through `pt` if you need a different presentation.
+> `display` and `maxSelectedLabels` are legacy compatibility props and have no effect. Use a dedicated collection picker when a large multi-select needs chip collapsing or virtualized search.

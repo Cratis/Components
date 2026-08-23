@@ -1,6 +1,6 @@
 # RadioGroupField
 
-`RadioGroupField` renders a group of PrimeReact `RadioButton` components from an options array, allowing the user to select a single value.
+`RadioGroupField` renders a Cratis-owned native radio group from an options array.
 
 ## Usage
 
@@ -52,4 +52,4 @@ With horizontal layout:
 
 - Default value is an empty string.
 - A radio button is checked when the current field value equals its `optionValue`.
-- Validation state is reflected via the PrimeReact `invalid` flag on all radio buttons.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.

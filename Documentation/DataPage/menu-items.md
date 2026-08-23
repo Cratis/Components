@@ -37,7 +37,7 @@ import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa6';
 - `disabled`: Disable the item unconditionally (default: false)
 - `disableOnUnselected`: Disable when no row is selected (default: false)
 
-That is the whole surface. `MenuItem` is Cratis-owned — `primereact/menuitem` was removed in PrimeReact 11 — so PrimeReact MenuItem props such as `items`, `separator`, `url`, `template` and `className` are **not** accepted.
+That is the whole surface. `MenuItem` is Cratis-owned; navigation/menu-specific props such as nested `items`, `separator`, `url`, and renderer templates are not accepted.
 
 ## Context-Aware Actions
 
@@ -129,7 +129,7 @@ import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa6';
 
 There are no separators and no submenus. A `MenuItem` with `MenuItem` children does not nest — the children are simply ignored, with no error to tell you — and `<MenuItem separator />` is not a thing.
 
-That is a deliberate consequence of PrimeReact 11 removing `Menubar`: the Cratis action bar that replaced it is a `Button` toolbar driven by a flat `model` array, and a menubar was never a good fit for a row of *actions* rather than navigation. When a page genuinely needs grouped actions, put the grouping in a dialog opened from one item, or split the page.
+The action bar is a flat Button toolbar because a navigation menubar is not the correct semantic pattern for a row of commands. When a page genuinely needs grouped actions, put the grouping in a dialog opened from one item, or split the page.
 
 ## Action Handlers
 

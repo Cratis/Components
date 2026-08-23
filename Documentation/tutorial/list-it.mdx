@@ -9,7 +9,7 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
 
 <Steps>
 
-1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with PrimeReact's `Column` — `field` matches a property on the read model, typed against the generated `Author`:
+1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with the Cratis-owned `Column` marker — `field` matches a property on the read model, typed against the generated `Author`:
 
    ```tsx title="Authors.tsx"
    import { Page } from '@cratis/components/Common';

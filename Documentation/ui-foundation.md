@@ -2,7 +2,7 @@
 title: UI foundation
 description: Why Components owns its public design system and uses React Aria for accessible behavior.
 sidebar:
-  order: 2
+    order: 2
 ---
 
 Components exists to give a Cratis application a stable, productive UI API—not to expose whichever rendering library happens to implement it. The default package therefore owns its markup, styling contract, and TypeScript types. It uses React Aria internally for accessible interaction behavior and uses TanStack Table only when a table needs advanced state that Arc paging and React Aria do not already provide.

@@ -174,7 +174,7 @@ DataPage integrates with:
 
 - `@cratis/arc/queries` for data fetching
 - `DataTableForQuery` and `DataTableForObservableQuery` components
-- PrimeReact's DataTable, plus a Cratis action toolbar of `Button`s (PrimeReact 11 removed Menubar)
+- the semantic Cratis data table plus a Cratis action toolbar of Buttons
 - Allotment for split view layout — its stylesheet is vendored into `@cratis/components/styles`, so the split view lays out as long as you import that
 
 ## See Also

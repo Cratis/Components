@@ -53,7 +53,7 @@ function MyTable() {
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
-- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
+- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
 - `children`: Column definitions
 
 While the first query result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
@@ -128,7 +128,7 @@ Integrates with:
 
 - `@cratis/arc/queries` for data fetching
 - `@cratis/arc.react/queries` for React hooks
-- PrimeReact DataTable and Paginator
+- semantic Cratis table and Arc-backed paginator
 
 ## See Also
 

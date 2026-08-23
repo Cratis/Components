@@ -54,7 +54,7 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 - `globalFilterFields`: Fields to search in global filter
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
-- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from the configured PrimeReact locale
+- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
 - `children`: Column definitions
 
 Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Filters are applied client-side to the currently loaded observable-query page, while pagination continues to use the server-reported totals.
@@ -147,7 +147,7 @@ Integrates with:
 
 - `@cratis/arc/queries` for observable query support
 - `@cratis/arc.react/queries` for React observable hooks
-- PrimeReact DataTable
+- semantic Cratis data table
 
 ## See Also
 

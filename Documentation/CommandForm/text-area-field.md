@@ -1,6 +1,6 @@
 # TextAreaField
 
-`TextAreaField` wraps the PrimeReact `Textarea` component (`primereact/textarea` — v10's `InputTextarea`) for multi-line text input.
+`TextAreaField` renders a Cratis-owned native multi-line input.
 
 ## Usage
 
@@ -27,4 +27,4 @@ import { TextAreaField } from '@cratis/components/CommandForm';
 
 - Default value is an empty string.
 - The field spans full width within its container.
-- Validation state is reflected via the PrimeReact `invalid` flag.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.

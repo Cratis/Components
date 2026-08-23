@@ -56,7 +56,7 @@ const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
 
 - **Injected (non-input) values** — set required values like a parent id via `initialValues`, not `onBeforeExecute`. Values set in `onBeforeExecute` run too late to affect validity, so the confirm button would stay disabled. Use `onBeforeExecute` only for generated values (like a new `Guid`) that don't gate validity.
 - **Multi-step forms** — reach for `StepperCommandDialog` when one command needs to be gathered across several stages.
-- Don't import `Dialog` from `primereact/dialog` directly — use the Cratis wrappers so execution, validation timing, and footers stay consistent.
+- Use the Cratis dialog wrappers so execution, validation timing, focus behavior, and footers stay consistent.
 
 ## Next
 

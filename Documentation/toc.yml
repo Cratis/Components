@@ -4,7 +4,7 @@
   href: why-components.md
 - name: UI foundation
   href: ui-foundation.md
-- name: PrimeReact and Components
+- name: Coming from PrimeReact
   href: coming-from-primereact.md
 - name: Getting started
   href: getting-started.mdx
@@ -62,5 +62,7 @@
   href: Common/toc.yml
 - name: Types
   href: Types/toc.yml
-- name: Migration
+- name: Migrate from Components 3 to 4
   href: migration.md
+- name: Migrate from Components 2 to 3
+  href: migration-from-2.md

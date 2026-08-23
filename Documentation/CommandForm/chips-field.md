@@ -1,6 +1,6 @@
 # ChipsField
 
-`ChipsField` wraps the PrimeReact `InputTags` component (`primereact/inputtags` — v10's `Chips`) for collecting multiple text values in a single field.
+`ChipsField` renders a Cratis-owned token input for collecting multiple text values.
 
 ## Usage
 
@@ -35,7 +35,7 @@ import { ChipsField } from '@cratis/components/CommandForm';
 
 - Default value is an empty array.
 - The field spans full width within its container.
-- Validation state is reflected via the PrimeReact `invalid` flag.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.
 
 > [!IMPORTANT]
-> **`separator` no longer does anything.** PrimeReact 11's `InputTags` commits one tag per Enter and does not auto-split pasted input, so v10 `Chips`' `separator` has no equivalent. The prop is still accepted so existing call sites compile — remove it, and split multi-value input yourself before binding if you need that behavior.
+> `separator` is treated as a literal string. The draft is split on that string when the user commits it; it is not interpreted as a regular expression.

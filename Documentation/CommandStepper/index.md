@@ -54,7 +54,7 @@ export const ProjectWizard = () => {
 - `onSubmit`: Submit callback invoked on the last step
 - Any `CommandForm` props, including `initialValues`, `currentValues`, `validateOnInit`, and validation callbacks
 - `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with, and it runs only on submit, so it can never satisfy required-field validation (seed those through `initialValues`)
-- `linear` (default `true`), `orientation` (`'horizontal'` default / `'vertical'`), `headerPosition` (`'top'` default / `'bottom'`), `start`, `end`, `onChangeStep`, `pt`, `ptOptions`, `unstyled`: the `StepperCustomizationProps` surface. This is a Cratis-owned type — it no longer aliases PrimeReact's `StepperProps`, and `orientation` / `headerPosition` / `start` / `end` are re-implemented over PrimeReact 11's compositional Stepper parts.
+- `linear` (default `true`), `orientation` (`'horizontal'` default / `'vertical'`), `headerPosition` (`'top'` default / `'bottom'`), `start`, `end`, `onChangeStep`, `pt`, `ptOptions`, `unstyled`: the `StepperCustomizationProps` surface. This is a Cratis-owned type mapped onto stable `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, and `panel` parts.
 
 Conditional steps written as `{condition && <StepperPanel/>}` are counted correctly — only the panels that actually render are counted, so navigation and the per-step validation state stay in step with what is on screen. A `<>…</>` fragment wrapping several panels still counts as **one** step.
 

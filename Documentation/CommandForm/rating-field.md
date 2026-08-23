@@ -1,6 +1,6 @@
 # RatingField
 
-`RatingField` provides a star-rating input backed by the PrimeReact `Rating` component, bound to a `number` property on a command.
+`RatingField` provides a Cratis-owned accessible star-rating radio group bound to a `number` property.
 
 ## Usage
 
@@ -21,12 +21,12 @@ import { RatingField } from '@cratis/components/CommandForm';
 | `stars` | `number` | `5` | Number of stars to display. |
 | `starAriaLabel` | `(starValue: number) => string` | `"1 star"`, `"2 stars"`, … | Builds the accessible name for each star, from the 1-based star value. Override to localize. |
 | `className` | `string` | — | Extra CSS class name. |
-| `pt` | `RatingRootProps['pt']` | — | PrimeReact pass-through configuration. |
-| `ptOptions` | `RatingRootProps['ptOptions']` | — | PrimeReact pass-through options. |
-| `unstyled` | `boolean` | `false` | Disables every base PrimeReact style on the underlying `Rating`. |
+| `pt` | component-specific parts | — | Cratis-owned HTML attributes for stable parts. |
+| `ptOptions` | `object` | — | Legacy compatibility prop; ignored. |
+| `unstyled` | `boolean` | `false` | Legacy compatibility prop; ignored. |
 
 ## Behavior
 
 - Default value is `0` (no rating selected).
 - The bound value is the selected star count (`1`–`stars`).
-- Validation state is reflected via the PrimeReact `invalid` flag.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.

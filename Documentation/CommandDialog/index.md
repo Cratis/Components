@@ -105,7 +105,7 @@ function MyComponent() {
 - `yesLabel`, `noLabel`: Labels for `YesNo` and `YesNoCancel` button modes
 - `buttons`: `DialogButtons` value or custom footer content
 - `initialFocus`: Where keyboard focus lands when the dialog opens — forwarded to `Dialog` (see below)
-- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle
+- `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle
 - `isValid`: Additional validity gate combined with command form validity
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
@@ -187,7 +187,7 @@ CommandDialog integrates with:
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- PrimeReact Dialog component for UI
+- React Aria modal/focus behavior behind Cratis-owned markup
 
 ## See Also
 

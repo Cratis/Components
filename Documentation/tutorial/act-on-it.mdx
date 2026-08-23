@@ -33,7 +33,7 @@ The table lists authors; now a librarian needs to *change* the list. Every chang
 2. **Open it from the screen.** `useDialog` gives you a wrapper element to render and a function to show it. Drop a toolbar button next to the table from chapter 1:
 
    ```tsx title="Authors.tsx"
-   import { Button } from 'primereact/button';
+   import { Button } from '@cratis/components/Common';
    import { useDialog } from '@cratis/arc.react/dialogs';
    import { AddAuthor } from './AddAuthor';
 
@@ -41,7 +41,7 @@ The table lists authors; now a librarian needs to *change* the list. Every chang
        const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
        return (
            <Page title="Authors" panel>
-               <Button onClick={() => showAddAuthor()}><i className="pi pi-plus" /> Add author</Button>
+               <Button onClick={() => showAddAuthor()} icon={<span aria-hidden='true'>+</span>} label='Add author' />
                <DataTableForObservableQuery query={AllAuthors} emptyMessage="No authors yet">
                    <Column field="name" header="Name" sortable />
                </DataTableForObservableQuery>

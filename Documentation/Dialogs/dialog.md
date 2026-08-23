@@ -81,18 +81,18 @@ const MyComponent = () => {
 - `width`: Dialog width (defaults to `'450px'`)
 - `style`: Custom dialog style
 - `contentStyle`: Custom content area style
-- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle. Existing code that passes it keeps compiling; it simply has no effect.
+- `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle. Existing code that passes it keeps compiling; it simply has no effect.
 - `isValid`: Enables or disables confirm actions (defaults to `true`)
 - `isBusy`: When `true`, disables all buttons and shows a loading spinner on the primary action button
 - `initialFocus`: Where keyboard focus lands when the dialog opens (see below)
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels. Footer icons are decorative and hidden from accessibility APIs, so each button's accessible name is exactly its configured label
 - `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the
-  underlying PrimeReact Dialog — see the [pass-through cheat sheet](../Styling/pass-through.md)
+  Cratis-owned dialog parts — see the [pass-through cheat sheet](../Styling/pass-through.md)
 
 ## Dismissing
 
 A dialog is _dismissable_ when the header close (X), a backdrop click and
-`Escape` are all offered. In PrimeReact 11 those three are one switch, so they
+`Escape` are all offered. Those three affordances are controlled by one switch, so they
 are always on or off together.
 
 By default the dialog works out which it should be from `buttons`: a predefined

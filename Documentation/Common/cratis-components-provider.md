@@ -1,144 +1,96 @@
-# CratisComponentsProvider
+---
+title: CratisComponentsProvider
+description: Configure locale, Components-owned labels, and the app-wide toast region.
+---
 
-Single setup point for Cratis Components. Wraps PrimeReact's `PrimeReactProvider` so the package can layer Cratis-wide defaults on top of PrimeReact's pass-through and unstyled mechanisms while still letting the consumer take complete control.
+`CratisComponentsProvider` is the application root for renderer-independent Components configuration. It does not provide a theme runtime or third-party renderer context; styling is owned by CSS.
 
-## Purpose
-
-- Hosts the PrimeReact `pt` / `unstyled` / `ptOptions` / `inputVariant` / `ripple` / `theme` / `defaults` / `zIndex` / `locale` configuration for every Cratis wrapper below it in the tree.
-- Deep-merges Cratis-wide defaults with the consumer's value, so future Cratis defaults can land without breaking consumer overrides.
-- Re-exported from the package root so the recommended setup is one import:
-
-  ```ts
-  import { CratisComponentsProvider } from '@cratis/components';
-  ```
-
-## Basic usage
-
-Mount once at the root of your tree:
+## Basic setup
 
 ```tsx
-import '@cratis/components/tokens';
-import '@cratis/components/styles';
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider>
-        <YourApp />
+    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+        <Application />
     </CratisComponentsProvider>
 );
 ```
 
-## Configuring `pt` / `unstyled` globally
+## Configuration
 
-The `value` prop accepts PrimeReact 11's `Partial<PrimeReactProps>` shape. The most commonly used members are `unstyled`, `pt`, `ptOptions`, `inputVariant`, `ripple`, and `theme`:
+| Member                | Purpose                                                                                    |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `locale`              | BCP 47 locale used by React Aria for dates, numbers, keyboard behavior, and announcements. |
+| `messages.paginator`  | Components-owned paginator labels.                                                         |
+| `messages.datePicker` | Components-owned date-picker action/navigation labels.                                     |
+| `locales`             | Temporary Components 3 compatibility map; migrate to `messages`.                           |
 
-```tsx
-import { CratisComponentsProvider } from '@cratis/components';
-import { globalPt } from './pt-preset';
+Unknown Components 3 renderer options remain accepted during the major migration so applications can update incrementally, but they have no effect. Remove `license`, `theme`, `defaults`, `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings from the provider.
 
-export const App = () => (
-    <CratisComponentsProvider value={{ unstyled: true, pt: globalPt }}>
-        <YourApp />
-    </CratisComponentsProvider>
-);
-```
-
-The `value` is deep-merged with the Cratis defaults (currently empty) so consumer settings always win. Pass a stable reference (a module-level constant or a `useMemo` result) to avoid unnecessary re-renders.
-
-## PrimeReact's styled mode
-
-PrimeReact 11's primitives are unstyled: `theme: { preset }` on its own emits the `--p-*` design tokens but the elements carry no `p-*` class names, so a preset alone paints nothing. `styledMode()` from `@cratis/components/styled` returns the `theme` *and* the `defaults` (`primeReactStyles`, PrimeReact's own component styles keyed by primitive name) the provider needs to apply PrimeReact's look to every primitive rendered under it — this library's and your own. Spread it into `value` next to your license key:
+## Localize owned labels
 
 ```tsx
-import { CratisComponentsProvider } from '@cratis/components';
-import { styledMode } from '@cratis/components/styled';
-
-export const App = () => (
-    <CratisComponentsProvider value={{ license: 'YOUR-PRIMEUI-KEY', ...styledMode() }}>
-        <YourApp />
-    </CratisComponentsProvider>
-);
-```
-
-It needs `@primereact/styles` and `@primeuix/themes` installed (optional peers). Options — `preset`, `darkModeSelector`, `cssLayer` — are on [Use PrimeReact's styled mode](../Styling/themed.md).
-
-## Props
-
-### `value`
-
-`Partial<PrimeReactProps>` — Cratis-wide and PrimeReact pass-through configuration. Merged on top of the library's defaults and made available to every Cratis component below in the tree.
-
-The most useful members:
-
-| Member | Purpose |
-|---|---|
-| `unstyled` | When `true`, disables every PrimeReact base style. Combine with `pt` (or per-component CSS / Tailwind) to fully restyle. |
-| `pt` | Per-component pass-through configuration. Keys are PrimeReact component names (`button`, `dialog`, `inputtext`, …); values are slot configuration objects. |
-| `ptOptions` | Controls merge vs. replace behavior for `pt`. Default is `{ mergeSections: true }` which merges per-instance `pt` with the global preset. |
-| `inputVariant` | `'outlined'` or `'filled'` — switches the default input rendering across the whole app. |
-| `theme` | `{ preset, options }` — a `@primeuix/themes` preset and its options (`darkModeSelector`, `cssLayer`, …). Emits the `--p-*` design tokens; on its own it paints nothing, because the primitives carry no `p-*` class — pair it with `defaults`, which is what `styledMode()` does. |
-| `defaults` | Default props per PrimeReact component name. `styledMode()` uses it to hand every primitive PrimeReact's component styles (`primeReactStyles`), which is what puts the `p-*` class names on the elements the preset paints. |
-| `license` | Your PrimeUI license key, passed straight through to PrimeReact. Required whichever way you style — the check runs when the provider mounts — see [Styling](../Styling/index.md). |
-| `ripple` | Enables PrimeReact's ripple animation on supported components. |
-| `zIndex` | Per-overlay-type z-index baseline (`{ modal: 1100, overlay: 1000, menu: 1000, tooltip: 1100 }`). |
-| `locale` | PrimeReact locale string. |
-
-The full type is re-exported as `CratisComponentsConfig`.
-
-### `toaster`
-
-`boolean | ToasterProps` — when set, mounts a [`Toaster`](../Notifications/index.md) inside the provider so the imperative `toast(...)` works app-wide with no extra setup. Pass `true` for the defaults, or a `ToasterProps` object to position and configure it:
-
-```tsx
-<CratisComponentsProvider toaster={{ position: 'bottom-right', limit: 5 }}>
-    <YourApp />
+<CratisComponentsProvider
+    value={{
+        locale: 'nb-NO',
+        messages: {
+            paginator: {
+                navigation: 'Sidenavigasjon',
+                first: 'Første side',
+                previous: 'Forrige side',
+                next: 'Neste side',
+                last: 'Siste side',
+            },
+            datePicker: {
+                today: 'I dag',
+                clear: 'Tøm',
+                openCalendar: 'Åpne kalender',
+                previousMonth: 'Forrige måned',
+                nextMonth: 'Neste måned',
+            },
+        },
+    }}
+>
+    <Application />
 </CratisComponentsProvider>
 ```
 
-Unlike `value`, this is a direct prop on `CratisComponentsProvider` — it is not part of PrimeReact's config.
+React Aria supplies locale data for its interaction patterns. Components asks you only for product labels it owns.
 
-### `children`
+## Mount the toaster
 
-`React.ReactNode` — your application tree.
-
-## Using `PrimeReactProvider` directly
-
-`CratisComponentsProvider` is optional. If you'd rather mount PrimeReact's own provider directly, that works too — every Cratis wrapper reads the same context:
+Pass `toaster` to mount the app-wide notification region:
 
 ```tsx
-import { PrimeReactProvider } from '@primereact/core';
-
-export const App = () => (
-    <PrimeReactProvider value={{ unstyled: true, pt: globalPt }}>
-        <YourApp />
-    </PrimeReactProvider>
-);
+<CratisComponentsProvider
+    value={{ locale: 'en-US' }}
+    toaster={{ position: 'top-right', dismissAriaLabel: 'Dismiss notification' }}
+>
+    <Application />
+</CratisComponentsProvider>
 ```
 
-The Cratis provider exists to give Cratis one place to layer in defaults later without breaking consumers, and to keep the setup discoverable from a single import path.
+You may instead mount `<Toaster />` yourself when its placement belongs elsewhere in the application tree.
 
-## Pure helpers (testing / library extension)
+## Styling
 
-The merge logic is exported so the contract can be verified without rendering React:
+Import `tokens` and `styles`, then choose the baseline `theme` or your own token values. The provider has no styling responsibility.
 
 ```ts
-import { mergeCratisComponentsConfig, cratisDefaults } from '@cratis/components';
-
-const merged = mergeCratisComponentsConfig({ unstyled: true, pt: myPt });
-// → { ...cratisDefaults, unstyled: true, pt: myPt }
+import '@cratis/components/tokens';
+import '@cratis/components/styles';
+import '@cratis/components/theme';
 ```
 
-| Export | Description |
-|---|---|
-| `CratisComponentsProvider`     | The React component. |
-| `CratisComponentsProviderProps` | Props type. |
-| `CratisComponentsConfig`        | Alias for `Partial<PrimeReactProps>`. |
-| `cratisDefaults`                | The Cratis-wide defaults that ship today (currently `{}`). |
-| `mergeCratisComponentsConfig`   | Pure deep-merge helper used inside the provider. |
+For custom products, see [Cratis tokens](../Styling/cratis-tokens.md) and [Stable component parts](../Styling/pass-through.md).
 
-## See also
+## Related exports
 
-- [Styling Overview](../Styling/index.md) — the supported styling options and where the provider fits
-- [Use PrimeReact's styled mode](../Styling/themed.md) — `styledMode()`, `CratisPreset` and the options
-- [Pass-through cheat sheet](../Styling/pass-through.md) — what `pt` reaches in each Cratis wrapper
-- [Use fully unstyled mode](../Styling/unstyled.md) — full `pt` preset walk-through
+| Export                          | Purpose                                              |
+| ------------------------------- | ---------------------------------------------------- |
+| `CratisComponentsConfig`        | Renderer-independent provider configuration.         |
+| `CratisComponentsMessages`      | Components-owned message groups.                     |
+| `cratisDefaults`                | Default locale and English labels.                   |
+| `mergeCratisComponentsConfig()` | Pure configuration merge helper.                     |
+| `useCratisComponentsConfig()`   | Reads the resolved configuration inside a component. |

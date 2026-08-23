@@ -1,6 +1,6 @@
 # ColorPickerField
 
-`ColorPickerField` wraps the PrimeReact `ColorPicker` component for selecting colors.
+`ColorPickerField` renders a Cratis-owned native color input.
 
 ## Usage
 
@@ -27,5 +27,5 @@ import { ColorPickerField } from '@cratis/components/CommandForm';
 ## Behavior
 
 - Default value is an empty string.
-- Values are persisted as color strings (hex format in the default PrimeReact mode).
+- Values are persisted as six-digit hex strings without the leading `#`.
 - Validation state is reflected by applying the `p-invalid` class when the field is invalid.

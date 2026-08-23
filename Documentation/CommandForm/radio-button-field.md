@@ -1,6 +1,6 @@
 # RadioButtonField
 
-`RadioButtonField` renders a single PrimeReact `RadioButton` that sets the bound command property to a specific value when selected. Use multiple `RadioButtonField` components bound to the same property to form a radio group.
+`RadioButtonField` renders a Cratis-owned native radio option that sets the bound command property to a specific value when selected. Use multiple `RadioButtonField` components bound to the same property to form a radio group.
 
 ## Usage
 
@@ -27,4 +27,4 @@ import { RadioButtonField } from '@cratis/components/CommandForm';
 
 - Default value is an empty string.
 - The radio button is checked when the current field value equals `buttonValue`.
-- Validation state is reflected via the PrimeReact `invalid` flag on the radio button.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.

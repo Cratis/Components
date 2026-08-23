@@ -1,6 +1,6 @@
 # DropdownField
 
-`DropdownField` renders the Cratis [`Dropdown`](../Dropdown/index.md) — PrimeReact 11's `Select`, composed for you — for choosing a single value from a list of options.
+`DropdownField` renders the renderer-independent Cratis [`Dropdown`](../Dropdown/index.md) for choosing one value from a list.
 
 ## Usage
 
@@ -58,5 +58,5 @@ const roles = [
 
 - Default value is an empty string.
 - The field spans full width within its container.
-- Validation state is reflected via the PrimeReact `invalid` flag.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.
 

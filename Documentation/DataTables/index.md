@@ -29,7 +29,7 @@ Both table components share:
 - Global filtering
 - Custom column templates
 - Empty state messages
-- PrimeReact Column support
+- Cratis-owned semantic Column markers and stable table parts
 
 ## See Also
 
