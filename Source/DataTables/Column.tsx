@@ -2,7 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React from 'react';
-import type { ColumnFilterDataType } from './ColumnFilterMenu';
+import type {
+    ColumnFilterDataType,
+    ColumnFilterElement,
+    ColumnFilterMenuLabels,
+} from './ColumnFilterMenu';
 
 /**
  * Props for {@link Column}.
@@ -28,6 +32,10 @@ export interface ColumnProps<TData = unknown> {
     dataType?: ColumnFilterDataType;
     /** Whether the filter menu shows the match-mode selector. Defaults to `true`. */
     showFilterMatchModes?: boolean;
+    /** Custom value editor rendered instead of the built-in column filter editor. */
+    filterElement?: ColumnFilterElement;
+    /** Overrides the column filter menu's default English labels. */
+    filterLabels?: Partial<ColumnFilterMenuLabels>;
     /**
      * Renders a selection control column (a radio for `single`, a checkbox for
      * `multiple`) instead of a data column.
@@ -64,5 +72,7 @@ export interface ColumnProps<TData = unknown> {
  * </DataTableForQuery>
  * ```
  */
-export const Column = <TData = unknown,>(_props: ColumnProps<TData>): React.ReactElement | null => null;
+export const Column = <TData = unknown,>(
+    _props: ColumnProps<TData>,
+): React.ReactElement | null => null;
 Column.displayName = 'Column';

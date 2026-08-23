@@ -1,19 +1,19 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { CSSProperties, ReactNode, useMemo } from 'react';
+import { type CSSProperties, type ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
 import type { ButtonProps } from '@primereact/types/primitive/button';
-import { IObservableQueryFor, IQueryFor, QueryFor } from '@cratis/arc/queries';
+import { type IObservableQueryFor, type IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
 import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
 import { Allotment } from 'allotment';
-import { Constructor } from '@cratis/fundamentals';
+import type { Constructor } from '@cratis/fundamentals';
 import { DataPageLayout } from './DataPageLayout';
 
 // Allotment ships its layout as a stylesheet rather than inline styles, and a pane only becomes
@@ -52,7 +52,7 @@ export interface MenuItemProps {
  * directly; the surrounding {@link MenuItems} component reads its props and
  * forwards them to the action menubar.
  */
-export const MenuItem = (_: MenuItemProps) => {
+export const MenuItem = (_props: MenuItemProps) => {
     return null;
 };
 
@@ -115,7 +115,9 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
                     label: child.props.label,
                     command: child.props.command,
                     icon: Icon ? <Icon className='mr-2' /> : undefined,
-                    disabled: (child.props.disabled ?? false) || (isDisabled && (child.props.disableOnUnselected ?? false)),
+                    disabled:
+                        (child.props.disabled ?? false) ||
+                        (isDisabled && (child.props.disableOnUnselected ?? false)),
                 });
             }
         });
@@ -124,15 +126,17 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
     }, [children, isDisabled]);
 
     return (
-        <div className="cratis-data-page-actions px-4 py-2" style={actionsStyle}>
+        <div className='cratis-data-page-actions px-4 py-2' style={actionsStyle}>
             <ActionMenubar
                 aria-label={context.actionsAriaLabel ?? 'Actions'}
                 model={items}
                 className={context.menubarClassName}
                 pt={context.menubarPt}
                 ptOptions={context.menubarPtOptions}
-                unstyled={context.menubarUnstyled} />
-        </div>);
+                unstyled={context.menubarUnstyled}
+            />
+        </div>
+    );
 };
 
 /**
@@ -145,36 +149,38 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
  * children defining the table columns.
  */
 export const Columns = ({ children }: ColumnProps) => {
-
     const context = useDataPageContext();
     const isSnapshotQuery = context.query.prototype instanceof QueryFor;
 
     return (
-        <div className="cratis-data-page-table" style={tableRegionStyle}>
-            {isSnapshotQuery
-                ? <DataTableForQuery
+        <div className='cratis-data-page-table' style={tableRegionStyle}>
+            {isSnapshotQuery ? (
+                <DataTableForQuery
                     {...context}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
-                    clientFiltering={context.clientFiltering}
                     className={context.tableClassName}
                     pt={context.tablePt}
                     ptOptions={context.tablePtOptions}
-                    unstyled={context.tableUnstyled}>
+                    unstyled={context.tableUnstyled}
+                >
                     {children}
                 </DataTableForQuery>
-                : <DataTableForObservableQuery
+            ) : (
+                <DataTableForObservableQuery
                     {...context}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
-                    clientFiltering={context.clientFiltering}
                     className={context.tableClassName}
                     pt={context.tablePt}
                     ptOptions={context.tablePtOptions}
-                    unstyled={context.tableUnstyled}>
+                    unstyled={context.tableUnstyled}
+                >
                     {children}
-                </DataTableForObservableQuery>}
-        </div>);
+                </DataTableForObservableQuery>
+            )}
+        </div>
+    );
 };
 
 /**
@@ -217,7 +223,11 @@ function useDataPageContext(): IDataPageContext {
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type, or `object` if the query takes none.
  */
-export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>, TDataType extends object, TArguments> {
+export interface DataPageProps<
+    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>,
+    TDataType extends object,
+    TArguments,
+> {
     /**
      * The title of the page
      */
@@ -274,9 +284,9 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * @deprecated No longer toggles behavior. Filtering is always applied
-     * client-side to the loaded page; retained only for source compatibility and
-     * will be removed in a future release.
+     * @deprecated Filtering is always applied to the currently loaded page.
+     * This compatibility prop no longer toggles behavior and does not change
+     * server-reported pagination totals.
      */
     clientFiltering?: boolean;
 
@@ -427,7 +437,13 @@ export interface DataPageProps<TQuery extends IQueryFor<TDataType> | IObservable
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataPageProps}.
  */
-const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>, TDataType extends object, TArguments extends object>(props: DataPageProps<TQuery, TDataType, TArguments>) => {
+const DataPage = <
+    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+>(
+    props: DataPageProps<TQuery, TDataType, TArguments>,
+) => {
     const [selectedItem, setSelectedItem] = React.useState(undefined);
 
     const selectionChanged = (e: DataTableSelectionChangeEvent<any>) => {
@@ -442,18 +458,23 @@ const DataPage = <TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDat
     return (
         <DataPageContext.Provider value={context}>
             <Page title={props.title} panel={true} style={pageStyle}>
-                {props.detailsComponent
-                    ? <Allotment className="h-full" proportionalLayout={false}>
+                {props.detailsComponent ? (
+                    <Allotment className='h-full' proportionalLayout={false}>
                         <Allotment.Pane>
                             <DataPageLayout>{props.children}</DataPageLayout>
                         </Allotment.Pane>
-                        {selectedItem &&
-                            <Allotment.Pane preferredSize="450px">
-                                <props.detailsComponent item={selectedItem} onRefresh={props.onRefresh} />
+                        {selectedItem && (
+                            <Allotment.Pane preferredSize='450px'>
+                                <props.detailsComponent
+                                    item={selectedItem}
+                                    onRefresh={props.onRefresh}
+                                />
                             </Allotment.Pane>
-                        }
+                        )}
                     </Allotment>
-                    : <DataPageLayout>{props.children}</DataPageLayout>}
+                ) : (
+                    <DataPageLayout>{props.children}</DataPageLayout>
+                )}
             </Page>
         </DataPageContext.Provider>
     );

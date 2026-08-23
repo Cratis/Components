@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ICommandResult } from '@cratis/arc/commands';
-import { toast } from 'primereact/toaster';
+import { toast } from './toast';
 
 /** Options for {@link toastCommandResult}. */
 export interface ToastCommandResultOptions {
@@ -48,7 +48,7 @@ export interface ToastCommandResultOptions {
  */
 export function toastCommandResult<TResponse = object>(
     result: ICommandResult<TResponse>,
-    options: ToastCommandResultOptions = {}
+    options: ToastCommandResultOptions = {},
 ): boolean {
     const {
         successTitle = 'Success',
@@ -73,7 +73,7 @@ export function toastCommandResult<TResponse = object>(
 
     if (!result.isValid) {
         const description = result.validationResults
-            .map(validationResult => validationResult.message)
+            .map((validationResult) => validationResult.message)
             .filter(Boolean)
             .join('\n');
         toast.error({ title: validationTitle, description: description || undefined });

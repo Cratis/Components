@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
-import { Constructor } from '@cratis/fundamentals';
-import { IQueryFor, Paging } from '@cratis/arc/queries';
+import type { Constructor } from '@cratis/fundamentals';
+import { type IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { DataTableCore } from './DataTableCore';
 import { TablePaginator, type TablePaginatorProps } from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
@@ -18,7 +18,11 @@ import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEv
  * @typeParam TDataType - The row type returned by the query.
  * @typeParam TArguments - The query's argument object type, or `object` if it takes none.
  */
-export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object> {
+export interface DataTableForQueryProps<
+    TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+> {
     /**
      * Children to render — `<Column>` elements describing the visible columns.
      */
@@ -65,10 +69,9 @@ export interface DataTableForQueryProps<TQuery extends IQueryFor<TDataType, TArg
     defaultFilters?: DataTableFilterMeta;
 
     /**
-     * @deprecated No longer toggles behavior. Filtering (`<Column filter>` and the
-     * global search) is always applied client-side to the loaded page; this flag
-     * is retained only for source compatibility and will be removed in a future
-     * release.
+     * @deprecated Filtering is always applied to the currently loaded page.
+     * This compatibility prop no longer toggles behavior and does not change
+     * server-reported pagination totals.
      */
     clientFiltering?: boolean;
 
@@ -139,10 +142,25 @@ const paging = new Paging(0, 20);
  * @typeParam TArguments - The query's argument object type.
  * @param props - {@link DataTableForQueryProps}.
  */
-export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>, TDataType extends object, TArguments extends object>(props: DataTableForQueryProps<TQuery, TDataType, TArguments>) => {
-    const [result, , , setPage] = useQueryWithPaging(props.query, paging, props.queryArguments);
+export const DataTableForQuery = <
+    TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+>(
+    props: DataTableForQueryProps<TQuery, TDataType, TArguments>,
+) => {
+    const [result, , , setPage] = useQueryWithPaging(
+        props.query,
+        paging,
+        props.queryArguments,
+    );
     const totalItems = result.paging.totalItems;
     const pageCount = result.paging.totalPages;
+
+    // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
+    const rows = result.data as unknown as TDataType[];
+    const emptyMessage =
+        result.isPerforming && rows.length === 0 ? null : props.emptyMessage;
 
     return (
         <div
@@ -152,13 +170,14 @@ export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments
                 height: '100%',
                 border: '1px solid var(--cratis-surface-border)',
                 borderRadius: 'var(--cratis-border-radius)',
-                overflow: 'hidden'
-            }}>
+                overflow: 'hidden',
+            }}
+        >
             <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
                 <DataTableCore<TDataType>
-                    data={result.data as unknown as TDataType[]}
+                    data={rows}
                     dataKey={props.dataKey}
-                    emptyMessage={props.emptyMessage}
+                    emptyMessage={emptyMessage}
                     selectionMode='single'
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
@@ -168,13 +187,19 @@ export const DataTableForQuery = <TQuery extends IQueryFor<TDataType, TArguments
                     style={{ minWidth: '100%' }}
                     pt={props.pt}
                     ptOptions={props.ptOptions}
-                    unstyled={props.unstyled}>
+                    unstyled={props.unstyled}
+                >
                     {props.children}
                 </DataTableCore>
             </div>
 
             {totalItems > 0 && pageCount > 1 && (
-                <div style={{ borderTop: '1px solid var(--cratis-surface-border)', flexShrink: 0 }}>
+                <div
+                    style={{
+                        borderTop: '1px solid var(--cratis-surface-border)',
+                        flexShrink: 0,
+                    }}
+                >
                     <TablePaginator
                         page={result.paging.page}
                         pageCount={pageCount}

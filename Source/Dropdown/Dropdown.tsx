@@ -1,9 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
+import type React from 'react';
 import { Select } from 'primereact/select';
-import type { SelectRootProps, SelectValueChangeEvent } from '@primereact/types/primitive/select';
+import type {
+    SelectRootProps,
+    SelectValueChangeEvent,
+} from '@primereact/types/primitive/select';
 
 /**
  * Change event emitted by {@link Dropdown}. Wrapper-owned so the public API does
@@ -48,6 +51,9 @@ export interface DropdownProps<T = unknown> {
     /** When true, shows a filter input inside the options popup. */
     filter?: boolean;
 
+    /** Placeholder shown in the filter input. Defaults to {@link placeholder}. */
+    filterPlaceholder?: string;
+
     /** When true, the dropdown accepts multiple selections. */
     multiple?: boolean;
 
@@ -66,7 +72,7 @@ export interface DropdownProps<T = unknown> {
     /** Inline style forwarded to the Select root. */
     style?: React.CSSProperties;
 
-    /** DOM id forwarded to the Select root — pair it with a label's `htmlFor`. */
+    /** DOM id forwarded to the focusable combobox — pair it with a label's `htmlFor`. */
     id?: string;
 
     /** Form field name forwarded to the Select root. */
@@ -80,6 +86,9 @@ export interface DropdownProps<T = unknown> {
 
     /** Id of the element that labels the control. */
     'aria-labelledby'?: string;
+
+    /** Id of the element that describes the control. */
+    'aria-describedby'?: string;
 
     /** Fired when the selection changes. */
     onChange?: (event: DropdownChangeEvent<T>) => void;
@@ -117,9 +126,14 @@ export interface DropdownProps<T = unknown> {
  * itself against the value instead, so `[{ label, value }]` options with a scalar
  * `value` never match. Resolve the v10 convention here so those call sites keep working.
  */
-const conventionalField = (options: unknown[] | undefined, field: 'label' | 'value'): string | undefined => {
+const conventionalField = (
+    options: unknown[] | undefined,
+    field: 'label' | 'value',
+): string | undefined => {
     const first = options?.[0];
-    return first !== null && typeof first === 'object' && field in (first as object) ? field : undefined;
+    return first !== null && typeof first === 'object' && field in (first as object)
+        ? field
+        : undefined;
 };
 
 export const Dropdown = <T = unknown,>({
@@ -129,6 +143,7 @@ export const Dropdown = <T = unknown,>({
     optionValue = conventionalField(options, 'value'),
     placeholder,
     filter,
+    filterPlaceholder,
     multiple,
     showClear,
     invalid,
@@ -140,6 +155,7 @@ export const Dropdown = <T = unknown,>({
     tabIndex,
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledby,
+    'aria-describedby': ariaDescribedby,
     onChange,
     onBlur,
     pt,
@@ -159,27 +175,44 @@ export const Dropdown = <T = unknown,>({
                 disabled={disabled}
                 className={className}
                 style={style}
-                id={id}
                 name={name}
-                tabIndex={tabIndex}
-                aria-label={ariaLabel}
-                aria-labelledby={ariaLabelledby}
                 onValueChange={(event: SelectValueChangeEvent) =>
-                    onChange?.({ value: event.value as T, originalEvent: event.originalEvent })}
+                    onChange?.({
+                        value: event.value as T,
+                        originalEvent: event.originalEvent,
+                    })
+                }
                 pt={pt}
                 ptOptions={ptOptions}
-                unstyled={unstyled}>
-                <Select.Trigger>
+                unstyled={unstyled}
+            >
+                <Select.Trigger
+                    id={id}
+                    tabIndex={tabIndex}
+                    aria-label={ariaLabel}
+                    aria-labelledby={ariaLabelledby}
+                    aria-describedby={ariaDescribedby}
+                >
                     <Select.Value placeholder={placeholder} />
                     {/* v11's parts render no glyph of their own - the icon is the composer's to supply.
                         `Indicator` is the trigger's chevron; `Arrow` would be the popup's pointer. */}
-                    {showClear && <Select.Clear><i className="pi pi-times" /></Select.Clear>}
-                    <Select.Indicator><i className="pi pi-chevron-down" /></Select.Indicator>
+                    {showClear && (
+                        <Select.Clear>
+                            <i className='pi pi-times' />
+                        </Select.Clear>
+                    )}
+                    <Select.Indicator>
+                        <i className='pi pi-chevron-down' />
+                    </Select.Indicator>
                 </Select.Trigger>
                 <Select.Portal>
                     <Select.Positioner>
                         <Select.Popup>
-                            {filter && <Select.Filter placeholder={placeholder} />}
+                            {filter && (
+                                <Select.Filter
+                                    placeholder={filterPlaceholder ?? placeholder}
+                                />
+                            )}
                             <Select.List />
                         </Select.Popup>
                     </Select.Positioner>

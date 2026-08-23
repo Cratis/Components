@@ -5,6 +5,7 @@ import * as CommandDialog from './CommandDialog';
 import * as CommandStepper from './CommandDialog';
 import * as CommandForm from './CommandForm';
 import * as Common from './Common';
+import * as Compatibility from './Compatibility';
 import * as DataPage from './DataPage';
 import * as DataTables from './DataTables';
 import * as Dialogs from './Dialogs';
@@ -25,6 +26,7 @@ export {
     CommandStepper,
     CommandForm,
     Common,
+    Compatibility,
     DataPage,
     DataTables,
     Dialogs,
@@ -51,3 +53,11 @@ export {
     type CratisComponentsConfig,
     type CratisComponentsProviderProps,
 } from './Common/CratisComponentsProvider';
+
+export {
+    assertPrimeReact11PassThroughCompatibility,
+    components3PrimeReact11PassThroughContract,
+    primeReact11PassThroughSentinelAttribute,
+    primeReact11PassThroughSentinelPreset,
+    type PrimeReact11PassThroughComponent,
+} from './Compatibility';

@@ -2,18 +2,23 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Dialog as PrimeDialog } from 'primereact/dialog';
-import type { DialogRootProps, DialogRootChangeEvent } from '@primereact/types/primitive/dialog';
+import type {
+    DialogRootProps,
+    DialogRootChangeEvent,
+} from '@primereact/types/primitive/dialog';
 import { Button } from 'primereact/button';
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
 import { DialogInitialFocus } from './DialogInitialFocus';
-import { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 /**
  * Callback used by {@link Dialog} (and its wrappers) when the dialog is about to
  * close. Returning `false` (sync or via promise) keeps the dialog open — useful
  * for confirming or surfacing an error to the user before letting it close.
  */
-export type CloseDialog = (result: DialogResult) => boolean | void | Promise<boolean> | Promise<void>;
+export type CloseDialog = (
+    result: DialogResult,
+) => boolean | void | Promise<boolean> | Promise<void>;
 
 /**
  * Callback invoked when the user activates the confirm action (Ok / Yes).
@@ -299,7 +304,7 @@ export const Dialog = ({
     className,
     pt,
     ptOptions,
-    unstyled
+    unstyled,
 }: DialogProps) => {
     // useDialogContext() is called unconditionally on every render — the try/catch only suppresses
     // the exception when Dialog is used standalone (outside a provider). React's Rules of Hooks
@@ -311,17 +316,19 @@ export const Dialog = ({
     } catch {
         contextCloseDialog = undefined;
     }
-    
+
     const isDialogValid = isValid !== false;
 
     // A dismissing button only exists for the predefined sets that have one — Cancel for
     // OkCancel / YesNoCancel, No for YesNo. Asking for Cancel focus without one (DialogButtons.Ok,
     // a custom footer node, or no footer) degrades to focusing the title rather than silently
     // leaving focus on the dialog container.
-    const hasDismissingButton = typeof buttons === 'number' && buttons !== DialogButtons.Ok;
-    const resolvedInitialFocus = (initialFocus === DialogInitialFocus.Cancel && !hasDismissingButton)
-        ? DialogInitialFocus.Content
-        : initialFocus;
+    const hasDismissingButton =
+        typeof buttons === 'number' && buttons !== DialogButtons.Ok;
+    const resolvedInitialFocus =
+        initialFocus === DialogInitialFocus.Cancel && !hasDismissingButton
+            ? DialogInitialFocus.Content
+            : initialFocus;
 
     const focusesConfirmButton = resolvedInitialFocus === DialogInitialFocus.Confirm;
     const focusesDismissingButton = resolvedInitialFocus === DialogInitialFocus.Cancel;
@@ -336,14 +343,16 @@ export const Dialog = ({
     // never reflects the attribute into the DOM for the trap's querySelector to find.
     // Exactly one element carries it, since the trap takes the first match in document
     // order (header → content → footer).
-    const autofocusMarker = (isTarget: boolean) => (isTarget ? { 'data-autofocus': '' } : {});
+    const autofocusMarker = (isTarget: boolean) =>
+        isTarget ? { 'data-autofocus': '' } : {};
 
     const headerElement = (
-        <div className="inline-flex items-center justify-center gap-2">
+        <div className='inline-flex items-center justify-center gap-2'>
             <span
                 tabIndex={focusesTitle ? -1 : undefined}
                 {...autofocusMarker(focusesTitle)}
-                className="font-bold whitespace-nowrap">
+                className='font-bold whitespace-nowrap'
+            >
                 {title}
             </span>
         </div>
@@ -360,14 +369,12 @@ export const Dialog = ({
                 const closeResult = await onClose(result);
                 shouldCloseThroughContext = closeResult !== false;
             }
-        } else {
-            if (onCancel) {
-                const closeResult = await onCancel();
-                shouldCloseThroughContext = closeResult === true;
-            } else if (onClose) {
-                const closeResult = await onClose(result);
-                shouldCloseThroughContext = closeResult !== false;
-            }
+        } else if (onCancel) {
+            const closeResult = await onCancel();
+            shouldCloseThroughContext = closeResult === true;
+        } else if (onClose) {
+            const closeResult = await onClose(result);
+            shouldCloseThroughContext = closeResult !== false;
         }
 
         if (shouldCloseThroughContext) {
@@ -380,39 +387,91 @@ export const Dialog = ({
     // (confirm) button shows a spinner in place of its icon while busy. `focused`
     // marks the button the dialog's focus trap should land on when it opens.
     // This helper keeps the footer definitions below readable.
-    const footerButton = (result: DialogResult, label: string, icon: string, primary: boolean, focused: boolean) => (
+    const footerButton = (
+        result: DialogResult,
+        label: string,
+        icon: string,
+        primary: boolean,
+        focused: boolean,
+    ) => (
         <Button
             key={`${result}-${label}`}
             variant={primary ? undefined : 'outlined'}
             onClick={() => handleClose(result)}
             disabled={primary ? !isDialogValid || isBusy : isBusy}
-            {...autofocusMarker(focused)}>
-            <i className={primary && isBusy ? 'pi pi-spin pi-spinner' : icon} />
+            {...autofocusMarker(focused)}
+        >
+            <i
+                className={primary && isBusy ? 'pi pi-spin pi-spinner' : icon}
+                aria-hidden='true'
+            />
             <span>{label}</span>
         </Button>
     );
 
-    const okFooter = footerButton(DialogResult.Ok, okLabel, 'pi pi-check', true, focusesConfirmButton);
+    const okFooter = footerButton(
+        DialogResult.Ok,
+        okLabel,
+        'pi pi-check',
+        true,
+        focusesConfirmButton,
+    );
 
     const okCancelFooter = (
         <>
-            {footerButton(DialogResult.Ok, okLabel, 'pi pi-check', true, focusesConfirmButton)}
-            {footerButton(DialogResult.Cancelled, cancelLabel, 'pi pi-times', false, focusesDismissingButton)}
+            {footerButton(
+                DialogResult.Ok,
+                okLabel,
+                'pi pi-check',
+                true,
+                focusesConfirmButton,
+            )}
+            {footerButton(
+                DialogResult.Cancelled,
+                cancelLabel,
+                'pi pi-times',
+                false,
+                focusesDismissingButton,
+            )}
         </>
     );
 
     const yesNoFooter = (
         <>
-            {footerButton(DialogResult.Yes, yesLabel, 'pi pi-check', true, focusesConfirmButton)}
-            {footerButton(DialogResult.No, noLabel, 'pi pi-times', false, focusesDismissingButton)}
+            {footerButton(
+                DialogResult.Yes,
+                yesLabel,
+                'pi pi-check',
+                true,
+                focusesConfirmButton,
+            )}
+            {footerButton(
+                DialogResult.No,
+                noLabel,
+                'pi pi-times',
+                false,
+                focusesDismissingButton,
+            )}
         </>
     );
 
     const yesNoCancelFooter = (
         <>
-            {footerButton(DialogResult.Yes, yesLabel, 'pi pi-check', true, focusesConfirmButton)}
+            {footerButton(
+                DialogResult.Yes,
+                yesLabel,
+                'pi pi-check',
+                true,
+                focusesConfirmButton,
+            )}
             {footerButton(DialogResult.No, noLabel, 'pi pi-times', false, false)}
-            {footerButton(DialogResult.Cancelled, cancelLabel, 'pi pi-times', false, focusesDismissingButton)}
+            {footerButton(
+                DialogResult.Cancelled,
+                cancelLabel,
+                'pi pi-times',
+                false,
+                focusesDismissingButton,
+            )}
         </>
     );
 
@@ -434,13 +493,11 @@ export const Dialog = ({
                 return yesNoCancelFooter;
         }
 
-        return (<></>);
+        return <></>;
     };
 
     const footer = (
-        <div className="flex flex-wrap justify-start gap-3">
-            {getFooterInterior()}
-        </div>
+        <div className='flex flex-wrap justify-start gap-3'>{getFooterInterior()}</div>
     );
 
     // The dialog is dismissable (backdrop click, Escape, header close button)
@@ -448,7 +505,7 @@ export const Dialog = ({
     // behavior that keyed off `typeof buttons === 'number'`. The `dismissable`
     // prop overrides that default so a custom-footer dialog (e.g. the stepper
     // wizard) can still offer a header-close affordance.
-    const isDismissable = dismissable ?? (typeof buttons === 'number');
+    const isDismissable = dismissable ?? typeof buttons === 'number';
 
     // PrimeReact 11's Dialog is a controlled overlay: `open` reflects `visible`,
     // and any dismiss gesture fires `onOpenChange` with `value: false`. We route
@@ -471,7 +528,8 @@ export const Dialog = ({
             closeOnEscape={isDismissable}
             pt={pt}
             ptOptions={ptOptions}
-            unstyled={unstyled}>
+            unstyled={unstyled}
+        >
             <PrimeDialog.Portal>
                 <PrimeDialog.Backdrop />
                 <PrimeDialog.Positioner>
@@ -480,11 +538,13 @@ export const Dialog = ({
                             <PrimeDialog.Title>{headerElement}</PrimeDialog.Title>
                             {isDismissable && (
                                 <PrimeDialog.Close aria-label={closeAriaLabel}>
-                                    <i className="pi pi-times" />
+                                    <i className='pi pi-times' />
                                 </PrimeDialog.Close>
                             )}
                         </PrimeDialog.Header>
-                        <PrimeDialog.Content style={contentStyle}>{children}</PrimeDialog.Content>
+                        <PrimeDialog.Content style={contentStyle}>
+                            {children}
+                        </PrimeDialog.Content>
                         <PrimeDialog.Footer>{footer}</PrimeDialog.Footer>
                     </PrimeDialog.Popup>
                 </PrimeDialog.Positioner>

@@ -17,10 +17,10 @@ Both DataTableForQuery and DataTableForObservableQuery support all PrimeReact Co
 ## Column with Filter
 
 ```typescript
-<Column 
-    field="status" 
-    header="Status" 
-    filter 
+<Column
+    field="status"
+    header="Status"
+    filter
     filterPlaceholder="Search by status"
 />
 ```
@@ -30,9 +30,9 @@ Both DataTableForQuery and DataTableForObservableQuery support all PrimeReact Co
 Display custom content in cells:
 
 ```typescript
-<Column 
-    field="status" 
-    header="Status" 
+<Column
+    field="status"
+    header="Status"
     body={(rowData) => (
         <span className={`badge badge-${rowData.status}`}>
             {rowData.status}
@@ -44,15 +44,15 @@ Display custom content in cells:
 ## Formatted Values
 
 ```typescript
-<Column 
-    field="price" 
-    header="Price" 
+<Column
+    field="price"
+    header="Price"
     body={(rowData) => `$${rowData.price.toFixed(2)}`}
 />
 
-<Column 
-    field="createdAt" 
-    header="Created" 
+<Column
+    field="createdAt"
+    header="Created"
     body={(rowData) => new Date(rowData.createdAt).toLocaleDateString()}
 />
 ```
@@ -60,9 +60,9 @@ Display custom content in cells:
 ## Boolean Display
 
 ```typescript
-<Column 
-    field="active" 
-    header="Active" 
+<Column
+    field="active"
+    header="Active"
     body={(rowData) => (
         <i className={`pi ${rowData.active ? 'pi-check text-green-500' : 'pi-times text-red-500'}`} />
     )}
@@ -77,18 +77,23 @@ PrimeReact 11's `Button` renders its content as **children** — the v10 `label`
 import { Button } from 'primereact/button';
 
 <Column
-    header="Actions"
+    header='Actions'
     body={(rowData) => (
-        <div className="flex gap-2">
-            <Button size="small" aria-label="Edit" onClick={() => handleEdit(rowData)}>
-                <i className="pi pi-pencil" />
+        <div className='flex gap-2'>
+            <Button size='small' aria-label='Edit' onClick={() => handleEdit(rowData)}>
+                <i className='pi pi-pencil' />
             </Button>
-            <Button size="small" severity="danger" aria-label="Delete" onClick={() => handleDelete(rowData)}>
-                <i className="pi pi-trash" />
+            <Button
+                size='small'
+                severity='danger'
+                aria-label='Delete'
+                onClick={() => handleDelete(rowData)}
+            >
+                <i className='pi pi-trash' />
             </Button>
         </div>
     )}
-/>
+/>;
 ```
 
 ## Column Width
@@ -102,9 +107,9 @@ import { Button } from 'primereact/button';
 ## Alignment
 
 ```typescript
-<Column 
-    field="price" 
-    header="Price" 
+<Column
+    field="price"
+    header="Price"
     style={{ textAlign: 'right' }}
     headerStyle={{ textAlign: 'right' }}
 />
@@ -122,9 +127,9 @@ import { Button } from 'primereact/button';
 ## Conditional Styling
 
 ```typescript
-<Column 
-    field="stock" 
-    header="Stock" 
+<Column
+    field="stock"
+    header="Stock"
     body={(rowData) => (
         <span className={rowData.stock < 10 ? 'text-red-500 font-bold' : ''}>
             {rowData.stock}
@@ -143,7 +148,7 @@ import { Button } from 'primereact/button';
 ## Custom Header
 
 ```typescript
-<Column 
+<Column
     header={
         <div className="flex align-items-center">
             <i className="pi pi-user mr-2" />
@@ -161,52 +166,128 @@ import { Button } from 'primereact/button';
 <Column field="internalId" header="Internal ID" exportable={false} />
 ```
 
-## Filter Types
+## Column Filters
 
-### Text Filter
+Set `filter` and choose one of the four built-in value editors with `dataType`:
 
-```typescript
-<Column 
-    field="name" 
-    header="Name" 
-    filter 
-    filterMatchMode="contains"
+| `dataType`       | Built-in editor     |
+| ---------------- | ------------------- |
+| `text` (default) | Text input          |
+| `numeric`        | Number input        |
+| `date`           | Date picker         |
+| `boolean`        | True/False dropdown |
+
+```tsx
+<Column
+    field='name'
+    header='Name'
+    filter
+    filterPlaceholder='Search names'
+    dataType='text'
 />
 ```
 
-### Dropdown Filter
+`defaultFilters` on the surrounding table initializes the draft once when the table mounts. Filtering is client-side over the currently loaded query page; the menu's Apply action commits its draft.
+
+### Match-mode vocabulary
+
+Use the Cratis-owned `DataTableFilterMatchMode` values rather than importing rendering-adapter constants:
 
 ```typescript
-<Column 
-    field="status" 
-    header="Status" 
-    filter 
-    filterElement={(options) => (
-        <Dropdown 
-            value={options.value} 
-            options={statusOptions}
-            onChange={(e) => options.filterCallback(e.value)}
-            placeholder="Select Status"
+import {
+    DataTableFilterMatchMode,
+    type DataTableFilterMeta,
+} from '@cratis/components/DataTables';
+
+const filters: DataTableFilterMeta = {
+    name: {
+        value: 'Ada',
+        matchMode: DataTableFilterMatchMode.Contains,
+    },
+};
+```
+
+For a custom mode, register the matcher through Cratis and use the branded value it returns:
+
+```typescript
+import {
+    registerDataTableFilterMatcher,
+    unregisterDataTableFilterMatcher,
+} from '@cratis/components/DataTables';
+
+const UserHasRole = registerDataTableFilterMatcher(
+    'userHasRole',
+    (roles, expectedRole) => Array.isArray(roles) && roles.includes(expectedRole),
+);
+
+const filters: DataTableFilterMeta = {
+    roles: { value: 'advisor', matchMode: UserHasRole.matchMode },
+};
+
+// Optional during hot-module disposal or isolated specs:
+unregisterDataTableFilterMatcher(UserHasRole);
+```
+
+Custom matcher names are process-wide, matching the active table engine's registry. Register them once with a unique application-owned name; built-in names cannot be replaced, and registering a different function under an existing custom name throws. Consumers import only the Cratis vocabulary and registration seam; every loaded table adapter receives the runtime matcher internally.
+
+### Localize the menu
+
+Override any of the default English labels per filtered column. Omitted labels retain their defaults:
+
+```tsx
+<Column
+    field='active'
+    header='Status'
+    filter
+    dataType='boolean'
+    filterLabels={{
+        filterTriggerAriaLabel: (field) => `Filtrer ${field}`,
+        clear: 'Tøm',
+        apply: 'Bruk',
+        true: 'Ja',
+        false: 'Nei',
+    }}
+/>
+```
+
+### Custom value editor
+
+`filterElement` replaces only the built-in value editor. The match-mode selector and the component-owned Clear and Apply actions remain in the menu. `onChange` updates the draft; it does not apply the filter until Apply is used.
+
+```tsx
+<Column
+    field='role'
+    filterField='roleCode'
+    header='Role'
+    filter
+    showFilterMatchModes={false}
+    filterElement={({ value, onChange }) => (
+        <Dropdown
+            value={value}
+            options={roleOptions}
+            optionLabel='label'
+            optionValue='value'
+            onChange={(event) => onChange(event.value, 'equals')}
+            placeholder='Select role'
         />
     )}
 />
 ```
 
-### Date Filter
+The callback receives:
 
 ```typescript
-<Column 
-    field="createdAt" 
-    header="Created" 
-    filter 
-    filterElement={(options) => (
-        <Calendar 
-            value={options.value} 
-            onChange={(e) => options.filterCallback(e.value)}
-        />
-    )}
-/>
+interface ColumnFilterElementOptions {
+    field: string; // effective filterField, or field
+    value: unknown; // current draft value
+    matchMode: DataTableFilterMatchMode; // current draft match mode
+    onChange(value: unknown, matchMode?: DataTableFilterMatchMode): void;
+    onApply(event: React.SyntheticEvent): void;
+    onClear(event: React.SyntheticEvent): void;
+}
 ```
+
+Use `onApply` / `onClear` when the custom editor needs its own action buttons; otherwise use the menu's built-in actions.
 
 ## Advanced Templates
 
@@ -219,18 +300,18 @@ const statusBodyTemplate = (rowData) => {
         pending: 'warning',
         inactive: 'danger'
     };
-    
+
     return (
-        <Tag 
-            value={rowData.status} 
+        <Tag
+            value={rowData.status}
             severity={statusColors[rowData.status]}
         />
     );
 };
 
-<Column 
-    field="status" 
-    header="Status" 
+<Column
+    field="status"
+    header="Status"
     body={statusBodyTemplate}
 />
 ```
@@ -238,11 +319,11 @@ const statusBodyTemplate = (rowData) => {
 ### Image Display
 
 ```typescript
-<Column 
+<Column
     header="Avatar"
     body={(rowData) => (
-        <img 
-            src={rowData.avatarUrl} 
+        <img
+            src={rowData.avatarUrl}
             alt={rowData.name}
             width="40"
             height="40"
@@ -255,8 +336,8 @@ const statusBodyTemplate = (rowData) => {
 ### Progress Bar
 
 ```typescript
-<Column 
-    field="progress" 
+<Column
+    field="progress"
     header="Progress"
     body={(rowData) => (
         <ProgressBar value={rowData.progress} />

@@ -11,6 +11,7 @@ Dropdown gives you a single-element select that binds a value to a list of optio
 - Single or multiple selection (set `multiple`)
 - Optional in-popup filter (`filter`) and clear control (`showClear`)
 - Portaled and stacked by PrimeReact 11 itself, so it renders above the dialog it was opened from — no manual z-index, no `appendTo`
+- `id`, tab order and accessible naming are applied to the focusable combobox trigger, not its layout wrapper
 - A small, curated prop surface (below) plus `pt` / `ptOptions` / `unstyled` for full styling control
 
 ## Quick Start
@@ -20,7 +21,7 @@ import { Dropdown } from '@cratis/components/Dropdown';
 
 function MyForm() {
     const [selectedCity, setSelectedCity] = useState(null);
-    
+
     const cities = [
         { label: 'Oslo', value: 'oslo' },
         { label: 'Bergen', value: 'bergen' },
@@ -33,6 +34,7 @@ function MyForm() {
             options={cities}
             onChange={(e) => setSelectedCity(e.value)}
             placeholder="Select a City"
+            aria-label="City"
         />
     );
 }
@@ -48,24 +50,27 @@ No `optionLabel` / `optionValue` here: when the option objects carry `label` and
 interface DropdownProps<T = unknown> {
     value?: T;
     options?: unknown[];
-    optionLabel?: string;                       // property used as the visible label; defaults to 'label' when the options carry it
-    optionValue?: string;                       // property used as the underlying value; defaults to 'value' when the options carry it
+    optionLabel?: string; // property used as the visible label; defaults to 'label' when the options carry it
+    optionValue?: string; // property used as the underlying value; defaults to 'value' when the options carry it
     placeholder?: string;
-    filter?: boolean;                           // filter input inside the popup
-    multiple?: boolean;                         // multi-select
+    filter?: boolean; // filter input inside the popup
+    filterPlaceholder?: string; // defaults to placeholder when omitted
+    multiple?: boolean; // multi-select
     showClear?: boolean;
     invalid?: boolean;
     disabled?: boolean;
-    onChange?: (event: DropdownChangeEvent<T>) => void;   // event.value is typed as T
+    onChange?: (event: DropdownChangeEvent<T>) => void; // event.value is typed as T
     onBlur?: React.FocusEventHandler<HTMLElement>;
-    // identity / accessibility / styling forwarded to the Select root:
+    // styling forwarded to the Select root:
     className?: string;
     style?: React.CSSProperties;
-    id?: string;
     name?: string;
+    // identity and accessibility forwarded to the focusable combobox trigger:
+    id?: string;
     tabIndex?: number;
     'aria-label'?: string;
     'aria-labelledby'?: string;
+    'aria-describedby'?: string;
     pt?: SelectRootProps['pt'];
     ptOptions?: SelectRootProps['ptOptions'];
     unstyled?: boolean;
@@ -74,16 +79,35 @@ interface DropdownProps<T = unknown> {
 
 Every prop is optional. `multiple`, `filter`, `showClear`, `invalid` and `disabled` are simply off unless you set them. The one convention the wrapper applies is `optionLabel` / `optionValue`: when they are omitted and the options are objects carrying a `label` / `value` field, that field is used — as PrimeReact 10's `Dropdown` did. v11's `Select` compares the option object itself against the value otherwise, so `[{ label, value }]` options with a scalar `value` would never match without it. Options keyed differently (`name` / `code`, say) still need `optionLabel` / `optionValue` spelled out.
 
-There is no `...rest` spread and no index signature, so anything not listed above is a compile error rather than an ignored prop. That includes `aria-*` beyond the two declared (`aria-label`, `aria-labelledby`) and PrimeReact Select props the wrapper deliberately does not surface — `appendTo`, `variant`, `size`, `fluid`, `filterMatchMode`, `optionGroupLabel` / `optionGroupChildren`, `optionDisabled`, `open` / `defaultOpen`, and the rest. Reach those through `pt` / `ptOptions` / `unstyled`, or compose `Select` yourself.
+There is no `...rest` spread and no index signature, so anything not listed above is a compile error rather than an ignored prop. That includes `aria-*` beyond the three declared (`aria-label`, `aria-labelledby`, `aria-describedby`) and PrimeReact Select props the wrapper deliberately does not surface — `appendTo`, `variant`, `size`, `fluid`, `filterMatchMode`, `optionGroupLabel` / `optionGroupChildren`, `optionDisabled`, `open` / `defaultOpen`, and the rest. Reach those through `pt` / `ptOptions` / `unstyled`, or compose `Select` yourself.
 
 `onChange` receives a `DropdownChangeEvent<T>`:
 
 ```typescript
 interface DropdownChangeEvent<T = unknown> {
-    value: T;                                          // the newly selected value (an array when `multiple`)
-    originalEvent?: React.SyntheticEvent;              // the underlying React event, when available
+    value: T; // the newly selected value (an array when `multiple`)
+    originalEvent?: React.SyntheticEvent; // the underlying React event, when available
 }
 ```
+
+## Accessible naming
+
+`Dropdown` places `id`, `tabIndex`, `aria-label`, `aria-labelledby` and `aria-describedby` on the focusable button carrying `role="combobox"`. The outer Select root is only a layout wrapper and does not receive the control id.
+
+Associate a visible label in the normal way:
+
+```tsx
+<label htmlFor="role">Role</label>
+<Dropdown
+    id="role"
+    value={role}
+    options={roles}
+    aria-describedby="role-help"
+/>
+<span id="role-help">Choose the role used for this assignment.</span>
+```
+
+When there is no visible label, provide `aria-label` instead.
 
 ## Basic Examples
 
@@ -122,7 +146,7 @@ const countries = [
 
 ### With Filtering
 
-Set `filter` to render a filter input inside the popup. The filter input reuses `placeholder` as its own placeholder — there is no separate `filterPlaceholder` prop:
+Set `filter` to render a filter input inside the popup. `filterPlaceholder` can differ from the closed trigger's `placeholder`; when omitted, it defaults to the trigger placeholder:
 
 ```typescript
 <Dropdown
@@ -131,6 +155,7 @@ Set `filter` to render a filter input inside the popup. The filter input reuses 
     onChange={(e) => setSelected(e.value)}
     filter
     placeholder="Select Option"
+    filterPlaceholder="Search options"
 />
 ```
 
@@ -186,7 +211,7 @@ The panel appears above the dialog without z-index issues.
 
 ## Overlay stacking inside dialogs
 
-On PrimeReact 10 this needed help. A dropdown panel opened inside a modal dialog rendered *inside* the dialog's DOM subtree, so the dialog's stacking and scroll context clipped it and the panel could land under the dialog's own mask. Version 2.x of this library carried two workarounds for that: `appendTo={document.body}` on every overlay-bearing field, and a `useOverlayZIndex` hook that raised the panel to a z-index floor with a `MutationObserver`.
+On PrimeReact 10 this needed help. A dropdown panel opened inside a modal dialog rendered _inside_ the dialog's DOM subtree, so the dialog's stacking and scroll context clipped it and the panel could land under the dialog's own mask. Version 2.x of this library carried two workarounds for that: `appendTo={document.body}` on every overlay-bearing field, and a `useOverlayZIndex` hook that raised the panel to a z-index floor with a `MutationObserver`.
 
 **Both are gone in 3.0, because PrimeReact 11 does the work itself.** `Select.Portal` defaults to `appendTo: 'body'`, so the panel is portaled out of the dialog entirely, and the shared z-index registry assigns a later-opened overlay a value above whatever is already registered — so the panel outranks the dialog it was opened from. Measured on PrimeReact 11.1.0: with the dialog positioner at z-index 1102, the select panel opens at 2103, parented directly to `document.body`.
 
@@ -320,7 +345,7 @@ function IssueForm() {
 1. **It is one element, not seven.** The wrapper composes the parts and gates `Select.Filter` and `Select.Clear` on the `filter` / `showClear` props.
 2. **It is a curated surface, not a passthrough.** Only the props in the table above are accepted; the rest of PrimeReact's Select API is reachable through `pt` / `ptOptions` / `unstyled`. That is deliberate — it is what lets the wrapper's API stay stable across PrimeReact versions.
 
-Two details of the composition are worth knowing when you style or test it. `onBlur` rides a wrapping `<span>` rather than `Select.Root`, because React blur bubbles as `focusout`. And `placeholder` is not passed to the root — it goes to `Select.Value`, and to the filter input when `filter` is set.
+Two details of the composition are worth knowing when you style or test it. `onBlur` rides a wrapping `<span>` rather than `Select.Root`, because React blur bubbles as `focusout`. And `placeholder` is not passed to the root — it goes to `Select.Value` and is the filter input's fallback when no independent `filterPlaceholder` is supplied.
 
 ## Best Practices
 

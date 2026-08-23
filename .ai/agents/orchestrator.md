@@ -24,7 +24,7 @@ You do NOT write code or documentation yourself — you assemble the right team,
 
 Always read and follow:
 - `.github/copilot-instructions.md`
-- `.github/instructions/vertical-slices.instructions.md`
+- `.ai/rules/vertical-slices.md`
 
 ---
 

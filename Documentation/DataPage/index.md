@@ -23,21 +23,23 @@ Declare the columns and menu actions with the compound `DataPage.Columns` and `D
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
 import { Column } from '@cratis/components/DataPage';
 import { FaPlus, FaPencil } from 'react-icons/fa6';
-import { AllAuthors } from './queries';   // generated query proxy
+import { AllAuthors } from './queries'; // generated query proxy
 
 function Authors() {
     return (
-        <DataPage
-            title="Authors"
-            query={AllAuthors}
-            emptyMessage="No authors found">
+        <DataPage title='Authors' query={AllAuthors} emptyMessage='No authors found'>
             <DataPage.MenuItems>
-                <MenuItem label="Add" icon={FaPlus} command={() => handleAdd()} />
-                <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={() => handleEdit()} />
+                <MenuItem label='Add' icon={FaPlus} command={() => handleAdd()} />
+                <MenuItem
+                    label='Edit'
+                    icon={FaPencil}
+                    disableOnUnselected
+                    command={() => handleEdit()}
+                />
             </DataPage.MenuItems>
             <DataPage.Columns>
-                <Column field="name" header="Name" sortable />
-                <Column field="id" header="Id" />
+                <Column field='name' header='Name' sortable />
+                <Column field='id' header='Id' />
             </DataPage.Columns>
         </DataPage>
     );
@@ -56,21 +58,26 @@ import { Column } from '@cratis/components/DataPage';
 import { AllAuthorsWithBooks } from './queries';
 
 const AuthorDetails = ({ item }) => (
-    <div className="p-4">
+    <div className='p-4'>
         <h2>{item.name}</h2>
-        <ul>{item.books.map(b => <li key={String(b.id)}>{b.title}</li>)}</ul>
+        <ul>
+            {item.books.map((b) => (
+                <li key={String(b.id)}>{b.title}</li>
+            ))}
+        </ul>
     </div>
 );
 
 function Authors() {
     return (
         <DataPage
-            title="Authors"
+            title='Authors'
             query={AllAuthorsWithBooks}
-            emptyMessage="No authors yet"
-            detailsComponent={AuthorDetails}>
+            emptyMessage='No authors yet'
+            detailsComponent={AuthorDetails}
+        >
             <DataPage.Columns>
-                <Column field="name" header="Name" sortable />
+                <Column field='name' header='Name' sortable />
             </DataPage.Columns>
         </DataPage>
     );
@@ -95,6 +102,10 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `onSelectionChange`: Callback when the selection changes
 - `globalFilterFields`: Fields to include in global search
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
+- `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded query page
+
+The query-backed table inside `DataPage` suppresses `emptyMessage` while its first result is still performing, so a pending query is not presented as a confirmed empty result.
+
 - `onRefresh`: Callback triggered to signal a data refresh — forwarded to the `detailsComponent`
 - `detailsComponent`: Component to render in the resizable details panel when a row is selected
 
@@ -106,6 +117,12 @@ DataPage supports two types of queries:
 2. **IObservableQueryFor**: Observable queries that automatically update when data changes
 
 The component automatically detects the query type and renders the appropriate data table component.
+
+## Filtering scope
+
+Column and global filters run against the currently loaded query page. Pagination continues to use the server-reported total so filtering one page never hides later pages.
+
+`clientFiltering` remains in the public props only so existing applications continue to compile. It is deprecated, has no effect, and should not be used in new code. To filter the complete result set, pass filter values through `queryArguments` and apply them on the server before paging so the query returns the filtered rows and filtered total. See [DataTableForQuery filtering scope](../DataTables/data-table-for-query.md#filtering-scope-and-server-pagination) for the rationale.
 
 ## Layout
 
@@ -127,9 +144,9 @@ That division only works if there is a height to divide. Every element from the 
 ```tsx
 // ✅ the layout gives the page a height to divide
 <div style={{ height: '100vh' }}>
-    <DataPage title="Authors" query={AllAuthors} emptyMessage="No authors found">
+    <DataPage title='Authors' query={AllAuthors} emptyMessage='No authors found'>
         <DataPage.Columns>
-            <Column field="name" header="Name" sortable />
+            <Column field='name' header='Name' sortable />
         </DataPage.Columns>
     </DataPage>
 </div>
@@ -139,9 +156,9 @@ That division only works if there is a height to divide. Every element from the 
 // ❌ nothing above resolves to a height, so the table grows to its content and
 //    the paginator ends up past the bottom of the page
 <div>
-    <DataPage title="Authors" query={AllAuthors} emptyMessage="No authors found">
+    <DataPage title='Authors' query={AllAuthors} emptyMessage='No authors found'>
         <DataPage.Columns>
-            <Column field="name" header="Name" sortable />
+            <Column field='name' header='Name' sortable />
         </DataPage.Columns>
     </DataPage>
 </div>

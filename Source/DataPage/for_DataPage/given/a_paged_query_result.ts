@@ -17,7 +17,7 @@ const pageSize = 20;
 const allPersons: Person[] = Array.from({ length: 24 }, (_, index) => ({
     id: index + 1,
     name: `Person ${index + 1}`,
-    email: `person${index + 1}@example.com`
+    email: `person${index + 1}@example.com`,
 }));
 
 /**
@@ -27,7 +27,7 @@ const allPersons: Person[] = Array.from({ length: 24 }, (_, index) => ({
 export const queryResult = {
     totalItems: allPersons.length,
     totalPages: 2,
-    page: 0
+    page: 0,
 };
 
 /**
@@ -65,7 +65,7 @@ export const arcQueryHooks = () => {
             page: queryResult.page,
             size: pageSize,
             totalItems: queryResult.totalItems,
-            totalPages: queryResult.totalPages
+            totalPages: queryResult.totalPages,
         },
         isSuccess: true,
         isAuthorized: true,
@@ -75,17 +75,23 @@ export const arcQueryHooks = () => {
         exceptionMessages: [],
         exceptionStackTrace: '',
         isPerforming: false,
-        hasData: queryResult.totalItems > 0
+        hasData: queryResult.totalItems > 0,
     });
 
     const setPage = (page: number) => {
         queryResult.page = page;
     };
-    const noop = () => { };
+    const noop = () => {};
 
     return {
-        useQueryWithPaging: () => [currentResult(), () => Promise.resolve(), noop, setPage, noop],
-        useObservableQueryWithPaging: () => [currentResult(), noop, setPage, noop]
+        useQueryWithPaging: () => [
+            currentResult(),
+            () => Promise.resolve(),
+            noop,
+            setPage,
+            noop,
+        ],
+        useObservableQueryWithPaging: () => [currentResult(), noop, setPage, noop],
     };
 };
 
@@ -97,6 +103,7 @@ export const arcQueryHooks = () => {
 export class PersonsQuery extends QueryFor<Person, object> {
     readonly route = '/api/persons';
     readonly routeTemplate = '/api/persons';
+    // SAFETY: Arc collection-query proxies are row-typed while their runtime default is an empty row array.
     readonly defaultValue: Person = [] as unknown as Person;
     readonly parameterDescriptors = [];
 
@@ -109,6 +116,22 @@ export class PersonsQuery extends QueryFor<Person, object> {
     }
 
     override perform(): Promise<QueryResult<Person>> {
-        return Promise.resolve({ data: rowsForCurrentPage() } as unknown as QueryResult<Person>);
+        // SAFETY: Arc collection query results are row-typed while their runtime data is the current row array.
+        return Promise.resolve({
+            data: rowsForCurrentPage(),
+            paging: {
+                page: queryResult.page,
+                size: pageSize,
+                totalItems: queryResult.totalItems,
+                totalPages: queryResult.totalPages,
+            },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            validationResults: [],
+            hasExceptions: false,
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Person>);
     }
 }
