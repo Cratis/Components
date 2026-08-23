@@ -312,6 +312,10 @@ import './ada-components.css';
     --cratis-border-radius: 6px;
     --cratis-focus-ring: var(--ada-ring-focus);
     --cratis-maskbg: var(--ada-scrim);
+    --cratis-shadow-subtle: var(--ada-shadow-sm);
+    --cratis-shadow-overlay: var(--ada-shadow-md);
+    --cratis-shadow-dialog: var(--ada-shadow-xl);
+    --cratis-shadow-toast: var(--ada-shadow-md);
 }
 ```
 

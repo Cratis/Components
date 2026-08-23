@@ -23,7 +23,7 @@ Apply `cratis-dark` to the document element:
 document.documentElement.classList.toggle('cratis-dark', darkMode);
 ```
 
-Use `cratis-light` to keep the light values when the operating system prefers dark. Without either explicit class, the baseline follows `prefers-color-scheme`.
+Use `cratis-light` to keep the light values when the operating system prefers dark. Explicit light wins over an ambient/root `cratis-dark`, while a subtree with its own `cratis-dark` remains dark. A root `cratis-light` also keeps ordinary `.cratis-theme` descendants light without repeating the class. Without either explicit class, the baseline follows `prefers-color-scheme`.
 
 ## Theme one subtree
 

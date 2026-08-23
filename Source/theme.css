@@ -12,8 +12,15 @@
     background-color: var(--cratis-surface-ground);
 }
 
-/* A themed subtree needs its own light defaults because tokens.css is rooted at :root. */
-.cratis-theme {
+/* A themed subtree needs its own light defaults because tokens.css is rooted at :root.
+   Explicit light wins over ambient/root dark; an explicitly dark subtree still wins. */
+.cratis-theme,
+:root.cratis-light,
+:root.cratis-dark.cratis-light,
+:root.cratis-light .cratis-theme:not(.cratis-dark),
+.cratis-theme.cratis-light,
+.cratis-dark .cratis-theme.cratis-light {
+    color-scheme: light;
     --cratis-primary-color: #3b82f6;
     --cratis-primary-color-text: #ffffff;
     --cratis-primary-300: #93c5fd;
