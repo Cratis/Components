@@ -34,7 +34,9 @@
 .cratis-button:is([data-variant='outlined'], [data-variant='text']):hover:not(:disabled) {
     background: color-mix(in srgb, currentColor 4%, transparent);
 }
-.cratis-button:is([data-variant='outlined'], [data-variant='text']):active:not(:disabled) {
+.cratis-button:is([data-variant='outlined'], [data-variant='text']):active:not(
+        :disabled
+    ) {
     background: color-mix(in srgb, currentColor 16%, transparent);
 }
 .cratis-button:focus-visible {

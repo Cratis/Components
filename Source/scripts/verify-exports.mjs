@@ -212,7 +212,9 @@ if (!publishedStyles.includes('.cratis\\:flex')) {
     console.error('Published styles are missing prefixed internal utility output.');
     process.exit(1);
 }
-if (/\n\s*\.(?:flex|grid|container|hidden|absolute|relative)\s*\{/u.test(publishedStyles)) {
+if (
+    /\n\s*\.(?:flex|grid|container|hidden|absolute|relative)\s*\{/u.test(publishedStyles)
+) {
     console.error('Published styles leak an unprefixed internal utility selector.');
     process.exit(1);
 }

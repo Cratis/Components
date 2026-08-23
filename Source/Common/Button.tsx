@@ -27,11 +27,10 @@ export interface ButtonParts {
 }
 
 /** Props for {@link Button}. */
-export interface ButtonProps
-    extends Omit<
-        ButtonHTMLAttributes<HTMLButtonElement>,
-        'children' | 'className' | 'disabled' | 'size' | 'style' | 'type'
-    > {
+export interface ButtonProps extends Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'children' | 'className' | 'disabled' | 'size' | 'style' | 'type'
+> {
     /** The button's text. */
     label?: ReactNode;
     /** The button's icon, rendered before the label. */
@@ -78,30 +77,33 @@ const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
 
 /** A Cratis-owned button with stable parts and renderer-independent styling. */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({
-    label,
-    icon,
-    loading,
-    tooltip,
-    tooltipOptions,
-    pt,
-    text,
-    link,
-    outlined,
-    rounded,
-    severity,
-    size = 'normal',
-    disabled,
-    type = 'button',
-    title,
-    autoFocus,
-    onClick,
-    className,
-    style,
-    'aria-label': ariaLabel,
-    children,
-    ...nativeProps
-}, ref) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+    {
+        label,
+        icon,
+        loading,
+        tooltip,
+        tooltipOptions,
+        pt,
+        text,
+        link,
+        outlined,
+        rounded,
+        severity,
+        size = 'normal',
+        disabled,
+        type = 'button',
+        title,
+        autoFocus,
+        onClick,
+        className,
+        style,
+        'aria-label': ariaLabel,
+        children,
+        ...nativeProps
+    },
+    ref,
+) {
     const variant = link ? 'link' : text ? 'text' : outlined ? 'outlined' : 'filled';
     const iconOnly = Boolean(icon) && label === undefined && !children;
     const rootClassName = ['cratis-button', pt?.root?.className, className]

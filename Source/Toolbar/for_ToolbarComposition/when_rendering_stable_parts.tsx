@@ -20,9 +20,7 @@ vi.mock('../../Common/Tooltip', () => ({
 describe('when rendering Toolbar composition parts', () => {
     const html = renderToStaticMarkup(
         <Toolbar aria-label='Canvas tools'>
-            <ToolbarGroup pt={{ root: { id: 'group' } }}>
-                Group
-            </ToolbarGroup>
+            <ToolbarGroup pt={{ root: { id: 'group' } }}>Group</ToolbarGroup>
             <ToolbarSeparator pt={{ root: { id: 'separator' } }} />
             <ToolbarLayout
                 name='tools'
@@ -98,6 +96,8 @@ describe('when rendering Toolbar composition parts', () => {
     });
 
     it('should_make_the_collapsed_folder_panel_inert', () => {
-        expect(html).to.match(/data-cratis-part="toolbar-folder-panel"[^>]*aria-hidden="true"[^>]*inert=""/);
+        expect(html).to.match(
+            /data-cratis-part="toolbar-folder-panel"[^>]*aria-hidden="true"[^>]*inert=""/,
+        );
     });
 });
