@@ -1,60 +1,68 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Rating } from 'primereact/rating';
-import type { RatingRootProps, RatingRootValueChangeEvent } from '@primereact/types/primitive/rating';
-import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
-/** Component-level props for {@link RatingField}. */
+interface RatingParts {
+    root?: HTMLAttributes<HTMLDivElement>;
+    option?: HTMLAttributes<HTMLLabelElement>;
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    star?: HTMLAttributes<HTMLSpanElement>;
+}
+
 interface RatingFieldComponentProps extends WrappedFieldProps<number> {
-    /** Number of stars. Defaults to `5`. */
     stars?: number;
-    /** Builds the accessible name for each star. Override to localize. Defaults to `` `${n} star(s)` ``. */
     starAriaLabel?: (starValue: number) => string;
-    /** Extra CSS class name. */
     className?: string;
-    /** PrimeReact pass-through configuration applied to the underlying Rating. */
-    pt?: RatingRootProps['pt'];
-    /** PrimeReact pass-through options applied to the underlying Rating. */
-    ptOptions?: RatingRootProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the underlying Rating. */
+    pt?: RatingParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A star-rating field bound to a `number` property on a Cratis Arc command.
- * See {@link InputTextField} for the full `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <RatingField value={c => c.rating} title="Rating" stars={5} />
- * ```
- */
+/** A star rating bound to a number property on an Arc command. */
 export const RatingField = asCommandFormField<RatingFieldComponentProps>(
     (props) => (
-        <div onBlur={props.onBlur} className={props.className}>
-            <Rating.Root
-                value={props.value}
-                onValueChange={props.onChange}
-                invalid={props.invalid}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}>
-                {Array.from({ length: props.stars ?? 5 }, (_, index) => (
-                    <Rating.Option
-                        key={index}
-                        value={index + 1}
-                        index={index}
-                        aria-label={(props.starAriaLabel ?? ((n) => `${n} ${n === 1 ? 'star' : 'stars'}`))(index + 1)}>
-                        <Rating.On><i className="pi pi-star-fill" /></Rating.On>
-                        <Rating.Off><i className="pi pi-star" /></Rating.Off>
-                    </Rating.Option>
-                ))}
-            </Rating.Root>
+        <div
+            {...props.pt?.root}
+            role='radiogroup'
+            className={['cratis-rating-field', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
+            onBlur={props.onBlur}
+            data-cratis-part='root'
+            data-invalid={props.invalid || undefined}
+        >
+            {Array.from({ length: props.stars ?? 5 }, (_, index) => {
+                const starValue = index + 1;
+                const label = (props.starAriaLabel ?? ((value: number) => `${value} ${value === 1 ? 'star' : 'stars'}`))(starValue);
+                return (
+                    <label
+                        {...props.pt?.option}
+                        key={starValue}
+                        className={['cratis-rating-field__option', props.pt?.option?.className].filter(Boolean).join(' ')}
+                        data-cratis-part='option'
+                    >
+                        <input
+                            {...props.pt?.input}
+                            type='radio'
+                            checked={props.value === starValue}
+                            onChange={event => {
+                                if (event.target.checked) props.onChange(starValue);
+                            }}
+                            aria-label={label}
+                            className={['cratis-choice-field__native', props.pt?.input?.className].filter(Boolean).join(' ')}
+                            data-cratis-part='input'
+                        />
+                        <span
+                            {...props.pt?.star}
+                            className={['cratis-rating-field__star', props.pt?.star?.className].filter(Boolean).join(' ')}
+                            data-cratis-part='star'
+                            data-selected={starValue <= props.value || undefined}
+                            aria-hidden='true'
+                        >★</span>
+                    </label>
+                );
+            })}
         </div>
     ),
-    {
-        defaultValue: 0,
-        extractValue: (e: RatingRootValueChangeEvent) => e.value
-    }
+    { defaultValue: 0, extractValue: (value: unknown) => typeof value === 'number' ? value : 0 },
 );

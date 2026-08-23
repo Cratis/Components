@@ -1,89 +1,81 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { RadioButton } from 'primereact/radiobutton';
-import type { RadioButtonRootProps, RadioButtonRootChangeEvent } from '@primereact/types/primitive/radiobutton';
-import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
-/**
- * Component-level props for {@link RadioGroupField}.
- */
+interface RadioGroupParts {
+    root?: HTMLAttributes<HTMLDivElement>;
+    option?: HTMLAttributes<HTMLLabelElement>;
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    box?: HTMLAttributes<HTMLSpanElement>;
+    indicator?: HTMLAttributes<HTMLSpanElement>;
+}
+
 interface RadioGroupFieldComponentProps extends WrappedFieldProps<string | number> {
-    /** Source array of objects to populate the radio options. */
     options: Array<Record<string, unknown>>;
-
-    /** Property name on each option object used as the visible label. */
     optionLabel: string;
-
-    /** Property name on each option object used as the underlying value. */
     optionValue: string;
-
-    /** Layout orientation. Defaults to `'vertical'`. */
     layout?: 'horizontal' | 'vertical';
-    /** Extra CSS class name forwarded to the group container. */
     className?: string;
-    /** PrimeReact pass-through configuration applied to every inner RadioButton. */
-    pt?: RadioButtonRootProps['pt'];
-    /** PrimeReact pass-through options applied to every inner RadioButton. */
-    ptOptions?: RadioButtonRootProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the inner RadioButtons. */
+    pt?: RadioGroupParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A radio-button group field bound to a `string` or `number` property on a
- * Cratis Arc command. Use for small mutually-exclusive choice sets where
- * all options should be visible at once; for larger sets, prefer
- * {@link DropdownField}. See {@link InputTextField} for the full
- * `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <RadioGroupField value={c => c.priority}
- *                  options={priorityOptions}
- *                  optionLabel="label"
- *                  optionValue="value"
- *                  layout="horizontal"
- *                  title="Priority" />
- * ```
- */
+/** A visible radio group bound to a string or number property on an Arc command. */
 export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>(
-    (props) => {
-        const layout = props.layout ?? 'vertical';
-        const layoutClasses = layout === 'horizontal' ? 'flex-row gap-4 flex-wrap' : 'flex-col gap-2';
-        const containerClassName = props.className
-            ? `flex ${layoutClasses} ${props.className}`
-            : `flex ${layoutClasses}`;
-        return (
-            <div className={containerClassName}>
-                {props.options.map((option) => {
-                    const optValue = option[props.optionValue] as string | number;
-                    const optLabel = option[props.optionLabel] as string;
-                    return (
-                        // A real <label> per option so the visible text is the radio's
-                        // accessible name. `onBlur` rides on the label (blur bubbles).
-                        <label key={String(optValue)} className="flex items-center" onBlur={props.onBlur}>
-                            <RadioButton.Root
-                                value={optValue}
-                                checked={props.value === optValue}
-                                onCheckedChange={(e: RadioButtonRootChangeEvent) => { if (e.checked) props.onChange(optValue); }}
-                                invalid={props.invalid}
-                                pt={props.pt}
-                                ptOptions={props.ptOptions}
-                                unstyled={props.unstyled}>
-                                <RadioButton.Box>
-                                    <RadioButton.Indicator />
-                                </RadioButton.Box>
-                            </RadioButton.Root>
-                            <span className="ml-2">{optLabel}</span>
-                        </label>
-                    );
-                })}
-            </div>
-        );
-    },
-    {
-        defaultValue: '',
-        extractValue: (e: unknown) => e as string | number
-    }
+    (props) => (
+        <div
+            {...props.pt?.root}
+            role='radiogroup'
+            className={[
+                'cratis-radio-group',
+                `cratis-radio-group--${props.layout ?? 'vertical'}`,
+                props.pt?.root?.className,
+                props.className,
+            ].filter(Boolean).join(' ')}
+            data-cratis-part='root'
+        >
+            {props.options.map(option => {
+                const value = option[props.optionValue] as string | number;
+                const label = String(option[props.optionLabel] ?? value);
+                return (
+                    <label
+                        {...props.pt?.option}
+                        key={String(value)}
+                        className={['cratis-choice-field', props.pt?.option?.className].filter(Boolean).join(' ')}
+                        onBlur={props.onBlur}
+                        data-cratis-part='option'
+                    >
+                        <input
+                            {...props.pt?.input}
+                            type='radio'
+                            checked={props.value === value}
+                            onChange={event => {
+                                if (event.target.checked) props.onChange(value);
+                            }}
+                            aria-invalid={props.invalid || undefined}
+                            className={['cratis-choice-field__native', props.pt?.input?.className].filter(Boolean).join(' ')}
+                            data-cratis-part='input'
+                        />
+                        <span
+                            {...props.pt?.box}
+                            className={['cratis-radio__box', props.pt?.box?.className].filter(Boolean).join(' ')}
+                            data-cratis-part='box'
+                            aria-hidden='true'
+                        >
+                            <span
+                                {...props.pt?.indicator}
+                                className={['cratis-radio__indicator', props.pt?.indicator?.className].filter(Boolean).join(' ')}
+                                data-cratis-part='indicator'
+                            />
+                        </span>
+                        <span className='cratis-choice-field__label'>{label}</span>
+                    </label>
+                );
+            })}
+        </div>
+    ),
+    { defaultValue: '', extractValue: (value: unknown) => value as string | number },
 );

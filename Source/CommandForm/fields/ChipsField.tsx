@@ -1,101 +1,100 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { InputTags } from 'primereact/inputtags';
-import type { InputTagsRootProps, InputTagsRootValueChangeEvent } from '@primereact/types/primitive/inputtags';
-import React from 'react';
+import { useState, type HTMLAttributes, type InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
-/**
- * Component-level props for {@link ChipsField}.
- */
+interface ChipsParts {
+    root?: HTMLAttributes<HTMLDivElement>;
+    item?: HTMLAttributes<HTMLSpanElement>;
+    remove?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+    input?: InputHTMLAttributes<HTMLInputElement>;
+}
+
 interface ChipsFieldComponentProps extends WrappedFieldProps<string[]> {
-    /** Placeholder text shown when the chip list is empty. */
     placeholder?: string;
-
-    /** Maximum number of chips allowed. */
     max?: number;
-
-    /**
-     * Character (or regex source) that splits typed input into multiple chips.
-     *
-     * PrimeReact 11's `InputTags` commits one tag per Enter rather than exposing
-     * v10 Chips' `separator`; accepted for API compatibility, not applied.
-     */
     separator?: string;
-
-    /** When true, the current input is committed as a chip on blur. */
     addOnBlur?: boolean;
-
-    /** When true, the same chip value may be added multiple times. */
     allowDuplicate?: boolean;
-
-    /** Accessible name for each chip's remove button. Override to localize. Defaults to `'Remove'`. */
     removeAriaLabel?: string;
-
-    /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
-
-    /** PrimeReact pass-through configuration applied to the underlying InputTags. */
-    pt?: InputTagsRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying InputTags. */
-    ptOptions?: InputTagsRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying InputTags. */
+    pt?: ChipsParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A tag/chip input field bound to a `string[]` property on a Cratis Arc
- * command. Each entered token becomes a chip; `separator` splits pasted
- * input into multiple chips at once. See {@link InputTextField} for the
- * full `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <ChipsField value={c => c.tags} title="Tags" separator="," />
- * ```
- */
-export const ChipsField = asCommandFormField<ChipsFieldComponentProps>(
-    (props) => (
-        // PrimeReact 11's InputTags is compositional with render-prop parts: Items
-        // renders one node per tag, Control renders the text-entry input. `onBlur`
-        // rides the wrapping div because React blur bubbles (focusout).
-        <div className={props.className ? `w-full ${props.className}` : 'w-full'} onBlur={props.onBlur}>
-            <InputTags.Root
-                value={props.value}
-                onValueChange={(e: InputTagsRootValueChangeEvent) => props.onChange(e.value ?? [])}
-                invalid={props.invalid}
-                max={props.max}
-                addOnBlur={props.addOnBlur}
-                allowDuplicate={props.allowDuplicate}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}>
-                <InputTags.Items>
-                    {({ item, index, remove, itemProps }) => (
-                        <span key={index} {...itemProps} className="cratis-inputtags-item">
-                            <span>{item}</span>
-                            <button type="button" aria-label={props.removeAriaLabel ?? 'Remove'} onClick={remove}>
-                                <i className="pi pi-times-circle" />
-                            </button>
-                        </span>
-                    )}
-                </InputTags.Items>
-                <InputTags.Control>
-                    {({ controlProps }) => <input {...controlProps} placeholder={props.placeholder} />}
-                </InputTags.Control>
-            </InputTags.Root>
+const ChipsControl = (props: ChipsFieldComponentProps) => {
+    const [draft, setDraft] = useState('');
+
+    const commit = () => {
+        const candidates = (props.separator ? draft.split(props.separator) : [draft])
+            .map(value => value.trim())
+            .filter(Boolean);
+        if (candidates.length === 0) return;
+        const available = props.max === undefined ? candidates : candidates.slice(0, Math.max(0, props.max - props.value.length));
+        const next = props.allowDuplicate
+            ? [...props.value, ...available]
+            : [...props.value, ...available.filter(candidate => !props.value.includes(candidate))];
+        props.onChange(next);
+        setDraft('');
+    };
+
+    return (
+        <div
+            {...props.pt?.root}
+            className={['cratis-chips-field', 'w-full', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
+            onBlur={event => {
+                props.onBlur?.();
+                if (props.addOnBlur && !event.currentTarget.contains(event.relatedTarget)) commit();
+            }}
+            data-cratis-part='root'
+            data-invalid={props.invalid || undefined}
+        >
+            {props.value.map((item, index) => (
+                <span
+                    {...props.pt?.item}
+                    key={`${item}-${index}`}
+                    className={['cratis-chips-field__item', props.pt?.item?.className].filter(Boolean).join(' ')}
+                    data-cratis-part='item'
+                >
+                    <span>{item}</span>
+                    <button
+                        {...props.pt?.remove}
+                        type='button'
+                        className={['cratis-chips-field__remove', props.pt?.remove?.className].filter(Boolean).join(' ')}
+                        data-cratis-part='remove'
+                        aria-label={props.removeAriaLabel ?? 'Remove'}
+                        onClick={() => props.onChange(props.value.filter((_, itemIndex) => itemIndex !== index))}
+                    >×</button>
+                </span>
+            ))}
+            <input
+                {...props.pt?.input}
+                value={draft}
+                onChange={event => setDraft(event.target.value)}
+                onKeyDown={event => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        commit();
+                    }
+                }}
+                placeholder={props.placeholder}
+                aria-invalid={props.invalid || undefined}
+                className={['cratis-chips-field__input', props.pt?.input?.className].filter(Boolean).join(' ')}
+                data-cratis-part='input'
+            />
         </div>
-    ),
+    );
+};
+
+/** A token input bound to a string array property on an Arc command. */
+export const ChipsField = asCommandFormField<ChipsFieldComponentProps>(
+    ChipsControl,
     {
         defaultValue: [],
-        extractValue: (e: unknown) => {
-            if (!Array.isArray(e)) {
-                return [];
-            }
-
-            return e.filter((item): item is string => typeof item === 'string');
-        }
-    }
+        extractValue: (value: unknown) => Array.isArray(value)
+            ? value.filter((item): item is string => typeof item === 'string')
+            : [],
+    },
 );

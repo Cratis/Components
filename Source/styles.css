@@ -30,6 +30,7 @@
 @import 'allotment/dist/style.css';
 
 @import './CommandDialog/CommandStepper.css';
+@import './CommandForm/fields/Fields.css';
 @import './Common/ActionMenubar.css';
 @import './Common/Button.css';
 @import './Common/DatePickerInput.css';

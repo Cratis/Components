@@ -1,51 +1,64 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { InputPassword } from 'primereact/inputpassword';
-import type { InputPasswordProps, InputPasswordValueChangeEvent } from '@primereact/types/primitive/inputpassword';
-import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import { useState, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 
-/** Component-level props for {@link PasswordField}. */
-interface PasswordFieldComponentProps extends WrappedFieldProps<string> {
-    /** Placeholder text. */
-    placeholder?: string;
-    /** Extra CSS class name combined with the default `w-full`. */
-    className?: string;
-    /** PrimeReact pass-through configuration applied to the underlying InputPassword. */
-    pt?: InputPasswordProps['pt'];
-    /** PrimeReact pass-through options applied to the underlying InputPassword. */
-    ptOptions?: InputPasswordProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the underlying InputPassword. */
-    unstyled?: boolean;
+interface PasswordParts {
+    root?: HTMLAttributes<HTMLDivElement>;
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    toggle?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
-/**
- * A masked password field bound to a `string` property on a Cratis Arc command,
- * with a built-in show/hide toggle. See {@link InputTextField} for the full
- * `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <PasswordField value={c => c.password} title="Password" />
- * ```
- */
-export const PasswordField = asCommandFormField<PasswordFieldComponentProps>(
-    (props) => (
-        <div onBlur={props.onBlur} className={props.className ? `w-full ${props.className}` : 'w-full'}>
-            <InputPassword
+interface PasswordFieldComponentProps extends WrappedFieldProps<string> {
+    placeholder?: string;
+    className?: string;
+    pt?: PasswordParts;
+    ptOptions?: object;
+    unstyled?: boolean;
+    showLabel?: string;
+    hideLabel?: string;
+}
+
+const PasswordControl = (props: PasswordFieldComponentProps) => {
+    const [visible, setVisible] = useState(false);
+    return (
+        <div
+            {...props.pt?.root}
+            onBlur={props.onBlur}
+            className={['cratis-password-field', 'w-full', props.pt?.root?.className, props.className].filter(Boolean).join(' ')}
+            data-cratis-part='root'
+        >
+            <input
+                {...props.pt?.input}
+                type={visible ? 'text' : 'password'}
                 value={props.value}
-                onValueChange={props.onChange}
-                invalid={props.invalid}
+                onChange={props.onChange}
                 placeholder={props.placeholder}
-                className="w-full"
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
+                aria-invalid={props.invalid || undefined}
+                data-invalid={props.invalid || undefined}
+                className={['cratis-field-input', 'w-full', props.pt?.input?.className].filter(Boolean).join(' ')}
+                data-cratis-part='input'
             />
+            <button
+                {...props.pt?.toggle}
+                type='button'
+                className={['cratis-password-field__toggle', props.pt?.toggle?.className].filter(Boolean).join(' ')}
+                data-cratis-part='toggle'
+                aria-label={visible ? props.hideLabel ?? 'Hide password' : props.showLabel ?? 'Show password'}
+                onClick={() => setVisible(current => !current)}
+            >
+                <span aria-hidden='true'>{visible ? '◉' : '○'}</span>
+            </button>
         </div>
-    ),
+    );
+};
+
+/** A masked password field bound to a string property on an Arc command. */
+export const PasswordField = asCommandFormField<PasswordFieldComponentProps>(
+    PasswordControl,
     {
         defaultValue: '',
-        extractValue: (e: InputPasswordValueChangeEvent) => e.value
-    }
+        extractValue: (event: React.ChangeEvent<HTMLInputElement>) => event.target.value,
+    },
 );
