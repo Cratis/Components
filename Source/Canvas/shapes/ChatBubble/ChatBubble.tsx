@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Guid } from '@cratis/fundamentals';
 import { PersonAvatarCircle, getAvatarColor, type BuildAvatarUrlParams } from './Avatar';
 
@@ -101,7 +102,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     height: size,
                     borderRadius: '50%',
                     boxShadow: selected
-                        ? `inset 0 0 0 3px var(--primary-color), 0 4px 12px rgba(0, 0, 0, 0.22)`
+                        ? `inset 0 0 0 3px var(--cratis-primary-color), 0 4px 12px rgba(0, 0, 0, 0.22)`
                         : '0 4px 12px rgba(0, 0, 0, 0.22)',
                     position: 'relative',
                 }}
@@ -149,8 +150,8 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                         marginLeft: 14,
                         transform: 'translateY(-50%)',
                         width: 224,
-                        background: 'var(--surface-card)',
-                        border: '1px solid var(--surface-border)',
+                        background: 'var(--cratis-surface-card)',
+                        border: '1px solid var(--cratis-surface-border)',
                         borderRadius: 10,
                         boxShadow: '0 8px 24px rgba(0, 0, 0, 0.14)',
                         padding: '10px 12px',
@@ -167,20 +168,20 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     {/* Text content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
-                            <span style={{ ...FONT, fontSize: 12, fontWeight: 600, color: 'var(--text-color)' }}>
+                            <span style={{ ...FONT, fontSize: 12, fontWeight: 600, color: 'var(--cratis-text-color)' }}>
                                 {authorName.length > PREVIEW_AUTHOR_NAME_MAX_LENGTH ? `${authorName.slice(0, PREVIEW_AUTHOR_NAME_MAX_LENGTH)}…` : authorName}
                             </span>
                             {previewTimestamp && (
-                                <span style={{ ...FONT, fontSize: 10, color: 'var(--text-color-secondary)' }}>
+                                <span style={{ ...FONT, fontSize: 10, color: 'var(--cratis-text-color-secondary)' }}>
                                     {formatTimestamp(previewTimestamp)}
                                 </span>
                             )}
                         </div>
-                        <p style={{ ...FONT, fontSize: 11, color: 'var(--text-color)', margin: '0 0 6px', lineHeight: 1.4 }}>
+                        <p style={{ ...FONT, fontSize: 11, color: 'var(--cratis-text-color)', margin: '0 0 6px', lineHeight: 1.4 } }>
                             {previewMessage ? (previewMessage.length > PREVIEW_MESSAGE_MAX_LENGTH ? `${previewMessage.slice(0, PREVIEW_MESSAGE_MAX_LENGTH)}…` : previewMessage) : 'No messages yet'}
                         </p>
                         {replyCount !== undefined && replyCount > 0 && (
-                            <span style={{ ...FONT, fontSize: 10, color: 'var(--primary-color)' }}>
+                            <span style={{ ...FONT, fontSize: 10, color: 'var(--cratis-primary-color)' }}>
                                 {replyCount === 1 ? '1 reply' : `${replyCount} replies`}
                             </span>
                         )}

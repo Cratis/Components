@@ -25,46 +25,83 @@ import { resolveDataTableFilterMatcher } from './DataTableFilterMatcherRegistry'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/** Event emitted when a DataTable row is activated. */
 export interface DataTableRowClickEvent<TData> {
+    /** Activated row data. */
     data: TData;
+    /** Loaded-page row index. */
     index: number;
 }
 
 /** Stable Cratis-owned parts for styling a {@link DataTableCore}. */
 export interface DataTableParts {
+    /** Outer table composition. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** Loaded-page search wrapper. */
     search?: HTMLAttributes<HTMLDivElement>;
+    /** Loaded-page search input. */
     searchInput?: React.InputHTMLAttributes<HTMLInputElement>;
+    /** Scroll container. */
     tableContainer?: HTMLAttributes<HTMLDivElement>;
+    /** Semantic table element. */
     table?: TableHTMLAttributes<HTMLTableElement>;
+    /** Table head. */
     head?: HTMLAttributes<HTMLTableSectionElement>;
+    /** Header row. */
     headerRow?: HTMLAttributes<HTMLTableRowElement>;
+    /** Header cell. */
     headerCell?: ThHTMLAttributes<HTMLTableCellElement>;
+    /** Table body. */
     body?: HTMLAttributes<HTMLTableSectionElement>;
+    /** Data row. */
     row?: HTMLAttributes<HTMLTableRowElement>;
+    /** Data cell. */
     cell?: TdHTMLAttributes<HTMLTableCellElement>;
+    /** Empty-state row. */
     emptyRow?: HTMLAttributes<HTMLTableRowElement>;
+    /** Empty-state cell. */
     emptyCell?: TdHTMLAttributes<HTMLTableCellElement>;
 }
 
+/** Props for the semantic loaded-page DataTable renderer. */
 export interface DataTableCoreProps<TData extends object> {
+    /** Loaded page rows. */
     data: TData[];
+    /** Declarative {@link Column} markers. */
     children?: ReactNode;
+    /** Row property used as stable identity. */
     dataKey?: string;
+    /** Content shown when the loaded page has no matching rows. */
     emptyMessage: ReactNode;
+    /** Enables single-row selection. */
     selectionMode?: 'single';
+    /** Accessible name for row selection controls. */
     selectionAriaLabel?: string;
+    /** Controlled selected row. */
     selection?: TData | null;
+    /** Invoked when row selection changes. */
     onSelectionChange?: (event: DataTableSelectionChangeEvent<TData>) => void;
+    /** Invoked when a row is clicked or keyboard activated. */
     onRowClick?: (event: DataTableRowClickEvent<TData>) => void;
+    /** Builds an extra class name for one row. */
     rowClassName?: (rowData: TData) => string;
+    /** Row fields searched on the loaded page. */
     globalFilterFields?: string[];
+    /** Placeholder for the loaded-page search input. */
     globalSearchPlaceholder?: string;
+    /** Accessible name for the loaded-page search input. */
+    globalSearchAriaLabel?: string;
+    /** Initial per-field filter constraints. */
     defaultFilters?: DataTableFilterMeta;
+    /** Invoked when applied field filters change. */
     onFilter?: (filters: DataTableFilterMeta) => void;
+    /** Enables the bounded scroll container. */
     scrollable?: boolean;
+    /** Scroll-container maximum height. */
     scrollHeight?: string;
+    /** Extra class name for the table composition. */
     className?: string;
+    /** Inline style for the table composition. */
     style?: CSSProperties;
     /** Cratis-owned per-part attributes. */
     pt?: DataTableParts;
@@ -217,6 +254,7 @@ export const DataTableCore = <TData extends object>({
     rowClassName,
     globalFilterFields,
     globalSearchPlaceholder = 'Search…',
+    globalSearchAriaLabel = 'Search table',
     defaultFilters,
     onFilter,
     scrollable,
@@ -311,6 +349,7 @@ export const DataTableCore = <TData extends object>({
                         {...pt?.searchInput}
                         value={globalFilter}
                         placeholder={globalSearchPlaceholder}
+                        aria-label={globalSearchAriaLabel}
                         className={classNames(
                             'cratis-datatable-search__input',
                             pt?.searchInput?.className,
@@ -433,6 +472,7 @@ export const DataTableCore = <TData extends object>({
                                                         column.props.filterElement
                                                     }
                                                     labels={column.props.filterLabels}
+                                                    pt={column.props.filterPt}
                                                     constraint={firstConstraint(
                                                         filters[field],
                                                     )}

@@ -21,7 +21,9 @@ Use native HTML for simple application-owned controls that do not need Component
 
 ## Replace provider configuration
 
-Remove `PrimeReactProvider`, license keys, presets, renderer defaults, and global Prime pass-through configuration. Mount `CratisComponentsProvider` for locale, owned labels, and the optional toaster.
+If Components was the application's only Prime consumer, remove `PrimeReactProvider`, license keys, presets, renderer defaults, and global Prime pass-through configuration. Mount `CratisComponentsProvider` for locale, owned labels, and the optional toaster.
+
+If the application still imports Prime directly, keep its Prime provider, styling, and license configuration around those remaining surfaces while mounting `CratisComponentsProvider` independently for Components. Remove the Prime root only after the downstream direct imports are gone.
 
 ## Replace styling
 

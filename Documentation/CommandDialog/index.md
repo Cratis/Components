@@ -169,11 +169,12 @@ import { DialogInitialFocus } from '@cratis/components/Dialogs';
 
 ## Busy State
 
-`CommandDialog` automatically manages a busy state during command execution:
+`CommandDialog` automatically manages a busy state from the start of `onBeforeExecute` until command execution settles:
 
-- When the Ok/Yes button is clicked and command execution begins, all buttons are disabled and the primary button shows a loading spinner.
+- All buttons, including header close, are disabled and the primary button shows a loading spinner.
+- Escape and backdrop dismissal are ignored while work is in flight.
 - Once execution completes (success or failure), the buttons return to their normal state.
-- This prevents duplicate submissions and gives users clear visual feedback.
+- This prevents duplicate submissions and accidental dismissal while giving users clear visual feedback.
 
 ## Context
 

@@ -50,7 +50,9 @@ function MyTable() {
 - `dataKey`: Unique identifier field
 - `selection`: Currently selected row
 - `onSelectionChange`: Callback when selection changes
-- `globalFilterFields`: Fields to search in global filter
+- `globalFilterFields`: Fields searched on the loaded page
+- `globalSearchPlaceholder`: Search-input placeholder
+- `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
 - `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages

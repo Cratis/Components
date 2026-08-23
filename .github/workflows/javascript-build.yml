@@ -124,7 +124,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                arc-version: ['20.3.1', '21.19.4', '22.0.1']
+                arc-version: ['20.3.1', '21.19.4', '22.1.0']
 
         steps:
             - name: Checkout code
@@ -235,7 +235,7 @@ jobs:
                   corepack prepare pnpm@10.17.1 --activate
                   pnpm add --ignore-scripts \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.0.1 @cratis/arc.react@22.0.1 \
+                    @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
                     @cratis/fundamentals react@19 react-dom@19 reflect-metadata tsyringe
                   pnpm exec node verify.mjs
 
@@ -255,7 +255,7 @@ jobs:
                   YAML
                   yarn add \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.0.1 @cratis/arc.react@22.0.1 \
+                    @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
                     @cratis/fundamentals react@19 react-dom@19 \
                     reflect-metadata tsyringe rxjs
                   yarn node verify.mjs

@@ -42,106 +42,117 @@ interface WebKitGestureEvent extends Event {
     readonly clientY: number;
 }
 
+/** Measured world-space bounds for one registered {@link CanvasItem}. */
 export interface CanvasItemRegistryEntry {
-
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
-
+    /** Measured width. */
     width: number;
-
+    /** Measured height. */
     height: number;
 }
 
+/** Registry contract used by {@link CanvasItem} to publish measured bounds. */
 export interface CanvasItemRegistryContextValue {
-
+    /** Adds or updates one measured item. */
     register: (id: string, entry: CanvasItemRegistryEntry) => void;
-
+    /** Removes one measured item. */
     unregister: (id: string) => void;
 }
 
+/** Context carrying the nearest Canvas item registry. */
 export const CanvasItemRegistryContext = React.createContext<CanvasItemRegistryContextValue | null>(null);
 
+/** Minimum data shape for an optional Pixi-rendered canvas item. */
 export interface CanvasItemData {
+    /** Stable item identity. */
     id: string;
+    /** World-space horizontal position. */
     x: number;
+    /** World-space vertical position. */
     y: number;
 }
 
+/** Pixi objects supplied after the Canvas renderer initializes. */
 export interface CanvasContext {
+    /** Pixi application owned by the Canvas. */
     app: PIXI.Application;
+    /** Pixi world container receiving rendered items. */
     world: PIXI.Container;
 }
 
+/** Imperative camera and measurement operations exposed by {@link Canvas}. */
 export interface CanvasHandle {
-
+    /** Smoothly centers a world point. */
     smoothPanToWorld(worldX: number, worldY: number, durationMs?: number): void;
-
-    /** Smoothly pans the world point to the viewport center while simultaneously animating to the target zoom. */
-    smoothPanZoomToWorld(worldX: number, worldY: number, targetZoom?: number, durationMs?: number): void;
-
+    /** Smoothly centers a world point while animating to a target zoom. */
+    smoothPanZoomToWorld(
+        worldX: number,
+        worldY: number,
+        targetZoom?: number,
+        durationMs?: number,
+    ): void;
+    /** Returns the current viewport rectangle, or `null` before mounting. */
     getContainerRect(): DOMRect | null;
-
-    /** The world-space bounds every registered CanvasItem currently occupies, as measured on screen. */
+    /** Returns world-space bounds for every registered CanvasItem. */
     getItemBounds(): MinimapItem[];
 }
 
+/** Props for the pan, zoom, item, minimap, and control surface. */
 export interface CanvasProps<T extends CanvasItemData = CanvasItemData> {
-
+    /** DOM content positioned inside the transformed world. */
     children?: React.ReactNode;
-
+    /** Optional Pixi-rendered item data. */
     items?: T[];
-
+    /** Builds a Pixi display object for one item. */
     renderItem?: (item: T) => PIXI.Container;
-
+    /** Receives pointer activation for a Pixi-rendered item. */
     onItemPointerDown?: (item: T, event: PIXI.FederatedPointerEvent) => void;
-
+    /** Receives the initialized Pixi application and world. */
     onReady?: (context: CanvasContext) => void;
-
+    /** Reports every camera transform change. */
     onTransformChange?: (zoom: number, pan: { x: number; y: number }) => void;
-
+    /** Initial zoom factor. Defaults to `1`. */
     initialZoom?: number;
-
+    /** Initial viewport translation. Defaults to `{ x: 0, y: 0 }`. */
     initialPan?: { x: number; y: number };
-
+    /** Minimum zoom factor. Defaults to `0.1`. */
     minZoom?: number;
-
+    /** Maximum zoom factor. Defaults to `5`. */
     maxZoom?: number;
-
+    /** Whether integrated zoom controls render. Defaults to `true`. */
     showControls?: boolean;
-
+    /** Whether controls expose the minimap toggle. Defaults to `false`. */
     showMinimap?: boolean;
-
+    /** World width represented by the minimap. */
     minimapWorldWidth?: number;
-
+    /** World height represented by the minimap. */
     minimapWorldHeight?: number;
-
+    /** Explicit minimap item rectangles; measured CanvasItem bounds are used otherwise. */
     minimapItems?: MinimapItem[];
-
+    /** Edge used by the integrated control bar. Defaults to `'bottom-left'`. */
     controlsPlacement?: 'bottom-left' | 'bottom-right';
+    /** Extra class name for the Canvas root. */
     className?: string;
+    /** Inline style for the Canvas root. */
     style?: React.CSSProperties;
-
-    /** Invoked when the controls' help button is clicked. When omitted, the help button does nothing. */
+    /** Invoked when the optional help action is activated. */
     onHelp?: () => void;
-    /** Tooltip for the controls' help button. */
+    /** Accessible label and tooltip for the help action. */
     helpTitle?: string;
-
-    /** Disables the LiquidGlass surface behind the control pill (falls back to a cheap backdrop-filter).
-     *  Large canvases set this because the per-frame glass capture stalls pan/zoom. */
+    /** Uses a low-cost CSS frosted pill instead of a consumer-supplied glass surface. */
     disableControlsGlass?: boolean;
-
+    /** Receives imperative camera and measurement operations. */
     onHandleReady?: (handle: CanvasHandle) => void;
-
-    /** Renders an inert preview: content can still be panned and zoomed, but nothing on it can be clicked,
-     *  dragged, or dropped into — a transparent cover absorbs every pointer event before it reaches the
-     *  board content, so no leaf component needs its own read-only handling. */
+    /** Keeps pan/zoom available while absorbing interaction with canvas content. */
     readOnly?: boolean;
-
-    /** Whether a left-button mouse or pen drag on the empty background pans the board. Boards that claim
-     *  that gesture for themselves (rubber-band selection) set this to false; the pointer events then
-     *  bubble up untouched. Wheel/trackpad panning, middle-drag panning, and one-finger touch panning are
-     *  never affected — turning this off must not leave a tablet unable to move the board. */
+    /**
+     * Whether mouse/pen drag on empty background pans the board. Disable when
+     * the product owns that gesture for selection; wheel, middle-button, and
+     * touch panning remain available.
+     */
     backgroundDragPans?: boolean;
 }
 

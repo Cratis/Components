@@ -4,10 +4,11 @@
 import React, { useContext, useEffect, useId, useRef, useState } from 'react';
 import { CanvasItemRegistryContext } from './Canvas';
 
+/** Props for a measured DOM item positioned in Canvas world space. */
 export interface CanvasItemProps {
-
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
 
     /**
@@ -19,7 +20,9 @@ export interface CanvasItemProps {
      */
     zIndex?: number;
 
+    /** Reports measured size changes. */
     onSize?: (width: number, height: number) => void;
+    /** Item content. */
     children: React.ReactNode;
 }
 

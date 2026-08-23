@@ -76,6 +76,31 @@ describe('when using migration aliases', () => {
         expect(trigger.getAttribute('aria-invalid')).to.equal('true');
     });
 
+    it('should map legacy select identity and aria values to the control', async () => {
+        await act(async () => {
+            root.render(
+                <CratisComponentsProvider>
+                    <Dropdown
+                        options={[{ label: 'Developer', value: 'developer' }]}
+                        pt={{
+                            select: {
+                                id: 'select-role',
+                                'aria-label': 'Role from select alias',
+                            },
+                        }}
+                    />
+                </CratisComponentsProvider>,
+            );
+        });
+        const renderedTrigger = container.querySelector<HTMLButtonElement>(
+            '[data-cratis-part="trigger"]',
+        );
+        expect(renderedTrigger?.id).to.equal('select-role');
+        expect(renderedTrigger?.getAttribute('aria-label')).to.equal(
+            'Role from select alias',
+        );
+    });
+
     it('should map legacy input and select classes to stable Cratis elements', () => {
         expect(trigger.classList.contains('product-dropdown-input')).to.equal(true);
         expect(dropdownRoot.classList.contains('product-dropdown-select')).to.equal(true);

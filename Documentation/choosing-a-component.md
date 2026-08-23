@@ -37,6 +37,10 @@ If you're building a list-screen-with-actions from scratch, start with the
 [list screen recipe](./list-screen-with-actions.md), which composes `DataPage` with `CommandDialog`
 actions.
 
+## Spatial workspaces
+
+Use [`Canvas`](./Canvas/index.md) for a pan/zoom workspace containing positioned DOM or Pixi items, optional minimap/controls, notes, regions, or collaborative chat shapes. Canvas owns interaction and rendering primitives; the application still owns persistence and behavior through Arc commands, queries, and Chronicle read models.
+
 ## Putting it together
 
 A typical CRUD screen combines these: a `DataPage` lists the rows, a toolbar button opens a

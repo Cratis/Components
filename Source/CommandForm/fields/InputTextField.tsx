@@ -8,7 +8,9 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface InputTextParts {
+/** Stable part attributes for {@link InputTextField}. */
+export interface InputTextParts {
+    /** Native input element. */
     root?: InputHTMLAttributes<HTMLInputElement>;
 }
 

@@ -1,57 +1,133 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useState, type ReactNode, type SyntheticEvent } from 'react';
+import {
+    useEffect,
+    useState,
+    type ButtonHTMLAttributes,
+    type CSSProperties,
+    type HTMLAttributes,
+    type InputHTMLAttributes,
+    type ReactNode,
+    type SyntheticEvent,
+} from 'react';
 import { Button as AriaButton } from 'react-aria-components/Button';
 import { Dialog as AriaDialog, DialogTrigger } from 'react-aria-components/Dialog';
 import { Popover } from 'react-aria-components/Popover';
-import { Button } from '../Common/Button';
+import { Button, type ButtonParts } from '../Common/Button';
 import { DatePickerInput } from '../Common/DatePickerInput';
-import { Dropdown } from '../Dropdown/Dropdown';
+import { Dropdown, type DropdownParts } from '../Dropdown/Dropdown';
 import {
     DataTableFilterMatchMode,
     type DataTableFilterConstraint,
     type DataTableFilterMatchMode as FilterMatchMode,
 } from './DataTableFilterMeta';
 
+/** Value editor used by a built-in column filter. */
 export type ColumnFilterDataType = 'text' | 'numeric' | 'date' | 'boolean';
 
+/** Localizable labels owned by the column filter popup. */
 export interface ColumnFilterMenuLabels {
+    /** Builds the filter-trigger accessible name from the effective field. */
     filterTriggerAriaLabel: (field: string) => string;
+    /** Builds the value-control accessible name from the effective field. */
+    valueAriaLabel: (field: string) => string;
+    /** Accessible name for the match-mode selector. */
+    matchModeAriaLabel: string;
+    /** Localizes a match mode while retaining its default label as fallback input. */
+    matchModeLabel: (mode: FilterMatchMode, defaultLabel: string) => string;
+    /** Clear action label. */
     clear: string;
+    /** Apply action label. */
     apply: string;
+    /** Boolean true option label. */
     true: string;
+    /** Boolean false option label. */
     false: string;
 }
 
+interface ColumnFilterOverlayAttributes {
+    id?: string;
+    className?: string;
+    style?: CSSProperties;
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
+    'aria-describedby'?: string;
+    [attribute: `data-${string}`]: string | number | boolean | undefined;
+}
+
+/** Stable Cratis-owned parts for a column filter popup. */
+export interface ColumnFilterMenuParts {
+    /** Header-cell filter trigger. */
+    trigger?: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'value'>;
+    /** Portaled filter popover. */
+    popover?: ColumnFilterOverlayAttributes;
+    /** Semantic filter dialog/menu. */
+    menu?: ColumnFilterOverlayAttributes;
+    /** Match-mode Dropdown parts. */
+    matchMode?: DropdownParts;
+    /** Built-in value input, or root class/style for date/boolean controls. */
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Clear/apply action row. */
+    actions?: HTMLAttributes<HTMLDivElement>;
+    /** Clear Button parts. */
+    clear?: ButtonParts;
+    /** Apply Button parts. */
+    apply?: ButtonParts;
+}
+
+/** Default English labels for the column filter popup. */
 export const defaultColumnFilterMenuLabels: ColumnFilterMenuLabels = {
     filterTriggerAriaLabel: (field) => `Filter by ${field}`,
+    valueAriaLabel: (field) => `Filter value for ${field}`,
+    matchModeAriaLabel: 'Match mode',
+    matchModeLabel: (_mode, defaultLabel) => defaultLabel,
     clear: 'Clear',
     apply: 'Apply',
     true: 'True',
     false: 'False',
 };
 
+/** State and actions supplied to a custom column filter value editor. */
 export interface ColumnFilterElementOptions {
+    /** Effective filtered field. */
     field: string;
+    /** Current draft value. */
     value: unknown;
+    /** Current draft match mode. */
     matchMode: FilterMatchMode;
+    /** Updates draft value and optionally match mode. */
     onChange: (value: unknown, matchMode?: FilterMatchMode) => void;
+    /** Applies the draft filter. */
     onApply: (event: SyntheticEvent) => void;
+    /** Clears the field filter. */
     onClear: (event: SyntheticEvent) => void;
 }
 
+/** Custom renderer for a column filter's value editor. */
 export type ColumnFilterElement = (options: ColumnFilterElementOptions) => ReactNode;
 
+/** Props for the Cratis-owned draft/apply column filter popup. */
 export interface ColumnFilterMenuProps {
+    /** Effective row field being filtered. */
     field: string;
+    /** Built-in value editor and match-mode family. */
     dataType?: ColumnFilterDataType;
+    /** Placeholder for the value editor. */
     placeholder?: string;
+    /** Whether the match-mode selector is shown. */
     showMatchModes?: boolean;
+    /** Custom value editor replacing the built-in control. */
     filterElement?: ColumnFilterElement;
+    /** Partial localization overrides. */
     labels?: Partial<ColumnFilterMenuLabels>;
+    /** Stable part attributes. */
+    pt?: ColumnFilterMenuParts;
+    /** Currently applied constraint. */
     constraint?: DataTableFilterConstraint;
+    /** Applies one draft constraint. */
     onApply: (constraint: DataTableFilterConstraint) => void;
+    /** Removes the field constraint. */
     onClear: () => void;
 }
 
@@ -92,6 +168,9 @@ const optionsFor = (dataType: ColumnFilterDataType): MatchModeOption[] => {
     }
 };
 
+const classNames = (...values: Array<string | undefined>) =>
+    values.filter(Boolean).join(' ');
+
 const defaultModeFor = (dataType: ColumnFilterDataType): FilterMatchMode => {
     if (dataType === 'text') return DataTableFilterMatchMode.Contains;
     if (dataType === 'date') return DataTableFilterMatchMode.DateIs;
@@ -106,6 +185,7 @@ export const ColumnFilterMenu = ({
     showMatchModes = true,
     filterElement,
     labels,
+    pt,
     constraint,
     onApply,
     onClear,
@@ -124,14 +204,27 @@ export const ColumnFilterMenu = ({
         filterTriggerAriaLabel:
             labels?.filterTriggerAriaLabel ??
             defaultColumnFilterMenuLabels.filterTriggerAriaLabel,
+        valueAriaLabel:
+            labels?.valueAriaLabel ?? defaultColumnFilterMenuLabels.valueAriaLabel,
+        matchModeAriaLabel:
+            labels?.matchModeAriaLabel ??
+            defaultColumnFilterMenuLabels.matchModeAriaLabel,
+        matchModeLabel:
+            labels?.matchModeLabel ?? defaultColumnFilterMenuLabels.matchModeLabel,
         clear: labels?.clear ?? defaultColumnFilterMenuLabels.clear,
         apply: labels?.apply ?? defaultColumnFilterMenuLabels.apply,
         true: labels?.true ?? defaultColumnFilterMenuLabels.true,
         false: labels?.false ?? defaultColumnFilterMenuLabels.false,
     };
-    const modeOptions = optionsFor(dataType);
+    const modeOptions = optionsFor(dataType).map((option) => ({
+        ...option,
+        label: resolvedLabels.matchModeLabel(option.value, option.label),
+    }));
     if (!modeOptions.some((option) => option.value === draftMode)) {
-        modeOptions.push({ label: String(draftMode), value: draftMode });
+        modeOptions.push({
+            label: resolvedLabels.matchModeLabel(draftMode, String(draftMode)),
+            value: draftMode,
+        });
     }
 
     const clear = (event?: SyntheticEvent) => {
@@ -161,10 +254,15 @@ export const ColumnFilterMenu = ({
                   case 'numeric':
                       return (
                           <input
+                              {...pt?.input}
                               type='number'
+                              aria-label={resolvedLabels.valueAriaLabel(field)}
                               value={typeof draftValue === 'number' ? draftValue : ''}
                               placeholder={placeholder}
-                              className='cratis-filter-menu__input'
+                              className={classNames(
+                                  'cratis-filter-menu__input',
+                                  pt?.input?.className,
+                              )}
                               onChange={(event) =>
                                   setDraftValue(
                                       event.target.value === ''
@@ -180,10 +278,9 @@ export const ColumnFilterMenu = ({
                               value={draftValue instanceof Date ? draftValue : null}
                               onChange={setDraftValue}
                               showIcon
-                              aria-label={
-                                  placeholder ??
-                                  resolvedLabels.filterTriggerAriaLabel(field)
-                              }
+                              aria-label={resolvedLabels.valueAriaLabel(field)}
+                              className={pt?.input?.className}
+                              style={pt?.input?.style}
                           />
                       );
                   case 'boolean':
@@ -197,18 +294,22 @@ export const ColumnFilterMenu = ({
                               placeholder={placeholder}
                               showClear
                               onChange={(event) => setDraftValue(event.value)}
-                              aria-label={
-                                  placeholder ??
-                                  resolvedLabels.filterTriggerAriaLabel(field)
-                              }
+                              aria-label={resolvedLabels.valueAriaLabel(field)}
+                              className={pt?.input?.className}
+                              style={pt?.input?.style}
                           />
                       );
                   default:
                       return (
                           <input
+                              {...pt?.input}
                               value={typeof draftValue === 'string' ? draftValue : ''}
+                              aria-label={resolvedLabels.valueAriaLabel(field)}
                               placeholder={placeholder}
-                              className='cratis-filter-menu__input'
+                              className={classNames(
+                                  'cratis-filter-menu__input',
+                                  pt?.input?.className,
+                              )}
                               onChange={(event) => setDraftValue(event.target.value)}
                           />
                       );
@@ -218,8 +319,12 @@ export const ColumnFilterMenu = ({
     return (
         <DialogTrigger>
             <AriaButton
+                {...pt?.trigger}
                 aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
-                className='cratis-filter-trigger'
+                className={classNames(
+                    'cratis-filter-trigger',
+                    pt?.trigger?.className,
+                )}
                 data-active={
                     (constraint?.value !== null &&
                         constraint?.value !== undefined &&
@@ -230,9 +335,19 @@ export const ColumnFilterMenu = ({
             >
                 <span aria-hidden='true'>⌕</span>
             </AriaButton>
-            <Popover className='cratis-filter-popover' placement='bottom end'>
+            <Popover
+                {...pt?.popover}
+                className={classNames(
+                    'cratis-filter-popover',
+                    pt?.popover?.className,
+                )}
+                data-cratis-part='filter-popover'
+                placement='bottom end'
+            >
                 <AriaDialog
-                    className='cratis-filter-menu'
+                    {...pt?.menu}
+                    className={classNames('cratis-filter-menu', pt?.menu?.className)}
+                    data-cratis-part='filter-menu'
                     aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
                 >
                     {showMatchModes && (
@@ -244,13 +359,30 @@ export const ColumnFilterMenu = ({
                             onChange={(event) =>
                                 setDraftMode(event.value as FilterMatchMode)
                             }
-                            aria-label='Match mode'
+                            aria-label={resolvedLabels.matchModeAriaLabel}
+                            pt={pt?.matchMode}
                         />
                     )}
                     {valueInput}
-                    <div className='cratis-filter-menu-actions'>
-                        <Button outlined onClick={clear} label={resolvedLabels.clear} />
-                        <Button onClick={apply} label={resolvedLabels.apply} />
+                    <div
+                        {...pt?.actions}
+                        className={classNames(
+                            'cratis-filter-menu-actions',
+                            pt?.actions?.className,
+                        )}
+                        data-cratis-part='filter-actions'
+                    >
+                        <Button
+                            outlined
+                            onClick={clear}
+                            label={resolvedLabels.clear}
+                            pt={pt?.clear}
+                        />
+                        <Button
+                            onClick={apply}
+                            label={resolvedLabels.apply}
+                            pt={pt?.apply}
+                        />
                     </div>
                 </AriaDialog>
             </Popover>

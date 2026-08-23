@@ -8,8 +8,11 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface NumberFieldParts {
+/** Stable part attributes for {@link NumberField}. */
+export interface NumberFieldParts {
+    /** Field wrapper. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** Native number input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
 }
 

@@ -58,53 +58,87 @@ interface DropdownLegacyControlAttributes {
 
 /** Stable Cratis-owned parts for styling a {@link Dropdown}. */
 export interface DropdownParts {
+    /** Outer Dropdown wrapper. */
     root?: HTMLAttributes<HTMLElement>;
     /** Legacy visible-control part, mapped onto the current trigger/filter input. */
     input?: DropdownLegacyControlAttributes;
     /** Legacy select-root alias for class, style, identity, and ARIA migration. */
     select?: DropdownLegacyControlAttributes;
+    /** Single-select trigger or filtered options button. */
     trigger?: DropdownTriggerAttributes;
+    /** Selected value display. */
     value?: HTMLAttributes<HTMLSpanElement>;
+    /** Selection clear button. */
     clear?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Dropdown indicator. */
     indicator?: HTMLAttributes<HTMLSpanElement>;
+    /** Portaled options popover. */
     popover?: HTMLAttributes<HTMLDivElement>;
+    /** Options listbox. */
     listbox?: HTMLAttributes<HTMLDivElement>;
+    /** One option. */
     option?: HTMLAttributes<HTMLDivElement>;
+    /** Filter input. */
     filter?: InputHTMLAttributes<HTMLInputElement>;
+    /** Native multiple-select element used when filtering is off. */
     multiple?: SelectHTMLAttributes<HTMLSelectElement>;
 }
 
 /** Props for {@link Dropdown}. */
 export interface DropdownProps<T = unknown> {
+    /** Controlled selected value, or selected-value array in multiple mode. */
     value?: T;
+    /** Available scalar values or option objects. */
     options?: unknown[];
+    /** Property containing an option object's visible label. */
     optionLabel?: string;
+    /** Property containing an option object's bound value. */
     optionValue?: string;
+    /** Empty-selection text. */
     placeholder?: string;
+    /** Enables the filterable combobox path. */
     filter?: boolean;
+    /** Filter-input placeholder. */
     filterPlaceholder?: string;
+    /** Enables multiple selection. */
     multiple?: boolean;
+    /** Shows a clear-selection action. */
     showClear?: boolean;
+    /** Marks the control invalid. */
     invalid?: boolean;
+    /** Disables every control and clear action. */
     disabled?: boolean;
+    /** Extra class name for the outer wrapper. */
     className?: string;
+    /** Inline style for the outer wrapper. */
     style?: CSSProperties;
+    /** DOM identity of the focusable primary control. */
     id?: string;
     /** Legacy identity alias mapped to {@link id}. */
     inputId?: string;
     /** Legacy popup class alias mapped to the `popover` part. */
     panelClassName?: string;
+    /** Native form field name. */
     name?: string;
+    /** Primary-control tab order. */
     tabIndex?: number;
+    /** Accessible control name. */
     'aria-label'?: string;
+    /** Id of an external labeling element. */
     'aria-labelledby'?: string;
+    /** Id(s) of external descriptions. */
     'aria-describedby'?: string;
     /** Camel-case aliases retained for existing product wrappers. */
     ariaLabel?: string;
+    /** Legacy camel-case alias for `aria-labelledby`. */
     ariaLabelledBy?: string;
+    /** Legacy camel-case alias for `aria-describedby`. */
     ariaDescribedBy?: string;
+    /** Legacy invalid-state alias. */
     ariaInvalid?: boolean;
+    /** Invoked with the selected value(s). */
     onChange?: (event: DropdownChangeEvent<T>) => void;
+    /** Invoked when focus leaves the Dropdown wrapper. */
     onBlur?: FocusEventHandler<HTMLElement>;
     /** Cratis-owned per-part attributes. */
     pt?: DropdownParts;
@@ -205,12 +239,23 @@ export const Dropdown = <T = unknown,>({
         Object.is(option.value, value),
     );
     const selectedKey = selectedOption?.key ?? null;
-    const effectiveAriaLabel = ariaLabel ?? ariaLabelAlias ?? pt?.input?.['aria-label'];
+    const effectiveAriaLabel =
+        ariaLabel ??
+        ariaLabelAlias ??
+        pt?.input?.['aria-label'] ??
+        pt?.select?.['aria-label'];
     const effectiveAriaLabelledby =
-        ariaLabelledby ?? ariaLabelledBy ?? pt?.input?.['aria-labelledby'];
+        ariaLabelledby ??
+        ariaLabelledBy ??
+        pt?.input?.['aria-labelledby'] ??
+        pt?.select?.['aria-labelledby'];
     const effectiveAriaDescribedby =
-        ariaDescribedby ?? ariaDescribedBy ?? pt?.input?.['aria-describedby'];
-    const inputAriaInvalid = pt?.input?.['aria-invalid'];
+        ariaDescribedby ??
+        ariaDescribedBy ??
+        pt?.input?.['aria-describedby'] ??
+        pt?.select?.['aria-describedby'];
+    const inputAriaInvalid =
+        pt?.input?.['aria-invalid'] ?? pt?.select?.['aria-invalid'];
     const effectiveInvalid =
         invalid ??
         ariaInvalid ??
@@ -224,7 +269,8 @@ export const Dropdown = <T = unknown,>({
         pt?.select?.className,
         className,
     );
-    const triggerId = id ?? inputId ?? pt?.trigger?.id ?? pt?.input?.id;
+    const triggerId =
+        id ?? inputId ?? pt?.trigger?.id ?? pt?.input?.id ?? pt?.select?.id;
 
     const selectOption = (key: Key | null) => {
         const option = resolvedOptions.find((candidate) => candidate.key === String(key));

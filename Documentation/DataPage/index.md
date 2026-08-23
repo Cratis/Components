@@ -100,7 +100,9 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `dataKey`: Unique key field for data items
 - `selection`: Currently selected item
 - `onSelectionChange`: Callback when the selection changes
-- `globalFilterFields`: Fields to include in global search
+- `globalFilterFields`: Fields to include in loaded-page search
+- `globalSearchPlaceholder`: Placeholder for the search input
+- `globalSearchAriaLabel`: Accessible name for the search input; localize independently from the placeholder
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded query page
 - `tablePt` / `tableClassName`: Stable table-part attributes and root class

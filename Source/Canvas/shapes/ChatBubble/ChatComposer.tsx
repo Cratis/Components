@@ -188,6 +188,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(({
                 ☺
             </button>
             <button
+                type='button'
                 className='chat-composer__send'
                 onClick={send}
                 disabled={!draft.text.trim()}

@@ -8,10 +8,15 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface CheckboxParts {
+/** Stable part attributes for {@link CheckboxField}. */
+export interface CheckboxParts {
+    /** Wrapping label. */
     root?: HTMLAttributes<HTMLLabelElement>;
+    /** Native checkbox input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Visual checkbox box. */
     box?: HTMLAttributes<HTMLSpanElement>;
+    /** Visual checked indicator. */
     indicator?: HTMLAttributes<HTMLSpanElement>;
 }
 

@@ -8,10 +8,15 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface RatingParts {
+/** Stable part attributes for {@link RatingField}. */
+export interface RatingParts {
+    /** Semantic radiogroup wrapper. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** One rating option label. */
     option?: HTMLAttributes<HTMLLabelElement>;
+    /** Native radio input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Visual star. */
     star?: HTMLAttributes<HTMLSpanElement>;
 }
 

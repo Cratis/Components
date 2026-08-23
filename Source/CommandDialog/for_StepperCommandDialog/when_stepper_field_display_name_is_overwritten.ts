@@ -1,38 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { expect } from 'chai';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { vi } from 'vitest';
+import { beforeEach, describe, it, vi } from 'vitest';
 import { CommandFormFieldDisplayName, markAsCommandFormField } from '../../CommandForm/commandFormMarkers';
 
 vi.mock('../../Dialogs/Dialog', () => ({
     Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
         React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
-}));
-
-// PrimeReact 11's Stepper is compositional: each part renders its children, and
-// the Number part forwards its inline `style` so specs can assert the per-step
-// red/green indicator the wrapper applies directly to each step's number.
-vi.mock('primereact/stepper', () => {
-    const part = (name: string) => {
-        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
-            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
-        Component.displayName = name;
-        return Component;
-    };
-    return {
-        Stepper: {
-            Root: part('root'), List: part('list'), Step: part('step'),
-            Header: part('header'), Number: part('number'), Title: part('title'),
-            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
-        },
-    };
-});
-
-vi.mock('primereact/button', () => ({
-    Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
-        React.createElement('button', { disabled: props.disabled }, props.children),
 }));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
@@ -114,33 +91,32 @@ describe('when a stepper field displayName has been overwritten by a build trans
 
     // Covers the read in processChildren.
     it('should still recognize the child as a field and wrap it', () => {
-        html.should.include('field-wrapper');
+        expect(html).to.include('field-wrapper');
     });
 
     it('should still render the field itself', () => {
-        html.should.include('the-field');
+        expect(html).to.include('the-field');
     });
 
-    // Covers the read in extractFieldNamesFromNode: the step indicator can only
-    // turn red if the field was recognized and its property name extracted.
+    // Covers the read in extractFieldNamesFromNode: the first step can only
+    // carry invalid state if the field was recognized and its property extracted.
     it('should still extract the field name for the step indicator', () => {
-        const step1Number = html.match(
-            /<span[^>]*data-cratis-part="number"[^>]*>1<\/span>/,
-        );
-        (step1Number?.[0] ?? '').should.include('red');
+        const steps =
+            html.match(/<li[^>]*data-cratis-part="step"[^>]*>/g) ?? [];
+        expect(steps[0] ?? '').to.include('data-invalid="true"');
     });
 
     it('should not mark the step that has no fields', () => {
-        const step2Number = html.match(
-            /<span[^>]*data-cratis-part="number"[^>]*>2<\/span>/,
-        );
-        (step2Number?.[0] ?? '').should.not.include('red');
+        const steps =
+            html.match(/<li[^>]*data-cratis-part="step"[^>]*>/g) ?? [];
+        expect(steps[1] ?? '').not.to.include('data-invalid');
     });
 
     // Guards every assertion above: were the overwrite to silently fail, they
     // would pass through the legacy fallback and prove nothing about the marker.
     it('should have actually lost the legacy display name', () => {
-        (RenamedField as { displayName?: string }).displayName!
-            .should.not.equal(CommandFormFieldDisplayName);
+        expect((RenamedField as { displayName?: string }).displayName).not.to.equal(
+            CommandFormFieldDisplayName,
+        );
     });
 });

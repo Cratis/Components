@@ -8,7 +8,9 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface TextAreaParts {
+/** Stable part attributes for {@link TextAreaField}. */
+export interface TextAreaParts {
+    /** Native textarea element. */
     root?: TextareaHTMLAttributes<HTMLTextAreaElement>;
 }
 

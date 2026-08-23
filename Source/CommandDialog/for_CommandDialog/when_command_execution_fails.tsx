@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 import React from 'react';
-import { vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import {
     click,
     render,

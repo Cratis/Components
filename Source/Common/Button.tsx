@@ -16,9 +16,13 @@ export type ButtonSeverity =
 
 /** Stable Cratis-owned parts for styling a {@link Button}. */
 export interface ButtonParts {
+    /** Native button element. */
     root?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Icon wrapper. */
     icon?: HTMLAttributes<HTMLSpanElement>;
+    /** Label/content wrapper. */
     label?: HTMLAttributes<HTMLSpanElement>;
+    /** Loading spinner. */
     spinner?: HTMLAttributes<HTMLSpanElement>;
 }
 

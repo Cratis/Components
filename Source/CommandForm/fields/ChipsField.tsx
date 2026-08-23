@@ -8,10 +8,15 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface ChipsParts {
+/** Stable part attributes for {@link ChipsField}. */
+export interface ChipsParts {
+    /** Field wrapper. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** One selected chip. */
     item?: HTMLAttributes<HTMLSpanElement>;
+    /** Chip removal button. */
     remove?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Native draft-value input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
 }
 

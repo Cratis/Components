@@ -6,6 +6,7 @@ import type { Version } from './types';
 import { ReadModelView } from './ReadModelView';
 import { EventsView } from './EventsView';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
+import { FaBoxArchive, FaList } from 'react-icons/fa6';
 
 export type { TimeMachineLabels } from './TimeMachineLabels';
 export { defaultTimeMachineLabels } from './TimeMachineLabels';
@@ -109,20 +110,22 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
       {/* View Switcher */}
       <div className="view-switcher">
         <button
+          type='button'
           className={`view-button ${viewMode === ViewModes.ReadModel ? 'active' : ''}`}
           onClick={() => setViewMode(ViewModes.ReadModel)}
           aria-label={l.readModelView}
           title={l.readModelView}
         >
-          <i className="pi pi-box" />
+          <FaBoxArchive aria-hidden='true' />
         </button>
         <button
+          type='button'
           className={`view-button ${viewMode === ViewModes.Events ? 'active' : ''}`}
           onClick={() => setViewMode(ViewModes.Events)}
           aria-label={l.eventsView}
           title={l.eventsView}
         >
-          <i className="pi pi-list" />
+          <FaList aria-hidden='true' />
         </button>
       </div>
 
@@ -155,6 +158,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
       {viewMode === ViewModes.ReadModel && (
         <div className="navigation-controls">
           <button
+            type='button'
             className="nav-button prev"
             disabled={selectedIndex === 0}
             onClick={() => handleVersionSelect(Math.max(0, selectedIndex - 1))}
@@ -163,6 +167,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
             ‹
           </button>
           <button
+            type='button'
             className="nav-button next"
             disabled={selectedIndex === versions.length - 1}
             onClick={() => handleVersionSelect(Math.min(versions.length - 1, selectedIndex + 1))}

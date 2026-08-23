@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { CONTENT_ATTR } from './glassAttributes';
 import { CanvasMinimap, CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
+import { FaCircleQuestion, FaMap, FaMinus, FaPlus } from 'react-icons/fa6';
 
 // How often the zoom-percentage label re-reads the live zoom. The canvas must not re-render during
 // gestures, so the label polls the ref-backed value on a slow interval instead of receiving state.
@@ -25,22 +26,33 @@ export interface CanvasControlsLabels {
     help?: string;
 }
 
+/** Props for standalone or Canvas-integrated zoom/minimap/help controls. */
 export interface CanvasControlsProps {
     /** Reads the live zoom factor — polled slowly so gestures never re-render the canvas. */
     getZoom: () => number;
+    /** Increases the Canvas zoom. */
     onZoomIn: () => void;
+    /** Decreases the Canvas zoom. */
     onZoomOut: () => void;
+    /** Restores the product's default zoom. */
     onZoomReset: () => void;
 
+    /** Whether the minimap toggle is available. */
     showMinimapToggle?: boolean;
 
+    /** Ref used to update the standalone minimap viewport. */
     minimapRef?: React.RefObject<CanvasMinimapHandle | null>;
+    /** World width represented by the minimap. */
     minimapWorldWidth?: number;
+    /** World height represented by the minimap. */
     minimapWorldHeight?: number;
 
+    /** Item rectangles rendered by the minimap. */
     minimapItems?: MinimapItem[];
+    /** Requests a Canvas pan from minimap interaction. */
     onMinimapPan?: (pan: { x: number; y: number }) => void;
 
+    /** Control-bar edge. Defaults to `'bottom-left'`. */
     placement?: 'bottom-left' | 'bottom-right';
 
     /** Invoked when the help button is clicked. When omitted, the help button is not rendered. */
@@ -70,6 +82,7 @@ export interface CanvasControlsProps {
     disableGlass?: boolean;
 }
 
+/** Zoom, minimap, and optional help controls for a {@link Canvas}. */
 export const CanvasControls: React.FC<CanvasControlsProps> = ({
     getZoom,
     onZoomIn,
@@ -140,29 +153,33 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                 {showMinimapToggle && (
                     <>
                         <button
+                            type='button'
                             title={labels?.toggleMinimap ?? 'Toggle minimap'}
+                            aria-label={labels?.toggleMinimap ?? 'Toggle minimap'}
                             className={`canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none${minimapOpen ? ' canvas-controls-icon-btn--active' : ''}`}
                             onClick={() => setMinimapOpen(v => !v)}
                         >
-                            <i className='pi pi-th-large text-base' />
+                            <FaMap className='text-base' aria-hidden='true' />
                         </button>
                         <span className='canvas-controls-separator' />
                     </>
                 )}
 
                 {/* Zoom controls */}
-                <button title={labels?.zoomOut ?? 'Zoom Out'} className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none' onClick={() => { onZoomOut(); refreshDisplayZoom(); }}>
-                    <i className='pi pi-minus text-base' />
+                <button type='button' title={labels?.zoomOut ?? 'Zoom Out'} aria-label={labels?.zoomOut ?? 'Zoom Out'} className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none' onClick={() => { onZoomOut(); refreshDisplayZoom(); }}>
+                    <FaMinus className='text-base' aria-hidden='true' />
                 </button>
                 <button
+                    type='button'
                     title={labels?.resetZoom ?? 'Reset Zoom'}
+                    aria-label={labels?.resetZoom ?? 'Reset Zoom'}
                     onClick={() => { onZoomReset(); refreshDisplayZoom(); }}
                     className='canvas-controls-zoom-btn flex items-center justify-center h-9 min-w-[3.25rem] px-1.5 rounded-lg text-xs font-semibold cursor-pointer select-none tabular-nums'
                 >
                     {Math.round(displayZoom * 100)}%
                 </button>
-                <button title={labels?.zoomIn ?? 'Zoom In'} className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none' onClick={() => { onZoomIn(); refreshDisplayZoom(); }}>
-                    <i className='pi pi-plus text-base' />
+                <button type='button' title={labels?.zoomIn ?? 'Zoom In'} aria-label={labels?.zoomIn ?? 'Zoom In'} className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none' onClick={() => { onZoomIn(); refreshDisplayZoom(); }}>
+                    <FaPlus className='text-base' aria-hidden='true' />
                 </button>
 
                 {/* Help - only where there is something to explain; a button that does nothing is worse than none. */}
@@ -170,11 +187,13 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                     <>
                         <span className='canvas-controls-separator' />
                         <button
+                            type='button'
                             title={helpTitle ?? labels?.help ?? 'Help'}
+                            aria-label={helpTitle ?? labels?.help ?? 'Help'}
                             className='canvas-controls-icon-btn flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer select-none'
                             onClick={onHelp}
                         >
-                            <i className='pi pi-question-circle text-base' />
+                            <FaCircleQuestion className='text-base' aria-hidden='true' />
                         </button>
                     </>
                 )}

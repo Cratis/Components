@@ -48,45 +48,79 @@ type DatePickerButtonAttributes = Omit<
 
 /** Stable Cratis-owned parts for styling a {@link DatePickerInput}. */
 export interface DatePickerInputPassThrough {
+    /** Outer wrapper. */
     root?: DatePickerPartAttributes;
+    /** Focusable segmented-input group. */
     group?: DatePickerPartAttributes;
+    /** Segmented date input. */
     input?: DatePickerPartAttributes;
+    /** Visible empty-value placeholder. */
     placeholder?: DatePickerPartAttributes;
+    /** Individual editable date/time segment. */
     segment?: DatePickerPartAttributes;
+    /** Calendar popup trigger. */
     trigger?: DatePickerButtonAttributes;
+    /** Portaled calendar popover. */
     popover?: DatePickerPartAttributes;
+    /** Calendar dialog. */
     dialog?: DatePickerPartAttributes;
+    /** Calendar root. */
     calendar?: DatePickerPartAttributes;
+    /** Calendar navigation header. */
     header?: DatePickerPartAttributes;
+    /** Current month/year heading. */
     heading?: DatePickerPartAttributes;
+    /** Previous-month action. */
     previous?: DatePickerButtonAttributes;
+    /** Next-month action. */
     next?: DatePickerButtonAttributes;
+    /** Calendar grid. */
     grid?: DatePickerPartAttributes;
+    /** One calendar cell. */
     cell?: DatePickerPartAttributes;
+    /** Today/clear action row. */
     buttonBar?: DatePickerPartAttributes;
+    /** Today action. */
     today?: DatePickerButtonAttributes;
+    /** Clear action. */
     clear?: DatePickerButtonAttributes;
 }
 
 /** Props for {@link DatePickerInput}. */
 export interface DatePickerInputProps {
+    /** Controlled JavaScript date value. */
     value: Date | null;
+    /** Invoked with the selected JavaScript date or `null`. */
     onChange: (value: Date | null) => void;
+    /** Invoked when focus leaves the picker wrapper. */
     onBlur?: FocusEventHandler<HTMLElement>;
+    /** Marks the picker invalid. */
     invalid?: boolean;
+    /** Disables every picker control. */
     disabled?: boolean;
+    /** Prevents editing while retaining focus semantics. */
     readOnly?: boolean;
+    /** DOM id for the segmented-input group. */
     id?: string;
+    /** Shows Today and Clear actions. */
     showButtonBar?: boolean;
+    /** Visible text while no date is selected. */
     placeholder?: string;
     /** Deprecated renderer mask; locale controls formatting now. */
     dateFormat?: string;
+    /** Shows the calendar trigger button. */
     showIcon?: boolean;
+    /** Adds hour/minute segments. */
     showTime?: boolean;
+    /** Preferred 12- or 24-hour cycle. */
     hourFormat?: '12' | '24';
+    /** Earliest selectable date. */
     minDate?: Date;
+    /** Latest selectable date. */
     maxDate?: Date;
+    /** Extra class name for the outer wrapper. */
     className?: string;
+    /** Inline style for the outer wrapper. */
     style?: CSSProperties;
     /** Cratis-owned per-part attributes. */
     pt?: DatePickerInputPassThrough;

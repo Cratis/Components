@@ -11,6 +11,7 @@ import { findOwnReaction } from './findOwnReaction';
 import { MessageReactions } from './MessageReactions';
 import { ReactionPicker, type ReactionPickerLabels } from './ReactionPicker';
 import { reactionsExcludingUser } from './reactionsExcludingUser';
+import { FaBolt, FaReply } from 'react-icons/fa6';
 
 /** Overrides for the bubble's own labels. Any field left unset falls back to a literal English
  *  default. `{emoji}`/`{name}` placeholders are substituted by the component. */
@@ -128,7 +129,7 @@ export const ChatMessageBubble = ({ message, showAuthor, showTimestamp, formatte
                                     aria-label={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', message.authorName)}
                                     onClick={() => onQuickReply(message.authorName)}
                                 >
-                                    <i className='pi pi-reply' aria-hidden='true' />
+                                    <FaReply aria-hidden='true' />
                                 </button>
                             )}
                             {onAct && (
@@ -139,7 +140,7 @@ export const ChatMessageBubble = ({ message, showAuthor, showTimestamp, formatte
                                     aria-label={labels?.convertToAction ?? 'Turn into an action'}
                                     onClick={() => onAct(message.id)}
                                 >
-                                    <i className='pi pi-bolt' aria-hidden='true' />
+                                    <FaBolt aria-hidden='true' />
                                 </button>
                             )}
                         </div>

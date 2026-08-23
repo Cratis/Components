@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { DialogButtons } from '@cratis/arc.react/dialogs';
 import { Dialog } from '../../../Dialogs/Dialog';
 import type { ChatMessage } from './ChatMessage';
+import { FaTriangleExclamation } from 'react-icons/fa6';
 
 /** The pieces of a would-be issue report, handed to {@link FailedReplyProps.buildReportUrl}. */
 export interface FailedReplyReportDetails {
@@ -82,7 +83,10 @@ export const FailedReply = ({ message, buildReportUrl, labels }: FailedReplyProp
     return (
         <div className='chat-failed-reply' aria-live='polite'>
             <div className='chat-failed-reply__line'>
-                <i className='pi pi-exclamation-triangle chat-failed-reply__icon' aria-hidden='true' />
+                <FaTriangleExclamation
+                    className='chat-failed-reply__icon'
+                    aria-hidden='true'
+                />
                 <span className='chat-failed-reply__text'>{withName(labels?.replyFailed ?? '{name} could not answer')}</span>
             </div>
             <div className='chat-failed-reply__actions'>

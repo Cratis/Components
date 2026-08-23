@@ -64,6 +64,16 @@
     background: var(--cratis-primary-color);
     color: var(--cratis-primary-color-text);
 }
+.cratis-command-stepper__step[data-visited='true']:not([data-invalid='true'])
+    .cratis-command-stepper__number {
+    border-color: var(--cratis-green-500);
+    color: var(--cratis-green-500);
+}
+.cratis-command-stepper__step[data-invalid='true'] .cratis-command-stepper__number {
+    border-color: var(--cratis-red-500);
+    background: var(--cratis-surface-card);
+    color: var(--cratis-red-500);
+}
 .cratis-command-stepper__title {
     overflow: hidden;
     text-overflow: ellipsis;

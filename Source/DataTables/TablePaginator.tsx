@@ -8,12 +8,19 @@ import { paginatorRange } from './paginatorRange';
 
 /** Stable Cratis-owned paginator parts. */
 export interface TablePaginatorParts {
+    /** Pagination navigation root. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** Loaded item-range report. */
     range?: HTMLAttributes<HTMLSpanElement>;
+    /** Current page / page-count report. */
     info?: HTMLAttributes<HTMLSpanElement>;
+    /** First-page Button parts. */
     first?: ButtonParts;
+    /** Previous-page Button parts. */
     previous?: ButtonParts;
+    /** Next-page Button parts. */
     next?: ButtonParts;
+    /** Last-page Button parts. */
     last?: ButtonParts;
 }
 

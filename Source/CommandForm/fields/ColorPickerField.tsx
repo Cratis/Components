@@ -8,9 +8,13 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface ColorPickerParts {
+/** Stable part attributes for {@link ColorPickerField}. */
+export interface ColorPickerParts {
+    /** Field wrapper. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** Native color input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Selected hexadecimal value output. */
     value?: HTMLAttributes<HTMLOutputElement>;
 }
 

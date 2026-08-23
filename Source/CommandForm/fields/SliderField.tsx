@@ -8,9 +8,13 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface SliderParts {
+/** Stable part attributes for {@link SliderField}. */
+export interface SliderParts {
+    /** Field wrapper. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** Native range input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Current-value display. */
     value?: HTMLAttributes<HTMLSpanElement>;
 }
 

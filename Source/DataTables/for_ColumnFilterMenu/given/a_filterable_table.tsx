@@ -39,7 +39,7 @@ export const renderFilterableTable = async (
     (
         globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
-    // SAFETY: jsdom omits ResizeObserver, while PrimeReact only calls its three observer methods.
+    // SAFETY: jsdom omits ResizeObserver; overlay positioning only calls these methods.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
         observe() {
             return undefined;

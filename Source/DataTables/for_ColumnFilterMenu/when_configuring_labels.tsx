@@ -29,6 +29,7 @@ describe('when configuring column filter labels', () => {
                 showFilterMatchModes: false,
                 filterLabels: {
                     filterTriggerAriaLabel: (field) => `Filtrer ${field}`,
+                    valueAriaLabel: (field) => `Filterverdi for ${field}`,
                     clear: 'Tøm',
                     apply: 'Bruk',
                     true: 'Ja',
@@ -57,6 +58,14 @@ describe('when configuring column filter labels', () => {
 
     it('should build the trigger label from the effective filter field', () => {
         expect(table.trigger.getAttribute('aria-label')).to.equal('Filtrer roleCode');
+    });
+
+    it('should label the filter value control', () => {
+        expect(
+            menu
+                .querySelector('[data-cratis-part="trigger"]')
+                ?.getAttribute('aria-label'),
+        ).to.equal('Filterverdi for roleCode');
     });
 
     it('should localize the menu actions', () => {

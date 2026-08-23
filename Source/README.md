@@ -160,6 +160,7 @@ Do not target React Aria classes or internal DOM structure.
 ## Entry points
 
 - `@cratis/components`
+- `@cratis/components/Canvas`
 - `@cratis/components/CommandDialog`
 - `@cratis/components/CommandStepper`
 - `@cratis/components/CommandForm`

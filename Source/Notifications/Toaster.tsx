@@ -17,6 +17,7 @@ import {
     type ToastSeverity,
 } from './toast';
 
+/** Supported viewport positions for the global toast region. */
 export type ToasterPosition =
     | 'top-left'
     | 'top-center'
@@ -25,23 +26,39 @@ export type ToasterPosition =
     | 'bottom-center'
     | 'bottom-right';
 
+/** Stable part attributes for {@link Toaster}. */
 export interface ToasterPassThrough {
+    /** Accessible toast region. */
     region?: HTMLAttributes<HTMLDivElement>;
+    /** One toast article. */
     toast?: HTMLAttributes<HTMLElement>;
+    /** Severity/custom icon wrapper. */
     icon?: HTMLAttributes<HTMLSpanElement>;
+    /** Toast content wrapper. */
     content?: HTMLAttributes<HTMLDivElement>;
+    /** Toast title. */
     title?: HTMLAttributes<HTMLDivElement>;
+    /** Toast description. */
     description?: HTMLAttributes<HTMLDivElement>;
+    /** Dismiss button. */
     close?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Optional toast action button. */
     action?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
+/** Props for the global accessible toast region. */
 export interface ToasterProps {
+    /** Viewport position. */
     position?: ToasterPosition;
+    /** Maximum visible toast count. */
     limit?: number;
+    /** Default timeout in milliseconds. */
     timeout?: number;
+    /** Accessible label for dismiss buttons. */
     dismissAriaLabel?: string;
+    /** Accessible name for the toast region. */
     regionAriaLabel?: string;
+    /** Stable part attributes. */
     pt?: ToasterPassThrough;
 }
 

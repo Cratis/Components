@@ -116,15 +116,18 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     const [isBusy, setIsBusy] = useState(false);
 
     const handleConfirm = async () => {
-        if (onBeforeExecute) {
-            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-            setCommandValues(applied instanceof Promise ? await applied : applied);
-        }
-
         setIsBusy(true);
         let result: ICommandResult<TResponse>;
         try {
-            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
+            if (onBeforeExecute) {
+                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+                setCommandValues(applied instanceof Promise ? await applied : applied);
+            }
+            result = await (
+                commandInstance as unknown as {
+                    execute: () => Promise<ICommandResult<TResponse>>;
+                }
+            ).execute();
         } finally {
             setIsBusy(false);
         }

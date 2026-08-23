@@ -189,6 +189,7 @@ export const Chat: React.FC<ChatProps> = ({
                 <div className='chat-panel-header'>
                     <span className='chat-panel-title'>{resolvedTitle}</span>
                     <button
+                        type='button'
                         className='chat-panel-close'
                         onClick={onClose}
                         title={labels?.close ?? 'Close'}

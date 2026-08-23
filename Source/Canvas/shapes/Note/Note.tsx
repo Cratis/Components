@@ -3,6 +3,7 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { whenNoteFontReady } from './noteFont';
+import { FaPlus } from 'react-icons/fa6';
 
 const MIN_SIZE = 80;
 // How small the fitted text is allowed to get. Notes live on a canvas that zooms, so text too small to
@@ -14,18 +15,19 @@ const MAX_FONT_SIZE = 120;
 const PADDING = 12;
 const LINE_HEIGHT_RATIO = 1.4;
 
+/** Controlled data rendered by {@link Note}. */
 export interface NoteData {
-
+    /** Stable note identity. */
     id: string;
-
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
-
+    /** Note width. */
     width: number;
-
+    /** Note height. */
     height: number;
-
+    /** Editable note text. */
     text: string;
 }
 
@@ -101,10 +103,11 @@ const RESIZE_CURSORS: Record<HandleKey, string> = {
     s: 's-resize',   sw: 'sw-resize', w: 'w-resize',
 };
 
+/** Props for a fully controlled movable, resizable, editable Canvas note. */
 export interface NoteProps {
-
+    /** Current note data. */
     note: NoteData;
-
+    /** Whether selection handles are visible. */
     selected: boolean;
 
     /**
@@ -113,14 +116,15 @@ export interface NoteProps {
      */
     onSelect: (id: string, additive: boolean) => void;
 
+    /** Reports drag movement. */
     onMove: (id: string, x: number, y: number) => void;
-
+    /** Reports drag completion. */
     onMoveEnd?: (id: string) => void;
-
+    /** Reports resize movement and the resulting bounds. */
     onResize: (id: string, x: number, y: number, width: number, height: number) => void;
-
+    /** Reports resize completion. */
     onResizeEnd?: (id: string) => void;
-
+    /** Reports committed text edits. */
     onTextChange: (id: string, text: string) => void;
 
     /**
@@ -403,7 +407,7 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
                     onClick={handleExpand}
                     onPointerDown={event => event.stopPropagation()}
                 >
-                    <i className='pi pi-plus' />
+                    <FaPlus aria-hidden='true' />
                 </button>
             )}
 

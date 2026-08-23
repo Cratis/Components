@@ -83,7 +83,7 @@ const MyComponent = () => {
 - `contentStyle`: Custom content area style
 - `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle. Existing code that passes it keeps compiling; it simply has no effect.
 - `isValid`: Enables or disables confirm actions (defaults to `true`)
-- `isBusy`: When `true`, disables all buttons and shows a loading spinner on the primary action button
+- `isBusy`: When `true`, disables all buttons, blocks Escape/backdrop dismissal, and shows a loading spinner on the primary action button
 - `initialFocus`: Where keyboard focus lands when the dialog opens (see below)
 - `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels. Footer icons are decorative and hidden from accessibility APIs, so each button's accessible name is exactly its configured label
 - `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the

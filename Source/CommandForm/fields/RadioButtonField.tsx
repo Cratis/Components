@@ -8,10 +8,15 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface RadioParts {
+/** Stable part attributes for {@link RadioButtonField}. */
+export interface RadioParts {
+    /** Wrapping option label. */
     root?: HTMLAttributes<HTMLLabelElement>;
+    /** Native radio input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Visual radio box. */
     box?: HTMLAttributes<HTMLSpanElement>;
+    /** Visual selected indicator. */
     indicator?: HTMLAttributes<HTMLSpanElement>;
 }
 

@@ -8,10 +8,15 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface ToggleSwitchParts {
+/** Stable part attributes for {@link ToggleSwitchField}. */
+export interface ToggleSwitchParts {
+    /** Wrapping label. */
     root?: HTMLAttributes<HTMLLabelElement>;
+    /** Native checkbox with switch semantics. */
     input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Visual switch track. */
     control?: HTMLAttributes<HTMLSpanElement>;
+    /** Visual switch handle. */
     handle?: HTMLAttributes<HTMLSpanElement>;
 }
 

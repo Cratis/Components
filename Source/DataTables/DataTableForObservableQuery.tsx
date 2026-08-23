@@ -69,6 +69,12 @@ export interface DataTableForObservableQueryProps<
      */
     globalFilterFields?: string[] | undefined;
 
+    /** Placeholder for the loaded-page search input. */
+    globalSearchPlaceholder?: string;
+
+    /** Accessible name for the loaded-page search input. */
+    globalSearchAriaLabel?: string;
+
     /**
      * Default filters to use
      */

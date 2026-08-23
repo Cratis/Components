@@ -13,9 +13,13 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 
-interface PasswordParts {
+/** Stable part attributes for {@link PasswordField}. */
+export interface PasswordParts {
+    /** Field wrapper. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** Native password/text input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Visibility toggle button. */
     toggle?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 

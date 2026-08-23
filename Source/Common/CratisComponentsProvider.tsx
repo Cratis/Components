@@ -6,24 +6,39 @@ import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications';
 
+/** Localizable labels owned by the Cratis paginator. */
 export interface CratisPaginatorMessages {
+    /** Pagination navigation-region name. */
     navigation?: string;
+    /** First-page action label. */
     first?: string;
+    /** Previous-page action label. */
     previous?: string;
+    /** Next-page action label. */
     next?: string;
+    /** Last-page action label. */
     last?: string;
 }
 
+/** Localizable labels owned by the Cratis date picker composition. */
 export interface CratisDatePickerMessages {
+    /** Today action label. */
     today?: string;
+    /** Clear action label. */
     clear?: string;
+    /** Calendar-trigger label. */
     openCalendar?: string;
+    /** Previous-month action label. */
     previousMonth?: string;
+    /** Next-month action label. */
     nextMonth?: string;
 }
 
+/** Components-owned message groups. */
 export interface CratisComponentsMessages {
+    /** Paginator labels. */
     paginator?: CratisPaginatorMessages;
+    /** Date-picker labels. */
     datePicker?: CratisDatePickerMessages;
 }
 
@@ -55,12 +70,17 @@ export interface CratisComponentsConfig {
     [legacyRendererOption: string]: unknown;
 }
 
+/** Props for the application-root Components provider. */
 export interface CratisComponentsProviderProps {
+    /** Locale and Components-owned messages. */
     value?: CratisComponentsConfig;
+    /** Mounts the global toaster with defaults or explicit options. */
     toaster?: boolean | ToasterProps;
+    /** Application content. */
     children: ReactNode;
 }
 
+/** Default locale and English Components messages. */
 export const cratisDefaults: CratisComponentsConfig = {
     locale: 'en-US',
     messages: {
@@ -81,6 +101,7 @@ export const cratisDefaults: CratisComponentsConfig = {
     },
 };
 
+/** Deep-merges consumer configuration over {@link cratisDefaults}. */
 export const mergeCratisComponentsConfig = (
     value: CratisComponentsConfig | undefined,
 ): CratisComponentsConfig => merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;

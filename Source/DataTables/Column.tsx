@@ -6,6 +6,7 @@ import type {
     ColumnFilterDataType,
     ColumnFilterElement,
     ColumnFilterMenuLabels,
+    ColumnFilterMenuParts,
 } from './ColumnFilterMenu';
 
 /**
@@ -36,6 +37,8 @@ export interface ColumnProps<TData = unknown> {
     filterElement?: ColumnFilterElement;
     /** Overrides the column filter menu's default English labels. */
     filterLabels?: Partial<ColumnFilterMenuLabels>;
+    /** Stable part attributes for this column's filter popup. */
+    filterPt?: ColumnFilterMenuParts;
     /**
      * Renders a selection control column (a radio for `single`, a checkbox for
      * `multiple`) instead of a data column.

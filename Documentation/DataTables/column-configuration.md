@@ -42,6 +42,7 @@ Set `filter` and optionally:
 - `dataType`: `text`, `numeric`, `date`, or `boolean`
 - `showFilterMatchModes`
 - `filterLabels`
+- `filterPt`
 - `filterElement`
 
 ```tsx
@@ -55,11 +56,16 @@ Set `filter` and optionally:
         apply: 'Use filter',
         true: 'Active',
         false: 'Inactive',
+        matchModeAriaLabel: 'Comparison',
+        valueAriaLabel: (field) => `Value for ${field}`,
+        matchModeLabel: (_mode, defaultLabel) => defaultLabel,
     }}
 />
 ```
 
 A custom editor receives the draft value/mode and `onChange`, `onApply`, and `onClear` callbacks. Applying updates the table's `DataTableFilterMeta`; clearing removes the constraint.
+
+`filterPt` exposes `trigger`, `popover`, `menu`, `matchMode`, `input`, `actions`, `clear`, and `apply`. These are Cratis-owned parts; the popup/menu/actions also render `data-cratis-part='filter-popover'`, `filter-menu`, and `filter-actions`.
 
 Filtering affects the loaded page. For complete-result filtering, send the filter model as query arguments and filter before server paging.
 

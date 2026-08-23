@@ -6,7 +6,6 @@ import React, {
     useMemo,
     useState,
     type ButtonHTMLAttributes,
-    type CSSProperties,
     type HTMLAttributes,
 } from 'react';
 import { Button } from '../Common/Button';
@@ -46,14 +45,23 @@ export type StepperHeaderPosition = 'top' | 'bottom';
  * content, and header position are implemented over stable Cratis parts.
  */
 export interface StepperParts {
+    /** Stepper composition root. */
     root?: HTMLAttributes<HTMLDivElement>;
+    /** Ordered step-header list. */
     list?: HTMLAttributes<HTMLOListElement>;
+    /** One step list item and its state attributes. */
     step?: HTMLAttributes<HTMLLIElement>;
+    /** Interactive step-header button. */
     header?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Step number/status indicator. */
     number?: HTMLAttributes<HTMLSpanElement>;
+    /** Step title. */
     title?: HTMLAttributes<HTMLSpanElement>;
+    /** Visual separator between steps. */
     separator?: HTMLAttributes<HTMLSpanElement>;
+    /** Panels wrapper. */
     panels?: HTMLAttributes<HTMLDivElement>;
+    /** Active step panel. */
     panel?: HTMLAttributes<HTMLElement>;
 }
 
@@ -266,19 +274,6 @@ export const CommandStepperContent = ({
     const isCurrentStepInvalid = stepErrors[currentStep] ?? false;
     const hasAnyStepErrors = stepErrors.some((hasError) => hasError);
 
-    // The per-step number indicator paints red when a visited step still has a
-    // field error and green once a step has been visited without errors — a
-    // traffic-light status marker that is intentionally theme-independent, so
-    // the literal color names are appropriate here (and let specs assert on the
-    // computed background reliably).
-    const numberStyle = (index: number): CSSProperties | undefined => {
-        const hasError = stepErrors[index] ?? false;
-        const isVisited = visitedSteps.has(index);
-        const backgroundColor = hasError ? 'red' : isVisited ? 'green' : undefined;
-        if (!backgroundColor) return undefined;
-        return { backgroundColor, color: 'var(--cratis-primary-color-text)' };
-    };
-
     const handleStepChange = (index: number) => {
         onChangeStep?.({ index });
 
@@ -350,7 +345,7 @@ export const CommandStepperContent = ({
                             ]
                                 .filter(Boolean)
                                 .join(' ')}
-                            style={{ ...pt?.number?.style, ...numberStyle(index) }}
+                            style={pt?.number?.style}
                             data-cratis-part='number'
                             data-part='number'
                         >
