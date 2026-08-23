@@ -9,9 +9,7 @@ import { describe, it } from 'vitest';
 const theme = readFileSync(new URL('../theme.css', import.meta.url), 'utf8');
 const selectors = postcss
     .parse(theme)
-    .nodes.flatMap((node) =>
-        node.type === 'rule' ? node.selectors : [],
-    );
+    .nodes.flatMap((node) => (node.type === 'rule' ? node.selectors : []));
 
 describe('when resolving explicit baseline color schemes', () => {
     it('should_allow_an_explicit_light_root_to_override_system_dark', () => {
