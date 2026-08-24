@@ -54,6 +54,8 @@ The reusable cross-framework seam today is Arc's generated query/transport contr
 
 PrimeReact 11 has a capable layered architecture, but PrimeUI's consumer contract is unsuitable as an invisible mandatory dependency of a general Cratis framework.
 
+Two facts about that contract are directly verifiable. First, PrimeReact 11 enforces licensing at runtime: `PrimeReactProvider` verifies a PrimeUI license key when it mounts, with no condition on unstyled rendering, on the applied theme, or on the build environment — verified against the published `@primereact/core` 11.1.0 artifact. Without a valid key the application logs a warning and shows a fixed _"Invalid PrimeUI License"_ banner, in development and production. Verification is offline — a signature check against an embedded public key, with no telemetry. Second, the upstream `primefaces/primereact` repository is archived; PrimeReact development continues under the commercial PrimeUI model, and only the pre-11 MIT versions remain MIT. A mandatory dependency with runtime license enforcement and no open-source development line cannot sit invisibly underneath every Cratis application.
+
 The [PrimeUI Community License](https://primeui.dev/licenses/community) says developers building on an internal wrapper or design system still need seats. Eligibility excludes organizations by revenue, team size, funding, or public-sector status. The [OEM guidance](https://primeui.dev/licenses/oem) identifies frameworks and SDKs used for third-party development as potential OEM uses while not clarifying peer-only open-source wrappers.
 
 No `@cratis/components.primereact` package is published. Such a package is only a conditional future option and requires written PrimeTek confirmation first. Consumers that need the old implementation remain on the Components 3 release line while migrating.
@@ -72,7 +74,7 @@ The transition was deliberately split:
 
 1. Components 3 received a source-compatible stabilization release with accessibility, localization, filtering, notification, and paging fixes while retaining explicit PrimeUI requirements.
 2. Components 4 changes the default foundation, removes Prime runtime/declaration references, and introduces Cratis-owned provider and styling contracts.
-3. Components 3 remains the temporary compatibility line for applications that cannot migrate atomically.
+3. Components 3 remains the temporary compatibility line for applications that cannot migrate atomically, receiving security and critical defect fixes but no new features or foundation work.
 
 The stabilization specs are the behavior parity contract for Components 4.
 

@@ -236,8 +236,12 @@ What the styling choice changes is whether you additionally depend on `@primerea
 
 ### Which license you need
 
-- **[Community License](https://primeui.dev/licenses/community)** — free, and covers individuals, students, non-profits and non-commercial open source. For an organization it requires _all_ of: under $1M USD annual gross revenue, fewer than 5 developers, fewer than 10 employees, and under $3M USD in outside funding. Supports up to 4 developers, renewed annually by confirming eligibility.
-- **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else. Per developer, perpetual, one year of updates.
+Keys are issued through a [PrimeUI account](https://primeui.dev/), for both tiers:
+
+- **[Community License](https://primeui.dev/licenses/community)** — free, and covers individuals, students, non-profits and non-commercial open source. For an organization it requires _all_ of: under $1M USD annual gross revenue, fewer than 5 developers, fewer than 10 employees, and under $3M USD in outside funding. Supports up to 4 developers, renewed annually by confirming eligibility. A Community key carries an expiry; after it passes there is a 30-day grace period (a console warning, no banner), then the banner returns until the key is renewed.
+- **[Commercial License](https://primeui.dev/licenses/commercial)** — for everyone else. Per developer, perpetual, one year of updates. The key is checked against the release date of the installed version, so a key stays valid forever for the versions its updates window covers — installing a version released after the window requires renewal, downgrading does not.
+
+Verification happens entirely offline — an Ed25519 signature check against a public key embedded in the package, with no telemetry and no remote connection. Worth knowing for a compliance review: supplying a key sends nothing anywhere.
 
 ### If you redistribute
 

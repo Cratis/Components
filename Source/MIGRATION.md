@@ -6,6 +6,10 @@ This is intentionally a major release. Component behavior remains familiar, but 
 
 :::note
 Components 3 remains the compatibility line for an application that cannot migrate yet. A separate PrimeReact compatibility package will not be published unless PrimeTek confirms the applicable OEM and redistribution terms in writing.
+
+**What staying on Components 3 means.** Components 3 keeps PrimeReact 11 as a peer dependency, and PrimeReact 11 verifies a PrimeUI license key when its provider mounts — on every styling path, including unstyled and the MIT Cratis baseline theme, in development and production. Without a valid key the application shows a fixed _"Invalid PrimeUI License"_ banner. The free Community key is eligibility-limited and must be renewed annually; an expired Community key has a 30-day grace period before the banner returns. See [the Components 2 to 3 guide's licensing section](https://github.com/Cratis/Components/blob/main/Documentation/migration-from-2.md#licensing) for the full terms.
+
+Components 3 receives security and critical defect fixes as the migration compatibility line; it receives no new features or foundation work. Plan the move to Components 4 rather than treating Components 3 as a steady state.
 :::
 
 ## Update dependencies
