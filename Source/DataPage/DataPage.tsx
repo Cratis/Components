@@ -494,7 +494,7 @@ const DataPage = <
         TDataType | null | undefined
     >(props.selection);
     const selectedItem =
-        props.selection !== undefined ? props.selection : internalSelection;
+        props.selection === undefined ? internalSelection : props.selection;
 
     const selectionChanged = (event: DataTableSelectionChangeEvent<TDataType>) => {
         if (props.selection === undefined) setInternalSelection(event.value);
