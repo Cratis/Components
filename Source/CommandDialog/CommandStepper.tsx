@@ -1,11 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, {
-    useState,
-    type ButtonHTMLAttributes,
-    type HTMLAttributes,
-} from 'react';
+import React, { useState, type ButtonHTMLAttributes, type HTMLAttributes } from 'react';
 import type { ICommandResult } from '@cratis/arc/commands';
 import {
     CommandForm,
