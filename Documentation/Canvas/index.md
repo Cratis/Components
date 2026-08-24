@@ -101,25 +101,25 @@ const handleReady = (handle: CanvasHandle) => {
 
 ### Product capture/compositor integration
 
-Components does not know Studio's Liquid Glass attribute vocabulary. A product opts into its own markers explicitly:
+Components does not know a product compositor's attribute vocabulary. A product opts into its own markers explicitly:
 
 ```tsx
 import { Canvas, type CanvasCaptureAttributes } from '@cratis/components/Canvas';
-import LiquidGlassSurface from './LiquidGlassSurface'; // product-owned surface
+import { ProductCompositorSurface } from './ProductCompositorSurface';
 
 const captureAttributes: CanvasCaptureAttributes = {
-    layer: 'data-liquid-glass-layer',
-    content: 'data-liquid-glass-content',
-    transformHost: 'data-liquid-glass-transform-host',
+    layer: 'data-product-compositor-layer',
+    content: 'data-product-compositor-content',
+    transformHost: 'data-product-compositor-transform-host',
 };
 
 <Canvas
     captureAttributes={captureAttributes}
-    controlsGlassSurface={<LiquidGlassSurface cornerRadius={999} />}
+    controlsGlassSurface={<ProductCompositorSurface cornerRadius={999} />}
 />;
 ```
 
-`layer` marks the Pixi canvas, `content` marks non-plain integrated controls, and `transformHost` marks both pan/zoom hosts. Omit the prop when the product has no capture pipeline. This keeps provider-specific names and update ownership outside Components.
+`layer` marks the Pixi canvas, `content` marks non-plain integrated controls, and `transformHost` marks both pan/zoom hosts. Omit the prop when the product has no capture pipeline. This keeps product-specific names and update ownership outside Components.
 
 ## Overlays and SSR
 

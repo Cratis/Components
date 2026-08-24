@@ -32,8 +32,7 @@ export interface ChatMessage {
 
     /**
      * Set when the turn carried the work out rather than only describing it — the agent was asked to
-     * change something and went and changed it. Such a message needs no offer to hand it to Studio: it
-     * already is the action.
+     * change something and went and changed it. Such a message needs no additional action offer.
      */
     didAct?: boolean;
 

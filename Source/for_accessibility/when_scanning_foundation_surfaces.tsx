@@ -47,7 +47,7 @@ describe('when scanning representative foundation surfaces', () => {
                             onChange={() => undefined}
                         />
                         <DataTableCore
-                            data={[{ id: 1, name: 'Ada' }]}
+                            data={[{ id: 1, name: 'Morgan' }]}
                             dataKey='id'
                             emptyMessage='No people'
                         >

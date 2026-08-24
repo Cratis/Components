@@ -17,7 +17,7 @@ export interface SelfSuspendingFrameLoop {
 }
 
 // An animation-frame loop that runs only while its step reports motion left to follow, instead of
-// burning a callback every frame forever (the board-page idle drain of StudioIssues#200). The step
+// burning a callback every frame forever on an idle canvas. The step
 // runs once per frame and returns whether another frame is needed; when it returns false the loop
 // suspends until the next wake(). The scheduler is injectable so the suspension logic can be
 // specified without a browser.

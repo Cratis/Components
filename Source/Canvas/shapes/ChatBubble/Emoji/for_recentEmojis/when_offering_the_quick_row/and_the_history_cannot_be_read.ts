@@ -10,11 +10,11 @@ describe('when offering the quick row and the history cannot be read', () => {
 
     beforeEach(() => {
         const rubbish = new a_memory();
-        rubbish.stored['studio.chat.recent-emojis'] = 'not json at all';
+        rubbish.stored['cratis.components.canvas.chat.recent-emojis'] = 'not json at all';
         fromRubbish = recentEmojis(rubbish);
 
         const wrongShape = new a_memory();
-        wrongShape.stored['studio.chat.recent-emojis'] = '{"an":"object"}';
+        wrongShape.stored['cratis.components.canvas.chat.recent-emojis'] = '{"an":"object"}';
         fromTheWrongShape = recentEmojis(wrongShape);
     });
 

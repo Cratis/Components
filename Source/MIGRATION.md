@@ -222,17 +222,17 @@ For an existing nested Prime stepper preset, map the slots by rendered responsib
 
 The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item layout on `step`, and interactive-header styling on `header`. Replace `data-p-active` selectors with `[data-cratis-part='step'][data-active='true']`.
 
-### Representative downstream migrations
+### Representative migration archetypes
 
-For an Ada-style design system, remove `styledMode`, `AdaPreset`, Prime locale types, and the PrimeUI license from the Components provider. Keep `--ada-*` as the canonical tokens and map them directly to `--cratis-*`. If the product still imports Prime directly, retain a separate Prime provider, preset, dependencies, and license until those imports are removed. Migrate Ada's role filter from `registerMatcher` to `registerDataTableFilterMatcher` and use the returned `matchMode` in its constraint.
+For a product-owned design system, remove `styledMode`, `ProductPreset`, Prime locale types, and the PrimeUI license from the Components provider. Keep `--product-*` as the canonical tokens and map them directly to `--cratis-*`. If the product still imports Prime directly, retain a separate Prime provider, preset, dependencies, and license until those imports are removed. Migrate custom filters from `registerMatcher` to `registerDataTableFilterMatcher` and use the returned `matchMode` in each constraint.
 
-A Components 2 / PrimeReact 10 product such as Stagehand can migrate directly to Components 4 without an intermediate Prime 11 conversion. Keep its Prime 10 provider/theme for direct Prime surfaces, mount Components independently, move `DataPage` children to the Cratis `Column`, and migrate direct controls in batches.
+A Components 2 / PrimeReact 10 product can migrate directly to Components 4 without an intermediate Prime 11 conversion. Keep its Prime 10 provider/theme for direct Prime surfaces, mount Components independently, move `DataPage` children to the Cratis `Column`, and migrate direct controls in batches.
 
-A Components 3 / PrimeReact 11 product such as Chronicle Workbench can start with the Components baseline theme while keeping a separate licensed Prime provider. Retain application-owned grouped/lazy tables and ordinary action rows when Components does not claim those behaviors.
+A Components 3 / PrimeReact 11 product can start with the Components baseline theme while keeping a separate licensed Prime provider. Retain application-owned grouped/lazy tables and ordinary action rows when Components does not claim those behaviors.
 
-For Studio Liquid Glass, replace renderer part types with `DialogParts`, `StepperParts`, and the complete Toolbar part family: `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. Keep Studio's shaders and measurement wrappers product-owned. Measure stable `data-cratis-part` and state boundaries; pass the integrated Canvas surface through `controlsGlassSurface`; pass Studio's layer/content/transform-host marker names through `captureAttributes`; and localize actions through `controlsLabels`.
+For a product-owned compositor, replace renderer part types with `DialogParts`, `StepperParts`, and the complete Toolbar part family: `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. Keep shaders and measurement wrappers product-owned. Measure stable `data-cratis-part` and state boundaries; pass the integrated Canvas surface through `controlsGlassSurface`; pass `data-product-compositor-*` marker names through `captureAttributes`; and localize actions through `controlsLabels`.
 
-The published migration guide contains the complete Ada, Stagehand, Workbench, and Studio mappings and stop conditions.
+The published migration guide contains the complete mappings and stop conditions for each archetype.
 
 Paginator callbacks that formerly returned classes from renderer context must become static Cratis parts plus CSS state selectors:
 

@@ -13,7 +13,7 @@
        user-select: text explicitly), but the canvas as a whole must never let a drag start a native
        text/element selection instead of a move or resize — a freshly created item can be dragged
        before its own CSS has had a chance to matter to a gesture that started a pixel outside its
-       still-settling bounds, and the resulting native selection is what StudioIssues#227 reports. */
+       still-settling bounds, which would otherwise start a native selection. */
     -webkit-user-select: none;
     user-select: none;
 }
@@ -24,8 +24,8 @@
     display: inline-flex;
 }
 
-/* Fallback for large boards where the LiquidGlass capture is too expensive: a frosted pill using the
-   GPU-composited backdrop-filter instead of an html2canvas re-rasterization every frame. */
+/* Fallback for large boards where a full-scene compositor capture is too expensive: a frosted pill
+   using the GPU-composited backdrop-filter instead of re-rasterizing every interaction frame. */
 .canvas-controls-glass--plain {
     background: color-mix(in srgb, var(--cratis-surface-card) 78%, transparent);
     backdrop-filter: blur(12px);

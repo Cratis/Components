@@ -51,8 +51,8 @@ export interface FailedReplyProps {
 
     /**
      * Builds the href for a "report this" link from the failure's details. Omit to hide the report
-     * action entirely — this library has no issue tracker of its own to link, so a host that has one
-     * (Studio links a pre-filled GitHub issue) opts in by passing this.
+     * action entirely — this library has no issue tracker of its own to link, so a host opts in by
+     * passing its own report URL builder.
      */
     buildReportUrl?: (details: FailedReplyReportDetails) => string;
 

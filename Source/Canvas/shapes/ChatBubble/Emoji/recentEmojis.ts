@@ -12,7 +12,7 @@ export const DEFAULT_EMOJIS: readonly string[] = ['👍', '❤️', '😂', '�
 /** How many the quick row holds; past this the least recently used drops off the end. */
 export const QUICK_ROW_SIZE = 6;
 
-const STORAGE_KEY = 'studio.chat.recent-emojis';
+const STORAGE_KEY = 'cratis.components.canvas.chat.recent-emojis';
 
 /**
  * The emojis to offer in the quick row: the ones this person reached for most recently, newest first,

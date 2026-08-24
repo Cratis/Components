@@ -220,7 +220,7 @@ export const Projects = () => {
 
 ## Browser verification (optional)
 
-If the workspace has `workbench.browser.enableChatTools` enabled, use the agentic browser tools to verify the UI after implementation:
+If agentic browser tools are available in the workspace, use them to verify the UI after implementation:
 
 1. Open the app page in the integrated browser.
 2. Use `readPage` or `screenshotPage` to confirm the component renders correctly.

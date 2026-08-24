@@ -27,7 +27,7 @@ describe('when selecting by object reference', () => {
         container = document.createElement('div');
         document.body.append(container);
         root = createRoot(container);
-        await render([selected, { name: 'Ada' }], selected);
+        await render([selected, { name: 'Morgan' }], selected);
     });
 
     afterEach(async () => {

@@ -64,11 +64,10 @@ export interface CanvasControlsProps {
     labels?: CanvasControlsLabels;
 
     /**
-     * Renders a glass/acrylic surface behind the control bar, in the same spot a consumer's own
-     * `<LiquidGlassSurface cornerRadius={999} />` (from `@cratis/liquid-glass`, a Studio-only package
-     * this library cannot depend on) used to occupy. When omitted, nothing is rendered there and the
-     * CSS-only `.canvas-controls-glass` / `.canvas-controls-glass--plain` styling still applies -
-     * a plain, GPU-composited backdrop-filter pill. Ignored when `disableGlass` is set.
+     * Renders a product-owned glass/acrylic surface behind the control bar. When omitted, nothing is
+     * rendered there and the CSS-only `.canvas-controls-glass` / `.canvas-controls-glass--plain`
+     * styling still applies: a plain, GPU-composited backdrop-filter pill. Ignored when
+     * `disableGlass` is set.
      */
     glassSurface?: React.ReactNode;
 
@@ -78,8 +77,8 @@ export interface CanvasControlsProps {
     /**
      * Disables the glass surface behind the control bar, falling back to a CSS backdrop-filter pill:
      * `glassSurface` is not rendered, and the product content marker is not set. A full-scene glass
-     * capture (like LiquidGlass's) re-rasterizes the content behind it on every interaction frame; on a
-     * very large canvas that costs hundreds of ms and stalls pan/zoom, so large boards opt out.
+     * capture can re-rasterize the content behind it on every interaction frame; on a very large
+     * canvas that costs hundreds of ms and stalls pan/zoom, so large boards opt out.
      */
     disableGlass?: boolean;
 }

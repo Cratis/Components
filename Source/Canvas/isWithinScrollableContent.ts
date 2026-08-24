@@ -25,8 +25,8 @@ export function hasScrollableOverflow(metrics: ScrollableMetrics): boolean {
 
 // A wheel/trackpad gesture that lands inside a scrollable overlay — a chat's message list, a properties
 // panel, anything with its own `overflow-y: auto` — must scroll that content natively instead of being
-// captured as a canvas pan (StudioIssues#229). Walking up from the event target toward the canvas
-// container, the first ancestor whose own content actually overflows its box claims the gesture; the
+// captured as a canvas pan. Walking up from the event target toward the canvas container, the first
+// ancestor whose own content actually overflows its box claims the gesture; the
 // search stops at the container itself, so gestures over the bare board are never affected.
 export function isWithinScrollableContent(target: EventTarget | null, container: HTMLElement | null): boolean {
     let element = target instanceof Node ? (target instanceof HTMLElement ? target : target.parentElement) : null;

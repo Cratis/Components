@@ -84,7 +84,7 @@ Components 4 deliberately does not pretend every adjacent problem is solved by t
 - [#159](https://github.com/Cratis/Components/issues/159) remains open for explicit complete-result filtering and sorting through server query arguments before paging. The deprecated `clientFiltering` compatibility prop is not that solution.
 - [#173](https://github.com/Cratis/Components/issues/173) tracks a package-export-driven audit and TSDoc/API-reference coverage. Existing root namespaces are intentionally retained for Components 4 consumer compatibility; any future export removal requires explicit consumer evidence and an appropriate major boundary.
 - [#174](https://github.com/Cratis/Components/issues/174) tracks typed provider messages for the remaining Components-owned labels.
-- [#175](https://github.com/Cratis/Components/issues/175) tracks a locale-aware number input so Ada can eventually remove its final specialized Prime input without losing number UX.
+- [#175](https://github.com/Cratis/Components/issues/175) tracks a locale-aware number input so products can remove specialized Prime inputs without losing number UX.
 
 These are follow-up contracts, not undocumented work required to use the Components 4 foundation.
 

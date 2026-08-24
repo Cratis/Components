@@ -225,14 +225,14 @@ For an existing nested Prime stepper preset, map the slots by rendered responsib
 
 The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item layout on `step`, and interactive-header styling on `header`. Replace `data-p-active` selectors with `[data-cratis-part='step'][data-active='true']`.
 
-### Ada-style preset migration
+### Product-owned preset migration
 
-Ada is the representative migration for a product that previously supplied `styledMode({ preset: AdaPreset })`, Prime locale types, a PrimeUI license, and a legacy token bridge:
+Consider a product that previously supplied `styledMode({ preset: ProductPreset })`, Prime locale types, a PrimeUI license, and a legacy token bridge:
 
-1. Remove `styledMode`, `AdaPreset`, and the license from the **Components provider**. If Ada still renders Prime directly, keep its Prime provider, preset, dependencies, and license beside Components until those direct imports are removed.
+1. Remove `styledMode`, `ProductPreset`, and the license from the **Components provider**. If the product still renders Prime directly, keep its Prime provider, preset, dependencies, and license beside Components until those direct imports are removed.
 2. Replace `LocaleProps['locales']` with product-owned message input and map only Components labels into `CratisComponentsMessages`.
-3. Keep `--ada-*` as the canonical design tokens. Replace the `--p-*` and `--surface-*` bridge with direct `--cratis-*` assignments.
-4. Keep Ada's `data-theme` selector and map both light and dark values there; Components does not own Ada's theme lifecycle.
+3. Keep `--product-*` as the canonical design tokens. Replace the `--p-*` and `--surface-*` bridge with direct `--cratis-*` assignments.
+4. Keep the product's theme selector and map both light and dark values there; Components does not own the product's theme lifecycle.
 
 ```tsx
 import type { ReactNode } from 'react';
@@ -241,145 +241,147 @@ import {
     type CratisComponentsMessages,
 } from '@cratis/components/Common';
 
-interface AdaComponentsProviderProps {
+interface ProductComponentsProviderProps {
     children: ReactNode;
     locale?: string;
     messages?: CratisComponentsMessages;
 }
 
-export const AdaComponentsProvider = ({
+export const ProductComponentsProvider = ({
     children,
     locale = 'en-US',
     messages,
-}: AdaComponentsProviderProps) => (
+}: ProductComponentsProviderProps) => (
     <CratisComponentsProvider value={{ locale, messages }} toaster>
         {children}
     </CratisComponentsProvider>
 );
 ```
 
-Import Components structure but omit its optional theme, then load Ada's mapping:
+Import Components structure but omit its optional theme, then load the product mapping:
 
 ```ts
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
-import './ada-components.css';
+import './product-components.css';
 ```
 
 ```css
 :root {
-    --cratis-surface-0: var(--ada-surface);
-    --cratis-surface-100: var(--ada-subtle);
-    --cratis-surface-ground: var(--ada-canvas);
-    --cratis-surface-section: var(--ada-subtle);
-    --cratis-surface-card: var(--ada-surface);
-    --cratis-surface-overlay: var(--ada-surface);
-    --cratis-surface-hover: var(--ada-subtle);
-    --cratis-surface-border: var(--ada-border-default);
-    --cratis-control-background: var(--ada-surface);
-    --cratis-control-border: var(--ada-border-default);
+    --cratis-surface-0: var(--product-surface);
+    --cratis-surface-100: var(--product-subtle);
+    --cratis-surface-ground: var(--product-canvas);
+    --cratis-surface-section: var(--product-subtle);
+    --cratis-surface-card: var(--product-surface);
+    --cratis-surface-overlay: var(--product-surface);
+    --cratis-surface-hover: var(--product-subtle);
+    --cratis-surface-border: var(--product-border-default);
+    --cratis-control-background: var(--product-surface);
+    --cratis-control-border: var(--product-border-default);
 
-    --cratis-text-color: var(--ada-text-primary);
-    --cratis-text-color-secondary: var(--ada-text-secondary);
+    --cratis-text-color: var(--product-text-primary);
+    --cratis-text-color-secondary: var(--product-text-secondary);
 
-    --cratis-primary-color: var(--ada-accent-700);
-    --cratis-primary-color-text: var(--ada-text-inverse);
-    --cratis-primary-300: var(--ada-accent-300);
-    --cratis-primary-400: var(--ada-accent-400);
-    --cratis-primary-500: var(--ada-accent-500);
-    --cratis-primary-600: var(--ada-accent-600);
-    --cratis-action-background: var(--ada-accent-500);
-    --cratis-action-background-hover: var(--ada-accent-600);
-    --cratis-action-background-active: var(--ada-accent-700);
-    --cratis-action-text: var(--ada-text-inverse);
+    --cratis-primary-color: var(--product-accent-700);
+    --cratis-primary-color-text: var(--product-text-inverse);
+    --cratis-primary-300: var(--product-accent-300);
+    --cratis-primary-400: var(--product-accent-400);
+    --cratis-primary-500: var(--product-accent-500);
+    --cratis-primary-600: var(--product-accent-600);
+    --cratis-action-background: var(--product-accent-500);
+    --cratis-action-background-hover: var(--product-accent-600);
+    --cratis-action-background-active: var(--product-accent-700);
+    --cratis-action-text: var(--product-text-inverse);
 
-    --cratis-highlight-bg: var(--ada-accent-50);
-    --cratis-highlight-text-color: var(--ada-accent-700);
-    --cratis-green-500: var(--ada-success-fg);
-    --cratis-orange-500: var(--ada-warning-fg);
-    --cratis-red-500: var(--ada-error-fg);
-    --cratis-info-background: var(--ada-info-fg);
-    --cratis-info-text: var(--ada-text-inverse);
-    --cratis-success-background: var(--ada-success-fg);
-    --cratis-success-text: var(--ada-text-inverse);
-    --cratis-warning-background: var(--ada-warning-fg);
-    --cratis-warning-text: var(--ada-text-inverse);
-    --cratis-danger-background: var(--ada-error-fg);
-    --cratis-danger-text: var(--ada-text-inverse);
-    --cratis-control-height: var(--ada-control-min-size);
-    --cratis-control-height-small: var(--ada-control-min-size);
-    --cratis-control-height-large: var(--ada-control-min-size);
+    --cratis-highlight-bg: var(--product-accent-50);
+    --cratis-highlight-text-color: var(--product-accent-700);
+    --cratis-green-500: var(--product-success-fg);
+    --cratis-orange-500: var(--product-warning-fg);
+    --cratis-red-500: var(--product-error-fg);
+    --cratis-info-background: var(--product-info-fg);
+    --cratis-info-text: var(--product-text-inverse);
+    --cratis-success-background: var(--product-success-fg);
+    --cratis-success-text: var(--product-text-inverse);
+    --cratis-warning-background: var(--product-warning-fg);
+    --cratis-warning-text: var(--product-text-inverse);
+    --cratis-danger-background: var(--product-error-fg);
+    --cratis-danger-text: var(--product-text-inverse);
+    --cratis-control-height: var(--product-control-min-size);
+    --cratis-control-height-small: var(--product-control-min-size);
+    --cratis-control-height-large: var(--product-control-min-size);
     --cratis-border-radius: 6px;
-    --cratis-focus-ring: var(--ada-ring-focus);
-    --cratis-maskbg: var(--ada-scrim);
-    --cratis-shadow-subtle: var(--ada-shadow-sm);
-    --cratis-shadow-overlay: var(--ada-shadow-md);
-    --cratis-shadow-dialog: var(--ada-shadow-xl);
-    --cratis-shadow-toast: var(--ada-shadow-md);
+    --cratis-focus-ring: var(--product-ring-focus);
+    --cratis-maskbg: var(--product-scrim);
+    --cratis-shadow-subtle: var(--product-shadow-sm);
+    --cratis-shadow-overlay: var(--product-shadow-md);
+    --cratis-shadow-dialog: var(--product-shadow-xl);
+    --cratis-shadow-toast: var(--product-shadow-md);
 }
 ```
 
-Because these assignments reference Ada tokens, Ada's existing dark, enhanced-contrast, control-size, status, and accessibility selectors flow through without duplicating the mapping. Ada continues to own typography, spacing, motion, elevation, and product-specific component treatments.
+Because these assignments reference product tokens, existing dark, enhanced-contrast, control-size, status, and accessibility selectors flow through without duplicating the mapping. The product continues to own typography, spacing, motion, elevation, and component-specific treatments.
 
-If Core still uses Prime's locale-aware `InputNumber`, keep it as an explicitly bounded Prime island. Mount the Prime provider independently around that remaining surface and retain its installed-version theme/license requirements; do not put renderer keys back into `CratisComponentsProvider`. Lobby can remove Prime as soon as it has no direct Prime imports. Remove the separate Prime provider only when number grouping, decimal handling, fraction digits, prefix/suffix, min/max, and command binding have an accepted renderer-independent replacement.
+If one product area still uses Prime's locale-aware `InputNumber`, keep it as an explicitly bounded Prime island. Mount the Prime provider independently around that remaining surface and retain its installed-version theme/license requirements; do not put renderer keys back into `CratisComponentsProvider`. Other areas can remove Prime as soon as they have no direct Prime imports. Remove the separate Prime provider only when number grouping, decimal handling, fraction digits, prefix/suffix, min/max, and command binding have an accepted renderer-independent replacement.
 
-This preserves Ada's token and theme ownership while removing the circular Ada → Prime preset → Prime variables → Cratis translation.
+This preserves product token and theme ownership while removing the circular product → Prime preset → Prime variables → Cratis translation.
 
-Ada's custom role filter must migrate in the same change: replace its Prime `FilterMatchMode` import with `DataTableFilterMatchMode`, replace `registerMatcher` with `registerDataTableFilterMatcher`, and store the returned `matchMode` in the role constraint. Built-in mode strings remain behaviorally compatible, but using the Cratis constants removes the renderer type dependency; custom registration never crosses registries automatically.
+Custom filters must migrate in the same change: replace the Prime `FilterMatchMode` import with `DataTableFilterMatchMode`, replace `registerMatcher` with `registerDataTableFilterMatcher`, and store the returned `matchMode` in the corresponding constraint. Built-in mode strings remain behaviorally compatible, but using the Cratis constants removes the renderer type dependency; custom registration never crosses registries automatically.
 
-### Stagehand: migrate directly from Components 2
+### Migrate directly from Components 2
 
 A PrimeReact 10 application does not need to adopt Components 3/PrimeReact 11 before moving to Components 4. Migrate the two boundaries independently:
 
 1. Keep the existing Prime 10 provider and Lara/product theme while direct Prime controls remain.
 2. Mount `CratisComponentsProvider` separately and import `tokens` plus `styles`.
-3. Map Stagehand's product palette directly to `--cratis-*`; omit the baseline `theme` when product CSS owns the appearance.
+3. Map the product palette directly to `--cratis-*`; omit the baseline `theme` when product CSS owns the appearance.
 4. Use the Cratis `Column` marker inside `DataPage`. Alias and retain Prime `Column` only for grouped/expandable direct Prime tables.
 5. Replace low-risk direct Button, Tag, Badge, Avatar, Message, Progress, Dropdown, Dialog, and Toast surfaces in batches.
 6. Retain Prime or build product primitives for tabs, sidebars, timelines, select-button groups, menubars, and advanced tables until their requirements have an intentional replacement.
 7. Retain PrimeIcons while class strings remain; move to React icons/product SVGs separately.
 
-This avoids an unnecessary intermediate Prime 11 migration and does not imply that Components configures Stagehand's remaining Prime 10 surfaces.
+This avoids an unnecessary intermediate Prime 11 migration and does not imply that Components configures the remaining Prime 10 surfaces.
 
-### Chronicle Workbench: baseline-first coexistence
+### Baseline-first coexistence with PrimeReact 11
 
-Workbench can adopt Components 4 while retaining Prime 11 directly:
+A Components 3 / PrimeReact 11 application can adopt Components 4 while retaining Prime 11 directly:
 
 1. Mount Components and Prime providers independently. Keep Prime dependencies, theme, and license for direct Prime controls.
 2. Remove `styledMode()` and `@cratis/components/primereact-v10-palette` from the Components side.
 3. Start with `tokens`, `styles`, and `theme` plus `cratis-dark` for the maintained baseline dark appearance.
-4. Keep temporary legacy `--surface-*` aliases in Workbench-owned CSS while direct Prime and old product styles remain; migrate those references to `--cratis-*` over time.
-5. Replace simple Workbench-owned Prime wrappers where Components or native composition has parity.
+4. Keep temporary legacy `--surface-*` aliases in product-owned CSS while direct Prime and old product styles remain; migrate those references to `--cratis-*` over time.
+5. Replace simple product-owned Prime wrappers where Components or native composition has parity.
 6. Keep the application-owned grouped/lazy table adapter until #109 or another proven state seam covers its grouping and controlled server sorting.
 7. Use Components `Toolbar` only for canvas/tool-palette interactions. Keep a native action row for ordinary page actions rather than forcing a canvas toolbar replacement.
 
-Every Workbench/host entry point that renders Components must import the structural stylesheet. A package that imports Components must also declare it rather than relying on another workspace's dependency.
+Every host entry point that renders Components must import the structural stylesheet. A package that imports Components must also declare it rather than relying on another workspace's dependency.
 
-### Studio Liquid Glass migration
+### Product compositor migration
 
-Studio is the representative deeply customized consumer. Keep `LiquidGlassSurface` and product shaders in Studio; replace renderer types and selectors at the Components boundary:
+A deeply customized product can retain its shaders and measurement wrappers while replacing renderer types and selectors at the Components boundary:
 
 - Type dialog maps as `DialogParts`: `mask` → `backdrop`, `headerTitle` → `title`, and `closeButton` → `close`.
 - Type stepper maps as `StepperParts`: `nav` → `list`, `panelContainer` → `panels`, `stepperpanel.root` → `step`, `action` → `header`, and `content` → `panel`.
-- Toolbar composition now exposes `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. Studio's measurement wrapper should identify boundaries through `toolbar-group`, `toolbar-separator`, `toolbar-layout`, `toolbar-section`, `toolbar-context`, and `toolbar-slot*` `data-cratis-part` values. Direction, mode, expanded, settled, active, and transitioning state are data attributes, so Studio can keep its glass sibling and measurement algorithm without depending on `.toolbar*` implementation classes.
-- For integrated Canvas controls, pass Studio's surface through `controlsGlassSurface`, localized actions through `controlsLabels`, and Studio's compositor marker names through `captureAttributes`. Set `disableControlsGlass` only when Studio intentionally wants the low-cost CSS fallback. Components no longer hardcodes or duplicates Studio's marker vocabulary.
-- Preserve product-owned capture attributes through the documented Canvas prop and ordinary part attributes; keep capture/compositor implementation in Studio.
+- Toolbar composition exposes `ToolbarParts`, `ToolbarButtonParts`, `ToolbarGroupParts`, `ToolbarSeparatorParts`, `ToolbarLayoutParts`, `ToolbarSectionParts`, `ToolbarFolderParts`, and `ToolbarFanOutParts`. A product measurement wrapper should identify boundaries through `toolbar-group`, `toolbar-separator`, `toolbar-layout`, `toolbar-section`, `toolbar-context`, and `toolbar-slot*` `data-cratis-part` values. Direction, mode, expanded, settled, active, and transitioning state are data attributes, so the product can keep its composited sibling and measurement algorithm without depending on `.toolbar*` implementation classes.
+- For integrated Canvas controls, pass the product surface through `controlsGlassSurface`, localized actions through `controlsLabels`, and compositor marker names through `captureAttributes`. Set `disableControlsGlass` only when the product intentionally wants the low-cost CSS fallback. Components does not hardcode or duplicate product marker vocabulary.
+- Preserve product-owned capture attributes through the documented Canvas prop and ordinary part attributes; keep capture/compositor implementation in the product.
 
 ```tsx
+import { ProductCompositorSurface } from './ProductCompositorSurface';
+
 <Canvas
     captureAttributes={{
-        layer: 'data-liquid-glass-layer',
-        content: 'data-liquid-glass-content',
-        transformHost: 'data-liquid-glass-transform-host',
+        layer: 'data-product-compositor-layer',
+        content: 'data-product-compositor-content',
+        transformHost: 'data-product-compositor-transform-host',
     }}
-    controlsGlassSurface={<LiquidGlassSurface /* Studio-owned shader props */ />}
+    controlsGlassSurface={<ProductCompositorSurface cornerRadius={999} />}
     controlsLabels={canvasControlLabels}
 />
 ```
 
 For direct Prime tables, map `value` to `data`. Replace `size='small'`, `stripedRows`, and `Column align` with product classes through `DataTableParts` / `Column` body and header classes. Stop and keep an application-owned or Prime table when the surface requires grouping, row expansion, or controlled lazy/server sorting that `DataTableCore` does not claim to provide. Move Prime `Column` imports used inside `DataPage` to the Cratis marker independently from those advanced tables.
 
-Removing Prime UI imports is not the same as removing a deliberate Prime schema/prototype catalog. If Studio keeps Prime metadata generation or its PrimeReact prototype workspace, Prime remains an intentional tooling/product dependency and must be versioned and licensed on that basis even after application screens migrate.
+Removing Prime UI imports is not the same as removing a deliberate Prime schema/prototype catalog. If a product keeps Prime metadata generation or a PrimeReact prototype workspace, Prime remains an intentional tooling/product dependency and must be versioned and licensed on that basis even after application screens migrate.
 
 Paginator callbacks that formerly returned classes from renderer context must become static Cratis parts plus CSS state selectors:
 
@@ -487,7 +489,7 @@ const roleMatcher = registerDataTableFilterMatcher(
 );
 
 const filters: DataTableFilterMeta = {
-    name: { value: 'Ada', matchMode: DataTableFilterMatchMode.Contains },
+    name: { value: 'Morgan', matchMode: DataTableFilterMatchMode.Contains },
     role: { value: 'admin', matchMode: roleMatcher.matchMode },
 };
 

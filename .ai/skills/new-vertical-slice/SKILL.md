@@ -16,7 +16,7 @@ Choose **one** of:
 
 ## Step 2 — Determine the namespace root
 
-Read `global.json` and existing `.cs` files under the app source root to find the namespace root (e.g. `Studio`, `Library`). Never hard-code it.
+Read `global.json` and existing `.cs` files under the app source root to find the namespace root (e.g. `Product`, `Library`). Never hard-code it.
 
 ## Step 3 — Create the C# slice file
 

@@ -272,9 +272,9 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     const isPanningRef = useRef(false);
     const lastPointerRef = useRef({ x: 0, y: 0 });
 
-    // Direct DOM write, not React state — the container's base cursor is 'default' (StudioIssues#222:
-    // an idle background shouldn't look grabbable until you actually start dragging it), and swapping
-    // to 'grabbing' for the life of a drag-pan is exactly the kind of per-gesture churn this file
+    // Direct DOM write, not React state — an idle background should not look grabbable until a drag
+    // starts. Swapping to 'grabbing' for the life of a drag-pan is exactly the kind of per-gesture
+    // churn this file
     // already avoids re-rendering for elsewhere (see the transform writes below).
     const setPanCursor = useCallback((panning: boolean) => {
         if (containerRef.current)
@@ -465,8 +465,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             // Initializing a renderer hooks pixi's SchedulerSystem onto the auto-starting system
             // ticker, which then runs a requestAnimationFrame loop forever even though nothing here
             // renders from a ticker (autoStart is false and every render is explicit) — one of the
-            // permanent loops that kept an idle board page busy (StudioIssues#200). Stop it after
-            // every init, because each new renderer restarts it; render() drives the scheduled
+            // permanent loops that kept an idle canvas busy. Stop it after every init, because each
+            // new renderer restarts it; render() drives the scheduled
             // housekeeping instead.
             PIXI.Ticker.system.stop();
 
@@ -575,8 +575,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             if (!container) return;
 
             // A plain scroll/trackpad gesture landing over a scrollable overlay (a chat's message list
-            // and similar) scrolls that content instead of panning the board underneath it
-            // (StudioIssues#229). A zoom gesture (ctrl/cmd) always wins — pinch-to-zoom over a chat
+            // and similar) scrolls that content instead of panning the board underneath it. A zoom
+            // gesture (ctrl/cmd) always wins — pinch-to-zoom over a chat
             // panel is still a zoom, not a captured scroll.
             if (
                 !(e.ctrlKey || e.metaKey) &&
@@ -653,8 +653,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         const handleGestureEnd = (event: Event) => event.preventDefault();
 
         // Explicitly non-passive: WebKit is free to treat an options-less gesture listener as
-        // passive, silently ignoring preventDefault() — which reads as "pinch zooms the browser
-        // page" on an iPad Magic Keyboard trackpad (StudioIssues#241, previously #73).
+        // passive, silently ignoring preventDefault() — which would zoom the browser page instead
+        // of the canvas on an iPad Magic Keyboard trackpad.
         container.addEventListener('gesturestart', handleGestureStart, {
             passive: false,
         });
@@ -673,14 +673,14 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     // subtree — but a toolbar, panel, or minimap floating over the canvas is frequently portalled to
     // document.body (or otherwise rendered as a sibling, not a descendant), so a pinch or Ctrl/Cmd+
     // wheel with the cursor sitting over one of those never reaches the listeners above at all, and
-    // the browser is free to zoom the whole page instead (StudioIssues#228). Listen at the window
-    // level too, and go purely by screen position — no matter what element actually receives the
-    // event, if it lands within the canvas's own rectangle the browser's native zoom is cancelled.
+    // the browser is free to zoom the whole page instead. Listen at the window level too, and go
+    // purely by screen position — no matter what element actually receives the
+    // event, if it lands within the canvas's own rectangle the browser's native zoom is canceled.
     // For events whose target sits inside the canvas subtree this only cancels the browser zoom —
     // the container's own listeners drive the canvas zoom, so applying it here too would double up.
     // For a pinch whose target is a portalled sibling (never reaching the container listeners), it
     // also drives the same zoom-towards-focus, so a pinch over a floating panel zooms the board
-    // instead of dying with the browser zoom cancelled (StudioIssues#241).
+    // instead of being swallowed after the browser zoom is canceled.
     useEffect(() => {
         const isWithinCanvas = (x: number, y: number) => {
             const rect = containerRef.current?.getBoundingClientRect();
