@@ -57,7 +57,7 @@ function Conversation() {
 | Feature | Enabled by |
 |---|---|
 | Reactions | `currentUserId` **and** `onReact` both given |
-| Quick reply (prefills the composer with `@name `) | Always available once there is more than one author |
+| Quick reply (prefills the composer with `@name`, followed by a space) | Always available once there is more than one author |
 | "Turn into an action" button | `onAct` given (optionally filtered per-message by `canAct`) |
 | `@`-mentions in the composer | `mentionCandidates` given |
 | Typing indicator | `typingAuthors` given (a list of who's currently typing/working) |
