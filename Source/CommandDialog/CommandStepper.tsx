@@ -190,10 +190,10 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
         }
 
         if (!result.isSuccess) {
-            if (result.isValid) {
-                await onFailed?.(result);
-            } else {
+            if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
+            } else {
+                await onFailed?.(result);
             }
             setCommandResult(result);
             return;
