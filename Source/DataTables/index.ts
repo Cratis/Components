@@ -11,6 +11,7 @@ export * from './DataTableSelectionChangeEvent';
 export * from './DataTableFilterMeta';
 export {
     registerDataTableFilterMatcher,
+    resolveDataTableFilterMatcher,
     unregisterDataTableFilterMatcher,
     type DataTableFilterMatcherRegistration,
 } from './DataTableFilterMatcherRegistry';

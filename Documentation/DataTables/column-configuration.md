@@ -77,4 +77,4 @@ Filtering affects the loaded page. For complete-result filtering, send the filte
 
 ## Custom matchers
 
-Use `registerDataTableFilterMatcher()` for a named matcher. The returned branded mode can be assigned to `DataTableFilterMeta`, and the registration handle removes it safely.
+Use `registerDataTableFilterMatcher()` for a named matcher. The returned branded mode can be assigned to `DataTableFilterMeta`, and the registration handle removes it safely. Use `resolveDataTableFilterMatcher(matchMode)` when an application-owned adapter or spec needs to verify the predicate currently installed in the live Components registry.

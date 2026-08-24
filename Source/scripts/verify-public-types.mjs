@@ -360,6 +360,12 @@ void findOwnReaction;
 export * from '${specifier}';
 `;
     }
+    if (subpath === './DataTables') {
+        return `import { resolveDataTableFilterMatcher } from '${specifier}';
+void resolveDataTableFilterMatcher;
+export * from '${specifier}';
+`;
+    }
     return `export * from '${specifier}';\n`;
 };
 

@@ -151,7 +151,7 @@ An audit of the published `exports` map ([#173](https://github.com/Cratis/Compon
 | `CommandStepperContent`                                                   | `@cratis/components/CommandStepper`, `@cratis/components/CommandDialog` | Private rendering primitive behind `CommandStepper` and `StepperCommandDialog`. Use one of those components; there is no direct public replacement. |
 | `PivotViewerOptimized`                                                    | `@cratis/components/PivotViewer`                                        | Was an accidental alias of `PivotViewer`. Import `PivotViewer` instead.                                                                             |
 | `getInitials`                                                             | `@cratis/components/Canvas`                                             | Private `PersonAvatarCircle` helper. Not part of the public API.                                                                                    |
-| `reactionsExcludingUser`                                                  | `@cratis/components/Canvas`                                             | Private `ChatMessageBubble` rendering helper. `findOwnReaction` remains public for consumers that own reaction commands.                           |
+| `reactionsExcludingUser`                                                  | `@cratis/components/Canvas`                                             | Private `ChatMessageBubble` rendering helper. `findOwnReaction` remains public for consumers that own reaction commands.                            |
 | `matchCandidates`, `activeMentionQuery`, `applyMention`, `MentionApplied` | `@cratis/components/Canvas`                                             | Private `ChatComposer` mention helpers. Not part of the public API.                                                                                 |
 | `EMOJI_CATALOG`, `EmojiCategoryKey`                                       | `@cratis/components/Canvas`                                             | Private `EmojiPicker` implementation details. Not part of the public API.                                                                           |
 | `DEFAULT_EMOJIS`, `QUICK_ROW_SIZE`                                        | `@cratis/components/Canvas`                                             | Private `recentEmojis`/`rememberEmoji` constants. Not part of the public API.                                                                       |
@@ -344,11 +344,23 @@ import './product-components.css';
 
 Because these assignments reference product tokens, existing dark, enhanced-contrast, control-size, status, and accessibility selectors flow through without duplicating the mapping. The product continues to own typography, spacing, motion, elevation, and component-specific treatments.
 
-If one product area still uses Prime's locale-aware `InputNumber`, keep it as an explicitly bounded Prime island. Mount the Prime provider independently around that remaining surface and retain its installed-version theme/license requirements; do not put renderer keys back into `CratisComponentsProvider`. Other areas can remove Prime as soon as they have no direct Prime imports. Remove the separate Prime provider only when number grouping, decimal handling, fraction digits, prefix/suffix, min/max, and command binding have an accepted renderer-independent replacement.
+If one product area still uses Prime's locale-aware `InputNumber`, keep it as an explicitly bounded Prime island. Mount the Prime provider independently around that remaining surface and retain its installed-version theme/license requirements; do not put renderer keys back into `CratisComponentsProvider`:
+
+```tsx
+import { PrimeReactProvider } from '@primereact/core';
+
+<CratisComponentsProvider value={{ locale, messages }}>
+    <PrimeReactProvider license={primeUiLicense}>
+        <LocaleAwareNumberInput />
+    </PrimeReactProvider>
+</CratisComponentsProvider>
+```
+
+PrimeReact 11 receives `license` directly as a provider prop; it does **not** use the `value={{ license }}` shape of `CratisComponentsProvider`. Add the installed Prime theme/provider options beside `license` when that island needs them. Other areas can remove Prime as soon as they have no direct Prime imports. Remove the separate Prime provider only when number grouping, decimal handling, fraction digits, prefix/suffix, min/max, and command binding have an accepted renderer-independent replacement.
 
 This preserves product token and theme ownership while removing the circular product → Prime preset → Prime variables → Cratis translation.
 
-Custom filters must migrate in the same change: replace the Prime `FilterMatchMode` import with `DataTableFilterMatchMode`, replace `registerMatcher` with `registerDataTableFilterMatcher`, and store the returned `matchMode` in the corresponding constraint. Built-in mode strings remain behaviorally compatible, but using the Cratis constants removes the renderer type dependency; custom registration never crosses registries automatically.
+Custom filters must migrate in the same change: replace the Prime `FilterMatchMode` import with `DataTableFilterMatchMode`, replace `registerMatcher` with `registerDataTableFilterMatcher`, and store the returned `matchMode` in the corresponding constraint. Built-in mode strings remain behaviorally compatible, but using the Cratis constants removes the renderer type dependency; custom registration never crosses registries automatically. Tests and application-owned adapters that must verify the live registered predicate can call `resolveDataTableFilterMatcher(matchMode)` from the same DataTables subpath.
 
 ### Migrate directly from Components 2
 
