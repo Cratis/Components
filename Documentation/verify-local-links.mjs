@@ -7,7 +7,10 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const markdownExtensions = new Set(['.md', '.mdx']);
-const documentationRoot = path.resolve(process.argv[2] ?? path.dirname(fileURLToPath(import.meta.url)));
+const selfTestMode = process.argv[2] === '--self-test';
+const documentationRoot = path.resolve(selfTestMode
+    ? path.dirname(fileURLToPath(import.meta.url))
+    : (process.argv[2] ?? path.dirname(fileURLToPath(import.meta.url))));
 const counts = {
     files: 0,
     local: 0,
@@ -19,37 +22,86 @@ const counts = {
 const failures = [];
 const anchorsByFile = new Map();
 
-const markdownFiles = findMarkdownFiles(documentationRoot);
-counts.files = markdownFiles.length;
-
-for (const sourceFile of markdownFiles) {
-    checkFile(sourceFile);
-}
-
-console.log(`Markdown files scanned: ${counts.files}`);
-console.log(`Local links checked: ${counts.local}`);
-console.log('Intentional exclusions:');
-console.log(`  Documentation-site root routes: ${counts.siteRoutes}`);
-console.log(`  External HTTP(S) links: ${counts.externalHttp}`);
-console.log(`  Localhost HTTP(S) links: ${counts.localhost}`);
-console.log(`  Other non-file URI schemes: ${counts.otherSchemes}`);
-
-if (counts.files === 0) {
-    failures.push('No Markdown files were found.');
-}
-if (counts.local === 0) {
-    failures.push('No local links were found; refusing to report a vacuous successful scan.');
-}
-
-if (failures.length > 0) {
-    console.error('');
-    console.error(`Broken local links: ${failures.length}`);
-    for (const failure of failures) {
-        console.error(`  ${failure}`);
-    }
-    process.exitCode = 1;
+if (selfTestMode) {
+    runSelfTests();
 } else {
-    console.log('Broken local links: 0');
+    verifyDocumentation();
+}
+
+function verifyDocumentation() {
+    const markdownFiles = findMarkdownFiles(documentationRoot);
+    counts.files = markdownFiles.length;
+
+    for (const sourceFile of markdownFiles) {
+        checkFile(sourceFile);
+    }
+
+    console.log(`Markdown files scanned: ${counts.files}`);
+    console.log(`Local links checked: ${counts.local}`);
+    console.log('Intentional exclusions:');
+    console.log(`  Documentation-site root routes: ${counts.siteRoutes}`);
+    console.log(`  External HTTP(S) links: ${counts.externalHttp}`);
+    console.log(`  Localhost HTTP(S) links: ${counts.localhost}`);
+    console.log(`  Other non-file URI schemes: ${counts.otherSchemes}`);
+
+    if (counts.files === 0) {
+        failures.push('No Markdown files were found.');
+    }
+    if (counts.local === 0) {
+        failures.push('No local links were found; refusing to report a vacuous successful scan.');
+    }
+
+    if (failures.length > 0) {
+        console.error('');
+        console.error(`Broken local links: ${failures.length}`);
+        for (const failure of failures) {
+            console.error(`  ${failure}`);
+        }
+        process.exitCode = 1;
+    } else {
+        console.log('Broken local links: 0');
+    }
+}
+
+function runSelfTests() {
+    const destinations = [];
+    collectInlineLinkDestinations([
+        '[escaped](guide\\(advanced\\).md#A\\-heading)',
+        '[nested [label]](<route with spaces.mdx#anchor>)',
+        '[title](route/index "A (title)")'
+    ].join('\n'), destinations);
+
+    assertSelfTest(
+        destinations.map(destination => destination.target).join('|') ===
+            'guide(advanced).md#A-heading|route with spaces.mdx#anchor|route/index',
+        'escaped, nested, and titled inline destinations are parsed incorrectly'
+    );
+
+    const malformedHeading = 'Safe <<span data-label=">">Injected</span>> Heading';
+    assertSelfTest(
+        slugifyHeading(malformedHeading) === 'safe-heading',
+        'nested HTML can bypass heading normalization'
+    );
+    assertSelfTest(
+        slugifyHeading('Use <code>Canvas</code> &amp; Data') === 'use-canvas-data',
+        'valid inline HTML is stripped incorrectly'
+    );
+
+    const malformedDestination = `[malformed](${'\\x'.repeat(100_000)}`;
+    const malformedDestinations = [];
+    const startedAt = process.hrtime.bigint();
+    collectInlineLinkDestinations(malformedDestination, malformedDestinations);
+    const elapsedMilliseconds = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+    assertSelfTest(malformedDestinations.length === 0, 'a malformed destination was accepted');
+    assertSelfTest(elapsedMilliseconds < 2_000, `malformed destination parsing took ${elapsedMilliseconds.toFixed(1)} ms`);
+
+    console.log(`Self-test passed: adversarial destination parsed in ${elapsedMilliseconds.toFixed(1)} ms; nested heading markup normalized.`);
+}
+
+function assertSelfTest(condition, message) {
+    if (!condition) {
+        throw new Error(`Self-test failed: ${message}`);
+    }
 }
 
 function findMarkdownFiles(root) {
@@ -79,8 +131,7 @@ function checkFile(sourceFile) {
     const references = readReferenceDefinitions(maskFencedCode(content));
     const destinations = [];
 
-    const inlineLinkPattern = /!?\[(?:\\.|[^\]\\])*\]\(\s*(?:<((?:\\.|[^>])*)>|((?:\\.|[^\s)])+))/g;
-    collectMatches(linkContent, inlineLinkPattern, destinations, match => match[1] ?? match[2]);
+    collectInlineLinkDestinations(linkContent, destinations);
 
     const referenceLinkPattern = /!?\[([^\]\n]+)\]\[([^\]\n]*)\]/g;
     collectMatches(linkContent, referenceLinkPattern, destinations, match => {
@@ -100,6 +151,160 @@ function checkFile(sourceFile) {
     for (const destination of destinations) {
         checkDestination(sourceFile, content, destination);
     }
+}
+
+function collectInlineLinkDestinations(content, destinations) {
+    let position = 0;
+    while (position < content.length) {
+        if (content[position] === '\\') {
+            position += 2;
+            continue;
+        }
+        if (content[position] !== '[') {
+            position += 1;
+            continue;
+        }
+
+        const parsedLink = parseInlineLink(content, position);
+        if (!parsedLink) {
+            position += 1;
+            continue;
+        }
+
+        const linkIndex = position > 0 && content[position - 1] === '!' ? position - 1 : position;
+        destinations.push({ index: linkIndex, target: unescapeMarkdown(parsedLink.target.trim()) });
+        position = parsedLink.end;
+    }
+}
+
+function parseInlineLink(content, labelStart) {
+    let bracketDepth = 1;
+    let position = labelStart + 1;
+
+    while (position < content.length && bracketDepth > 0) {
+        const character = content[position];
+        if (character === '\\') {
+            position += 2;
+            continue;
+        }
+        if (character === '[') {
+            bracketDepth += 1;
+        } else if (character === ']') {
+            bracketDepth -= 1;
+        }
+        position += 1;
+    }
+
+    if (bracketDepth !== 0 || content[position] !== '(') {
+        return undefined;
+    }
+
+    return parseInlineDestination(content, position);
+}
+
+function parseInlineDestination(content, openingParenthesis) {
+    let position = skipMarkdownWhitespace(content, openingParenthesis + 1);
+    const destinationStart = position;
+
+    if (content[position] === '<') {
+        position += 1;
+        const enclosedStart = position;
+        while (position < content.length) {
+            const character = content[position];
+            if (character === '\\') {
+                position += 2;
+                continue;
+            }
+            if (character === '\n' || character === '\r' || character === '<') {
+                return undefined;
+            }
+            if (character === '>') {
+                return finishInlineDestination(content, position + 1, enclosedStart, position);
+            }
+            position += 1;
+        }
+        return undefined;
+    }
+
+    let parenthesisDepth = 0;
+    while (position < content.length) {
+        const character = content[position];
+        if (character === '\\') {
+            position += 2;
+            continue;
+        }
+        if (character === '(') {
+            parenthesisDepth += 1;
+        } else if (character === ')') {
+            if (parenthesisDepth === 0) {
+                return {
+                    target: content.slice(destinationStart, position),
+                    end: position + 1
+                };
+            }
+            parenthesisDepth -= 1;
+        } else if (isMarkdownWhitespace(character)) {
+            if (parenthesisDepth !== 0) {
+                return undefined;
+            }
+            return finishInlineDestination(content, position, destinationStart, position);
+        }
+        position += 1;
+    }
+
+    return undefined;
+}
+
+function finishInlineDestination(content, tailStart, destinationStart, destinationEnd) {
+    const positionAfterWhitespace = skipMarkdownWhitespace(content, tailStart);
+    if (content[positionAfterWhitespace] === ')') {
+        return {
+            target: content.slice(destinationStart, destinationEnd),
+            end: positionAfterWhitespace + 1
+        };
+    }
+    if (positionAfterWhitespace === tailStart) {
+        return undefined;
+    }
+
+    const titleOpening = content[positionAfterWhitespace];
+    const titleClosing = titleOpening === '(' ? ')' : titleOpening;
+    if (titleOpening !== '"' && titleOpening !== "'" && titleOpening !== '(') {
+        return undefined;
+    }
+
+    let position = positionAfterWhitespace + 1;
+    while (position < content.length) {
+        if (content[position] === '\\') {
+            position += 2;
+            continue;
+        }
+        if (content[position] === titleClosing) {
+            position = skipMarkdownWhitespace(content, position + 1);
+            if (content[position] === ')') {
+                return {
+                    target: content.slice(destinationStart, destinationEnd),
+                    end: position + 1
+                };
+            }
+            return undefined;
+        }
+        position += 1;
+    }
+
+    return undefined;
+}
+
+function skipMarkdownWhitespace(content, start) {
+    let position = start;
+    while (position < content.length && isMarkdownWhitespace(content[position])) {
+        position += 1;
+    }
+    return position;
+}
+
+function isMarkdownWhitespace(character) {
+    return character === ' ' || character === '\t' || character === '\n' || character === '\r';
 }
 
 function collectMatches(content, pattern, destinations, getTarget) {
@@ -264,13 +469,66 @@ function anchorsFor(file) {
 }
 
 function slugifyHeading(heading) {
-    return heading
-        .replace(/<[^>]*>/g, '')
+    return stripHeadingTags(heading)
         .replace(/&[a-z\d#]+;/gi, '')
         .trim()
         .toLowerCase()
         .replace(/[!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~]/g, '')
         .replace(/\s+/g, '-');
+}
+
+function stripHeadingTags(heading) {
+    const output = [];
+    const pendingTag = [];
+    let tagDepth = 0;
+    let braceDepth = 0;
+    let quote;
+    let escaped = false;
+
+    for (const character of heading) {
+        if (tagDepth === 0) {
+            if (character === '<') {
+                tagDepth = 1;
+                pendingTag.push(character);
+            } else {
+                output.push(character);
+            }
+            continue;
+        }
+
+        pendingTag.push(character);
+        if (escaped) {
+            escaped = false;
+            continue;
+        }
+        if (quote) {
+            if (character === '\\') {
+                escaped = true;
+            } else if (character === quote) {
+                quote = undefined;
+            }
+            continue;
+        }
+        if (character === '"' || character === "'") {
+            quote = character;
+        } else if (character === '{') {
+            braceDepth += 1;
+        } else if (character === '}' && braceDepth > 0) {
+            braceDepth -= 1;
+        } else if (character === '<') {
+            tagDepth += 1;
+        } else if (character === '>' && (tagDepth > 1 || braceDepth === 0)) {
+            tagDepth -= 1;
+            if (tagDepth === 0) {
+                pendingTag.length = 0;
+            }
+        }
+    }
+
+    if (pendingTag.length > 0) {
+        output.push(...pendingTag);
+    }
+    return output.join('');
 }
 
 function maskFencedCode(content) {
