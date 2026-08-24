@@ -92,7 +92,7 @@ The current exceptions are:
 
 ### Why the Canvas Pixi surface remains public
 
-`CanvasContext`, `renderItem`, and pointer callbacks intentionally expose real Pixi objects so consumers can build arbitrary Pixi content. Replacing those types with reduced Cratis facades would either duplicate Pixi's API or force consumers to cast back to it. The bounded WebGPU declaration exception is preferable to weakening this intentional extensibility contract. PivotViewer does not expose Pixi types publicly and needs no equivalent exception.
+`CanvasContext`, `renderItem`, and pointer callbacks intentionally expose real Pixi objects so consumers can build arbitrary Pixi content. Replacing those types with reduced Cratis facades would either duplicate Pixi's API or force consumers to cast back to it. The bounded WebGPU declaration exception is preferable to weakening this intentional extensibility contract. `pixi.js` is therefore an optional peer: Canvas/PivotViewer consumers install one compatible `^8.20.0` resolution, preventing nested nominally-incompatible Pixi instances while non-Pixi subpaths impose no installation requirement. PivotViewer does not expose Pixi types publicly and needs no equivalent declaration exception.
 
 ## Tracked follow-up work
 

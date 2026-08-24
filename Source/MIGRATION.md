@@ -27,6 +27,8 @@ npm install @cratis/components
 
 Keep a Prime package only when your application still imports it directly. Migrate those imports separately; Components no longer supplies or requires them.
 
+Applications using Canvas or PivotViewer must install `pixi.js@^8.20.0`, now an optional peer rather than a nested Components dependency. Align any existing direct Pixi dependency to the same compatible resolution so public Pixi types come from one package instance. Applications using only non-Pixi subpaths do not need it.
+
 The supported Arc peer range remains `>=20.3.1 <23`.
 
 ## Keep the stylesheet entry points

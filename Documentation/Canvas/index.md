@@ -21,6 +21,14 @@ import {
 
 Import `@cratis/components/tokens` and `@cratis/components/styles` once at the application root. Add `@cratis/components/theme` only when using the baseline appearance.
 
+Canvas and PivotViewer expose and render real Pixi objects. Install the optional peer once in an application that uses either surface:
+
+```bash
+npm install pixi.js@^8.20.0
+```
+
+Keep one compatible Pixi resolution across the application and Components. Two installed copies produce nominal TypeScript incompatibilities for containers and pointer events even when their APIs look structurally similar.
+
 ## Canvas
 
 ```tsx
