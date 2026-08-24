@@ -5,6 +5,8 @@ description: Reference for the pan, zoom, minimap, overlay, and collaborative ca
 
 `@cratis/components/Canvas` provides a renderer-independent React surface for large spatial workspaces. It owns gesture coordination, transforms, controls, item measurement, minimap state, and optional Note, Region, and Chat shapes. Product appearance comes from `--cratis-*` tokens and Canvas classes; PrimeIcons and a renderer provider are not required.
 
+The engine renders and positions arbitrary content independently of the optional presentational shapes. Start with [Basic usage](basic-usage.md), then use the focused guides for [pan and zoom](pan-and-zoom.md), [controls chrome](controls-chrome.md), [notes](notes.md), [regions](regions.md), and the [chat bubble](chat-bubble.md). This page is the complete API reference.
+
 ## Import
 
 ```tsx
