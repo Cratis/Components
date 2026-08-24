@@ -50,6 +50,8 @@
   href: ObjectNavigationalBar/index.md
 - name: ObjectContentEditor
   href: ObjectContentEditor/index.md
+- name: Canvas
+  href: Canvas/toc.yml
 - name: PivotViewer
   href: PivotViewer/toc.yml
 - name: SchemaEditor
