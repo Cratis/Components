@@ -4,12 +4,20 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import type { Guid } from '@cratis/fundamentals';
 import type { BuildAvatarUrlParams } from './Avatar';
-import { ChatComposer, type ChatComposerHandle, type ChatComposerLabels } from './ChatComposer';
+import {
+    ChatComposer,
+    type ChatComposerHandle,
+    type ChatComposerLabels,
+} from './ChatComposer';
 import { ChatMessageBubble, type ChatMessageBubbleLabels } from './ChatMessageBubble';
 import type { ChatMessage } from './ChatMessage';
 import type { ChatTypingAuthor } from './ChatTypingAuthor';
 import { ChatVariant } from './ChatVariant';
-import { FailedReply, type FailedReplyLabels, type FailedReplyReportDetails } from './FailedReply';
+import {
+    FailedReply,
+    type FailedReplyLabels,
+    type FailedReplyReportDetails,
+} from './FailedReply';
 import type { MentionCandidate } from './Mentions';
 import { TypingIndicator } from './TypingIndicator';
 
@@ -39,16 +47,24 @@ export interface ChatLabels {
     failedReply?: FailedReplyLabels;
 }
 
+/**
+ * Props for the full conversation panel — messages, composer, typing indicator, and reactions.
+ * Accepts message data and reports sends/reactions/actions; owns no state except the draft being typed.
+ */
 export interface ChatProps {
-
+    /** The messages to render in chronological order. */
     messages: ChatMessage[];
 
+    /** Invoked with the trimmed message text when the user sends. */
     onSend: (text: string) => void;
 
+    /** Invoked when the close button is activated (only rendered when not {@link ChatVariant.Docked}). */
     onClose: () => void;
 
+    /** The panel's title. Defaults to the localized `'Comments'` or {@link ChatLabels.title}. */
     title?: string;
 
+    /** Whether the composer takes focus when mounted. Defaults to `false`. */
     autoFocus?: boolean;
 
     /**
@@ -119,7 +135,6 @@ function sameMinute(a: Date, b: Date): boolean {
 }
 
 interface MessageRenderInfo {
-
     showAuthor: boolean;
 
     showTimestamp: boolean;
@@ -147,13 +162,25 @@ function computeRenderInfo(messages: ChatMessage[]): MessageRenderInfo[] {
  * @param labels Label overrides, as passed to {@link Chat}.
  * @returns The label to show, empty when nobody is.
  */
-function typingLabel(authors: ChatTypingAuthor[], labels: ChatLabels | undefined): string {
+function typingLabel(
+    authors: ChatTypingAuthor[],
+    labels: ChatLabels | undefined,
+): string {
     if (authors.length === 0) return '';
-    if (authors.length === 1) return (labels?.typing ?? '{name} is typing').replace('{name}', authors[0].name);
-    if (authors.length === 2) return (labels?.typingTwo ?? '{first} and {second} are typing').replace('{first}', authors[0].name).replace('{second}', authors[1].name);
+    if (authors.length === 1)
+        return (labels?.typing ?? '{name} is typing').replace('{name}', authors[0].name);
+    if (authors.length === 2)
+        return (labels?.typingTwo ?? '{first} and {second} are typing')
+            .replace('{first}', authors[0].name)
+            .replace('{second}', authors[1].name);
     return labels?.typingSeveral ?? 'Several people are typing';
 }
 
+/**
+ * The full conversation panel — messages, composer, typing indicator, and reactions. It renders
+ * message bubbles, the composer row, and the typing indicator, and coordinates reactions/quick-reply/action
+ * callbacks. Owns no state except the draft being typed.
+ */
 export const Chat: React.FC<ChatProps> = ({
     messages,
     onSend,
@@ -181,10 +208,14 @@ export const Chat: React.FC<ChatProps> = ({
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, [messages, typingAuthors.length]);
 
-    const quickReply = (authorName: string) => composerRef.current?.prefill(`@${authorName} `);
+    const quickReply = (authorName: string) =>
+        composerRef.current?.prefill(`@${authorName} `);
 
     return (
-        <div className={`chat-panel${isDocked ? ' chat-panel--docked' : ''}`} onClick={event => event.stopPropagation()}>
+        <div
+            className={`chat-panel${isDocked ? ' chat-panel--docked' : ''}`}
+            onClick={(event) => event.stopPropagation()}
+        >
             {!isDocked && (
                 <div className='chat-panel-header'>
                     <span className='chat-panel-title'>{resolvedTitle}</span>
@@ -202,13 +233,22 @@ export const Chat: React.FC<ChatProps> = ({
 
             <div className='chat-panel-messages'>
                 {messages.length === 0 && (
-                    <p className='chat-panel-empty'>{labels?.noComments ?? 'No comments yet. Be the first!'}</p>
+                    <p className='chat-panel-empty'>
+                        {labels?.noComments ?? 'No comments yet. Be the first!'}
+                    </p>
                 )}
                 {messages.map((message, index) => {
                     // A turn that ended in failure is not something its author said, so it never becomes
                     // a bubble — it stands where the answer would have been and says so.
                     if (message.failureDetail !== undefined) {
-                        return <FailedReply key={message.id.toString()} message={message} buildReportUrl={buildReportUrl} labels={labels?.failedReply} />;
+                        return (
+                            <FailedReply
+                                key={message.id.toString()}
+                                message={message}
+                                buildReportUrl={buildReportUrl}
+                                labels={labels?.failedReply}
+                            />
+                        );
                     }
 
                     const { showAuthor, showTimestamp } = renderInfo[index];
@@ -222,13 +262,19 @@ export const Chat: React.FC<ChatProps> = ({
                             currentUserId={currentUserId}
                             onReact={onReact}
                             onQuickReply={quickReply}
-                            onAct={onAct && (canAct?.(message) ?? true) ? onAct : undefined}
+                            onAct={
+                                onAct && (canAct?.(message) ?? true) ? onAct : undefined
+                            }
                             buildAvatarUrl={buildAvatarUrl}
                             labels={labels?.messageBubble}
                         />
                     );
                 })}
-                <TypingIndicator authors={typingAuthors} label={typingLabel(typingAuthors, labels)} buildAvatarUrl={buildAvatarUrl} />
+                <TypingIndicator
+                    authors={typingAuthors}
+                    label={typingLabel(typingAuthors, labels)}
+                    buildAvatarUrl={buildAvatarUrl}
+                />
                 <div ref={messagesEndRef} />
             </div>
 

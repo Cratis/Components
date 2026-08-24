@@ -142,6 +142,25 @@ Map product tokens directly in CSS:
 
 This removes the old product-token → Prime preset → Prime variable → Cratis variable translation chain.
 
+## Removed accidental package exports
+
+An audit of the published `exports` map ([#173](https://github.com/Cratis/Components/issues/173)) found implementation-only symbols that were unintentionally reachable from a public subpath — each was exported only because the owning module's barrel used a blanket `export *`, not because it was a supported contract. Components 4 stops re-exporting them from their public barrel; the underlying files keep the symbol for their own internal cross-file use, so this is a package-export change only, not a behavior change.
+
+| Removed export                                                | Subpath(s)                                                       | Migration                                                                                            |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `CommandStepperContent`                                        | `@cratis/components/CommandStepper`, `@cratis/components/CommandDialog` | Private rendering primitive behind `CommandStepper` and `StepperCommandDialog`. Use one of those components; there is no direct public replacement. |
+| `PivotViewerOptimized`                                         | `@cratis/components/PivotViewer`                                   | Was an accidental alias of `PivotViewer`. Import `PivotViewer` instead.                                |
+| `getInitials`                                                  | `@cratis/components/Canvas`                                        | Private `PersonAvatarCircle` helper. Not part of the public API.                                       |
+| `findOwnReaction`, `reactionsExcludingUser`                    | `@cratis/components/Canvas`                                        | Private `ChatMessageBubble` helpers. Not part of the public API.                                       |
+| `matchCandidates`, `activeMentionQuery`, `applyMention`, `MentionApplied` | `@cratis/components/Canvas`                               | Private `ChatComposer` mention helpers. Not part of the public API.                                    |
+| `EMOJI_CATALOG`, `EmojiCategoryKey`                             | `@cratis/components/Canvas`                                        | Private `EmojiPicker` implementation details. Not part of the public API.                              |
+| `DEFAULT_EMOJIS`, `QUICK_ROW_SIZE`                              | `@cratis/components/Canvas`                                        | Private `recentEmojis`/`rememberEmoji` constants. Not part of the public API.                          |
+| `buildFilterValues`, `buildRangeValues`, `RenderedHistogramBucket` | `@cratis/components/Filter`                                      | Private `useFilterState`/`RangeHistogramFilter` helpers. Not part of the public API.                   |
+
+None of these had a documented contract, and none is required by any other public API in this package. An application that imported one of these directly has no supported replacement to migrate to — inline the equivalent logic, or open an issue describing the use case if the behavior should become a supported public contract.
+
+The surfaces this audit confirmed as intentional and kept public — `ToastRecord`, `getToastSnapshot`, `subscribeToToasts`, `ToastDispatch`, `EmojiMemory`, `ChatAuthorKind`, `DEFAULT_TYPE_FORMATS`, `NavigationItem`, `Json`, and `TimeMachine`'s `Properties` — are unchanged and now carry TSDoc explaining their contract and, where relevant, their extension-point role.
+
 ## Migrate pass-through configuration
 
 The `pt` prop remains the per-part customization surface, but its values are now ordinary HTML attributes and its keys are stable Cratis names. `ptOptions` and `unstyled` remain accepted temporarily but have no effect: part attributes always merge, and Components always uses consumer-owned CSS.

@@ -9,8 +9,10 @@ export { RangeHistogramFilter } from './RangeHistogramFilter';
 export type { RangeHistogramFilterProps } from './RangeHistogramFilter';
 export { useFilterState } from './useFilterState';
 export type { UseFilterStateResult } from './useFilterState';
-export { buildFilterValues, buildRangeValues, buildHistogram } from './utils';
-export type { RenderedHistogramBucket } from './utils';
+// `buildFilterValues`, `buildRangeValues`, and `RenderedHistogramBucket` are internal
+// helpers used by `useFilterState`/`RangeHistogramFilter` and are intentionally not
+// part of the public API.
+export { buildHistogram } from './utils';
 export type {
   FilterValue,
   FilterOption,

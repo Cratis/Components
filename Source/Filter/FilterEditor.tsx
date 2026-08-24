@@ -4,11 +4,18 @@
 import type { ReactNode } from 'react';
 import type { FilterEditorProps } from './types';
 
+/**
+ * Props for the {@link FilterEditor} slot descriptor.
+ *
+ * Declares a custom editor for a specific filter group inside
+ * {@link FilterPanel}. The editor receives the current value and an
+ * `onChange` handler through the render prop.
+ */
 export interface FilterEditorSlotProps {
-  /** Must match the `key` of the corresponding `FilterDefinition`. */
-  filterKey: string;
-  /** Render prop that receives `{ value, onChange }` and returns the editor UI. */
-  children: (props: FilterEditorProps) => ReactNode;
+    /** Must match the `key` of the corresponding `FilterDefinition`. */
+    filterKey: string;
+    /** Render prop that receives `{ value, onChange }` and returns the editor UI. */
+    children: (props: FilterEditorProps) => ReactNode;
 }
 
 /**
@@ -30,5 +37,5 @@ export interface FilterEditorSlotProps {
  * by `FilterPanel`.
  */
 export function FilterEditor(_props: FilterEditorSlotProps): null {
-  return null;
+    return null;
 }

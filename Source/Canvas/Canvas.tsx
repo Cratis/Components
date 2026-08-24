@@ -208,6 +208,11 @@ const MOMENTUM_MIN_VELOCITY = 0.02;
 // responsive, slow enough to read as a coast rather than a snap.
 const MOMENTUM_FRICTION = 0.0035;
 
+/**
+ * A pan/zoom/Pixi-backed infinite canvas with optional HTML overlay items, integrated minimap, and
+ * zoom controls. Renders Pixi-backed sprites and DOM content under one synchronized camera, manages
+ * wheel/touch/trackpad gestures, and exposes imperative camera navigation.
+ */
 function Canvas<T extends CanvasItemData = CanvasItemData>({
     children,
     items = [] as T[],

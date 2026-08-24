@@ -5,8 +5,11 @@ import { PersonAvatarCircle, type BuildAvatarUrlParams } from '../Avatar';
 import { ChatAuthorKind } from '../ChatAuthorKind';
 import type { MentionCandidate } from './MentionCandidate';
 
+/**
+ * Props for the list that opens while an `@` mention is being typed, showing people and agents
+ * together with their avatars.
+ */
 export interface MentionSuggestionsProps {
-
     /** The candidates to offer, already filtered by what has been typed. */
     candidates: MentionCandidate[];
 
@@ -27,7 +30,13 @@ export interface MentionSuggestionsProps {
  * The list that opens while an `@` mention is being typed, showing people and agents together with
  * their avatars.
  */
-export const MentionSuggestions = ({ candidates, highlightedIndex, onSelect, onHighlight, buildAvatarUrl }: MentionSuggestionsProps) => (
+export const MentionSuggestions = ({
+    candidates,
+    highlightedIndex,
+    onSelect,
+    onHighlight,
+    buildAvatarUrl,
+}: MentionSuggestionsProps) => (
     <div className='mention-suggestions' role='listbox'>
         {candidates.map((candidate, index) => (
             <button
@@ -37,7 +46,7 @@ export const MentionSuggestions = ({ candidates, highlightedIndex, onSelect, onH
                 aria-selected={index === highlightedIndex}
                 className={`mention-suggestions__item${index === highlightedIndex ? ' mention-suggestions__item--highlighted' : ''}`}
                 // The input must keep focus, so the pointer press never reaches it as a blur.
-                onMouseDown={event => event.preventDefault()}
+                onMouseDown={(event) => event.preventDefault()}
                 onMouseEnter={() => onHighlight(index)}
                 onClick={() => onSelect(candidate)}
             >
@@ -46,7 +55,9 @@ export const MentionSuggestions = ({ candidates, highlightedIndex, onSelect, onH
                     name={candidate.name}
                     hasAvatar={candidate.hasAvatar}
                     size={20}
-                    ownerType={candidate.kind === ChatAuthorKind.Agent ? 'Agents' : 'Users'}
+                    ownerType={
+                        candidate.kind === ChatAuthorKind.Agent ? 'Agents' : 'Users'
+                    }
                     version={candidate.avatarVersion}
                     buildAvatarUrl={buildAvatarUrl}
                 />

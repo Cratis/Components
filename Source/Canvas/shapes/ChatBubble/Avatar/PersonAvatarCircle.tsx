@@ -8,7 +8,6 @@ import { getAvatarColor } from './getAvatarColor';
 
 /** The parameters {@link PersonAvatarCircleProps.buildAvatarUrl} resolves into an image URL. */
 export interface BuildAvatarUrlParams {
-
     /** The identifier of the person, as a string. */
     userId: string;
 
@@ -22,8 +21,12 @@ export interface BuildAvatarUrlParams {
     version?: number | string;
 }
 
+/**
+ * Props for rendering a person's avatar image when one has been uploaded and a URL can be built for
+ * it, falling back to their initials on a color derived from their identifier so the same person
+ * always shows the same fallback color.
+ */
 export interface PersonAvatarCircleProps {
-
     /** The identifier of the person, used to build the avatar image URL. */
     userId: Guid | string;
 
@@ -64,10 +67,25 @@ export interface PersonAvatarCircleProps {
  * back to their initials on a color derived from their identifier so the same person always shows the
  * same fallback color.
  */
-export const PersonAvatarCircle = ({ userId, name, hasAvatar, size, ownerType = 'Users', avatarSize = 'Small', version, buildAvatarUrl, className }: PersonAvatarCircleProps) => {
+export const PersonAvatarCircle = ({
+    userId,
+    name,
+    hasAvatar,
+    size,
+    ownerType = 'Users',
+    avatarSize = 'Small',
+    version,
+    buildAvatarUrl,
+    className,
+}: PersonAvatarCircleProps) => {
     const initials = getInitials(name);
     const dimension = `${size}px`;
-    const src = buildAvatarUrl?.({ userId: userId.toString(), ownerType, avatarSize, version });
+    const src = buildAvatarUrl?.({
+        userId: userId.toString(),
+        ownerType,
+        avatarSize,
+        version,
+    });
 
     // The "has avatar" signal can outlive the stored image (e.g. a persona flag that stays set
     // after the blob is gone), which otherwise leaves a broken image and a stream of 404s.
@@ -78,14 +96,33 @@ export const PersonAvatarCircle = ({ userId, name, hasAvatar, size, ownerType = 
 
     return (
         <span
-            className={className ? `person-avatar-circle ${className}` : 'person-avatar-circle'}
-            style={{ width: dimension, height: dimension, background: showImage ? undefined : getAvatarColor(userId.toString()) }}
+            className={
+                className ? `person-avatar-circle ${className}` : 'person-avatar-circle'
+            }
+            style={{
+                width: dimension,
+                height: dimension,
+                background: showImage ? undefined : getAvatarColor(userId.toString()),
+            }}
             aria-label={name}
             title={name}
         >
-            {showImage
-                ? <img className='person-avatar-circle-image' src={src} alt={name} draggable={false} onError={() => setFailedSrc(src)} />
-                : <span className='person-avatar-circle-initials' style={{ fontSize: `${Math.max(8, Math.round(size * 0.4))}px` }}>{initials}</span>}
+            {showImage ? (
+                <img
+                    className='person-avatar-circle-image'
+                    src={src}
+                    alt={name}
+                    draggable={false}
+                    onError={() => setFailedSrc(src)}
+                />
+            ) : (
+                <span
+                    className='person-avatar-circle-initials'
+                    style={{ fontSize: `${Math.max(8, Math.round(size * 0.4))}px` }}
+                >
+                    {initials}
+                </span>
+            )}
         </span>
     );
 };

@@ -128,6 +128,7 @@
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
+        "verify-api-docs": "node ./scripts/verify-api-docs.mjs",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",

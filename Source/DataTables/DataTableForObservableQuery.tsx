@@ -83,7 +83,7 @@ export interface DataTableForObservableQueryProps<
     /**
      * @deprecated Filtering is always applied to the currently loaded page.
      * This compatibility prop no longer toggles behavior and does not change
-     * server-reported pagination totals.
+     * server-reported pagination totals. Retained for source compatibility only.
      */
     clientFiltering?: boolean;
 

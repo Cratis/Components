@@ -35,6 +35,42 @@ toast.success({
 
 The queue is shared across loaded Components copies. `setToastDispatch()` installs an application-owned dispatch and returns a scoped restore callback.
 
+## Building a custom rendering surface
+
+The default `Toaster` is optional. An application that wants full control over how
+notifications render — a different animation library, a non-portal placement, or
+integration with an existing app-wide notification center — can build its own surface
+on the same primitives `Toaster` itself uses:
+
+- `subscribeToToasts(listener)` subscribes to the shared queue and returns an
+  unsubscribe callback. Call it inside a `useSyncExternalStore`/`useEffect` binding.
+- `getToastSnapshot()` returns the current, immutable array of queued `ToastRecord`
+  values — the snapshot to read whenever the subscription notifies of a change.
+- `ToastRecord` is `ToastOptions & { id: ToastId }`, the exact shape stored in the
+  queue; render each record's `title`/`description`/`render`, honor `dismissible`,
+  and call the imperative `toast` API (or a custom `ToastDispatch`) to dismiss it.
+- `ToastDispatch` is the interface implemented by whatever `setToastDispatch()`
+  installs — implement it to redirect every `toast(...)` call to a different
+  in-app system (or to a test double) instead of the built-in queue.
+
+A minimal custom subscriber:
+
+```tsx
+import { useSyncExternalStore } from 'react';
+import { subscribeToToasts, getToastSnapshot } from '@cratis/components/Notifications';
+
+const CustomToastRegion = () => {
+    const toasts = useSyncExternalStore(subscribeToToasts, getToastSnapshot);
+    return (
+        <div role='region' aria-label='Notifications'>
+            {toasts.map((toast) => (
+                <CustomToastFrame key={toast.id} toast={toast} />
+            ))}
+        </div>
+    );
+};
+```
+
 ## Accessible behavior
 
 - Error frames use `role="alert"`; other frames use `role="status"`.

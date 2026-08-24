@@ -7,8 +7,11 @@ import type { ChatMessageReaction } from './ChatMessageReaction';
 
 const MAX_STACKED_GLYPHS = 3;
 
+/**
+ * Props for the row of emoji badges a message's reactions render as, sitting below the message text.
+ * Each badge says who is behind it on hover, emoji on the left and name on the right, one line per person.
+ */
 export interface MessageReactionsProps {
-
     /**
      * The reactions to render, one badge per distinct emoji. Several people behind the same emoji
      * render as a stack rather than repeating the glyph; a different emoji gets its own badge on the
@@ -18,7 +21,6 @@ export interface MessageReactionsProps {
 }
 
 interface ReactionBadgeProps {
-
     /** The reaction this badge stands for. */
     reaction: ChatMessageReaction;
 }
@@ -45,27 +47,46 @@ const ReactionBadge = ({ reaction }: ReactionBadgeProps) => {
                 className='message-reactions__badge'
                 onFocus={() => setIsHovered(true)}
                 onBlur={() => setIsHovered(false)}
-                onClick={() => setIsPinned(pinned => !pinned)}
+                onClick={() => setIsPinned((pinned) => !pinned)}
             >
                 <span className='message-reactions__stack'>
                     {reaction.users.slice(0, MAX_STACKED_GLYPHS).map((user, index) => (
-                        <span key={user.id.toString()} className='message-reactions__glyph' style={{ zIndex: MAX_STACKED_GLYPHS - index }}>
+                        <span
+                            key={user.id.toString()}
+                            className='message-reactions__glyph'
+                            style={{ zIndex: MAX_STACKED_GLYPHS - index }}
+                        >
                             {reaction.emoji}
                         </span>
                     ))}
                 </span>
                 {reaction.users.length > 1 && (
-                    <span className='message-reactions__count'>{reaction.users.length}</span>
+                    <span className='message-reactions__count'>
+                        {reaction.users.length}
+                    </span>
                 )}
             </button>
             {/* Portaled rather than positioned inside the bubble: the chat panel scrolls, and anything
                 positioned within it is clipped the moment it reaches the panel's edge. */}
-            <AnchoredOverlay anchorRef={anchorRef} open={isHovered || isPinned} side='above' align='left' gap={6}>
+            <AnchoredOverlay
+                anchorRef={anchorRef}
+                open={isHovered || isPinned}
+                side='above'
+                align='left'
+                gap={6}
+            >
                 <div className='message-reactions__tooltip' role='tooltip'>
-                    {reaction.users.map(user => (
-                        <div key={user.id.toString()} className='message-reactions__tooltip-row'>
-                            <span className='message-reactions__tooltip-emoji'>{reaction.emoji}</span>
-                            <span className='message-reactions__tooltip-name'>{user.name}</span>
+                    {reaction.users.map((user) => (
+                        <div
+                            key={user.id.toString()}
+                            className='message-reactions__tooltip-row'
+                        >
+                            <span className='message-reactions__tooltip-emoji'>
+                                {reaction.emoji}
+                            </span>
+                            <span className='message-reactions__tooltip-name'>
+                                {user.name}
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -83,7 +104,7 @@ export const MessageReactions = ({ reactions }: MessageReactionsProps) => {
 
     return (
         <div className='message-reactions'>
-            {reactions.map(reaction => (
+            {reactions.map((reaction) => (
                 <ReactionBadge key={reaction.emoji} reaction={reaction} />
             ))}
         </div>

@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useContext, useEffect, useId, useRef, useState } from 'react';
+import type React from 'react';
+import { useContext, useEffect, useId, useRef, useState } from 'react';
 import { CanvasItemRegistryContext } from './Canvas';
 
 /** Props for a measured DOM item positioned in Canvas world space. */
@@ -26,7 +27,17 @@ export interface CanvasItemProps {
     children: React.ReactNode;
 }
 
-export const CanvasItem: React.FC<CanvasItemProps> = ({ x, y, zIndex, onSize, children }) => {
+/**
+ * A measured DOM element positioned in Canvas world space, registered so the Canvas minimap can
+ * show it. Observes size changes and reports bounds to the nearest Canvas registry.
+ */
+export const CanvasItem: React.FC<CanvasItemProps> = ({
+    x,
+    y,
+    zIndex,
+    onSize,
+    children,
+}) => {
     const elementRef = useRef<HTMLDivElement>(null);
     const onSizeRef = useRef(onSize);
     const registryContext = useContext(CanvasItemRegistryContext);
@@ -39,7 +50,7 @@ export const CanvasItem: React.FC<CanvasItemProps> = ({ x, y, zIndex, onSize, ch
         const element = elementRef.current;
         if (!element) return;
 
-        const observer = new ResizeObserver(entries => {
+        const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const { width, height } = entry.contentRect;
                 onSizeRef.current?.(width, height);
@@ -59,12 +70,19 @@ export const CanvasItem: React.FC<CanvasItemProps> = ({ x, y, zIndex, onSize, ch
     // Register with the Canvas registry whenever position or size changes
     useEffect(() => {
         if (!size || !registryContext) return;
-        registryContext.register(itemId, { x, y, width: size.width, height: size.height });
+        registryContext.register(itemId, {
+            x,
+            y,
+            width: size.width,
+            height: size.height,
+        });
     }, [x, y, size, registryContext, itemId]);
 
     // Unregister when unmounting
     useEffect(() => {
-        return () => { registryContext?.unregister(itemId); };
+        return () => {
+            registryContext?.unregister(itemId);
+        };
     }, [registryContext, itemId]);
 
     return (

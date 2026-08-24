@@ -66,6 +66,14 @@ jobs:
                   export NODE_OPTIONS="--max-old-space-size=4096"
                   yarn ci
 
+            # Every intentionally public declaration/member reachable from a JS `exports`
+            # subpath must carry a TSDoc comment (Cratis/Components#173). Runs against
+            # source, so it needs no build step; its own self-tests run first and fail
+            # the job if the reachability/doc-presence walk itself regresses.
+            - name: Verify public API TSDoc coverage
+              working-directory: Source
+              run: node scripts/verify-api-docs.mjs
+
             - name: Build Storybook
               run: yarn workspace @cratis/components build-storybook
 

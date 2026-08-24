@@ -44,8 +44,11 @@ export interface EmojiPickerLabels {
     categories?: Partial<Record<EmojiCategoryKey, string>>;
 }
 
+/**
+ * Props for the full emoji picker the quick row's last button opens — every emoji offered, in the
+ * sections a picker is expected to have. Only the selected section is mounted.
+ */
 export interface EmojiPickerProps {
-
     /** The emoji the viewer already gave, marked so picking it again reads as taking it back. */
     ownEmoji?: string;
 
@@ -72,28 +75,43 @@ export const EmojiPicker = ({ ownEmoji, onPick, labels }: EmojiPickerProps) => {
         gridRef.current?.scrollTo({ top: 0 });
     };
 
-    const emojis = EMOJI_CATALOG.find(section => section.key === category)?.emojis ?? [];
-    const categoryLabel = (key: EmojiCategoryKey) => labels?.categories?.[key] ?? DEFAULT_CATEGORY_LABELS[key];
+    const emojis =
+        EMOJI_CATALOG.find((section) => section.key === category)?.emojis ?? [];
+    const categoryLabel = (key: EmojiCategoryKey) =>
+        labels?.categories?.[key] ?? DEFAULT_CATEGORY_LABELS[key];
 
     return (
-        <div className='emoji-picker' role='dialog' aria-label={labels?.allEmojis ?? 'All emojis'}>
-            <div ref={gridRef} className='emoji-picker__grid' role='listbox' aria-label={labels?.pickEmoji ?? 'Pick an emoji'}>
-                {emojis.map(emoji => (
+        <div
+            className='emoji-picker'
+            role='dialog'
+            aria-label={labels?.allEmojis ?? 'All emojis'}
+        >
+            <div
+                ref={gridRef}
+                className='emoji-picker__grid'
+                role='listbox'
+                aria-label={labels?.pickEmoji ?? 'Pick an emoji'}
+            >
+                {emojis.map((emoji) => (
                     <button
                         key={emoji}
                         type='button'
                         role='option'
                         aria-selected={emoji === ownEmoji}
                         className={`emoji-picker__emoji${emoji === ownEmoji ? ' emoji-picker__emoji--selected' : ''}`}
-                        onMouseDown={event => event.preventDefault()}
+                        onMouseDown={(event) => event.preventDefault()}
                         onClick={() => onPick(emoji)}
                     >
                         {emoji}
                     </button>
                 ))}
             </div>
-            <div className='emoji-picker__tabs' role='tablist' aria-label={labels?.emojiCategories ?? 'Emoji categories'}>
-                {EMOJI_CATALOG.map(section => (
+            <div
+                className='emoji-picker__tabs'
+                role='tablist'
+                aria-label={labels?.emojiCategories ?? 'Emoji categories'}
+            >
+                {EMOJI_CATALOG.map((section) => (
                     <button
                         key={section.key}
                         type='button'
@@ -102,7 +120,7 @@ export const EmojiPicker = ({ ownEmoji, onPick, labels }: EmojiPickerProps) => {
                         aria-label={categoryLabel(section.key)}
                         title={categoryLabel(section.key)}
                         className={`emoji-picker__tab${section.key === category ? ' emoji-picker__tab--current' : ''}`}
-                        onMouseDown={event => event.preventDefault()}
+                        onMouseDown={(event) => event.preventDefault()}
                         onClick={() => showCategory(section.key)}
                     >
                         {CATEGORY_GLYPHS[section.key]}

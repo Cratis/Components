@@ -4,7 +4,8 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
-import { CommandStepper, CommandStepperContent } from '../../CommandStepper';
+import { CommandStepper } from '../../CommandStepper';
+import { CommandStepperContent } from '../../CommandStepperContent';
 import { StepperPanel } from '../../StepperPanel';
 
 const { buttonClicks } = vi.hoisted(() => ({ buttonClicks: new Map<string, () => void>() }));

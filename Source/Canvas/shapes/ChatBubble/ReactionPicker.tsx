@@ -19,8 +19,12 @@ export interface ReactionPickerLabels {
     emojiPicker?: EmojiPickerLabels;
 }
 
+/**
+ * Props for the popover a reaction button opens: the emojis this person reached for most recently,
+ * and a muted button at the end that opens the full picker — the shape Apple's tapback bar established,
+ * where the quick row answers almost every reaction and the rest is one click further away.
+ */
 export interface ReactionPickerProps {
-
     /** The emoji the viewer already gave, highlighted so picking it again reads as "remove". */
     ownEmoji?: string;
 
@@ -61,16 +65,28 @@ export interface ReactionPickerProps {
  * Picking the emoji already given is how a reaction is taken back; the caller decides
  * give/change/revoke from what was clicked.
  */
-export const ReactionPicker = ({ ownEmoji, reactions = [], memory, anchorRef, onPick, onDismiss, labels }: ReactionPickerProps) => {
+export const ReactionPicker = ({
+    ownEmoji,
+    reactions = [],
+    memory,
+    anchorRef,
+    onPick,
+    onDismiss,
+    labels,
+}: ReactionPickerProps) => {
     const rootRef = useRef<HTMLDivElement>(null);
-    const store = memory ?? (typeof window === 'undefined' ? undefined : window.localStorage);
-    const [quickEmojis, setQuickEmojis] = useState(() => store ? recentEmojis(store) : []);
+    const store =
+        memory ?? (typeof window === 'undefined' ? undefined : window.localStorage);
+    const [quickEmojis, setQuickEmojis] = useState(() =>
+        store ? recentEmojis(store) : [],
+    );
     const [showingAll, setShowingAll] = useState(false);
 
     useEffect(() => {
         const handlePointerDown = (event: PointerEvent) => {
             const target = event.target as Node;
-            if (rootRef.current?.contains(target) || anchorRef?.current?.contains(target)) return;
+            if (rootRef.current?.contains(target) || anchorRef?.current?.contains(target))
+                return;
             onDismiss();
         };
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -96,15 +112,19 @@ export const ReactionPicker = ({ ownEmoji, reactions = [], memory, anchorRef, on
 
     return (
         <div ref={rootRef} className='reaction-picker'>
-            <div className='reaction-picker__quick' role='listbox' aria-label={labels?.pickEmoji ?? 'Pick an emoji'}>
-                {quickEmojis.map(emoji => (
+            <div
+                className='reaction-picker__quick'
+                role='listbox'
+                aria-label={labels?.pickEmoji ?? 'Pick an emoji'}
+            >
+                {quickEmojis.map((emoji) => (
                     <button
                         key={emoji}
                         type='button'
                         role='option'
                         aria-selected={emoji === ownEmoji}
                         className={`reaction-picker__item${emoji === ownEmoji ? ' reaction-picker__item--selected' : ''}`}
-                        onMouseDown={event => event.preventDefault()}
+                        onMouseDown={(event) => event.preventDefault()}
                         onClick={() => pick(emoji)}
                     >
                         {emoji}
@@ -116,21 +136,36 @@ export const ReactionPicker = ({ ownEmoji, reactions = [], memory, anchorRef, on
                     title={labels?.allEmojis ?? 'All emojis'}
                     aria-label={labels?.allEmojis ?? 'All emojis'}
                     aria-expanded={showingAll}
-                    onMouseDown={event => event.preventDefault()}
-                    onClick={() => setShowingAll(open => !open)}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => setShowingAll((open) => !open)}
                 >
                     ☺
                 </button>
             </div>
-            {showingAll && <EmojiPicker ownEmoji={ownEmoji} onPick={pick} labels={labels?.emojiPicker} />}
+            {showingAll && (
+                <EmojiPicker
+                    ownEmoji={ownEmoji}
+                    onPick={pick}
+                    labels={labels?.emojiPicker}
+                />
+            )}
             {!showingAll && reactions.length > 0 && (
                 <div className='reaction-picker__given'>
-                    {reactions.flatMap(reaction => reaction.users.map(user => (
-                        <div key={`${reaction.emoji}-${user.id.toString()}`} className='reaction-picker__given-row'>
-                            <span className='reaction-picker__given-emoji'>{reaction.emoji}</span>
-                            <span className='reaction-picker__given-name'>{user.name}</span>
-                        </div>
-                    )))}
+                    {reactions.flatMap((reaction) =>
+                        reaction.users.map((user) => (
+                            <div
+                                key={`${reaction.emoji}-${user.id.toString()}`}
+                                className='reaction-picker__given-row'
+                            >
+                                <span className='reaction-picker__given-emoji'>
+                                    {reaction.emoji}
+                                </span>
+                                <span className='reaction-picker__given-name'>
+                                    {user.name}
+                                </span>
+                            </div>
+                        )),
+                    )}
                 </div>
             )}
         </div>

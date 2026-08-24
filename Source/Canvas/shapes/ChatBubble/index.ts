@@ -18,10 +18,10 @@ export type { ChatTypingAuthor } from './ChatTypingAuthor';
 export { ChatVariant } from './ChatVariant';
 export { FailedReply } from './FailedReply';
 export type { FailedReplyProps, FailedReplyLabels, FailedReplyReportDetails } from './FailedReply';
-export { findOwnReaction } from './findOwnReaction';
+// `findOwnReaction` and `reactionsExcludingUser` are internal helpers used by
+// `ChatMessageBubble` and are intentionally not part of the public API.
 export { MessageReactions } from './MessageReactions';
 export type { MessageReactionsProps } from './MessageReactions';
-export { reactionsExcludingUser } from './reactionsExcludingUser';
 export { ReactionPicker } from './ReactionPicker';
 export type { ReactionPickerProps, ReactionPickerLabels } from './ReactionPicker';
 export { TypingIndicator } from './TypingIndicator';

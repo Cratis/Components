@@ -8,21 +8,33 @@ import { Properties } from './Properties';
 
 /** Stable part attributes for {@link EventsView}. */
 export interface EventsViewParts {
+    /** Scrollable container wrapping the entire vertical timeline. */
     timeline?: HTMLAttributes<HTMLDivElement>;
+    /** One timeline event article element with `data-position` (left/right). */
     event?: HTMLAttributes<HTMLElement>;
+    /** Separator column containing the marker and optional connector line. */
     separator?: HTMLAttributes<HTMLDivElement>;
+    /** Event marker (the circular dot on the timeline spine). */
     marker?: HTMLAttributes<HTMLDivElement>;
+    /** Vertical line connecting consecutive event markers. */
     connector?: HTMLAttributes<HTMLDivElement>;
+    /** Content panel showing the event card (type, timestamp, properties). */
     content?: HTMLAttributes<HTMLDivElement>;
 }
 
 /** Props for the standalone, localized event timeline. */
 export interface EventsViewProps {
+    /** Ordered list of domain events to render in the vertical timeline. */
     events: Event[];
+    /** CSS class name applied to the timeline root. */
     className?: string;
+    /** Cratis-owned per-part attributes for timeline, event, separator, marker, connector, content. */
     pt?: EventsViewParts;
+    /** Retained for source compatibility; Cratis parts always merge. */
     ptOptions?: object;
+    /** Retained for source compatibility; consumers always own the CSS. */
     unstyled?: boolean;
+    /** Override any user-facing string (for localization). See {@link TimeMachineLabels}. */
     labels?: TimeMachineLabels;
 }
 

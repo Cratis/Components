@@ -5,23 +5,34 @@ import { Guid } from '@cratis/fundamentals';
 import { ChatAuthorKind } from './ChatAuthorKind';
 import type { ChatMessageReaction } from './ChatMessageReaction';
 
+/**
+ * One message in a conversation, carrying who said it, what was said, when it was said, and optional
+ * reactions. A message whose {@link failureDetail} is set renders as a failure line rather than as
+ * something its author said.
+ */
 export interface ChatMessage {
-
+    /** Stable message identity. */
     id: Guid;
 
+    /** The identifier of the person or agent who wrote the message. */
     authorId: Guid;
 
+    /** The author's display name. */
     authorName: string;
 
+    /** The author's initials, used for avatar fallback. */
     authorInitials: string;
 
+    /** Whether the author has an uploaded avatar image. */
     hasAvatar: boolean;
 
     /** Whether a person or an agent wrote it, which decides where the avatar is fetched from. */
     authorKind: ChatAuthorKind;
 
+    /** The message text. */
     text: string;
 
+    /** When the message was sent. */
     timestamp: Date;
 
     /**

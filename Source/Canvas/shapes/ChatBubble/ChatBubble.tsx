@@ -20,32 +20,51 @@ function formatTimestamp(date: Date): string {
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+/**
+ * Props for a canvas-rendered chat bubble avatar with hover preview and optional thinking indicator.
+ * Shows the author's avatar circle with an optional selection ring, animated thinking dots, and a
+ * hover card previewing the conversation state.
+ */
 export interface ChatBubbleProps {
-
+    /** The identifier of the person this bubble represents. */
     authorId: Guid | string;
 
+    /** The person's display name, used for the avatar and preview. */
     authorName: string;
 
+    /** Whether the person has an uploaded avatar image. */
     hasAvatar: boolean;
 
+    /** The avatar circle's diameter in pixels. Defaults to `56`. */
     size?: number;
 
+    /** Whether to suppress the hover preview card. Defaults to `false`. */
     suppressPreview?: boolean;
 
+    /** The most recent message text shown in the preview. */
     previewMessage?: string;
 
+    /** The timestamp of the most recent message shown in the preview. */
     previewTimestamp?: Date;
 
+    /** The number of replies shown in the preview. */
     replyCount?: number;
 
+    /** Whether to show the animated thinking-bubble indicator. Defaults to `false`. */
     showThinkingBubbles?: boolean;
 
+    /** Whether to show the selection ring around the avatar. Defaults to `false`. */
     selected?: boolean;
 
     /** Builds the avatar image URL. Omit to always show initials — see {@link PersonAvatarCircleProps}. */
     buildAvatarUrl?: (params: BuildAvatarUrlParams) => string;
 }
 
+/**
+ * A canvas-rendered chat bubble avatar with hover preview and optional thinking indicator. Shows
+ * the author's avatar circle with an optional selection ring, animated thinking dots trailing
+ * down-right, and a hover card previewing the conversation state.
+ */
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
     authorId,
     authorName,
@@ -107,7 +126,14 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     position: 'relative',
                 }}
             >
-                <PersonAvatarCircle userId={authorId} name={authorName} hasAvatar={hasAvatar} size={size} avatarSize='Medium' buildAvatarUrl={buildAvatarUrl} />
+                <PersonAvatarCircle
+                    userId={authorId}
+                    name={authorName}
+                    hasAvatar={hasAvatar}
+                    size={size}
+                    avatarSize='Medium'
+                    buildAvatarUrl={buildAvatarUrl}
+                />
             </div>
 
             {/* Animated thinking bubbles trailing down-right */}
@@ -163,25 +189,72 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     }}
                 >
                     {/* Avatar in preview */}
-                    <PersonAvatarCircle userId={authorId} name={authorName} hasAvatar={hasAvatar} size={30} buildAvatarUrl={buildAvatarUrl} />
+                    <PersonAvatarCircle
+                        userId={authorId}
+                        name={authorName}
+                        hasAvatar={hasAvatar}
+                        size={30}
+                        buildAvatarUrl={buildAvatarUrl}
+                    />
 
                     {/* Text content */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 3, flexWrap: 'wrap' }}>
-                            <span style={{ ...FONT, fontSize: 12, fontWeight: 600, color: 'var(--cratis-text-color)' }}>
-                                {authorName.length > PREVIEW_AUTHOR_NAME_MAX_LENGTH ? `${authorName.slice(0, PREVIEW_AUTHOR_NAME_MAX_LENGTH)}…` : authorName}
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'baseline',
+                                gap: 6,
+                                marginBottom: 3,
+                                flexWrap: 'wrap',
+                            }}
+                        >
+                            <span
+                                style={{
+                                    ...FONT,
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: 'var(--cratis-text-color)',
+                                }}
+                            >
+                                {authorName.length > PREVIEW_AUTHOR_NAME_MAX_LENGTH
+                                    ? `${authorName.slice(0, PREVIEW_AUTHOR_NAME_MAX_LENGTH)}…`
+                                    : authorName}
                             </span>
                             {previewTimestamp && (
-                                <span style={{ ...FONT, fontSize: 10, color: 'var(--cratis-text-color-secondary)' }}>
+                                <span
+                                    style={{
+                                        ...FONT,
+                                        fontSize: 10,
+                                        color: 'var(--cratis-text-color-secondary)',
+                                    }}
+                                >
                                     {formatTimestamp(previewTimestamp)}
                                 </span>
                             )}
                         </div>
-                        <p style={{ ...FONT, fontSize: 11, color: 'var(--cratis-text-color)', margin: '0 0 6px', lineHeight: 1.4 } }>
-                            {previewMessage ? (previewMessage.length > PREVIEW_MESSAGE_MAX_LENGTH ? `${previewMessage.slice(0, PREVIEW_MESSAGE_MAX_LENGTH)}…` : previewMessage) : 'No messages yet'}
+                        <p
+                            style={{
+                                ...FONT,
+                                fontSize: 11,
+                                color: 'var(--cratis-text-color)',
+                                margin: '0 0 6px',
+                                lineHeight: 1.4,
+                            }}
+                        >
+                            {previewMessage
+                                ? previewMessage.length > PREVIEW_MESSAGE_MAX_LENGTH
+                                    ? `${previewMessage.slice(0, PREVIEW_MESSAGE_MAX_LENGTH)}…`
+                                    : previewMessage
+                                : 'No messages yet'}
                         </p>
                         {replyCount !== undefined && replyCount > 0 && (
-                            <span style={{ ...FONT, fontSize: 10, color: 'var(--cratis-primary-color)' }}>
+                            <span
+                                style={{
+                                    ...FONT,
+                                    fontSize: 10,
+                                    color: 'var(--cratis-primary-color)',
+                                }}
+                            >
                                 {replyCount === 1 ? '1 reply' : `${replyCount} replies`}
                             </span>
                         )}

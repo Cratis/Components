@@ -45,6 +45,11 @@ export interface CanvasMinimapProps {
     onRequestPan?: (pan: { x: number; y: number }) => void;
 }
 
+/**
+ * A standalone minimap overlay for {@link Canvas}, showing item rectangles and the current
+ * viewport. Click or drag to pan; imperative {@link CanvasMinimapHandle.update} keeps the viewport
+ * rectangle synchronized with the parent Canvas camera.
+ */
 export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>(
     (
         {
@@ -59,7 +64,12 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
         const scaleYConst = MINIMAP_HEIGHT / worldHeight;
         const viewportRectRef = useRef<HTMLDivElement>(null);
         // Stores the latest canvas state for use inside pointer-event handlers
-        const stateRef = useRef({ pan: { x: 0, y: 0 }, zoom: 1, canvasWidth: 800, canvasHeight: 600 });
+        const stateRef = useRef({
+            pan: { x: 0, y: 0 },
+            zoom: 1,
+            canvasWidth: 800,
+            canvasHeight: 600,
+        });
 
         useImperativeHandle(
             ref,
@@ -92,7 +102,6 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
             }),
             [worldWidth, worldHeight],
         );
-
 
         const panFromMinimapPos = useCallback(
             (clientX: number, clientY: number, bounds: DOMRect) => {
@@ -151,7 +160,8 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        backgroundImage: 'radial-gradient(circle, var(--cratis-surface-border) 1px, transparent 1px)',
+                        backgroundImage:
+                            'radial-gradient(circle, var(--cratis-surface-border) 1px, transparent 1px)',
                         backgroundSize: '10px 10px',
                         pointerEvents: 'none',
                     }}

@@ -23,6 +23,13 @@ import type {
 import { FilterEditor } from './FilterEditor';
 import { RangeHistogramFilter } from './RangeHistogramFilter';
 
+/**
+ * Props for {@link FilterPanel}.
+ *
+ * Describes the filter definitions to render, the current state
+ * (selections, ranges, custom values), and the callbacks that fire when
+ * the user changes a filter or expands a filter group.
+ */
 export interface FilterPanelProps {
     /** Whether the panel is visible. */
     isOpen: boolean;
@@ -93,6 +100,53 @@ function buildEditorMap(
     return map;
 }
 
+/**
+ * Renders a filter dropdown panel anchored below a trigger button. The panel
+ * appears as a portal at a fixed position on the page and includes search,
+ * collapsible filter groups, and per-filter editors (option lists, numeric
+ * range histograms, or custom components).
+ *
+ * Use with {@link useFilterState} for turnkey state management, or wire the
+ * props to external state when the filter state lives elsewhere (e.g. in a
+ * query param reducer).
+ *
+ * ## Filter types
+ *
+ * - **String/option filters** render as a list of checkboxes or radio buttons.
+ *   Controlled through `filterValues`.
+ * - **Numeric/date range filters** render as a {@link RangeHistogramFilter}
+ *   with a draggable range selector over a histogram. Controlled through
+ *   `rangeValues`.
+ * - **Custom filters** slot in a `<FilterEditor>` child whose `filterKey`
+ *   matches the filter's `key`. Controlled through `customValues`.
+ *
+ * ```tsx
+ * const state = useFilterState(filters);
+ * const [isOpen, setIsOpen] = useState(false);
+ * const anchorRef = useRef<HTMLButtonElement>(null);
+ *
+ * return (
+ *   <>
+ *     <button ref={anchorRef} onClick={() => setIsOpen(!isOpen)}>
+ *       Filters
+ *     </button>
+ *     <FilterPanel
+ *       isOpen={isOpen}
+ *       filters={filters}
+ *       anchorRef={anchorRef}
+ *       onClose={() => setIsOpen(false)}
+ *       {...state}
+ *     >
+ *       <FilterEditor filterKey="rating">
+ *         {({ value, onChange }) => <RatingPicker value={value} onChange={onChange} />}
+ *       </FilterEditor>
+ *     </FilterPanel>
+ *   </>
+ * );
+ * ```
+ *
+ * @param props - {@link FilterPanelProps}.
+ */
 function renderOptionCount(count: number | undefined): string | number {
     return typeof count === 'number' ? count : '';
 }
@@ -166,6 +220,14 @@ const subscribeToBrowserState = () => () => undefined;
 const browserSnapshot = () => true;
 const serverSnapshot = () => false;
 
+/**
+ * A filter dropdown panel anchored below a trigger button. Renders filter
+ * groups, search, numeric range histograms, and custom editors. The panel
+ * appears as a portal at a fixed position on the page and closes when the
+ * user clicks outside.
+ *
+ * See the full documentation comment at line 169 for usage examples.
+ */
 export function FilterPanel({
     isOpen,
     filters,

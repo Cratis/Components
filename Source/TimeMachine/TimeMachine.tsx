@@ -17,8 +17,17 @@ enum ViewModes {
 
 /** Props for the localized, keyboard-accessible event/read-model timeline. */
 export interface TimeMachineProps {
+    /** Ordered list of historical entity versions (snapshots) to scrub through. */
     versions: Version[];
+    /**
+     * Zero-based index of the currently selected version.
+     * Controlled externally — the parent owns this value and updates it via {@link onVersionChange}.
+     */
     currentVersionIndex?: number;
+    /**
+     * Invoked when the user selects a different version (via timeline, scroll gesture, or arrow keys).
+     * Called immediately after the internal state changes, before rendering the new version.
+     */
     onVersionChange?: (index: number) => void;
     /** Scroll sensitivity - higher values require more scrolling to change versions */
     scrollSensitivity?: number;
@@ -26,6 +35,12 @@ export interface TimeMachineProps {
     labels?: Partial<TimeMachineLabels>;
 }
 
+/**
+ * A version slider/timeline component that lets a user scrub through historical snapshots
+ * of an event-sourced entity. Supports two view modes: read-model snapshots (with a
+ * fish-eye timeline and version cards) and a vertical event timeline. Built on top of
+ * event-sourced read models.
+ */
 export const TimeMachine: React.FC<TimeMachineProps> = ({
     versions,
     currentVersionIndex = 0,

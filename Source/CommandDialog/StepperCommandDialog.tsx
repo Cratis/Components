@@ -18,7 +18,8 @@ import {
     type ConfirmCallback,
     type CancelCallback,
 } from '../Dialogs/Dialog';
-import { CommandStepperContent, type StepperCustomizationProps } from './CommandStepper';
+import type { StepperCustomizationProps } from './CommandStepper';
+import { CommandStepperContent } from './CommandStepperContent';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
 import { getStepPanels } from './stepChildren';
 
@@ -268,10 +269,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         if (!result.isSuccess) {
             await onFailed?.(result);
             if (result.hasExceptions) {
-                await onException?.(
-                    result.exceptionMessages,
-                    result.exceptionStackTrace,
-                );
+                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
             }
             if (!result.isAuthorized) await onUnauthorized?.();
             if (!result.isValid) {
@@ -559,4 +557,18 @@ const StepperCommandDialogComponent = <
     );
 };
 
+/**
+ * A multi-step wizard dialog backed by a single Cratis Arc command. Wraps
+ * the Cratis-owned Stepper inside a Cratis {@link Dialog}, tracks per-step
+ * visit state, surfaces inline error indicators on steps with invalid
+ * fields, and executes the bound command when the user submits the last
+ * step. Use it when one command has enough fields that they should be
+ * broken into named stages; for single-stage commands, use
+ * {@link CommandDialog}.
+ *
+ * See {@link StepperCommandDialogComponent} for full documentation.
+ *
+ * @typeParam TCommand - The command class (proxy generated from C# `[Command]`).
+ * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
+ */
 export const StepperCommandDialog = StepperCommandDialogComponent;

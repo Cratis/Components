@@ -128,7 +128,10 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
     }, [children, isDisabled]);
 
     return (
-        <div className='cratis-data-page-actions cratis:px-4 cratis:py-2' style={actionsStyle}>
+        <div
+            className='cratis-data-page-actions cratis:px-4 cratis:py-2'
+            style={actionsStyle}
+        >
             <ActionMenubar
                 aria-label={context.actionsAriaLabel ?? 'Actions'}
                 model={items}
@@ -213,12 +216,11 @@ export interface IDetailsComponentProps<TDataType> {
     onRefresh?: () => void;
 }
 
-interface IDataPageContext
-    extends DataPageProps<
-        IQueryFor<object, object> | IObservableQueryFor<object, object>,
-        object,
-        object
-    > {
+interface IDataPageContext extends DataPageProps<
+    IQueryFor<object, object> | IObservableQueryFor<object, object>,
+    object,
+    object
+> {
     selectedItem: object | null | undefined;
     onSelectionChanged: (event: DataTableSelectionChangeEvent<object>) => void;
 }
@@ -309,7 +311,7 @@ export interface DataPageProps<
     /**
      * @deprecated Filtering is always applied to the currently loaded page.
      * This compatibility prop no longer toggles behavior and does not change
-     * server-reported pagination totals.
+     * server-reported pagination totals. Retained for source compatibility only.
      */
     clientFiltering?: boolean;
 

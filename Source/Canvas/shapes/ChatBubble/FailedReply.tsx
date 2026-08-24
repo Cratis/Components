@@ -9,7 +9,6 @@ import { FaTriangleExclamation } from 'react-icons/fa6';
 
 /** The pieces of a would-be issue report, handed to {@link FailedReplyProps.buildReportUrl}. */
 export interface FailedReplyReportDetails {
-
     /** A one-line title for the report. */
     title: string;
 
@@ -44,8 +43,13 @@ export interface FailedReplyLabels {
     close?: string;
 }
 
+/**
+ * Props for the line a failed turn leaves behind, standing where the answer would have been. It says
+ * plainly that the answer never came, and offers the two things somebody staring at it actually wants:
+ * the error itself, and — when {@link buildReportUrl} is wired up — a way to report it without
+ * transcribing anything by hand.
+ */
 export interface FailedReplyProps {
-
     /** The message whose turn ended in failure; its `failureDetail` carries the reason. */
     message: ChatMessage;
 
@@ -73,7 +77,10 @@ export const FailedReply = ({ message, buildReportUrl, labels }: FailedReplyProp
 
     const reportUrl = buildReportUrl?.({
         title: withName(labels?.reportTitle ?? '"{name}" could not answer a comment'),
-        summary: withName(labels?.reportSummary ?? '{name} failed while answering a comment. The error it reported follows.'),
+        summary: withName(
+            labels?.reportSummary ??
+                '{name} failed while answering a comment. The error it reported follows.',
+        ),
         detail,
         // The comment the failed turn was written as is the only identifier the reply carries, and it
         // is what the turn can be traced by on the server.
@@ -87,10 +94,16 @@ export const FailedReply = ({ message, buildReportUrl, labels }: FailedReplyProp
                     className='chat-failed-reply__icon'
                     aria-hidden='true'
                 />
-                <span className='chat-failed-reply__text'>{withName(labels?.replyFailed ?? '{name} could not answer')}</span>
+                <span className='chat-failed-reply__text'>
+                    {withName(labels?.replyFailed ?? '{name} could not answer')}
+                </span>
             </div>
             <div className='chat-failed-reply__actions'>
-                <button type='button' className='chat-failed-reply__action' onClick={() => setDetailShown(true)}>
+                <button
+                    type='button'
+                    className='chat-failed-reply__action'
+                    onClick={() => setDetailShown(true)}
+                >
                     {labels?.seeError ?? 'See error'}
                 </button>
                 {reportUrl && (
@@ -98,7 +111,8 @@ export const FailedReply = ({ message, buildReportUrl, labels }: FailedReplyProp
                         className='chat-failed-reply__action'
                         href={reportUrl}
                         target='_blank'
-                        rel='noreferrer'>
+                        rel='noreferrer'
+                    >
                         {labels?.report ?? 'Report a bug'}
                     </a>
                 )}
@@ -110,7 +124,8 @@ export const FailedReply = ({ message, buildReportUrl, labels }: FailedReplyProp
                     buttons={DialogButtons.Ok}
                     okLabel={labels?.close ?? 'Close'}
                     onConfirm={() => setDetailShown(false)}
-                    onCancel={() => setDetailShown(false)}>
+                    onCancel={() => setDetailShown(false)}
+                >
                     <pre className='chat-failed-reply__detail'>{detail}</pre>
                 </Dialog>
             )}
