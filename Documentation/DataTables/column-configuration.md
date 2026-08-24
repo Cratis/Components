@@ -63,6 +63,12 @@ Set `filter` and optionally:
 />
 ```
 
+Every label in `filterLabels` resolves with the same precedence: the `filterLabels` entry wins, then the matching
+[`CratisComponentsProvider`](../Common/cratis-components-provider.md) `messages.columnFilter` message, then the
+English default shown in the snippet above. Configure a product's column-filter copy once through the provider
+rather than repeating `filterLabels` on every filterable `Column`; use `filterLabels` for a column that genuinely
+needs different wording than the rest of the application.
+
 A custom editor receives the draft value/mode and `onChange`, `onApply`, and `onClear` callbacks. Applying updates the table's `DataTableFilterMeta`; clearing removes the constraint.
 
 `filterPt` exposes `trigger`, `popover`, `menu`, `matchMode`, `input`, `actions`, `clear`, and `apply`. These are Cratis-owned parts; the popup/menu/actions also render `data-cratis-part='filter-popover'`, `filter-menu`, and `filter-actions`.

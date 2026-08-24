@@ -207,7 +207,11 @@ export const DatePickerInput = ({
     const effectiveInvalid = invalid ?? pt?.input?.['aria-invalid'] ?? false;
     const effectivePlaceholder = placeholder ?? pt?.input?.placeholder;
     const effectiveAriaLabel =
-        ariaLabel ?? pt?.input?.['aria-label'] ?? effectivePlaceholder ?? 'Date';
+        ariaLabel ??
+        pt?.input?.['aria-label'] ??
+        effectivePlaceholder ??
+        datePickerMessages?.label ??
+        'Date';
     const effectiveAriaLabelledby = ariaLabelledby ?? pt?.input?.['aria-labelledby'];
     const effectiveAriaDescribedby = ariaDescribedby ?? pt?.input?.['aria-describedby'];
     const inputPartAttributes = {

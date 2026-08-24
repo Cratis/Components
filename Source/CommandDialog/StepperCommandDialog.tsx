@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState, type CSSProperties } from 'react';
-import { ICommandResult } from '@cratis/arc/commands';
+import type { ICommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Button } from '../Common/Button';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import {
     CommandForm,
     useCommandFormContext,
@@ -77,11 +78,11 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
      * the command is executing.
      */
     onCancel?: CancelCallback;
-    /** Label for the submit button shown on the last step when valid. Defaults to `'Submit'`. */
+    /** Label for the submit button shown on the last step when valid. Falls back to the provider's `stepper.submit` message, then `'Submit'`. */
     okLabel?: string;
-    /** Label for the next step button. Defaults to `'Next'`. */
+    /** Label for the next step button. Falls back to the provider's `stepper.next` message, then `'Next'`. */
     nextLabel?: string;
-    /** Label for the previous step button. Defaults to `'Previous'`. */
+    /** Label for the previous step button. Falls back to the provider's `stepper.previous` message, then `'Previous'`. */
     previousLabel?: string;
     /**
      * Show a Cancel action in the footer. Defaults to `false`, leaving the X in the header as the
@@ -89,7 +90,7 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
      * submit — a destructive or long flow, or one presented without a visible header.
      */
     showCancel?: boolean;
-    /** Label for the footer cancel button. Defaults to `'Cancel'`. */
+    /** Label for the footer cancel button. Falls back to the provider's `dialog.cancel` message, then `'Cancel'`. */
     cancelLabel?: string;
     /**
      * Extra CSS class name forwarded to the underlying Cratis Dialog root.
@@ -152,11 +153,11 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     onException,
     onUnauthorized,
     onBeforeExecute,
-    okLabel = 'Submit',
-    nextLabel = 'Next',
-    previousLabel = 'Previous',
+    okLabel,
+    nextLabel,
+    previousLabel,
     showCancel = false,
-    cancelLabel = 'Cancel',
+    cancelLabel,
     linear = true,
     orientation,
     headerPosition,
@@ -172,6 +173,13 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     dialogUnstyled,
     children,
 }: StepperCommandDialogWrapperProps<TCommand, TResponse>) => {
+    const { messages } = useCratisComponentsConfig();
+    const stepperMessages = messages?.stepper;
+    const dialogMessages = messages?.dialog;
+    const resolvedOkLabel = okLabel ?? stepperMessages?.submit ?? 'Submit';
+    const resolvedNextLabel = nextLabel ?? stepperMessages?.next ?? 'Next';
+    const resolvedPreviousLabel = previousLabel ?? stepperMessages?.previous ?? 'Previous';
+    const resolvedCancelLabel = cancelLabel ?? dialogMessages?.cancel ?? 'Cancel';
     const {
         setCommandValues,
         setCommandResult,
@@ -224,15 +232,13 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 const closeResult = await onClose(result);
                 shouldCloseThroughContext = closeResult !== false;
             }
-        } else {
-            if (onCancel) {
+        } else if (onCancel) {
                 const closeResult = await onCancel();
                 shouldCloseThroughContext = closeResult === true;
             } else if (onClose) {
                 const closeResult = await onClose(result);
                 shouldCloseThroughContext = closeResult !== false;
             }
-        }
 
         if (shouldCloseThroughContext) {
             contextCloseDialog?.(result);
@@ -299,7 +305,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                     disabled={isBusy}
                     style={{ width: 'auto' }}
                 >
-                    <span>{cancelLabel}</span>
+                    <span>{resolvedCancelLabel}</span>
                 </Button>
             )}
             {!isFirstStep && (
@@ -309,7 +315,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                     disabled={isBusy}
                     style={{ width: 'auto' }}
                 >
-                    <span>{previousLabel}</span>
+                    <span>{resolvedPreviousLabel}</span>
                 </Button>
             )}
             <div style={{ flex: 1 }} />
@@ -322,7 +328,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                     disabled={isBusy || isCurrentStepInvalid}
                     style={{ width: 'auto' }}
                 >
-                    <span>{nextLabel}</span>
+                    <span>{resolvedNextLabel}</span>
                 </Button>
             )}
             {isLastStep && isDialogValid && (
@@ -335,7 +341,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                     {isBusy && (
                         <span className='cratis-dialog__spinner' aria-hidden='true' />
                     )}
-                    <span>{okLabel}</span>
+                    <span>{resolvedOkLabel}</span>
                 </Button>
             )}
         </div>

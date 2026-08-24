@@ -41,6 +41,26 @@ Filtered selection follows the combobox pattern. A non-filtered single select fo
 
 Set `multiple` and bind an array. Components uses native multiple selection when filtering is off and an accessible multi-value combobox when `filter` is enabled. Use a specialized collection picker when a large dataset needs virtualized search or chip collapsing.
 
+## Localizing show-options and clear-selection
+
+The show-options trigger (the filtered combobox path) and the clear-selection action (`showClear`) carry
+their own accessible names, resolved with the same precedence everywhere `Dropdown` renders them: `pt.trigger['aria-label']`
+(or `pt.select['aria-label']` for the trigger) wins, then the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s
+`messages.dropdown.showOptions` / `messages.dropdown.clearSelection`, then the English defaults `'Show options'` /
+`'Clear selection'`. Configure them once for every `Dropdown` in the application through the provider, or per instance
+through `pt`.
+
+```tsx
+<Dropdown
+    value={role}
+    options={roles}
+    filter
+    showClear
+    aria-label='Role'
+    pt={{ trigger: { 'aria-label': 'Show role options' } }}
+/>
+```
+
 ## Props
 
 | Prop                               | Purpose                                         |

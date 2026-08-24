@@ -32,6 +32,85 @@ export interface CratisDatePickerMessages {
     previousMonth?: string;
     /** Next-month action label. */
     nextMonth?: string;
+    /**
+     * Accessible name for the segmented date input when neither an explicit
+     * `aria-label` nor a `placeholder` is supplied. Previously an orphaned
+     * `'Date'` literal with no override path.
+     */
+    label?: string;
+}
+
+/** Localizable labels owned by the Cratis {@link Dropdown} composition. */
+export interface CratisDropdownMessages {
+    /** Accessible name for the options-popover trigger. */
+    showOptions?: string;
+    /** Accessible name for the clear-selection action. */
+    clearSelection?: string;
+}
+
+/**
+ * Localizable action and dismissal labels shared by every Cratis-owned dialog
+ * surface — {@link Dialog}, {@link CommandDialog}, and {@link StepperCommandDialog}.
+ */
+export interface CratisDialogMessages {
+    /** Primary confirmation label (the `Ok` action in `DialogButtons.Ok*`). */
+    ok?: string;
+    /** Cancellation label (the `Cancel` action, and the Stepper footer Cancel). */
+    cancel?: string;
+    /** Affirmative label (the `Yes` action in `DialogButtons.YesNo*`). */
+    yes?: string;
+    /** Negative label (the `No` action in `DialogButtons.YesNo*`). */
+    no?: string;
+    /** Accessible name for the header close (×) action. */
+    close?: string;
+}
+
+/** Localizable navigation labels owned by {@link CommandStepper} / {@link StepperCommandDialog}. */
+export interface CratisStepperMessages {
+    /** Advance-to-next-step action label. */
+    next?: string;
+    /** Return-to-previous-step action label. */
+    previous?: string;
+    /** Final-step submit action label. */
+    submit?: string;
+}
+
+/** Localizable labels owned by the Cratis {@link Toaster}. */
+export interface CratisNotificationsMessages {
+    /** Accessible name for a toast's dismiss action. */
+    dismiss?: string;
+    /** Accessible name for the toast region landmark. */
+    region?: string;
+}
+
+/** Localizable labels owned by the Cratis {@link DataTableCore} composition. */
+export interface CratisDataTableMessages {
+    /** Accessible name for a single-selection row control. */
+    selectRow?: string;
+    /** Placeholder for the loaded-page search input. */
+    search?: string;
+    /** Accessible name for the loaded-page search input. */
+    searchAriaLabel?: string;
+}
+
+/** Localizable labels owned by the Cratis column-filter popup. */
+export interface CratisColumnFilterMessages {
+    /** Builds the filter-trigger accessible name from the effective field. */
+    filterTriggerAriaLabel?: (field: string) => string;
+    /** Builds the value-control accessible name from the effective field. */
+    valueAriaLabel?: (field: string) => string;
+    /** Accessible name for the match-mode selector. */
+    matchModeAriaLabel?: string;
+    /** Localizes a match mode while retaining its default label as fallback input. */
+    matchModeLabel?: (mode: string, defaultLabel: string) => string;
+    /** Clear action label. */
+    clear?: string;
+    /** Apply action label. */
+    apply?: string;
+    /** Boolean true option label. */
+    true?: string;
+    /** Boolean false option label. */
+    false?: string;
 }
 
 /** Components-owned message groups. */
@@ -40,6 +119,18 @@ export interface CratisComponentsMessages {
     paginator?: CratisPaginatorMessages;
     /** Date-picker labels. */
     datePicker?: CratisDatePickerMessages;
+    /** Dropdown labels. */
+    dropdown?: CratisDropdownMessages;
+    /** Dialog action/dismissal labels shared by Dialog, CommandDialog, and StepperCommandDialog. */
+    dialog?: CratisDialogMessages;
+    /** Stepper navigation labels shared by CommandStepper and StepperCommandDialog. */
+    stepper?: CratisStepperMessages;
+    /** Toaster labels. */
+    notifications?: CratisNotificationsMessages;
+    /** DataTable search/selection labels. */
+    dataTable?: CratisDataTableMessages;
+    /** Column-filter popup labels and match-mode copy. */
+    columnFilter?: CratisColumnFilterMessages;
 }
 
 interface LegacyLocaleMessages {
@@ -95,6 +186,39 @@ export const cratisDefaults: CratisComponentsConfig = {
             openCalendar: 'Open calendar',
             previousMonth: 'Previous month',
             nextMonth: 'Next month',
+            label: 'Date',
+        },
+        dropdown: {
+            showOptions: 'Show options',
+            clearSelection: 'Clear selection',
+        },
+        dialog: {
+            ok: 'Ok',
+            cancel: 'Cancel',
+            yes: 'Yes',
+            no: 'No',
+            close: 'Close',
+        },
+        stepper: {
+            next: 'Next',
+            previous: 'Previous',
+            submit: 'Submit',
+        },
+        notifications: {
+            dismiss: 'Dismiss',
+            region: 'Notifications',
+        },
+        dataTable: {
+            selectRow: 'Select row',
+            search: 'Search…',
+            searchAriaLabel: 'Search table',
+        },
+        columnFilter: {
+            matchModeAriaLabel: 'Match mode',
+            clear: 'Clear',
+            apply: 'Apply',
+            true: 'True',
+            false: 'False',
         },
     },
 };

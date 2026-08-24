@@ -28,6 +28,7 @@ import {
     ListBoxItem as ComboBoxListBoxItem,
     Popover as ComboBoxPopover,
 } from 'react-aria-components/ComboBox';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 
 /** Change event emitted by {@link Dropdown}. */
 export interface DropdownChangeEvent<T = unknown> {
@@ -234,6 +235,15 @@ export const Dropdown = <T = unknown,>({
     onBlur,
     pt,
 }: DropdownProps<T>) => {
+    const { messages } = useCratisComponentsConfig();
+    const dropdownMessages = messages?.dropdown;
+    const showOptionsLabel =
+        pt?.trigger?.['aria-label'] ??
+        pt?.select?.['aria-label'] ??
+        dropdownMessages?.showOptions ??
+        'Show options';
+    const clearSelectionLabel =
+        pt?.clear?.['aria-label'] ?? dropdownMessages?.clearSelection ?? 'Clear selection';
     const resolvedOptions = resolveOptions(options, optionLabel, optionValue);
     const selectedOption = resolvedOptions.find((option) =>
         Object.is(option.value, value),
@@ -352,11 +362,7 @@ export const Dropdown = <T = unknown,>({
                                 pt?.trigger?.className,
                             )}
                             data-cratis-part='trigger'
-                            aria-label={
-                                pt?.trigger?.['aria-label'] ??
-                                pt?.select?.['aria-label'] ??
-                                'Show options'
-                            }
+                            aria-label={showOptionsLabel}
                         >
                             <span aria-hidden='true'>⌄</span>
                         </ComboBoxButton>
@@ -370,9 +376,7 @@ export const Dropdown = <T = unknown,>({
                                     pt?.clear?.className,
                                 )}
                                 data-cratis-part='clear'
-                                aria-label={
-                                    pt?.clear?.['aria-label'] ?? 'Clear selection'
-                                }
+                                aria-label={clearSelectionLabel}
                                 onClick={() => onChange?.({ value: [] as T })}
                             >
                                 <span aria-hidden='true'>×</span>
@@ -481,7 +485,7 @@ export const Dropdown = <T = unknown,>({
                             pt?.clear?.className,
                         )}
                         data-cratis-part='clear'
-                        aria-label={pt?.clear?.['aria-label'] ?? 'Clear selection'}
+                        aria-label={clearSelectionLabel}
                         onClick={() => onChange?.({ value: [] as T })}
                     >
                         <span aria-hidden='true'>×</span>
@@ -535,11 +539,7 @@ export const Dropdown = <T = unknown,>({
                             pt?.trigger?.className,
                         )}
                         data-cratis-part='trigger'
-                        aria-label={
-                            pt?.trigger?.['aria-label'] ??
-                            pt?.select?.['aria-label'] ??
-                            'Show options'
-                        }
+                        aria-label={showOptionsLabel}
                     >
                         <span aria-hidden='true'>⌄</span>
                     </ComboBoxButton>
@@ -553,7 +553,7 @@ export const Dropdown = <T = unknown,>({
                                 pt?.clear?.className,
                             )}
                             data-cratis-part='clear'
-                            aria-label={pt?.clear?.['aria-label'] ?? 'Clear selection'}
+                            aria-label={clearSelectionLabel}
                             onClick={() => onChange?.({ value: null as T })}
                         >
                             <span aria-hidden='true'>×</span>
@@ -670,7 +670,7 @@ export const Dropdown = <T = unknown,>({
                             pt?.clear?.className,
                         )}
                         data-cratis-part='clear'
-                        aria-label={pt?.clear?.['aria-label'] ?? 'Clear selection'}
+                        aria-label={clearSelectionLabel}
                         onClick={() => onChange?.({ value: null as T })}
                     >
                         <span aria-hidden='true'>×</span>

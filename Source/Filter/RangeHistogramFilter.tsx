@@ -39,6 +39,8 @@ export interface RangeHistogramFilterProps {
      * Use this to display ms timestamps as dates, currency, etc.
      */
     formatValue?: (value: number) => string;
+    /** Unit shown after a histogram bar count. Override to localize. Defaults to `'items'`. */
+    itemsLabel?: string;
 }
 
 const defaultFormatValue = (value: number) => {
@@ -82,6 +84,7 @@ export function RangeHistogramFilter({
     selectedRange,
     onChange,
     formatValue = defaultFormatValue,
+    itemsLabel = 'items',
 }: RangeHistogramFilterProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState<'left' | 'right' | 'range' | null>(null);
@@ -204,7 +207,7 @@ export function RangeHistogramFilter({
                             className={`pv-histogram-bar ${isInRange ? 'in-range' : ''} ${isPartiallyInRange && !isInRange ? 'partial' : ''}`}
                             style={{ height: `${heightPercent}%` }}
                             onClick={() => handleBarClick(bucket)}
-                            title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} items`}
+                            title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} ${itemsLabel}`}
                             type='button'
                         />
                     );

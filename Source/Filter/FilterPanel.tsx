@@ -155,12 +155,15 @@ interface OptionListProps {
     filter: FilterDefinition;
     selections: Set<string>;
     onFilterToggle: (filterKey: string, optionKey: string, multi: boolean) => void;
+    /** Falls back to the panel-level search placeholder when the filter group has none of its own. */
+    searchPlaceholder?: string;
 }
 
 function OptionList({
     filter,
     selections,
     onFilterToggle,
+    searchPlaceholder,
 }: Omit<OptionListProps, 'onFilterClear'>) {
     const [groupSearch, setGroupSearch] = useState('');
     const allOptions = filter.options ?? [];
@@ -178,7 +181,7 @@ function OptionList({
                 <div className='pv-filter-group-search'>
                     <input
                         type='search'
-                        placeholder={filter.searchPlaceholder ?? 'Search…'}
+                        placeholder={filter.searchPlaceholder ?? searchPlaceholder}
                         value={groupSearch}
                         onChange={(event) => setGroupSearch(event.target.value)}
                     />
@@ -372,7 +375,7 @@ export function FilterPanel({
                                                             <button
                                                                 type='button'
                                                                 className='pv-filter-clear-header'
-                                                                title='Clear filter'
+                                                                title={clearFilterAriaLabel}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     onFilterClear(
@@ -395,7 +398,7 @@ export function FilterPanel({
                                                         <button
                                                             type='button'
                                                             className='pv-filter-clear-header'
-                                                            title='Clear range'
+                                                            title={clearRangeAriaLabel}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 onRangeChange(
@@ -421,7 +424,7 @@ export function FilterPanel({
                                                             <button
                                                                 type='button'
                                                                 className='pv-filter-clear-header'
-                                                                title='Clear filter'
+                                                                title={clearFilterAriaLabel}
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     onCustomValueChange?.(
@@ -472,6 +475,7 @@ export function FilterPanel({
                                                     filter={filter}
                                                     selections={selections}
                                                     onFilterToggle={onFilterToggle}
+                                                    searchPlaceholder={searchPlaceholder}
                                                 />
                                             )}
                                         </div>

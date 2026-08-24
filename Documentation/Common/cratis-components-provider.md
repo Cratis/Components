@@ -19,16 +19,89 @@ export const App = () => (
 
 ## Configuration
 
-| Member                | Purpose                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| `locale`              | BCP 47 locale used by React Aria for dates, numbers, keyboard behavior, and announcements. |
-| `messages.paginator`  | Components-owned paginator labels.                                                         |
-| `messages.datePicker` | Components-owned date-picker action/navigation labels.                                     |
-| `locales`             | Temporary Components 3 compatibility map; migrate to `messages`.                           |
+| Member                  | Purpose                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| `locale`                | BCP 47 locale used by React Aria for dates, numbers, keyboard behavior, and announcements. |
+| `messages.paginator`    | Components-owned paginator labels.                                                         |
+| `messages.datePicker`   | Components-owned date-picker action/navigation labels, plus the segmented input's fallback accessible name (`label`). |
+| `messages.dropdown`     | `Dropdown`'s show-options and clear-selection labels.                                      |
+| `messages.dialog`       | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
+| `messages.stepper`      | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`. |
+| `messages.notifications`| `Toaster`'s dismiss-action and region-landmark labels.                                     |
+| `messages.dataTable`    | `DataTableCore`'s loaded-page search and single-row-selection labels.                      |
+| `messages.columnFilter` | The built-in column filter popup's clear/apply/boolean/match-mode labels.                  |
+| `locales`               | Temporary Components 3 compatibility map; migrate to `messages`.                           |
 
 Unknown Components 3 renderer options are intentionally a type error. Remove `license`, `theme`, `defaults`, global `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings rather than compiling a provider whose visual configuration does nothing. Configure any remaining direct Prime provider independently.
 
+Every group follows the same precedence: a named component prop (or a component's own `labels`/`filterLabels` override) wins, then the matching provider message, then the English default shown above. Per-instance overrides keep working exactly as before — the provider only fills gaps a call site left unset.
+
 ## Localize owned labels
+
+English, spelled out explicitly (this is also what every group defaults to with no provider at all):
+
+```tsx
+<CratisComponentsProvider
+    value={{
+        locale: 'en-US',
+        messages: {
+            paginator: {
+                navigation: 'Pagination',
+                first: 'First page',
+                previous: 'Previous page',
+                next: 'Next page',
+                last: 'Last page',
+            },
+            datePicker: {
+                today: 'Today',
+                clear: 'Clear',
+                openCalendar: 'Open calendar',
+                previousMonth: 'Previous month',
+                nextMonth: 'Next month',
+                label: 'Date',
+            },
+            dropdown: {
+                showOptions: 'Show options',
+                clearSelection: 'Clear selection',
+            },
+            dialog: {
+                ok: 'Ok',
+                cancel: 'Cancel',
+                yes: 'Yes',
+                no: 'No',
+                close: 'Close',
+            },
+            stepper: {
+                next: 'Next',
+                previous: 'Previous',
+                submit: 'Submit',
+            },
+            notifications: {
+                dismiss: 'Dismiss',
+                region: 'Notifications',
+            },
+            dataTable: {
+                selectRow: 'Select row',
+                search: 'Search…',
+                searchAriaLabel: 'Search table',
+            },
+            columnFilter: {
+                matchModeAriaLabel: 'Match mode',
+                clear: 'Clear',
+                apply: 'Apply',
+                true: 'True',
+                false: 'False',
+                filterTriggerAriaLabel: (field) => `Filter by ${field}`,
+                valueAriaLabel: (field) => `Filter value for ${field}`,
+            },
+        },
+    }}
+>
+    <Application />
+</CratisComponentsProvider>
+```
+
+The same shape in Norwegian Bokmål:
 
 ```tsx
 <CratisComponentsProvider
@@ -48,6 +121,41 @@ Unknown Components 3 renderer options are intentionally a type error. Remove `li
                 openCalendar: 'Åpne kalender',
                 previousMonth: 'Forrige måned',
                 nextMonth: 'Neste måned',
+                label: 'Dato',
+            },
+            dropdown: {
+                showOptions: 'Vis alternativer',
+                clearSelection: 'Fjern valg',
+            },
+            dialog: {
+                ok: 'Ok',
+                cancel: 'Avbryt',
+                yes: 'Ja',
+                no: 'Nei',
+                close: 'Lukk',
+            },
+            stepper: {
+                next: 'Neste',
+                previous: 'Forrige',
+                submit: 'Send inn',
+            },
+            notifications: {
+                dismiss: 'Lukk',
+                region: 'Varsler',
+            },
+            dataTable: {
+                selectRow: 'Velg rad',
+                search: 'Søk…',
+                searchAriaLabel: 'Søk i tabellen',
+            },
+            columnFilter: {
+                matchModeAriaLabel: 'Sammenligningsmodus',
+                clear: 'Tøm',
+                apply: 'Bruk',
+                true: 'Sann',
+                false: 'Usann',
+                filterTriggerAriaLabel: (field) => `Filtrer på ${field}`,
+                valueAriaLabel: (field) => `Filterverdi for ${field}`,
             },
         },
     }}
@@ -56,7 +164,7 @@ Unknown Components 3 renderer options are intentionally a type error. Remove `li
 </CratisComponentsProvider>
 ```
 
-React Aria supplies locale data for its interaction patterns. Components asks you only for product labels it owns.
+React Aria supplies locale data for its interaction patterns — calendar month/weekday names, number formatting, and similar platform locale data. Components asks you only for the product labels it owns; do not copy React Aria's own locale strings into `messages`.
 
 ## Mount the toaster
 

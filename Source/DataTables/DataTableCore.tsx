@@ -12,6 +12,7 @@ import React, {
     type TdHTMLAttributes,
     type ThHTMLAttributes,
 } from 'react';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
@@ -75,7 +76,7 @@ export interface DataTableCoreProps<TData extends object> {
     emptyMessage: ReactNode;
     /** Enables single-row selection. */
     selectionMode?: 'single';
-    /** Accessible name for row selection controls. */
+    /** Accessible name for row selection controls. Falls back to the provider's `dataTable.selectRow` message, then `'Select row'`. */
     selectionAriaLabel?: string;
     /** Controlled selected row. */
     selection?: TData | null;
@@ -87,9 +88,9 @@ export interface DataTableCoreProps<TData extends object> {
     rowClassName?: (rowData: TData) => string;
     /** Row fields searched on the loaded page. */
     globalFilterFields?: string[];
-    /** Placeholder for the loaded-page search input. */
+    /** Placeholder for the loaded-page search input. Falls back to the provider's `dataTable.search` message, then `'Search…'`. */
     globalSearchPlaceholder?: string;
-    /** Accessible name for the loaded-page search input. */
+    /** Accessible name for the loaded-page search input. Falls back to the provider's `dataTable.searchAriaLabel` message, then `'Search table'`. */
     globalSearchAriaLabel?: string;
     /** Initial per-field filter constraints. */
     defaultFilters?: DataTableFilterMeta;
@@ -247,14 +248,14 @@ export const DataTableCore = <TData extends object>({
     dataKey,
     emptyMessage,
     selectionMode,
-    selectionAriaLabel = 'Select row',
+    selectionAriaLabel,
     selection,
     onSelectionChange,
     onRowClick,
     rowClassName,
     globalFilterFields,
-    globalSearchPlaceholder = 'Search…',
-    globalSearchAriaLabel = 'Search table',
+    globalSearchPlaceholder,
+    globalSearchAriaLabel,
     defaultFilters,
     onFilter,
     scrollable,
@@ -263,6 +264,14 @@ export const DataTableCore = <TData extends object>({
     style,
     pt,
 }: DataTableCoreProps<TData>) => {
+    const { messages } = useCratisComponentsConfig();
+    const dataTableMessages = messages?.dataTable;
+    const resolvedSelectionAriaLabel =
+        selectionAriaLabel ?? dataTableMessages?.selectRow ?? 'Select row';
+    const resolvedGlobalSearchPlaceholder =
+        globalSearchPlaceholder ?? dataTableMessages?.search ?? 'Search…';
+    const resolvedGlobalSearchAriaLabel =
+        globalSearchAriaLabel ?? dataTableMessages?.searchAriaLabel ?? 'Search table';
     const columns = useColumns(children);
     const selectionGroupName = useId();
     const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters ?? {});
@@ -374,8 +383,8 @@ export const DataTableCore = <TData extends object>({
                     <input
                         {...pt?.searchInput}
                         value={globalFilter}
-                        placeholder={globalSearchPlaceholder}
-                        aria-label={globalSearchAriaLabel}
+                        placeholder={resolvedGlobalSearchPlaceholder}
+                        aria-label={resolvedGlobalSearchAriaLabel}
                         className={classNames(
                             'cratis-datatable-search__input',
                             pt?.searchInput?.className,
@@ -612,7 +621,7 @@ export const DataTableCore = <TData extends object>({
                                                         name={selectionGroupName}
                                                         readOnly
                                                         tabIndex={-1}
-                                                        aria-label={selectionAriaLabel}
+                                                        aria-label={resolvedSelectionAriaLabel}
                                                         checked={isSelected}
                                                     />
                                                 ) : (

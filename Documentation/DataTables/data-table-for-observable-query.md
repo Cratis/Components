@@ -52,8 +52,9 @@ Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
 - `selection`: Currently selected row
 - `onSelectionChange`: Callback when selection changes
 - `globalFilterFields`: Fields searched on the loaded page
-- `globalSearchPlaceholder`: Search-input placeholder
-- `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder
+- `globalSearchPlaceholder`: Search-input placeholder. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.dataTable.search`, then `'Search…'`
+- `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder. Falls back to the provider's `messages.dataTable.searchAriaLabel`, then `'Search table'`
+- `selectionAriaLabel`: Accessible name for a single-selection row control. Falls back to the provider's `messages.dataTable.selectRow`, then `'Select row'`
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
 - `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages

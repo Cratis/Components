@@ -16,6 +16,7 @@ import { Dialog as AriaDialog, DialogTrigger } from 'react-aria-components/Dialo
 import { Popover } from 'react-aria-components/Popover';
 import { Button, type ButtonParts } from '../Common/Button';
 import { DatePickerInput } from '../Common/DatePickerInput';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { Dropdown, type DropdownParts } from '../Dropdown/Dropdown';
 import {
     DataTableFilterMatchMode,
@@ -200,21 +201,29 @@ export const ColumnFilterMenu = ({
         setDraftMode(constraint?.matchMode ?? defaultModeFor(dataType));
     }, [constraint, dataType]);
 
+    const { messages } = useCratisComponentsConfig();
+    const columnFilterMessages = messages?.columnFilter;
     const resolvedLabels: ColumnFilterMenuLabels = {
         filterTriggerAriaLabel:
             labels?.filterTriggerAriaLabel ??
+            columnFilterMessages?.filterTriggerAriaLabel ??
             defaultColumnFilterMenuLabels.filterTriggerAriaLabel,
         valueAriaLabel:
-            labels?.valueAriaLabel ?? defaultColumnFilterMenuLabels.valueAriaLabel,
+            labels?.valueAriaLabel ??
+            columnFilterMessages?.valueAriaLabel ??
+            defaultColumnFilterMenuLabels.valueAriaLabel,
         matchModeAriaLabel:
             labels?.matchModeAriaLabel ??
+            columnFilterMessages?.matchModeAriaLabel ??
             defaultColumnFilterMenuLabels.matchModeAriaLabel,
         matchModeLabel:
-            labels?.matchModeLabel ?? defaultColumnFilterMenuLabels.matchModeLabel,
-        clear: labels?.clear ?? defaultColumnFilterMenuLabels.clear,
-        apply: labels?.apply ?? defaultColumnFilterMenuLabels.apply,
-        true: labels?.true ?? defaultColumnFilterMenuLabels.true,
-        false: labels?.false ?? defaultColumnFilterMenuLabels.false,
+            labels?.matchModeLabel ??
+            columnFilterMessages?.matchModeLabel ??
+            defaultColumnFilterMenuLabels.matchModeLabel,
+        clear: labels?.clear ?? columnFilterMessages?.clear ?? defaultColumnFilterMenuLabels.clear,
+        apply: labels?.apply ?? columnFilterMessages?.apply ?? defaultColumnFilterMenuLabels.apply,
+        true: labels?.true ?? columnFilterMessages?.true ?? defaultColumnFilterMenuLabels.true,
+        false: labels?.false ?? columnFilterMessages?.false ?? defaultColumnFilterMenuLabels.false,
     };
     const modeOptions = optionsFor(dataType).map((option) => ({
         ...option,

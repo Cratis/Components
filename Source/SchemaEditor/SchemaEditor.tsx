@@ -10,8 +10,8 @@ import { Tooltip } from '../Common/Tooltip';
 import * as faIcons from 'react-icons/fa6';
 import { NameCell } from './NameCell';
 import { TypeCell } from './TypeCell';
-import { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
-import { TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
+import type { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
+import { type TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
 import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
 
 /**
@@ -430,13 +430,14 @@ export const SchemaEditor = ({
 
     const menuItems = useMemo<ActionMenuItem[]>(
         () => [
-            ...(!isEditMode
-                ? [
+            ...(isEditMode
+                ? []
+                : [
                       {
                           label: l.edit,
                           icon: <faIcons.FaPencil className='cratis:mr-2' />,
                           command: canEdit ? handleEdit : undefined,
-                          className: !canEdit ? 'edit-disabled-with-reason' : undefined,
+                          className: canEdit ? undefined : 'edit-disabled-with-reason',
                           template:
                               !canEdit && canNotEditReason
                                   ? (item: ActionMenuItem) => (
@@ -462,29 +463,28 @@ export const SchemaEditor = ({
                                     )
                                   : undefined,
                       },
-                  ]
-                : []),
+                  ]),
             ...(isEditMode
                 ? [
-                      ...(!saveDisabled
-                          ? [
+                      ...(saveDisabled
+                          ? []
+                          : [
                                 {
                                     label: l.save,
                                     icon: <faIcons.FaCheck className='cratis:mr-2' />,
                                     command: hasValidationErrors ? undefined : handleSave,
                                     disabled: hasValidationErrors,
                                 },
-                            ]
-                          : []),
-                      ...(!cancelDisabled
-                          ? [
+                            ]),
+                      ...(cancelDisabled
+                          ? []
+                          : [
                                 {
                                     label: l.cancel,
                                     icon: <faIcons.FaXmark className='cratis:mr-2' />,
                                     command: handleCancel,
                                 },
-                            ]
-                          : []),
+                            ]),
                       {
                           label: l.addProperty,
                           icon: <faIcons.FaPlus className='cratis:mr-2' />,
@@ -525,7 +525,7 @@ export const SchemaEditor = ({
 
             <div className='cratis:px-4 cratis:py-2 cratis-schema-editor-bottom-border'>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Tooltip content='Navigate back' position='top'>
+                    <Tooltip content={l.navigateBack} position='top'>
                         <Button
                             text
                             size='small'

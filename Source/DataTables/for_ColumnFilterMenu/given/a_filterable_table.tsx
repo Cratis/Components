@@ -3,7 +3,10 @@
 
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
+import {
+    CratisComponentsProvider,
+    type CratisComponentsConfig,
+} from '../../../Common/CratisComponentsProvider';
 import { Column, type ColumnProps } from '../../Column';
 import { DataTableCore } from '../../DataTableCore';
 import type { DataTableFilterMeta } from '../../DataTableFilterMeta';
@@ -24,6 +27,8 @@ export interface FilterableTableOptions {
     column?: ColumnProps<Row>;
     defaultFilters?: DataTableFilterMeta;
     onFilter?: (filters: DataTableFilterMeta) => void;
+    /** Overrides the `CratisComponentsProvider` value the table renders under. */
+    providerValue?: CratisComponentsConfig;
 }
 
 export interface FilterableTableInTheDom {
@@ -65,7 +70,7 @@ export const renderFilterableTable = async (
 
     await act(async () => {
         root.render(
-            <CratisComponentsProvider>
+            <CratisComponentsProvider value={options.providerValue}>
                 <DataTableCore<Row>
                     data={rows}
                     dataKey='id'

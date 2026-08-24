@@ -96,11 +96,11 @@ function MyComponent() {
 - `onConfirm`: Confirm callback — called only after successful command execution
 - `onCancel`: Cancel callback — invoked for every dismissal that is not a successful submit: the X in the dialog header, the Escape key, and the footer Cancel button when `showCancel` is on
 - `onClose`: Fallback close callback
-- `okLabel`: Label for the submit button shown on the last step when valid (default: `'Submit'`)
-- `nextLabel`: Label for the next step button (default: `'Next'`)
-- `previousLabel`: Label for the previous step button (default: `'Previous'`)
+- `okLabel`: Label for the submit button shown on the last step when valid. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.stepper.submit`, then `'Submit'`
+- `nextLabel`: Label for the next step button. Falls back to the provider's `messages.stepper.next`, then `'Next'`
+- `previousLabel`: Label for the previous step button. Falls back to the provider's `messages.stepper.previous`, then `'Previous'`
 - `showCancel`: Adds a Cancel button as the first item in the footer (default: `false`)
-- `cancelLabel`: Label for the footer cancel button (default: `'Cancel'`)
+- `cancelLabel`: Label for the footer cancel button. Falls back to the provider's `messages.dialog.cancel` — the same group `Dialog`'s own Cancel button resolves through — then `'Cancel'`
 - `isValid`: Additional validity gate combined with command form validity
 - `width`: Dialog width (default: `'600px'`)
 - `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle. Existing call sites keep compiling; the prop simply has no effect.

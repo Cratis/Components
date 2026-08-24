@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { Button } from '../Common/Button';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { CommandFormFieldWrapper } from '@cratis/arc.react/commands';
 import { isCommandFormField } from '../CommandForm/commandFormMarkers';
 import type { StepperPanelProps } from './StepperPanel';
@@ -37,11 +38,11 @@ export interface CommandStepperContentProps extends StepperCustomizationProps {
     showNavigation?: boolean;
     /** Whether to show built-in submit on the last step. Defaults to `true`. */
     showSubmit?: boolean;
-    /** Label for the next step button. Defaults to `'Next'`. */
+    /** Label for the next step button. Falls back to the provider's `stepper.next` message, then `'Next'`. */
     nextLabel?: string;
-    /** Label for the previous step button. Defaults to `'Previous'`. */
+    /** Label for the previous step button. Falls back to the provider's `stepper.previous` message, then `'Previous'`. */
     previousLabel?: string;
-    /** Label for the submit button. Defaults to `'Submit'`. */
+    /** Label for the submit button. Falls back to the provider's `stepper.submit` message, then `'Submit'`. */
     okLabel?: string;
     /** Whether navigation controls are busy. */
     isBusy?: boolean;
@@ -126,9 +127,9 @@ export const CommandStepperContent = ({
     getFieldError,
     showNavigation = true,
     showSubmit = true,
-    nextLabel = 'Next',
-    previousLabel = 'Previous',
-    okLabel = 'Submit',
+    nextLabel,
+    previousLabel,
+    okLabel,
     isBusy = false,
     isSubmitting = false,
     isSubmitDisabled = false,
@@ -141,6 +142,12 @@ export const CommandStepperContent = ({
     onChangeStep,
     pt,
 }: CommandStepperContentProps) => {
+    const { messages } = useCratisComponentsConfig();
+    const resolvedNextLabel = nextLabel ?? messages?.stepper?.next ?? 'Next';
+    const resolvedPreviousLabel =
+        previousLabel ?? messages?.stepper?.previous ?? 'Previous';
+    const resolvedOkLabel = okLabel ?? messages?.stepper?.submit ?? 'Submit';
+
     // The steps that actually render. Conditional steps (`{condition && <StepperPanel/>}`)
     // leave falsy children behind, so the count, the per-step validation state and what the
     // Stepper renders are all derived from this one list — they cannot drift apart.
@@ -361,7 +368,7 @@ export const CommandStepperContent = ({
                             disabled={isBusy}
                             style={{ width: 'auto' }}
                         >
-                            <span>{previousLabel}</span>
+                            <span>{resolvedPreviousLabel}</span>
                         </Button>
                     )}
                     <div style={{ flex: 1 }} />
@@ -371,7 +378,7 @@ export const CommandStepperContent = ({
                             disabled={isBusy || isSubmitting || isCurrentStepInvalid}
                             style={{ width: 'auto' }}
                         >
-                            <span>{nextLabel}</span>
+                            <span>{resolvedNextLabel}</span>
                         </Button>
                     )}
                     {isLastStep && showSubmit && (
@@ -392,7 +399,7 @@ export const CommandStepperContent = ({
                                     aria-hidden='true'
                                 />
                             )}
-                            <span>{okLabel}</span>
+                            <span>{resolvedOkLabel}</span>
                         </Button>
                     )}
                 </div>

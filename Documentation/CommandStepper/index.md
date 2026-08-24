@@ -45,12 +45,12 @@ export const ProjectWizard = () => {
 
 - `command`: Command constructor used to establish `CommandForm`
 - `children`: `StepperPanel` elements
-- `nextLabel`: Next button label (default: `Next`)
-- `previousLabel`: Previous button label (default: `Previous`)
+- `nextLabel`: Next button label. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.stepper.next`, then `'Next'`
+- `previousLabel`: Previous button label. Falls back to the provider's `messages.stepper.previous`, then `'Previous'`
 - `showNavigation`: Show built-in navigation controls (default: `true`)
 - `onStepErrorsChange`: Callback receiving a boolean array of per-step validation errors
 - `showSubmit`: Show the built-in submit action on the last step (default: `true`)
-- `okLabel`: Submit button label (default: `Submit`)
+- `okLabel`: Submit button label. Falls back to the provider's `messages.stepper.submit`, then `'Submit'`
 - `isBusy`: Disables the navigation controls while something is running
 - `onSubmit`: Submit callback invoked on the last step
 - Any `CommandForm` props, including `initialValues`, `currentValues`, `validateOnInit`, and validation callbacks

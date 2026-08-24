@@ -77,7 +77,8 @@ const MyComponent = () => {
 - `dismissable`: Whether the header close (X), a backdrop click and `Escape` are
   offered (see below)
 - `closeAriaLabel`: Accessible name for the header close button. Defaults to
-  `'Close'` — override it to localize
+  the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s
+  `messages.dialog.close`, then `'Close'` — override it to localize a single dialog
 - `width`: Dialog width (defaults to `'450px'`)
 - `style`: Custom dialog style
 - `contentStyle`: Custom content area style
@@ -85,7 +86,13 @@ const MyComponent = () => {
 - `isValid`: Enables or disables confirm actions (defaults to `true`)
 - `isBusy`: When `true`, disables all buttons, blocks Escape/backdrop dismissal, and shows a loading spinner on the primary action button
 - `initialFocus`: Where keyboard focus lands when the dialog opens (see below)
-- `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels. Footer icons are decorative and hidden from accessibility APIs, so each button's accessible name is exactly its configured label
+- `okLabel`, `cancelLabel`, `yesLabel`, `noLabel`: Button labels. Each resolves from the prop, then the
+  [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s matching `messages.dialog` entry
+  (`ok`, `cancel`, `yes`, `no`), then its English default (`'Ok'`, `'Cancel'`, `'Yes'`, `'No'`) — localize every
+  dialog at once through the provider, or one dialog through the prop. Footer icons are decorative and hidden
+  from accessibility APIs, so each button's accessible name is exactly its configured label. `CommandDialog`
+  and `StepperCommandDialog` forward these same props straight through to `Dialog`, so the same precedence
+  covers every dialog surface.
 - `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts — see the [pass-through cheat sheet](../Styling/pass-through.md)
 - `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
 

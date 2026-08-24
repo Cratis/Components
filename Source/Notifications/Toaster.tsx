@@ -9,6 +9,7 @@ import {
     type HTMLAttributes,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import {
     getToastSnapshot,
     subscribeToToasts,
@@ -54,9 +55,9 @@ export interface ToasterProps {
     limit?: number;
     /** Default timeout in milliseconds. */
     timeout?: number;
-    /** Accessible label for dismiss buttons. */
+    /** Accessible label for dismiss buttons. Falls back to the provider's `notifications.dismiss` message, then `'Dismiss'`. */
     dismissAriaLabel?: string;
-    /** Accessible name for the toast region. */
+    /** Accessible name for the toast region. Falls back to the provider's `notifications.region` message, then `'Notifications'`. */
     regionAriaLabel?: string;
     /** Stable part attributes. */
     pt?: ToasterPassThrough;
@@ -190,10 +191,16 @@ export const Toaster = ({
     position = 'top-right',
     limit = 3,
     timeout = 6000,
-    dismissAriaLabel = 'Dismiss',
-    regionAriaLabel = 'Notifications',
+    dismissAriaLabel,
+    regionAriaLabel,
     pt,
 }: ToasterProps) => {
+    const { messages } = useCratisComponentsConfig();
+    const notificationsMessages = messages?.notifications;
+    const resolvedDismissAriaLabel =
+        dismissAriaLabel ?? notificationsMessages?.dismiss ?? 'Dismiss';
+    const resolvedRegionAriaLabel =
+        regionAriaLabel ?? notificationsMessages?.region ?? 'Notifications';
     const items = useSyncExternalStore(
         subscribeToToasts,
         getToastSnapshot,
@@ -208,7 +215,7 @@ export const Toaster = ({
             data-cratis-part='region'
             data-position={position}
             role='region'
-            aria-label={regionAriaLabel}
+            aria-label={resolvedRegionAriaLabel}
             aria-live='polite'
         >
             {items.slice(-limit).map((item) => (
@@ -216,7 +223,7 @@ export const Toaster = ({
                     key={item.id}
                     item={item}
                     timeout={timeout}
-                    dismissAriaLabel={dismissAriaLabel}
+                    dismissAriaLabel={resolvedDismissAriaLabel}
                     pt={pt}
                 />
             ))}

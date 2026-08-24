@@ -12,6 +12,7 @@ import type {
 } from 'react';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { DialogInitialFocus } from './DialogInitialFocus';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 
 /** Callback handling a typed dialog result; return `false` to keep the dialog open. */
 export type CloseDialog = (
@@ -86,15 +87,15 @@ export interface DialogProps {
     isValid?: boolean;
     /** Disables every action and dismissal path while work is in flight. */
     isBusy?: boolean;
-    /** Label for the Ok action. */
+    /** Label for the Ok action. Falls back to the provider's `dialog.ok` message, then `'Ok'`. */
     okLabel?: string;
-    /** Label for the Cancel action. */
+    /** Label for the Cancel action. Falls back to the provider's `dialog.cancel` message, then `'Cancel'`. */
     cancelLabel?: string;
-    /** Label for the Yes action. */
+    /** Label for the Yes action. Falls back to the provider's `dialog.yes` message, then `'Yes'`. */
     yesLabel?: string;
-    /** Label for the No action. */
+    /** Label for the No action. Falls back to the provider's `dialog.no` message, then `'No'`. */
     noLabel?: string;
-    /** Accessible label for the header close button. */
+    /** Accessible label for the header close button. Falls back to the provider's `dialog.close` message, then `'Close'`. */
     closeAriaLabel?: string;
     /** Enables header, Escape, and backdrop dismissal when not busy. */
     dismissable?: boolean;
@@ -137,15 +138,22 @@ export const Dialog = ({
     contentStyle,
     isValid,
     isBusy = false,
-    okLabel = 'Ok',
-    cancelLabel = 'Cancel',
-    yesLabel = 'Yes',
-    noLabel = 'No',
-    closeAriaLabel = 'Close',
+    okLabel,
+    cancelLabel,
+    yesLabel,
+    noLabel,
+    closeAriaLabel,
     dismissable,
     className,
     pt,
 }: DialogProps) => {
+    const { messages } = useCratisComponentsConfig();
+    const dialogMessages = messages?.dialog;
+    const resolvedOkLabel = okLabel ?? dialogMessages?.ok ?? 'Ok';
+    const resolvedCancelLabel = cancelLabel ?? dialogMessages?.cancel ?? 'Cancel';
+    const resolvedYesLabel = yesLabel ?? dialogMessages?.yes ?? 'Yes';
+    const resolvedNoLabel = noLabel ?? dialogMessages?.no ?? 'No';
+    const resolvedCloseAriaLabel = closeAriaLabel ?? dialogMessages?.close ?? 'Close';
     let contextCloseDialog: ((result: DialogResult) => void) | undefined;
     try {
         const context = useDialogContext();
@@ -241,19 +249,24 @@ export const Dialog = ({
 
         switch (buttons) {
             case DialogButtons.Ok:
-                return footerButton(DialogResult.Ok, okLabel, true, focusesConfirmButton);
+                return footerButton(
+                    DialogResult.Ok,
+                    resolvedOkLabel,
+                    true,
+                    focusesConfirmButton,
+                );
             case DialogButtons.OkCancel:
                 return (
                     <>
                         {footerButton(
                             DialogResult.Ok,
-                            okLabel,
+                            resolvedOkLabel,
                             true,
                             focusesConfirmButton,
                         )}
                         {footerButton(
                             DialogResult.Cancelled,
-                            cancelLabel,
+                            resolvedCancelLabel,
                             false,
                             focusesDismissingButton,
                         )}
@@ -264,13 +277,13 @@ export const Dialog = ({
                     <>
                         {footerButton(
                             DialogResult.Yes,
-                            yesLabel,
+                            resolvedYesLabel,
                             true,
                             focusesConfirmButton,
                         )}
                         {footerButton(
                             DialogResult.No,
-                            noLabel,
+                            resolvedNoLabel,
                             false,
                             focusesDismissingButton,
                         )}
@@ -281,14 +294,14 @@ export const Dialog = ({
                     <>
                         {footerButton(
                             DialogResult.Yes,
-                            yesLabel,
+                            resolvedYesLabel,
                             true,
                             focusesConfirmButton,
                         )}
-                        {footerButton(DialogResult.No, noLabel, false, false)}
+                        {footerButton(DialogResult.No, resolvedNoLabel, false, false)}
                         {footerButton(
                             DialogResult.Cancelled,
-                            cancelLabel,
+                            resolvedCancelLabel,
                             false,
                             focusesDismissingButton,
                         )}
@@ -332,7 +345,7 @@ export const Dialog = ({
                                 pt?.close?.className,
                             )}
                             data-cratis-part='close'
-                            aria-label={closeAriaLabel}
+                            aria-label={resolvedCloseAriaLabel}
                             onClick={() => void handleClose(DialogResult.Cancelled)}
                         >
                             <span aria-hidden='true'>×</span>

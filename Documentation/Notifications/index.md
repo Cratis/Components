@@ -97,6 +97,9 @@ Custom content replaces only the body. The frame, severity indicator, timeout, a
 | `position`         | One of the six viewport edges/corners.                                                            |
 | `limit`            | Maximum visible frames.                                                                           |
 | `timeout`          | Default timeout in milliseconds.                                                                  |
-| `dismissAriaLabel` | Accessible name for close controls.                                                               |
-| `regionAriaLabel`  | Accessible name for the notification region.                                                      |
+| `dismissAriaLabel` | Accessible name for close controls. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.notifications.dismiss`, then `'Dismiss'`. |
+| `regionAriaLabel`  | Accessible name for the notification region. Falls back to the provider's `messages.notifications.region`, then `'Notifications'`. |
 | `pt`               | Stable `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, and `close` parts. |
+
+Configure `dismissAriaLabel` / `regionAriaLabel` once for the whole application through
+`CratisComponentsProvider`'s `messages.notifications`, or override either per `<Toaster>` instance.
