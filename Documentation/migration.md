@@ -353,10 +353,14 @@ import { PrimeReactProvider } from '@primereact/core';
     <PrimeReactProvider license={primeUiLicense}>
         <LocaleAwareNumberInput />
     </PrimeReactProvider>
-</CratisComponentsProvider>
+</CratisComponentsProvider>;
 ```
 
-PrimeReact 11 receives `license` directly as a provider prop; it does **not** use the `value={{ license }}` shape of `CratisComponentsProvider`. Add the installed Prime theme/provider options beside `license` when that island needs them. Other areas can remove Prime as soon as they have no direct Prime imports. Remove the separate Prime provider only when number grouping, decimal handling, fraction digits, prefix/suffix, min/max, and command binding have an accepted renderer-independent replacement.
+PrimeReact 11 receives `license` directly as a provider prop; it does **not** use the `value={{ license }}` shape of `CratisComponentsProvider`. Add the installed Prime theme/provider options beside `license` when that island needs them.
+
+The provider boundary scopes Prime runtime configuration and context, but a JavaScript-imported Prime theme stylesheet is still a **document-global side effect**. Put the import in the smallest host entry point that contains the island and inventory any `.p-*` selectors that intentionally depend on it; wrapping a subtree does not isolate that CSS. Every retained island should have an owner, a reason it remains, its licensing/theme dependencies, and an explicit removal condition or tracking issue.
+
+Other areas can remove Prime as soon as they have no direct Prime imports. Remove the separate Prime provider only when number grouping, decimal handling, fraction digits, prefix/suffix, min/max, and command binding have an accepted renderer-independent replacement.
 
 This preserves product token and theme ownership while removing the circular product → Prime preset → Prime variables → Cratis translation.
 
