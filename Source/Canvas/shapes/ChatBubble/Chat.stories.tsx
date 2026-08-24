@@ -127,7 +127,7 @@ export const BasicThread: Story = {
                         <Chat
                             messages={messages}
                             onSend={send}
-                            onClose={() => {}}
+                            onClose={() => { /* Chat is embedded inline in the story; there is no panel to close. */ }}
                             currentUserId={you}
                             onReact={react}
                             mentionCandidates={mentionCandidates}
@@ -169,8 +169,8 @@ export const WithFailedTurn: Story = {
                 <div style={{ height: 420, width: 380, border: '1px solid var(--surface-border)', borderRadius: 12, overflow: 'hidden' }}>
                     <Chat
                         messages={messages}
-                        onSend={() => {}}
-                        onClose={() => {}}
+                        onSend={() => { /* This story only shows the failed-turn line; sending is not wired up. */ }}
+                        onClose={() => { /* Chat is embedded inline in the story; there is no panel to close. */ }}
                         buildReportUrl={details => `https://github.com/example/repo/issues/new?title=${encodeURIComponent(details.title)}`}
                     />
                 </div>
