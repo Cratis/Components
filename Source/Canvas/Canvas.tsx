@@ -4,7 +4,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { LAYER_ATTR, TRANSFORM_HOST_ATTR } from './glassAttributes';
-import { CanvasControls } from './CanvasControls';
+import { CanvasControls, CanvasControlsLabels } from './CanvasControls';
 import { CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
 import { canvasGesture } from './canvasGesture';
 import { canvasTransformActivity } from './canvasTransformActivity';
@@ -131,6 +131,18 @@ export interface CanvasProps<T extends CanvasItemData = CanvasItemData> {
      *  Large canvases set this because the per-frame glass capture stalls pan/zoom. */
     disableControlsGlass?: boolean;
 
+    /** Forwarded to the internally-rendered `CanvasControls` as its `glassSurface` prop - a consumer
+     *  with its own glass/frosted-panel component (for instance `@cratis/liquid-glass`'s
+     *  `LiquidGlassSurface`) supplies it here to get the same chrome `disableControlsGlass={false}`
+     *  implies, since `Canvas` owns the `CanvasControls` instance and there is no other way to reach
+     *  it. Ignored when `disableControlsGlass` is `true`. */
+    controlsGlassSurface?: React.ReactNode;
+
+    /** Forwarded to the internally-rendered `CanvasControls` as its `labels` prop - overrides for the
+     *  controls' button labels/tooltips, for a consumer that wants its own localized copy instead of
+     *  the literal English defaults. */
+    controlsLabels?: CanvasControlsLabels;
+
     onHandleReady?: (handle: CanvasHandle) => void;
 
     /** Renders an inert preview: content can still be panned and zoomed, but nothing on it can be clicked,
@@ -190,6 +202,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     onHelp,
     helpTitle,
     disableControlsGlass = false,
+    controlsGlassSurface,
+    controlsLabels,
     readOnly = false,
     backgroundDragPans = true,
 }: CanvasProps<T>): React.ReactElement {
@@ -1057,6 +1071,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                     onHelp={onHelp}
                     helpTitle={helpTitle}
                     disableGlass={disableControlsGlass}
+                    glassSurface={controlsGlassSurface}
+                    labels={controlsLabels}
                 />
             )}
         </div>
