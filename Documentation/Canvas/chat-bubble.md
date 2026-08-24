@@ -28,16 +28,19 @@ function Conversation() {
     ]);
 
     const send = (text: string) => {
-        setMessages(current => [...current, {
-            id: Guid.create(),
-            authorId: me,
-            authorName: 'You',
-            authorInitials: 'Y',
-            hasAvatar: false,
-            authorKind: ChatAuthorKind.User,
-            text,
-            timestamp: new Date(),
-        }]);
+        setMessages((current) => [
+            ...current,
+            {
+                id: Guid.create(),
+                authorId: me,
+                authorName: 'You',
+                authorInitials: 'Y',
+                hasAvatar: false,
+                authorKind: ChatAuthorKind.User,
+                text,
+                timestamp: new Date(),
+            },
+        ]);
     };
 
     return (
@@ -46,7 +49,9 @@ function Conversation() {
             onSend={send}
             onClose={() => {}}
             currentUserId={me}
-            onReact={(messageId, emoji) => console.log('react', messageId.toString(), emoji)}
+            onReact={(messageId, emoji) =>
+                console.log('react', messageId.toString(), emoji)
+            }
         />
     );
 }
@@ -54,15 +59,15 @@ function Conversation() {
 
 `messages`, `onSend`, and `onClose` are the only required props — everything else is opt-in, and each opt-in feature is gated on its own prop rather than a single "mode" switch:
 
-| Feature | Enabled by |
-|---|---|
-| Reactions | `currentUserId` **and** `onReact` both given |
-| Quick reply (prefills the composer with `@name`, followed by a space) | Always available once there is more than one author |
-| "Turn into an action" button | `onAct` given (optionally filtered per-message by `canAct`) |
-| `@`-mentions in the composer | `mentionCandidates` given |
-| Typing indicator | `typingAuthors` given (a list of who's currently typing/working) |
-| Avatar images (instead of initials) | `buildAvatarUrl` given |
-| "Report a bug" link on a failed turn | `buildReportUrl` given |
+| Feature                                                               | Enabled by                                                       |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Reactions                                                             | `currentUserId` **and** `onReact` both given                     |
+| Quick reply (prefills the composer with `@name`, followed by a space) | Always available once there is more than one author              |
+| "Turn into an action" button                                          | `onAct` given (optionally filtered per-message by `canAct`)      |
+| `@`-mentions in the composer                                          | `mentionCandidates` given                                        |
+| Typing indicator                                                      | `typingAuthors` given (a list of who's currently typing/working) |
+| Avatar images (instead of initials)                                   | `buildAvatarUrl` given                                           |
+| "Report a bug" link on a failed turn                                  | `buildReportUrl` given                                           |
 
 `variant` (`ChatVariant.Floating`, the default, or `ChatVariant.Docked`) controls whether `Chat` renders its own header/close button (`Floating`) or leaves the frame and heading to whatever contains it (`Docked`, for a sidebar that already has its own).
 
