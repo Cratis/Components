@@ -78,15 +78,31 @@ The transition was deliberately split:
 
 The stabilization specs are the behavior parity contract for Components 4.
 
+## Strict public-type validation
+
+Components 4 validates every public JavaScript subpath as a strict external TypeScript 6 consumer of the actual packed artifact. Run `yarn workspace @cratis/components verify-public-types` after building the package. The verifier creates isolated Bundler and NodeNext fixtures with `skipLibCheck: false`, confirms that TypeScript resolved declarations from the fresh archive rather than source or stale output, and emits a machine-readable report when requested.
+
+Known upstream failures are bounded in `Source/scripts/verify-public-types.exceptions.json`. Each exception names exact package versions, diagnostic codes, affected subpaths and resolution modes, and an objective removal condition. Unlisted diagnostics, any diagnostic in Components-owned declarations, a TypeScript-version mismatch, or an exception that stops reproducing all fail the gate.
+
+The current exceptions are:
+
+- **`@webgpu/types@0.1.72` through `pixi.js@8.20.0`:** its ambient WebGPU declarations conflict with TypeScript 6's built-in DOM declarations for the root and `Canvas` subpaths (`TS2403`, `TS2687`, `TS2717`, `TS6200`).
+- **`@cratis/arc.react@22.1.0`:** its published global JSX declarations expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
+- **`@cratis/arc@22.1.0`, `@cratis/arc.react@22.1.0`, and `@cratis/fundamentals@7.18.1`:** their published ESM declarations use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
+
+### Why the Canvas Pixi surface remains public
+
+`CanvasContext`, `renderItem`, and pointer callbacks intentionally expose real Pixi objects so consumers can build arbitrary Pixi content. Replacing those types with reduced Cratis facades would either duplicate Pixi's API or force consumers to cast back to it. The bounded WebGPU declaration exception is preferable to weakening this intentional extensibility contract. PivotViewer does not expose Pixi types publicly and needs no equivalent exception.
+
 ## Tracked follow-up work
 
 Components 4 deliberately does not pretend every adjacent problem is solved by this renderer change:
 
 - [#109](https://github.com/Cratis/Components/issues/109) tracks a future Arc React query/table state binding, to be extracted only after another renderer proves the contract.
-- [#159](https://github.com/Cratis/Components/issues/159) remains open for explicit complete-result filtering and sorting through server query arguments before paging. The deprecated `clientFiltering` compatibility prop is not that solution.
-- [#173](https://github.com/Cratis/Components/issues/173) tracks a package-export-driven audit and TSDoc/API-reference coverage. Existing root namespaces are intentionally retained for Components 4 consumer compatibility; any future export removal requires explicit consumer evidence and an appropriate major boundary.
-- [#174](https://github.com/Cratis/Components/issues/174) tracks typed provider messages for the remaining Components-owned labels.
+- [#178](https://github.com/Cratis/Components/issues/178) tracks explicit complete-result filtering and sorting through server query arguments before paging. The deprecated `clientFiltering` compatibility prop is not that solution.
+- [#174](https://github.com/Cratis/Components/issues/174) tracks localization beyond the pre-stable provider-message tranche, including generated labels and plural/relative text.
 - [#175](https://github.com/Cratis/Components/issues/175) tracks a locale-aware number input so products can remove specialized Prime inputs without losing number UX.
+- [#179](https://github.com/Cratis/Components/issues/179) tracks the exact-artifact downstream RC runtime and visual pilots required before stable release.
 
 These are follow-up contracts, not undocumented work required to use the Components 4 foundation.
 
@@ -100,5 +116,6 @@ Components 4 is accepted only when:
 - Representative custom-theme and pass-through consumers compile after following the guide.
 - Specs, Storybook, package exports, SSR, keyboard/focus behavior, responsive layouts, dark mode, forced colors, and reduced motion pass.
 - The migration guide works without repository-specific knowledge.
+- Every packed public JavaScript subpath passes strict TypeScript 6 validation or matches a bounded machine-readable upstream exception whose removal condition is still unmet.
 
 Track acceptance evidence in [the UI foundation issue](https://github.com/Cratis/Components/issues/170).

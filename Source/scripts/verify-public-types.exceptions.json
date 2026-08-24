@@ -1,0 +1,136 @@
+{
+    "$comment": "Machine-readable, bounded allow-list for Cratis/Components#176. Every entry names the exact upstream package/version, the diagnostic codes it produces, why it is external to Components, and an objective, checkable removal condition. verify-public-types.mjs refuses to treat an unlisted diagnostic - or a diagnostic whose file does not match filePrefixes - as covered, and fails the run if a listed exception stops reproducing (the removal condition is presumed met and the entry is stale).",
+    "typeScriptVersion": "6.0.3",
+    "trackingIssue": "https://github.com/Cratis/Components/issues/176",
+    "upstreamIssues": [
+        {
+            "id": "pixi-webgpu-types-lib-conflict",
+            "summary": "pixi.js bundles @webgpu/types, whose WebGPU ambient declarations duplicate identifiers TypeScript 6 now ships in lib.dom.d.ts (GPUTextureFormat, GPUDevice, GPUBindGroupDescriptor.entries, ...) with incompatible shapes.",
+            "reason": "external - upstream declaration collision between @webgpu/types (a pixi.js dependency) and TypeScript's own built-in DOM lib; not a Components authoring defect.",
+            "upstreamPackages": [
+                { "name": "@webgpu/types", "version": "0.1.72", "via": "pixi.js@8.20.0" }
+            ],
+            "resolutionModes": ["bundler", "nodenext"],
+            "diagnosticCodes": ["TS2403", "TS2687", "TS2717", "TS6200"],
+            "filePrefixes": ["@webgpu/types/", "typescript/lib/lib.dom.d.ts"],
+            "removalCondition": "pixi.js ships a @webgpu/types release whose WebGPU surface no longer duplicates conflicting global identifiers against the target TypeScript version's lib.dom.d.ts (tracked upstream at https://github.com/pixijs/pixijs and https://github.com/gpuweb/types), OR Components narrows Canvas's public renderItem/CanvasContext contract off raw PIXI.* types without losing the ability to render arbitrary Pixi content (rejected for now - see docs/ui-foundation.md, 'Why the Canvas Pixi surface is not narrowed')."
+        },
+        {
+            "id": "arc-react-global-jsx-namespace",
+            "summary": "@cratis/arc.react ships a global.d.ts that declares `namespace JSX` referencing test-only ambient types (vitest/globals, chai, sinon-chai) as part of its published package instead of scoping that augmentation to its own test build. A strict external consumer that does not also install those test packages cannot resolve the bare `JSX` identifiers arc.react's dialog/command declaration files reference.",
+            "reason": "external - @cratis/arc.react's own shipped .d.ts, not a Components declaration; Components has no `namespace JSX` augmentation of its own.",
+            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.1.0" }],
+            "resolutionModes": ["bundler"],
+            "diagnosticCodes": ["TS2503"],
+            "filePrefixes": ["@cratis/arc.react/"],
+            "removalCondition": "A published @cratis/arc.react release removes (or properly scopes to its own test build) the global `namespace JSX` augmentation in global.d.ts, so `JSX.Element` in its public dialog/command declaration files resolves through @types/react's module-scoped JSX types instead."
+        },
+        {
+            "id": "arc-family-nodenext-extensionless-specifiers",
+            "summary": "@cratis/arc, @cratis/arc.react, and @cratis/fundamentals publish ESM declaration files with extensionless relative specifiers (e.g. `export * from './ICommandScope'`). Node16/NodeNext module resolution requires an explicit extension on relative ECMAScript imports, so these upstream barrels fail under --moduleResolution nodenext; downstream symbols that transit through the broken barrel then read as missing (TS2305/TS2694 cascades).",
+            "reason": "external - the extensionless specifiers live in @cratis/arc, @cratis/arc.react, and @cratis/fundamentals's own published dist, not in Components' declarations. Cratis/Components' own declaration rewrite (this PR) already eliminated Components' extensionless specifiers.",
+            "upstreamPackages": [
+                { "name": "@cratis/arc", "version": "22.1.0" },
+                { "name": "@cratis/arc.react", "version": "22.1.0" },
+                { "name": "@cratis/fundamentals", "version": "7.18.1" }
+            ],
+            "resolutionModes": ["nodenext"],
+            "diagnosticCodes": ["TS2834", "TS2835", "TS2305", "TS2694"],
+            "filePrefixes": [
+                "@cratis/arc/",
+                "@cratis/arc.react/",
+                "@cratis/fundamentals/"
+            ],
+            "messagePatterns": [
+                "@cratis/arc.react",
+                "@cratis/arc/",
+                "@cratis/fundamentals"
+            ],
+            "removalCondition": "Coordinate with @cratis/fundamentals (and @cratis/arc / @cratis/arc.react, which share the same generator/build) to add explicit .js extensions to relative specifiers in published declaration files, per the issue's direction to fix this upstream rather than copy or patch their types in Components."
+        }
+    ],
+    "exceptions": [
+        {
+            "subpath": ".",
+            "resolutionModes": {
+                "bundler": [
+                    "pixi-webgpu-types-lib-conflict",
+                    "arc-react-global-jsx-namespace"
+                ],
+                "nodenext": [
+                    "pixi-webgpu-types-lib-conflict",
+                    "arc-family-nodenext-extensionless-specifiers"
+                ]
+            }
+        },
+        {
+            "subpath": "./Canvas",
+            "resolutionModes": {
+                "bundler": ["pixi-webgpu-types-lib-conflict"],
+                "nodenext": [
+                    "pixi-webgpu-types-lib-conflict",
+                    "arc-family-nodenext-extensionless-specifiers"
+                ]
+            }
+        },
+        {
+            "subpath": "./CommandDialog",
+            "resolutionModes": {
+                "bundler": ["arc-react-global-jsx-namespace"],
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./CommandStepper",
+            "resolutionModes": {
+                "bundler": ["arc-react-global-jsx-namespace"],
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./CommandForm",
+            "resolutionModes": {
+                "bundler": ["arc-react-global-jsx-namespace"],
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./CommandForm/fields",
+            "resolutionModes": {
+                "bundler": ["arc-react-global-jsx-namespace"],
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./Common",
+            "resolutionModes": {
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./DataPage",
+            "resolutionModes": {
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./DataTables",
+            "resolutionModes": {
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./Dialogs",
+            "resolutionModes": {
+                "bundler": ["arc-react-global-jsx-namespace"],
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
+            "subpath": "./Notifications",
+            "resolutionModes": {
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        }
+    ]
+}

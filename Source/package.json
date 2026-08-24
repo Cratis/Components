@@ -129,6 +129,7 @@
         "verify-exports": "node ./scripts/verify-exports.mjs",
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
         "verify-api-docs": "node ./scripts/verify-api-docs.mjs",
+        "verify-public-types": "node ./scripts/verify-public-types.mjs",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
