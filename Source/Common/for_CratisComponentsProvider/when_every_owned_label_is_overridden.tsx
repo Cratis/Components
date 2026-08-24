@@ -12,7 +12,7 @@ import { CratisComponentsProvider } from '../CratisComponentsProvider';
 import { DatePickerInput } from '../DatePickerInput';
 import { Dropdown } from '../../Dropdown/Dropdown';
 import { Dialog } from '../../Dialogs/Dialog';
-import { CommandStepperContent } from '../../CommandDialog/CommandStepper';
+import { CommandStepperContent } from '../../CommandDialog/CommandStepperContent';
 import { StepperPanel } from '../../CommandDialog/StepperPanel';
 import { Toaster, toast } from '../../Notifications';
 import { Column } from '../../DataTables/Column';
@@ -133,12 +133,7 @@ describe('when every owned label is overridden through the provider', () => {
                         selectionMode='single'
                     >
                         <Column field='name' header='Name' />
-                        <Column
-                            field='role'
-                            header='Role'
-                            filter
-                            dataType='boolean'
-                        />
+                        <Column field='role' header='Role' filter dataType='boolean' />
                         <Column selectionMode='single' />
                     </DataTableCore>
                     <DatePickerInput value={null} onChange={() => undefined} />
@@ -236,7 +231,9 @@ describe('when every owned label is overridden through the provider', () => {
 
     it('should never leave an audited surface showing its English default', () => {
         const attributeValues = Array.from(
-            document.querySelectorAll('[data-cratis-part][aria-label], [data-cratis-part][placeholder], [data-cratis-part][title]'),
+            document.querySelectorAll(
+                '[data-cratis-part][aria-label], [data-cratis-part][placeholder], [data-cratis-part][title]',
+            ),
         ).flatMap((element) => [
             element.getAttribute('aria-label'),
             element.getAttribute('placeholder'),

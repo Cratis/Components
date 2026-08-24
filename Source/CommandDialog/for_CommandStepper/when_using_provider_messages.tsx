@@ -8,7 +8,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { expect } from 'chai';
 import { afterEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
-import { CommandStepperContent } from '../CommandStepper';
+import { CommandStepperContent } from '../CommandStepperContent';
 import { StepperPanel } from '../StepperPanel';
 
 /**
