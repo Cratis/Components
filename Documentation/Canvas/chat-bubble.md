@@ -81,6 +81,8 @@ Omit it and every avatar falls back to the person's initials on a color determin
 
 Reactions are quick emoji given to a message (`ChatMessage.reactions: ChatMessageReaction[]`, each grouping the users who gave that emoji). The reaction button opens a `ReactionPicker`: a row of recently-used emoji (remembered per-browser in `localStorage` by default, or wherever a `memory: EmojiMemory` you pass points instead) plus a button that opens the full `EmojiPicker`. Picking the emoji already given is how a reaction is taken back — `onReact` is called either way and the caller decides give/change/revoke from what was clicked.
 
+Applications that own those give/change/revoke commands can import `findOwnReaction(reactions, currentUserId)` from `@cratis/components/Canvas`. It returns the current person's `reactionId` and emoji, or `undefined`, so application command logic can follow the same one-reaction-per-person rule as the built-in chat composition.
+
 ## Mentions
 
 Passing `mentionCandidates` (people and agents who can be `@`-mentioned) turns on mention suggestions in the composer: typing `@` opens a filtered `MentionSuggestions` list, navigable with the arrow keys and committed with `Enter`/`Tab`.

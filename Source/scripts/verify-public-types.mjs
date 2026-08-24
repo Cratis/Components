@@ -343,6 +343,26 @@ const tsconfigFor = (mode) => ({
 const sanitize = (subpath) =>
     subpath === '.' ? 'root' : subpath.replace(/^\.\//, '').replace(/\//g, '_');
 
+const consumerSourceFor = (subpath, specifier) => {
+    if (subpath === './DataPage') {
+        return `import type { IObservableQueryFor } from '@cratis/arc/queries';
+import type { DataPageProps } from '${specifier}';
+interface Row { id: string; }
+type ListObservableQueryProps = DataPageProps<IObservableQueryFor<Row[], object>, Row, object>;
+declare const listObservableQueryProps: ListObservableQueryProps;
+void listObservableQueryProps;
+export * from '${specifier}';
+`;
+    }
+    if (subpath === './Canvas') {
+        return `import { findOwnReaction } from '${specifier}';
+void findOwnReaction;
+export * from '${specifier}';
+`;
+    }
+    return `export * from '${specifier}';\n`;
+};
+
 /** Parses `file(line,col): error TSxxxx: message` lines and normalizes `file` to a package-relative id. */
 function parseDiagnostics(stdout) {
     const diagnosticLine = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/u;
@@ -435,7 +455,7 @@ for (const { subpath, specifier, declarationRelPath } of selected) {
         const consumerFile = mode === 'nodenext' ? 'consumer.mts' : 'consumer.ts';
         writeFileSync(
             path.join(fixtureDir, consumerFile),
-            `export * from '${specifier}';\n`,
+            consumerSourceFor(subpath, specifier),
         );
         if (mode === 'nodenext') {
             writeFileSync(

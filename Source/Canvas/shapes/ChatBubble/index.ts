@@ -18,8 +18,10 @@ export type { ChatTypingAuthor } from './ChatTypingAuthor';
 export { ChatVariant } from './ChatVariant';
 export { FailedReply } from './FailedReply';
 export type { FailedReplyProps, FailedReplyLabels, FailedReplyReportDetails } from './FailedReply';
-// `findOwnReaction` and `reactionsExcludingUser` are internal helpers used by
-// `ChatMessageBubble` and are intentionally not part of the public API.
+// A consumer that owns reaction commands can use the same current-user lookup as the
+// Components chat composition without duplicating its one-reaction-per-person rules.
+export { findOwnReaction } from './findOwnReaction';
+// `reactionsExcludingUser` remains an internal rendering helper.
 export { MessageReactions } from './MessageReactions';
 export type { MessageReactionsProps } from './MessageReactions';
 export { ReactionPicker } from './ReactionPicker';

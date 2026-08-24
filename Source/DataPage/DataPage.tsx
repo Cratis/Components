@@ -243,9 +243,13 @@ function useDataPageContext(): IDataPageContext {
  * @typeParam TArguments - The query's argument object type, or `object` if the query takes none.
  */
 export interface DataPageProps<
-    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>,
+    TQuery extends
+        | IQueryFor<TDataType, TArguments>
+        | IQueryFor<TDataType[], TArguments>
+        | IObservableQueryFor<TDataType, TArguments>
+        | IObservableQueryFor<TDataType[], TArguments>,
     TDataType extends object,
-    TArguments,
+    TArguments extends object,
 > {
     /**
      * The title of the page
@@ -476,7 +480,11 @@ export interface DataPageProps<
  * @param props - {@link DataPageProps}.
  */
 const DataPage = <
-    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>,
+    TQuery extends
+        | IQueryFor<TDataType, TArguments>
+        | IQueryFor<TDataType[], TArguments>
+        | IObservableQueryFor<TDataType, TArguments>
+        | IObservableQueryFor<TDataType[], TArguments>,
     TDataType extends object,
     TArguments extends object,
 >(
