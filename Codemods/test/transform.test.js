@@ -5,6 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import ts from 'typescript';
 import { transformSource } from '../lib/transform.js';
 import {
     approvedRootSymbols as codemodApprovedRootSymbols,
@@ -65,6 +66,29 @@ describe('root namespace maps', () => {
         expect([...codemodApprovedRootSymbols].sort()).toEqual(
             [...eslintApprovedRootSymbols].sort(),
         );
+    });
+
+    it('should match the actual setup-only package root exports', () => {
+        const rootIndex = readFileSync(
+            path.join(__dirname, '..', '..', 'Source', 'index.ts'),
+            'utf8',
+        );
+        const sourceFile = ts.createSourceFile(
+            'Source/index.ts',
+            rootIndex,
+            ts.ScriptTarget.Latest,
+            true,
+            ts.ScriptKind.TS,
+        );
+        const exportedNames = sourceFile.statements
+            .filter(ts.isExportDeclaration)
+            .flatMap((declaration) =>
+                declaration.exportClause && ts.isNamedExports(declaration.exportClause)
+                    ? declaration.exportClause.elements.map((element) => element.name.text)
+                    : [],
+            );
+
+        expect(exportedNames.sort()).toEqual([...codemodApprovedRootSymbols].sort());
     });
 
     it('should keep both migration guides aligned with every namespace and the shipped command', () => {
