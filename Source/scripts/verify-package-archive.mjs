@@ -64,11 +64,7 @@ for (const expected of [
     }
 }
 
-const styles = runTar(
-    '-xOzf',
-    normalizedArchive,
-    'package/dist/esm/styles.css',
-);
+const styles = runTar('-xOzf', normalizedArchive, 'package/dist/esm/styles.css');
 const styleBytes = Buffer.byteLength(styles);
 const gzipBytes = gzipSync(styles, { level: 9 }).byteLength;
 const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;

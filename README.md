@@ -30,8 +30,8 @@ npx --package @cratis/components-codemods \
 
 Cratis is an open community, and we are glad to help users, teams evaluating the stack, and contributors.
 
-| Channel | Details |
-|---|---|
-| Discord | Join the community on [Discord](https://discord.gg/kt4AMpV8WV) for questions and discussions |
-| GitHub Issues | [Report bugs or request features](https://github.com/Cratis/Components/issues) |
-| Documentation | Read the docs at [cratis.io](https://cratis.io) |
+| Channel       | Details                                                                                      |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| Discord       | Join the community on [Discord](https://discord.gg/kt4AMpV8WV) for questions and discussions |
+| GitHub Issues | [Report bugs or request features](https://github.com/Cratis/Components/issues)               |
+| Documentation | Read the docs at [cratis.io](https://cratis.io)                                              |

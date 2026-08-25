@@ -84,7 +84,9 @@ describe('root namespace maps', () => {
             .filter(ts.isExportDeclaration)
             .flatMap((declaration) =>
                 declaration.exportClause && ts.isNamedExports(declaration.exportClause)
-                    ? declaration.exportClause.elements.map((element) => element.name.text)
+                    ? declaration.exportClause.elements.map(
+                          (element) => element.name.text,
+                      )
                     : [],
             );
 
@@ -93,8 +95,14 @@ describe('root namespace maps', () => {
 
     it('should keep both migration guides aligned with every namespace and the shipped command', () => {
         const guides = [
-            readFileSync(path.join(__dirname, '..', '..', 'Documentation', 'migration.md'), 'utf8'),
-            readFileSync(path.join(__dirname, '..', '..', 'Source', 'MIGRATION.md'), 'utf8'),
+            readFileSync(
+                path.join(__dirname, '..', '..', 'Documentation', 'migration.md'),
+                'utf8',
+            ),
+            readFileSync(
+                path.join(__dirname, '..', '..', 'Source', 'MIGRATION.md'),
+                'utf8',
+            ),
         ];
 
         for (const guide of guides) {

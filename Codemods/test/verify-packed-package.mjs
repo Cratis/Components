@@ -86,9 +86,7 @@ try {
     assertRun('packed codemod apply', run(binary, [source], { cwd: consumer }));
     const migrated = readFileSync(source, 'utf8');
     if (
-        !migrated.includes(
-            "import * as EditorNS from '@cratis/components/SchemaEditor';",
-        )
+        !migrated.includes("import * as EditorNS from '@cratis/components/SchemaEditor';")
     ) {
         throw new Error(`Packed codemod produced unexpected output:\n${migrated}`);
     }

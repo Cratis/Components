@@ -3,13 +3,13 @@
 ESLint rules for projects that consume Cratis Components. Compose these on top of the
 Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cratis/eslint-config).
 
-| Rule | What it does |
-|---|---|
-| `no-root-barrel-import` | Disallows importing a removed Components 3 component namespace from the Components 4 setup-only root. Use the exact component subpath (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …). Package-wide provider/configuration symbols remain allowed at the root; an unambiguous namespace violation is autofixed. |
-| `no-primereact-dialog` | Disallows importing `Dialog` from `primereact/dialog`. Use `CommandDialog` from `@cratis/components/CommandDialog`, or `Dialog` from `@cratis/components/Dialogs` — the wrappers add Arc command binding, overlay/focus fixes, and theming. |
-| `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. `onBeforeExecute` is a transformer — a body that can complete without returning executes the command with `undefined` (silent data loss). |
-| `no-hooks-in-view-model` | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions. |
-| `no-raw-command-form-marker` | Disallows identifying a CommandForm field or column by a hand-written `displayName` string, in either direction. Use `markAsCommandFormField`/`markAsCommandFormColumn` and `isCommandFormField`/`isCommandFormColumn` from `@cratis/components/CommandForm` — they go through a marker a build transform cannot rewrite. |
+| Rule                          | What it does                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `no-root-barrel-import`       | Disallows importing a removed Components 3 component namespace from the Components 4 setup-only root. Use the exact component subpath (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …). Package-wide provider/configuration symbols remain allowed at the root; an unambiguous namespace violation is autofixed. |
+| `no-primereact-dialog`        | Disallows importing `Dialog` from `primereact/dialog`. Use `CommandDialog` from `@cratis/components/CommandDialog`, or `Dialog` from `@cratis/components/Dialogs` — the wrappers add Arc command binding, overlay/focus fixes, and theming.                                                                                                                          |
+| `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. `onBeforeExecute` is a transformer — a body that can complete without returning executes the command with `undefined` (silent data loss).                                                                                                                                                       |
+| `no-hooks-in-view-model`      | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions.                                                                                                                                                                                        |
+| `no-raw-command-form-marker`  | Disallows identifying a CommandForm field or column by a hand-written `displayName` string, in either direction. Use `markAsCommandFormField`/`markAsCommandFormColumn` and `isCommandFormField`/`isCommandFormColumn` from `@cratis/components/CommandForm` — they go through a marker a build transform cannot rewrite.                                            |
 
 The two import rules cover `import` and re-`export … from` forms.
 
@@ -53,7 +53,7 @@ During the issue #174 localization pass, a static rule flagging a hardcoded Engl
 bypasses `CratisComponentsProvider` messages (e.g. a `title`/`aria-label` string sitting next to an
 already-localized prop) was considered and rejected. Every rule above is a syntactic, structural
 pattern an AST visitor resolves unambiguously (an import specifier, a known display-name
-constant, a callback's control-flow shape). Detecting an *owned-label bypass* instead requires
+constant, a callback's control-flow shape). Detecting an _owned-label bypass_ instead requires
 understanding which of a component's many string literals are user-facing chrome versus CSS class
 names, `data-*` values, decorative glyphs, or genuinely correct per-instance defaults — a semantic
 judgment call, not a syntactic one. A rule broad enough to catch a real bypass (any string literal
@@ -152,7 +152,9 @@ service) instead of calling a hook.
 ```ts
 // ❌ generated Arc proxy hook inside a view model
 class AuthorsViewModel {
-    load() { const [authors] = AllAuthors.use(); }   // flagged
+    load() {
+        const [authors] = AllAuthors.use();
+    } // flagged
 }
 
 // ✅ inject the abstraction; call hooks only in the component
@@ -172,7 +174,7 @@ inside a nested non–view-model class are not.
 `CommandForm`, `CommandDialog` and `CommandStepper` decide which children are fields by
 inspecting the child's component type. Historically that test was a single string
 comparison against `displayName` — and `displayName` is React's public, writable
-*diagnostic* name, a routine target for build tooling. Storybook's
+_diagnostic_ name, a routine target for build tooling. Storybook's
 `reactDocgen: 'react-docgen-typescript'` setting rewrites it by default.
 
 When it is rewritten, the child stops being recognized as a field: it renders with no
@@ -187,13 +189,20 @@ properties, and that shared shape is what carries the contract across the two pa
 ```ts
 // ❌ a build transform that rewrites displayName silently unbinds this field
 MyField.displayName = 'CommandFormField';
-if (component.displayName === 'CommandFormField') { wrap(component); }
+if (component.displayName === 'CommandFormField') {
+    wrap(component);
+}
 
 // ✅ marker first, legacy displayName still set and still honoured
-import { markAsCommandFormField, isCommandFormField } from '@cratis/components/CommandForm';
+import {
+    markAsCommandFormField,
+    isCommandFormField,
+} from '@cratis/components/CommandForm';
 
 markAsCommandFormField(MyField);
-if (isCommandFormField(component)) { wrap(component); }
+if (isCommandFormField(component)) {
+    wrap(component);
+}
 ```
 
 Flagged in both directions: assignment (`C.displayName = '…'`, including computed and
