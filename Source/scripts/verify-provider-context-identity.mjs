@@ -6,12 +6,12 @@
  * (Cratis/Components root architecture).
  *
  * The root barrel (`@cratis/components`) and every subpath (`@cratis/components/Dialogs`,
- * `/Dropdown`, `/DataTables`, `/Notifications`, `/TimeMachine`, ...) are now separate
- * Rollup entry points, each emitted with `preserveModules` into its own `dist/esm/<Subpath>`
- * tree (see `rollup.config.mjs`'s `entryPointsFromExports`). That is a real risk this
- * script exists to rule out: if the shared `CratisComponentsContext` (custom labels) or
- * `react-aria-components`' `I18nProvider` locale context were ever duplicated across
- * entry points instead of staying one singleton module, a consumer mounting
+ * `/Dropdown`, `/DataTables`, `/TimeMachine`, ...) are now separate Rollup entry points,
+ * each emitted with `preserveModules` into its own `dist/esm/<Subpath>` tree (see
+ * `rollup.config.mjs`'s `entryPointsFromExports`). That is a real risk this script exists
+ * to rule out: if the shared `CratisComponentsContext` (custom labels) or
+ * `react-aria-components`' `I18nProvider` locale context were ever duplicated across entry
+ * points instead of staying one singleton module, a consumer mounting
  * `CratisComponentsProvider` from the root and a component from a subpath would silently
  * fail to share configuration - each subpath's `useCratisComponentsConfig()` would read
  * its own defaults instead of the root's live value.
@@ -22,18 +22,30 @@
  * published entry points are structured - only the built/packed boundary can actually
  * exercise this risk.
  *
+ * Rendering uses `react-dom/server`'s `renderToStaticMarkup` rather than jsdom: no DOM
+ * polyfill, no `requestAnimationFrame`/`ResizeObserver`/global-property shimming, and no
+ * dependency on a full browser environment being faithfully reproduced - only a plain
+ * Node ESM process. `Dialog` and `Dropdown` already render fully in a non-browser
+ * environment (`Dialog`'s SSR fallback path; `Dropdown`/`DataTableCore`/`TimeMachine` have
+ * no `document`-gated early return), so their labels are present in the server markup
+ * without needing any interaction. `Toaster` is deliberately excluded from this fixture -
+ * it renders through `createPortal(..., document.body)` and returns `null` while
+ * `document` is undefined, so it has nothing to prove here and belongs to a DOM-based
+ * spec instead.
+ *
  * One `CratisComponentsProvider` (imported from the package root) wraps a `Dialog`
- * (`./Dialogs`), a `Dropdown` (`./Dropdown`), a `DataTableCore` (`./DataTables`), a
- * `Toaster` (`./Notifications`), and a `TimeMachine` (`./TimeMachine`) - five separately
- * bundled subpath modules - with sentinel `messages` and a non-English `locale`. Every
- * rendered label is asserted to be the sentinel/locale-formatted value, never the English
- * default, proving the same context instances actually reach all five subpaths.
+ * (`./Dialogs`), a `Dropdown` (`./Dropdown`), a `DataTableCore` (`./DataTables`), and a
+ * `TimeMachine` (`./TimeMachine`) - four separately bundled subpath modules - with
+ * sentinel `messages` unique to this run and a non-English `locale`. The rendered server
+ * markup is asserted to contain every sentinel label/locale-formatted value, proving the
+ * same context instances actually reach all four subpaths.
  *
  * Usage:  node scripts/verify-provider-context-identity.mjs [--keep-fixture]
  * Exits non-zero if any subpath fails to reflect the root provider's configuration.
  */
 
 import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import {
     existsSync,
     mkdtempSync,
@@ -80,7 +92,7 @@ process.once('exit', cleanup);
 console.log(`Packing ${pkg.name}@${pkg.version} ...`);
 const { entries: packedEntries } = packArtifact(packageDir, scratchRoot);
 
-// Every subpath exercised here (Dialogs, Dropdown, DataTables, Notifications, TimeMachine) is
+// Every subpath exercised here (Dialogs, Dropdown, DataTables, TimeMachine) is
 // non-spatial, so pixi.js is withheld the same way verify-no-pixi-consumer.mjs does - this
 // fixture only needs the mandatory peers.
 buildScratchNodeModules({
@@ -96,10 +108,14 @@ writeFileSync(
     JSON.stringify({ private: true, type: 'module' }, null, 4),
 );
 
+// A fresh random nonce per run rather than a fixed sentinel string, so a stale cached
+// build/module or a hardcoded default in the component itself cannot coincidentally match.
+const nonce = randomUUID().slice(0, 8);
+
 // The identity probe itself runs as its own ESM entry file (rather than an --eval string) so it
 // can use top-level await comfortably and stay readable.
 const probeFile = path.join(scratchRoot, 'identity-probe.mjs');
-writeFileSync(probeFile, buildProbeSource(pkg.name));
+writeFileSync(probeFile, buildProbeSource(pkg.name, nonce));
 
 const result = spawnSync(process.execPath, [probeFile], {
     cwd: scratchRoot,
@@ -122,148 +138,83 @@ if (result.status !== 0) {
 }
 
 console.log(
-    '\nRoot provider configuration (messages + locale) reaches Dialog, Dropdown, DataTable, ' +
-        'Toaster, and TimeMachine, each imported from its own separately built subpath.',
+    '\nRoot provider configuration (messages + locale) reaches Dialog, Dropdown, DataTableCore, ' +
+        'and TimeMachine, each imported from its own separately built subpath, in server-rendered markup.',
 );
 
-/** Builds the child probe's source: jsdom setup, a composed render, and label assertions. */
-function buildProbeSource(packageName) {
+/** Builds the child probe's source: a react-dom/server render and label/markup assertions. */
+function buildProbeSource(packageName, nonce) {
     return `
-import { JSDOM } from 'jsdom';
+import { createElement as h } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { CratisComponentsProvider } from '${packageName}';
+import { Dialog } from '${packageName}/Dialogs';
+import { DialogButtons } from '@cratis/arc.react/dialogs';
+import { Dropdown } from '${packageName}/Dropdown';
+import { DataTableCore, Column } from '${packageName}/DataTables';
+import { TimeMachine } from '${packageName}/TimeMachine';
 
-// pretendToBeVisual gives jsdom a real requestAnimationFrame/cancelAnimationFrame (used by
-// React Aria's FocusScope and press interactions) instead of leaving them undefined.
-const dom = new JSDOM('<!doctype html><html><body></body></html>', {
-    url: 'http://localhost/',
-    pretendToBeVisual: true,
-});
-const { window: jsdomWindow } = dom;
-
-// Copy every own property of jsdom's window onto globalThis (not a fixed short list) - React
-// Aria's interaction/focus/press internals reach for SVGElement, getComputedStyle, MutationObserver,
-// CustomEvent, PointerEvent, DOMRect, and more; a fixed allowlist silently under-polyfills whichever
-// of those a given interaction happens to need. Node 21+ already defines some of these (navigator,
-// performance, ...) as getter-only globals, so this redefines rather than assigns.
-for (const key of Object.getOwnPropertyNames(jsdomWindow)) {
-    if (key === 'window' || key === 'globalThis' || key === 'self' || key === 'top' || key === 'parent') continue;
-    try {
-        Object.defineProperty(globalThis, key, {
-            value: jsdomWindow[key],
-            configurable: true,
-            writable: true,
-            enumerable: true,
-        });
-    } catch {
-        // Non-configurable on this Node version - leave the existing global as-is.
-    }
-}
-globalThis.window = jsdomWindow;
-globalThis.document = jsdomWindow.document;
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-globalThis.ResizeObserver ??= class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-};
-
-const React = await import('react');
-const { createElement: h, act } = React;
-const { createRoot } = await import('react-dom/client');
-const { CratisComponentsProvider } = await import(${JSON.stringify(packageName)});
-const { Dialog } = await import(${JSON.stringify(packageName)} + '/Dialogs');
-const { DialogButtons } = await import('@cratis/arc.react/dialogs');
-const { Dropdown } = await import(${JSON.stringify(packageName)} + '/Dropdown');
-const { DataTableCore, Column } = await import(${JSON.stringify(packageName)} + '/DataTables');
-const { Toaster } = await import(${JSON.stringify(packageName)} + '/Notifications');
-const { TimeMachine } = await import(${JSON.stringify(packageName)} + '/TimeMachine');
-
+const nonce = ${JSON.stringify(nonce)};
 const sentinelMessages = {
-    dialog: { ok: 'IDENTITY-ok', cancel: 'IDENTITY-cancel' },
-    dropdown: { showOptions: 'IDENTITY-show-options', clearSelection: 'IDENTITY-clear-selection' },
-    dataTable: { search: 'IDENTITY-search', searchAriaLabel: 'IDENTITY-search-aria', selectRow: 'IDENTITY-select-row' },
-    notifications: { region: 'IDENTITY-region', dismiss: 'IDENTITY-dismiss' },
+    dialog: { ok: \`IDENTITY-ok-\${nonce}\`, cancel: \`IDENTITY-cancel-\${nonce}\` },
+    dropdown: { showOptions: \`IDENTITY-show-options-\${nonce}\` },
+    dataTable: {
+        search: \`IDENTITY-search-placeholder-\${nonce}\`,
+        searchAriaLabel: \`IDENTITY-search-aria-\${nonce}\`,
+    },
 };
 const LOCALE = 'nb-NO';
 const versionTimestamp = new Date(Date.UTC(2024, 0, 15, 10, 30));
 const nbFormatted = new Intl.DateTimeFormat(LOCALE, { month: 'short', day: 'numeric', year: 'numeric' }).format(versionTimestamp);
 const enFormatted = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(versionTimestamp);
 
-const container = document.createElement('div');
-document.body.append(container);
-const root = createRoot(container);
-
-await act(async () => {
-    root.render(
+const markup = renderToStaticMarkup(
+    h(
+        CratisComponentsProvider,
+        { value: { locale: LOCALE, messages: sentinelMessages } },
+        h(Dialog, { title: 'Identity dialog', buttons: DialogButtons.OkCancel }, 'Body'),
+        h(Dropdown, { filter: true, options: [{ label: 'A', value: 'a' }] }),
         h(
-            CratisComponentsProvider,
-            { value: { locale: LOCALE, messages: sentinelMessages }, toaster: true },
-            h(Dialog, { title: 'Identity dialog', buttons: DialogButtons.OkCancel }, 'Body'),
-            h(Dropdown, { value: 'a', options: [{ label: 'A', value: 'a' }], showClear: true }),
-            h(
-                DataTableCore,
-                { data: [{ id: '1', name: 'Row' }], dataKey: 'id', emptyMessage: 'No rows', globalFilterFields: ['name'] },
-                h(Column, { field: 'name', header: 'Name' }),
-            ),
-            h(TimeMachine, {
-                versions: [{ id: 'v1', timestamp: versionTimestamp, label: 'v1', content: h('div', null, 'v1') }],
-            }),
+            DataTableCore,
+            { data: [{ id: '1', name: 'Row' }], dataKey: 'id', emptyMessage: 'No rows', globalFilterFields: ['name'] },
+            h(Column, { field: 'name', header: 'Name' }),
         ),
-    );
-});
-
-const failures = [];
-const check = (label, actual, expected) => {
-    if (actual === expected) {
-        console.log('  ok   - ' + label);
-    } else {
-        failures.push(label);
-        console.error('  FAIL - ' + label + ' (expected ' + JSON.stringify(expected) + ', got ' + JSON.stringify(actual) + ')');
-    }
-};
-const contains = (label, haystack, needle) => {
-    if (typeof haystack === 'string' && haystack.includes(needle)) {
-        console.log('  ok   - ' + label);
-    } else {
-        failures.push(label);
-        console.error('  FAIL - ' + label + ' (expected to find ' + JSON.stringify(needle) + ' in ' + JSON.stringify(haystack) + ')');
-    }
-};
-
-const okButton = Array.from(document.querySelectorAll('button')).find((b) => b.textContent === 'IDENTITY-ok');
-check('Dialog (./Dialogs) resolves the root provider\\'s Ok label', okButton?.textContent, 'IDENTITY-ok');
-
-const dropdownTrigger = container.querySelector('[data-cratis-part="trigger"]');
-check(
-    'Dropdown (./Dropdown) resolves the root provider\\'s show-options label',
-    dropdownTrigger?.getAttribute('aria-label'),
-    'IDENTITY-show-options',
+        h(TimeMachine, {
+            versions: [{ id: 'v1', timestamp: versionTimestamp, label: 'v1', content: h('div', null, 'v1') }],
+        }),
+    ),
 );
 
-const searchInput = container.querySelector('[data-cratis-part="search-input"]');
-check('DataTableCore (./DataTables) resolves the root provider\\'s search placeholder', searchInput?.getAttribute('placeholder'), 'IDENTITY-search');
-check('DataTableCore (./DataTables) resolves the root provider\\'s search aria-label', searchInput?.getAttribute('aria-label'), 'IDENTITY-search-aria');
+const failures = [];
+const contains = (label, needle) => {
+    if (markup.includes(needle)) {
+        console.log('  ok   - ' + label);
+    } else {
+        failures.push(label);
+        console.error('  FAIL - ' + label + ' (expected to find ' + JSON.stringify(needle) + ' in the server-rendered markup)');
+    }
+};
 
-const toastRegion = document.querySelector('[data-cratis-part="region"]');
-check('Toaster (./Notifications) resolves the root provider\\'s region label', toastRegion?.getAttribute('aria-label'), 'IDENTITY-region');
+contains("Dialog (./Dialogs) resolves the root provider's Ok label", \`IDENTITY-ok-\${nonce}\`);
+contains("Dialog (./Dialogs) resolves the root provider's Cancel label", \`IDENTITY-cancel-\${nonce}\`);
+contains("Dropdown (./Dropdown) resolves the root provider's show-options label", \`IDENTITY-show-options-\${nonce}\`);
+contains("DataTableCore (./DataTables) resolves the root provider's search placeholder", \`IDENTITY-search-placeholder-\${nonce}\`);
+contains("DataTableCore (./DataTables) resolves the root provider's search aria-label", \`IDENTITY-search-aria-\${nonce}\`);
 
-const timelineEntry = container.querySelector('.timeline-entry');
 if (nbFormatted === enFormatted) {
     console.error('  FAIL - locale fixture is not distinguishing (nb-NO and en-US formatted the same) - fix the fixture date');
     failures.push('locale fixture distinguishes nb-NO from en-US');
 } else {
     contains(
         "TimeMachine (./TimeMachine) resolves the root provider's nb-NO locale via react-aria-components' I18nProvider",
-        timelineEntry?.getAttribute('aria-label') ?? '',
         nbFormatted,
     );
 }
-
-await act(async () => root.unmount());
 
 if (failures.length > 0) {
     console.error('\\n' + failures.length + ' identity assertion(s) failed.');
     process.exit(1);
 }
-console.log('\\nAll 5 subpath consumers reflect the root provider configuration.');
+console.log('\\nAll 4 subpath consumers reflect the root provider configuration in server-rendered markup.');
 `;
 }
