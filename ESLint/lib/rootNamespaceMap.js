@@ -23,7 +23,9 @@
 export const namespaceSubpaths = {
     Canvas: 'Canvas',
     CommandDialog: 'CommandDialog',
-    CommandStepper: 'CommandStepper',
+    // The former root CommandStepper namespace aliased the entire CommandDialog module.
+    // Preserve that module identity; the narrower ./CommandStepper subpath does not.
+    CommandStepper: 'CommandDialog',
     CommandForm: 'CommandForm',
     Common: 'Common',
     DataPage: 'DataPage',
@@ -49,8 +51,18 @@ export const namespaceSubpaths = {
  */
 export const approvedRootSymbols = new Set([
     'CratisComponentsProvider',
+    'useCratisComponentsConfig',
     'cratisDefaults',
     'mergeCratisComponentsConfig',
     'CratisComponentsConfig',
     'CratisComponentsProviderProps',
+    'CratisComponentsMessages',
+    'CratisPaginatorMessages',
+    'CratisDatePickerMessages',
+    'CratisDropdownMessages',
+    'CratisDialogMessages',
+    'CratisStepperMessages',
+    'CratisNotificationsMessages',
+    'CratisDataTableMessages',
+    'CratisColumnFilterMessages',
 ]);

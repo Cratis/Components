@@ -1,10 +1,6 @@
 # @cratis/components-codemods
 
-Internal, unpublished codemods that support the `@cratis/components` root-namespace-removal
-migration. `Source/index.ts` currently re-exports every component subpath as a namespace off
-the package root (`import { Canvas } from '@cratis/components'`) for convenience; the
-long-term direction is to reach for the subpath directly (`@cratis/components/Canvas`) and
-keep only the primary provider setup surface at the root. See
+Internal, unpublished codemods that support the Components 3 root-namespace-removal migration. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). See
 [`ESLint`'s `no-root-barrel-import` rule](../ESLint/README.md) for the lint-time guard that
 enforces this once a consumer has migrated.
 

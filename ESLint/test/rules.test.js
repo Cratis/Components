@@ -41,6 +41,8 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
         "import { CratisComponentsProvider as Provider } from '@cratis/components';",
         "import type { CratisComponentsConfig, CratisComponentsProviderProps } from '@cratis/components';",
         "import { type CratisComponentsConfig } from '@cratis/components';",
+        "import { useCratisComponentsConfig } from '@cratis/components';",
+        "import type { CratisComponentsMessages, CratisPaginatorMessages, CratisDatePickerMessages, CratisDropdownMessages, CratisDialogMessages, CratisStepperMessages, CratisNotificationsMessages, CratisDataTableMessages, CratisColumnFilterMessages } from '@cratis/components';",
         // Re-exporting an approved setup symbol from the root is fine too.
         "export { CratisComponentsProvider } from '@cratis/components';",
         // The 'allow' option still permits an exact specifier wholesale.
@@ -56,7 +58,11 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
             output: "import * as Canvas from '@cratis/components/Canvas';",
@@ -67,7 +73,11 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
             output: "import type * as Canvas from '@cratis/components/Canvas';",
@@ -78,7 +88,11 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
             output: "import type * as Canvas from '@cratis/components/Canvas';",
@@ -89,10 +103,30 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
             output: "import * as C from '@cratis/components/Canvas';",
+        },
+        {
+            // The former root CommandStepper namespace was the complete CommandDialog module,
+            // not the narrower dedicated CommandStepper subpath. Preserve module identity.
+            code: "import { CommandStepper as StepperNS } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: {
+                        name: 'CommandStepper',
+                        packageName: '@cratis/components',
+                        subpath: 'CommandDialog',
+                    },
+                },
+            ],
+            output: "import * as StepperNS from '@cratis/components/CommandDialog';",
         },
         {
             // 'Types' is the one namespace whose subpath differs in casing from its name.
@@ -100,7 +134,11 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Types', packageName: '@cratis/components', subpath: 'types' },
+                    data: {
+                        name: 'Types',
+                        packageName: '@cratis/components',
+                        subpath: 'types',
+                    },
                 },
             ],
             output: "import * as Types from '@cratis/components/types';",
@@ -111,11 +149,19 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Common', packageName: '@cratis/components', subpath: 'Common' },
+                    data: {
+                        name: 'Common',
+                        packageName: '@cratis/components',
+                        subpath: 'Common',
+                    },
                 },
             ],
             output: "import * as Canvas from '@cratis/components/Canvas';\nimport * as Common from '@cratis/components/Common';",
@@ -126,11 +172,14 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
-            output:
-                "import { CratisComponentsProvider } from '@cratis/components';\nimport * as Canvas from '@cratis/components/Canvas';",
+            output: "import { CratisComponentsProvider } from '@cratis/components';\nimport * as Canvas from '@cratis/components/Canvas';",
         },
         {
             // An unrelated existing subpath import on the line above is left completely alone.
@@ -138,18 +187,24 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
-            output:
-                "import { Dialog } from '@cratis/components/Dialogs';\nimport * as Canvas from '@cratis/components/Canvas';",
+            output: "import { Dialog } from '@cratis/components/Dialogs';\nimport * as Canvas from '@cratis/components/Canvas';",
         },
         {
             // A symbol that is neither an approved setup symbol nor a known namespace (it only
             // exists *inside* the Common namespace) is flagged but never guessed at — no autofix.
             code: "import { Button } from '@cratis/components';",
             errors: [
-                { messageId: 'unknownSymbol', data: { name: 'Button', packageName: '@cratis/components' } },
+                {
+                    messageId: 'unknownSymbol',
+                    data: { name: 'Button', packageName: '@cratis/components' },
+                },
             ],
             output: null,
         },
@@ -158,7 +213,10 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             // approved symbol never gets a spurious report.
             code: "import { CratisComponentsProvider, Button } from '@cratis/components';",
             errors: [
-                { messageId: 'unknownSymbol', data: { name: 'Button', packageName: '@cratis/components' } },
+                {
+                    messageId: 'unknownSymbol',
+                    data: { name: 'Button', packageName: '@cratis/components' },
+                },
             ],
             output: null,
         },
@@ -169,16 +227,28 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpath',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
-                { messageId: 'unknownSymbol', data: { name: 'Button', packageName: '@cratis/components' } },
+                {
+                    messageId: 'unknownSymbol',
+                    data: { name: 'Button', packageName: '@cratis/components' },
+                },
             ],
             output: null,
         },
         {
             // A namespace import of the whole package cannot be safely rewritten.
             code: "import * as Components from '@cratis/components';",
-            errors: [{ messageId: 'ambiguousImport', data: { packageName: '@cratis/components' } }],
+            errors: [
+                {
+                    messageId: 'ambiguousImport',
+                    data: { packageName: '@cratis/components' },
+                },
+            ],
             output: null,
         },
         {
@@ -199,7 +269,11 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpathExport',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
             output: null,
@@ -210,7 +284,11 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             errors: [
                 {
                     messageId: 'useNamespaceSubpathExport',
-                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                    data: {
+                        name: 'Canvas',
+                        packageName: '@cratis/components',
+                        subpath: 'Canvas',
+                    },
                 },
             ],
             output: null,
@@ -218,13 +296,21 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
         {
             code: "export { Button } from '@cratis/components';",
             errors: [
-                { messageId: 'unknownSymbolExport', data: { name: 'Button', packageName: '@cratis/components' } },
+                {
+                    messageId: 'unknownSymbolExport',
+                    data: { name: 'Button', packageName: '@cratis/components' },
+                },
             ],
             output: null,
         },
         {
             code: "export * from '@cratis/components';",
-            errors: [{ messageId: 'ambiguousExport', data: { packageName: '@cratis/components' } }],
+            errors: [
+                {
+                    messageId: 'ambiguousExport',
+                    data: { packageName: '@cratis/components' },
+                },
+            ],
             output: null,
         },
         {
@@ -236,7 +322,12 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             // Configurable package name — the Cratis namespace map still applies to it.
             code: "import { Canvas } from '@acme/ui';",
             options: [{ packageName: '@acme/ui' }],
-            errors: [{ messageId: 'useNamespaceSubpath', data: { name: 'Canvas', packageName: '@acme/ui', subpath: 'Canvas' } }],
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@acme/ui', subpath: 'Canvas' },
+                },
+            ],
             output: "import * as Canvas from '@acme/ui/Canvas';",
         },
     ],
@@ -267,33 +358,33 @@ ruleTester.run('no-primereact-dialog', noPrimereactDialog, {
 tsRuleTester.run('onbeforeexecute-must-return', onbeforeexecuteMustReturn, {
     valid: [
         // Expression-bodied arrow always returns.
-        "const a = <CommandDialog onBeforeExecute={values => values} />;",
+        'const a = <CommandDialog onBeforeExecute={values => values} />;',
         // Block body that returns the values.
         "const b = <CommandDialog onBeforeExecute={(values) => { values.id = '1'; return values; }} />;",
         // Object property form.
-        "const c = { onBeforeExecute: (v) => v };",
+        'const c = { onBeforeExecute: (v) => v };',
         // Variable form.
-        "const onBeforeExecute = (v) => { return v; };",
+        'const onBeforeExecute = (v) => { return v; };',
         // A nested callback returning nothing does not count against the outer return.
-        "const d = <CommandDialog onBeforeExecute={(v) => { [1].forEach(() => {}); return v; }} />;",
+        'const d = <CommandDialog onBeforeExecute={(v) => { [1].forEach(() => {}); return v; }} />;',
         // Unrelated callbacks are never flagged, even when they return nothing.
-        "const e = <button onClick={() => { doThing(); }} />;",
+        'const e = <button onClick={() => { doThing(); }} />;',
     ],
     invalid: [
         {
-            code: "const a = <CommandDialog onBeforeExecute={(values) => { doSideEffect(values); }} />;",
+            code: 'const a = <CommandDialog onBeforeExecute={(values) => { doSideEffect(values); }} />;',
             errors: [{ messageId: 'missingReturn' }],
         },
         {
-            code: "const b = <CommandDialog onBeforeExecute={function (values) { doSideEffect(values); }} />;",
+            code: 'const b = <CommandDialog onBeforeExecute={function (values) { doSideEffect(values); }} />;',
             errors: [{ messageId: 'missingReturn' }],
         },
         {
-            code: "const c = <CommandDialog onBeforeExecute={(values) => { return; }} />;",
+            code: 'const c = <CommandDialog onBeforeExecute={(values) => { return; }} />;',
             errors: [{ messageId: 'emptyReturn' }],
         },
         {
-            code: "const d = { onBeforeExecute: (v) => { log(v); } };",
+            code: 'const d = { onBeforeExecute: (v) => { log(v); } };',
             errors: [{ messageId: 'missingReturn' }],
         },
     ],
@@ -302,28 +393,28 @@ tsRuleTester.run('onbeforeexecute-must-return', onbeforeexecuteMustReturn, {
 tsRuleTester.run('no-hooks-in-view-model', noHooksInViewModel, {
     valid: [
         // A view model with no hooks.
-        "class FooViewModel { select(id) { this.selected = id; } }",
+        'class FooViewModel { select(id) { this.selected = id; } }',
         // A *ViewModel calling a plain method is fine.
-        "class BarViewModel { compute() { return this.transform(); } }",
+        'class BarViewModel { compute() { return this.transform(); } }',
         // A non-view-model class may use hooks (it is a component/helper, not a VM).
-        "class Helper { render() { const x = useState(0); return x; } }",
+        'class Helper { render() { const x = useState(0); return x; } }',
         // An injectable view model with only injected collaborators.
-        "@injectable class BazViewModel { constructor(private readonly svc) {} load() { return this.svc.get(); } }",
+        '@injectable class BazViewModel { constructor(private readonly svc) {} load() { return this.svc.get(); } }',
     ],
     invalid: [
         {
             // Generated Arc proxy .use() inside a *ViewModel.
-            code: "class FooViewModel { load() { const [x] = AllAuthors.use(); return x; } }",
+            code: 'class FooViewModel { load() { const [x] = AllAuthors.use(); return x; } }',
             errors: [{ messageId: 'noHook', data: { name: '.use' } }],
         },
         {
             // A React hook inside an @injectable view model.
-            code: "@injectable class Bar { method() { const s = useState(0); return s; } }",
+            code: '@injectable class Bar { method() { const s = useState(0); return s; } }',
             errors: [{ messageId: 'noHook', data: { name: 'useState' } }],
         },
         {
             // A class registered via withViewModel, even without the naming/decorator signals.
-            code: "class Vm { method() { useIdentity(); } } const C = withViewModel(Vm, () => null);",
+            code: 'class Vm { method() { useIdentity(); } } const C = withViewModel(Vm, () => null);',
             errors: [{ messageId: 'noHook', data: { name: 'useIdentity' } }],
         },
     ],
@@ -332,20 +423,20 @@ tsRuleTester.run('no-hooks-in-view-model', noHooksInViewModel, {
 tsRuleTester.run('no-raw-command-form-marker', noRawCommandFormMarker, {
     valid: [
         // The sanctioned way to mark and to test, in both directions.
-        "markAsCommandFormField(MyField);",
-        "markAsCommandFormColumn(MyColumn);",
-        "if (isCommandFormField(component)) { wrap(component); }",
-        "if (isCommandFormColumn(component)) { layout(component); }",
+        'markAsCommandFormField(MyField);',
+        'markAsCommandFormColumn(MyColumn);',
+        'if (isCommandFormField(component)) { wrap(component); }',
+        'if (isCommandFormColumn(component)) { layout(component); }',
         // Referring to the exported constant rather than repeating the literal.
-        "MyField.displayName = CommandFormFieldDisplayName;",
-        "if (component.displayName === CommandFormFieldDisplayName) { wrap(component); }",
+        'MyField.displayName = CommandFormFieldDisplayName;',
+        'if (component.displayName === CommandFormFieldDisplayName) { wrap(component); }',
         // Declaring the constants themselves — the one place the literal belongs.
         "export const CommandFormFieldDisplayName = 'CommandFormField';",
         "export const CommandFormColumnDisplayName = 'CommandFormColumn';",
         // displayName used as the diagnostic label it is meant to be.
         "MyDialog.displayName = 'MyDialog';",
         "StepperPanel.displayName = 'StepperPanel';",
-        "const label = `DialogWrapper(${Component.displayName})`;",
+        'const label = `DialogWrapper(${Component.displayName})`;',
         // A different property that happens to hold the same string.
         "const meta = { kind: 'CommandFormField' };",
         // Comparing a non-displayName property.
@@ -354,40 +445,83 @@ tsRuleTester.run('no-raw-command-form-marker', noRawCommandFormMarker, {
     invalid: [
         {
             code: "MyField.displayName = 'CommandFormField';",
-            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormField', name: 'CommandFormField' } }],
+            errors: [
+                {
+                    messageId: 'useMarkHelper',
+                    data: { helper: 'markAsCommandFormField', name: 'CommandFormField' },
+                },
+            ],
         },
         {
             code: "MyColumn.displayName = 'CommandFormColumn';",
-            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormColumn', name: 'CommandFormColumn' } }],
+            errors: [
+                {
+                    messageId: 'useMarkHelper',
+                    data: {
+                        helper: 'markAsCommandFormColumn',
+                        name: 'CommandFormColumn',
+                    },
+                },
+            ],
         },
         {
             // Computed member access is the same stamp.
             code: "MyField['displayName'] = 'CommandFormField';",
-            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormField', name: 'CommandFormField' } }],
+            errors: [
+                {
+                    messageId: 'useMarkHelper',
+                    data: { helper: 'markAsCommandFormField', name: 'CommandFormField' },
+                },
+            ],
         },
         {
             // Set through an object literal, e.g. Object.assign.
             code: "Object.assign(MyField, { displayName: 'CommandFormField' });",
-            errors: [{ messageId: 'useMarkHelper', data: { helper: 'markAsCommandFormField', name: 'CommandFormField' } }],
+            errors: [
+                {
+                    messageId: 'useMarkHelper',
+                    data: { helper: 'markAsCommandFormField', name: 'CommandFormField' },
+                },
+            ],
         },
         {
             code: "if (component.displayName === 'CommandFormField') { wrap(component); }",
-            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormField', name: 'CommandFormField' } }],
+            errors: [
+                {
+                    messageId: 'usePredicate',
+                    data: { helper: 'isCommandFormField', name: 'CommandFormField' },
+                },
+            ],
         },
         {
             // Reversed operand order.
             code: "if ('CommandFormColumn' === component.displayName) { layout(component); }",
-            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormColumn', name: 'CommandFormColumn' } }],
+            errors: [
+                {
+                    messageId: 'usePredicate',
+                    data: { helper: 'isCommandFormColumn', name: 'CommandFormColumn' },
+                },
+            ],
         },
         {
             // Negated comparison misses a renamed field just as badly.
             code: "if (component.displayName !== 'CommandFormField') { return child; }",
-            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormField', name: 'CommandFormField' } }],
+            errors: [
+                {
+                    messageId: 'usePredicate',
+                    data: { helper: 'isCommandFormField', name: 'CommandFormField' },
+                },
+            ],
         },
         {
             // The cast form this package used before the marker existed.
             code: "if ((component as { displayName?: string }).displayName === 'CommandFormField') { wrap(component); }",
-            errors: [{ messageId: 'usePredicate', data: { helper: 'isCommandFormField', name: 'CommandFormField' } }],
+            errors: [
+                {
+                    messageId: 'usePredicate',
+                    data: { helper: 'isCommandFormField', name: 'CommandFormField' },
+                },
+            ],
         },
     ],
 });

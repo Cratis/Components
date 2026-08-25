@@ -118,8 +118,8 @@ For card images:
 - Set explicit dimensions
 
 ```typescript
-<img 
-    src={item.thumbnailUrl} 
+<img
+    src={item.thumbnailUrl}
     alt={item.name}
     width={200}
     height={150}

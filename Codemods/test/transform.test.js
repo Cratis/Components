@@ -6,6 +6,14 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { transformSource } from '../lib/transform.js';
+import {
+    approvedRootSymbols as codemodApprovedRootSymbols,
+    namespaceSubpaths as codemodNamespaceSubpaths,
+} from '../lib/namespaceMap.js';
+import {
+    approvedRootSymbols as eslintApprovedRootSymbols,
+    namespaceSubpaths as eslintNamespaceSubpaths,
+} from '../../ESLint/lib/rootNamespaceMap.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturesDir = path.join(__dirname, 'fixtures');
@@ -20,6 +28,7 @@ const supportedCases = [
     'alias-import',
     'mixed-import',
     'multiple-namespaces',
+    'command-stepper-alias',
 ];
 
 // Fixtures where the codemod must leave the file completely untouched: either because it
@@ -46,6 +55,18 @@ const unsupportedCases = new Set([
     'unsupported-side-effect-only',
     'unsupported-export',
 ]);
+
+describe('root namespace maps', () => {
+    it('should keep the codemod and ESLint namespace maps identical', () => {
+        expect(codemodNamespaceSubpaths).toEqual(eslintNamespaceSubpaths);
+    });
+
+    it('should keep the codemod and ESLint setup allowlists identical', () => {
+        expect([...codemodApprovedRootSymbols].sort()).toEqual(
+            [...eslintApprovedRootSymbols].sort(),
+        );
+    });
+});
 
 describe('transformSource — fixture coverage', () => {
     it('covers every fixture directory with a supported or unchanged expectation', () => {

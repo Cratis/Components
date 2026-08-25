@@ -177,32 +177,32 @@ Do not target React Aria classes or internal DOM structure.
 
 The canonical rule: **the package root is setup-only; every component ships from its own subpath.** Import `CratisComponentsProvider` (and `cratisDefaults`, `mergeCratisComponentsConfig`) from the root; import every component from the subpath in its capability profile:
 
-| Subpath | Capability profile |
-| --- | --- |
-| `@cratis/components/Canvas` | Spatial (optional `pixi.js` peer) |
-| `@cratis/components/CommandDialog` | Foundation |
-| `@cratis/components/CommandStepper` | Foundation |
-| `@cratis/components/CommandForm` | Foundation |
-| `@cratis/components/CommandForm/fields` | Foundation |
-| `@cratis/components/Common` | Foundation |
-| `@cratis/components/DataPage` | Foundation |
-| `@cratis/components/DataTables` | Foundation |
-| `@cratis/components/Dialogs` | Foundation |
-| `@cratis/components/Display` | Foundation |
-| `@cratis/components/Dropdown` | Foundation |
-| `@cratis/components/Filter` | Foundation |
-| `@cratis/components/Notifications` | Foundation |
-| `@cratis/components/ObjectContentEditor` | Advanced React |
-| `@cratis/components/ObjectNavigationalBar` | Advanced React |
-| `@cratis/components/PivotViewer` | Spatial (optional `pixi.js` peer) |
-| `@cratis/components/SchemaEditor` | Advanced React |
-| `@cratis/components/TimeMachine` | Advanced React |
-| `@cratis/components/Toolbar` | Advanced React |
-| `@cratis/components/types` | Foundation |
+| Subpath                                    | Capability profile                |
+| ------------------------------------------ | --------------------------------- |
+| `@cratis/components/Canvas`                | Spatial (optional `pixi.js` peer) |
+| `@cratis/components/CommandDialog`         | Foundation                        |
+| `@cratis/components/CommandStepper`        | Foundation                        |
+| `@cratis/components/CommandForm`           | Foundation                        |
+| `@cratis/components/CommandForm/fields`    | Foundation                        |
+| `@cratis/components/Common`                | Foundation                        |
+| `@cratis/components/DataPage`              | Foundation                        |
+| `@cratis/components/DataTables`            | Foundation                        |
+| `@cratis/components/Dialogs`               | Foundation                        |
+| `@cratis/components/Display`               | Foundation                        |
+| `@cratis/components/Dropdown`              | Foundation                        |
+| `@cratis/components/Filter`                | Foundation                        |
+| `@cratis/components/Notifications`         | Foundation                        |
+| `@cratis/components/ObjectContentEditor`   | Advanced React                    |
+| `@cratis/components/ObjectNavigationalBar` | Advanced React                    |
+| `@cratis/components/PivotViewer`           | Spatial (optional `pixi.js` peer) |
+| `@cratis/components/SchemaEditor`          | Advanced React                    |
+| `@cratis/components/TimeMachine`           | Advanced React                    |
+| `@cratis/components/Toolbar`               | Advanced React                    |
+| `@cratis/components/types`                 | Foundation                        |
 
 Foundation, Advanced React, and Spatial are equal-support capability profiles, not stability tiers: all three ship from the same package at the same version, behind the same release gates, on the same semver line. "Spatial" describes what a component is for and what it costs to adopt (the optional Pixi peer), never how carefully it is built, tested, or versioned. See the published [Capability profiles](https://cratis.io/components/ui-foundation/#capability-profiles) explanation and its [capability matrix](https://cratis.io/components/ui-foundation/#capability-matrix) for state, persistence, Arc/Chronicle, SSR, and performance ownership per profile.
 
-The root also retains every subpath as a namespace export (`import { Canvas } from '@cratis/components'`, then `Canvas.CanvasItem`) for source compatibility with established consumers; this is not the pattern for new code, and this release does not remove it. Components 4 intentionally retains the existing namespace symbols; declaration-level TSDoc and API-reference coverage for them is tracked as ongoing documentation work, not as a silent 4.x export removal. [MIGRATION.md](./MIGRATION.md) has the complete namespace-to-subpath mapping and the codemod invocation for moving existing code off the root namespace.
+Components 4 removes component-family namespaces from the root. The root is intentionally setup-only so importing the provider never traverses optional or unrelated component graphs. [MIGRATION.md](./MIGRATION.md) contains the complete namespace-to-subpath mapping and the shipped codemod command for existing root imports.
 
 ## Components 3 migration
 

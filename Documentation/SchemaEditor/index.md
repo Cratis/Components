@@ -79,12 +79,12 @@ What is deliberately **not** supported: JSON Schema composition keywords (`oneOf
 
 Properties are displayed in a table:
 
-| Name | Type | Format | Required |
-|------|------|--------|----------|
-| name | string | - | ✓ |
-| email | string | email | ✓ |
-| age | number | - |  |
-| createdAt | string | date-time |  |
+| Name      | Type   | Format    | Required |
+| --------- | ------ | --------- | -------- |
+| name      | string | -         | ✓        |
+| email     | string | email     | ✓        |
+| age       | number | -         |          |
+| createdAt | string | date-time |          |
 
 ## See Also
 

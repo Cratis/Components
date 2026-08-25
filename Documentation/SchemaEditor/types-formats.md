@@ -6,14 +6,14 @@ SchemaEditor authors a deliberate JSON Schema subset. It is not a complete JSON 
 
 The built-in editor offers six types:
 
-| Type | Purpose | Nested definition |
-| --- | --- | --- |
-| `string` | Text and formatted temporal/identifier values | — |
-| `integer` | Whole numeric values | — |
-| `number` | Floating-point or decimal values | — |
-| `boolean` | True/false values | — |
-| `object` | Named nested properties | `properties` and `required` |
-| `array` | Repeated values | `items` |
+| Type      | Purpose                                       | Nested definition           |
+| --------- | --------------------------------------------- | --------------------------- |
+| `string`  | Text and formatted temporal/identifier values | —                           |
+| `integer` | Whole numeric values                          | —                           |
+| `number`  | Floating-point or decimal values              | —                           |
+| `boolean` | True/false values                             | —                           |
+| `object`  | Named nested properties                       | `properties` and `required` |
+| `array`   | Repeated values                               | `items`                     |
 
 The editor does not offer `null`, boolean schemas, or type unions such as `type: ['string', 'null']`.
 
@@ -21,12 +21,12 @@ The editor does not offer `null`, boolean schemas, or type unions such as `type:
 
 The default `TypeFormat` catalog is exported as `DEFAULT_TYPE_FORMATS` from `@cratis/components/types` and contains:
 
-| JSON type | Formats |
-| --- | --- |
-| `string` | unformatted, `guid`, `date-time`, `date`, `time` |
-| `integer` | unformatted, `int16`, `int32`, `int64` |
-| `number` | unformatted, `float`, `double` |
-| `boolean` | unformatted |
+| JSON type | Formats                                          |
+| --------- | ------------------------------------------------ |
+| `string`  | unformatted, `guid`, `date-time`, `date`, `time` |
+| `integer` | unformatted, `int16`, `int32`, `int64`           |
+| `number`  | unformatted, `float`, `double`                   |
+| `boolean` | unformatted                                      |
 
 Example:
 
@@ -60,11 +60,7 @@ const typeFormats: TypeFormat[] = [
     { jsonType: 'boolean', format: '' },
 ];
 
-<SchemaEditor
-    schema={schema}
-    typeFormats={typeFormats}
-    onChange={setSchema}
-/>;
+<SchemaEditor schema={schema} typeFormats={typeFormats} onChange={setSchema} />;
 ```
 
 The selected option stores the `jsonType` in `type` and a non-empty format in `format`. `array` and `object` remain available in addition to the custom primitive catalog.
