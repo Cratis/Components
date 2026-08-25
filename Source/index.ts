@@ -12,8 +12,9 @@
  *
  * This keeps a consumer's root import free of every optional-peer-heavy subsystem
  * (Canvas and PivotViewer's Pixi dependency chief among them) and free of every
- * `@cratis/arc`/`@cratis/arc.react` binding: mounting `CratisComponentsProvider`
- * never requires installing, resolving, or type-checking against Pixi or Arc.
+ * `@cratis/arc`/`@cratis/arc.react` runtime or declaration edge. Importing the root
+ * therefore does not resolve or type-check Pixi or Arc modules; package-level peer metadata
+ * still describes the requirements of the complete set of optional capability subpaths.
  * Import a component from its subpath; import the provider and its configuration
  * types from here.
  */
