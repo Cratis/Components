@@ -31,6 +31,22 @@ describe('remove-root-namespace-imports CLI', () => {
         expect(result.stdout).toContain('Usage:');
     });
 
+    it('prints public command help and exits 0', () => {
+        const result = run(['--help']);
+
+        expect(result.status).toBe(0);
+        expect(result.stdout).toContain(
+            'Usage: cratis-components-remove-root-namespace-imports',
+        );
+    });
+
+    it('rejects an unknown option', () => {
+        const result = run(['--chek']);
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('Unknown option: --chek');
+    });
+
     it('rejects --package without a package name', () => {
         const result = run(['--package']);
 

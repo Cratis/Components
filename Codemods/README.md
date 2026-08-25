@@ -76,6 +76,9 @@ consumers are left exactly as they are.
 
 ### Use
 
+The published CLI requires Node.js 20 or newer and brings its own TypeScript parser; it does
+not depend on the consumer application's TypeScript version.
+
 ```sh
 # Preview what would change, without writing anything:
 npx --package @cratis/components-codemods \

@@ -63,11 +63,6 @@ try {
         }
     }
 
-    const source = path.join(consumer, 'App.ts');
-    writeFileSync(
-        source,
-        "import { SchemaEditor as EditorNS } from '@cratis/components';\n",
-    );
     const binary = path.join(
         consumer,
         'node_modules',
@@ -75,6 +70,21 @@ try {
         process.platform === 'win32'
             ? 'cratis-components-remove-root-namespace-imports.cmd'
             : 'cratis-components-remove-root-namespace-imports',
+    );
+    const help = run(binary, ['--help'], { cwd: consumer });
+    assertRun('packed codemod --help', help);
+    if (
+        !help.stdout.includes(
+            'Usage: cratis-components-remove-root-namespace-imports',
+        )
+    ) {
+        throw new Error(`Unexpected --help output:\n${help.stdout}`);
+    }
+
+    const source = path.join(consumer, 'App.ts');
+    writeFileSync(
+        source,
+        "import { SchemaEditor as EditorNS } from '@cratis/components';\n",
     );
 
     const pending = run(binary, ['--check', source], { cwd: consumer });

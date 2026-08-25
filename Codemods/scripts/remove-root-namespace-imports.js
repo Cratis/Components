@@ -13,7 +13,7 @@ const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.yarn']);
 function printUsage() {
     console.log(
         [
-            'Usage: remove-root-namespace-imports [--check] [--package <name>] <path...>',
+            'Usage: cratis-components-remove-root-namespace-imports [--check] [--package <name>] <path...>',
             '',
             'Rewrites \'import { Namespace } from "@cratis/components"\' into',
             '\'import * as Namespace from "@cratis/components/Namespace"\' for every namespace',
@@ -71,6 +71,9 @@ function main(argv) {
         } else if (arg === '--help' || arg === '-h') {
             printUsage();
             return 0;
+        } else if (arg.startsWith('-')) {
+            console.error(`Unknown option: ${arg}`);
+            return 1;
         } else {
             paths.push(arg);
         }
