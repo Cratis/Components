@@ -99,7 +99,7 @@ describe('root namespace maps', () => {
 
         for (const guide of guides) {
             expect(guide).toContain(
-                'node Codemods/scripts/remove-root-namespace-imports.js --check <paths...>',
+                'cratis-components-remove-root-namespace-imports --check <paths...>',
             );
             for (const namespace of Object.keys(codemodNamespaceSubpaths)) {
                 expect(guide).toContain(`| \`${namespace}\``);

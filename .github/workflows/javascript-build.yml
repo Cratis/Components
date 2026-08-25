@@ -73,7 +73,9 @@ jobs:
 
             - name: Verify root-import codemod
               working-directory: Codemods
-              run: yarn test
+              run: |
+                  yarn test
+                  yarn verify-package
 
             # Every intentionally public declaration/member reachable from a JS `exports`
             # subpath must carry a TSDoc comment (Cratis/Components#173). Runs against

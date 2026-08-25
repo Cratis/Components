@@ -1,6 +1,6 @@
 # @cratis/components-codemods
 
-Internal, unpublished codemods that support the Components 3 root-namespace-removal migration. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). See
+Published migration codemods for moving from Components 3 root namespaces to Components 4 explicit subpath imports. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). See
 [`ESLint`'s `no-root-barrel-import` rule](../ESLint/README.md) for the lint-time guard that
 enforces this once a consumer has migrated.
 
@@ -78,13 +78,15 @@ consumers are left exactly as they are.
 
 ```sh
 # Preview what would change, without writing anything:
-node Codemods/scripts/remove-root-namespace-imports.js --check path/to/app/src
+npx --package @cratis/components-codemods \
+  cratis-components-remove-root-namespace-imports --check path/to/app/src
 
 # Apply the rewrite:
-node Codemods/scripts/remove-root-namespace-imports.js path/to/app/src
+npx --package @cratis/components-codemods \
+  cratis-components-remove-root-namespace-imports path/to/app/src
 
-# One specific file:
-node Codemods/scripts/remove-root-namespace-imports.js --check path/to/App.tsx
+# Contributors to this repository can run the workspace source directly:
+node Codemods/scripts/remove-root-namespace-imports.js --check Source
 ```
 
 Exit code is non-zero whenever an unsupported case was found (with `--check` or without —

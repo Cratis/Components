@@ -22,7 +22,8 @@ imports (`import { Canvas } from '@cratis/components'`) onto their canonical sub
 for full behavior and the companion `@cratis/components/no-root-barrel-import` ESLint rule.
 
 ```sh
-node Codemods/scripts/remove-root-namespace-imports.js <paths...>
+npx --package @cratis/components-codemods \
+  cratis-components-remove-root-namespace-imports <paths...>
 ```
 
 ## Support

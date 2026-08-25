@@ -88,8 +88,10 @@ This is an intentional Components 4 breaking change. The package root now expose
 Run the shipped AST-based codemod in preview mode first, then apply it:
 
 ```bash
-node Codemods/scripts/remove-root-namespace-imports.js --check <paths...>
-node Codemods/scripts/remove-root-namespace-imports.js <paths...>
+npx --package @cratis/components-codemods \
+  cratis-components-remove-root-namespace-imports --check <paths...>
+npx --package @cratis/components-codemods \
+  cratis-components-remove-root-namespace-imports <paths...>
 ```
 
 The codemod preserves aliases and type-only imports, splits mixed setup/namespace imports, and reports unsupported cases without guessing. Review its diagnostics, then run the consuming project's lint, build, and tests.
