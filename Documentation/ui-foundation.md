@@ -95,6 +95,8 @@ Everything Pixi-related — the peer, the install, the single-resolution rule, a
 
 This means Foundation, Advanced React, and Spatial CSS all ship together today: importing `@cratis/components/styles` once loads Canvas's and PivotViewer's rules alongside Dialog's and DataTable's, whether or not the application ever renders `Canvas`. That is an acceptable, and currently the simplest, aggregate cost — plain CSS custom properties and class rules are inert until a matching class or `data-cratis-part` renders, so unused component CSS costs parse time on an already-small stylesheet, not runtime behavior, layout, or a Pixi/JavaScript dependency.
 
+The packed archive gate makes that trade-off measurable and fail-closed. The aggregate stylesheet currently has reviewed ceilings of **200 KiB raw**, **32 KiB gzip**, and **1,200 declaration blocks**. A change that crosses a ceiling must either reduce the payload or update the budget with measured consumer evidence; it cannot grow silently.
+
 A future split — for example, a separate `@cratis/components/styles/spatial` alongside a slimmer default — would only be justified once one of these becomes true and measured, not merely theoretical:
 
 - The aggregate manifest's compiled size becomes large enough that a Foundation-only application's CSS payload is a demonstrated problem, not a stylistic preference.
