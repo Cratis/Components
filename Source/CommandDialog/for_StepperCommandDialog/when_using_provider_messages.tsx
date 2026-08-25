@@ -4,7 +4,8 @@
 // @vitest-environment jsdom
 
 import React from 'react';
-import { vi } from 'vitest';
+import { expect } from 'chai';
+import { afterEach, describe, it, vi } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 import { StepperPanel } from '../StepperPanel';
 import { StepperCommandDialog } from '../StepperCommandDialog';
@@ -69,7 +70,7 @@ describe('when StepperCommandDialog uses provider messages', () => {
         dialog = await render(
             <CratisComponentsProvider>
                 <StepperCommandDialog<TestCommand>
-                    command={TestCommand as unknown as new () => object}
+                    command={TestCommand}
                     visible
                     title='Wizard'
                     showCancel
@@ -80,8 +81,8 @@ describe('when StepperCommandDialog uses provider messages', () => {
             </CratisComponentsProvider>,
         );
 
-        buttonLabels(dialog).should.contain('Next');
-        buttonLabels(dialog).should.contain('Cancel');
+        expect(buttonLabels(dialog)).to.include('Next');
+        expect(buttonLabels(dialog)).to.include('Cancel');
     });
 
     it('should use the provider messages for Next and the footer Cancel when no prop override is given', async () => {
@@ -95,7 +96,7 @@ describe('when StepperCommandDialog uses provider messages', () => {
                 }}
             >
                 <StepperCommandDialog<TestCommand>
-                    command={TestCommand as unknown as new () => object}
+                    command={TestCommand}
                     visible
                     title='Wizard'
                     showCancel
@@ -106,10 +107,10 @@ describe('when StepperCommandDialog uses provider messages', () => {
             </CratisComponentsProvider>,
         );
 
-        buttonLabels(dialog).should.contain('Provider Next');
-        buttonLabels(dialog).should.contain('Provider Cancel');
-        buttonLabels(dialog).should.not.contain('Next');
-        buttonLabels(dialog).should.not.contain('Cancel');
+        expect(buttonLabels(dialog)).to.include('Provider Next');
+        expect(buttonLabels(dialog)).to.include('Provider Cancel');
+        expect(buttonLabels(dialog)).not.to.include('Next');
+        expect(buttonLabels(dialog)).not.to.include('Cancel');
     });
 
     it('should prefer named prop overrides over the provider messages', async () => {
@@ -123,7 +124,7 @@ describe('when StepperCommandDialog uses provider messages', () => {
                 }}
             >
                 <StepperCommandDialog<TestCommand>
-                    command={TestCommand as unknown as new () => object}
+                    command={TestCommand}
                     visible
                     title='Wizard'
                     showCancel
@@ -136,9 +137,9 @@ describe('when StepperCommandDialog uses provider messages', () => {
             </CratisComponentsProvider>,
         );
 
-        buttonLabels(dialog).should.contain('Explicit Next');
-        buttonLabels(dialog).should.contain('Explicit Cancel');
-        buttonLabels(dialog).should.not.contain('Provider Next');
-        buttonLabels(dialog).should.not.contain('Provider Cancel');
+        expect(buttonLabels(dialog)).to.include('Explicit Next');
+        expect(buttonLabels(dialog)).to.include('Explicit Cancel');
+        expect(buttonLabels(dialog)).not.to.include('Provider Next');
+        expect(buttonLabels(dialog)).not.to.include('Provider Cancel');
     });
 });
