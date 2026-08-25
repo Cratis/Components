@@ -17,6 +17,8 @@ on:
             - 'main'
         paths:
             - 'Source/**'
+            - 'Codemods/**'
+            - 'ESLint/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -26,6 +28,8 @@ on:
             - '**'
         paths:
             - 'Source/**'
+            - 'Codemods/**'
+            - 'ESLint/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -66,6 +70,10 @@ jobs:
               run: |
                   export NODE_OPTIONS="--max-old-space-size=4096"
                   yarn ci
+
+            - name: Verify root-import codemod
+              working-directory: Codemods
+              run: yarn test
 
             # Every intentionally public declaration/member reachable from a JS `exports`
             # subpath must carry a TSDoc comment (Cratis/Components#173). Runs against
