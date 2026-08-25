@@ -14,7 +14,8 @@ import { DatePickerInput } from '../DatePickerInput';
     describe(`when rendering with invalid set to ${invalid}`, () => {
         let container: HTMLDivElement;
         let root: Root;
-        let input: HTMLInputElement;
+        let pickerRoot: HTMLElement;
+        let group: HTMLElement;
         let errorSpy: ReturnType<typeof vi.spyOn>;
 
         beforeEach(async () => {
@@ -39,13 +40,19 @@ import { DatePickerInput } from '../DatePickerInput';
                 );
             });
 
-            const renderedInput = container.querySelector<HTMLInputElement>(
-                '[data-scope="datepicker"][data-part="input"]',
+            const renderedRoot = container.querySelector<HTMLElement>(
+                '[data-cratis-part="root"]',
             );
-            if (!renderedInput) {
-                throw new Error('DatePickerInput did not render its input element.');
+            const renderedGroup = container.querySelector<HTMLElement>(
+                '[data-cratis-part="group"]',
+            );
+            if (!renderedRoot || !renderedGroup) {
+                throw new Error(
+                    'DatePickerInput did not render its stable Cratis parts.',
+                );
             }
-            input = renderedInput;
+            pickerRoot = renderedRoot;
+            group = renderedGroup;
         });
 
         afterEach(async () => {
@@ -59,8 +66,8 @@ import { DatePickerInput } from '../DatePickerInput';
         });
 
         it('should represent the invalid state through accepted input attributes', () => {
-            expect(input.getAttribute('aria-invalid')).to.equal(invalid ? 'true' : null);
-            expect(input.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(group.getAttribute('aria-invalid')).to.equal(invalid ? 'true' : null);
+            expect(pickerRoot.hasAttribute('data-invalid')).to.equal(invalid);
         });
     });
 });

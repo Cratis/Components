@@ -10,15 +10,20 @@ describe('when merging user value', () => {
 
     beforeEach(() => {
         withoutValue = mergeCratisComponentsConfig(undefined) as Record<string, unknown>;
-        withValue = mergeCratisComponentsConfig({ unstyled: true, ripple: true, pt: userPt }) as Record<string, unknown>;
+        withValue = mergeCratisComponentsConfig({
+            unstyled: true,
+            ripple: true,
+            pt: userPt,
+        }) as Record<string, unknown>;
     });
 
     it('should return an object when no value is given', () => {
         withoutValue.should.not.be.undefined;
     });
 
-    it('should pass an empty config when no value is given', () => {
-        Object.keys(withoutValue).should.have.lengthOf(0);
+    it('should include the renderer-independent defaults when no value is given', () => {
+        withoutValue.locale!.should.equal('en-US');
+        withoutValue.messages!.should.not.be.undefined;
     });
 
     it('should forward unstyled from user value', () => {

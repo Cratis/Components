@@ -1,0 +1,9 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Mirror the published package contract: semantic defaults, no-Preflight internal utilities,
+   layered component structure, then optional baseline scheme behavior. */
+@import '../tokens.css';
+@import '../tailwind.css';
+@import '../styles.css' layer(cratis-components);
+@import '../theme.css';

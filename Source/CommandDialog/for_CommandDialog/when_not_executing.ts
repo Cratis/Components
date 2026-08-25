@@ -6,24 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { CommandDialog } from '../CommandDialog';
 
-vi.mock('primereact/dialog', () => {
-    // PrimeReact 11's Dialog is compositional; each part is a pass-through that
-    // renders its children so the footer buttons and content reach the markup.
-    const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
-    return {
-        Dialog: {
-            Root: part, Portal: part, Backdrop: part, Positioner: part, Popup: part,
-            Header: part, Title: part, Close: part, Content: part, Footer: part,
-        },
-    };
-});
 
-vi.mock('primereact/button', () => ({
-    // PrimeReact 11 Button renders children (the v10 label/icon/loading props are gone).
-    // A busy dialog now disables its confirm button rather than setting a loading flag.
-    Button: (props: { disabled?: boolean; children?: React.ReactNode }) =>
-        React.createElement('button', { disabled: props.disabled }, props.children),
-}));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },
@@ -53,6 +36,7 @@ describe('when CommandDialog is in its initial state', () => {
 
     beforeEach(() => {
         const element = React.createElement(CommandDialog, {
+            // SAFETY: The test command implements the runtime command constructor contract.
             command: TestCommand as unknown as new () => object,
             visible: true,
             title: 'Test Dialog',
@@ -61,7 +45,6 @@ describe('when CommandDialog is in its initial state', () => {
     });
 
     it('should_not_have_buttons_disabled_due_to_busy', () => {
-        // A busy dialog swaps the confirm icon for a spinner; a non-busy dialog shows none.
-        html.should.not.include('pi-spinner');
+        html.should.not.include('cratis-dialog__spinner');
     });
 });

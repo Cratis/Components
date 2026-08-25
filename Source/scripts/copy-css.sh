@@ -13,7 +13,7 @@ set -euo pipefail
 
 mkdir -p dist/esm
 
-for stylesheet in tokens.css theme.css primereact-v10-palette.css; do
+for stylesheet in tokens.css theme.css; do
     cp "$stylesheet" "dist/esm/$stylesheet"
     echo "Copied $stylesheet"
 done
@@ -31,5 +31,10 @@ while IFS= read -r font; do
     cp "$font" "dist/esm/$(basename "$font")"
     echo "Copied $(basename "$font")"
 done
+
+# Patrick Hand is distributed under the SIL Open Font License. Keep its notice beside the
+# packaged font binaries so every redistributed archive carries the required license text.
+cp Canvas/shapes/Note/PatrickHand-OFL.txt dist/esm/PatrickHand-OFL.txt
+echo "Copied PatrickHand-OFL.txt"
 
 echo "Stylesheet layers copied successfully"

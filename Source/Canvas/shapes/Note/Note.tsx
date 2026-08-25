@@ -3,6 +3,7 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { whenNoteFontReady } from './noteFont';
+import { FaPlus } from 'react-icons/fa6';
 
 const MIN_SIZE = 80;
 // How small the fitted text is allowed to get. Notes live on a canvas that zooms, so text too small to
@@ -14,18 +15,19 @@ const MAX_FONT_SIZE = 120;
 const PADDING = 12;
 const LINE_HEIGHT_RATIO = 1.4;
 
+/** Controlled data rendered by {@link Note}. */
 export interface NoteData {
-
+    /** Stable note identity. */
     id: string;
-
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
-
+    /** Note width. */
     width: number;
-
+    /** Note height. */
     height: number;
-
+    /** Editable note text. */
     text: string;
 }
 
@@ -40,7 +42,7 @@ function textFitsAtSize(
     text: string,
     fontSize: number,
     availableWidth: number,
-    availableHeight: number
+    availableHeight: number,
 ): boolean {
     measurer.style.width = `${availableWidth}px`;
     measurer.style.fontSize = `${fontSize}px`;
@@ -53,9 +55,13 @@ function findOptimalFontSize(
     measurer: HTMLDivElement,
     text: string,
     width: number,
-    height: number
+    height: number,
 ): FontFit {
-    if (!(text ?? '').trim()) return { fontSize: Math.min(MAX_FONT_SIZE, Math.min(width, height) * 0.4), overflows: false };
+    if (!(text ?? '').trim())
+        return {
+            fontSize: Math.min(MAX_FONT_SIZE, Math.min(width, height) * 0.4),
+            overflows: false,
+        };
 
     const availableWidth = width - PADDING * 2;
     const availableHeight = height - PADDING * 2;
@@ -86,25 +92,31 @@ type HandleKey = (typeof HANDLE_KEYS)[number];
 
 const HANDLE_POSITIONS: Record<HandleKey, React.CSSProperties> = {
     nw: { top: -4, left: -4 },
-    n:  { top: -4, left: '50%', transform: 'translateX(-50%)' },
+    n: { top: -4, left: '50%', transform: 'translateX(-50%)' },
     ne: { top: -4, right: -4 },
-    e:  { top: '50%', right: -4, transform: 'translateY(-50%)' },
+    e: { top: '50%', right: -4, transform: 'translateY(-50%)' },
     se: { bottom: -4, right: -4 },
-    s:  { bottom: -4, left: '50%', transform: 'translateX(-50%)' },
+    s: { bottom: -4, left: '50%', transform: 'translateX(-50%)' },
     sw: { bottom: -4, left: -4 },
-    w:  { top: '50%', left: -4, transform: 'translateY(-50%)' },
+    w: { top: '50%', left: -4, transform: 'translateY(-50%)' },
 };
 
 const RESIZE_CURSORS: Record<HandleKey, string> = {
-    nw: 'nw-resize', n: 'n-resize', ne: 'ne-resize',
-    e: 'e-resize',   se: 'se-resize',
-    s: 's-resize',   sw: 'sw-resize', w: 'w-resize',
+    nw: 'nw-resize',
+    n: 'n-resize',
+    ne: 'ne-resize',
+    e: 'e-resize',
+    se: 'se-resize',
+    s: 's-resize',
+    sw: 'sw-resize',
+    w: 'w-resize',
 };
 
+/** Props for a fully controlled movable, resizable, editable Canvas note. */
 export interface NoteProps {
-
+    /** Current note data. */
     note: NoteData;
-
+    /** Whether selection handles are visible. */
     selected: boolean;
 
     /**
@@ -113,14 +125,15 @@ export interface NoteProps {
      */
     onSelect: (id: string, additive: boolean) => void;
 
+    /** Reports drag movement. */
     onMove: (id: string, x: number, y: number) => void;
-
+    /** Reports drag completion. */
     onMoveEnd?: (id: string) => void;
-
+    /** Reports resize movement and the resulting bounds. */
     onResize: (id: string, x: number, y: number, width: number, height: number) => void;
-
+    /** Reports resize completion. */
     onResizeEnd?: (id: string) => void;
-
+    /** Reports committed text edits. */
     onTextChange: (id: string, text: string) => void;
 
     /**
@@ -131,7 +144,22 @@ export interface NoteProps {
     onExpandedChange?: (id: string, isExpanded: boolean) => void;
 }
 
-export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, onMoveEnd, onResize, onResizeEnd, onTextChange, onExpandedChange }) => {
+/**
+ * A fully controlled movable, resizable, editable Canvas note with automatic font fitting. Text
+ * shrinks to fit the note's bounds; when it no longer fits even at the readability floor, a "see full
+ * text" button grows the note temporarily. Double-click to edit, drag to move, drag handles to resize.
+ */
+export const Note: React.FC<NoteProps> = ({
+    note,
+    selected,
+    onSelect,
+    onMove,
+    onMoveEnd,
+    onResize,
+    onResizeEnd,
+    onTextChange,
+    onExpandedChange,
+}) => {
     const noteRef = useRef<HTMLDivElement>(null);
     const measurerRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -177,7 +205,6 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
         zoom: number;
     } | null>(null);
 
-
     const readEffectiveZoom = useCallback((): number => {
         if (!noteRef.current) return 1;
         const renderedWidth = noteRef.current.getBoundingClientRect().width;
@@ -200,7 +227,7 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
             };
             event.currentTarget.setPointerCapture(event.pointerId);
         },
-        [isEditing, note.id, note.x, note.y, onSelect, readEffectiveZoom]
+        [isEditing, note.id, note.x, note.y, onSelect, readEffectiveZoom],
     );
 
     const handlePointerMove = useCallback(
@@ -211,7 +238,7 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
             const deltaY = (event.clientY - clientY) / zoom;
             onMove(note.id, startX + deltaX, startY + deltaY);
         },
-        [note.id, onMove]
+        [note.id, onMove],
     );
 
     const handlePointerUp = useCallback(() => {
@@ -238,13 +265,22 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
             };
             event.currentTarget.setPointerCapture(event.pointerId);
         },
-        [note.x, note.y, note.width, note.height, readEffectiveZoom]
+        [note.x, note.y, note.width, note.height, readEffectiveZoom],
     );
 
     const handleResizePointerMove = useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
             if (!resizeRef.current || !event.buttons) return;
-            const { handle, clientX, clientY, startX, startY, startWidth, startHeight, zoom } = resizeRef.current;
+            const {
+                handle,
+                clientX,
+                clientY,
+                startX,
+                startY,
+                startWidth,
+                startHeight,
+                zoom,
+            } = resizeRef.current;
             const deltaX = (event.clientX - clientX) / zoom;
             const deltaY = (event.clientY - clientY) / zoom;
 
@@ -270,7 +306,7 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
 
             onResize(note.id, newX, newY, newWidth, newHeight);
         },
-        [note.id, onResize]
+        [note.id, onResize],
     );
 
     const handleResizePointerUp = useCallback(() => {
@@ -282,29 +318,38 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
 
     // ── Text editing ────────────────────────────────────────────────────────
 
-    const handleDoubleClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-        event.stopPropagation();
-        setLiveText(note.text);
-        setIsEditing(true);
-    }, [note.text]);
+    const handleDoubleClick = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            event.stopPropagation();
+            setLiveText(note.text);
+            setIsEditing(true);
+        },
+        [note.text],
+    );
 
-    const handleTextareaChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setLiveText(event.currentTarget.value);
-    }, []);
+    const handleTextareaChange = useCallback(
+        (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+            setLiveText(event.currentTarget.value);
+        },
+        [],
+    );
 
     const handleTextareaBlur = useCallback(
         (event: React.FocusEvent<HTMLTextAreaElement>) => {
             onTextChange(note.id, event.currentTarget.value);
             setIsEditing(false);
         },
-        [note.id, onTextChange]
+        [note.id, onTextChange],
     );
 
-    const handleTextareaKeyDown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (event.key === 'Escape') {
-            setIsEditing(false);
-        }
-    }, []);
+    const handleTextareaKeyDown = useCallback(
+        (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            if (event.key === 'Escape') {
+                setIsEditing(false);
+            }
+        },
+        [],
+    );
 
     // Use live text for font sizing when editing, otherwise use committed text
     const displayText = isEditing ? liveText : note.text;
@@ -314,7 +359,12 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
     // Also measures actual text height so the textarea can be vertically centred.
     useLayoutEffect(() => {
         if (!measurerRef.current) return;
-        const { fontSize: optimal, overflows } = findOptimalFontSize(measurerRef.current, displayText, note.width, note.height);
+        const { fontSize: optimal, overflows } = findOptimalFontSize(
+            measurerRef.current,
+            displayText,
+            note.width,
+            note.height,
+        );
         setFontSize(optimal);
         setIsOverflowing(overflows);
 
@@ -356,7 +406,10 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
         <div
             ref={noteRef}
             className={`canvas-note${selected ? ' canvas-note--selected' : ''}${isExpanded ? ' canvas-note--expanded' : ''}`}
-            style={{ width: note.width, height: isExpanded ? Math.max(note.height, fullTextHeight) : note.height }}
+            style={{
+                width: note.width,
+                height: isExpanded ? Math.max(note.height, fullTextHeight) : note.height,
+            }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -365,11 +418,7 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
             onDoubleClick={handleDoubleClick}
         >
             {/* Off-screen measurement div — mirrors text styling for accurate fitting */}
-            <div
-                ref={measurerRef}
-                className='canvas-note__measurer'
-                aria-hidden='true'
-            />
+            <div ref={measurerRef} className='canvas-note__measurer' aria-hidden='true' />
 
             {isEditing ? (
                 <textarea
@@ -386,7 +435,7 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
                     onChange={handleTextareaChange}
                     onBlur={handleTextareaBlur}
                     onKeyDown={handleTextareaKeyDown}
-                    onPointerDown={event => event.stopPropagation()}
+                    onPointerDown={(event) => event.stopPropagation()}
                 />
             ) : (
                 <p className='canvas-note__text' style={{ fontSize }}>
@@ -401,25 +450,30 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
                     aria-label='See full text'
                     title='See full text'
                     onClick={handleExpand}
-                    onPointerDown={event => event.stopPropagation()}
+                    onPointerDown={(event) => event.stopPropagation()}
                 >
-                    <i className='pi pi-plus' />
+                    <FaPlus aria-hidden='true' />
                 </button>
             )}
 
             {/* The handles resize from the note's own height, so they stay off while it is showing more
                 than that — dragging one would otherwise snap the note back to its real size first. */}
-            {selected && !isExpanded && HANDLE_KEYS.map(handle => (
-                <div
-                    key={handle}
-                    className='canvas-note__handle'
-                    style={{ ...HANDLE_POSITIONS[handle], cursor: RESIZE_CURSORS[handle] }}
-                    onPointerDown={handleResizePointerDown(handle)}
-                    onPointerMove={handleResizePointerMove}
-                    onPointerUp={handleResizePointerUp}
-                    onPointerCancel={handleResizePointerUp}
-                />
-            ))}
+            {selected &&
+                !isExpanded &&
+                HANDLE_KEYS.map((handle) => (
+                    <div
+                        key={handle}
+                        className='canvas-note__handle'
+                        style={{
+                            ...HANDLE_POSITIONS[handle],
+                            cursor: RESIZE_CURSORS[handle],
+                        }}
+                        onPointerDown={handleResizePointerDown(handle)}
+                        onPointerMove={handleResizePointerMove}
+                        onPointerUp={handleResizePointerUp}
+                        onPointerCancel={handleResizePointerUp}
+                    />
+                ))}
         </div>
     );
 };

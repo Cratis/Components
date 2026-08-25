@@ -46,11 +46,11 @@ export const Overview: Story = {
             <Row label="Chip">
                 <Chip label="Design" />
                 <Chip label="Removable" removable onRemove={fn()} />
-                <Chip label="With icon" icon={<i className="pi pi-user" />} />
+                <Chip label="With icon" icon={<span aria-hidden='true'>◆</span>} />
             </Row>
             <Row label="Avatar">
                 <Avatar label="JD" />
-                <Avatar icon={<i className="pi pi-user" />} size="large" />
+                <Avatar icon={<span aria-hidden='true'>◆</span>} size="large" />
             </Row>
             <Row label="ProgressBar">
                 <div style={{ flex: 1, minWidth: '200px' }}>

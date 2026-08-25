@@ -1,71 +1,90 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Slider } from 'primereact/slider';
-import type { SliderRootProps, SliderRootChangeEvent } from '@primereact/types/primitive/slider';
-import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
-/**
- * Component-level props for {@link SliderField}.
- */
-interface SliderFieldComponentProps extends WrappedFieldProps<number> {
-    /** Minimum value. Defaults to `0`. */
+/** Stable part attributes for {@link SliderField}. */
+export interface SliderParts {
+    /** Field wrapper. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Native range input. */
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Current-value display. */
+    value?: HTMLAttributes<HTMLSpanElement>;
+}
+
+interface SliderFieldComponentProps
+    extends WrappedFieldProps<number>,
+        FieldAccessibilityProps {
     min?: number;
-
-    /** Maximum value. Defaults to `100`. */
     max?: number;
-
-    /** Increment between selectable values. Defaults to `1`. */
     step?: number;
-
-    /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
-
-    /** PrimeReact pass-through configuration applied to the underlying Slider. */
-    pt?: SliderRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying Slider. */
-    ptOptions?: SliderRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying Slider. */
+    pt?: SliderParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A horizontal slider field bound to a `number` property on a Cratis Arc
- * command. The current value is rendered below the track for feedback. See
- * {@link InputTextField} for the full `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <SliderField value={c => c.volume} title="Volume" min={0} max={100} />
- * ```
- */
+/** A range slider bound to a number property on an Arc command. */
 export const SliderField = asCommandFormField<SliderFieldComponentProps>(
-    (props) => (
-        <div className="w-full" onBlur={props.onBlur}>
-            <Slider.Root
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+        <div
+            {...props.pt?.root}
+            className={[
+                'cratis-slider-field',
+                'cratis:w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
+            onBlur={props.onBlur}
+            data-cratis-part='root'
+        >
+            <input
+                {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
+                type='range'
                 value={props.value}
-                onValueChange={(e: SliderRootChangeEvent) => props.onChange(Array.isArray(e.value) ? (e.value[0] ?? 0) : e.value)}
+                onChange={props.onChange}
                 min={props.min ?? 0}
                 max={props.max ?? 100}
                 step={props.step ?? 1}
-                className={props.className ? `w-full ${props.className}` : 'w-full'}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}>
-                <Slider.Track>
-                    <Slider.Range />
-                </Slider.Track>
-                <Slider.Handle />
-            </Slider.Root>
-            <div className="text-center mt-2">
-                <span className="font-semibold">{props.value}</span>
-            </div>
+                aria-invalid={props.invalid || undefined}
+                className={['cratis-slider-field__input', props.pt?.input?.className]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='input'
+            />
+            <span
+                {...props.pt?.value}
+                className={['cratis-slider-field__value', props.pt?.value?.className]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='value'
+            >
+                {props.value}
+            </span>
+            {accessibility.hiddenError}
         </div>
-    ),
+        );
+    },
     {
         defaultValue: 0,
-        extractValue: (e: unknown) => (typeof e === 'number' ? e : 0)
-    }
+        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
+            event.target.valueAsNumber,
+    },
 );

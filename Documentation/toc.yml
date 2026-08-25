@@ -2,7 +2,9 @@
   href: index.mdx
 - name: Why Components
   href: why-components.md
-- name: PrimeReact and Components
+- name: UI foundation
+  href: ui-foundation.md
+- name: Coming from PrimeReact
   href: coming-from-primereact.md
 - name: Getting started
   href: getting-started.mdx
@@ -22,6 +24,8 @@
   href: multi-step-form.md
 - name: A list screen with actions
   href: list-screen-with-actions.md
+- name: Canvas
+  href: Canvas/toc.yml
 - name: CommandDialog
   href: CommandDialog/toc.yml
 - name: CommandForm
@@ -62,5 +66,7 @@
   href: Common/toc.yml
 - name: Types
   href: Types/toc.yml
-- name: Migration
+- name: Migrate from Components 3 to 4
   href: migration.md
+- name: Migrate from Components 2 to 3
+  href: migration-from-2.md

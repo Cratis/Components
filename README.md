@@ -2,7 +2,10 @@
 
 Components is a React component library aligned with Arc application patterns.
 
-This is the owning source repository for `@cratis/components`. The package provides command forms and dialogs, query-backed data tables, page compositions, notifications, editors, and shared application surfaces for frontends built with Cratis Arc.
+This is the owning source repository for `@cratis/components`. The current
+package uses Cratis-owned React markup, public TypeScript types, design tokens,
+stable parts, and state attributes. React Aria is an internal implementation
+dependency for selected interaction primitives.
 
 [![NPM](https://img.shields.io/npm/v/@cratis/components?label=@cratis/components&logo=npm)](https://www.npmjs.com/package/@cratis/components)
 [![Publish](https://github.com/Cratis/Components/actions/workflows/publish.yml/badge.svg)](https://github.com/Cratis/Components/actions/workflows/publish.yml)
@@ -17,63 +20,77 @@ This is the owning source repository for `@cratis/components`. The package provi
 
 ## What Components owns
 
-| Area | Use it for |
+| Area | Current package role |
 | --- | --- |
-| Command input | Typed command fields, embedded forms, single-step dialogs, and multi-step command flows |
+| Command input | Typed fields, embedded forms, dialogs, and multi-step command flows |
 | Data display | Query-backed tables, local-array tables, list pages, filters, and detail surfaces |
 | Application surfaces | Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars |
 | Structured editors | JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views |
-| Styling boundary | Cratis tokens, component styles, a baseline theme, and pass-through hooks for application styling |
-
-The table above maps common screen jobs to the smallest current component area.
+| Styling boundary | Cratis tokens, component styles, an optional baseline theme, and stable parts |
 
 ## Relationship to Arc
 
-Components is built for Arc application frontends. Its command and query compositions consume Arc's generated TypeScript proxies and React contexts; the package manifest declares Arc packages as peer dependencies.
+Components consumes generated command and query contracts and React contexts
+from Arc packages. Arc owns those application contracts; Components owns the
+React markup, public component types, styling tokens, stable parts, and component
+behavior in this repository.
 
-That boundary is intentional:
-
-- **Arc packages** provide the generated command and query contracts and React contexts consumed here.
-- **Components** owns the React compositions that render and execute those contracts.
-- Applications still choose their own screen composition, styling, accessibility verification, and browser support profile.
-
-Components is not evidence of a complete design system, accessibility conformance, or browser coverage for an application. Verify those properties in the exact application and component profile you ship.
+Applications may use Arc without Components. Components does not by itself
+establish design-system completeness, accessibility conformance, browser
+coverage, or compatibility with every Arc/React/package-version combination.
+Verify those properties for the exact application and component profile shipped.
 
 ## Minimal setup
 
-Install the package and its required rendering peers:
+Install the package:
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+npm install @cratis/components
 ```
 
-Import the token and component styles once, then mount the provider around the application:
+Import the semantic tokens and component structure. The baseline theme is
+optional:
 
 ```tsx
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
-import { CratisComponentsProvider } from '@cratis/components';
+import '@cratis/components/theme';
+import { CratisComponentsProvider } from '@cratis/components/Common';
 
 export const App = () => (
-    <CratisComponentsProvider value={{ license: 'YOUR-PRIMEUI-LICENSE-KEY' }}>
+    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
         <YourApp />
     </CratisComponentsProvider>
 );
 ```
 
-The [canonical Components page](https://cratis.io/components/) carries the currently admitted documentation profile. Replace the placeholder with a key supplied through your application's approved secret/configuration boundary; do not commit it to source.
+The current package manifest defines the exact React, Arc, Fundamentals, and
+optional Pixi peer ranges. Verify those ranges before installing the package.
 
-## Documentation map
+## Current boundaries
+
+- The package manifest, exports, source, and migration guide define the current
+  Components major-version surface.
+- Package existence, examples, Storybook output, and passing checks do not
+  establish maturity, accessibility conformance, browser coverage, support,
+  security, or production suitability.
+- Direct third-party UI dependencies retained by an application keep their own
+  package, provider, styling, and license boundaries.
+- Use the exact package archive and application profile when evaluating an
+  upgrade.
+
+## Documentation and migration
 
 - [Canonical Components documentation](https://cratis.io/components/)
 - [Product-owned documentation source](https://github.com/Cratis/Components/tree/main/Documentation)
-- [Package-level requirements and licensing notes](./Source/README.md)
-
-The canonical documentation is maintained in this repository under [`Documentation/`](https://github.com/Cratis/Components/tree/main/Documentation) and rendered on cratis.io by the Documentation repository.
+- [Package README](./Source/README.md)
+- [Components 3 to 4 migration guide](./Source/MIGRATION.md)
 
 ## Contributing
 
-This is a framework-library repository. [Component source](https://github.com/Cratis/Components/tree/main/Source) keeps public types, stories, and specifications near each component; export and package verification lives under `Source/scripts/`.
+This is a framework-library repository. [Component source](https://github.com/Cratis/Components/tree/main/Source)
+keeps public types, stories, and specifications near each component; export and
+package verification lives under `Source/scripts/`.
 
 For root and package README changes, verify the exact files explicitly:
 
@@ -82,14 +99,9 @@ npx markdownlint-cli2 README.md Source/README.md
 npx linkinator README.md Source/README.md --markdown --recurse
 ```
 
-For product documentation under `Documentation/`, run its repository verification:
-
-```bash
-cd Documentation
-./verify-markdown.sh
-```
-
-Source changes follow the repository's framework contribution rules and the applicable build, type, specification, export, and Storybook gates.
+Source changes follow the repository's framework rules and the applicable build,
+type, specification, export, package-archive, accessibility-diagnostic, and
+Storybook gates.
 
 ## Community and repository
 
@@ -101,3 +113,4 @@ Source changes follow the repository's framework contribution rules and the appl
 | Contributing | [Cratis contribution guide](https://github.com/Cratis/.github/blob/main/contributing.md) |
 | Security reports | [Private security reporting](mailto:oss@cratis.io?subject=Security%3A) |
 | Source license | [`LICENSE`](./LICENSE) |
+| Package notices | [`Source/THIRD_PARTY_NOTICES.md`](./Source/THIRD_PARTY_NOTICES.md) |

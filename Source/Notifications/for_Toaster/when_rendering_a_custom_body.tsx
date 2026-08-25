@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 
-import type { ToastType } from '@primereact/types/primitive/toaster';
+import type { ToastType } from '../toast';
 import { expect } from 'chai';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, it } from 'vitest';
@@ -35,28 +35,25 @@ describe('when rendering a custom toast body', () => {
     });
 
     it('should render the custom body inside the normal content frame', () => {
-        const content = document.querySelector(
-            '[data-scope="toast"][data-part="content"]',
-        );
+        const content = document.querySelector('[data-cratis-part="content"]');
         expect(content?.querySelector('[data-custom-toast-body]')).not.to.equal(null);
     });
 
     it('should retain the severity icon', () => {
-        expect(document.querySelector('.cratis-toast .pi-times-circle')).not.to.equal(
-            null,
-        );
+        const icon = document.querySelector('[data-cratis-part="icon"]');
+        expect(icon?.textContent).to.equal('⨯');
     });
 
     it('should retain an accessible dismiss control', () => {
         const close = document.querySelector<HTMLButtonElement>(
-            '[data-scope="toast"][data-part="close"]',
+            '[data-cratis-part="close"]',
         );
         expect(close?.getAttribute('aria-label')).to.equal('Dismiss notification');
     });
 
     it('should dismiss without a consumer-owned id or close button', async () => {
         const close = document.querySelector<HTMLButtonElement>(
-            '[data-scope="toast"][data-part="close"]',
+            '[data-cratis-part="close"]',
         );
         if (!close) {
             throw new Error('Custom toast did not retain its close control.');

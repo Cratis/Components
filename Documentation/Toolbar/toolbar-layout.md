@@ -6,28 +6,40 @@ The key capability: any component in the React tree can inject a complete toolba
 
 ## When to use `ToolbarLayout` vs `ToolbarGroup`
 
-| | `ToolbarGroup` | `ToolbarLayout` |
-|---|---|---|
-| Visual container | Yes — renders as a pill | No — transparent pass-through |
-| Slot content | Appended to its own children | Replaces fallback children |
-| Intended content | Individual buttons | Complete toolbar structures (groups, sections, separators) |
-| Use case | Cluster related buttons | Entire swappable toolbar regions |
+|                  | `ToolbarGroup`               | `ToolbarLayout`                                            |
+| ---------------- | ---------------------------- | ---------------------------------------------------------- |
+| Visual container | Yes — renders as a pill      | No — transparent pass-through                              |
+| Slot content     | Appended to its own children | Replaces fallback children                                 |
+| Intended content | Individual buttons           | Complete toolbar structures (groups, sections, separators) |
+| Use case         | Cluster related buttons      | Entire swappable toolbar regions                           |
 
 ## Quick Start
 
 Wrap the toolbar and the contributing components in a `ToolbarSlotProvider`. Give `ToolbarLayout` a `name` prop that external components match in their `ToolbarSlot`:
 
 ```tsx
-import { ToolbarSlotProvider, ToolbarSlot } from '@cratis/components/Toolbar';
+import { useMemo } from 'react';
+import {
+    Toolbar,
+    ToolbarButton,
+    ToolbarGroup,
+    ToolbarLayout,
+    ToolbarSeparator,
+    ToolbarSlot,
+    ToolbarSlotProvider,
+} from '@cratis/components/Toolbar';
 
 export const AppShell = () => (
     <ToolbarSlotProvider>
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
             <ToolbarLayout name='canvas-tools'>
                 {/* Fallback — shown when no slot content is registered */}
                 <ToolbarGroup>
-                    <ToolbarButton icon='pi pi-pencil' title='Draw (default)' />
+                    <ToolbarButton
+                        icon={<span aria-hidden='true'>◆</span>}
+                        title='Draw (default)'
+                    />
                 </ToolbarGroup>
             </ToolbarLayout>
         </Toolbar>
@@ -38,20 +50,36 @@ export const AppShell = () => (
 
 // Anywhere in the tree — injects a complete multi-group layout:
 const CanvasFeature = () => {
-    const content = useMemo(() => (
-        <>
-            <ToolbarGroup>
-                <ToolbarButton icon='pi pi-star' title='Favorite' />
-                <ToolbarButton icon='pi pi-heart' title='Like' />
-            </ToolbarGroup>
-            <ToolbarSeparator />
-            <ToolbarGroup>
-                <ToolbarButton icon='pi pi-bolt' title='Quick action' />
-            </ToolbarGroup>
-        </>
-    ), []);
+    const content = useMemo(
+        () => (
+            <>
+                <ToolbarGroup>
+                    <ToolbarButton
+                        icon={<span aria-hidden='true'>◆</span>}
+                        title='Favorite'
+                    />
+                    <ToolbarButton
+                        icon={<span aria-hidden='true'>◆</span>}
+                        title='Like'
+                    />
+                </ToolbarGroup>
+                <ToolbarSeparator />
+                <ToolbarGroup>
+                    <ToolbarButton
+                        icon={<span aria-hidden='true'>◆</span>}
+                        title='Quick action'
+                    />
+                </ToolbarGroup>
+            </>
+        ),
+        [],
+    );
 
-    return <ToolbarSlot slotName='canvas-tools' order={0}>{content}</ToolbarSlot>;
+    return (
+        <ToolbarSlot slotName='canvas-tools' order={0}>
+            {content}
+        </ToolbarSlot>
+    );
 };
 ```
 
@@ -62,8 +90,10 @@ The `children` prop provides default content rendered when no slot content has b
 If the layout region has no meaningful default, omit `children` entirely — `ToolbarLayout` renders nothing when both its slot and its children are empty:
 
 ```tsx
-{/* No fallback — layout is invisible until a feature registers */}
-<ToolbarLayout name='mode-tools' />
+{
+    /* No fallback — layout is invisible until a feature registers */
+}
+<ToolbarLayout name='mode-tools' />;
 ```
 
 ## Multiple Contributors
@@ -74,7 +104,7 @@ Multiple components can each register a `ToolbarSlot` with the same `slotName`. 
 // Feature A — appears first
 <ToolbarSlot slotName='shared-tools' order={10}>
     <ToolbarGroup>
-        <ToolbarButton icon='pi pi-star' title='Feature A' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Feature A' />
     </ToolbarGroup>
 </ToolbarSlot>
 
@@ -83,7 +113,7 @@ Multiple components can each register a `ToolbarSlot` with the same `slotName`. 
     <>
         <ToolbarSeparator />
         <ToolbarGroup>
-            <ToolbarButton icon='pi pi-cog' title='Feature B' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Feature B' />
         </ToolbarGroup>
     </>
 </ToolbarSlot>
@@ -103,16 +133,16 @@ const modeContent = {
 // The ToolbarLayout region updates automatically as activeMode changes:
 <ToolbarSlot slotName='mode-tools' order={0}>
     {modeContent[activeMode]}
-</ToolbarSlot>
+</ToolbarSlot>;
 ```
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `name` | `string` | required | Identifies the layout region. Match this in `ToolbarSlot` `slotName`. |
-| `children` | `ReactNode` | — | Fallback content shown when no slot content is registered. |
-| `orientation` | `'vertical' \| 'horizontal'` | `'vertical'` | Layout direction — should match the parent `Toolbar`. |
+| Prop          | Type                         | Default      | Description                                                           |
+| ------------- | ---------------------------- | ------------ | --------------------------------------------------------------------- |
+| `name`        | `string`                     | required     | Identifies the layout region. Match this in `ToolbarSlot` `slotName`. |
+| `children`    | `ReactNode`                  | —            | Fallback content shown when no slot content is registered.            |
+| `orientation` | `'vertical' \| 'horizontal'` | `'vertical'` | Layout direction — should match the parent `Toolbar`.                 |
 
 ## Related
 

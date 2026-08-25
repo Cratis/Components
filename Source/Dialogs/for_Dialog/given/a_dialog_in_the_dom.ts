@@ -17,24 +17,22 @@ export interface DialogInTheDom {
 }
 
 /**
- * Renders an element into a real document and lets PrimeReact's show
- * transition complete, so the dialog has settled on its initial focus by the
- * time the spec looks at it.
- *
- * PrimeReact 11 components resolve their configuration from a
- * `PrimeReactProvider` and throw without one, so the element is mounted inside
- * the Cratis provider that supplies it. `ResizeObserver` is stubbed because
- * PrimeReact's positioner observes the overlay and jsdom has no layout engine
- * to report any size at all.
+ * Renders an element into a real document and lets the modal focus scope settle
+ * before the spec observes it. The Cratis provider supplies locale and global
+ * notification context just as an application root does.
  * @param element - The element to render.
  * @returns The mounted dialog, to be passed to {@link unmount}.
  */
 export const render = async (element: React.ReactElement): Promise<DialogInTheDom> => {
-    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
+    (
+        globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: jsdom omits ResizeObserver; the overlay only calls these observer methods.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-        observe() { }
-        unobserve() { }
-        disconnect() { }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
     };
 
     const container = document.createElement('div');
@@ -46,7 +44,7 @@ export const render = async (element: React.ReactElement): Promise<DialogInTheDo
     });
 
     await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 400));
+        await new Promise((resolve) => setTimeout(resolve, 400));
     });
 
     return { container, root };
@@ -69,7 +67,7 @@ export const unmount = async (dialog: DialogInTheDom) => {
  * not carry chai's `should`, and a description also makes a failure say what
  * was focused instead of only that two objects differ.
  *
- * Reads as `button:Ok`, `span:Delete personal data`, or `document.body` when
+ * Reads as `button:Ok`, `h2:Delete personal data`, or `document.body` when
  * focus was never moved into the dialog at all.
  * @returns The description of the focused element.
  */
@@ -88,27 +86,32 @@ export const focusedElement = (): string => {
  */
 export const focusIsInsideTheDialog = (): boolean => {
     const dialog = document.querySelector('[role="dialog"]');
-    return !!dialog && dialog.contains(document.activeElement) && document.activeElement !== document.body;
+    return (
+        !!dialog &&
+        dialog.contains(document.activeElement) &&
+        document.activeElement !== document.body
+    );
 };
 
 /**
- * Whether the dialog renders its header close (X) button. PrimeReact 11 is unstyled-first —
- * with no theme preset applied every `class` attribute is empty — so its parts are addressed
- * by the `data-scope` / `data-part` pair rather than by a `p-*` class name.
+ * Whether the dialog renders its header close button.
  * @returns True when the close button is present.
  */
 export const hasCloseButton = (): boolean =>
-    !!document.querySelector('[data-scope="dialog"][data-part="close"]');
+    !!document.querySelector('[data-cratis-part="close"]');
 
 /**
  * The `tabindex` attribute on the dialog's title, or `'none'` when it has none.
  * @returns The tab index as a string.
  */
 export const titleTabIndex = (): string =>
-    document.querySelector('[data-scope="dialog"][data-part="title"] span')?.getAttribute('tabindex') ?? 'none';
+    document.querySelector('[data-cratis-part="title"]')?.getAttribute('tabindex') ??
+    'none';
 
 const buttonLabeled = (label: string) =>
-    Array.from(document.querySelectorAll('button')).find(button => button.textContent === label);
+    Array.from(document.querySelectorAll('button')).find(
+        (button) => button.textContent === label,
+    );
 
 /**
  * Presses `Enter` on whatever has focus, the way a browser does: the key event
@@ -121,7 +124,9 @@ export const pressEnterOnFocusedElement = async () => {
     const element = document.activeElement as HTMLElement;
 
     await act(async () => {
-        element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', repeat: true, bubbles: true }));
+        element.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter', repeat: true, bubbles: true }),
+        );
         if (element instanceof HTMLButtonElement) {
             element.click();
         }
@@ -129,11 +134,18 @@ export const pressEnterOnFocusedElement = async () => {
 };
 
 /**
- * Presses `Escape`, which PrimeReact listens for on the document.
+ * Presses `Escape`, which the modal focus scope listens for on the document.
  */
 export const pressEscape = async () => {
     await act(async () => {
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
+        const target = document.activeElement ?? document;
+        target.dispatchEvent(
+            new KeyboardEvent('keydown', {
+                key: 'Escape',
+                code: 'Escape',
+                bubbles: true,
+            }),
+        );
     });
 };
 

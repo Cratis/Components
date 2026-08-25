@@ -197,7 +197,9 @@ Custom filter editors should not implement their own clear buttons; the header c
 | `rangeValues` | `RangeValues` | ✓ | Current numeric range selections |
 | `customValues` | `CustomFilterValues` | — | Values for custom-editor filters |
 | `search` | `string` | — | Current search-box value |
-| `searchPlaceholder` | `string` | — | Placeholder for search input (default: `'Search…'`) |
+| `searchPlaceholder` | `string` | — | Placeholder for the panel's search input (default: `'Search…'`). Also the fallback placeholder for a searchable filter group that does not declare its own `searchPlaceholder`. |
+| `clearFilterAriaLabel` | `string` | — | Accessible name and tooltip for a string/custom filter's clear button (default: `'Clear filter'`) |
+| `clearRangeAriaLabel` | `string` | — | Accessible name and tooltip for a numeric/date filter's clear button (default: `'Clear range'`) |
 | `expandedFilterKey` | `string \| null` | — | Which filter group is open |
 | `anchorRef` | `RefObject<HTMLButtonElement>` | ✓ | Button the panel anchors below |
 | `onClose` | `() => void` | ✓ | Called when panel should close |
@@ -260,6 +262,8 @@ The hook re-syncs state when the `filters` array reference changes — existing 
 | `buckets` | `number` | | Number of histogram bars (default `20`) |
 | `selectedRange` | `[number, number] \| null` | ✓ | Currently selected range, or `null` for none |
 | `onChange` | `(range: [number, number] \| null) => void` | ✓ | Called when the range changes |
+| `formatValue` | `(value: number) => string` | — | Formatter for endpoint labels and bar-tooltip numbers (default: a plain numeric formatter) |
+| `itemsLabel` | `string` | — | Unit word shown after a bar tooltip's count, e.g. `'42 items'` (default: `'items'`) |
 
 ## Importing
 

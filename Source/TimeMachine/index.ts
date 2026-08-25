@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export { TimeMachine } from './TimeMachine';
+export type { TimeMachineProps } from './TimeMachine';
 export { ReadModelView } from './ReadModelView';
 export { EventsView } from './EventsView';
+export type { EventsViewParts, EventsViewProps } from './EventsView';
 export { defaultTimeMachineLabels } from './TimeMachineLabels';
 export type { TimeMachineLabels } from './TimeMachineLabels';
 export { Properties } from './Properties';

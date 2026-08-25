@@ -4,4 +4,5 @@
 export { PersonAvatarCircle } from './PersonAvatarCircle';
 export type { PersonAvatarCircleProps, BuildAvatarUrlParams } from './PersonAvatarCircle';
 export { getAvatarColor } from './getAvatarColor';
-export { getInitials } from './getInitials';
+// `getInitials` is an internal helper used by `PersonAvatarCircle` and is
+// intentionally not part of the public API.

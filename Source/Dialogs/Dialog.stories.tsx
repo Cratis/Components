@@ -1,13 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
+import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { Dialog } from './Dialog';
 import { DialogInitialFocus } from './DialogInitialFocus';
-import { DialogButtons, DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
+import {
+    DialogButtons,
+    DialogResult,
+    useDialog,
+    useDialogContext,
+} from '@cratis/arc.react/dialogs';
+import { Button } from '../Common/Button';
 
 const meta: Meta<typeof Dialog> = {
     title: 'Dialogs/Dialog',
@@ -20,7 +25,19 @@ const meta: Meta<typeof Dialog> = {
 export default meta;
 type Story = StoryObj<typeof Dialog>;
 
-const DialogWrapper = ({ buttons, title, children, isValid, initialFocus }: { buttons: DialogButtons; title: string; children: React.ReactNode; isValid?: boolean; initialFocus?: DialogInitialFocus }) => {
+const DialogWrapper = ({
+    buttons,
+    title,
+    children,
+    isValid,
+    initialFocus,
+}: {
+    buttons: DialogButtons;
+    title: string;
+    children: React.ReactNode;
+    isValid?: boolean;
+    initialFocus?: DialogInitialFocus;
+}) => {
     const ResultDialog = () => {
         const { closeDialog } = useDialogContext();
 
@@ -50,34 +67,34 @@ const DialogWrapper = ({ buttons, title, children, isValid, initialFocus }: { bu
 
 export const OkCancel: Story = {
     render: () => (
-        <DialogWrapper title="Confirm Action" buttons={DialogButtons.OkCancel}>
+        <DialogWrapper title='Confirm Action' buttons={DialogButtons.OkCancel}>
             <p>Are you sure you want to perform this action?</p>
         </DialogWrapper>
-    )
+    ),
 };
 
 export const YesNo: Story = {
     render: () => (
-        <DialogWrapper title="Delete Item" buttons={DialogButtons.YesNo}>
+        <DialogWrapper title='Delete Item' buttons={DialogButtons.YesNo}>
             <p>Do you want to delete this item? This cannot be undone.</p>
         </DialogWrapper>
-    )
+    ),
 };
 
 export const YesNoCancel: Story = {
     render: () => (
-        <DialogWrapper title="Save Changes" buttons={DialogButtons.YesNoCancel}>
+        <DialogWrapper title='Save Changes' buttons={DialogButtons.YesNoCancel}>
             <p>You have unsaved changes. Do you want to save them before closing?</p>
         </DialogWrapper>
-    )
+    ),
 };
 
 export const Ok: Story = {
     render: () => (
-        <DialogWrapper title="Information" buttons={DialogButtons.Ok}>
+        <DialogWrapper title='Information' buttons={DialogButtons.Ok}>
             <p>The operation completed successfully.</p>
         </DialogWrapper>
-    )
+    ),
 };
 
 /**
@@ -88,10 +105,17 @@ export const Ok: Story = {
  */
 export const DestructiveFocusesDismiss: Story = {
     render: () => (
-        <DialogWrapper title="Delete personal data?" buttons={DialogButtons.YesNo} initialFocus={DialogInitialFocus.Cancel}>
-            <p>This permanently removes the person and every record about them. It cannot be undone.</p>
+        <DialogWrapper
+            title='Delete personal data?'
+            buttons={DialogButtons.YesNo}
+            initialFocus={DialogInitialFocus.Cancel}
+        >
+            <p>
+                This permanently removes the person and every record about them. It cannot
+                be undone.
+            </p>
         </DialogWrapper>
-    )
+    ),
 };
 
 /**
@@ -101,10 +125,17 @@ export const DestructiveFocusesDismiss: Story = {
  */
 export const DestructiveArmsNothing: Story = {
     render: () => (
-        <DialogWrapper title="Delete personal data?" buttons={DialogButtons.OkCancel} initialFocus={DialogInitialFocus.Content}>
-            <p>This permanently removes the person and every record about them. It cannot be undone.</p>
+        <DialogWrapper
+            title='Delete personal data?'
+            buttons={DialogButtons.OkCancel}
+            initialFocus={DialogInitialFocus.Content}
+        >
+            <p>
+                This permanently removes the person and every record about them. It cannot
+                be undone.
+            </p>
         </DialogWrapper>
-    )
+    ),
 };
 
 export const WithForm: Story = {
@@ -117,29 +148,33 @@ export const WithForm: Story = {
 
             return (
                 <Dialog
-                    title="Edit Name"
+                    title='Edit Name'
                     buttons={DialogButtons.OkCancel}
                     onConfirm={() => closeDialog(DialogResult.Ok, { name })}
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
                     isValid={name.trim().length > 0}
                 >
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="name">Name</label>
-                        <InputText
-                            id="name"
+                    <div className='cratis:flex cratis:flex-col cratis:gap-2'>
+                        <label htmlFor='name'>Name</label>
+                        <input
+                            id='name'
+                            className='cratis-field-input'
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter name..."
+                            onChange={(event) => setName(event.target.value)}
+                            placeholder='Enter name…'
                         />
                         {name.trim().length === 0 && (
-                            <small className="p-error">Name is required</small>
+                            <small className='cratis:text-[var(--cratis-red-500)]'>
+                                Name is required
+                            </small>
                         )}
                     </div>
                 </Dialog>
             );
         };
 
-        const [AddNameDialogComponent, showAddNameDialog] = useDialog<NameResult>(AddNameDialog);
+        const [AddNameDialogComponent, showAddNameDialog] =
+            useDialog<NameResult>(AddNameDialog);
         const [result, setResult] = useState('');
 
         return (
@@ -151,12 +186,14 @@ export const WithForm: Story = {
                             setResult(value.name);
                         }
                     }}
-                >Open Form Dialog</Button>
+                >
+                    Open Form Dialog
+                </Button>
                 {result && <p>Last saved name: {result}</p>}
                 <AddNameDialogComponent />
             </>
         );
-    }
+    },
 };
 
 export const IsBusy: Story = {
@@ -168,11 +205,11 @@ export const IsBusy: Story = {
 
             return (
                 <Dialog
-                    title="Saving changes"
+                    title='Saving changes'
                     buttons={DialogButtons.OkCancel}
                     onConfirm={async () => {
                         setBusy(true);
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        await new Promise((resolve) => setTimeout(resolve, 3000));
                         setBusy(false);
                         closeDialog(DialogResult.Ok);
                         return true;
@@ -180,7 +217,10 @@ export const IsBusy: Story = {
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
                     isBusy={busy}
                 >
-                    <p>Click Ok to simulate a 3-second save operation. All buttons become disabled and the primary button shows a spinner.</p>
+                    <p>
+                        Click Ok to simulate a 3-second save operation. All buttons become
+                        disabled and the primary button shows a spinner.
+                    </p>
                 </Dialog>
             );
         };
@@ -193,7 +233,7 @@ export const IsBusy: Story = {
                 <DialogComponent />
             </>
         );
-    }
+    },
 };
 
 export const CustomButtons: Story = {
@@ -205,16 +245,24 @@ export const CustomButtons: Story = {
 
             return (
                 <Dialog
-                    title="Custom Actions"
+                    title='Custom Actions'
                     buttons={
                         <>
                             <Button
-                                severity="secondary"
-                                onClick={() => closeDialog(DialogResult.Ok, { action: 'draft' })}
-                            ><i className="pi pi-save" /> Save Draft</Button>
+                                severity='secondary'
+                                onClick={() =>
+                                    closeDialog(DialogResult.Ok, { action: 'draft' })
+                                }
+                            >
+                                <span aria-hidden='true'>◆</span> Save Draft
+                            </Button>
                             <Button
-                                onClick={() => closeDialog(DialogResult.Ok, { action: 'publish' })}
-                            ><i className="pi pi-send" /> Publish</Button>
+                                onClick={() =>
+                                    closeDialog(DialogResult.Ok, { action: 'publish' })
+                                }
+                            >
+                                <span aria-hidden='true'>◆</span> Publish
+                            </Button>
                         </>
                     }
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
@@ -224,7 +272,8 @@ export const CustomButtons: Story = {
             );
         };
 
-        const [CustomActionsDialogComponent, showCustomActionsDialog] = useDialog<ActionResult>(CustomActionsDialog);
+        const [CustomActionsDialogComponent, showCustomActionsDialog] =
+            useDialog<ActionResult>(CustomActionsDialog);
         const [result, setResult] = useState('');
 
         return (
@@ -236,10 +285,12 @@ export const CustomButtons: Story = {
                             setResult(value.action);
                         }
                     }}
-                >Open Custom Dialog</Button>
+                >
+                    Open Custom Dialog
+                </Button>
                 {result && <p>Last action: {result}</p>}
                 <CustomActionsDialogComponent />
             </>
         );
-    }
+    },
 };

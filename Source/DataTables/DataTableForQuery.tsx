@@ -1,13 +1,17 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
+import type { DataTableParts } from './DataTableCore';
 import type { Constructor } from '@cratis/fundamentals';
 import { type IQueryFor, Paging } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
 import type { ReactNode } from 'react';
 import { DataTableCore } from './DataTableCore';
-import { TablePaginator, type TablePaginatorProps } from './TablePaginator';
+import {
+    TablePaginator,
+    type TablePaginatorParts,
+    type TablePaginatorProps,
+} from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
@@ -63,6 +67,12 @@ export interface DataTableForQueryProps<
      */
     globalFilterFields?: string[] | undefined;
 
+    /** Placeholder for the loaded-page search input. */
+    globalSearchPlaceholder?: string;
+
+    /** Accessible name for the loaded-page search input. */
+    globalSearchAriaLabel?: string;
+
     /**
      * Default filters to use
      */
@@ -71,7 +81,7 @@ export interface DataTableForQueryProps<
     /**
      * @deprecated Filtering is always applied to the currently loaded page.
      * This compatibility prop no longer toggles behavior and does not change
-     * server-reported pagination totals.
+     * server-reported pagination totals. Retained for source compatibility only.
      */
     clientFiltering?: boolean;
 
@@ -80,17 +90,29 @@ export interface DataTableForQueryProps<
      */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying DataTable. */
-    pt?: DataTableRootProps['pt'];
+    /** Cratis-owned per-part attributes applied to the underlying table. */
+    pt?: DataTableParts;
 
-    /** PrimeReact pass-through options applied to the underlying DataTable. */
-    ptOptions?: DataTableRootProps['ptOptions'];
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
+    ptOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the underlying DataTable. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 
     /** Extra CSS class name forwarded to the paginator. */
     paginatorClassName?: string;
+
+    /** Cratis-owned attributes for paginator parts. */
+    paginatorPt?: TablePaginatorParts;
+
+    /**
+     * @deprecated Cratis paginator parts always merge. Remove this renderer-era option.
+     */
+    paginatorPtOptions?: object;
 
     /** Accessible names for the paginator controls. Override any to localize. */
     paginatorAriaLabels?: TablePaginatorProps['ariaLabels'];
@@ -102,7 +124,7 @@ const paging = new Paging(0, 20);
  * A paged data table bound to a snapshot Cratis Arc query
  * (`IQueryFor<TDataType, TArguments>`). Subscribes via
  * `useQueryWithPaging` from `@cratis/arc.react/queries`, renders the result
- * page through the headless {@link DataTableCore}, and shows a
+ * page through the semantic Cratis-owned {@link DataTableCore}, and shows a
  * {@link TablePaginator} when the result set exceeds one page.
  *
  * ## What `TQuery` is
@@ -182,6 +204,8 @@ export const DataTableForQuery = <
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
                     globalFilterFields={props.globalFilterFields}
+                    globalSearchPlaceholder={props.globalSearchPlaceholder}
+                    globalSearchAriaLabel={props.globalSearchAriaLabel}
                     defaultFilters={props.defaultFilters}
                     className={props.className}
                     style={{ minWidth: '100%' }}
@@ -208,6 +232,8 @@ export const DataTableForQuery = <
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}
                         ariaLabels={props.paginatorAriaLabels}
+                        pt={props.paginatorPt}
+                        ptOptions={props.paginatorPtOptions}
                     />
                 </div>
             )}

@@ -2,109 +2,66 @@
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
 /*
- * Cratis Components — CSS variable tokens.
- *
- * Every internal component references the --cratis-* variables defined here
- * instead of PrimeReact's theme variables directly. This indirection is the
- * single seam that lets the library span PrimeReact major versions — and 3.0.0
- * is the release that seam was built for.
- *
- *   --cratis-surface-border: var(--p-content-border-color, var(--surface-border));
- *                                  ^ PrimeReact v11 (@primeuix/themes)  ^ v10 legacy
- *
- * Each token resolves the v11 design token first and falls back to the legacy v10
- * theme variable. @cratis/components 3.0.0 requires `primereact@^11` as a peer, so
- * the v11 arm is the one that resolves in a correctly installed app; the v10 arm is
- * kept deliberately for the upgrade window, when an app still has a compiled v10
- * theme stylesheet on the page while it ports its own screens. Nothing breaks the
- * day that stylesheet is removed — the v11 arm was already winning.
- *
- * ## Where the values now come from
- *
- * v11 ships ZERO CSS. There is no `primereact/resources/themes/*.css` to import any
- * more. The --p-* custom properties are emitted **at runtime** by @primeuix/styled
- * when a preset (a plain JS token object from @primeuix/themes — Aura, Lara, Nora)
- * is handed to the provider - which `styledMode()` from `@cratis/components/styled`
- * does, together with PrimeReact's own component styles for every primitive (a
- * preset alone leaves the primitives without their `p-*` classes):
- *
- *   import { styledMode } from '@cratis/components/styled';
- *   <CratisComponentsProvider value={{ license, ...styledMode() }}>
- *
- * So the chain is: preset (JS) → --p-* (runtime) → --cratis-* (this file) → component CSS.
- *
- * v11 is not a rename of v10 — it is a different token vocabulary (a primitive
- * palette plus semantic content/surface/text/primary/highlight tokens). Where
- * v11 has no 1:1 equivalent for a v10 concept (surface-ground / surface-section
- * / surface-overlay / the composite focus-ring), the closest durable v11
- * semantic token is used and noted inline; consumers can always override.
- *
- * ## Three ways to get a look
- *
- * 1. **Styled mode** — `value={{ license, ...styledMode() }}` from
- *    `@cratis/components/styled`: a preset plus PrimeReact's component styles.
- * 2. **The Cratis baseline theme** — `import '@cratis/components/theme'`. A stylesheet
- *    that assigns the --cratis-* tokens directly (light and dark), so it needs no preset
- *    and no @primeuix/themes install. It defers to a preset's --p-* values when one is
- *    present.
- * 3. **Your own tokens** — override any --cratis-* on :root (or any ancestor):
- *
- *   :root {
- *       --cratis-surface-card: #1f2937;
- *       --cratis-text-color:   #f3f4f6;
- *   }
- *
- * Tokens are intentionally fallback-free at the end of the chain — if neither a
- * PrimeReact theme (v10 or v11), the baseline theme, nor a consumer override is
- * present, the variable resolves to nothing and the affected rule no-ops. That keeps
- * the library theme-agnostic without imposing a default palette on consumers.
+ * Stable semantic seam between Components structure and product design systems.
+ * Conservative light defaults keep an unthemed surface usable. Products may override
+ * these variables directly; optional theme.css adds dark, forced-color, and subtree behavior.
  */
-
 :root {
-    /* Surfaces */
-    /* v10's surface scale ran from the page tone (0) up through raised surfaces (100, 200, …)
-     * and inverted in its dark themes, so surface-0 was the darkest tone there. v11's
-     * --p-surface-N is a plain palette that is white at 0 in both schemes, so it cannot stand
-     * in. The two are read here as what they were used for: the tone underneath a form field
-     * and the tone of a raised or hovered surface, which v11 names semantically. */
-    --cratis-surface-0:        var(--p-form-field-background, var(--surface-0));
-    --cratis-surface-100:      var(--p-content-hover-background, var(--surface-100));
-    /* v11 has no page-canvas/section token — map to the neutral content surface;
-     * separation in v11 comes from borders (content-border-color), not fills. */
-    --cratis-surface-ground:   var(--p-content-background, var(--surface-ground));
-    --cratis-surface-section:  var(--p-content-hover-background, var(--surface-section));
-    --cratis-surface-card:     var(--p-content-background, var(--surface-card));
-    /* v11 splits overlay backgrounds by type — use the modal surface as the general overlay. */
-    --cratis-surface-overlay:  var(--p-overlay-modal-background, var(--surface-overlay));
-    --cratis-surface-hover:    var(--p-content-hover-background, var(--surface-hover));
-    --cratis-surface-border:   var(--p-content-border-color, var(--surface-border));
+    --cratis-surface-0: #ffffff;
+    --cratis-surface-100: #f3f4f6;
+    --cratis-surface-ground: #f9fafb;
+    --cratis-surface-section: #ffffff;
+    --cratis-surface-card: #ffffff;
+    --cratis-surface-overlay: #ffffff;
+    --cratis-surface-hover: #f6f9fc;
+    --cratis-surface-border: #dfe7ef;
+    --cratis-control-background: #ffffff;
+    --cratis-control-border: #8492a6;
 
-    /* Text */
-    --cratis-text-color:           var(--p-text-color, var(--text-color));
-    --cratis-text-color-secondary: var(--p-text-muted-color, var(--text-color-secondary));
+    --cratis-text-color: #4b5563;
+    --cratis-text-color-secondary: #6b7280;
 
-    /* Primary brand */
-    --cratis-primary-color:      var(--p-primary-color, var(--primary-color));
-    --cratis-primary-color-text: var(--p-primary-contrast-color, var(--primary-color-text));
-    --cratis-primary-300:        var(--p-primary-300, var(--primary-300));
-    --cratis-primary-400:        var(--p-primary-400, var(--primary-400));
-    --cratis-primary-500:        var(--p-primary-500, var(--primary-500));
-    --cratis-primary-600:        var(--p-primary-600, var(--primary-600));
+    --cratis-primary-color: #3b82f6;
+    --cratis-primary-color-text: #ffffff;
+    --cratis-primary-300: #93c5fd;
+    --cratis-primary-400: #60a5fa;
+    --cratis-primary-500: #3b82f6;
+    --cratis-primary-600: #2563eb;
+    --cratis-action-background: #2563eb;
+    --cratis-action-background-hover: #1d4ed8;
+    --cratis-action-background-active: #1e40af;
+    --cratis-action-text: #ffffff;
 
-    /* Highlight / selection */
-    --cratis-highlight-bg:         var(--p-highlight-background, var(--highlight-bg));
-    --cratis-highlight-text-color: var(--p-highlight-color, var(--highlight-text-color));
+    --cratis-highlight-bg: #eff6ff;
+    --cratis-highlight-text-color: #1d4ed8;
 
-    /* Semantic accents (primitive palette) */
-    --cratis-green-500:  var(--p-green-500, var(--green-500));
-    --cratis-orange-500: var(--p-orange-500, var(--orange-500));
-    --cratis-red-500:    var(--p-red-500, var(--red-500));
+    --cratis-green-500: #16a34a;
+    --cratis-orange-500: #d97706;
+    --cratis-red-500: #dc2626;
+    --cratis-info-background: #0369a1;
+    --cratis-info-text: #ffffff;
+    --cratis-success-background: #15803d;
+    --cratis-success-text: #ffffff;
+    --cratis-warning-background: #c2410c;
+    --cratis-warning-text: #ffffff;
+    --cratis-danger-background: #b91c1c;
+    --cratis-danger-text: #ffffff;
 
-    /* Geometry */
-    --cratis-border-radius: var(--p-content-border-radius, var(--border-radius));
+    --cratis-border-radius: 6px;
+    --cratis-control-height: 2.75rem;
+    --cratis-control-height-small: 2.25rem;
+    --cratis-control-height-large: 3.25rem;
+    --cratis-disabled-opacity: 0.55;
+    --cratis-focus-ring: 0 0 0 3px #2563eb;
+    --cratis-maskbg: rgb(0 0 0 / 40%);
+    --cratis-shadow-subtle: 0 1px 2px rgb(0 0 0 / 5%);
+    --cratis-shadow-overlay: 0 2px 12px rgb(0 0 0 / 10%);
+    --cratis-shadow-dialog: 0 1rem 3rem rgb(0 0 0 / 22%);
+    --cratis-shadow-toast: 0 2px 12px rgb(0 0 0 / 10%);
 
-    /* Effects */
-    /* v11 decomposes the focus ring; --p-focus-ring-shadow is the box-shadow form. */
-    --cratis-focus-ring: var(--p-focus-ring-shadow, var(--focus-ring));
-    --cratis-maskbg:     var(--p-mask-background, var(--maskbg));
+    --cratis-z-index-dialog: 1100;
+    --cratis-z-index-overlay: 1200;
+    --cratis-z-index-filter: 1250;
+    --cratis-z-index-tooltip: 1300;
+    --cratis-z-index-toast: 1400;
 }

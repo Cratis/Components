@@ -4,15 +4,15 @@
   href: getting-started.md
 - name: Use the Cratis baseline theme
   href: baseline-theme.md
-- name: Use PrimeReact's styled mode (preset, needs a license)
+- name: Build a product theme
   href: themed.md
-- name: Use a custom palette on top of a PrimeReact theme
+- name: Customize the palette
   href: custom-palette.md
-- name: Use fully unstyled mode
+- name: Own all styling
   href: unstyled.md
 - name: Cratis token reference
   href: cratis-tokens.md
-- name: Pass-through (pt) cheat sheet
+- name: Stable component parts
   href: pass-through.md
-- name: Combining styling setups
+- name: Combine styling setups
   href: mixing-paths.md

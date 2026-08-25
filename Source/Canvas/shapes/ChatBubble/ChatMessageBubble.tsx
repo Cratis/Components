@@ -11,6 +11,7 @@ import { findOwnReaction } from './findOwnReaction';
 import { MessageReactions } from './MessageReactions';
 import { ReactionPicker, type ReactionPickerLabels } from './ReactionPicker';
 import { reactionsExcludingUser } from './reactionsExcludingUser';
+import { FaBolt, FaReply } from 'react-icons/fa6';
 
 /** Overrides for the bubble's own labels. Any field left unset falls back to a literal English
  *  default. `{emoji}`/`{name}` placeholders are substituted by the component. */
@@ -30,8 +31,12 @@ export interface ChatMessageBubbleLabels {
     reactionPicker?: ReactionPickerLabels;
 }
 
+/**
+ * Props for one message bubble in a conversation, with optional quick-reaction and quick-reply
+ * affordances. The affordances are opt-in via {@link currentUserId} — a conversation that does not
+ * pass it renders exactly as it did before reactions existed.
+ */
 export interface ChatMessageBubbleProps {
-
     /** The message to render. */
     message: ChatMessage;
 
@@ -74,13 +79,28 @@ export interface ChatMessageBubbleProps {
  * conversation may offer. The affordances are opt-in via {@link ChatMessageBubbleProps.currentUserId} —
  * a conversation that does not pass it renders exactly as it did before reactions existed.
  */
-export const ChatMessageBubble = ({ message, showAuthor, showTimestamp, formattedTimestamp, currentUserId, onReact, onQuickReply, onAct, buildAvatarUrl, labels }: ChatMessageBubbleProps) => {
+export const ChatMessageBubble = ({
+    message,
+    showAuthor,
+    showTimestamp,
+    formattedTimestamp,
+    currentUserId,
+    onReact,
+    onQuickReply,
+    onAct,
+    buildAvatarUrl,
+    labels,
+}: ChatMessageBubbleProps) => {
     const [pickerOpen, setPickerOpen] = useState(false);
     const reactionButtonRef = useRef<HTMLButtonElement>(null);
     const supportsReactions = !!currentUserId && !!onReact;
     const showActionsRow = supportsReactions || !!onQuickReply || !!onAct;
-    const ownReaction = supportsReactions ? findOwnReaction(message.reactions, currentUserId) : undefined;
-    const otherReactions = supportsReactions ? reactionsExcludingUser(message.reactions, currentUserId) : [];
+    const ownReaction = supportsReactions
+        ? findOwnReaction(message.reactions, currentUserId)
+        : undefined;
+    const otherReactions = supportsReactions
+        ? reactionsExcludingUser(message.reactions, currentUserId)
+        : [];
 
     const pick = (emoji: string) => {
         setPickerOpen(false);
@@ -96,14 +116,20 @@ export const ChatMessageBubble = ({ message, showAuthor, showTimestamp, formatte
                         name={message.authorName}
                         hasAvatar={message.hasAvatar}
                         size={22}
-                        ownerType={message.authorKind === ChatAuthorKind.Agent ? 'Agents' : 'Users'}
+                        ownerType={
+                            message.authorKind === ChatAuthorKind.Agent
+                                ? 'Agents'
+                                : 'Users'
+                        }
                         buildAvatarUrl={buildAvatarUrl}
                     />
                     <span className='chat-bubble-name'>{message.authorName}</span>
                 </div>
             )}
             <div className='chat-bubble-body'>
-                <div className={`chat-bubble-panel${showActionsRow ? ' chat-bubble-panel--with-actions' : ''}`}>
+                <div
+                    className={`chat-bubble-panel${showActionsRow ? ' chat-bubble-panel--with-actions' : ''}`}
+                >
                     <p className='chat-bubble-text'>{message.text}</p>
                     {showActionsRow && (
                         <div className='chat-bubble-actions'>
@@ -112,10 +138,26 @@ export const ChatMessageBubble = ({ message, showAuthor, showTimestamp, formatte
                                     ref={reactionButtonRef}
                                     type='button'
                                     className={`chat-bubble-action${ownReaction ? ' chat-bubble-action--own-reaction' : ''}`}
-                                    title={ownReaction ? (labels?.yourReaction ?? 'You reacted with {emoji}').replace('{emoji}', ownReaction.emoji) : (labels?.addReaction ?? 'Add a quick reaction')}
-                                    aria-label={ownReaction ? (labels?.yourReaction ?? 'You reacted with {emoji}').replace('{emoji}', ownReaction.emoji) : (labels?.addReaction ?? 'Add a quick reaction')}
+                                    title={
+                                        ownReaction
+                                            ? (
+                                                  labels?.yourReaction ??
+                                                  'You reacted with {emoji}'
+                                              ).replace('{emoji}', ownReaction.emoji)
+                                            : (labels?.addReaction ??
+                                              'Add a quick reaction')
+                                    }
+                                    aria-label={
+                                        ownReaction
+                                            ? (
+                                                  labels?.yourReaction ??
+                                                  'You reacted with {emoji}'
+                                              ).replace('{emoji}', ownReaction.emoji)
+                                            : (labels?.addReaction ??
+                                              'Add a quick reaction')
+                                    }
                                     aria-expanded={pickerOpen}
-                                    onClick={() => setPickerOpen(previous => !previous)}
+                                    onClick={() => setPickerOpen((previous) => !previous)}
                                 >
                                     {ownReaction ? ownReaction.emoji : '☺'}
                                 </button>
@@ -124,22 +166,30 @@ export const ChatMessageBubble = ({ message, showAuthor, showTimestamp, formatte
                                 <button
                                     type='button'
                                     className='chat-bubble-action'
-                                    title={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', message.authorName)}
-                                    aria-label={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', message.authorName)}
+                                    title={(
+                                        labels?.quickReplyTo ?? 'Reply to {name}'
+                                    ).replace('{name}', message.authorName)}
+                                    aria-label={(
+                                        labels?.quickReplyTo ?? 'Reply to {name}'
+                                    ).replace('{name}', message.authorName)}
                                     onClick={() => onQuickReply(message.authorName)}
                                 >
-                                    <i className='pi pi-reply' aria-hidden='true' />
+                                    <FaReply aria-hidden='true' />
                                 </button>
                             )}
                             {onAct && (
                                 <button
                                     type='button'
                                     className='chat-bubble-action'
-                                    title={labels?.convertToAction ?? 'Turn into an action'}
-                                    aria-label={labels?.convertToAction ?? 'Turn into an action'}
+                                    title={
+                                        labels?.convertToAction ?? 'Turn into an action'
+                                    }
+                                    aria-label={
+                                        labels?.convertToAction ?? 'Turn into an action'
+                                    }
                                     onClick={() => onAct(message.id)}
                                 >
-                                    <i className='pi pi-bolt' aria-hidden='true' />
+                                    <FaBolt aria-hidden='true' />
                                 </button>
                             )}
                         </div>
@@ -151,7 +201,13 @@ export const ChatMessageBubble = ({ message, showAuthor, showTimestamp, formatte
                 {supportsReactions && <MessageReactions reactions={otherReactions} />}
                 {/* Portaled to <body> rather than positioned inside the bubble: the chat panel scrolls,
                     so a picker positioned within it is clipped the moment it reaches the panel's edge. */}
-                <AnchoredOverlay anchorRef={reactionButtonRef} open={pickerOpen} side='above' align='right' gap={6}>
+                <AnchoredOverlay
+                    anchorRef={reactionButtonRef}
+                    open={pickerOpen}
+                    side='above'
+                    align='right'
+                    gap={6}
+                >
                     <ReactionPicker
                         ownEmoji={ownReaction?.emoji}
                         reactions={message.reactions}

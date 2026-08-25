@@ -25,25 +25,27 @@ const RESIZE_CURSORS: Record<HandleKey, string> = {
     s: 's-resize',   sw: 'sw-resize', w: 'w-resize',
 };
 
+/** Controlled data rendered by {@link Region}. */
 export interface RegionData {
-
+    /** Stable region identity. */
     id: string;
-
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
-
+    /** Region width. */
     width: number;
-
+    /** Region height. */
     height: number;
-
+    /** Editable region label. */
     name: string;
 }
 
+/** Props for a fully controlled movable, resizable, labeled Canvas region. */
 export interface RegionProps {
-
+    /** Current region data. */
     region: RegionData;
-
+    /** Whether resize handles are visible. */
     selected: boolean;
 
     /**
@@ -52,14 +54,15 @@ export interface RegionProps {
      */
     onSelect: (id: string, additive: boolean) => void;
 
+    /** Reports drag movement. */
     onMove: (id: string, x: number, y: number) => void;
-
+    /** Reports drag completion. */
     onMoveEnd?: (id: string) => void;
-
+    /** Reports resize movement and resulting bounds. */
     onResize: (id: string, x: number, y: number, width: number, height: number) => void;
-
+    /** Reports resize completion. */
     onResizeEnd?: (id: string) => void;
-
+    /** Reports committed label edits. */
     onNameChange: (id: string, name: string) => void;
 
     /**

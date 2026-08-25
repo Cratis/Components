@@ -5,62 +5,63 @@ description: React components aligned with Arc application patterns.
 
 Components is a React component library aligned with Arc application patterns.
 
-The `@cratis/components` package provides React compositions for Arc-generated
-commands and queries, together with dialogs, data surfaces, editors,
-notifications, styling tokens, and shared application primitives.
+The current package provides React components for Arc-generated commands and
+queries, together with dialogs, data surfaces, editors, notifications, semantic
+tokens, stable parts, and application primitives.
 
 ## Relationship to Arc
 
-Arc packages provide the generated command and query contracts and React
-contexts consumed by Components. Applications may use Arc without Components.
-Components is not a general-purpose design-system claim and does not by itself
-establish accessibility conformance or browser coverage for an application.
+Components consumes generated command and query contracts and React contexts
+from Arc packages. Applications may use Arc without Components.
+
+Components does not by itself establish design-system completeness,
+accessibility conformance, browser coverage, or compatibility with every
+Arc/React/package-version combination. Verify those properties for the exact
+application and component profile shipped.
 
 ## Minimal setup
 
-Install Components and its required rendering peers:
+Install the package:
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+npm install @cratis/components
 ```
 
-Import the token and component styles, then mount the provider:
+Import the token and component styles, then mount the provider. The baseline
+theme is optional.
 
 ```tsx
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
-import { CratisComponentsProvider } from '@cratis/components';
+import '@cratis/components/theme';
+import { CratisComponentsProvider } from '@cratis/components/Common';
 
 export const App = () => (
-    <CratisComponentsProvider value={{ license: 'YOUR-PRIMEUI-LICENSE-KEY' }}>
+    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
         <YourApp />
     </CratisComponentsProvider>
 );
 ```
 
-Replace the placeholder with a key supplied through the application's approved
-secret/configuration boundary. Do not commit it to source. Current dependency
-and licensing terms are owned by each installed package and must be reviewed for
-the exact version selected.
-
 ## Component areas
 
 | Area | Current package role |
 | --- | --- |
-| Command input | Typed fields, embedded forms, dialogs, and multi-step command flows |
-| Data display | Query-backed tables, local-array tables, list pages, filters, and detail surfaces |
+| Command input | Typed fields, forms, dialogs, and multi-step command flows |
+| Data display | Query-backed and local-array tables, list pages, filters, and detail surfaces |
 | Application surfaces | Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars |
 | Structured editors | JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views |
-| Styling boundary | Cratis tokens, component styles, a baseline theme, and pass-through hooks |
+| Styling boundary | Semantic tokens, component styles, an optional baseline theme, and stable parts |
 
 ## Current boundaries
 
-- Components aligns with Arc application patterns; it does not imply support for
-  every Arc, React, browser, runtime, or package-version combination.
-- Package existence, examples, and Storybook output do not establish maturity,
-  accessibility conformance, support, security, or production suitability.
-- Verify the exact package manifest, peer dependencies, component profile, and
-  application behavior before adoption.
+- Package manifests and exports define the exact React, Arc, Fundamentals, and
+  optional Pixi peer ranges.
+- Package existence, examples, Storybook output, and passing checks do not
+  establish maturity, accessibility conformance, browser coverage, support,
+  security, or production suitability.
+- Direct third-party UI dependencies retained by an application keep their own
+  package, provider, styling, and license boundaries.
 
 ## Continue
 

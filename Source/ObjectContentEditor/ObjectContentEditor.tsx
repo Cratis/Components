@@ -7,12 +7,7 @@ import * as faIcons from 'react-icons/fa6';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
 import { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { getValueAtPath } from './objectHelpers';
-import { InputText } from 'primereact/inputtext';
-import { InputNumber } from 'primereact/inputnumber';
-import type { InputNumberRootValueChangeEvent } from '@primereact/types/primitive/inputnumber';
-import { Checkbox } from 'primereact/checkbox';
-import type { CheckboxRootChangeEvent } from '@primereact/types/primitive/checkbox';
-import { Textarea } from 'primereact/textarea';
+
 import { DatePickerInput } from '../Common/DatePickerInput';
 
 /**
@@ -54,7 +49,7 @@ export interface ObjectContentEditorProps {
     /**
      * Extra CSS class names appended to the editor root, combined with the
      * default `order-content` class. For fine-grained styling of the internal
-     * PrimeReact inputs, use a global `pt` preset on `CratisComponentsProvider`.
+     * Components inputs, use product tokens and stable Cratis parts.
      */
     className?: string;
 }
@@ -66,44 +61,76 @@ export interface ObjectContentEditorProps {
  * edit mode it switches to the appropriate input type for each property
  * (`InputText`, `InputNumber`, `Checkbox`, `Calendar`, `InputTextarea`).
  *
- * The component composes many PrimeReact widgets internally; for fine-grained
- * pass-through styling use a global `pt` preset on `CratisComponentsProvider`.
+ * The component composes Cratis-owned controls internally. Restyle it through
+ * semantic tokens, its root `className`, and documented descendant
+ * `data-cratis-part` values rather than a provider-level renderer preset.
  *
  * @param props - {@link ObjectContentEditorProps}.
  */
-export const ObjectContentEditor = ({ object, timestamp, schema, editMode = false, onChange, onValidationChange, className }: ObjectContentEditorProps) => {
+export const ObjectContentEditor = ({
+    object,
+    timestamp,
+    schema,
+    editMode = false,
+    onChange,
+    onValidationChange,
+    className,
+}: ObjectContentEditorProps) => {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-    const validateValue = useCallback((propertyName: string, value: Json, property: JsonSchemaProperty): string | undefined => {
-        if (editMode) {
-            if (value === null || value === undefined || value === '') {
-                return 'This field is required';
+    const validateValue = useCallback(
+        (
+            propertyName: string,
+            value: Json,
+            property: JsonSchemaProperty,
+        ): string | undefined => {
+            if (editMode) {
+                if (value === null || value === undefined || value === '') {
+                    return 'This field is required';
+                }
+            } else {
+                const isRequired = schema.required?.includes(propertyName);
+                if (
+                    isRequired &&
+                    (value === null || value === undefined || value === '')
+                ) {
+                    return 'This field is required';
+                }
             }
-        } else {
-            const isRequired = schema.required?.includes(propertyName);
-            if (isRequired && (value === null || value === undefined || value === '')) {
-                return 'This field is required';
-            }
-        }
 
-        if (property.type === 'string' && typeof value === 'string') {
-            if (property.format === 'email' && value && !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-                return 'Invalid email format';
+            if (property.type === 'string' && typeof value === 'string') {
+                if (
+                    property.format === 'email' &&
+                    value &&
+                    !value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+                ) {
+                    return 'Invalid email format';
+                }
+                if (
+                    property.format === 'uri' &&
+                    value &&
+                    !value.match(/^https?:\/\/.+/)
+                ) {
+                    return 'Invalid URI format';
+                }
             }
-            if (property.format === 'uri' && value && !value.match(/^https?:\/\/.+/)) {
-                return 'Invalid URI format';
-            }
-        }
 
-        if (property.type === 'number' || property.type === 'integer') {
-            if (value !== null && value !== undefined && value !== '' && isNaN(Number(value))) {
-                return 'Must be a valid number';
+            if (property.type === 'number' || property.type === 'integer') {
+                if (
+                    value !== null &&
+                    value !== undefined &&
+                    value !== '' &&
+                    isNaN(Number(value))
+                ) {
+                    return 'Must be a valid number';
+                }
             }
-        }
 
-        return undefined;
-    }, [schema, editMode]);
+            return undefined;
+        },
+        [schema, editMode],
+    );
 
     useEffect(() => {
         if (!editMode || navigationPath.length > 0) return;
@@ -113,7 +140,11 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         Object.entries(properties).forEach(([propertyName, property]) => {
             const value = (object as Record<string, Json>)[propertyName];
-            const error = validateValue(propertyName, value, property as JsonSchemaProperty);
+            const error = validateValue(
+                propertyName,
+                value,
+                property as JsonSchemaProperty,
+            );
             if (error) {
                 errors[propertyName] = error;
             }
@@ -129,17 +160,23 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         }
     }, [validationErrors, editMode, onValidationChange]);
 
-    const navigateToProperty = useCallback((key: string) => {
-        setNavigationPath([...navigationPath, key]);
-    }, [navigationPath]);
+    const navigateToProperty = useCallback(
+        (key: string) => {
+            setNavigationPath([...navigationPath, key]);
+        },
+        [navigationPath],
+    );
 
-    const navigateToBreadcrumb = useCallback((index: number) => {
-        if (index === 0) {
-            setNavigationPath([]);
-        } else {
-            setNavigationPath(navigationPath.slice(0, index));
-        }
-    }, [navigationPath]);
+    const navigateToBreadcrumb = useCallback(
+        (index: number) => {
+            if (index === 0) {
+                setNavigationPath([]);
+            } else {
+                setNavigationPath(navigationPath.slice(0, index));
+            }
+        },
+        [navigationPath],
+    );
 
     const currentData = useMemo(() => {
         if (navigationPath.length === 0) {
@@ -149,11 +186,14 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         const lastKey = navigationPath[navigationPath.length - 1];
         const pathToParent = navigationPath.slice(0, -1);
 
-        const parentValue = pathToParent.length > 0
-            ? getValueAtPath(object, pathToParent)
-            : object;
+        const parentValue =
+            pathToParent.length > 0 ? getValueAtPath(object, pathToParent) : object;
 
-        if (parentValue && typeof parentValue === 'object' && !Array.isArray(parentValue)) {
+        if (
+            parentValue &&
+            typeof parentValue === 'object' &&
+            !Array.isArray(parentValue)
+        ) {
             const value = (parentValue as { [k: string]: Json })[lastKey];
 
             if (Array.isArray(value)) {
@@ -213,21 +253,28 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         fontSize: '0.75rem',
     };
 
-    const updateValue = useCallback((propertyName: string, newValue: Json) => {
-        if (!onChange) return;
+    const updateValue = useCallback(
+        (propertyName: string, newValue: Json) => {
+            if (!onChange) return;
 
-        const updatedObject = { ...(object as Record<string, Json>) };
-        updatedObject[propertyName] = newValue;
-        onChange(updatedObject);
-    }, [object, onChange]);
+            const updatedObject = { ...(object as Record<string, Json>) };
+            updatedObject[propertyName] = newValue;
+            onChange(updatedObject);
+        },
+        [object, onChange],
+    );
 
-    const renderEditField = (propertyName: string, property: JsonSchemaProperty, value: Json) => {
+    const renderEditField = (
+        propertyName: string,
+        property: JsonSchemaProperty,
+        value: Json,
+    ) => {
         const error = validationErrors[propertyName];
 
         const handleChange = (newValue: Json) => {
             updateValue(propertyName, newValue);
             const validationError = validateValue(propertyName, newValue, property);
-            setValidationErrors(prev => {
+            setValidationErrors((prev) => {
                 const newErrors = { ...prev };
                 if (validationError) {
                     newErrors[propertyName] = validationError;
@@ -241,14 +288,13 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         if (property.type === 'boolean') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <Checkbox.Root
+                    <input
+                        type='checkbox'
                         checked={Boolean(value)}
-                        onCheckedChange={(e: CheckboxRootChangeEvent) => handleChange(e.checked ?? false)}
-                        invalid={!!error}>
-                        <Checkbox.Box>
-                            <Checkbox.Indicator />
-                        </Checkbox.Box>
-                    </Checkbox.Root>
+                        onChange={(event) => handleChange(event.target.checked)}
+                        aria-invalid={Boolean(error) || undefined}
+                        className='cratis:size-5 cratis:accent-[var(--cratis-primary-color)]'
+                    />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
@@ -257,13 +303,19 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         if (property.type === 'number' || property.type === 'integer') {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <InputNumber.Root
-                        value={(value === null || value === undefined) ? null : Number(value)}
-                        onValueChange={(e: InputNumberRootValueChangeEvent) => handleChange(e.value ?? null)}
-                        useGrouping={false}
-                        invalid={!!error}>
-                        <InputNumber.Input className="w-full" />
-                    </InputNumber.Root>
+                    <input
+                        type='number'
+                        value={value === null || value === undefined ? '' : Number(value)}
+                        onChange={(event) =>
+                            handleChange(
+                                event.target.value === ''
+                                    ? null
+                                    : event.target.valueAsNumber,
+                            )
+                        }
+                        aria-invalid={Boolean(error) || undefined}
+                        className='cratis-field-input cratis:w-full'
+                    />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
             );
@@ -275,7 +327,9 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <DatePickerInput
                         value={dateValue}
-                        onChange={(date) => handleChange(date ? date.toISOString() : null)}
+                        onChange={(date) =>
+                            handleChange(date ? date.toISOString() : null)
+                        }
                         showTime
                         showIcon
                         invalid={!!error}
@@ -291,7 +345,9 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <DatePickerInput
                         value={dateValue}
-                        onChange={(date) => handleChange(date ? date.toISOString().split('T')[0] : null)}
+                        onChange={(date) =>
+                            handleChange(date ? date.toISOString().split('T')[0] : null)
+                        }
                         showIcon
                         invalid={!!error}
                     />
@@ -302,7 +358,13 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         if (property.type === 'array') {
             return (
-                <div className="flex items-center gap-2" style={{ color: 'var(--cratis-text-color-secondary)', fontStyle: 'italic' }}>
+                <div
+                    className='cratis:flex cratis:items-center cratis:gap-2'
+                    style={{
+                        color: 'var(--cratis-text-color-secondary)',
+                        fontStyle: 'italic',
+                    }}
+                >
                     <span>Array editing not yet supported</span>
                 </div>
             );
@@ -310,7 +372,13 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         if (property.type === 'object') {
             return (
-                <div className="flex items-center gap-2" style={{ color: 'var(--cratis-text-color-secondary)', fontStyle: 'italic' }}>
+                <div
+                    className='cratis:flex cratis:items-center cratis:gap-2'
+                    style={{
+                        color: 'var(--cratis-text-color-secondary)',
+                        fontStyle: 'italic',
+                    }}
+                >
                     <span>Object editing not yet supported</span>
                 </div>
             );
@@ -321,12 +389,12 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
         if (isLongText) {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <Textarea
+                    <textarea
                         value={String(value ?? '')}
-                        onChange={(e) => handleChange(e.target.value)}
+                        onChange={(event) => handleChange(event.target.value)}
                         rows={3}
-                        invalid={!!error}
-                        className="w-full"
+                        aria-invalid={Boolean(error) || undefined}
+                        className='cratis-field-input cratis-field-textarea cratis:w-full'
                     />
                     {error && <small style={fieldErrorStyle}>{error}</small>}
                 </div>
@@ -335,11 +403,11 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <InputText
+                <input
                     value={String(value ?? '')}
-                    onChange={(e) => handleChange(e.target.value)}
-                    invalid={!!error}
-                    className="w-full"
+                    onChange={(event) => handleChange(event.target.value)}
+                    aria-invalid={Boolean(error) || undefined}
+                    className='cratis-field-input cratis:w-full'
                 />
                 {error && <small style={fieldErrorStyle}>{error}</small>}
             </div>
@@ -351,27 +419,53 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
         if (Array.isArray(value)) {
             return (
-                <div
-                    className="flex items-center gap-2 cursor-pointer"
+                <button
+                    type='button'
+                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
                     onClick={() => navigateToProperty(propertyName)}
-                    style={{ color: 'var(--cratis-primary-color)', display: 'flex', alignItems: 'center' }}
+                    style={{
+                        color: 'var(--cratis-primary-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: 0,
+                        border: 0,
+                        background: 'transparent',
+                        font: 'inherit',
+                    }}
+                    aria-label={`Open ${propertyName}, ${value.length} items`}
                 >
                     <span>Array[{value.length}]</span>
-                    <faIcons.FaArrowRight style={{ fontSize: '0.875rem', display: 'inline-flex' }} />
-                </div>
+                    <faIcons.FaArrowRight
+                        style={{ fontSize: '0.875rem', display: 'inline-flex' }}
+                        aria-hidden='true'
+                    />
+                </button>
             );
         }
 
         if (typeof value === 'object') {
             return (
-                <div
-                    className="flex items-center gap-2 cursor-pointer"
+                <button
+                    type='button'
+                    className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
                     onClick={() => navigateToProperty(propertyName)}
-                    style={{ color: 'var(--cratis-primary-color)', display: 'flex', alignItems: 'center' }}
+                    style={{
+                        color: 'var(--cratis-primary-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: 0,
+                        border: 0,
+                        background: 'transparent',
+                        font: 'inherit',
+                    }}
+                    aria-label={`Open ${propertyName}`}
                 >
                     <span>Object</span>
-                    <faIcons.FaArrowRight style={{ fontSize: '0.875rem', display: 'inline-flex' }} />
-                </div>
+                    <faIcons.FaArrowRight
+                        style={{ fontSize: '0.875rem', display: 'inline-flex' }}
+                        aria-hidden='true'
+                    />
+                </button>
             );
         }
 
@@ -380,10 +474,24 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
 
     const renderTable = () => {
         if (Array.isArray(currentData)) {
-            if (currentData.length === 0) return <div style={{ padding: '12px', color: 'var(--cratis-text-color-secondary)' }}>Empty array</div>;
+            if (currentData.length === 0)
+                return (
+                    <div
+                        style={{
+                            padding: '12px',
+                            color: 'var(--cratis-text-color-secondary)',
+                        }}
+                    >
+                        Empty array
+                    </div>
+                );
 
             const firstItem = currentData[0];
-            if (typeof firstItem === 'object' && firstItem !== null && !Array.isArray(firstItem)) {
+            if (
+                typeof firstItem === 'object' &&
+                firstItem !== null &&
+                !Array.isArray(firstItem)
+            ) {
                 const keys = Object.keys(firstItem);
 
                 return (
@@ -392,14 +500,24 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                             {currentData.map((item, index) => (
                                 <React.Fragment key={index}>
                                     {index > 0 && (
-                                        <tr style={{ height: '8px', background: 'var(--cratis-surface-hover)' }}>
+                                        <tr
+                                            style={{
+                                                height: '8px',
+                                                background: 'var(--cratis-surface-hover)',
+                                            }}
+                                        >
                                             <td colSpan={2}></td>
                                         </tr>
                                     )}
                                     {keys.map((key) => (
                                         <tr key={`${index}-${key}`} style={rowStyle}>
                                             <td style={labelStyle}>{key}</td>
-                                            <td style={valueStyle}>{renderValue((item as Record<string, Json>)[key], key)}</td>
+                                            <td style={valueStyle}>
+                                                {renderValue(
+                                                    (item as Record<string, Json>)[key],
+                                                    key,
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </React.Fragment>
@@ -414,7 +532,9 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
                             {currentData.map((item, index) => (
                                 <tr key={index} style={rowStyle}>
                                     <td style={labelStyle}>[{index}]</td>
-                                    <td style={valueStyle}>{renderValue(item, `[${index}]`)}</td>
+                                    <td style={valueStyle}>
+                                        {renderValue(item, `[${index}]`)}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -423,66 +543,103 @@ export const ObjectContentEditor = ({ object, timestamp, schema, editMode = fals
             }
         }
 
-        const entries = navigationPath.length === 0
-            ? Object.entries(currentProperties)
-            : Object.entries(currentData as { [key: string]: Json });
+        const entries =
+            navigationPath.length === 0
+                ? Object.entries(currentProperties)
+                : Object.entries(currentData as { [key: string]: Json });
 
         return (
             <table style={tableStyle}>
                 <tbody>
-                    {entries.map(([propertyName, propertyDef]: [string, JsonSchemaProperty | Json]) => {
-                        const value = (currentData as Record<string, Json>)[propertyName];
+                    {entries.map(
+                        ([propertyName, propertyDef]: [
+                            string,
+                            JsonSchemaProperty | Json,
+                        ]) => {
+                            const value = (currentData as Record<string, Json>)[
+                                propertyName
+                            ];
 
-                        const isSchemaProperty = navigationPath.length === 0;
-                        const property = isSchemaProperty && typeof propertyDef === 'object' && propertyDef !== null && 'type' in propertyDef
-                            ? (propertyDef as JsonSchemaProperty)
-                            : null;
-                        const description = property?.description;
+                            const isSchemaProperty = navigationPath.length === 0;
+                            const property =
+                                isSchemaProperty &&
+                                typeof propertyDef === 'object' &&
+                                propertyDef !== null &&
+                                'type' in propertyDef
+                                    ? (propertyDef as JsonSchemaProperty)
+                                    : null;
+                            const description = property?.description;
 
-                        return (
-                            <tr key={propertyName} style={rowStyle}>
-                                <td style={labelStyle}>
-                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                        {propertyName}
-                                        {description && (
-                                            <Tooltip content={description} position="right">
-                                                <faIcons.FaCircleInfo
-                                                    className="property-info-icon"
-                                                    style={infoIconStyle} />
-                                            </Tooltip>
-                                        )}
-                                    </span>
-                                </td>
-                                <td style={valueStyle}>
-                                    {editMode && property
-                                        ? renderEditField(propertyName, property, value)
-                                        : renderValue(value as Json, propertyName)
-                                    }
-                                </td>
-                            </tr>
-                        );
-                    })}
+                            return (
+                                <tr key={propertyName} style={rowStyle}>
+                                    <td style={labelStyle}>
+                                        <span
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                            }}
+                                        >
+                                            {propertyName}
+                                            {description && (
+                                                <Tooltip
+                                                    content={description}
+                                                    position='right'
+                                                >
+                                                    <span
+                                                        tabIndex={0}
+                                                        role='img'
+                                                        aria-label='Property description'
+                                                    >
+                                                        <faIcons.FaCircleInfo
+                                                            aria-hidden='true'
+                                                            className='property-info-icon'
+                                                            style={infoIconStyle}
+                                                        />
+                                                    </span>
+                                                </Tooltip>
+                                            )}
+                                        </span>
+                                    </td>
+                                    <td style={valueStyle}>
+                                        {editMode && property
+                                            ? renderEditField(
+                                                  propertyName,
+                                                  property,
+                                                  value,
+                                              )
+                                            : renderValue(value as Json, propertyName)}
+                                    </td>
+                                </tr>
+                            );
+                        },
+                    )}
                 </tbody>
             </table>
         );
     };
 
     return (
-        <div className={className ? `order-content ${className}` : 'order-content'} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div
+            className={className ? `order-content ${className}` : 'order-content'}
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
             <ObjectNavigationalBar
                 navigationPath={navigationPath}
                 onNavigate={navigateToBreadcrumb}
             />
             {renderTable()}
             {timestamp && (
-                <div style={{
-                    marginTop: '20px',
-                    padding: '12px',
-                    background: 'var(--cratis-highlight-bg)',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    color: 'var(--cratis-text-color-secondary)'
-                }}>
+                <div
+                    style={{
+                        marginTop: '20px',
+                        padding: '12px',
+                        background: 'var(--cratis-highlight-bg)',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        color: 'var(--cratis-text-color-secondary)',
+                    }}
+                >
                     Snapshot captured: {timestamp.toLocaleString()}
                 </div>
             )}

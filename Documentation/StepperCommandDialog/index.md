@@ -1,6 +1,6 @@
 # StepperCommandDialog
 
-The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of `CommandStepper` and [PrimeReact](https://primereact.org/)'s compositional Stepper.
+The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of the Cratis-owned `CommandStepper`.
 
 ## Purpose
 
@@ -96,25 +96,26 @@ function MyComponent() {
 - `onConfirm`: Confirm callback — called only after successful command execution
 - `onCancel`: Cancel callback — invoked for every dismissal that is not a successful submit: the X in the dialog header, the Escape key, and the footer Cancel button when `showCancel` is on
 - `onClose`: Fallback close callback
-- `okLabel`: Label for the submit button shown on the last step when valid (default: `'Submit'`)
-- `nextLabel`: Label for the next step button (default: `'Next'`)
-- `previousLabel`: Label for the previous step button (default: `'Previous'`)
+- `okLabel`: Label for the submit button shown on the last step when valid. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.stepper.submit`, then `'Submit'`
+- `nextLabel`: Label for the next step button. Falls back to the provider's `messages.stepper.next`, then `'Next'`
+- `previousLabel`: Label for the previous step button. Falls back to the provider's `messages.stepper.previous`, then `'Previous'`
 - `showCancel`: Adds a Cancel button as the first item in the footer (default: `false`)
-- `cancelLabel`: Label for the footer cancel button (default: `'Cancel'`)
+- `cancelLabel`: Label for the footer cancel button. Falls back to the provider's `messages.dialog.cancel` — the same group `Dialog`'s own Cancel button resolves through — then `'Cancel'`
 - `isValid`: Additional validity gate combined with command form validity
 - `width`: Dialog width (default: `'600px'`)
-- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle. Existing call sites keep compiling; the prop simply has no effect.
+- `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle. Existing call sites keep compiling; the prop simply has no effect.
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `dialogClassName`: Extra CSS class name for the outer dialog root
-- `dialogPt` / `dialogPtOptions` / `dialogUnstyled`: Pass-through styling for the **outer** dialog (the inherited `pt` / `ptOptions` / `unstyled` target the **inner** stepper)
+- `dialogPt`: Cratis-owned stable part attributes for the **outer** dialog; inherited `pt` targets the **inner** stepper
+- `dialogPtOptions` / `dialogUnstyled` / inherited `ptOptions` / inherited `unstyled`: Retained temporarily for source compatibility; ignored because part attributes always merge and styling is CSS-owned
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with. It runs only on submit, after every step has been validated, so a value produced here can never satisfy required-field validation; seed required values through `initialValues` instead.
 
 ### Stepper Props
 
-`StepperCustomizationProps` is Cratis-owned — it no longer aliases PrimeReact's `StepperProps`, so the surface below is the whole of it. PrimeReact 11's Stepper has no built-in `orientation` / `headerPosition` / `start` / `end`; the wrapper re-implements them over the compositional parts.
+`StepperCustomizationProps` is Cratis-owned. The surface below is complete and maps onto stable stepper parts rather than renderer props.
 
 - `orientation`: `'horizontal'` (default) or `'vertical'`
 - `headerPosition`: `'top'` (default) or `'bottom'`
@@ -122,9 +123,9 @@ function MyComponent() {
 - `onChangeStep`: Callback when the active step changes, receiving `{ index }` (zero-based)
 - `start`: Content rendered before the stepper
 - `end`: Content rendered after the stepper
-- `pt`: PrimeReact pass-through configuration for the inner stepper's parts
-- `ptOptions`: Pass-through options controlling merge vs. replace for `pt`
-- `unstyled`: Removes every base PrimeReact style on the inner stepper
+- `pt`: Cratis-owned HTML attributes for the inner stepper's stable parts
+- `ptOptions`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge
+- `unstyled`: Legacy compatibility flag; ignored
 
 ## Callback Behavior
 
@@ -152,11 +153,11 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 
 The step number circles in the wizard navigation bar reflect the validation state of each step:
 
-| Circle color | Meaning |
-|---|---|
-| **Red** | The step contains at least one field with a validation error |
-| **Green** | The step has been visited (navigated through) and all its fields are valid |
-| **Default** (theme primary) | The step has not been visited yet |
+| Circle color                | Meaning                                                                    |
+| --------------------------- | -------------------------------------------------------------------------- |
+| **Red**                     | The step contains at least one field with a validation error               |
+| **Green**                   | The step has been visited (navigated through) and all its fields are valid |
+| **Default** (theme primary) | The step has not been visited yet                                          |
 
 Steps that are not currently active are dimmed to keep visual focus on the current step.
 
@@ -174,12 +175,12 @@ This is useful when the dialog opens with pre-populated values that may already 
 
 ## Navigation and Submit
 
-| Step position | Footer content | Footer content with `showCancel` |
-|---|---|---|
-| First step | Next | Cancel, Next |
-| Middle step | Previous, Next | Cancel, Previous, Next |
-| Last step (invalid) | Previous | Cancel, Previous |
-| Last step (valid) | Previous, Submit | Cancel, Previous, Submit |
+| Step position       | Footer content   | Footer content with `showCancel` |
+| ------------------- | ---------------- | -------------------------------- |
+| First step          | Next             | Cancel, Next                     |
+| Middle step         | Previous, Next   | Cancel, Previous, Next           |
+| Last step (invalid) | Previous         | Cancel, Previous                 |
+| Last step (valid)   | Previous, Submit | Cancel, Previous, Submit         |
 
 The Submit button is hidden until the user reaches the last step **and** all command form fields across every step pass validation.
 
@@ -192,17 +193,24 @@ Set `showCancel` to add a Cancel button to the footer as well. It leads the foot
 ```tsx
 <StepperCommandDialog<DeleteEnvironment>
     command={DeleteEnvironment}
-    title="Delete environment"
-    okLabel="Delete"
+    title='Delete environment'
+    okLabel='Delete'
     showCancel
-    cancelLabel="Keep environment"
+    cancelLabel='Keep environment'
     onCancel={() => closeDialog(DialogResult.Cancelled)}
 >
-    <StepperPanel header="Environment">
-        <DropdownField<DeleteEnvironment> value={c => c.environmentId} title="Environment" options={environments} />
+    <StepperPanel header='Environment'>
+        <DropdownField<DeleteEnvironment>
+            value={(c) => c.environmentId}
+            title='Environment'
+            options={environments}
+        />
     </StepperPanel>
-    <StepperPanel header="Confirm">
-        <InputTextField<DeleteEnvironment> value={c => c.confirmationText} title="Type the environment name to confirm" />
+    <StepperPanel header='Confirm'>
+        <InputTextField<DeleteEnvironment>
+            value={(c) => c.confirmationText}
+            title='Type the environment name to confirm'
+        />
     </StepperPanel>
 </StepperCommandDialog>
 ```
@@ -221,38 +229,44 @@ Set `showCancel` to add a Cancel button to the footer as well. It leads the foot
 Each step is defined by a `StepperPanel` from `@cratis/components/CommandDialog`. The `header` prop sets the step title shown in the stepper navigation:
 
 ```tsx
-<StepperPanel header="Contact Details">
-    <InputTextField<MyCommand> value={c => c.email} title="Email" />
+<StepperPanel header='Contact Details'>
+    <InputTextField<MyCommand> value={(c) => c.email} title='Email' />
 </StepperPanel>
 ```
 
 CommandForm fields placed inside a `StepperPanel` are automatically bound to the same command instance, regardless of which step they are on.
 
-`StepperPanel` is Cratis-owned — it replaces PrimeReact 10's `primereact/stepperpanel`, which no longer exists in PrimeReact 11. It is a pure marker: the stepper consumes its props, so rendering one on its own produces nothing.
+`StepperPanel` is a pure Cratis marker: the stepper consumes its props, so rendering one on its own produces nothing.
 
 ## Conditional steps
 
 A step that only applies sometimes is written the obvious way, and it is counted the obvious way:
 
 ```tsx
-<StepperCommandDialog<RegisterCustomer> command={RegisterCustomer} title="New customer">
-    <StepperPanel header="Customer">
-        <InputTextField<RegisterCustomer> value={c => c.name} title="Name" />
+<StepperCommandDialog<RegisterCustomer> command={RegisterCustomer} title='New customer'>
+    <StepperPanel header='Customer'>
+        <InputTextField<RegisterCustomer> value={(c) => c.name} title='Name' />
     </StepperPanel>
     {isBusiness && (
-        <StepperPanel header="Company">
-            <InputTextField<RegisterCustomer> value={c => c.organizationNumber} title="Organization number" />
+        <StepperPanel header='Company'>
+            <InputTextField<RegisterCustomer>
+                value={(c) => c.organizationNumber}
+                title='Organization number'
+            />
         </StepperPanel>
     )}
-    <StepperPanel header="Confirm">
-        <CheckboxField<RegisterCustomer> value={c => c.acceptedTerms} label="I accept the terms" />
+    <StepperPanel header='Confirm'>
+        <CheckboxField<RegisterCustomer>
+            value={(c) => c.acceptedTerms}
+            label='I accept the terms'
+        />
     </StepperPanel>
 </StepperCommandDialog>
 ```
 
 **Only the steps that actually render are counted.** `{condition && <StepperPanel/>}` leaves a `false` child behind when the condition does not hold, and `null` / `undefined` children are just as common; all of them are filtered out before the step count, the per-step validation state and the rendered panels are derived — from the same one list, so they cannot drift apart. With `isBusiness` false the wizard above has two steps, and Submit appears on "Confirm" where the user expects it.
 
-The count is not fixed for the lifetime of the dialog either. A late-resolving query or a `currentValues` overlay can flip the condition *after* the user has advanced past that step, so the active step is clamped into the set that still renders — an index left stranded above the end resolves to the last surviving step rather than a step that is neither last nor navigable.
+The count is not fixed for the lifetime of the dialog either. A late-resolving query or a `currentValues` overlay can flip the condition _after_ the user has advanced past that step, so the active step is clamped into the set that still renders — an index left stranded above the end resolves to the last surviving step rather than a step that is neither last nor navigable.
 
 > [!WARNING]
 > A `<>…</>` fragment wrapping several panels counts as **one** step. Give each step its own `StepperPanel` child.
@@ -263,7 +277,7 @@ The count is not fixed for the lifetime of the dialog either. A late-resolving q
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- [PrimeReact](https://primereact.org/)'s compositional Stepper, plus the Cratis-owned `StepperPanel`, for the wizard UI
+- the Cratis-owned Stepper and `StepperPanel` for the wizard UI
 - The Cratis [`Dialog`](../Dialogs/dialog.md) for the modal wrapper
 
 ## See Also

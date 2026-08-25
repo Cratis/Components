@@ -57,22 +57,21 @@ Pass small typed fakes / `sinon.stub()` for dependencies; don't build a broad ha
 
 ## Component spec (when rendering is the point)
 
-Environment is `node`; render server-side markup and mock only the external component boundary:
+Environment is `node`; render server-side markup and use the public Cratis component contract:
 
 ```ts
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { vi } from 'vitest';
-
-vi.mock('primereact/dialog', () => ({
-    Dialog: (p: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, p.footer, p.children),
-}));
+import { Button } from '@cratis/components/Common';
 
 describe('when rendered while busy', () => {
     let html: string;
-    beforeEach(() => { html = renderToStaticMarkup(React.createElement(MyDialog, { isBusy: true })); });
-    it('should disable the confirm button', () => html.should.include('disabled'));
+    beforeEach(() => {
+        html = renderToStaticMarkup(
+            React.createElement(Button, { loading: true, label: 'Save' }),
+        );
+    });
+    it('should disable the action', () => html.should.include('disabled'));
 });
 ```
 

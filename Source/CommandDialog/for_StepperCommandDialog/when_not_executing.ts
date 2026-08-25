@@ -7,33 +7,13 @@ import { vi } from 'vitest';
 import { StepperCommandDialog } from '../StepperCommandDialog';
 import { StepperPanel } from '../StepperPanel';
 
-// StepperCommandDialog now composes the Cratis Dialog wrapper (not primereact/dialog
-// directly) — render its custom footer (`buttons`) and body.
+// Render the Cratis Dialog wrapper's custom footer and body.
 vi.mock('../../Dialogs/Dialog', () => ({
     Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
         React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-// PrimeReact 11's Stepper is a set of compositional parts — each just renders its
-// children so the footer/navigation behavior can be asserted.
-vi.mock('primereact/stepper', () => {
-    const part = (name: string) => {
-        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
-            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
-        Component.displayName = name;
-        return Component;
-    };
-    return {
-        Stepper: {
-            Root: part('root'), List: part('list'), Step: part('step'),
-            Header: part('header'), Number: part('number'), Title: part('title'),
-            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
-        },
-    };
-});
-
-// PrimeReact 11's Button renders its content as children (no label/loading props).
-vi.mock('primereact/button', () => ({
+vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),
 }));
@@ -70,6 +50,7 @@ describe('when StepperCommandDialog is in its initial state', () => {
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {
+                // SAFETY: The test command implements the runtime command constructor contract.
                 command: TestCommand as unknown as new () => object,
                 visible: true,
                 title: 'Test Stepper Dialog',
@@ -81,7 +62,7 @@ describe('when StepperCommandDialog is in its initial state', () => {
     });
 
     it('should_not_have_buttons_in_a_busy_state', () => {
-        html.should.not.include('pi-spinner');
+        html.should.not.include('cratis-dialog__spinner');
     });
 
     it('should_not_show_previous_button_on_first_step', () => {

@@ -11,7 +11,7 @@ import {
 describe('when using built-in match modes', () => {
     const filters: DataTableFilterMeta = {
         name: {
-            value: 'Ada',
+            value: 'Morgan',
             matchMode: DataTableFilterMatchMode.Contains,
         },
         legacyCustomField: {
@@ -20,12 +20,20 @@ describe('when using built-in match modes', () => {
         },
     };
 
+    const matchModeFor = (field: string) => {
+        const entry = filters[field];
+        if ('constraints' in entry) {
+            throw new Error(`${field} unexpectedly uses operator constraints.`);
+        }
+        return entry.matchMode;
+    };
+
     it('should provide the adapter-independent runtime value', () => {
-        expect(filters.name.matchMode).to.equal('contains');
+        expect(matchModeFor('name')).to.equal('contains');
     });
 
     it('should retain source compatibility with existing custom matcher names', () => {
-        expect(filters.legacyCustomField.matchMode).to.equal(
+        expect(matchModeFor('legacyCustomField')).to.equal(
             'matcherRegisteredByTheConsumer',
         );
     });

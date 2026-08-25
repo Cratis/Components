@@ -1,10 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+// @vitest-environment jsdom
+
+import { expect } from 'chai';
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
+import {
+    click,
+    render,
+    unmount,
+    type DialogInTheDom,
+} from '../../Dialogs/for_Dialog/given/a_dialog_in_the_dom';
 import { CommandDialog } from '../CommandDialog';
 
 const { closeDialog, commandResult } = vi.hoisted(() => ({
@@ -13,31 +21,6 @@ const { closeDialog, commandResult } = vi.hoisted(() => ({
         isSuccess: true,
         isValid: true,
         validationResults: [],
-    },
-}));
-
-vi.mock('primereact/dialog', () => {
-    // PrimeReact 11's Dialog is compositional; each part is a pass-through that
-    // renders its children so the footer buttons and content reach the markup.
-    const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
-    return {
-        Dialog: {
-            Root: part, Portal: part, Backdrop: part, Positioner: part, Popup: part,
-            Header: part, Title: part, Close: part, Content: part, Footer: part,
-        },
-    };
-});
-
-vi.mock('primereact/button', () => ({
-    // PrimeReact 11 Button renders children (the v10 label/icon props are gone), and the
-    // dialog marks the button its focus trap should land on with `data-autofocus` rather
-    // than React's autoFocus prop. That marker identifies the confirm button, whose click
-    // this SSR render stands in for.
-    Button: (props: { 'data-autofocus'?: string; onClick?: () => Promise<void> | void; disabled?: boolean; children?: React.ReactNode }) => {
-        if (props['data-autofocus'] !== undefined && props.onClick) {
-            void props.onClick();
-        }
-        return React.createElement('button', { disabled: props.disabled }, props.children);
     },
 }));
 
@@ -52,12 +35,10 @@ vi.mock('@cratis/arc.react/commands', () => ({
         React.createElement('div', null, props.children),
     useCommandFormContext: () => ({
         isValid: true,
-        setCommandValues: () => {},
-        setCommandResult: () => {},
+        setCommandValues: () => undefined,
+        setCommandResult: () => undefined,
     }),
-    useCommandInstance: () => ({
-        execute: async () => commandResult,
-    }),
+    useCommandInstance: () => ({ execute: async () => commandResult }),
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
         React.createElement('div', null, props.field),
 }));
@@ -78,16 +59,19 @@ const TestDialog = () => {
 };
 
 describe('when confirming with close dialog and command result', () => {
-    beforeEach(() => {
+    let dialog: DialogInTheDom;
+
+    beforeEach(async () => {
         closeDialog.mockReset();
-        renderToStaticMarkup(React.createElement(TestDialog));
+        dialog = await render(React.createElement(TestDialog));
+        await click('Ok');
     });
 
-    it('should_close_once_with_ok_and_the_command_result', () => {
-        if (closeDialog.mock.calls.length !== 1) {
-            throw new Error(`Expected one closeDialog call, got ${closeDialog.mock.calls.length}`);
-        }
-        closeDialog.mock.calls[0][0].should.equal(3);
-        closeDialog.mock.calls[0][1].should.equal(commandResult);
+    afterEach(async () => unmount(dialog));
+
+    it('should close once with ok and the command result', () => {
+        expect(closeDialog.mock.calls).to.have.lengthOf(1);
+        expect(closeDialog.mock.calls[0][0]).to.equal(3);
+        expect(closeDialog.mock.calls[0][1]).to.equal(commandResult);
     });
 });

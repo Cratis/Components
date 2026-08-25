@@ -7,29 +7,15 @@ import { vi } from 'vitest';
 
 vi.mock('../../Dialogs/Dialog', () => ({
     Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
+        React.createElement(
+            'div',
+            { 'data-testid': 'dialog' },
+            props.buttons,
+            props.children,
+        ),
 }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, and
-// the Number part forwards its inline `style` so specs can assert the per-step
-// red/green indicator the wrapper applies directly to each step's number.
-vi.mock('primereact/stepper', () => {
-    const part = (name: string) => {
-        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties }) =>
-            React.createElement('div', { 'data-part': name, style: props.style }, props.children);
-        Component.displayName = name;
-        return Component;
-    };
-    return {
-        Stepper: {
-            Root: part('root'), List: part('list'), Step: part('step'),
-            Header: part('header'), Number: part('number'), Title: part('title'),
-            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
-        },
-    };
-});
-
-vi.mock('primereact/button', () => ({
+vi.mock('../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
         React.createElement('button', { disabled: props.disabled }, props.children),
 }));
@@ -81,12 +67,14 @@ describe('when a step contains a field with a validation error', () => {
 
     beforeEach(async () => {
         vi.resetModules();
-        StepperCommandDialog = (await import('../StepperCommandDialog')).StepperCommandDialog;
+        StepperCommandDialog = (await import('../StepperCommandDialog'))
+            .StepperCommandDialog;
         StepperPanel = (await import('../StepperPanel')).StepperPanel;
 
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {
+                // SAFETY: The generated command proxy constructor is erased by this SSR harness only.
                 command: TestCommand as unknown as new () => object,
                 visible: true,
                 title: 'Test Dialog',
@@ -94,22 +82,20 @@ describe('when a step contains a field with a validation error', () => {
             React.createElement(
                 StepperPanel,
                 { header: 'Step 1' },
-                React.createElement(FakeNameField, { value: (c: TestCommand) => c.name })
+                React.createElement(FakeNameField, { value: (c: TestCommand) => c.name }),
             ),
-            React.createElement(StepperPanel, { header: 'Step 2' }, 'No errors here')
+            React.createElement(StepperPanel, { header: 'Step 2' }, 'No errors here'),
         );
         html = renderToStaticMarkup(element);
     });
 
-    it('should_mark_the_invalid_step_number_with_the_error_color', () => {
-        // Step 1 (number "1") has a field error — its number circle should have the red error background
-        const step1Number = html.match(/<span data-part="number"[^>]*>1<\/span>|<div data-part="number"[^>]*>1<\/div>/);
-        (step1Number?.[0] ?? '').should.include('red');
+    it('should_mark_the_invalid_step', () => {
+        const steps = html.match(/<li[^>]*data-cratis-part="step"[^>]*>/g) ?? [];
+        (steps[0] ?? '').should.include('data-invalid="true"');
     });
 
-    it('should_not_mark_the_valid_step_number_with_the_error_color', () => {
-        // Step 2 (number "2") has no field errors — its number circle should not have the red error background
-        const step2Number = html.match(/<span data-part="number"[^>]*>2<\/span>|<div data-part="number"[^>]*>2<\/div>/);
-        (step2Number?.[0] ?? '').should.not.include('red');
+    it('should_not_mark_the_valid_step', () => {
+        const steps = html.match(/<li[^>]*data-cratis-part="step"[^>]*>/g) ?? [];
+        (steps[1] ?? '').should.not.include('data-invalid');
     });
 });

@@ -49,7 +49,7 @@ Review changed code against all Cratis project standards and produce a structure
 - [ ] `CommandDialog` from `@cratis/components/CommandDialog` for command dialogs
 - [ ] `Dialog` from `@cratis/components/Dialogs` for data-only dialogs
 - [ ] Never imports `Dialog` from `primereact/dialog` directly
-- [ ] No hard-coded hex/rgb colors — PrimeReact CSS variables only
+- [ ] No hard-coded hex/rgb colors — Cratis semantic CSS variables only
 - [ ] README.md present for complex component folders with multiple sub-components
 
 ## Performance
@@ -70,14 +70,15 @@ Classify findings: 🔴 measurable degradation at moderate load (fix before merg
 Start with: **Review result: ✅ Approved / ⚠️ Approved with comments / ❌ Changes requested**
 
 Then list issues:
-```
+
+````
 ### <file path>
 
 **[BLOCKING]** Line N: `problematic code`
 Because: explanation
 Fix:
 ```corrected code```
-```
+````
 
 End with a concise summary of what passed and what must change.
 

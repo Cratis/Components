@@ -1,10 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import type { Version } from './types';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { Properties } from './Properties';
+import { FaArrowRotateLeft, FaArrowRotateRight } from 'react-icons/fa6';
 
 /**
  * Props for {@link ReadModelView}.
@@ -124,7 +126,11 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     aria-label={labels.showRelatedEvents}
                                                     aria-pressed={isFlipped}
                                                 >
-                                                    <i className={`pi ${isFlipped ? 'pi-undo' : 'pi-refresh'}`} />
+                                                    {isFlipped ? (
+                                                        <FaArrowRotateLeft aria-hidden='true' />
+                                                    ) : (
+                                                        <FaArrowRotateRight aria-hidden='true' />
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>
@@ -148,7 +154,11 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     aria-label={labels.showReadModelSnapshot}
                                                     aria-pressed={isFlipped}
                                                 >
-                                                    <i className={`pi ${isFlipped ? 'pi-undo' : 'pi-refresh'}`} />
+                                                    {isFlipped ? (
+                                                        <FaArrowRotateLeft aria-hidden='true' />
+                                                    ) : (
+                                                        <FaArrowRotateRight aria-hidden='true' />
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>

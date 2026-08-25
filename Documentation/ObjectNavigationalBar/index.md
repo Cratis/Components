@@ -196,7 +196,7 @@ onNavigate(navigationPath.length - 1);  // Back button
 
 ## Styling
 
-The component uses PrimeReact styling:
+The component uses Cratis tokens and stable parts:
 
 - Border at bottom
 - Surface border color

@@ -1,141 +1,214 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type React from 'react';
-import { Select } from 'primereact/select';
 import type {
-    SelectRootProps,
-    SelectValueChangeEvent,
-} from '@primereact/types/primitive/select';
+    ButtonHTMLAttributes,
+    CSSProperties,
+    FocusEventHandler,
+    HTMLAttributes,
+    InputHTMLAttributes,
+    Key,
+    SelectHTMLAttributes,
+    SyntheticEvent,
+} from 'react';
+import {
+    Button as AriaButton,
+    ListBox,
+    ListBoxItem,
+    Popover,
+    Select as AriaSelect,
+    SelectValue,
+} from 'react-aria-components/Select';
+import {
+    Button as ComboBoxButton,
+    ComboBox,
+    ComboBoxValue,
+    Input,
+    ListBox as ComboBoxListBox,
+    ListBoxItem as ComboBoxListBoxItem,
+    Popover as ComboBoxPopover,
+} from 'react-aria-components/ComboBox';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 
-/**
- * Change event emitted by {@link Dropdown}. Wrapper-owned so the public API does
- * not leak a raw PrimeReact type; carries the newly selected `value` (a single
- * option value, or an array when `multiple` is set) plus the originating event.
- */
+/** Change event emitted by {@link Dropdown}. */
 export interface DropdownChangeEvent<T = unknown> {
-    /** The newly selected value. An array of values when `multiple` is set. */
+    /** Newly selected value, or an array when `multiple` is set. */
     value: T;
-
-    /** The underlying React event that produced the change, when available. */
-    originalEvent?: SelectValueChangeEvent['originalEvent'];
+    /** Underlying event when the native multiple-select path produced the change. */
+    originalEvent?: SyntheticEvent;
 }
 
-/**
- * Props for {@link Dropdown}. Wrapper-owned — the common single/multi select
- * surface every Cratis form needs, without exposing PrimeReact's internal
- * compositional Select parts.
- */
-export interface DropdownProps<T = unknown> {
-    /** The selected value. An array of values when `multiple` is set. */
-    value?: T;
+type DropdownTriggerAttributes = Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'tabIndex' | 'value'
+>;
 
-    /** Source array of option objects (or primitives). */
-    options?: unknown[];
+type DropdownOptionValue =
+    string | number | boolean | bigint | symbol | object | null | undefined;
 
-    /**
-     * Property name on each option object used as the visible label. When omitted and the
-     * options are objects carrying a `label`, that is used - the v10 `Dropdown` convention.
-     */
-    optionLabel?: string;
-
-    /**
-     * Property name on each option object used as the underlying value. When omitted and the
-     * options are objects carrying a `value`, that is used - the v10 `Dropdown` convention.
-     */
-    optionValue?: string;
-
-    /** Placeholder shown in the trigger when nothing is selected. */
-    placeholder?: string;
-
-    /** When true, shows a filter input inside the options popup. */
-    filter?: boolean;
-
-    /** Placeholder shown in the filter input. Defaults to {@link placeholder}. */
-    filterPlaceholder?: string;
-
-    /** When true, the dropdown accepts multiple selections. */
-    multiple?: boolean;
-
-    /** When true, shows a clear control that resets the selection. */
-    showClear?: boolean;
-
-    /** Renders the trigger in an invalid (error) state. */
-    invalid?: boolean;
-
-    /** Disables the control. */
-    disabled?: boolean;
-
-    /** Extra CSS class name forwarded to the Select root. */
-    className?: string;
-
-    /** Inline style forwarded to the Select root. */
-    style?: React.CSSProperties;
-
-    /** DOM id forwarded to the focusable combobox — pair it with a label's `htmlFor`. */
+/** Narrow migration aliases shared by the legacy `input` and `select` keys. */
+interface DropdownLegacyControlAttributes {
     id?: string;
-
-    /** Form field name forwarded to the Select root. */
-    name?: string;
-
-    /** Tab order for the control. */
-    tabIndex?: number;
-
-    /** Accessible name for the control (when no visible label is associated). */
+    className?: string;
+    style?: CSSProperties;
     'aria-label'?: string;
-
-    /** Id of the element that labels the control. */
     'aria-labelledby'?: string;
-
-    /** Id of the element that describes the control. */
     'aria-describedby'?: string;
+    'aria-invalid'?: boolean | 'true' | 'false' | 'grammar' | 'spelling';
+}
 
-    /** Fired when the selection changes. */
+/** Stable Cratis-owned parts for styling a {@link Dropdown}. */
+export interface DropdownParts {
+    /** Outer Dropdown wrapper. */
+    root?: HTMLAttributes<HTMLElement>;
+    /** Legacy visible-control part, mapped onto the current trigger/filter input. */
+    input?: DropdownLegacyControlAttributes;
+    /** Legacy select-root alias for class, style, identity, and ARIA migration. */
+    select?: DropdownLegacyControlAttributes;
+    /** Single-select trigger or filtered options button. */
+    trigger?: DropdownTriggerAttributes;
+    /** Selected value display. */
+    value?: HTMLAttributes<HTMLSpanElement>;
+    /** Selection clear button. */
+    clear?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Dropdown indicator. */
+    indicator?: HTMLAttributes<HTMLSpanElement>;
+    /** Portaled options popover. */
+    popover?: HTMLAttributes<HTMLDivElement>;
+    /** Options listbox. */
+    listbox?: HTMLAttributes<HTMLDivElement>;
+    /** One option. */
+    option?: HTMLAttributes<HTMLDivElement>;
+    /** Filter input. */
+    filter?: InputHTMLAttributes<HTMLInputElement>;
+    /** Native multiple-select element used when filtering is off. */
+    multiple?: SelectHTMLAttributes<HTMLSelectElement>;
+}
+
+/** Props for {@link Dropdown}. */
+export interface DropdownProps<T = unknown> {
+    /** Controlled selected value, or selected-value array in multiple mode. */
+    value?: T;
+    /** Available scalar values or option objects. */
+    options?: unknown[];
+    /** Property containing an option object's visible label. */
+    optionLabel?: string;
+    /** Property containing an option object's bound value. */
+    optionValue?: string;
+    /** Empty-selection text. */
+    placeholder?: string;
+    /** Enables the filterable combobox path. */
+    filter?: boolean;
+    /** Filter-input placeholder. */
+    filterPlaceholder?: string;
+    /** Enables multiple selection. */
+    multiple?: boolean;
+    /** Shows a clear-selection action. */
+    showClear?: boolean;
+    /** Marks the control invalid. */
+    invalid?: boolean;
+    /** Disables every control and clear action. */
+    disabled?: boolean;
+    /** Extra class name for the outer wrapper. */
+    className?: string;
+    /** Inline style for the outer wrapper. */
+    style?: CSSProperties;
+    /** DOM identity of the focusable primary control. */
+    id?: string;
+    /** Legacy identity alias mapped to {@link id}. */
+    inputId?: string;
+    /** Legacy popup class alias mapped to the `popover` part. */
+    panelClassName?: string;
+    /** Native form field name. */
+    name?: string;
+    /** Primary-control tab order. */
+    tabIndex?: number;
+    /** Accessible control name. */
+    'aria-label'?: string;
+    /** Id of an external labeling element. */
+    'aria-labelledby'?: string;
+    /** Id(s) of external descriptions. */
+    'aria-describedby'?: string;
+    /** Camel-case aliases retained for existing product wrappers. */
+    ariaLabel?: string;
+    /** Legacy camel-case alias for `aria-labelledby`. */
+    ariaLabelledBy?: string;
+    /** Legacy camel-case alias for `aria-describedby`. */
+    ariaDescribedBy?: string;
+    /** Legacy invalid-state alias. */
+    ariaInvalid?: boolean;
+    /** Invoked with the selected value(s). */
     onChange?: (event: DropdownChangeEvent<T>) => void;
-
-    /** Fired when focus leaves the control (rides the root's blur). */
-    onBlur?: React.FocusEventHandler<HTMLElement>;
-
-    /** PrimeReact pass-through configuration applied to the Select. */
-    pt?: SelectRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the Select. */
-    ptOptions?: SelectRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the Select. */
+    /** Invoked when focus leaves the Dropdown wrapper. */
+    onBlur?: FocusEventHandler<HTMLElement>;
+    /** Cratis-owned per-part attributes. */
+    pt?: DropdownParts;
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
+    ptOptions?: object;
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
-/**
- * Cratis single/multi select built on PrimeReact 11's compositional `Select`.
- *
- * PrimeReact 11 replaced the monolithic v10 `Dropdown` with a headless,
- * compositional `Select` (Root → Trigger/Value → Portal → Positioner → Popup →
- * List/Option). This wrapper assembles that composition once behind a small,
- * familiar `value` / `options` / `optionLabel` / `optionValue` / `onChange`
- * API so slices never touch the parts directly. `Select.List` auto-renders the
- * `options`, so no manual option mapping is needed.
- *
- * The options popup renders through `Select.Portal` and stacks correctly above
- * modal dialogs via PrimeReact 11's overlay manager — the v10 `appendTo` /
- * manual z-index workaround is no longer required.
- */
-/**
- * PrimeReact 10's `Dropdown` read `label` and `value` off option objects when no
- * `optionLabel` / `optionValue` was given; v11's `Select` compares the option object
- * itself against the value instead, so `[{ label, value }]` options with a scalar
- * `value` never match. Resolve the v10 convention here so those call sites keep working.
- */
+interface ResolvedOption {
+    key: string;
+    label: string;
+    value: unknown;
+    disabled: boolean;
+}
+
 const conventionalField = (
     options: unknown[] | undefined,
     field: 'label' | 'value',
 ): string | undefined => {
     const first = options?.[0];
-    return first !== null && typeof first === 'object' && field in (first as object)
+    return first !== null && typeof first === 'object' && field in first
         ? field
         : undefined;
 };
 
+const optionValue = (value: unknown): DropdownOptionValue => {
+    if (typeof value === 'function') return String(value);
+    return value as DropdownOptionValue;
+};
+
+const readField = (option: unknown, field: string | undefined): DropdownOptionValue => {
+    if (!field || option === null || typeof option !== 'object')
+        return optionValue(option);
+    return field in option
+        ? optionValue((option as Record<string, unknown>)[field])
+        : optionValue(option);
+};
+
+const resolveOptions = (
+    options: unknown[] | undefined,
+    optionLabel: string | undefined,
+    optionValue: string | undefined,
+): ResolvedOption[] =>
+    (options ?? []).map((option, index) => {
+        const value = readField(option, optionValue);
+        const labelValue = readField(option, optionLabel);
+        const keyValue = value ?? index;
+        const disabled =
+            option !== null && typeof option === 'object' && 'disabled' in option
+                ? Boolean((option as { disabled?: unknown }).disabled)
+                : false;
+
+        return {
+            key: `${typeof keyValue}:${String(keyValue)}:${index}`,
+            label: String(labelValue ?? value ?? ''),
+            value,
+            disabled,
+        };
+    });
+
+const classNames = (...values: Array<string | undefined>) =>
+    values.filter(Boolean).join(' ');
+
+/** A renderer-independent single or multiple select with stable Cratis parts. */
 export const Dropdown = <T = unknown,>({
     value,
     options,
@@ -151,73 +224,504 @@ export const Dropdown = <T = unknown,>({
     className,
     style,
     id,
+    inputId,
+    panelClassName,
     name,
     tabIndex,
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledby,
     'aria-describedby': ariaDescribedby,
+    ariaLabel: ariaLabelAlias,
+    ariaLabelledBy,
+    ariaDescribedBy,
+    ariaInvalid,
     onChange,
     onBlur,
     pt,
-    ptOptions,
-    unstyled,
 }: DropdownProps<T>) => {
-    return (
-        // `onBlur` rides the wrapping span because React blur bubbles (focusout).
-        <span onBlur={onBlur}>
-            <Select.Root
-                value={value}
-                options={options}
-                optionLabel={optionLabel}
-                optionValue={optionValue}
-                multiple={multiple}
-                invalid={invalid}
-                disabled={disabled}
-                className={className}
-                style={style}
-                name={name}
-                onValueChange={(event: SelectValueChangeEvent) =>
-                    onChange?.({
-                        value: event.value as T,
-                        originalEvent: event.originalEvent,
-                    })
-                }
-                pt={pt}
-                ptOptions={ptOptions}
-                unstyled={unstyled}
-            >
-                <Select.Trigger
-                    id={id}
-                    tabIndex={tabIndex}
-                    aria-label={ariaLabel}
-                    aria-labelledby={ariaLabelledby}
-                    aria-describedby={ariaDescribedby}
+    const { messages } = useCratisComponentsConfig();
+    const dropdownMessages = messages?.dropdown;
+    const showOptionsLabel =
+        pt?.trigger?.['aria-label'] ??
+        pt?.select?.['aria-label'] ??
+        dropdownMessages?.showOptions ??
+        'Show options';
+    const clearSelectionLabel =
+        pt?.clear?.['aria-label'] ??
+        dropdownMessages?.clearSelection ??
+        'Clear selection';
+    const resolvedOptions = resolveOptions(options, optionLabel, optionValue);
+    const selectedOption = resolvedOptions.find((option) =>
+        Object.is(option.value, value),
+    );
+    const selectedKey = selectedOption?.key ?? null;
+    const effectiveAriaLabel =
+        ariaLabel ??
+        ariaLabelAlias ??
+        pt?.input?.['aria-label'] ??
+        pt?.select?.['aria-label'];
+    const effectiveAriaLabelledby =
+        ariaLabelledby ??
+        ariaLabelledBy ??
+        pt?.input?.['aria-labelledby'] ??
+        pt?.select?.['aria-labelledby'];
+    const effectiveAriaDescribedby =
+        ariaDescribedby ??
+        ariaDescribedBy ??
+        pt?.input?.['aria-describedby'] ??
+        pt?.select?.['aria-describedby'];
+    const inputAriaInvalid = pt?.input?.['aria-invalid'] ?? pt?.select?.['aria-invalid'];
+    const effectiveInvalid =
+        invalid ??
+        ariaInvalid ??
+        (inputAriaInvalid === true ||
+            inputAriaInvalid === 'true' ||
+            inputAriaInvalid === 'grammar' ||
+            inputAriaInvalid === 'spelling');
+    const rootClassName = classNames(
+        'cratis-dropdown',
+        pt?.root?.className,
+        pt?.select?.className,
+        className,
+    );
+    const triggerId = id ?? inputId ?? pt?.trigger?.id ?? pt?.input?.id ?? pt?.select?.id;
+
+    const selectOption = (key: Key | null) => {
+        const option = resolvedOptions.find((candidate) => candidate.key === String(key));
+        onChange?.({ value: (option?.value ?? null) as T });
+    };
+    const selectOptions = (keys: readonly Key[]) => {
+        const selectedKeys = new Set(keys.map(String));
+        const values = resolvedOptions
+            .filter((option) => selectedKeys.has(option.key))
+            .map((option) => option.value);
+        onChange?.({ value: values as T });
+    };
+    // React Aria's Select trigger context does not forward aria-invalid from its Button child.
+    // Keep the Cratis validation contract on the actual focusable control after context props merge.
+    const applyTriggerState = (element: HTMLButtonElement | null) => {
+        if (!element) return;
+        if (effectiveInvalid) element.setAttribute('aria-invalid', 'true');
+        else element.removeAttribute('aria-invalid');
+        if (tabIndex !== undefined) element.tabIndex = tabIndex;
+    };
+
+    if (multiple) {
+        const selectedValues = Array.isArray(value) ? value : [];
+        const selectedKeys = resolvedOptions
+            .filter((option) =>
+                selectedValues.some((selected) => Object.is(selected, option.value)),
+            )
+            .map((option) => option.key);
+
+        if (filter) {
+            return (
+                <span
+                    {...pt?.root}
+                    className={rootClassName}
+                    data-cratis-part='root'
+                    data-invalid={effectiveInvalid || undefined}
+                    data-disabled={disabled || undefined}
+                    style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
+                    onBlur={onBlur}
                 >
-                    <Select.Value placeholder={placeholder} />
-                    {/* v11's parts render no glyph of their own - the icon is the composer's to supply.
-                        `Indicator` is the trigger's chevron; `Arrow` would be the popup's pointer. */}
-                    {showClear && (
-                        <Select.Clear>
-                            <i className='pi pi-times' />
-                        </Select.Clear>
-                    )}
-                    <Select.Indicator>
-                        <i className='pi pi-chevron-down' />
-                    </Select.Indicator>
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Positioner>
-                        <Select.Popup>
-                            {filter && (
-                                <Select.Filter
-                                    placeholder={filterPlaceholder ?? placeholder}
-                                />
+                    <ComboBox
+                        selectionMode='multiple'
+                        value={selectedKeys}
+                        onChange={selectOptions}
+                        isDisabled={disabled}
+                        isInvalid={effectiveInvalid}
+                        name={name}
+                        aria-label={effectiveAriaLabel}
+                        aria-labelledby={effectiveAriaLabelledby}
+                        aria-describedby={effectiveAriaDescribedby}
+                        allowsEmptyCollection
+                        className='cratis-dropdown__combobox'
+                    >
+                        <ComboBoxValue
+                            {...pt?.value}
+                            placeholder={placeholder}
+                            className={classNames(
+                                'cratis-dropdown__value',
+                                pt?.value?.className,
                             )}
-                            <Select.List />
-                        </Select.Popup>
-                    </Select.Positioner>
-                </Select.Portal>
-            </Select.Root>
+                            data-cratis-part='value'
+                        />
+                        <Input
+                            {...pt?.filter}
+                            id={triggerId}
+                            placeholder={filterPlaceholder ?? placeholder}
+                            tabIndex={tabIndex}
+                            aria-invalid={effectiveInvalid || undefined}
+                            className={classNames(
+                                'cratis-dropdown__filter',
+                                pt?.input?.className,
+                                pt?.filter?.className,
+                            )}
+                            style={{ ...pt?.input?.style, ...pt?.filter?.style }}
+                            data-cratis-part='filter'
+                        />
+                        <ComboBoxButton
+                            {...pt?.trigger}
+                            className={classNames(
+                                'cratis-dropdown__indicator',
+                                pt?.trigger?.className,
+                            )}
+                            data-cratis-part='trigger'
+                            aria-label={showOptionsLabel}
+                        >
+                            <span aria-hidden='true'>⌄</span>
+                        </ComboBoxButton>
+                        {showClear && selectedKeys.length > 0 && (
+                            <button
+                                {...pt?.clear}
+                                type='button'
+                                disabled={disabled}
+                                className={classNames(
+                                    'cratis-dropdown__clear',
+                                    pt?.clear?.className,
+                                )}
+                                data-cratis-part='clear'
+                                aria-label={clearSelectionLabel}
+                                onClick={() => onChange?.({ value: [] as T })}
+                            >
+                                <span aria-hidden='true'>×</span>
+                            </button>
+                        )}
+                        <ComboBoxPopover
+                            {...pt?.popover}
+                            className={classNames(
+                                'cratis-dropdown__popover',
+                                pt?.popover?.className,
+                                panelClassName,
+                            )}
+                            style={{
+                                zIndex: 'var(--cratis-z-index-overlay)',
+                                ...pt?.popover?.style,
+                            }}
+                            data-cratis-part='popover'
+                        >
+                            <ComboBoxListBox
+                                {...pt?.listbox}
+                                items={resolvedOptions}
+                                className={classNames(
+                                    'cratis-dropdown__listbox',
+                                    pt?.listbox?.className,
+                                )}
+                                data-cratis-part='listbox'
+                            >
+                                {(option) => (
+                                    <ComboBoxListBoxItem
+                                        {...pt?.option}
+                                        id={option.key}
+                                        textValue={option.label}
+                                        isDisabled={option.disabled}
+                                        className={classNames(
+                                            'cratis-dropdown__option',
+                                            pt?.option?.className,
+                                        )}
+                                        data-cratis-part='option'
+                                    >
+                                        {option.label}
+                                    </ComboBoxListBoxItem>
+                                )}
+                            </ComboBoxListBox>
+                        </ComboBoxPopover>
+                    </ComboBox>
+                </span>
+            );
+        }
+
+        return (
+            <span
+                {...pt?.root}
+                className={rootClassName}
+                data-cratis-part='root'
+                data-invalid={effectiveInvalid || undefined}
+                data-disabled={disabled || undefined}
+                style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
+                onBlur={onBlur}
+            >
+                <select
+                    {...pt?.multiple}
+                    id={triggerId ?? pt?.multiple?.id}
+                    name={name}
+                    multiple
+                    disabled={disabled}
+                    value={selectedKeys}
+                    tabIndex={tabIndex}
+                    aria-label={effectiveAriaLabel}
+                    aria-labelledby={effectiveAriaLabelledby}
+                    aria-describedby={effectiveAriaDescribedby}
+                    aria-invalid={effectiveInvalid || undefined}
+                    className={classNames(
+                        'cratis-dropdown__multiple',
+                        pt?.input?.className,
+                        pt?.multiple?.className,
+                    )}
+                    data-cratis-part='multiple'
+                    onChange={(event) => {
+                        const keys = Array.from(
+                            event.currentTarget.selectedOptions,
+                            (option) => option.value,
+                        );
+                        const values = resolvedOptions
+                            .filter((option) => keys.includes(option.key))
+                            .map((option) => option.value);
+                        onChange?.({ value: values as T, originalEvent: event });
+                    }}
+                >
+                    {resolvedOptions.map((option) => (
+                        <option
+                            key={option.key}
+                            value={option.key}
+                            disabled={option.disabled}
+                        >
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+                {showClear && selectedKeys.length > 0 && (
+                    <button
+                        {...pt?.clear}
+                        type='button'
+                        disabled={disabled}
+                        className={classNames(
+                            'cratis-dropdown__clear',
+                            pt?.clear?.className,
+                        )}
+                        data-cratis-part='clear'
+                        aria-label={clearSelectionLabel}
+                        onClick={() => onChange?.({ value: [] as T })}
+                    >
+                        <span aria-hidden='true'>×</span>
+                    </button>
+                )}
+            </span>
+        );
+    }
+
+    if (filter) {
+        return (
+            <span
+                {...pt?.root}
+                className={rootClassName}
+                data-cratis-part='root'
+                data-invalid={effectiveInvalid || undefined}
+                data-disabled={disabled || undefined}
+                style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
+                onBlur={onBlur}
+            >
+                <ComboBox
+                    value={selectedKey}
+                    onChange={selectOption}
+                    isDisabled={disabled}
+                    isInvalid={effectiveInvalid}
+                    name={name}
+                    aria-label={effectiveAriaLabel}
+                    aria-labelledby={effectiveAriaLabelledby}
+                    aria-describedby={effectiveAriaDescribedby}
+                    allowsEmptyCollection
+                    className='cratis-dropdown__combobox'
+                >
+                    <Input
+                        {...pt?.filter}
+                        id={triggerId}
+                        placeholder={filterPlaceholder ?? placeholder}
+                        tabIndex={tabIndex}
+                        aria-invalid={effectiveInvalid || undefined}
+                        className={classNames(
+                            'cratis-dropdown__filter',
+                            pt?.input?.className,
+                            pt?.filter?.className,
+                        )}
+                        style={{ ...pt?.input?.style, ...pt?.filter?.style }}
+                        data-cratis-part='filter'
+                    />
+                    <ComboBoxButton
+                        {...pt?.trigger}
+                        className={classNames(
+                            'cratis-dropdown__indicator',
+                            pt?.trigger?.className,
+                        )}
+                        data-cratis-part='trigger'
+                        aria-label={showOptionsLabel}
+                    >
+                        <span aria-hidden='true'>⌄</span>
+                    </ComboBoxButton>
+                    {showClear && selectedKey !== null && (
+                        <button
+                            {...pt?.clear}
+                            type='button'
+                            disabled={disabled}
+                            className={classNames(
+                                'cratis-dropdown__clear',
+                                pt?.clear?.className,
+                            )}
+                            data-cratis-part='clear'
+                            aria-label={clearSelectionLabel}
+                            onClick={() => onChange?.({ value: null as T })}
+                        >
+                            <span aria-hidden='true'>×</span>
+                        </button>
+                    )}
+                    <ComboBoxPopover
+                        {...pt?.popover}
+                        className={classNames(
+                            'cratis-dropdown__popover',
+                            pt?.popover?.className,
+                            panelClassName,
+                        )}
+                        style={{
+                            zIndex: 'var(--cratis-z-index-overlay)',
+                            ...pt?.popover?.style,
+                        }}
+                        data-cratis-part='popover'
+                    >
+                        <ComboBoxListBox
+                            {...pt?.listbox}
+                            items={resolvedOptions}
+                            className={classNames(
+                                'cratis-dropdown__listbox',
+                                pt?.listbox?.className,
+                            )}
+                            data-cratis-part='listbox'
+                        >
+                            {(option) => (
+                                <ComboBoxListBoxItem
+                                    {...pt?.option}
+                                    id={option.key}
+                                    textValue={option.label}
+                                    isDisabled={option.disabled}
+                                    className={classNames(
+                                        'cratis-dropdown__option',
+                                        pt?.option?.className,
+                                    )}
+                                    data-cratis-part='option'
+                                >
+                                    {option.label}
+                                </ComboBoxListBoxItem>
+                            )}
+                        </ComboBoxListBox>
+                    </ComboBoxPopover>
+                </ComboBox>
+            </span>
+        );
+    }
+
+    return (
+        <span
+            {...pt?.root}
+            className={rootClassName}
+            data-cratis-part='root'
+            data-invalid={effectiveInvalid || undefined}
+            data-disabled={disabled || undefined}
+            style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
+            onBlur={onBlur}
+        >
+            <AriaSelect
+                value={selectedKey}
+                onChange={selectOption}
+                isDisabled={disabled}
+                isInvalid={effectiveInvalid}
+                name={name}
+                aria-label={effectiveAriaLabel}
+                aria-labelledby={effectiveAriaLabelledby}
+                aria-describedby={effectiveAriaDescribedby}
+                className='cratis-dropdown__select'
+            >
+                <AriaButton
+                    {...pt?.trigger}
+                    ref={applyTriggerState}
+                    id={triggerId}
+                    excludeFromTabOrder={tabIndex === -1}
+                    aria-invalid={effectiveInvalid || undefined}
+                    className={classNames(
+                        'cratis-dropdown__trigger',
+                        pt?.input?.className,
+                        pt?.trigger?.className,
+                    )}
+                    style={{ ...pt?.input?.style, ...pt?.trigger?.style }}
+                    data-cratis-part='trigger'
+                >
+                    <SelectValue
+                        {...pt?.value}
+                        className={classNames(
+                            'cratis-dropdown__value',
+                            pt?.value?.className,
+                        )}
+                        data-cratis-part='value'
+                    >
+                        {selectedOption?.label ?? placeholder}
+                    </SelectValue>
+                    <span
+                        {...pt?.indicator}
+                        className={classNames(
+                            'cratis-dropdown__indicator',
+                            pt?.indicator?.className,
+                        )}
+                        data-cratis-part='indicator'
+                        aria-hidden='true'
+                    >
+                        ⌄
+                    </span>
+                </AriaButton>
+                {showClear && selectedKey !== null && (
+                    <button
+                        {...pt?.clear}
+                        type='button'
+                        disabled={disabled}
+                        className={classNames(
+                            'cratis-dropdown__clear',
+                            pt?.clear?.className,
+                        )}
+                        data-cratis-part='clear'
+                        aria-label={clearSelectionLabel}
+                        onClick={() => onChange?.({ value: null as T })}
+                    >
+                        <span aria-hidden='true'>×</span>
+                    </button>
+                )}
+                <Popover
+                    {...pt?.popover}
+                    className={classNames(
+                        'cratis-dropdown__popover',
+                        pt?.popover?.className,
+                        panelClassName,
+                    )}
+                    style={{
+                        zIndex: 'var(--cratis-z-index-overlay)',
+                        ...pt?.popover?.style,
+                    }}
+                    data-cratis-part='popover'
+                >
+                    <ListBox
+                        {...pt?.listbox}
+                        items={resolvedOptions}
+                        className={classNames(
+                            'cratis-dropdown__listbox',
+                            pt?.listbox?.className,
+                        )}
+                        data-cratis-part='listbox'
+                    >
+                        {(option) => (
+                            <ListBoxItem
+                                {...pt?.option}
+                                id={option.key}
+                                textValue={option.label}
+                                isDisabled={option.disabled}
+                                className={classNames(
+                                    'cratis-dropdown__option',
+                                    pt?.option?.className,
+                                )}
+                                data-cratis-part='option'
+                            >
+                                {option.label}
+                            </ListBoxItem>
+                        )}
+                    </ListBox>
+                </Popover>
+            </AriaSelect>
         </span>
     );
 };

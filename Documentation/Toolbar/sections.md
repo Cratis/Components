@@ -8,12 +8,12 @@ import { Toolbar, ToolbarButton, ToolbarSeparator } from '@cratis/components/Too
 function ZoomToolbar() {
     return (
         <Toolbar orientation='horizontal'>
-            <ToolbarButton icon='pi pi-th-large' title='Overview' tooltipPosition='bottom' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Overview' tooltipPosition='bottom' />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-minus' title='Zoom out' tooltipPosition='bottom' />
-            <ToolbarButton icon='pi pi-plus' title='Zoom in' tooltipPosition='bottom' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Zoom out' tooltipPosition='bottom' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Zoom in' tooltipPosition='bottom' />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-question-circle' title='Help' tooltipPosition='bottom' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Help' tooltipPosition='bottom' />
         </Toolbar>
     );
 }
@@ -27,8 +27,8 @@ In a vertical toolbar (the default) the separator is a horizontal rule:
 
 ```tsx
 <Toolbar>
-    <ToolbarButton icon='pi pi-pencil' title='Draw' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw' />
     <ToolbarSeparator />
-    <ToolbarButton icon='pi pi-undo' title='Undo' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Undo' />
 </Toolbar>
 ```

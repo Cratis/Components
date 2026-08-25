@@ -1,95 +1,94 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { InputColor } from 'primereact/inputcolor';
-import { parseColor } from '@primereact/headless/inputcolor';
-import type { InputColorRootProps, InputColorRootChangeEvent } from '@primereact/types/primitive/inputcolor';
-import React from 'react';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
-/** Parse a bare hex string (no leading `#`) into a color, falling back on invalid input. */
-const toColor = (hex: string, fallback: string) => {
-    const candidate = typeof hex === 'string' && hex.length > 0 ? hex : fallback;
-    try {
-        return parseColor(`#${candidate}`);
-    } catch {
-        return parseColor(`#${fallback}`);
-    }
-};
+/** Stable part attributes for {@link ColorPickerField}. */
+export interface ColorPickerParts {
+    /** Field wrapper. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Native color input. */
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Selected hexadecimal value output. */
+    value?: HTMLAttributes<HTMLOutputElement>;
+}
 
-/**
- * Component-level props for {@link ColorPickerField}.
- */
-interface ColorPickerFieldComponentProps extends WrappedFieldProps<string> {
-    /**
-     * When true, renders the color picker inline rather than as a popover.
-     *
-     * PrimeReact 11's InputColor is composed inline (area + sliders + swatch); the
-     * v10 popover mode is not reproduced here. Accepted for API compatibility.
-     */
+interface ColorPickerFieldComponentProps
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     inline?: boolean;
-
-    /** Initial color shown when the bound property is empty. Defaults to `'000000'`. */
     defaultColor?: string;
-
-    /** Extra CSS class name forwarded to the underlying InputColor. */
     className?: string;
-
-    /** PrimeReact pass-through configuration applied to the underlying InputColor. */
-    pt?: InputColorRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying InputColor. */
-    ptOptions?: InputColorRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying InputColor. */
+    pt?: ColorPickerParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A color picker field bound to a `string` property on a Cratis Arc command,
- * holding a hex color value without the leading `#` (e.g. `"60a5fa"`). Set
- * `inline` to render the picker inline rather than as a popover. See
- * {@link InputTextField} for the full `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <ColorPickerField value={c => c.accentColor} title="Accent" inline />
- * ```
- */
+const normalizeHex = (value: string, fallback: string) =>
+    /^[0-9a-f]{6}$/i.test(value) ? value : fallback;
+
+/** A native color picker bound to a bare six-digit hex string on an Arc command. */
 export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProps>(
     (props) => {
-        const defaultColor = props.defaultColor ?? '000000';
-        // InputColor exposes no `invalid` prop, so surface the invalid state as a class on the
-        // wrapper — the same `p-invalid` token the other fields emit; it no-ops when unstyled.
-        const invalidClass = props.invalid ? 'p-invalid' : undefined;
-        const className = [invalidClass, props.className].filter(Boolean).join(' ') || undefined;
-
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        const value = normalizeHex(
+            props.value,
+            normalizeHex(props.defaultColor ?? '000000', '000000'),
+        );
         return (
-            // PrimeReact 11's InputColor is compositional (area + hue slider + swatch).
-            // `onBlur` rides the wrapping div because React blur bubbles (focusout).
-            <div className={className} onBlur={props.onBlur}>
-                <InputColor.Root
-                    value={toColor(props.value, defaultColor)}
-                    onValueChange={(e: InputColorRootChangeEvent) => props.onChange(e.value.toString('hex').replace('#', ''))}
-                    pt={props.pt}
-                    ptOptions={props.ptOptions}
-                    unstyled={props.unstyled}>
-                    <InputColor.Area>
-                        <InputColor.AreaBackground />
-                        <InputColor.AreaHandle />
-                    </InputColor.Area>
-                    <InputColor.Slider>
-                        <InputColor.SliderTrack />
-                        <InputColor.SliderHandle />
-                    </InputColor.Slider>
-                    <InputColor.Swatch>
-                        <InputColor.SwatchBackground />
-                    </InputColor.Swatch>
-                </InputColor.Root>
+            <div
+                {...props.pt?.root}
+                className={[
+                    'cratis-color-field',
+                    props.pt?.root?.className,
+                    props.className,
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
+                onBlur={props.onBlur}
+                data-cratis-part='root'
+                data-invalid={props.invalid || undefined}
+                data-inline={props.inline || undefined}
+            >
+                <input
+                    {...props.pt?.input}
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    type='color'
+                    value={`#${value}`}
+                    onChange={props.onChange}
+                    aria-invalid={props.invalid || undefined}
+                    className={['cratis-color-field__input', props.pt?.input?.className]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='input'
+                />
+                <output
+                    {...props.pt?.value}
+                    className={['cratis-color-field__value', props.pt?.value?.className]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='value'
+                >
+                    #{value}
+                </output>
+                {accessibility.hiddenError}
             </div>
         );
     },
     {
         defaultValue: '',
-        extractValue: (e: unknown) => typeof e === 'string' ? e : ''
-    }
+        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
+            event.target.value.replace('#', ''),
+    },
 );

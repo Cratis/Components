@@ -1,283 +1,134 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Dialog as PrimeDialog } from 'primereact/dialog';
-import type {
-    DialogRootProps,
-    DialogRootChangeEvent,
-} from '@primereact/types/primitive/dialog';
-import { Button } from 'primereact/button';
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
+import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
+import { Modal, ModalOverlay } from 'react-aria-components/Modal';
+import type {
+    ButtonHTMLAttributes,
+    CSSProperties,
+    HTMLAttributes,
+    ReactNode,
+} from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { DialogInitialFocus } from './DialogInitialFocus';
-import type { CSSProperties, ReactNode } from 'react';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 
-/**
- * Callback used by {@link Dialog} (and its wrappers) when the dialog is about to
- * close. Returning `false` (sync or via promise) keeps the dialog open — useful
- * for confirming or surfacing an error to the user before letting it close.
- */
+/** Callback handling a typed dialog result; return `false` to keep the dialog open. */
 export type CloseDialog = (
     result: DialogResult,
 ) => boolean | void | Promise<boolean> | Promise<void>;
 
-/**
- * Callback invoked when the user activates the confirm action (Ok / Yes).
- * Return `false` (sync or via promise) to keep the dialog open after the
- * confirm callback completes.
- */
+/** Confirmation callback; return `true` to permit host closure. */
 export type ConfirmCallback = () => boolean | void | Promise<boolean> | Promise<void>;
-
-/**
- * Callback invoked when the user activates the cancel / dismiss action.
- * Return `false` to keep the dialog open after the cancel callback completes.
- */
+/** Cancellation callback; return `true` to permit host closure. */
 export type CancelCallback = () => boolean | void | Promise<boolean> | Promise<void>;
 
-/**
- * Props for {@link Dialog}.
- */
+type DialogPartAttributes<TElement> = HTMLAttributes<TElement> & {
+    [attribute: `data-${string}`]: string | number | boolean | undefined;
+};
+
+type DialogButtonAttributes = Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'value'
+>;
+
+/** Stable Cratis-owned parts for styling a {@link Dialog}. */
+export interface DialogParts {
+    /** Viewport backdrop and dismissal surface. */
+    backdrop?: DialogPartAttributes<HTMLDivElement>;
+    /** Viewport positioning wrapper. */
+    positioner?: DialogPartAttributes<HTMLDivElement>;
+    /** Modal root. */
+    root?: DialogPartAttributes<HTMLDivElement>;
+    /** Header containing title and optional close action. */
+    header?: DialogPartAttributes<HTMLElement>;
+    /** Dialog heading. */
+    title?: DialogPartAttributes<HTMLHeadingElement>;
+    /** Header close button. */
+    close?: DialogButtonAttributes;
+    /** Dialog content region. */
+    content?: DialogPartAttributes<HTMLDivElement>;
+    /** Footer action region. */
+    footer?: DialogPartAttributes<HTMLElement>;
+    /** Primary confirmation button. */
+    confirm?: DialogButtonAttributes;
+    /** Secondary dismissal button(s). */
+    cancel?: DialogButtonAttributes;
+}
+
+/** Props for {@link Dialog}. */
 export interface DialogProps {
-    /** Header text shown at the top of the dialog. */
+    /** Dialog heading. */
     title: string;
-
-    /** Controls visibility. Defaults to `true`; set to `false` to hide without unmounting. */
+    /** Controlled open state. Defaults to `true`. */
     visible?: boolean;
-
-    /**
-     * Catch-all close callback invoked for both confirm and cancel paths when no
-     * matching {@link onConfirm} / {@link onCancel} handler is supplied. Receives
-     * the {@link DialogResult} the user produced.
-     */
+    /** Combined result callback used when a dedicated confirm/cancel callback is absent. */
     onClose?: CloseDialog;
-
-    /** Invoked when the user activates the confirm action (Ok / Yes). */
+    /** Invoked by primary confirmation actions. */
     onConfirm?: ConfirmCallback;
-
-    /** Invoked when the user activates the cancel / dismiss action. */
+    /** Invoked by cancellation actions. */
     onCancel?: CancelCallback;
-
-    /**
-     * Footer button configuration. Pass a {@link DialogButtons} value for one of
-     * the predefined sets (`Ok`, `OkCancel`, `YesNo`, `YesNoCancel`), `null` for
-     * no footer, or a custom React node to fully render your own footer.
-     * Defaults to `DialogButtons.OkCancel`.
-     *
-     * ⚠️ **Anything other than a {@link DialogButtons} value also opts the dialog
-     * out of three unrelated behaviors**, because the dialog can no longer know
-     * which of your buttons means "confirm" and which means "dismiss":
-     * the header close (X) is removed, `Escape` no longer closes, and
-     * `onClose` / `onCancel` / `onConfirm` are never invoked — including the
-     * confirm handler that {@link CommandDialog} uses to execute its command.
-     * A custom footer must therefore close the dialog itself through
-     * `useDialogContext().closeDialog(...)`, or opt the dismiss affordances back
-     * in explicitly with {@link dismissable}.
-     *
-     * Reach for {@link initialFocus} rather than a custom footer when all you
-     * want is to change which button starts out focused.
-     */
+    /** Predefined Arc buttons, custom footer content, or `null` for no footer. */
     buttons?: DialogButtons | ReactNode;
-
-    /**
-     * Where keyboard focus lands when the dialog becomes visible. Defaults to
-     * {@link DialogInitialFocus.Confirm}, which focuses the `Ok` / `Yes` button.
-     *
-     * Set it to {@link DialogInitialFocus.Cancel} or
-     * {@link DialogInitialFocus.Content} for a dialog whose confirm action is
-     * destructive and needs no input to become valid — otherwise the confirm
-     * button sits armed under the same `Enter` that opened the dialog, and key
-     * auto-repeat (or the habit of pressing `Enter` twice) collapses a two-step
-     * confirmation into one.
-     */
+    /** Initial focus target. Defaults to the confirmation action. */
     initialFocus?: DialogInitialFocus;
-
     /** Dialog body content. */
     children: ReactNode;
-
-    /** Dialog width, any valid CSS length. Defaults to `'450px'`. */
+    /** CSS width. Defaults to `450px`. */
     width?: string;
-
-    /** Inline style forwarded to the dialog popup (the visible dialog box). */
+    /** Modal-root inline style. */
     style?: CSSProperties;
-
-    /** Inline style forwarded to the dialog's inner content area. */
+    /** Content-region inline style. */
     contentStyle?: CSSProperties;
-
     /**
-     * When true, allows the user to resize the dialog. Defaults to `false`.
-     *
-     * PrimeReact 11's headless Dialog has no built-in resize handle, so this is
-     * currently accepted for API compatibility and has no effect. Kept so
-     * existing call sites continue to type-check.
+     * @deprecated The Cratis dialog is viewport-bounded rather than resizable. Remove this prop.
      */
     resizable?: boolean;
-
-    /**
-     * Controls whether the confirm button is enabled. Defaults to `true` when
-     * omitted; set to `false` to disable confirm (e.g. when form validation
-     * fails).
-     */
+    /** Whether the primary action is enabled. Defaults to `true`. */
     isValid?: boolean;
-
-    /**
-     * When true, disables all dialog buttons and shows a loading state on the
-     * confirm button. Used by command-executing wrappers while a command runs.
-     */
+    /** Disables every action and dismissal path while work is in flight. */
     isBusy?: boolean;
-
-    /** Override the Ok button label. Defaults to `'Ok'`. */
+    /** Label for the Ok action. Falls back to the provider's `dialog.ok` message, then `'Ok'`. */
     okLabel?: string;
-
-    /** Override the Cancel button label. Defaults to `'Cancel'`. */
+    /** Label for the Cancel action. Falls back to the provider's `dialog.cancel` message, then `'Cancel'`. */
     cancelLabel?: string;
-
-    /** Override the Yes button label. Defaults to `'Yes'`. */
+    /** Label for the Yes action. Falls back to the provider's `dialog.yes` message, then `'Yes'`. */
     yesLabel?: string;
-
-    /** Override the No button label. Defaults to `'No'`. */
+    /** Label for the No action. Falls back to the provider's `dialog.no` message, then `'No'`. */
     noLabel?: string;
-
-    /** Accessible name for the header close button. Override to localize. Defaults to `'Close'`. */
+    /** Accessible label for the header close button. Falls back to the provider's `dialog.close` message, then `'Close'`. */
     closeAriaLabel?: string;
-
-    /**
-     * Whether the dialog can be dismissed via the header close button, a
-     * backdrop click, or the Escape key. When omitted, the dialog is
-     * dismissable exactly when a predefined {@link DialogButtons} set is used
-     * (a custom `ReactNode` footer or `null` footer is not dismissable by
-     * default). Set it explicitly to keep a dismiss affordance with a custom
-     * footer — as {@link StepperCommandDialog} does for its wizard chrome.
-     */
+    /** Enables header, Escape, and backdrop dismissal when not busy. */
     dismissable?: boolean;
-
-    /**
-     * Extra CSS class names forwarded to the underlying PrimeReact Dialog root.
-     */
+    /** Extra class name for the modal root. */
     className?: string;
-
+    /** Cratis-owned per-part attributes. */
+    pt?: DialogParts;
     /**
-     * PrimeReact pass-through configuration. Applies to the underlying Dialog's
-     * slots (`root`, `positioner`, `backdrop`, `header`, `title`, `close`,
-     * `content`, `footer`, …) — see PrimeReact's Dialog `pt` reference for the
-     * available keys. Use this (or set a global preset on
-     * `CratisComponentsProvider`) to take full control of styling.
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
      */
-    pt?: DialogRootProps['pt'];
-
+    ptOptions?: object;
     /**
-     * PrimeReact pass-through options. Controls merge vs. replace behavior for
-     * the {@link pt} preset.
-     */
-    ptOptions?: DialogRootProps['ptOptions'];
-
-    /**
-     * When true, disables every base PrimeReact style on the underlying Dialog.
-     * Combine with {@link pt} or with the global setting from
-     * `CratisComponentsProvider` to fully restyle.
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
      */
     unstyled?: boolean;
 }
 
+const classNames = (...values: Array<string | undefined>) =>
+    values.filter(Boolean).join(' ');
+
+const subscribeToBrowserEnvironment = () => () => undefined;
+const useIsBrowser = () =>
+    useSyncExternalStore(
+        subscribeToBrowserEnvironment,
+        () => true,
+        () => false,
+    );
+
 /**
- * Cratis wrapper around PrimeReact's `Dialog` that adds the surface every Arc
- * app needs on top of PrimeReact's bare modal:
- *
- * - **Typed footer-button enum** (`DialogButtons.Ok` / `OkCancel` / `YesNo` /
- *   `YesNoCancel`) with localizable labels. Pass `null` for a footer-less
- *   dialog with your own buttons, or a `ReactNode` to fully render the
- *   footer yourself.
- * - **Confirm/cancel callback contract** (`onConfirm`, `onCancel`, `onClose`)
- *   where returning `false` (sync or via promise) keeps the dialog open.
- *   This is the contract used to surface inline command failures: when a
- *   command's `execute()` returns `IsSuccess: false`, the dialog stays open
- *   and the form re-renders with field-level errors.
- * - **Busy state** (`isBusy`) that disables every action and shows a loading
- *   spinner on the confirm button. Command-executing wrappers
- *   ({@link CommandDialog}, {@link StepperCommandDialog}) flip this
- *   automatically while a command runs.
- * - **Validity gate** (`isValid`) that disables the confirm button without
- *   disabling the cancel button. Used by command-executing wrappers to
- *   block submission while form validation fails.
- * - **Initial focus** (`initialFocus`) choosing which element inside the
- *   dialog the keyboard lands on when it opens.
- *
- * ## Initial focus
- *
- * By default the confirm button is focused when the dialog opens, so the
- * common "read it, press Enter" flow costs one keystroke. That default also
- * *arms* the confirm button: browsers fire `click` from the `keydown` of
- * `Enter`, so the key still held down from opening the dialog — or the very
- * ordinary habit of pressing `Enter` twice — confirms it immediately.
- *
- * A dialog whose confirm action is destructive **and** needs no input to
- * become valid gets no protection from `isValid`, because there is nothing
- * to fill in. Give those dialogs an explicit
- * {@link DialogInitialFocus} instead:
- *
- * ```tsx
- * <Dialog title="Delete personal data?"
- *         buttons={DialogButtons.YesNo}
- *         initialFocus={DialogInitialFocus.Cancel}
- *         onConfirm={...} onCancel={...}>
- *     This permanently removes the person and every record about them.
- * </Dialog>
- * ```
- *
- * `Cancel` focuses the dismissing button (`Cancel`, or `No` when the set has
- * no `Cancel`); `Content` focuses the dialog's title so nothing at all is
- * armed and screen readers announce the dialog from the top. Both keep the
- * footer, the close (X), `Escape`, and every callback intact — unlike
- * replacing `buttons` with a custom node.
- *
- * ## Arc dialog host integration
- *
- * When mounted inside a `<DialogHost>` from `@cratis/arc.react/dialogs`, the
- * Dialog automatically discovers the host through `useDialogContext()` and
- * closes through it on confirm/cancel — no manual `closeDialog` wiring at
- * the call site. The typical pattern at the host's request site:
- *
- * ```tsx
- * import { useDialog, DialogResult } from '@cratis/arc.react/dialogs';
- *
- * const [DeleteProjectDialog, showDeleteProjectDialog] = useDialog(DeleteProject);
- *
- * const onDeleteClick = async () => {
- *     const [result] = await showDeleteProjectDialog();
- *     if (result === DialogResult.Yes) {
- *         // user confirmed
- *     }
- * };
- * ```
- *
- * Inside the dialog component itself the close path goes through
- * `useDialogContext()`:
- *
- * ```tsx
- * import { Dialog, DialogButtons, DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
- *
- * export const DeleteProject = () => {
- *     const { closeDialog } = useDialogContext();
- *     return (
- *         <Dialog title="Delete project?" buttons={DialogButtons.YesNo}
- *                 onConfirm={() => closeDialog(DialogResult.Yes)}
- *                 onCancel={() => closeDialog(DialogResult.No)}>
- *             This action cannot be undone.
- *         </Dialog>
- *     );
- * };
- * ```
- *
- * The Dialog also works **outside** a host — the `useDialogContext()` call is
- * wrapped in a try/catch so standalone use does not throw.
- *
- * ## Styling
- *
- * Pass `pt`, `ptOptions`, `unstyled`, or `className` to forward straight to
- * the underlying PrimeReact Dialog. See the [Styling section](../../Documentation/Styling/index.md)
- * for the supported styling options and the
- * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md)
- * for available slots.
- *
- * @param props - {@link DialogProps}.
+ * A modal dialog with Arc host integration, typed footer actions, busy/validity
+ * state, controlled dismissal, and stable Cratis-owned styling parts.
  */
 export const Dialog = ({
     title,
@@ -291,24 +142,24 @@ export const Dialog = ({
     width = '450px',
     style,
     contentStyle,
-    // `resizable` is accepted for API compatibility but has no effect on
-    // PrimeReact 11's headless Dialog, so it is intentionally not destructured.
     isValid,
     isBusy = false,
-    okLabel = 'Ok',
-    cancelLabel = 'Cancel',
-    yesLabel = 'Yes',
-    noLabel = 'No',
-    closeAriaLabel = 'Close',
+    okLabel,
+    cancelLabel,
+    yesLabel,
+    noLabel,
+    closeAriaLabel,
     dismissable,
     className,
     pt,
-    ptOptions,
-    unstyled,
 }: DialogProps) => {
-    // useDialogContext() is called unconditionally on every render — the try/catch only suppresses
-    // the exception when Dialog is used standalone (outside a provider). React's Rules of Hooks
-    // are not violated because the hook is always called; the try/catch never skips the call.
+    const { messages } = useCratisComponentsConfig();
+    const dialogMessages = messages?.dialog;
+    const resolvedOkLabel = okLabel ?? dialogMessages?.ok ?? 'Ok';
+    const resolvedCancelLabel = cancelLabel ?? dialogMessages?.cancel ?? 'Cancel';
+    const resolvedYesLabel = yesLabel ?? dialogMessages?.yes ?? 'Yes';
+    const resolvedNoLabel = noLabel ?? dialogMessages?.no ?? 'No';
+    const resolvedCloseAriaLabel = closeAriaLabel ?? dialogMessages?.close ?? 'Close';
     let contextCloseDialog: ((result: DialogResult) => void) | undefined;
     try {
         const context = useDialogContext();
@@ -317,46 +168,34 @@ export const Dialog = ({
         contextCloseDialog = undefined;
     }
 
-    const isDialogValid = isValid !== false;
+    const isBrowser = useIsBrowser();
+    const titleRef = useRef<HTMLHeadingElement>(null);
+    const confirmRef = useRef<HTMLButtonElement>(null);
+    const cancelRef = useRef<HTMLButtonElement>(null);
 
-    // A dismissing button only exists for the predefined sets that have one — Cancel for
-    // OkCancel / YesNoCancel, No for YesNo. Asking for Cancel focus without one (DialogButtons.Ok,
-    // a custom footer node, or no footer) degrades to focusing the title rather than silently
-    // leaving focus on the dialog container.
+    const isDialogValid = isValid !== false;
     const hasDismissingButton =
         typeof buttons === 'number' && buttons !== DialogButtons.Ok;
     const resolvedInitialFocus =
         initialFocus === DialogInitialFocus.Cancel && !hasDismissingButton
             ? DialogInitialFocus.Content
             : initialFocus;
-
     const focusesConfirmButton = resolvedInitialFocus === DialogInitialFocus.Confirm;
     const focusesDismissingButton = resolvedInitialFocus === DialogInitialFocus.Cancel;
     const focusesTitle = resolvedInitialFocus === DialogInitialFocus.Content;
+    const allowsDismissal = dismissable ?? typeof buttons === 'number';
+    const isDismissable = allowsDismissal && !isBusy;
 
-    // PrimeReact 11's Dialog focus trap resolves its initial target in this order:
-    // an explicit `initialFocusRef`, then the first `[autofocus]` / `[data-autofocus]`
-    // element inside the popup, then the first focusable element, then the container.
-    // `DialogRoot` does not forward `initialFocusRef`, so the marker attribute is the
-    // seam — and it has to be `data-autofocus` rather than React's `autoFocus` prop,
-    // because React implements `autoFocus` by calling `.focus()` itself on mount and
-    // never reflects the attribute into the DOM for the trap's querySelector to find.
-    // Exactly one element carries it, since the trap takes the first match in document
-    // order (header → content → footer).
-    const autofocusMarker = (isTarget: boolean) =>
-        isTarget ? { 'data-autofocus': '' } : {};
-
-    const headerElement = (
-        <div className='inline-flex items-center justify-center gap-2'>
-            <span
-                tabIndex={focusesTitle ? -1 : undefined}
-                {...autofocusMarker(focusesTitle)}
-                className='font-bold whitespace-nowrap'
-            >
-                {title}
-            </span>
-        </div>
-    );
+    useEffect(() => {
+        if (!visible) return;
+        const target = focusesConfirmButton
+            ? confirmRef.current
+            : focusesDismissingButton
+              ? cancelRef.current
+              : titleRef.current;
+        const frame = requestAnimationFrame(() => target?.focus());
+        return () => cancelAnimationFrame(frame);
+    }, [focusesConfirmButton, focusesDismissingButton, visible]);
 
     const handleClose = async (result: DialogResult) => {
         let shouldCloseThroughContext = true;
@@ -377,178 +216,273 @@ export const Dialog = ({
             shouldCloseThroughContext = closeResult !== false;
         }
 
-        if (shouldCloseThroughContext) {
-            contextCloseDialog?.(result);
-        }
+        if (shouldCloseThroughContext) contextCloseDialog?.(result);
     };
 
-    // PrimeReact 11's Button renders its content as children (the v10 `label`/`icon`
-    // props are gone) and expresses the outlined look through `variant`. The primary
-    // (confirm) button shows a spinner in place of its icon while busy. `focused`
-    // marks the button the dialog's focus trap should land on when it opens.
-    // This helper keeps the footer definitions below readable.
     const footerButton = (
         result: DialogResult,
         label: string,
-        icon: string,
         primary: boolean,
         focused: boolean,
     ) => (
-        <Button
+        <button
             key={`${result}-${label}`}
-            variant={primary ? undefined : 'outlined'}
-            onClick={() => handleClose(result)}
+            {...(primary ? pt?.confirm : pt?.cancel)}
+            type='button'
+            className={classNames(
+                'cratis-dialog__button',
+                primary
+                    ? 'cratis-dialog__button--primary'
+                    : 'cratis-dialog__button--secondary',
+                primary ? pt?.confirm?.className : pt?.cancel?.className,
+            )}
+            data-cratis-part={primary ? 'confirm' : 'cancel'}
+            ref={primary ? confirmRef : focused ? cancelRef : undefined}
+            onClick={() => void handleClose(result)}
             disabled={primary ? !isDialogValid || isBusy : isBusy}
-            {...autofocusMarker(focused)}
+            autoFocus={focused}
+            aria-busy={primary && isBusy ? true : undefined}
         >
-            <i
-                className={primary && isBusy ? 'pi pi-spin pi-spinner' : icon}
-                aria-hidden='true'
-            />
+            {primary && isBusy && (
+                <span className='cratis-dialog__spinner' aria-hidden='true' />
+            )}
             <span>{label}</span>
-        </Button>
+        </button>
     );
 
-    const okFooter = footerButton(
-        DialogResult.Ok,
-        okLabel,
-        'pi pi-check',
-        true,
-        focusesConfirmButton,
-    );
+    const predefinedFooter = () => {
+        if (typeof buttons !== 'number') return buttons;
 
-    const okCancelFooter = (
-        <>
-            {footerButton(
-                DialogResult.Ok,
-                okLabel,
-                'pi pi-check',
-                true,
-                focusesConfirmButton,
-            )}
-            {footerButton(
-                DialogResult.Cancelled,
-                cancelLabel,
-                'pi pi-times',
-                false,
-                focusesDismissingButton,
-            )}
-        </>
-    );
-
-    const yesNoFooter = (
-        <>
-            {footerButton(
-                DialogResult.Yes,
-                yesLabel,
-                'pi pi-check',
-                true,
-                focusesConfirmButton,
-            )}
-            {footerButton(
-                DialogResult.No,
-                noLabel,
-                'pi pi-times',
-                false,
-                focusesDismissingButton,
-            )}
-        </>
-    );
-
-    const yesNoCancelFooter = (
-        <>
-            {footerButton(
-                DialogResult.Yes,
-                yesLabel,
-                'pi pi-check',
-                true,
-                focusesConfirmButton,
-            )}
-            {footerButton(DialogResult.No, noLabel, 'pi pi-times', false, false)}
-            {footerButton(
-                DialogResult.Cancelled,
-                cancelLabel,
-                'pi pi-times',
-                false,
-                focusesDismissingButton,
-            )}
-        </>
-    );
-
-    const getFooterInterior = () => {
-        // If buttons is a ReactNode (custom buttons), use it directly
-        if (typeof buttons !== 'number') {
-            return buttons;
-        }
-
-        // Otherwise, use predefined buttons based on DialogButtons enum
         switch (buttons) {
             case DialogButtons.Ok:
-                return okFooter;
+                return footerButton(
+                    DialogResult.Ok,
+                    resolvedOkLabel,
+                    true,
+                    focusesConfirmButton,
+                );
             case DialogButtons.OkCancel:
-                return okCancelFooter;
+                return (
+                    <>
+                        {footerButton(
+                            DialogResult.Ok,
+                            resolvedOkLabel,
+                            true,
+                            focusesConfirmButton,
+                        )}
+                        {footerButton(
+                            DialogResult.Cancelled,
+                            resolvedCancelLabel,
+                            false,
+                            focusesDismissingButton,
+                        )}
+                    </>
+                );
             case DialogButtons.YesNo:
-                return yesNoFooter;
+                return (
+                    <>
+                        {footerButton(
+                            DialogResult.Yes,
+                            resolvedYesLabel,
+                            true,
+                            focusesConfirmButton,
+                        )}
+                        {footerButton(
+                            DialogResult.No,
+                            resolvedNoLabel,
+                            false,
+                            focusesDismissingButton,
+                        )}
+                    </>
+                );
             case DialogButtons.YesNoCancel:
-                return yesNoCancelFooter;
+                return (
+                    <>
+                        {footerButton(
+                            DialogResult.Yes,
+                            resolvedYesLabel,
+                            true,
+                            focusesConfirmButton,
+                        )}
+                        {footerButton(DialogResult.No, resolvedNoLabel, false, false)}
+                        {footerButton(
+                            DialogResult.Cancelled,
+                            resolvedCancelLabel,
+                            false,
+                            focusesDismissingButton,
+                        )}
+                    </>
+                );
+            default:
+                return null;
         }
-
-        return <></>;
     };
 
-    const footer = (
-        <div className='flex flex-wrap justify-start gap-3'>{getFooterInterior()}</div>
+    const dialogDocument = (
+        <AriaDialog className='cratis-dialog__document'>
+            <>
+                <header
+                    {...pt?.header}
+                    className={classNames('cratis-dialog__header', pt?.header?.className)}
+                    style={pt?.header?.style}
+                    data-cratis-part='header'
+                >
+                    <Heading
+                        {...pt?.title}
+                        slot='title'
+                        tabIndex={focusesTitle ? -1 : undefined}
+                        ref={titleRef}
+                        className={classNames(
+                            'cratis-dialog__title',
+                            pt?.title?.className,
+                        )}
+                        style={pt?.title?.style}
+                        data-cratis-part='title'
+                    >
+                        {title}
+                    </Heading>
+                    {allowsDismissal && (
+                        <button
+                            {...pt?.close}
+                            type='button'
+                            disabled={isBusy}
+                            className={classNames(
+                                'cratis-dialog__close',
+                                pt?.close?.className,
+                            )}
+                            data-cratis-part='close'
+                            aria-label={resolvedCloseAriaLabel}
+                            onClick={() => void handleClose(DialogResult.Cancelled)}
+                        >
+                            <span aria-hidden='true'>×</span>
+                        </button>
+                    )}
+                </header>
+                <div
+                    {...pt?.content}
+                    className={classNames(
+                        'cratis-dialog__content',
+                        pt?.content?.className,
+                    )}
+                    style={{ ...pt?.content?.style, ...contentStyle }}
+                    data-cratis-part='content'
+                >
+                    <fieldset
+                        className='cratis-dialog__busy-scope'
+                        data-cratis-part='busy-scope'
+                        disabled={isBusy}
+                        inert={isBusy}
+                        aria-busy={isBusy || undefined}
+                    >
+                        {children}
+                    </fieldset>
+                </div>
+                {buttons !== null && (
+                    <footer
+                        {...pt?.footer}
+                        className={classNames(
+                            'cratis-dialog__footer',
+                            pt?.footer?.className,
+                        )}
+                        style={pt?.footer?.style}
+                        data-cratis-part='footer'
+                    >
+                        <fieldset
+                            className='cratis-dialog__busy-scope cratis-dialog__busy-scope--footer'
+                            data-cratis-part='busy-scope'
+                            disabled={isBusy}
+                            inert={isBusy}
+                            aria-busy={isBusy || undefined}
+                        >
+                            {predefinedFooter()}
+                        </fieldset>
+                    </footer>
+                )}
+            </>
+        </AriaDialog>
     );
 
-    // The dialog is dismissable (backdrop click, Escape, header close button)
-    // for the predefined-button sets by default, mirroring the v10 `closable`
-    // behavior that keyed off `typeof buttons === 'number'`. The `dismissable`
-    // prop overrides that default so a custom-footer dialog (e.g. the stepper
-    // wizard) can still offer a header-close affordance.
-    const isDismissable = dismissable ?? typeof buttons === 'number';
+    const dialogStyle = { width, ...pt?.root?.style, ...style };
 
-    // PrimeReact 11's Dialog is a controlled overlay: `open` reflects `visible`,
-    // and any dismiss gesture fires `onOpenChange` with `value: false`. We route
-    // that through the same `handleClose(Cancelled)` path used by the footer's
-    // cancel button, so the "return false keeps the dialog open" contract holds —
-    // the parent (the Arc dialog host) owns `visible`, so nothing closes unless
-    // `handleClose` calls back through the host.
-    const handleOpenChange = (event: DialogRootChangeEvent) => {
-        if (!event.value) {
-            handleClose(DialogResult.Cancelled);
-        }
-    };
+    // useSyncExternalStore supplies the server snapshot during hydration, so this
+    // fallback is identical on the server and on the client's first render. React
+    // switches to the portaled React Aria modal only after hydration completes.
+    if (!isBrowser) {
+        if (!visible) return null;
+        return (
+            <div
+                {...pt?.backdrop}
+                className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
+                style={{
+                    zIndex: 'var(--cratis-z-index-dialog)',
+                    ...pt?.backdrop?.style,
+                }}
+                data-cratis-part='backdrop'
+            >
+                <div
+                    {...pt?.positioner}
+                    className={classNames(
+                        'cratis-dialog__positioner',
+                        pt?.positioner?.className,
+                    )}
+                    style={pt?.positioner?.style}
+                    data-cratis-part='positioner'
+                >
+                    <section
+                        {...pt?.root}
+                        className={classNames(
+                            'cratis-dialog',
+                            pt?.root?.className,
+                            className,
+                        )}
+                        style={dialogStyle}
+                        data-cratis-part='root'
+                    >
+                        {dialogDocument}
+                    </section>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <PrimeDialog.Root
-            open={visible}
-            onOpenChange={handleOpenChange}
-            modal
-            dismissable={isDismissable}
-            closeOnEscape={isDismissable}
-            pt={pt}
-            ptOptions={ptOptions}
-            unstyled={unstyled}
+        <ModalOverlay
+            {...pt?.backdrop}
+            isOpen={visible}
+            onOpenChange={(open) => {
+                if (!open && !isBusy) void handleClose(DialogResult.Cancelled);
+            }}
+            isDismissable={isDismissable}
+            isKeyboardDismissDisabled={!isDismissable}
+            className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
+            style={{
+                zIndex: 'var(--cratis-z-index-dialog)',
+                ...pt?.backdrop?.style,
+            }}
+            data-cratis-part='backdrop'
         >
-            <PrimeDialog.Portal>
-                <PrimeDialog.Backdrop />
-                <PrimeDialog.Positioner>
-                    <PrimeDialog.Popup className={className} style={{ width, ...style }}>
-                        <PrimeDialog.Header>
-                            <PrimeDialog.Title>{headerElement}</PrimeDialog.Title>
-                            {isDismissable && (
-                                <PrimeDialog.Close aria-label={closeAriaLabel}>
-                                    <i className='pi pi-times' />
-                                </PrimeDialog.Close>
-                            )}
-                        </PrimeDialog.Header>
-                        <PrimeDialog.Content style={contentStyle}>
-                            {children}
-                        </PrimeDialog.Content>
-                        <PrimeDialog.Footer>{footer}</PrimeDialog.Footer>
-                    </PrimeDialog.Popup>
-                </PrimeDialog.Positioner>
-            </PrimeDialog.Portal>
-        </PrimeDialog.Root>
+            <div
+                {...pt?.positioner}
+                className={classNames(
+                    'cratis-dialog__positioner',
+                    pt?.positioner?.className,
+                )}
+                style={pt?.positioner?.style}
+                data-cratis-part='positioner'
+            >
+                <Modal
+                    {...pt?.root}
+                    className={classNames(
+                        'cratis-dialog',
+                        pt?.root?.className,
+                        className,
+                    )}
+                    style={dialogStyle}
+                    data-cratis-part='root'
+                >
+                    {dialogDocument}
+                </Modal>
+            </div>
+        </ModalOverlay>
     );
 };

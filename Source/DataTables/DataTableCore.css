@@ -1,13 +1,113 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
+.cratis-datatable {
+    width: 100%;
+    color: var(--cratis-text-color);
+}
 .cratis-datatable-header-cell {
     display: flex;
+    min-width: 0;
     align-items: center;
-    gap: 0.25rem;
+    justify-content: space-between;
+    gap: 0.35rem;
 }
-
 .cratis-datatable-search {
     padding: 0.5rem;
     border-bottom: 1px solid var(--cratis-surface-border);
+}
+.cratis-datatable-search__input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--cratis-control-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-control-background);
+    color: var(--cratis-text-color);
+    font: inherit;
+}
+.cratis-datatable-search__input:focus-visible {
+    outline: none;
+    border-color: var(--cratis-primary-color);
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-datatable__container {
+    width: 100%;
+    overflow-x: auto;
+}
+.cratis-datatable__table {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+.cratis-datatable__header-cell {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--cratis-surface-border);
+    background: var(--cratis-surface-section);
+    color: var(--cratis-text-color);
+    text-align: start;
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+.cratis-datatable__sort {
+    display: inline-flex;
+    padding: 0;
+    align-items: center;
+    gap: 0.35rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+}
+.cratis-datatable__sort:focus-visible {
+    outline: none;
+    border-radius: 0.2rem;
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-datatable__cell {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--cratis-surface-border);
+    vertical-align: middle;
+}
+.cratis-datatable__row {
+    background: var(--cratis-surface-card);
+    transition: background-color 100ms ease;
+}
+.cratis-datatable__row[data-interactive='true']:hover {
+    background: var(--cratis-surface-hover);
+}
+.cratis-datatable__row:focus-visible {
+    outline: none;
+    box-shadow: inset var(--cratis-focus-ring);
+}
+.cratis-datatable__row[data-selected='true'] {
+    background: var(--cratis-highlight-bg);
+    color: var(--cratis-highlight-text-color);
+}
+.cratis-datatable__empty-cell {
+    padding: 2rem 1rem;
+    color: var(--cratis-text-color-secondary);
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cratis-datatable__row {
+        transition: none;
+    }
+}
+@media (forced-colors: active) {
+    .cratis-datatable-search__input,
+    .cratis-datatable__header-cell,
+    .cratis-datatable__cell {
+        border-color: CanvasText;
+    }
+    .cratis-datatable__row[data-selected='true'] {
+        outline: 2px solid Highlight;
+    }
 }

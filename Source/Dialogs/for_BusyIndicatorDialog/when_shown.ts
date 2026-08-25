@@ -4,7 +4,13 @@
 
 import React from 'react';
 import { BusyIndicatorDialog } from '../BusyIndicatorDialog';
-import { focusIsInsideTheDialog, focusedElement, render, unmount, type DialogInTheDom } from '../for_Dialog/given/a_dialog_in_the_dom';
+import {
+    focusIsInsideTheDialog,
+    focusedElement,
+    render,
+    unmount,
+    type DialogInTheDom,
+} from '../for_Dialog/given/a_dialog_in_the_dom';
 
 /**
  * A busy indicator has no buttons at all, so there is nothing for the browser
@@ -15,10 +21,12 @@ describe('when a busy indicator dialog is shown', () => {
     let dialog: DialogInTheDom;
 
     beforeEach(async () => {
-        dialog = await render(React.createElement(BusyIndicatorDialog, {
-            title: 'Saving',
-            message: 'Persisting your changes'
-        }));
+        dialog = await render(
+            React.createElement(BusyIndicatorDialog, {
+                title: 'Saving',
+                message: 'Persisting your changes',
+            }),
+        );
     });
 
     afterEach(async () => await unmount(dialog));
@@ -28,6 +36,6 @@ describe('when a busy indicator dialog is shown', () => {
     });
 
     it('should focus the title so the wait state is announced', () => {
-        focusedElement().should.equal('span:Saving');
+        focusedElement().should.equal('h2:Saving');
     });
 });

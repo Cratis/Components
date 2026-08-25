@@ -14,6 +14,8 @@
     "type": "module",
     "files": [
         "dist",
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md",
         "!dist/**/*.stories.*",
         "!dist/**/given.*",
         "!dist/**/storybook-static/**",
@@ -57,10 +59,6 @@
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
             "import": "./dist/esm/Common/index.js"
-        },
-        "./compatibility": {
-            "types": "./dist/esm/Compatibility/index.d.ts",
-            "import": "./dist/esm/Compatibility/index.js"
         },
         "./DataPage": {
             "types": "./dist/esm/DataPage/index.d.ts",
@@ -114,26 +112,24 @@
             "types": "./dist/esm/Toolbar/index.d.ts",
             "import": "./dist/esm/Toolbar/index.js"
         },
-        "./styled": {
-            "types": "./dist/esm/Styled/index.d.ts",
-            "import": "./dist/esm/Styled/index.js"
-        },
         "./types": {
             "types": "./dist/esm/types/index.d.ts",
             "import": "./dist/esm/types/index.js"
         },
         "./styles": "./dist/esm/styles.css",
         "./tokens": "./dist/esm/tokens.css",
-        "./theme": "./dist/esm/theme.css",
-        "./primereact-v10-palette": "./dist/esm/primereact-v10-palette.css"
+        "./theme": "./dist/esm/theme.css"
     },
     "scripts": {
-        "prepare": "yarn g:build",
-        "clean": "yarn g:clean",
+        "prepare": "yarn clean && yarn g:build",
+        "clean": "rm -rf dist && yarn g:clean",
         "build": "tsc -p tsconfig.json",
         "compile": "tsc -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
+        "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
+        "verify-api-docs": "node ./scripts/verify-api-docs.mjs",
+        "verify-public-types": "node ./scripts/verify-public-types.mjs",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
@@ -143,50 +139,29 @@
         "build-storybook": "npx storybook build"
     },
     "dependencies": {
+        "@internationalized/date": "3.12.3",
         "allotment": "1.20.5",
         "framer-motion": "13.1.1",
-        "pixi.js": "^8.20.0",
+        "react-aria-components": "1.20.0",
         "react-icons": "5.7.0",
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
         "@cratis/arc.vite": "22.1.0",
-        "@primereact/core": "11.1.0",
-        "@primereact/headless": "11.1.0",
-        "@primereact/hooks": "11.1.0",
-        "@primereact/styles": "11.1.0",
-        "@primereact/types": "11.1.0",
-        "@primeuix/motion": "^1.0.0",
-        "@primeuix/styled": "^1.0.0",
-        "@primeuix/themes": "3.0.0",
-        "primeicons": "8.0.0",
-        "primereact": "11.1.0"
+        "pixi.js": "^8.20.0"
     },
     "peerDependencies": {
         "@cratis/arc": ">=20.3.1 <23",
         "@cratis/arc.react": ">=20.3.1 <23",
         "@cratis/fundamentals": "^7.10.3",
-        "@primereact/core": "^11.0.0",
-        "@primereact/headless": "^11.0.0",
-        "@primereact/hooks": "^11.0.0",
-        "@primereact/styles": "^11.0.0",
-        "@primereact/types": "^11.0.0",
-        "@primeuix/themes": "^3.0.0",
-        "primeicons": "^8.0.0",
-        "primereact": "^11.0.0",
+        "pixi.js": "^8.20.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "reflect-metadata": "0.2.2",
         "tsyringe": "4.10.0"
     },
     "peerDependenciesMeta": {
-        "@primereact/styles": {
-            "optional": true
-        },
-        "@primereact/types": {
-            "optional": true
-        },
-        "@primeuix/themes": {
+        "pixi.js": {
             "optional": true
         }
     }

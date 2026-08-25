@@ -16,7 +16,7 @@ Map the page URL to its owning repo:
 | URL | Source file |
 |---|---|
 | `/chronicle/**` | `Chronicle/Documentation/**` |
-| `/arc/**` | `Arc/Documentation/**` (the `ApplicationModel` repo, cloned as `Arc`) |
+| `/arc/**` | `Arc/Documentation/**` |
 | `/components/**` | `Components/Documentation/**` |
 | `/cli/**`, `/fundamentals/**`, `/contributing/**` | the matching repo's `Documentation/` |
 | `/`, `/why-cratis`, `/cratis-stack`, `/glossary`, `/comparisons/**`, `/adopting-cratis`, … | Site-level pages: use the Documentation repo; source lives in `Documentation/web/src/content/docs/*.{md,mdx}`. |
@@ -28,7 +28,7 @@ Example: `/chronicle/concepts/event-source/` → `Chronicle/Documentation/concep
 ## 2. Edit the source
 
 - Match the page's **Diátaxis type** (tutorial / how-to / explanation / reference) and the **tour voice** (teach, don't dump) — see the **`writing-cratis-docs`** rule (the tour-voice checklist + Starlight authoring tools). Don't mix types.
-- **Verify every framework API in a code example against real source** before writing it — readers paste them verbatim. (See the `writing-correct-examples` rule; grep Studio `*.cs`/`*.tsx` and the product `Source/` trees.)
+- **Verify every framework API in a code example against real source** before writing it — readers paste them verbatim. (See the `writing-correct-examples` rule; grep a representative application's `*.cs`/`*.tsx` files and the relevant framework `Source/` trees.)
 - Link rules: product `.md` may use `./foo.md`; links to a `.mdx` page must be **extension-less** (`./foo`); site-level `.mdx` uses clean root-relative URLs (`/arc/...`).
 
 ## 3. Sync, preview, verify

@@ -1,72 +1,82 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { InputNumber } from 'primereact/inputnumber';
-import type { InputNumberRootProps, InputNumberRootValueChangeEvent } from '@primereact/types/primitive/inputnumber';
-import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
-/**
- * Component-level props for {@link NumberField}.
- */
-interface NumberFieldComponentProps extends WrappedFieldProps<number> {
-    /** Placeholder text shown when the field is empty. */
+/** Stable part attributes for {@link NumberField}. */
+export interface NumberFieldParts {
+    /** Field wrapper. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Native number input. */
+    input?: InputHTMLAttributes<HTMLInputElement>;
+}
+
+interface NumberFieldComponentProps
+    extends WrappedFieldProps<number>,
+        FieldAccessibilityProps {
     placeholder?: string;
-
-    /** Minimum allowed value. */
     min?: number;
-
-    /** Maximum allowed value. */
     max?: number;
-
-    /** Increment/decrement step applied by the spinner buttons. */
     step?: number;
-
-    /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
-
-    /** PrimeReact pass-through configuration applied to the underlying InputNumber. */
-    pt?: InputNumberRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying InputNumber. */
-    ptOptions?: InputNumberRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying InputNumber. */
+    pt?: NumberFieldParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A numeric input field bound to a `number` property on a Cratis Arc
- * command. Defaults to integer mode without thousands grouping; pass `step`
- * to enable spinner increments and `min` / `max` to clamp the range. See
- * {@link InputTextField} for the full `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <NumberField value={c => c.quantity} title="Quantity" min={0} step={1} />
- * ```
- */
+/** A numeric field bound to a number property on an Arc command. */
 export const NumberField = asCommandFormField<NumberFieldComponentProps>(
-    (props) => (
-        // PrimeReact 11's InputNumber is compositional (Root owns the numeric model,
-        // Input is the text field). `onBlur` rides on the wrapping div so the
-        // CommandForm's blur-timed validation still fires from the inner input.
-        <div onBlur={props.onBlur} className={props.className ? `w-full ${props.className}` : 'w-full'}>
-            <InputNumber.Root
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+        <div
+            {...props.pt?.root}
+            onBlur={props.onBlur}
+            data-cratis-part='root'
+            className={[
+                'cratis-number-field',
+                'cratis:w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        >
+            <input
+                {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
+                type='number'
                 value={props.value}
-                onValueChange={(e: InputNumberRootValueChangeEvent) => props.onChange(e.value ?? 0)}
-                invalid={props.invalid}
+                onChange={props.onChange}
+                placeholder={props.placeholder}
                 min={props.min}
                 max={props.max}
                 step={props.step}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}>
-                <InputNumber.Input placeholder={props.placeholder} className="w-full" />
-            </InputNumber.Root>
+                aria-invalid={props.invalid || undefined}
+                data-invalid={props.invalid || undefined}
+                data-cratis-part='input'
+                className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
+                    .filter(Boolean)
+                    .join(' ')}
+            />
+            {accessibility.hiddenError}
         </div>
-    ),
+        );
+    },
     {
         defaultValue: 0,
-        extractValue: (e: unknown) => (typeof e === 'number' ? e : 0)
-    }
+        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
+            Number.isNaN(event.target.valueAsNumber) ? 0 : event.target.valueAsNumber,
+    },
 );

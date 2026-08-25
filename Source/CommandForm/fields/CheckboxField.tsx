@@ -1,65 +1,100 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Checkbox } from 'primereact/checkbox';
-import type { CheckboxRootProps, CheckboxRootChangeEvent } from '@primereact/types/primitive/checkbox';
-import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
-/**
- * Component-level props for {@link CheckboxField}.
- */
-interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
-    /** Optional label displayed next to the checkbox. */
+/** Stable part attributes for {@link CheckboxField}. */
+export interface CheckboxParts {
+    /** Wrapping label. */
+    root?: HTMLAttributes<HTMLLabelElement>;
+    /** Native checkbox input. */
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Visual checkbox box. */
+    box?: HTMLAttributes<HTMLSpanElement>;
+    /** Visual checked indicator. */
+    indicator?: HTMLAttributes<HTMLSpanElement>;
+}
+
+interface CheckboxFieldComponentProps
+    extends WrappedFieldProps<boolean>,
+        FieldAccessibilityProps {
     label?: string;
-
-    /** Extra CSS class name forwarded to the underlying Checkbox. */
     className?: string;
-
-    /** PrimeReact pass-through configuration applied to the underlying Checkbox. */
-    pt?: CheckboxRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying Checkbox. */
-    ptOptions?: CheckboxRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying Checkbox. */
+    pt?: CheckboxParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A single boolean checkbox field bound to a `boolean` property on a Cratis
- * Arc command. See {@link InputTextField} for the full `value={c => c.prop}`
- * binding model.
- *
- * ```tsx
- * <CheckboxField value={c => c.acceptedTerms} label="I agree to the terms" />
- * ```
- */
+/** A checkbox field bound to a boolean property on an Arc command. */
 export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
-    (props) => (
-        // PrimeReact 11's Checkbox is compositional (Root → Box → Indicator). A real
-        // <label> wraps the control so the visible text is its accessible name
-        // (implicit association) and doubles the click target. `onBlur` rides on the
-        // label because React blur bubbles (focusout), so the CommandForm's blur-timed
-        // validation still fires from the inner input.
-        <label className="flex items-center" onBlur={props.onBlur}>
-            <Checkbox.Root
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'] ?? props.label,
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
+        <label
+            {...props.pt?.root}
+            className={['cratis-choice-field', props.pt?.root?.className, props.className]
+                .filter(Boolean)
+                .join(' ')}
+            onBlur={props.onBlur}
+            data-cratis-part='root'
+            data-invalid={props.invalid || undefined}
+        >
+            <input
+                {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
+                type='checkbox'
                 checked={props.value}
-                onCheckedChange={props.onChange}
-                invalid={props.invalid}
-                className={props.className}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}>
-                <Checkbox.Box>
-                    <Checkbox.Indicator />
-                </Checkbox.Box>
-            </Checkbox.Root>
-            {props.label && <span className="ml-2">{props.label}</span>}
+                onChange={props.onChange}
+                aria-invalid={props.invalid || undefined}
+                className={['cratis-choice-field__native', props.pt?.input?.className]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='input'
+            />
+            <span
+                {...props.pt?.box}
+                className={['cratis-checkbox__box', props.pt?.box?.className]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='box'
+                aria-hidden='true'
+            >
+                <span
+                    {...props.pt?.indicator}
+                    className={[
+                        'cratis-checkbox__indicator',
+                        props.pt?.indicator?.className,
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='indicator'
+                >
+                    ✓
+                </span>
+            </span>
+            {props.label && (
+                <span className='cratis-choice-field__label'>{props.label}</span>
+            )}
         </label>
-    ),
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: false,
-        extractValue: (e: CheckboxRootChangeEvent) => e.checked
-    }
+        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
+            event.target.checked,
+    },
 );

@@ -55,8 +55,8 @@
     margin: 0;
     padding: 12px;
     border-radius: 6px;
-    background: var(--surface-100);
-    color: var(--text-color);
+    background: var(--cratis-surface-100);
+    color: var(--cratis-text-color);
     font-size: 12px;
     line-height: 1.5;
     white-space: pre-wrap;

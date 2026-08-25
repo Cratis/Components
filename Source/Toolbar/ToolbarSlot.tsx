@@ -115,7 +115,7 @@ export const useToolbarSlot = (slotName: string): ReactNode[] => {
         return registry.subscribe(fn);
     }, [registry]);
     const getSnapshot = useCallback(() => registry?.getSnapshot(slotName) ?? _emptySnapshot, [registry, slotName]);
-    return useSyncExternalStore(subscribe, getSnapshot);
+    return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 };
 
 /** Props for the {@link ToolbarSlot} component. */
@@ -151,7 +151,7 @@ export interface ToolbarSlotProps {
  * ```tsx
  * // In a feature component, inject a button into the 'canvas-tools' slot:
  * <ToolbarSlot slotName="canvas-tools" order={10}>
- *     <ToolbarButton icon="pi pi-star" title="Favorite" />
+ *     <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Favorite" />
  * </ToolbarSlot>
  * ```
  */

@@ -1,31 +1,167 @@
-# Canvas
+---
+title: Canvas
+description: Reference for the pan, zoom, minimap, overlay, and collaborative canvas primitives.
+---
 
-The `Canvas` module provides a pan/zoom/drag surface for building spatial, freely-positioned UIs — boards, editors, diagrams, or anything laid out in an infinite 2D plane rather than the normal document flow. On top of the surface engine itself, it ships a set of ready-made presentational shapes — sticky notes, labeled regions, and a full chat/comment kit — for building the kind of "sticky notes and regions" board these were originally extracted from.
+`@cratis/components/Canvas` provides a renderer-independent React surface for large spatial workspaces. It owns gesture coordination, transforms, controls, item measurement, minimap state, and optional Note, Region, and Chat shapes. Product appearance comes from `--cratis-*` tokens and Canvas classes; PrimeIcons and a renderer provider are not required.
 
-The engine (`Canvas`, `CanvasItem`, `CanvasControls`, `CanvasMinimap`) is independent of the shapes: it renders and positions whatever you give it, and knows nothing about notes, regions, or chat. The shapes (`Note`, `Region`, the `ChatBubble` kit) are ordinary presentational components that happen to be designed to live inside a `Canvas`.
+The engine renders and positions arbitrary content independently of the optional presentational shapes. Start with [Basic usage](basic-usage.md), then use the focused guides for [pan and zoom](pan-and-zoom.md), [controls chrome](controls-chrome.md), [notes](notes.md), [regions](regions.md), and the [chat bubble](chat-bubble.md). This page is the complete API reference.
 
-## Components
+## Import
 
-| Component | Description |
-|---|---|
-| `Canvas` | The pan/zoom/drag surface itself — the container every other piece renders inside of |
-| `CanvasItem` | Positions a single piece of content at world-space `x`/`y` coordinates inside a `Canvas` |
-| `CanvasControls` | The zoom in/out/reset pill and optional minimap toggle rendered over a `Canvas` |
-| `CanvasMinimap` | A small overview panel showing item positions and the current viewport, with click/drag-to-pan |
-| `CanvasOverlay` | Portals its children to `document.body`, for board overlays that must escape the canvas's own clipping/stacking context |
-| `CanvasHandle` | The imperative handle type exposed via `onHandleReady`, for programmatic pan/zoom and bounds queries |
-| `Note` | A draggable, resizable, editable sticky note with auto-fitting text |
-| `Region` | A draggable, resizable, labeled box other shapes can be visually nested inside of |
-| `Chat` | The chat/comment thread panel: message list, composer, reactions, mentions, typing indicator |
-| `ChatBubble` | A floating avatar "chat head" with a hover preview of the latest message — the entry point into a conversation, not the conversation itself |
-| `ChatComposer` | The compose row: text input, `@`-mention suggestions, emoji insert, send button |
-| `ChatMessageBubble` | One rendered message, with its optional reaction and quick-reply/act affordances |
-| `FailedReply` | The line a message renders in place of an answer when its turn failed, with "see error" and an optional "report a bug" link |
-| `MessageReactions` | The row of emoji badges under a message, one stacked badge per distinct emoji |
-| `ReactionPicker` | The quick-emoji popover opened from a reaction button or the composer's emoji toggle |
-| `TypingIndicator` | The "X is typing" line with jumping dots, shown while somebody is composing or an agent is working |
-| `PersonAvatarCircle` | A person/agent avatar circle, falling back to initials on a deterministic color when no image is available |
-| `EmojiPicker` | The full emoji picker `ReactionPicker` opens when its quick row isn't enough |
-| `MentionSuggestions` | The `@`-mention candidate list `ChatComposer` opens while typing a mention |
+```tsx
+import {
+    Canvas,
+    CanvasItem,
+    CanvasOverlay,
+    type CanvasCaptureAttributes,
+    type CanvasHandle,
+} from '@cratis/components/Canvas';
+```
 
-A handful of supporting types travel with these components: `NoteData` and `RegionData` (the controlled data shapes for `Note`/`Region`), `ChatMessage`, `ChatAuthorKind`, `ChatVariant`, `MentionCandidate`, `ChatTypingAuthor`, `ChatMessageReaction`, and `BuildAvatarUrlParams` (the parameters passed to a `buildAvatarUrl` callback). These are covered alongside the component that uses them in the pages below rather than getting a row of their own.
+Import `@cratis/components/tokens` and `@cratis/components/styles` once at the application root. Add `@cratis/components/theme` only when using the baseline appearance.
+
+Canvas and PivotViewer expose and render real Pixi objects. Install the optional peer once in an application that uses either surface:
+
+```bash
+npm install pixi.js@^8.20.0
+```
+
+Keep one compatible Pixi resolution across the application and Components. Two installed copies produce nominal TypeScript incompatibilities for containers and pointer events even when their APIs look structurally similar.
+
+## Canvas
+
+```tsx
+const handleReady = (handle: CanvasHandle) => {
+    handle.smoothPanZoomToWorld(1200, 800, 1.25);
+};
+
+<Canvas
+    initialZoom={1}
+    minZoom={0.25}
+    maxZoom={3}
+    showControls
+    showMinimap
+    onHandleReady={handleReady}
+>
+    <CanvasItem x={1200} y={800}>
+        <article>Customer journey</article>
+    </CanvasItem>
+</Canvas>;
+```
+
+### `CanvasProps<T>`
+
+`T` extends `CanvasItemData` (`id`, `x`, `y`) when the optional Pixi item renderer is used.
+
+| Prop                                       | Type                               | Default                               | Meaning                                                                                                                           |
+| ------------------------------------------ | ---------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `children`                                 | `ReactNode`                        | —                                     | DOM canvas content, normally positioned with `CanvasItem`.                                                                        |
+| `items`                                    | `T[]`                              | `[]`                                  | Optional Pixi-backed item data.                                                                                                   |
+| `renderItem`                               | `(item: T) => PIXI.Container`      | —                                     | Builds one Pixi display object.                                                                                                   |
+| `onItemPointerDown`                        | `(item, event) => void`            | —                                     | Receives Pixi item pointer activation.                                                                                            |
+| `onReady`                                  | `(context: CanvasContext) => void` | —                                     | Provides the Pixi `app` and `world` container.                                                                                    |
+| `onTransformChange`                        | `(zoom, pan) => void`              | —                                     | Reports camera changes.                                                                                                           |
+| `initialZoom`                              | `number`                           | `1`                                   | Initial zoom factor.                                                                                                              |
+| `initialPan`                               | `{ x: number; y: number }`         | `{ x: 0, y: 0 }`                      | Initial viewport translation.                                                                                                     |
+| `minZoom` / `maxZoom`                      | `number`                           | `0.1` / `5`                           | Zoom limits.                                                                                                                      |
+| `showControls`                             | `boolean`                          | `true`                                | Shows zoom controls.                                                                                                              |
+| `showMinimap`                              | `boolean`                          | `false`                               | Adds the minimap toggle/control.                                                                                                  |
+| `minimapWorldWidth` / `minimapWorldHeight` | `number`                           | `4000` / `3000` in the minimap        | World dimensions represented by the minimap.                                                                                      |
+| `minimapItems`                             | `MinimapItem[]`                    | measured items                        | Explicit minimap rectangles.                                                                                                      |
+| `controlsPlacement`                        | `'bottom-left' \| 'bottom-right'`  | `'bottom-left'`                       | Control-bar edge.                                                                                                                 |
+| `className` / `style`                      | standard React values              | —                                     | Canvas root customization.                                                                                                        |
+| `onHelp`                                   | `() => void`                       | —                                     | Adds and handles the help action.                                                                                                 |
+| `helpTitle`                                | `string`                           | provider-independent English fallback | Help action label.                                                                                                                |
+| `controlsLabels`                           | `CanvasControlsLabels`             | English fallbacks                     | Localizes integrated minimap, zoom, reset, and help controls.                                                                     |
+| `controlsGlassSurface`                     | `ReactNode`                        | —                                     | Product-owned glass/acrylic surface rendered behind integrated controls.                                                          |
+| `disableControlsGlass`                     | `boolean`                          | `false`                               | Forces the low-cost CSS frosted pill. The same fallback is used automatically when no `controlsGlassSurface` is supplied.         |
+| `captureAttributes`                        | `CanvasCaptureAttributes`          | —                                     | Product-owned layer/content/transform-host attribute names for a capture or compositor pipeline. Nothing is hardcoded by default. |
+| `onHandleReady`                            | `(handle: CanvasHandle) => void`   | —                                     | Provides imperative camera/item-bound operations.                                                                                 |
+| `readOnly`                                 | `boolean`                          | `false`                               | Keeps pan/zoom but absorbs content interaction.                                                                                   |
+| `backgroundDragPans`                       | `boolean`                          | `true`                                | Set `false` when the product owns empty-background drag selection. Wheel, middle-button, and touch panning remain available.      |
+
+### `CanvasHandle`
+
+| Method                                           | Meaning                                                     |
+| ------------------------------------------------ | ----------------------------------------------------------- |
+| `smoothPanToWorld(x, y, durationMs?)`            | Centers a world point with an animated pan.                 |
+| `smoothPanZoomToWorld(x, y, zoom?, durationMs?)` | Animates pan and zoom together.                             |
+| `getContainerRect()`                             | Returns the current viewport rectangle or `null`.           |
+| `getItemBounds()`                                | Returns measured world-space rectangles as `MinimapItem[]`. |
+
+## CanvasItem
+
+`CanvasItem` positions and measures DOM content inside a `Canvas`.
+
+| Prop       | Type                      | Meaning                                                                                                                        |
+| ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `x` / `y`  | `number`                  | World position.                                                                                                                |
+| `zIndex`   | `number`                  | Item-root stacking order. Use this rather than a descendant z-index because each transformed item is its own stacking context. |
+| `onSize`   | `(width, height) => void` | Reports measured size changes.                                                                                                 |
+| `children` | `ReactNode`               | Item content.                                                                                                                  |
+
+## Controls and minimap
+
+`CanvasControls` is exported for products that compose controls separately. Its callbacks are `getZoom`, `onZoomIn`, `onZoomOut`, and `onZoomReset`; optional minimap, placement, help, label, glass-surface, and low-cost fallback props match the integrated Canvas controls. Standalone controls can set `contentCaptureAttribute` when a product compositor needs to mark their non-plain surface.
+
+`CanvasControlsLabels` localizes `toggleMinimap`, `zoomOut`, `resetZoom`, `zoomIn`, and `help`.
+
+`CanvasMinimap` accepts `worldWidth`, `worldHeight`, `items`, and `onRequestPan`. A `MinimapItem` contains `x`, `y`, `width`, `height`, and optional `color`. Its ref exposes `CanvasMinimapHandle.update(pan, zoom, canvasWidth, canvasHeight)`.
+
+### Product capture/compositor integration
+
+Components does not know a product compositor's attribute vocabulary. A product opts into its own markers explicitly:
+
+```tsx
+import { Canvas, type CanvasCaptureAttributes } from '@cratis/components/Canvas';
+import { ProductCompositorSurface } from './ProductCompositorSurface';
+
+const captureAttributes: CanvasCaptureAttributes = {
+    layer: 'data-product-compositor-layer',
+    content: 'data-product-compositor-content',
+    transformHost: 'data-product-compositor-transform-host',
+};
+
+<Canvas
+    captureAttributes={captureAttributes}
+    controlsGlassSurface={<ProductCompositorSurface cornerRadius={999} />}
+/>;
+```
+
+`layer` marks the Pixi canvas, `content` marks non-plain integrated controls, and `transformHost` marks both pan/zoom hosts. Omit the prop when the product has no capture pipeline. This keeps product-specific names and update ownership outside Components.
+
+## Overlays and SSR
+
+`CanvasOverlay` portals children to `document.body` in the browser. It renders an empty server/hydration placeholder, so importing or server-rendering a Canvas tree does not access `document` before hydration.
+
+Use it for floating controls that must escape canvas clipping:
+
+```tsx
+<CanvasOverlay>
+    <aside className='product-canvas-inspector'>Inspector</aside>
+</CanvasOverlay>
+```
+
+## Included shapes
+
+The Canvas entry point also exports:
+
+- `Note`, `NoteProps`, and `NoteData` for movable/resizable editable notes.
+- `Region`, `RegionProps`, and `RegionData` for labeled spatial grouping.
+- Chat composition primitives: `Chat`, `ChatBubble`, `ChatComposer`, `ChatMessageBubble`, `MessageReactions`, `ReactionPicker`, `TypingIndicator`, `FailedReply`, and their exported data/label types.
+- Avatar, emoji-memory/catalog, and mention parsing/application helpers used by the chat primitives.
+- `AnchoredOverlay` and its side/alignment types for body-level overlays attached to a control.
+- `canvasGesture`, `canvasTransformActivity`, and `createSelfSuspendingFrameLoop` for advanced canvas integrations.
+
+These shapes are optional conveniences, not domain models. Applications own persistence, authorization, and collaboration policy. Arc can own commands, queries, validation, authorization, and generated React bindings without Chronicle. Applications that choose Arc plus Chronicle additionally own event streams, projections, and read models. Pass typed data and callbacks into Canvas shapes rather than coupling them to generated proxies.
+
+## Styling
+
+Canvas structure uses the standard semantic token seam:
+
+- `--cratis-surface-card`, `--cratis-surface-hover`, `--cratis-surface-border`
+- `--cratis-text-color`, `--cratis-text-color-secondary`
+- `--cratis-primary-color`, `--cratis-green-500`, `--cratis-red-500`
+
+Use `className` on Canvas roots and product CSS for shape-specific treatment. Components does not install an icon font; library-owned actions use bundled React icon components.

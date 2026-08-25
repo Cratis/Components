@@ -7,6 +7,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
 import { Column } from '../../../DataTables/Column';
 import type { DataTableFilterMeta } from '../../../DataTables/DataTableFilterMeta';
+import type { TablePaginatorParts } from '../../../DataTables/TablePaginator';
 // Allotment lays its split view out entirely from this stylesheet, and a pane is only the
 // absolutely positioned, full-height box the page assumes once the rules are on the document.
 // `DataPage` no longer imports it — a CSS import inside the JS graph is what stopped the
@@ -38,29 +39,42 @@ export interface DataPageOptions {
 
     /** Seed the data table's per-field filters. */
     defaultFilters?: DataTableFilterMeta;
+
+    /** Controlled row selection. */
+    selection?: Person | null;
+
+    /** Observe selection changes. */
+    onSelectionChange?: (event: { value: Person | null }) => void;
+
+    /** Customize paginator parts. */
+    paginatorPt?: TablePaginatorParts;
 }
 
 const PersonDetails = ({ item }: { item: Person }) =>
     React.createElement('div', { className: 'person-details' }, item.name);
 
 const columns = () =>
-    React.createElement(
-        DataPage.Columns,
-        { key: 'columns' },
-        React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
-        React.createElement(Column, { key: 'name', field: 'name', header: 'Name' }),
-    );
+    React.createElement(DataPage.Columns, {
+        key: 'columns',
+        children: [
+            React.createElement(Column, { key: 'id', field: 'id', header: 'Id' }),
+            React.createElement(Column, {
+                key: 'name',
+                field: 'name',
+                header: 'Name',
+            }),
+        ],
+    });
 
 const menuItems = () =>
-    React.createElement(
-        DataPage.MenuItems,
-        { key: 'menuItems' },
-        React.createElement(MenuItem, {
+    React.createElement(DataPage.MenuItems, {
+        key: 'menuItems',
+        children: React.createElement(MenuItem, {
             key: 'add',
             label: 'Add',
-            icon: () => React.createElement('i', { className: 'pi pi-plus' }),
+            icon: () => React.createElement('span', { 'aria-hidden': true }, '◆'),
         }),
-    );
+    });
 
 /**
  * Builds the `DataPage` element the specs render.
@@ -69,28 +83,28 @@ const menuItems = () =>
  */
 export const aDataPage = (options: DataPageOptions = {}) => {
     const children = options.withMenuItems ? [menuItems(), columns()] : [columns()];
+    const PersonDataPage = DataPage<PersonsQuery, Person, object>;
 
-    return React.createElement(
-        DataPage,
-        {
-            title: 'Persons',
-            query: PersonsQuery,
-            emptyMessage: 'No persons found',
-            dataKey: 'id',
-            detailsComponent: options.withDetails ? PersonDetails : undefined,
-            defaultFilters: options.defaultFilters,
-        },
-        ...children,
-    );
+    return React.createElement(PersonDataPage, {
+        title: 'Persons',
+        query: PersonsQuery,
+        emptyMessage: 'No persons found',
+        dataKey: 'id',
+        detailsComponent: options.withDetails ? PersonDetails : undefined,
+        defaultFilters: options.defaultFilters,
+        selection: options.selection,
+        onSelectionChange: options.onSelectionChange,
+        paginatorPt: options.paginatorPt,
+        children,
+    });
 };
 
 /**
  * Renders an element into a real document and lets React settle, so the specs
  * look at the tree a browser would have built.
  *
- * PrimeReact 11 components resolve their configuration from a `PrimeReactProvider`
- * and throw without one, so the element is mounted inside the Cratis provider that
- * supplies it. `ResizeObserver` is stubbed because Allotment observes its container
+ * The element is mounted inside the Cratis provider to supply locale and component
+ * messages. `ResizeObserver` is stubbed because Allotment observes its container
  * for size changes and jsdom has no layout engine to report any.
  * @param element - The element to render.
  * @returns The mounted page, to be passed to {@link unmount}.

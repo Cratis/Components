@@ -98,7 +98,7 @@ const CreateProjectDialog = () => {
 
 ```tsx
 import { useDialog } from '@cratis/arc.react/dialogs';
-import { Button } from 'primereact/button';
+import { Button } from '@cratis/components/Common';
 
 export const ProjectsPage = () => {
     const [CreateProjectDialogWrapper, showCreateProject] = useDialog(CreateProjectDialog);
@@ -112,7 +112,7 @@ export const ProjectsPage = () => {
 };
 ```
 
-Use the PrimeReact `Button` (or a Cratis Components wrapper) — never a raw `<button className="p-button">`.
+Use the Cratis `Button` so product tokens, stable parts, focus behavior, and disabled semantics stay consistent.
 
 ---
 
@@ -218,7 +218,7 @@ For longer wizards, vertical orientation can be more readable:
 | `onConfirm` | `() => void \| Promise<void>` | — | Called after successful execute |
 | `onCancel` | `() => void \| Promise<void>` | — | Called when user dismisses dialog |
 | `onBeforeExecute` | `(values: TCommand) => TCommand` | — | Transform values before execution |
-| `pt` | `StepperProps['pt']` | — | PrimeReact PassThrough for deep DOM customization |
+| `pt` | `StepperParts` | — | Cratis-owned attributes for the stable stepper parts |
 
 ---
 

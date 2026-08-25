@@ -13,10 +13,15 @@ import type { ChatOwnReaction } from './ChatOwnReaction';
  * @param userId The person to look for.
  * @returns Their reaction, or undefined when they have not reacted.
  */
-export const findOwnReaction = (reactions: ChatMessageReaction[] | undefined, userId: Guid): ChatOwnReaction | undefined => {
+export const findOwnReaction = (
+    reactions: ChatMessageReaction[] | undefined,
+    userId: Guid,
+): ChatOwnReaction | undefined => {
     const own = (reactions ?? [])
-        .flatMap(reaction => reaction.users.map(user => ({ user, emoji: reaction.emoji })))
-        .find(entry => entry.user.id.equals(userId));
+        .flatMap((reaction) =>
+            reaction.users.map((user) => ({ user, emoji: reaction.emoji })),
+        )
+        .find((entry) => entry.user.id.equals(userId));
 
     return own ? { reactionId: own.user.reactionId, emoji: own.emoji } : undefined;
 };

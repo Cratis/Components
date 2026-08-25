@@ -1,23 +1,23 @@
 ---
-applyTo: "**/*.cs, **/*.tsx"
+applyTo: '**/*.cs, **/*.tsx'
 profile: application
 paths:
-  - "**/*.cs"
-  - "**/*.tsx"
+    - '**/*.cs'
+    - '**/*.tsx'
 ---
 
 # Vertical Slice Architecture
 
-> **Application profile.** This is the architecture for *applications built on Cratis*. It does **not** apply inside a Cratis framework repo (Arc/Chronicle/Fundamentals/Components) — those are libraries; see [framework.md](./framework.md).
+> **Application profile.** This is the architecture for _applications built on Cratis_. It does **not** apply inside a Cratis framework repo (Arc/Chronicle/Fundamentals/Components) — those are libraries; see [framework.md](./framework.md).
 
 A vertical slice owns a single behavior: the command or query, the events it produces, the projections that build read models, the React component that renders the UI, and the specs that verify it all works. Everything lives together because everything changes together. **The slice is the invariant unit** (command + events + projection + component + specs), created, renamed, and deleted as one.
 
-This file is the reference for *what* goes in each part of a slice. Layout, slice types, workflow, and quality gates are in [general.md](./general.md).
+This file is the reference for _what_ goes in each part of a slice. Layout, slice types, workflow, and quality gates are in [general.md](./general.md).
 
 ## Technical stack
 
 - .NET / C# (ASP.NET Core) — **Cratis Arc** for CQRS / model-bound commands and queries, **Cratis Chronicle** for event sourcing, MongoDB or EF Core for read models.
-- React + TypeScript (Vite) — Cratis Components (PrimeReact-based) + Arc-generated proxies, MVVM. Vitest + Mocha/Chai/Sinon for frontend specs.
+- React + TypeScript (Vite) — Cratis Components with Cratis-owned tokens/parts + Arc-generated proxies, MVVM. Vitest + Mocha/Chai/Sinon for frontend specs.
 - xUnit + Cratis.Specifications + NSubstitute for C# specs (the `*Scenario` family — see [specs.md](./specs.md)).
 
 ## Proxy generation — the build dependency
@@ -46,9 +46,9 @@ A single `<Slice>.cs` therefore contains ALL of: `[Command]` records with `Handl
 
 ## Concepts
 
-Every domain identifier or named value is a typed record — raw `string`/`Guid`/`int` should not appear on commands, events, or read models for domain values. Primitives stay primitive only when the meaning *is* the base type (`bool`, a plain count, `DateOnly`).
+Every domain identifier or named value is a typed record — raw `string`/`Guid`/`int` should not appear on commands, events, or read models for domain values. Primitives stay primitive only when the meaning _is_ the base type (`bool`, a plain count, `DateOnly`).
 
-- **[contract] Value concepts** derive from `ConceptAs<T>`. The base provides value equality and an implicit **concept → `T`** conversion. **Add your own `T` → concept operator** when call-site ergonomics need it — the base does *not* provide that direction.
+- **[contract] Value concepts** derive from `ConceptAs<T>`. The base provides value equality and an implicit **concept → `T`** conversion. **Add your own `T` → concept operator** when call-site ergonomics need it — the base does _not_ provide that direction.
 - **[contract] Identity concepts** (event-source ids) derive from `EventSourceId<T>` with the underlying primitive (`Guid` standard). `EventSourceId<T>` already gives conversions to/from `T`, untyped `EventSourceId`, and `string`. Add `NotSet`, a typed `New()`, and a `T` → id operator.
 
 ```csharp
@@ -75,18 +75,18 @@ The command carries input from the caller. `Handle()` is defined directly on the
 
 ### The decision matrix — where each rule lives **[contract]**
 
-`Handle()` assumes the command is valid and constructs the event(s). Pick the mechanism by what the decision *is*:
+`Handle()` assumes the command is valid and constructs the event(s). Pick the mechanism by what the decision _is_:
 
-| Decision | Use |
-|---|---|
-| Reusable value invariant (length, format, range) | `ConceptValidator<T>` on the concept type |
-| Command-input / cross-field / pre-handler rule (incl. injected read-model/service/identity checks) | `CommandValidator<TCommand>` with `RuleFor(...)` |
-| Handler needs fetched/computed data before it can build the event | `Provide()` — fetches the data; may validate it and short-circuit |
-| State-dependent rule that must hold **under concurrency** | inject the read model into `Handle()`, return `Result<TEvent, ValidationResult>` |
-| Uniqueness | Chronicle `[Unique]` / `IConstraint` (race-safe) — not a read-model pre-check |
-| Genuinely exceptional failure (bug, missing infra) | `throw` a domain exception |
+| Decision                                                                                           | Use                                                                              |
+| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Reusable value invariant (length, format, range)                                                   | `ConceptValidator<T>` on the concept type                                        |
+| Command-input / cross-field / pre-handler rule (incl. injected read-model/service/identity checks) | `CommandValidator<TCommand>` with `RuleFor(...)`                                 |
+| Handler needs fetched/computed data before it can build the event                                  | `Provide()` — fetches the data; may validate it and short-circuit                |
+| State-dependent rule that must hold **under concurrency**                                          | inject the read model into `Handle()`, return `Result<TEvent, ValidationResult>` |
+| Uniqueness                                                                                         | Chronicle `[Unique]` / `IConstraint` (race-safe) — not a read-model pre-check    |
+| Genuinely exceptional failure (bug, missing infra)                                                 | `throw` a domain exception                                                       |
 
-**Do not throw for normal business rejection.** A thrown exception (from `Provide()` or `Handle()`) surfaces as an exception/HTTP 500, *not* a validation result. Recoverable, user-facing rejections are validation: `ValidationResult.Error(...)` via a validator or `Result<,>`. (For step-by-step business-rule placement, invoke the **add-business-rule** skill.)
+**Do not throw for normal business rejection.** A thrown exception (from `Provide()` or `Handle()`) surfaces as an exception/HTTP 500, _not_ a validation result. Recoverable, user-facing rejections are validation: `ValidationResult.Error(...)` via a validator or `Result<,>`. (For step-by-step business-rule placement, invoke the **add-business-rule** skill.)
 
 ### `Provide()` — data for `Handle()` **[contract]**
 
@@ -114,28 +114,28 @@ Use `Provide()` for IO/fetched/computed data a valid command needs (explicit-key
 
 Return the event(s) directly — Arc appends them; never inject `IEventLog` to append the primary event. If there is no `await`, return the value directly (no `Task<T>`/`Task.FromResult`).
 
-| Return | When |
-|---|---|
-| `TEvent` | one event on the implicit stream |
-| `(EventSourceId, TEvent)` | command decides the event source id (tuple order doesn't matter) |
-| `(TResponse, TEvent)` | a response value plus an event |
-| `IEnumerable<object>` | multiple events; `EventForEventSourceId(id, @event)` wrappers for cross-stream |
-| `Result<TEvent, ValidationResult>` | success event or a typed validation error (concurrency-sensitive rule) |
-| `void` | no event |
+| Return                             | When                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------ |
+| `TEvent`                           | one event on the implicit stream                                               |
+| `(EventSourceId, TEvent)`          | command decides the event source id (tuple order doesn't matter)               |
+| `(TResponse, TEvent)`              | a response value plus an event                                                 |
+| `IEnumerable<object>`              | multiple events; `EventForEventSourceId(id, @event)` wrappers for cross-stream |
+| `Result<TEvent, ValidationResult>` | success event or a typed validation error (concurrency-sensitive rule)         |
+| `void`                             | no event                                                                       |
 
-**How Arc picks the response vs. metadata:** for an `(A, B)` tuple, each element is checked — exactly one element *without* a registered event handler becomes the `CommandResult<...>` response; if all are events, there is no response; **more than one un-handled element throws**. A `Result<TSuccess, TError>` has its inner value unwrapped and processed by these same rules (so `Result<(TId, TEvent), ValidationResult>` is processed as a tuple). A `(TEvent, Subject)` tuple's `Subject` is treated as **append metadata** (not a response) and overrides the resolved compliance subject. A `(TIdConcept, TEvent)` tuple opens a new stream — the id concept is the event source for that event.
+**How Arc picks the response vs. metadata:** for an `(A, B)` tuple, each element is checked — exactly one element _without_ a registered event handler becomes the `CommandResult<...>` response; if all are events, there is no response; **more than one un-handled element throws**. A `Result<TSuccess, TError>` has its inner value unwrapped and processed by these same rules (so `Result<(TId, TEvent), ValidationResult>` is processed as a tuple). A `(TEvent, Subject)` tuple's `Subject` is treated as **append metadata** (not a response) and overrides the resolved compliance subject. A `(TIdConcept, TEvent)` tuple opens a new stream — the id concept is the event source for that event.
 
 ### Stream metadata & DCB concurrency **[contract]**
 
-Three attributes scope an append broad→narrow, and each one *also* (only with `concurrency: true`) contributes its dimension to the server-side concurrency check:
+Three attributes scope an append broad→narrow, and each one _also_ (only with `concurrency: true`) contributes its dimension to the server-side concurrency check:
 
-| Attribute | Meaning |
-|---|---|
-| `[EventSourceType("...")]` | the overarching concept the event source *is* (`Account`, `Order`) |
-| `[EventStreamType("...")]` | a concrete process **within** that source type (`Onboarding`, `Transactions`) |
-| `[EventStreamId("...")]` | a marker separating **independent streams** within one stream type (`Monthly`, `2026-06`) |
+| Attribute                  | Meaning                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| `[EventSourceType("...")]` | the overarching concept the event source _is_ (`Account`, `Order`)                        |
+| `[EventStreamType("...")]` | a concrete process **within** that source type (`Onboarding`, `Transactions`)             |
+| `[EventStreamId("...")]`   | a marker separating **independent streams** within one stream type (`Monthly`, `2026-06`) |
 
-Each attribute always tags the appended events (visible in `EventContext`). **Only when the command also carries `concurrency: true`** does each dimension join the server-side `ConcurrencyScope` (plus the event source id), with the optimistic strategy supplying the expected tail sequence number. A command **without** `concurrency: true` contributes no scope of its own, and the append falls to whatever concurrency strategy the event sequence is configured with — by default the optimistic one, scoped to the event source. So the attribute chooses *which dimensions* bound the check, not whether a check happens at all. Reach for it on high-contention state transitions where a stale read would let two commands both "win" — it narrows the boundary so appends that are genuinely independent stop colliding (concurrency failures surface on `CommandResult`/`AppendResult`). Adopt it deliberately per behavior, not as a blanket default.
+Each attribute always tags the appended events (visible in `EventContext`). **Only when the command also carries `concurrency: true`** does each dimension join the server-side `ConcurrencyScope` (plus the event source id), with the optimistic strategy supplying the expected tail sequence number. A command **without** `concurrency: true` contributes no scope of its own, and the append falls to whatever concurrency strategy the event sequence is configured with — by default the optimistic one, scoped to the event source. So the attribute chooses _which dimensions_ bound the check, not whether a check happens at all. Reach for it on high-contention state transitions where a stale read would let two commands both "win" — it narrows the boundary so appends that are genuinely independent stop colliding (concurrency failures surface on `CommandResult`/`AppendResult`). Adopt it deliberately per behavior, not as a blanket default.
 
 When the stream id is known only at runtime, implement `ICanProvideEventStreamId.GetEventStreamId()` instead of `[EventStreamId]`. ⚠️ Combining `ICanProvideEventStreamId` with a non-null `[EventStreamId]` attribute on the same command throws `AmbiguousEventStreamId` at startup — pick one (or set the attribute value to `null` to defer to the interface).
 
@@ -143,7 +143,7 @@ When the stream id is known only at runtime, implement `ICanProvideEventStreamId
 
 `ICanProvideEventSourceId.GetEventSourceId()` → a single `EventSourceId`/`EventSourceId<T>`-derived property → a `[Key]` property → else Arc/Chronicle generates one.
 
-⚠️ **Injected read models resolve ONLY by the command's resolved event-source id** — not by the read-model type, and not by "the property that looks like its key." If the read model you need is keyed by a **different** value, direct injection silently hands you the **wrong** instance (or a default-initialized one) — a correctness bug, not a compile error. The three failure shapes: (1) you need a *referenced other* entity (act on A, check B); (2) the command has **multiple** `EventSourceId<T>`-typed properties → ambiguous resolution (never rely on property order); (3) a create command whose id is generated inside `Handle()`. In all three, read by explicit key: `IReadModels.GetInstanceById<T>((EventSourceId)key)`.
+⚠️ **Injected read models resolve ONLY by the command's resolved event-source id** — not by the read-model type, and not by "the property that looks like its key." If the read model you need is keyed by a **different** value, direct injection silently hands you the **wrong** instance (or a default-initialized one) — a correctness bug, not a compile error. The three failure shapes: (1) you need a _referenced other_ entity (act on A, check B); (2) the command has **multiple** `EventSourceId<T>`-typed properties → ambiguous resolution (never rely on property order); (3) a create command whose id is generated inside `Handle()`. In all three, read by explicit key: `IReadModels.GetInstanceById<T>((EventSourceId)key)`.
 
 ### Validators **[contract]**
 
@@ -166,8 +166,9 @@ Apply authorization attributes on the `[Command]` record or query method. **[con
 - **[contract] `[EventType]` lives in its owning slice file** — referenced from other slices via `using`.
 
 **Event-design rules (what is and isn't a fact):**
+
 - **Events are not read models** — never append events for totals, counts, statuses, search indexes, or dashboards. Project those from source events into read models.
-- **Never duplicate one fact as an aggregate event *plus* a per-item fanout.** If a command fans out per item (one `RequestSentToPartner` per partner), don't also emit an aggregate event carrying the whole list. Keep the fanout as the single source of truth and project any aggregate from it; pick per-item vs. single-with-list event from how consumers read it — never both.
+- **Never duplicate one fact as an aggregate event _plus_ a per-item fanout.** If a command fans out per item (one `RequestSentToPartner` per partner), don't also emit an aggregate event carrying the whole list. Keep the fanout as the single source of truth and project any aggregate from it; pick per-item vs. single-with-list event from how consumers read it — never both.
 - **Command rejection normally appends no event.** Validation and business-rule rejections are command results, not facts. Add a rejection/failed event only when the business must audit or react to that failure later.
 - **One event name = one meaning.** Don't reuse a vague event for several domain facts; if facts can occur, be absent, or have consumers independently, split them into separate event types.
 
@@ -207,7 +208,7 @@ public record Author(AuthorId Id, AuthorName Name)
 
 ### Choosing read-model access in command-side code **[convention]**
 
-Ladder, first that fits: (1) direct read-model (DCB) injection — only when keyed by the command's own event-source id; (2) a `[Passive]` projection; (3) `IReadModels.GetInstanceById<T>((EventSourceId)key)` for a different/derived key; (4) a materialized projection. A lookup *interface* is justified **only** for a genuine non-key search (e.g. find-by-email) — never to wrap a keyed `GetInstanceById`.
+Ladder, first that fits: (1) direct read-model (DCB) injection — only when keyed by the command's own event-source id; (2) a `[Passive]` projection; (3) `IReadModels.GetInstanceById<T>((EventSourceId)key)` for a different/derived key; (4) a materialized projection. A lookup _interface_ is justified **only** for a genuine non-key search (e.g. find-by-email) — never to wrap a keyed `GetInstanceById`.
 
 **Existence checks — null vs default:** a read model **with** class-level `[RemovedWith<T>]` returns **default-initialized** values after a removal event (never `null`) for both persisted and passive models — so check a sentinel/flag, not `null`. A read model **without** `[RemovedWith<T>]` that was **never created** resolves to **`null`** from `IReadModels.GetInstanceById<T>`. Match the check to the model.
 
@@ -222,7 +223,7 @@ Projections build read models from **events** (never from other read models). Us
 3. **Reducer `IReducerFor<T>`** when the model is "current state + event → next state" — branching on prior state, loops, calculations. A valid style, **not** a failure mode; carry an inline justification comment naming the limitation that ruled out a projection.
 
 - **[contract] AutoMap is on by default — never call `.AutoMap()`.** Match property names so AutoMap wires them; diverge with `[SetFrom<T>]` / `.Set().To()` only for genuine name differences. Re-enable `.AutoMap()` only inside a scope disabled with `.NoAutoMap()`.
-  - ⚠️ **AutoMap runs per *event* across every event the projection references — it does not defer to your explicit setters.** A property sourced with `[SetFrom<A>]` can still be silently overwritten when some *other* referenced event `B` happens to carry an identically named property (AutoMap wires `B`'s value on top). Fence the property with property-level **`[NoAutoMap]`** (which pairs with the `[SetFrom]`, not replaces it) so only your explicit setter writes it. `[SetFrom]` does **not** imply this — leaving AutoMap on is what allows the common create-then-rename pattern (a later event updating a property by name-match). No colliding event property name means no `[NoAutoMap]` needed. (An event subscribed only via an aggregate like `[Count]` doesn't auto-map its other properties, so it can't collide.) The analyzer **`CHR0025`** surfaces this collision as an *informational* heads-up (not a warning, because either resolution — add `[NoAutoMap]`, or accept the update — can be correct).
+    - ⚠️ **AutoMap runs per _event_ across every event the projection references — it does not defer to your explicit setters.** A property sourced with `[SetFrom<A>]` can still be silently overwritten when some _other_ referenced event `B` happens to carry an identically named property (AutoMap wires `B`'s value on top). Fence the property with property-level **`[NoAutoMap]`** (which pairs with the `[SetFrom]`, not replaces it) so only your explicit setter writes it. `[SetFrom]` does **not** imply this — leaving AutoMap on is what allows the common create-then-rename pattern (a later event updating a property by name-match). No colliding event property name means no `[NoAutoMap]` needed. (An event subscribed only via an aggregate like `[Count]` doesn't auto-map its other properties, so it can't collide.) The analyzer **`CHR0025`** surfaces this collision as an _informational_ heads-up (not a warning, because either resolution — add `[NoAutoMap]`, or accept the update — can be correct).
 - **[contract] `[Nested]`** projects a single nullable child object; place `[FromEvent<T>]` on the nested type (or property-level `[SetFrom<T>]` when the parent shares the event — declaring class-level `[FromEvent<T>]` on both parent and nested type for the same event is a duplicate-registration startup crash).
 - **[contract] Event-sequence source attributes:** class-level `[EventSequence("name")]`, `[EventLog]`, or `[EventStore("name")]` select where the projection reads from (a named sequence, the explicit default log, or another Chronicle event store / inbox). ⚠️ `[FromEventSequence]` is **removed** — use `[EventSequence("name")]`.
 
@@ -258,22 +259,22 @@ public Task AuthorRegistered(AuthorRegistered @event, EventContext context) => .
 - **`[PII]` is found at any nesting depth, and may mark a whole value object.** A `[PII]` concept inside a value object is encrypted where it sits (siblings stay readable). Marking the **value object type** (or a property typed as one) with `[PII]` classifies every value it holds — Chronicle pushes the marker down to the individual values, so the document keeps its shape and each value is separately encrypted rather than fused into one blob.
 - Projection-backed read models inherit PII lineage automatically — don't add `[PII]` to their properties. Reducer-backed models: a `[PII]`-concept-typed property is detected automatically; add property-level `[PII]` only for a primitive/non-PII-concept property populated from PII source data.
 - ⚠️ **`[PII]` cannot be applied to `EventSourceId`/`EventSourceId<T>`** — Chronicle throws `PIINotSupportedOnEventSourceId` at runtime because the identifier is the encryption-key lookup. If the identifier itself is sensitive, use a random `Guid`-backed surrogate as the event source id and store the sensitive value in a `[PII]` property.
-- **PII inside a list/array element IS encrypted.** The compliance walk descends into nested objects *and* into array elements, so a `[PII]` concept in an `IReadOnlyList<T>` and a `[PII]` member of an element object are both encrypted per element. `[PII]` on the *list property itself* is different: it blob-encrypts the whole collection as one value, protecting it but making per-element values unqueryable — reach for that only when you never need to query inside the collection. For list-valued PII that must stay queryable, prefer a **person-scoped** read model joined at the query edge.
+- **PII inside a list/array element IS encrypted.** The compliance walk descends into nested objects _and_ into array elements, so a `[PII]` concept in an `IReadOnlyList<T>` and a `[PII]` member of an element object are both encrypted per element. `[PII]` on the _list property itself_ is different: it blob-encrypts the whole collection as one value, protecting it but making per-element values unqueryable — reach for that only when you never need to query inside the collection. For list-valued PII that must stay queryable, prefer a **person-scoped** read model joined at the query edge.
 - ⚠️ **Do not declare a read-model property named `_subject`** — Chronicle reserves that field in MongoDB for internal key tracking. After right-to-erasure key deletion, `[PII]` properties return an **empty** value (no exception is thrown).
 
 ### Subject resolution **[contract]**
 
 The compliance **subject** is the encryption-key identity. It is resolved first-match-wins:
 
-| Priority | Mechanism |
-|---|---|
-| 1 | `Subject` as the second tuple element returned from `Handle()` (computed in the handler) |
-| 2 | `ICanProvideSubject.GetSubject()` on the command |
-| 3 | a `Subject`-typed property on the command |
-| 4 | an `EventSourceId<T>` property (the typed identity is the subject — no attribute) |
-| 5 | `[Subject]` on a **non-`EventSourceId<T>`** property (Arc converts via `ToString()`) |
+| Priority | Mechanism                                                                                |
+| -------- | ---------------------------------------------------------------------------------------- |
+| 1        | `Subject` as the second tuple element returned from `Handle()` (computed in the handler) |
+| 2        | `ICanProvideSubject.GetSubject()` on the command                                         |
+| 3        | a `Subject`-typed property on the command                                                |
+| 4        | an `EventSourceId<T>` property (the typed identity is the subject — no attribute)        |
+| 5        | `[Subject]` on a **non-`EventSourceId<T>`** property (Arc converts via `ToString()`)     |
 
-`ICanProvideSubject` lives in `Cratis.Chronicle.Events` (alongside `ICanProvideEventSourceId`/`ICanProvideEventStreamId`). `[Subject]` is *not* aggregate identity. A managed read-model document has **one** subject — never mix multiple people's PII in one document; split into person-scoped models.
+`ICanProvideSubject` lives in `Cratis.Chronicle.Events` (alongside `ICanProvideEventSourceId`/`ICanProvideEventStreamId`). `[Subject]` is _not_ aggregate identity. A managed read-model document has **one** subject — never mix multiple people's PII in one document; split into person-scoped models.
 
 ### Redaction **[contract]**
 

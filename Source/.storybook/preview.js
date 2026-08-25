@@ -3,101 +3,51 @@
 
 import { addons } from 'storybook/preview-api';
 import React from 'react';
-import 'primeicons/primeicons.css';
-import '../styles.css';
+import './foundation.css';
 import './preview.css';
-import '../theme.css';
-import '../primereact-v10-palette.css';
-import Aura from '@primeuix/themes/aura';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
-import { styledMode } from '../Styled';
-import { tailwindPtPreset } from './pt-preset';
 
-// PrimeReact 11 is unstyled-first and token-based: the styled look is styled mode -
-// PrimeReact's own component styles handed to every primitive through the provider's
-// `defaults`, painted by a @primeuix/themes preset applied through its `theme` config
-// (which injects the `--p-*` design tokens). A preset alone styles nothing; that is what
-// `styledMode()` composes. Dark mode is toggled with the class the preset's
-// `darkModeSelector` targets. There are no theme CSS files to <link> anymore (the v10
-// `primereact/resources/themes/lara-*` files were removed).
 const DARK_SELECTOR = 'cratis-dark';
+const LIGHT_SELECTOR = 'cratis-light';
 
-// PrimeReact 11 verifies a PrimeUI license key when its provider mounts, whatever the
-// styling path; without one a nag banner appears. Set STORYBOOK_PRIMEUI_LICENSE to your
-// own key. The default mode below is the unstyled + Tailwind `pt` path.
-const PRIMEUI_LICENSE = import.meta.env?.STORYBOOK_PRIMEUI_LICENSE;
-const withLicense = (value) => (PRIMEUI_LICENSE ? { ...value, license: PRIMEUI_LICENSE } : value);
-
-const STYLING_MODES = {
-    'unstyled-pt': {
-        title: 'Path C — Unstyled + Tailwind pt (default)',
-        dark: true,
-        bodyClass: 'cratis-unstyled-pt',
-        providerValue: { unstyled: true, pt: tailwindPtPreset },
-    },
-    'unstyled-bare': {
-        title: 'Path C — Unstyled (bare structure)',
-        dark: true,
-        bodyClass: 'cratis-unstyled-bare',
-        providerValue: { unstyled: true },
-    },
-    'styled-dark': {
-        title: 'Path A — Styled mode, Cratis preset, dark',
+const APPEARANCE_MODES = {
+    'baseline-dark': {
+        title: 'Cratis baseline — dark',
         dark: true,
         bodyClass: null,
-        providerValue: withLicense({ ripple: true, ...styledMode() }),
     },
-    'styled-light': {
-        title: 'Path A — Styled mode, Cratis preset, light',
+    'baseline-light': {
+        title: 'Cratis baseline — light',
         dark: false,
         bodyClass: null,
-        providerValue: withLicense({ ripple: true, ...styledMode() }),
     },
-    'styled-aura-dark': {
-        title: 'Path A — Styled mode, Aura preset, dark',
+    'product-theme': {
+        title: 'Product-owned token mapping',
         dark: true,
-        bodyClass: null,
-        providerValue: withLicense({ ripple: true, ...styledMode({ preset: Aura }) }),
-    },
-    'cratis-theme': {
-        title: 'Path B — Cratis baseline theme, dark (no license)',
-        dark: true,
-        bodyClass: 'cratis-theme',
-        providerValue: { unstyled: true },
-    },
-    'cratis-theme-light': {
-        title: 'Path B — Cratis baseline theme, light (no license)',
-        dark: false,
-        bodyClass: 'cratis-theme',
-        providerValue: { unstyled: true },
+        bodyClass: 'storybook-product-theme',
     },
 };
 
-const ALL_BODY_CLASSES = Object.values(STYLING_MODES)
-    .map(mode => mode.bodyClass)
+const ALL_BODY_CLASSES = Object.values(APPEARANCE_MODES)
+    .map((mode) => mode.bodyClass)
     .filter(Boolean);
 
-// Tracks the theme relayed from manager.js via the Storybook channel.
-// null means "not embedded — use the toolbar selection".
-let _docsSiteTheme = null;
+let docsSiteAppearance = null;
 
 addons.getChannel().on('STORYBOOK_THEME_CHANGE', ({ theme }) => {
-    _docsSiteTheme = theme === 'light' ? 'styled-light' : 'styled-dark';
-    const mode = STYLING_MODES[_docsSiteTheme];
-    if (mode) {
-        applyDarkMode(mode.dark);
-        applyBodyClass(mode.bodyClass);
-    }
+    docsSiteAppearance = theme === 'light' ? 'baseline-light' : 'baseline-dark';
+    const mode = APPEARANCE_MODES[docsSiteAppearance];
+    if (mode) applyAppearance(mode);
 });
 
 export const globalTypes = {
-    theme: {
-        name: 'Styling',
-        description: 'Which README styling path to render the story under',
-        defaultValue: 'unstyled-pt',
+    appearance: {
+        name: 'Appearance',
+        description: 'Render with the Cratis baseline or a product-owned token mapping',
+        defaultValue: 'baseline-dark',
         toolbar: {
             icon: 'paintbrush',
-            items: Object.entries(STYLING_MODES).map(([value, mode]) => ({
+            items: Object.entries(APPEARANCE_MODES).map(([value, mode]) => ({
                 value,
                 title: mode.title,
             })),
@@ -106,32 +56,24 @@ export const globalTypes = {
     },
 };
 
-function applyDarkMode(isDark) {
-    document.documentElement.classList.toggle(DARK_SELECTOR, !!isDark);
-}
-
-function applyBodyClass(className) {
+function applyAppearance(mode) {
+    document.documentElement.classList.toggle(DARK_SELECTOR, mode.dark);
+    document.documentElement.classList.toggle(LIGHT_SELECTOR, !mode.dark);
     document.body.classList.remove(...ALL_BODY_CLASSES);
-    if (className) {
-        document.body.classList.add(className);
-    }
+    if (mode.bodyClass) document.body.classList.add(mode.bodyClass);
 }
 
 export const decorators = [
     (Story, context) => {
-        const themeKey = _docsSiteTheme ?? context.globals.theme ?? 'unstyled-pt';
-        const mode = STYLING_MODES[themeKey] ?? STYLING_MODES['unstyled-pt'];
+        const appearanceKey =
+            docsSiteAppearance ?? context.globals.appearance ?? 'baseline-dark';
+        const mode = APPEARANCE_MODES[appearanceKey] ?? APPEARANCE_MODES['baseline-dark'];
+        applyAppearance(mode);
 
-        applyDarkMode(mode.dark);
-        applyBodyClass(mode.bodyClass);
-
-        // Key the provider by the selected mode so switching styling paths fully
-        // remounts it — this re-initializes the injected `@primeuix/themes` stylesheet
-        // instead of leaving a stale preset behind when moving to/from unstyled modes.
         return React.createElement(
             CratisComponentsProvider,
-            { key: themeKey, value: mode.providerValue },
-            React.createElement(Story)
+            { key: appearanceKey, value: { locale: 'en-US' } },
+            React.createElement(Story),
         );
     },
 ];
@@ -139,6 +81,7 @@ export const decorators = [
 export const parameters = {
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: { expanded: true },
+    a11y: { test: 'error' },
     backgrounds: {
         default: 'dark',
         values: [

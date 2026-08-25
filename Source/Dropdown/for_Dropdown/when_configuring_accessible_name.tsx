@@ -39,17 +39,17 @@ describe('when configuring the accessible name', () => {
                         aria-label='Select a role'
                         aria-labelledby='role-label'
                         aria-describedby='role-help'
-                        tabIndex={3}
+                        tabIndex={-1}
                     />
                 </CratisComponentsProvider>,
             );
         });
 
         const renderedRoot = container.querySelector<HTMLElement>(
-            '[data-scope="select"][data-part="root"]',
+            '.cratis-dropdown[data-cratis-part="root"]',
         );
         const renderedTrigger = container.querySelector<HTMLButtonElement>(
-            '[data-scope="select"][data-part="trigger"][role="combobox"]',
+            '[data-cratis-part="trigger"]',
         );
         if (!renderedRoot || !renderedTrigger) {
             throw new Error('Dropdown did not render its root and combobox trigger.');
@@ -72,7 +72,9 @@ describe('when configuring the accessible name', () => {
     });
 
     it('should put the label reference on the combobox', () => {
-        expect(trigger.getAttribute('aria-labelledby')).to.equal('role-label');
+        expect(trigger.getAttribute('aria-labelledby')?.split(' ')).to.include(
+            'role-label',
+        );
     });
 
     it('should put the description reference on the combobox', () => {
@@ -84,7 +86,7 @@ describe('when configuring the accessible name', () => {
     });
 
     it('should put the tab order on the combobox', () => {
-        expect(trigger.tabIndex).to.equal(3);
+        expect(trigger.tabIndex).to.equal(-1);
     });
 
     it('should not duplicate the control id on the wrapper', () => {

@@ -2,11 +2,23 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export { Canvas, CanvasItemRegistryContext } from './Canvas';
-export type { CanvasItemRegistryEntry, CanvasItemRegistryContextValue, CanvasItemData, CanvasContext, CanvasProps, CanvasHandle } from './Canvas';
+export type {
+    CanvasCaptureAttributes,
+    CanvasContext,
+    CanvasHandle,
+    CanvasItemData,
+    CanvasItemRegistryContextValue,
+    CanvasItemRegistryEntry,
+    CanvasProps,
+} from './Canvas';
 export { CanvasItem } from './CanvasItem';
 export type { CanvasItemProps } from './CanvasItem';
 export { CanvasMinimap } from './CanvasMinimap';
-export type { MinimapItem, CanvasMinimapHandle, CanvasMinimapProps } from './CanvasMinimap';
+export type {
+    MinimapItem,
+    CanvasMinimapHandle,
+    CanvasMinimapProps,
+} from './CanvasMinimap';
 export { CanvasControls } from './CanvasControls';
 export type { CanvasControlsProps, CanvasControlsLabels } from './CanvasControls';
 export { CanvasOverlay } from './CanvasOverlay';

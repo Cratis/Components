@@ -4,8 +4,13 @@
 import { DEFAULT_COLORS, type CardColors } from './constants';
 
 export function createCssColorResolver() {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  let context: CanvasRenderingContext2D | null | undefined;
+  const getContext = () => {
+    if (context !== undefined) return context;
+    if (typeof document === 'undefined') return null;
+    context = document.createElement('canvas').getContext('2d');
+    return context;
+  };
 
   const parseHex = (val: string): number | null => {
     if (!val.startsWith('#')) return null;
@@ -23,9 +28,8 @@ export function createCssColorResolver() {
   };
 
   return (cssValue: string, fallback: number): number => {
-    if (!ctx) {
-      return fallback;
-    }
+    const ctx = getContext();
+    if (!ctx) return fallback;
     ctx.fillStyle = cssValue.trim();
     const resolved = ctx.fillStyle; // normalized by canvas
     const hex = parseHex(resolved);
@@ -50,18 +54,23 @@ export function createCssColorResolver() {
   };
 }
 
-export function resolveCardColors(cssColorResolver: (s: string, f: number) => number): CardColors {
-  const root = document.documentElement;
-  const style = getComputedStyle(root);
+export function resolveCardColors(
+  cssColorResolver: (s: string, f: number) => number,
+  element?: Element,
+): CardColors {
+  if (typeof document === 'undefined' || typeof getComputedStyle === 'undefined') {
+    return DEFAULT_COLORS;
+  }
+  const style = getComputedStyle(element ?? document.documentElement);
   const getVar = (name: string, fallback: number) =>
     cssColorResolver(style.getPropertyValue(name) || name, fallback);
 
   return {
-    base: getVar('--surface-b', DEFAULT_COLORS.base),
-    mid: getVar('--surface-a', DEFAULT_COLORS.mid),
-    gradient: getVar('--surface-ground', DEFAULT_COLORS.gradient),
-    border: getVar('--surface-border', DEFAULT_COLORS.border),
-    text: getVar('--text-color', DEFAULT_COLORS.text),
-    textSecondary: getVar('--text-color-secondary', DEFAULT_COLORS.textSecondary),
+    base: getVar('--cratis-surface-card', DEFAULT_COLORS.base),
+    mid: getVar('--cratis-surface-section', DEFAULT_COLORS.mid),
+    gradient: getVar('--cratis-surface-ground', DEFAULT_COLORS.gradient),
+    border: getVar('--cratis-surface-border', DEFAULT_COLORS.border),
+    text: getVar('--cratis-text-color', DEFAULT_COLORS.text),
+    textSecondary: getVar('--cratis-text-color-secondary', DEFAULT_COLORS.textSecondary),
   };
 }

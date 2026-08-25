@@ -24,7 +24,13 @@ interface MatcherRegistryState {
 
 /** Handle returned for one custom matcher registration. */
 export interface DataTableFilterMatcherRegistration {
+    /** The branded match mode name that was registered and can now be used in filter metadata. */
     matchMode: DataTableCustomFilterMatchMode;
+    /**
+     * Removes this custom matcher registration from the global registry. Safe
+     * to call more than once. After the first call, the matcher is no longer
+     * available and the match mode reverts to an unrecognized custom mode.
+     */
     unregister(): void;
 }
 
@@ -95,6 +101,11 @@ export const registerDataTableFilterMatcher = (
 
     return { matchMode, unregister };
 };
+
+/** Resolves a custom matcher registered for the given name. */
+export const resolveDataTableFilterMatcher = (
+    name: string,
+): DataTableFilterMatcher | undefined => registry.matchers.get(name)?.matcher;
 
 /** Removes a custom matcher registration. Safe to call more than once. */
 export const unregisterDataTableFilterMatcher = (

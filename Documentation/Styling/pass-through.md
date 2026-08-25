@@ -1,195 +1,126 @@
-# Pass-through (`pt`) cheat sheet
+---
+title: Stable component parts
+description: Customize Components through typed Cratis part keys and documented DOM part values.
+---
 
-Every Cratis wrapper forwards PrimeReact's `pt`, `ptOptions`, and `unstyled` props somewhere — but **where** depends on how much PrimeReact the wrapper composes. This page summarizes the pattern per component so you know which prop to reach for.
+Components exposes two related styling surfaces:
 
-## Three patterns
+- **Typed `pt` keys** use camel case and accept ordinary HTML attributes for one component instance.
+- **DOM part values** appear in `data-cratis-part` and use kebab case where a name contains several words.
 
-### 1. Single-widget wrappers
+They are documented separately because not every DOM part needs a `pt` key, and the spellings are intentionally different (`headerRow` versus `header-row`).
 
-The wrapper renders exactly one PrimeReact widget and forwards `pt` / `ptOptions` / `unstyled` / `className` straight to it. The pt slot names are PrimeReact's own — see the underlying component's documentation.
-
-| Wrapper            | Underlying widget (PrimeReact 11)                     | pt slot reference           |
-| ------------------ | ----------------------------------------------------- | --------------------------- |
-| `Dialog`           | `primereact/dialog` Dialog                            | PrimeReact Dialog `pt`      |
-| `Dropdown`         | `primereact/select` Select                            | PrimeReact Select `pt`      |
-| `InputTextField`   | `primereact/inputtext` InputText                      | PrimeReact InputText `pt`   |
-| `TextAreaField`    | `primereact/textarea` Textarea                        | PrimeReact Textarea `pt`    |
-| `NumberField`      | `primereact/inputnumber` InputNumber                  | PrimeReact InputNumber `pt` |
-| `DropdownField`    | `primereact/select` Select                            | PrimeReact Select `pt`      |
-| `RadioGroupField`  | `primereact/radiobutton` RadioButton (one per option) | PrimeReact RadioButton `pt` |
-| `RadioButtonField` | `primereact/radiobutton` RadioButton                  | PrimeReact RadioButton `pt` |
-| `CalendarField`    | `primereact/datepicker` DatePicker                    | PrimeReact DatePicker `pt`  |
-| `CheckboxField`    | `primereact/checkbox` Checkbox                        | PrimeReact Checkbox `pt`    |
-| `SliderField`      | `primereact/slider` Slider                            | PrimeReact Slider `pt`      |
-| `ChipsField`       | `primereact/inputtags` InputTags                      | PrimeReact InputTags `pt`   |
-| `MultiSelectField` | `primereact/select` Select (multiple mode)            | PrimeReact Select `pt`      |
-| `ColorPickerField` | `primereact/inputcolor` InputColor                    | PrimeReact InputColor `pt`  |
-| `EventsView`       | `primereact/timeline` Timeline                        | PrimeReact Timeline `pt`    |
-
-`DatePickerInput` exposes `id`, `disabled`, `readOnly` and `showButtonBar` directly, so those behaviors do not need element-level pass-through workarounds. It deliberately narrows PrimeReact 11's stale root pass-through declaration: use `input` for additional attributes on the rendered `data-part="input"` element; `pcInputText` is not valid because PrimeReact does not emit it. The wrapper also translates `invalid` to `aria-invalid` and `data-invalid` rather than leaking a rejected `invalid` DOM attribute.
+## Typed pt keys
 
 ```tsx
-<DatePickerInput
-    id='appointment-date'
-    value={selectedDate}
-    onChange={setSelectedDate}
-    disabled={isDisabled}
-    readOnly={isReadOnly}
-    showButtonBar
+<Dialog
+    title='Edit account'
     pt={{
-        input: {
-            'aria-label': 'Appointment date',
-            'aria-describedby': 'appointment-date-help',
-        },
-    }}
-/>
-```
-
-Example:
-
-```tsx
-<InputTextField
-    value={(c) => c.email}
-    title='Email'
-    pt={{ root: { className: 'border-2 border-sky-500' } }}
-/>
-```
-
-### 2. Multi-slot composites
-
-The wrapper composes more than one PrimeReact widget and exposes a sibling set of `*Pt` / `*PtOptions` / `*Unstyled` / `*ClassName` props per slot.
-
-#### `Dialog`-based dialogs
-
-`CommandDialog` is a single Dialog and forwards `pt`/`ptOptions`/`unstyled` to that Dialog.
-
-`StepperCommandDialog` composes a Dialog **and** a Stepper:
-
-| Prop                                                                  | Targets                       |
-| --------------------------------------------------------------------- | ----------------------------- |
-| `pt` / `ptOptions` / `unstyled`                                       | The inner PrimeReact Stepper. |
-| `dialogPt` / `dialogPtOptions` / `dialogUnstyled` / `dialogClassName` | The outer PrimeReact Dialog.  |
-
-```tsx
-<StepperCommandDialog<RegisterAuthor>
-    command={RegisterAuthor}
-    title='Register author'
-    pt={{ stepperpanel: { content: { className: 'pt-6' } } }}
-    dialogPt={{ header: { className: 'bg-slate-900 text-slate-50' } }}
-    dialogClassName='shadow-2xl'
->
-    …
-</StepperCommandDialog>
-```
-
-#### Data tables and pages
-
-`DataTableForQuery` and `DataTableForObservableQuery` each compose a DataTable **and** a Paginator:
-
-| Prop                                          | Targets                                                                   |
-| --------------------------------------------- | ------------------------------------------------------------------------- |
-| `pt` / `ptOptions` / `unstyled` / `className` | The inner DataTable.                                                      |
-| `paginatorClassName` / `paginatorAriaLabels`  | The paginator (a Cratis button control — styled by class name, not `pt`). |
-
-`DataPage` composes a DataTable **and** an action toolbar:
-
-| Prop                                                                      | Targets                                                                                      |
-| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `tablePt` / `tablePtOptions` / `tableUnstyled` / `tableClassName`         | The inner DataTable.                                                                         |
-| `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` | The action toolbar's buttons (PrimeReact 11 replaced the v10 Menubar with a button toolbar). |
-
-```tsx
-<DataPage<AllAuthors, Author, never>
-    title='Authors'
-    query={AllAuthors}
-    tablePt={{ table: { className: 'min-w-full divide-y divide-slate-700' } }}
-    menubarPt={{ root: { className: 'px-3 py-2 bg-slate-900' } }}
->
-    <DataPage.MenuItems>…</DataPage.MenuItems>
-    <DataPage.Columns>…</DataPage.Columns>
-</DataPage>
-```
-
-### 3. Large composites
-
-These wrappers render many PrimeReact widgets internally (`InputText`, `InputNumber`, `Checkbox`, `DatePicker`, `Textarea`, `Select`, `Button`, …). Exposing a `pt` prop per inner widget would be impractical; instead, they expose **`className`** on the root for layout/positioning, and you restyle their internals via the **global `pt` preset** on [`CratisComponentsProvider`](../Common/cratis-components-provider.md).
-
-| Wrapper                 | What it accepts | How to restyle internals                                                                               |
-| ----------------------- | --------------- | ------------------------------------------------------------------------------------------------------ |
-| `ObjectContentEditor`   | `className`     | Global `pt` on `CratisComponentsProvider` covering `inputtext`, `inputnumber`, `checkbox`, `textarea`. |
-| `ObjectNavigationalBar` | `className`     | Global `pt` covering `button`; `--cratis-surface-border` for the bottom border.                        |
-| `SchemaEditor`          | `className`     | Global `pt` covering `button`, `inputtext`, `select`, `datatable`.                                     |
-
-Example with a global preset:
-
-```tsx
-<CratisComponentsProvider
-    value={{
-        unstyled: true,
-        pt: {
-            inputtext: { root: { className: 'my-input' } },
-            inputnumber: { input: { root: { className: 'my-input' } } },
-            button: { root: { className: 'my-btn' } },
-            /* … */
-        },
+        backdrop: { className: 'account-dialog-backdrop' },
+        root: { className: 'account-dialog' },
+        content: { className: 'account-dialog-content' },
     }}
 >
-    <ObjectContentEditor object={data} schema={schema} editMode />
-</CratisComponentsProvider>
+    Content
+</Dialog>
 ```
 
-## Where the global `pt` reaches
+| Component/type                              | Typed `pt` keys                                                                                                                                                                        | Element types                                                 |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `ButtonParts`                               | `root`, `icon`, `label`, `spinner`                                                                                                                                                     | button, spans                                                 |
+| `DialogParts`                               | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                                 | divs/header/heading/footer/buttons                            |
+| `DropdownParts`                             | `root`, `input`, `select`, `trigger`, `value`, `clear`, `indicator`, `popover`, `listbox`, `option`, `filter`, `multiple`                                                              | wrapper, input/button, spans, popover/listbox/options, select |
+| `DatePickerInputPassThrough`                | `root`, `group`, `input`, `placeholder`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `buttonBar`, `today`, `clear` | divs, segmented field, buttons, calendar grid/cells           |
+| `DataTableParts`                            | `root`, `search`, `searchInput`, `tableContainer`, `table`, `head`, `headerRow`, `headerCell`, `body`, `row`, `cell`, `emptyRow`, `emptyCell`                                          | div/input/table sections/rows/cells                           |
+| `ColumnFilterMenuParts` (`Column.filterPt`) | `trigger`, `popover`, `menu`, `matchMode`, `input`, `actions`, `clear`, `apply`                                                                                                        | button, overlay/menu, inputs, actions                         |
+| `TablePaginatorParts`                       | `root`, `range`, `info`, `first`, `previous`, `next`, `last`                                                                                                                           | navigation div, spans, and Button parts                       |
+| `StepperParts`                              | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                                    | div, ordered list, list item, button, spans, section          |
+| `ToasterPassThrough`                        | `region`, `toast`, `icon`, `content`, `title`, `description`, `close`, `action`                                                                                                        | region/article/divs/spans/buttons                             |
+| `ToolbarParts` / `ToolbarButtonParts`       | toolbar `root`; button `root`, `icon`, `label`                                                                                                                                         | toolbar div and native buttons/spans                          |
+| `ToolbarGroupParts` / `ToolbarLayoutParts`  | `root`, `slot`, `incoming`, `outgoing`                                                                                                                                                 | group/layout and transition measurement divs                  |
+| `ToolbarSectionParts`                       | `root`, `context`                                                                                                                                                                      | animated section and named context divs                       |
+| `ToolbarSeparatorParts`                     | `root`                                                                                                                                                                                 | native separator div                                          |
+| `ToolbarFolderParts` / `ToolbarFanOutParts` | `root`, `trigger`, `panel`                                                                                                                                                             | composition div, native trigger, and inert collapsed panel    |
+| `ActionMenubar` `pt`                        | the `ButtonParts` keys applied to each action                                                                                                                                          | button and spans                                              |
+| Query table / `DataPage` `paginatorPt`      | `TablePaginatorParts`                                                                                                                                                                  | paginator surface                                             |
+| `DataPage` `tablePt`                        | `DataTableParts`                                                                                                                                                                       | table surface                                                 |
+| `DataPage` `menubarPt`                      | `ButtonParts`                                                                                                                                                                          | action buttons                                                |
 
-A `pt` preset on `CratisComponentsProvider` flows into **every** PrimeReact widget rendered by every wrapper — including the internals of the large composites. Per-instance `pt` props on individual wrappers are _merged_ with the global preset (PrimeReact's `ptOptions.mergeSections` defaults to `true`).
+Command field part keys:
 
-To replace a slot's preset entirely on a single instance, opt out of merging:
+| Field                  | Typed keys                                          |
+| ---------------------- | --------------------------------------------------- |
+| InputText / TextArea   | `root` (the native control; see the DOM note below) |
+| Number                 | `root`, `input`                                     |
+| Checkbox               | `root`, `input`, `box`, `indicator`                 |
+| ToggleSwitch           | `root`, `input`, `control`, `handle`                |
+| Password               | `root`, `input`, `toggle`                           |
+| RadioButton            | `root`, `input`, `box`, `indicator`                 |
+| RadioGroup             | `root`, `option`, `input`, `box`, `indicator`       |
+| Slider                 | `root`, `input`, `value`                            |
+| Chips                  | `root`, `item`, `remove`, `input`                   |
+| ColorPicker            | `root`, `input`, `value`                            |
+| Rating                 | `root`, `option`, `input`, `star`                   |
+| Calendar               | `DatePickerInputPassThrough` keys                   |
+| Dropdown / MultiSelect | `DropdownParts` keys                                |
 
-```tsx
-<Button pt={{ root: { className: 'special-btn' } }} ptOptions={{ mergeSections: false }}>
-    Special
-</Button>
+`InputTextParts.root` applies to the native element carrying `data-cratis-part='input'`; `TextAreaParts.root` applies to `data-cratis-part='textarea'`. The typed key is retained for source compatibility, but there is no extra field-root DOM wrapper.
+
+Named behavior props override conflicting part attributes. Part classes and styles merge with component structure. `DropdownParts.input` and `select` are narrow Components 3 migration aliases for class, style, id, and ARIA values; attach event handlers and other ordinary attributes to the current `trigger`, `filter`, `multiple`, `listbox`, or `option` part instead.
+
+## DOM part values
+
+Use the exact kebab-case value in CSS or tests:
+
+| Surface        | `data-cratis-part` values                                                                                                                                                                                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Button         | `root`, `icon`, `label`, `spinner`                                                                                                                                                                                                                                                                                     |
+| Dialog         | `backdrop`, `positioner`, `root`, `header`, `title`, `close`, `content`, `footer`, `confirm`, `cancel`                                                                                                                                                                                                                 |
+| Dropdown       | `root`, `trigger`, `value`, `clear`, `indicator`, `filter`, `popover`, `listbox`, `option`, `multiple`                                                                                                                                                                                                                 |
+| DatePicker     | `root`, `group`, `input`, `placeholder`, `segment`, `trigger`, `popover`, `dialog`, `calendar`, `header`, `heading`, `previous`, `next`, `grid`, `cell`, `button-bar`, `today`, `clear`                                                                                                                                |
+| DataTable      | `root`, `search`, `search-input`, `table-container`, `table`, `head`, `header-row`, `header-cell`, `header-content`, `sort`, `filter-trigger`, `filter-popover`, `filter-menu`, `filter-actions`, `body`, `row`, `cell`, `empty-row`, `empty-cell`                                                                     |
+| TablePaginator | `root`, `range`, `info`; paginator buttons expose the documented Button parts                                                                                                                                                                                                                                          |
+| Stepper        | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                                                                                                                                                                                                                    |
+| Toaster        | `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, `close`                                                                                                                                                                                                                                        |
+| Tooltip        | `popup`; a standalone trigger uses `trigger`, while a composed child preserves its own component part and gains `data-cratis-tooltip-trigger`                                                                                                                                                                          |
+| Command fields | `root`, plus the typed field-specific values listed above (`input`, `textarea`, `box`, `control`, `handle`, `indicator`, `option`, `item`, `remove`, `value`, `star`, `toggle`)                                                                                                                                        |
+| Display        | component roots plus `image`, `fallback`, `remove`, `indicator`, `range`, `track`, and labels where applicable                                                                                                                                                                                                         |
+| Event timeline | `timeline`, `event`, `separator`, `marker`, `connector`, `content`                                                                                                                                                                                                                                                     |
+| Toolbar        | `root`, `button`, `icon`, `label`, `fanout-root`, `fanout-trigger`, `fanout-panel`, `toolbar-group`, `toolbar-separator`, `toolbar-layout`, `toolbar-section`, `toolbar-context`, `toolbar-slot`, `toolbar-slot-incoming`, `toolbar-slot-outgoing`, `toolbar-folder`, `toolbar-folder-trigger`, `toolbar-folder-panel` |
+
+`header-content`, `sort`, and `filter-trigger` are DOM targets but are not `DataTableParts` keys. Customize them with CSS rather than claiming a nonexistent typed key.
+
+`Tooltip` enhances the actual focusable child. If that child already has a component-specific `data-cratis-part` (for example `button`, `toolbar-folder-trigger`, or `fanout-trigger`), Tooltip preserves it and adds `data-cratis-tooltip-trigger`. It uses `data-cratis-part='trigger'` only for a child without its own stable part.
+
+```css
+[data-cratis-part='header-cell'] {
+    text-transform: uppercase;
+}
+
+[data-cratis-part='row'][data-selected='true'] {
+    background: var(--product-selected-row);
+}
 ```
 
-## Components that do NOT accept per-instance `pt`
+## State attributes
 
-- **`BusyIndicatorDialog`** — the dialog is rendered by the dialog host on demand and the request type lives in `@cratis/arc.react`, so no per-instance prop is plumbed through. Use the **global `pt`** on `CratisComponentsProvider` to restyle it.
+State attributes are component-specific. Common values include:
 
-## Versioned compatibility contract
+| Attribute          | Meaning                                |
+| ------------------ | -------------------------------------- |
+| `data-active`      | Active filter, step, or action.        |
+| `data-selected`    | Selected row, option, or value.        |
+| `data-invalid`     | Validation error state.                |
+| `data-disabled`    | Disabled component state.              |
+| `data-readonly`    | Read-only date/control state.          |
+| `data-loading`     | Loading toast/action.                  |
+| `data-position`    | Overlay, timeline, or region position. |
+| `data-orientation` | Horizontal/vertical layout.            |
+| `data-size`        | Component size variant.                |
+| `data-severity`    | Semantic status tone.                  |
 
-Components 3 publishes its PrimeReact 11 compatibility surface from `@cratis/components/compatibility`. The contract is scoped to this Components major; it does not preserve PrimeReact 10 names or guarantee the same names in a future Components major.
+Do not assume an attribute exists on every component; use its documented parts/type and inspect the rendered Cratis contract in tests.
 
-| Contract component | Global `pt` key     | Contracted slots                                                                                                                  |
-| ------------------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `button`           | `button`            | `root`                                                                                                                            |
-| `inputtext`        | `inputtext`         | `root`                                                                                                                            |
-| `textarea`         | `textarea`          | `root`                                                                                                                            |
-| `inputnumber`      | `inputnumber.root`  | `root`, `input`                                                                                                                   |
-| `select`           | `select.root`       | `root`, `trigger`, `value`, `clear`, `indicator`, `positioner`, `popup`, `filter`, `list`, `option`                               |
-| `checkbox`         | `checkbox.root`     | `root`, `input`, `box`, `indicator`                                                                                               |
-| `radiobutton`      | `radiobutton.root`  | `root`, `input`, `box`, `indicator`                                                                                               |
-| `datepicker`       | `datepicker.root`   | `root`, `trigger`, `positioner`, `popup`, `calendar`, `header`, `prev`, `title`, `selectMonth`, `selectYear`, `next`, `tableBody` |
-| `slider`           | `slider.root`       | `root`, `track`, `range`, `handle`                                                                                                |
-| `inputtags`        | `inputtags.root`    | `root`                                                                                                                            |
-| `inputcolor`       | `inputcolor.root`   | `area`, `areaBackground`, `areaHandle`, `sliderTrack`, `sliderHandle`, `swatch`, `swatchBackground`                               |
-| `timeline`         | `timeline.root`     | `root`, `event`, `separator`, `marker`, `connector`, `content`                                                                    |
-| `rating`           | `rating.root`       | `root`, `option`, `onIcon`, `offIcon`                                                                                             |
-| `toggleswitch`     | `toggleswitch.root` | `root`, `input`, `control`, `handle`                                                                                              |
-| `inputpassword`    | `inputtext`         | `root`                                                                                                                            |
-| `dialog`           | `dialog.root`       | `backdrop`, `positioner`, `popup`, `header`, `title`, `close`, `content`, `footer`                                                |
-| `datatable`        | `datatable.root`    | `root`, `tableContainer`, `table`, `head`, `theadRow`, `theadCell`, `body`, `row`, `cell`                                         |
-| `stepper`          | `stepper.root`      | `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, `panel`                                               |
+## Legacy flags
 
-`components3PrimeReact11PassThroughContract` is the machine-readable source of truth. Each entry also lists the rendered `data-scope` / `data-part` markers verified by the compatibility suite. The table covers the parts rendered by Components' supported compositions; it is not a copy of every optional PrimeReact part that an application could compose itself. Contract additions are compatible. A contracted slot or marker removal or rename requires a new Components major.
-
-Use `primeReact11PassThroughSentinelPreset` and `assertPrimeReact11PassThroughCompatibility()` in a DOM test to verify the subset your application renders. See [Use fully unstyled mode](unstyled.md#verify-the-contract) for an example.
-
-### Compatibility history
-
-| Components major | PrimeReact major | Contract revision |
-| ---------------- | ---------------- | ----------------- |
-| 3                | 11               | 1                 |
-
-## See also
-
-- [CratisComponentsProvider](../Common/cratis-components-provider.md) — global `pt` / `unstyled` setup
-- [Use fully unstyled mode](unstyled.md) — full `pt` preset walk-through
+`ptOptions` and `unstyled` remain accepted temporarily for Components 3 source compatibility. They have no effect: typed Cratis attributes always merge, and styling is always CSS-owned.

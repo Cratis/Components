@@ -1,77 +1,57 @@
 ---
 title: Getting started
-description: Install Components, mount the provider, and render your first type-safe command form — a few declarative lines instead of a few files of glue.
+description: Install Components, mount the provider, and render your first type-safe command form.
 sidebar:
     order: 2
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-You've built an Arc backend — a `RegisterAuthor` command, an `AllAuthors` query — and `dotnet build` has generated the typed proxies for both. Now you need a screen: a form to add an author, a table that lists them and refreshes itself when one's added.
-
-You can build that straight on PrimeReact — instantiate the command, track its executing state, disable the button while it runs, render OK/Cancel, bind every field, call the query, subscribe to its observable, re-render on change. `@cratis/components` centralizes that integration around your generated proxies, so the same screen is a few declarative lines. Let's wire it up.
+You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` query—and `dotnet build` generated typed proxies for both. Components turns those proxies into accessible forms, dialogs, and data views without duplicating command state, validation, or query lifecycle code.
 
 ## Prerequisites
 
-- **A React app** — a Vite + React frontend (the `dotnet new cratis` template scaffolds one).
-- **An Arc frontend that reaches your backend through generated proxies** — the [Arc frontend get-started](/arc/frontend/getting-started/) sets that up. Components renders forms and tables _on top_ of those proxies. If you scaffolded with `dotnet new cratis`, the package is already installed and you're here to understand the pieces.
+- A React 19 application.
+- An Arc frontend connected through generated proxies. The [Arc frontend guide](/arc/frontend/getting-started/) sets this up.
 
 ## Install and wire it up
 
 <Steps>
 
-1. **Install the package — and PrimeReact alongside it.**
+1. **Install Components.**
 
     ```bash title="Install Components"
-    npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+    npm install @cratis/components
     ```
 
-    From 3.0, PrimeReact is a **peer dependency**, so you supply it and the library uses yours. That's not bureaucracy: when the library bundled its own copy, an app that also depended on `primereact` could end up with **two** — and two copies means two `PrimeReactProvider` contexts, so overlays stack wrongly and `pt` silently stops applying, with no error to point at it. One declared peer is one copy. If you carried a `resolutions` / `overrides` pin for `primereact` to work around this, delete it.
+    React Aria and the internationalized date implementation are internal dependencies. You do not install a UI kit, theme runtime, icon package, or commercial license for Components.
 
-    `primeicons` went 7 → 8 with PrimeReact 11. The heavier extras — `pixi.js` (`PivotViewer`), `framer-motion` (animated panels), `allotment` (`DataPage`) — are still regular dependencies and install automatically. The remaining peers (`react`/`react-dom` 19+, `@cratis/arc*`, `reflect-metadata`, `tsyringe`) already come with the Arc frontend from the prerequisites.
+    The remaining peers—React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe`—already come with an Arc frontend. Arc 20, 21, and 22 are supported.
 
-2. **Import the stylesheets once**, at your app's entry point, in this order:
+2. **Import the Cratis-owned stylesheets once**, at your application entry point:
 
     ```typescript title="main.tsx"
-    import '@cratis/components/tokens'; // the --cratis-* token layer
-    import '@cratis/components/styles'; // every component stylesheet, in one file
-    import '@cratis/components/theme'; // optional — the Cratis baseline look (MIT CSS)
-    ```
-
-    :::caution[PrimeReact 11 is not MIT]
-    `@cratis/components` is MIT, but as of 3.0.0 it builds on **PrimeReact 11**, which is part of
-    PrimeTek's commercial **PrimeUI** family — as are `primeicons` 8.x, `@primereact/core`,
-    `@primereact/headless`, `@primereact/styles`, `@primeuix/themes` and `@primeuix/styled`. PrimeReact 10 was MIT; 11 is not.
-
-    A **PrimeUI license key is required regardless of how you style** — the check runs when
-    `PrimeReactProvider` mounts, not when a theme is applied. Without one you get a console warning and
-    an _"Invalid PrimeUI License"_ banner, in development and production.
-
-    The [Community License](https://primeui.dev/licenses/community) is free for individuals, students,
-    non-profits, non-commercial open source, and organizations under $1M revenue with fewer than 5
-    developers. Everyone else needs a [Commercial License](https://primeui.dev/licenses/commercial).
-    Redistributing a library that others build with needs a separate OEM License.
-
-    Need to stay MIT-only? **`@cratis/components` 2.x remains on PrimeReact 10.** See
-    [Licensing](/components/migration/#licensing).
-    :::
-
-    Components no longer import their own CSS — that's what lets the package load in a plain Node test environment. `tokens` declares the `--cratis-*` [token layer](/components/styling/) the components read their colors and spacing from; `styles` is the component CSS plus the pre-compiled utility styles; `theme` is optional and covered below. It works with any bundler.
-
-    <Aside type='caution' title='Order matters'>
-        Import `tokens` first. Both `styles` and `theme` resolve `--cratis-*` variables
-        that `tokens` declares.
-    </Aside>
-
-3. **Mount the provider** around your app:
-
-    ```tsx title="App.tsx"
     import '@cratis/components/tokens';
     import '@cratis/components/styles';
-    import { CratisComponentsProvider } from '@cratis/components';
+    import '@cratis/components/theme'; // optional baseline appearance
+    ```
+
+    `tokens` defines stable `--cratis-*` variables with conservative light defaults. `styles` supplies no-Preflight component structure in low-priority Cratis layers. `theme` adds automatic/explicit dark mode, forced colors, and themed subtrees.
+
+    A product with its own design system can omit `theme`, map its own variables onto `--cratis-*`, and customize stable `data-cratis-part` elements or `pt` attributes.
+
+    <Aside type='caution' title='Order matters'>
+        Import `tokens` before `styles` and `theme` so every component resolves the same
+        semantic variables.
+    </Aside>
+
+3. **Mount the provider** around your application:
+
+    ```tsx title="App.tsx"
+    import { CratisComponentsProvider } from '@cratis/components/Common';
 
     export const App = () => (
-        <CratisComponentsProvider>
+        <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
             <YourApp />
         </CratisComponentsProvider>
     );
@@ -81,25 +61,56 @@ You can build that straight on PrimeReact — instantiate the command, track its
 
 ## What the provider sets up
 
-That one wrapper does more than it looks. Components renders PrimeReact **unstyled-first** (PrimeReact 11's default) and is the single place you layer on a `pt` preset, locale, ripple, overlay z-index, or a styled theme — routing every component's look through the `--cratis-*` tokens you just imported. The upshot: everything below it renders structurally right away, and it takes its visual identity from tokens and the styling setup you control — not from styles baked into the library.
+The provider supplies the locale, Components-specific labels, and an optional app-wide toast region. React Aria uses the locale for date, number, keyboard, and screen-reader behavior. Styling remains CSS-owned rather than provider-owned.
 
 ```mermaid
 flowchart LR
     Proxy["generated proxy<br/>RegisterAuthor · AllAuthors"] --> C["Components<br/>CommandDialog · DataTable"]
-    C --> PR["PrimeReact (unstyled)"]
-    Tokens["--cratis-* tokens"] -.->|theming| PR
+    C --> Markup["Cratis-owned semantic markup"]
+    Aria["React Aria behavior"] -.-> Markup
+    Tokens["--cratis-* tokens"] -.-> Markup
 ```
 
-The components sit between your typed proxies and PrimeReact: they speak commands and queries on one side, render PrimeReact on the other, and take their styling from tokens.
+React Aria is an implementation dependency. Public props, parts, CSS variables, and event types are owned by Cratis.
+
+## Localize Components labels
+
+React Aria supplies its own locale data. Configure only labels owned by Components:
+
+```tsx
+<CratisComponentsProvider
+    value={{
+        locale: 'nb-NO',
+        messages: {
+            paginator: {
+                navigation: 'Sidenavigasjon',
+                first: 'Første side',
+                previous: 'Forrige side',
+                next: 'Neste side',
+                last: 'Siste side',
+            },
+            datePicker: {
+                today: 'I dag',
+                clear: 'Tøm',
+                openCalendar: 'Åpne kalender',
+                previousMonth: 'Forrige måned',
+                nextMonth: 'Neste måned',
+            },
+        },
+    }}
+>
+    <YourApp />
+</CratisComponentsProvider>
+```
 
 ## See the payoff
 
-Here's the add-author form — the whole thing. `CommandDialog` takes your generated command, renders the fields and the confirm/cancel buttons, and disables confirm while it executes:
+`CommandDialog` takes the generated command, renders its fields and actions, and disables confirmation while execution is in progress:
 
 ```tsx title="AddAuthor.tsx"
 import { CommandDialog } from '@cratis/components/CommandDialog';
 import { InputTextField } from '@cratis/components/CommandForm';
-import { RegisterAuthor } from './Authors/RegisterAuthor'; // generated proxy
+import { RegisterAuthor } from './Authors/RegisterAuthor';
 
 export const AddAuthor = () => (
     <CommandDialog<RegisterAuthor>
@@ -107,28 +118,32 @@ export const AddAuthor = () => (
         title='Add author'
         okLabel='Add'
     >
-        <InputTextField<RegisterAuthor> value={(i) => i.name} title='Name' />
+        <InputTextField<RegisterAuthor> value={(command) => command.name} title='Name' />
     </CommandDialog>
 );
 ```
 
-No `isExecuting` flag, no button wiring, no duplicate validation logic — and because `RegisterAuthor` is generated from your C#, `i => i.name` is type-checked against the real command. Rename the property in C#, rebuild, and this line stops compiling until you fix it.
+No `isExecuting` state, action wiring, or duplicate validation logic is required. If the C# command changes, the generated proxy makes this component fail compilation until it is updated.
 
 ## Choose how it looks
 
-The components render structurally the moment the provider is mounted; their _look_ is a separate, deliberate choice. PrimeReact 11 is unstyled-first, so pick one setup on the [Styling](/components/styling/) page:
+Choose one styling posture:
 
-- the **Cratis baseline theme** (`import '@cratis/components/theme'` + `class="cratis-theme"`),
-- PrimeReact's **styled mode** — `import { styledMode } from '@cratis/components/styled'` and `value={{ license, ...styledMode() }}`, which hands the provider a `@primeuix/themes` preset _and_ PrimeReact's own component styles (a preset alone emits tokens but paints nothing; needs `@primereact/styles` and `@primeuix/themes` installed), or
-- fully unstyled, with your own `pt` / CSS.
+- Import `theme` for the Cratis baseline.
+- Define your own `--cratis-*` token values for a product design system.
+- Add classes or ordinary HTML attributes through each component's Cratis-owned `pt` parts.
+- Target stable `data-cratis-part` and state attributes when product CSS needs structural control.
+
+Do not target React Aria class names or internal DOM structure. See [Styling](/components/styling/) and [Stable component parts](/components/styling/pass-through/).
 
 ## Recap
 
-You installed `@cratis/components` and its PrimeReact peers, imported the token and component stylesheets, and wrapped your app in `CratisComponentsProvider` — and with that one provider in place, a typed command form is a handful of lines instead of a handful of files. Everything else in the library works the same way: declare it, point it at a proxy, done.
+You installed one UI package, imported Cratis-owned styles, and mounted a locale/toast provider. Components owns the public UI contract while Arc supplies command and query behavior and React Aria supplies low-level accessible interactions.
 
 ## Where to go next
 
-- **[Building a form](/components/building-a-form/)** — `CommandDialog`, field types, validation, and multi-step wizards.
-- **[Displaying data](/components/displaying-data/)** — live data tables that re-render when the read model changes.
-- **[Choosing a component](/components/choosing-a-component/)** — a decision guide from "what's on the screen" to the right component.
-- **[Build a full-stack feature](/build-a-full-app/)** — see Components consume a real Arc slice end to end.
+- [Building a form](/components/building-a-form/)
+- [Displaying data](/components/displaying-data/)
+- [Choosing a component](/components/choosing-a-component/)
+- [Migrate from Components 3](/components/migration/)
+- [Understand the UI foundation](/components/ui-foundation/)

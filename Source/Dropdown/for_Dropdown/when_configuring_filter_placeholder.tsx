@@ -20,7 +20,7 @@ describe('when configuring the filter placeholder', () => {
         (
             globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
         ).IS_REACT_ACT_ENVIRONMENT = true;
-        // SAFETY: jsdom omits ResizeObserver, while PrimeReact only calls its three observer methods.
+        // SAFETY: jsdom omits ResizeObserver, while overlay positioning only calls its observer methods.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
             observe() {
                 return undefined;
@@ -50,7 +50,7 @@ describe('when configuring the filter placeholder', () => {
         });
 
         const trigger = container.querySelector<HTMLButtonElement>(
-            '[data-scope="select"][data-part="trigger"]',
+            '[data-cratis-part="trigger"]',
         );
         if (!trigger) {
             throw new Error('Dropdown did not render its trigger.');
@@ -58,7 +58,7 @@ describe('when configuring the filter placeholder', () => {
         await act(async () => trigger.click());
 
         const renderedFilter = document.querySelector<HTMLInputElement>(
-            '[data-scope="select"][data-part="filter"]',
+            '[data-cratis-part="filter"]',
         );
         if (!renderedFilter) {
             throw new Error('Dropdown did not render its filter input.');

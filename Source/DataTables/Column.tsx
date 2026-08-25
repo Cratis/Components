@@ -1,11 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
+import type React from 'react';
 import type {
     ColumnFilterDataType,
     ColumnFilterElement,
     ColumnFilterMenuLabels,
+    ColumnFilterMenuParts,
 } from './ColumnFilterMenu';
 
 /**
@@ -36,11 +37,10 @@ export interface ColumnProps<TData = unknown> {
     filterElement?: ColumnFilterElement;
     /** Overrides the column filter menu's default English labels. */
     filterLabels?: Partial<ColumnFilterMenuLabels>;
-    /**
-     * Renders a selection control column (a radio for `single`, a checkbox for
-     * `multiple`) instead of a data column.
-     */
-    selectionMode?: 'single' | 'multiple';
+    /** Stable part attributes for this column's filter popup. */
+    filterPt?: ColumnFilterMenuParts;
+    /** Renders a single-row selection radio instead of a data column. */
+    selectionMode?: 'single';
     /** Inline style for every body cell in the column. */
     style?: React.CSSProperties;
     /** Class name for every body cell in the column. */
@@ -58,9 +58,8 @@ export interface ColumnProps<TData = unknown> {
 /**
  * Declares one column of a Cratis data table (`DataTableForQuery`,
  * `DataTableForObservableQuery`, `DataPage.Columns`). This is the Cratis-owned
- * replacement for the removed `primereact/column` — the same `<Column field
- * header body sortable />` authoring model, mapped internally onto PrimeReact
- * 11's headless DataTable header/body cells.
+ * renderer-independent `<Column field header body sortable />` authoring model,
+ * mapped internally onto semantic table header/body cells.
  *
  * It is a pure marker: the surrounding table reads its props to build the
  * header and per-row cells, so it renders nothing when mounted on its own.

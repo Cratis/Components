@@ -47,6 +47,28 @@ export default [
 
 `onbeforeexecute-must-return`, `no-hooks-in-view-model` and `no-raw-command-form-marker` take no options.
 
+## Considered and rejected: a hardcoded-owned-label rule
+
+During the issue #174 localization pass, a static rule flagging a hardcoded English literal that
+bypasses `CratisComponentsProvider` messages (e.g. a `title`/`aria-label` string sitting next to an
+already-localized prop) was considered and rejected. Every rule above is a syntactic, structural
+pattern an AST visitor resolves unambiguously (an import specifier, a known display-name
+constant, a callback's control-flow shape). Detecting an *owned-label bypass* instead requires
+understanding which of a component's many string literals are user-facing chrome versus CSS class
+names, `data-*` values, decorative glyphs, or genuinely correct per-instance defaults — a semantic
+judgment call, not a syntactic one. A rule broad enough to catch a real bypass (any string literal
+passed to `title`/`aria-label`/`placeholder`/a `Tooltip`'s `content`) flags the large fraction of
+those call sites that are already correct, and an allowlist narrow enough to avoid that noise stops
+catching new bypasses the moment a new component or prop name is introduced — the allowlist would
+need updating in lockstep with every future component, which defeats the purpose of a ratchet.
+Render-time sentinel-provider specs (see
+`Source/Common/for_CratisComponentsProvider/when_every_owned_label_is_overridden.tsx`) are the
+reliable gate instead: they render each audited surface under a provider whose messages are all
+unmistakable sentinel strings and assert the rendered label is the sentinel, never the English
+default — a real behavioral check that a static rule cannot approximate without the same false-positive
+cost. Revisit a lint rule if a narrower, high-confidence pattern emerges (for example, once every
+owned-label prop follows one consistent naming and JSDoc convention).
+
 ## Rules
 
 ### `onbeforeexecute-must-return`

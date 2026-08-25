@@ -4,11 +4,16 @@
 import { Dropdown, type DropdownProps } from '../../Dropdown/Dropdown';
 import React from 'react';
 import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 /**
  * Component-level props for {@link DropdownField}.
  */
-interface DropdownFieldComponentProps extends WrappedFieldProps<string | number> {
+interface DropdownFieldComponentProps
+    extends WrappedFieldProps<string | number>, FieldAccessibilityProps {
     /** Source array of objects to populate the dropdown options. */
     options: Array<{ [key: string]: unknown }>;
 
@@ -24,13 +29,17 @@ interface DropdownFieldComponentProps extends WrappedFieldProps<string | number>
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying Dropdown. */
+    /** Cratis-owned per-part attributes applied to the underlying Dropdown. */
     pt?: DropdownProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying Dropdown. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: DropdownProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying Dropdown. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
@@ -50,24 +59,41 @@ interface DropdownFieldComponentProps extends WrappedFieldProps<string | number>
  * ```
  */
 export const DropdownField = asCommandFormField<DropdownFieldComponentProps>(
-    (props) => (
-        <Dropdown
-            value={props.value}
-            onChange={(e) => props.onChange(e.value)}
-            onBlur={props.onBlur}
-            options={props.options}
-            optionValue={props.optionValue}
-            optionLabel={props.optionLabel}
-            placeholder={props.placeholder}
-            invalid={props.invalid}
-            className={props.className ? `w-full ${props.className}` : 'w-full'}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
-    ),
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
+                <Dropdown
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    value={props.value}
+                    onChange={(e) => props.onChange(e.value)}
+                    onBlur={props.onBlur}
+                    options={props.options}
+                    optionValue={props.optionValue}
+                    optionLabel={props.optionLabel}
+                    placeholder={props.placeholder}
+                    invalid={props.invalid}
+                    className={
+                        props.className
+                            ? `cratis:w-full ${props.className}`
+                            : 'cratis:w-full'
+                    }
+                    pt={props.pt}
+                    ptOptions={props.ptOptions}
+                    unstyled={props.unstyled}
+                />
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: '',
-        extractValue: (e: unknown) => e as string | number
-    }
+        extractValue: (e: unknown) => e as string | number,
+    },
 );

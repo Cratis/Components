@@ -8,21 +8,23 @@ const MINIMAP_HEIGHT = 120;
 const DEFAULT_WORLD_WIDTH = 4000;
 const DEFAULT_WORLD_HEIGHT = 3000;
 
+/** One world-space rectangle rendered in a Canvas minimap. */
 export interface MinimapItem {
-
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
-
+    /** World-space width. */
     width: number;
-
+    /** World-space height. */
     height: number;
-
+    /** Optional product color for the rectangle. */
     color?: string;
 }
 
+/** Imperative viewport update exposed by {@link CanvasMinimap}. */
 export interface CanvasMinimapHandle {
-
+    /** Updates the visible viewport rectangle from current Canvas camera state. */
     update: (
         pan: { x: number; y: number },
         zoom: number,
@@ -31,17 +33,23 @@ export interface CanvasMinimapHandle {
     ) => void;
 }
 
+/** Props for the standalone Canvas minimap. */
 export interface CanvasMinimapProps {
-
+    /** Represented world width. Defaults to `4000`. */
     worldWidth?: number;
-
+    /** Represented world height. Defaults to `3000`. */
     worldHeight?: number;
-
+    /** World-space item rectangles. */
     items?: MinimapItem[];
-
+    /** Requests a Canvas pan when the minimap is clicked or dragged. */
     onRequestPan?: (pan: { x: number; y: number }) => void;
 }
 
+/**
+ * A standalone minimap overlay for {@link Canvas}, showing item rectangles and the current
+ * viewport. Click or drag to pan; imperative {@link CanvasMinimapHandle.update} keeps the viewport
+ * rectangle synchronized with the parent Canvas camera.
+ */
 export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>(
     (
         {
@@ -56,7 +64,12 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
         const scaleYConst = MINIMAP_HEIGHT / worldHeight;
         const viewportRectRef = useRef<HTMLDivElement>(null);
         // Stores the latest canvas state for use inside pointer-event handlers
-        const stateRef = useRef({ pan: { x: 0, y: 0 }, zoom: 1, canvasWidth: 800, canvasHeight: 600 });
+        const stateRef = useRef({
+            pan: { x: 0, y: 0 },
+            zoom: 1,
+            canvasWidth: 800,
+            canvasHeight: 600,
+        });
 
         useImperativeHandle(
             ref,
@@ -89,7 +102,6 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
             }),
             [worldWidth, worldHeight],
         );
-
 
         const panFromMinimapPos = useCallback(
             (clientX: number, clientY: number, bounds: DOMRect) => {
@@ -148,7 +160,8 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
                     style={{
                         position: 'absolute',
                         inset: 0,
-                        backgroundImage: 'radial-gradient(circle, var(--surface-200) 1px, transparent 1px)',
+                        backgroundImage:
+                            'radial-gradient(circle, var(--cratis-surface-border) 1px, transparent 1px)',
                         backgroundSize: '10px 10px',
                         pointerEvents: 'none',
                     }}
@@ -165,7 +178,9 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
                             top: item.y * scaleYConst,
                             width: Math.max(2, item.width * scaleXConst),
                             height: Math.max(2, item.height * scaleYConst),
-                            background: item.color ?? 'rgba(255, 255, 255, 0.25)',
+                            background:
+                                item.color ??
+                                'color-mix(in srgb, var(--cratis-text-color) 25%, transparent)',
                             borderRadius: 2,
                             pointerEvents: 'none',
                         }}
