@@ -284,7 +284,7 @@
  * When a Toolbar contains ToolbarGroup children it becomes a transparent
  * layout wrapper — each group renders as its own pill.
  */
-.toolbar:has(.toolbar-group) {
+.toolbar:has(> .toolbar-group) {
     background: transparent;
     border: none;
     box-shadow: none;

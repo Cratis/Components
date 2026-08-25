@@ -3,6 +3,60 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { useMemo, useState, type DragEvent } from 'react';
+import type { IconType } from 'react-icons';
+import {
+    FaAlignCenter,
+    FaAlignLeft,
+    FaArrowPointer,
+    FaArrowUpRightFromSquare,
+    FaArrowsRotate,
+    FaBell,
+    FaBold,
+    FaBolt,
+    FaBookmark,
+    FaCircle,
+    FaCircleExclamation,
+    FaCircleQuestion,
+    FaClockRotateLeft,
+    FaClone,
+    FaComment,
+    FaEraser,
+    FaExpand,
+    FaEye,
+    FaFile,
+    FaFilePen,
+    FaFilter,
+    FaFloppyDisk,
+    FaFolderOpen,
+    FaGear,
+    FaHand,
+    FaHeart,
+    FaHouse,
+    FaImage,
+    FaLink,
+    FaList,
+    FaMinus,
+    FaMoon,
+    FaPalette,
+    FaPencil,
+    FaPlay,
+    FaPlus,
+    FaRotateLeft,
+    FaShareNodes,
+    FaSitemap,
+    FaSortUp,
+    FaSquare,
+    FaSquareCheck,
+    FaStar,
+    FaStopwatch,
+    FaSun,
+    FaTable,
+    FaTableCellsLarge,
+    FaUnderline,
+    FaUpDownLeftRight,
+    FaUpload,
+    FaWrench,
+} from 'react-icons/fa6';
 import { Toolbar } from './Toolbar';
 import { ToolbarButton } from './ToolbarButton';
 import { ToolbarContext } from './ToolbarContext';
@@ -26,11 +80,63 @@ export default meta;
 
 type Story = StoryObj<typeof Toolbar>;
 
-const ToolGlyph = ({ name }: { name: string }) => (
-    <span aria-hidden='true' style={{ fontSize: '0.75rem', fontWeight: 700 }}>
-        {name.slice(0, 1).toUpperCase()}
-    </span>
-);
+const toolIcons: Record<string, IconType> = {
+    'align-center': FaAlignCenter,
+    'align-left': FaAlignLeft,
+    'arrow-up-left': FaArrowPointer,
+    'arrows-alt': FaUpDownLeftRight,
+    bell: FaBell,
+    bold: FaBold,
+    bolt: FaBolt,
+    bookmark: FaBookmark,
+    'check-square': FaSquareCheck,
+    circle: FaCircle,
+    clone: FaClone,
+    cog: FaGear,
+    comment: FaComment,
+    eraser: FaEraser,
+    'exclamation-circle': FaCircleExclamation,
+    expand: FaExpand,
+    'external-link': FaArrowUpRightFromSquare,
+    eye: FaEye,
+    file: FaFile,
+    'file-edit': FaFilePen,
+    filter: FaFilter,
+    'folder-open': FaFolderOpen,
+    'hand-paper': FaHand,
+    heart: FaHeart,
+    history: FaClockRotateLeft,
+    home: FaHouse,
+    image: FaImage,
+    link: FaLink,
+    list: FaList,
+    minus: FaMinus,
+    moon: FaMoon,
+    palette: FaPalette,
+    pencil: FaPencil,
+    play: FaPlay,
+    plus: FaPlus,
+    'question-circle': FaCircleQuestion,
+    refresh: FaArrowsRotate,
+    save: FaFloppyDisk,
+    'share-alt': FaShareNodes,
+    sitemap: FaSitemap,
+    'sort-up': FaSortUp,
+    star: FaStar,
+    stop: FaSquare,
+    stopwatch: FaStopwatch,
+    sun: FaSun,
+    table: FaTable,
+    'th-large': FaTableCellsLarge,
+    underline: FaUnderline,
+    undo: FaRotateLeft,
+    upload: FaUpload,
+};
+
+const ToolGlyph = ({ name }: { name: string }) => {
+    const Icon = toolIcons[name] ?? FaWrench;
+    return <Icon aria-hidden='true' />;
+};
 
 const folderIcons: string[] = [
     'exclamation-circle',
@@ -758,7 +864,7 @@ export const LayoutForEditorModules: Story = {
 
             const assetTools = useMemo(
                 () => (
-                    <ToolbarGroup>
+                    <ToolbarGroup orientation='horizontal'>
                         <ToolbarButton icon={<ToolGlyph name='image' />} title='Asset Browser' />
                         <ToolbarButton icon={<ToolGlyph name='upload' />} title='Upload Asset' />
                     </ToolbarGroup>
@@ -770,7 +876,7 @@ export const LayoutForEditorModules: Story = {
                 () => (
                     <>
                         <ToolbarSeparator />
-                        <ToolbarGroup>
+                        <ToolbarGroup orientation='horizontal'>
                             <ToolbarButton icon={<ToolGlyph name='comment' />} title='Comments' />
                             <ToolbarButton icon={<ToolGlyph name='check-square' />} title='Approval Checks' />
                         </ToolbarGroup>
@@ -781,52 +887,70 @@ export const LayoutForEditorModules: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
-                        <Toolbar orientation='horizontal'>
-                            <ToolbarButton icon={<ToolGlyph name='file-edit' />} title='Open Editor' tooltipPosition='bottom' />
-                            <ToolbarSeparator orientation='horizontal' />
-                            <ToolbarLayout name='editor-modules' orientation='horizontal'>
-                                <ToolbarGroup orientation='horizontal'>
-                                    <ToolbarButton icon={<ToolGlyph name='save' />} title='Save' tooltipPosition='bottom' />
-                                    <ToolbarButton icon={<ToolGlyph name='refresh' />} title='Reload' tooltipPosition='bottom' />
-                                </ToolbarGroup>
-                            </ToolbarLayout>
-                            <ToolbarSeparator orientation='horizontal' />
-                            <ToolbarButton icon={<ToolGlyph name='cog' />} title='Settings' tooltipPosition='bottom' />
-                        </Toolbar>
+                    <section
+                        className='cratis:flex cratis:flex-col cratis:gap-6 cratis:p-8 cratis:rounded-2xl cratis:border'
+                        style={{
+                            width: 'min(52rem, calc(100vw - 4rem))',
+                            borderColor: 'var(--cratis-surface-border)',
+                            background: 'var(--cratis-surface-card)',
+                            color: 'var(--cratis-text-color)',
+                            boxShadow: 'var(--cratis-shadow-overlay)',
+                        }}
+                    >
+                        <header className='cratis:flex cratis:flex-col cratis:gap-1'>
+                            <strong>Editor module toolbar</strong>
+                            <span className='cratis:text-sm' style={{ color: 'var(--cratis-text-color-secondary)' }}>
+                                Independent features contribute complete tool groups to one named layout region.
+                            </span>
+                        </header>
 
-                        {assetToolsEnabled && (
-                            <ToolbarSlot slotName='editor-modules' order={10}>
-                                {assetTools}
-                            </ToolbarSlot>
-                        )}
+                        <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
+                            <Toolbar orientation='horizontal'>
+                                <ToolbarButton icon={<ToolGlyph name='file-edit' />} title='Open Editor' tooltipPosition='bottom' />
+                                <ToolbarSeparator orientation='horizontal' />
+                                <ToolbarLayout name='editor-modules' orientation='horizontal'>
+                                    <ToolbarGroup orientation='horizontal'>
+                                        <ToolbarButton icon={<ToolGlyph name='save' />} title='Save' tooltipPosition='bottom' />
+                                        <ToolbarButton icon={<ToolGlyph name='refresh' />} title='Reload' tooltipPosition='bottom' />
+                                    </ToolbarGroup>
+                                </ToolbarLayout>
+                                <ToolbarSeparator orientation='horizontal' />
+                                <ToolbarButton icon={<ToolGlyph name='cog' />} title='Settings' tooltipPosition='bottom' />
+                            </Toolbar>
 
-                        {reviewToolsEnabled && (
-                            <ToolbarSlot slotName='editor-modules' order={20}>
-                                {reviewTools}
-                            </ToolbarSlot>
-                        )}
+                            {assetToolsEnabled && (
+                                <ToolbarSlot slotName='editor-modules' order={10}>
+                                    {assetTools}
+                                </ToolbarSlot>
+                            )}
 
-                        <div className='cratis:flex cratis:gap-6'>
-                            {[
-                                { label: 'Asset tools', enabled: assetToolsEnabled, toggle: () => setAssetToolsEnabled(v => !v) },
-                                { label: 'Review tools', enabled: reviewToolsEnabled, toggle: () => setReviewToolsEnabled(v => !v) },
-                            ].map(({ label, enabled, toggle }) => (
-                                <div key={label} className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
-                                    <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>{label}</span>
-                                    <button
-                                        type='button'
-                                        onClick={toggle}
-                                        className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
-                                            enabled ? 'cratis:bg-blue-600 cratis:text-white' : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
-                                        }`}
-                                    >
-                                        {enabled ? 'Disable' : 'Enable'}
-                                    </button>
-                                </div>
-                            ))}
+                            {reviewToolsEnabled && (
+                                <ToolbarSlot slotName='editor-modules' order={20}>
+                                    {reviewTools}
+                                </ToolbarSlot>
+                            )}
+
+                            <div className='cratis:flex cratis:gap-6'>
+                                {[
+                                    { label: 'Asset tools', enabled: assetToolsEnabled, toggle: () => setAssetToolsEnabled(v => !v) },
+                                    { label: 'Review tools', enabled: reviewToolsEnabled, toggle: () => setReviewToolsEnabled(v => !v) },
+                                ].map(({ label, enabled, toggle }) => (
+                                    <div key={label} className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
+                                        <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>{label}</span>
+                                        <button
+                                            type='button'
+                                            onClick={toggle}
+                                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
+                                                enabled ? 'cratis:bg-blue-600 cratis:text-white' : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
+                                            }`}
+                                        >
+                                            {enabled ? 'Disable' : 'Enable'}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    </section>
                 </ToolbarSlotProvider>
             );
         };
