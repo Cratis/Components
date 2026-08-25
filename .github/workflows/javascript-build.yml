@@ -64,8 +64,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
               run: yarn
@@ -80,6 +79,10 @@ jobs:
               run: |
                   yarn test
                   yarn verify-package
+
+            - name: Verify packed ESLint plugin
+              working-directory: ESLint
+              run: yarn verify-package
 
             # Every intentionally public declaration/member reachable from a JS `exports`
             # subpath must carry a TSDoc comment (Cratis/Components#173). Runs against
@@ -127,8 +130,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
               run: yarn
@@ -168,8 +170,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
               run: yarn
@@ -219,8 +220,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
               run: yarn
@@ -268,8 +268,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
               run: yarn
@@ -309,8 +308,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
               run: yarn
@@ -351,8 +349,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
               run: yarn
@@ -429,11 +426,23 @@ jobs:
 
     verify-package-managers:
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 20
         strategy:
             fail-fast: false
             matrix:
-                manager: ['pnpm', 'yarn-pnp']
+                include:
+                    - manager: npm
+                      pixi: absent
+                    - manager: npm
+                      pixi: present
+                    - manager: pnpm
+                      pixi: absent
+                    - manager: pnpm
+                      pixi: present
+                    - manager: yarn-pnp
+                      pixi: absent
+                    - manager: yarn-pnp
+                      pixi: present
 
         steps:
             - name: Checkout code
@@ -463,33 +472,35 @@ jobs:
                   cat > /tmp/components-consumer/package.json <<'JSON'
                   {"private":true,"type":"module"}
                   JSON
-                  cat > /tmp/components-consumer/verify.mjs <<'NODE'
-                  const commandDialog = await import('@cratis/components/CommandDialog');
-                  const dataPage = await import('@cratis/components/DataPage');
-                  const notifications = await import('@cratis/components/Notifications');
-                  if (!commandDialog.CommandDialog || !dataPage.DataPage || !notifications.toast) {
-                      throw new Error('The packed Components surface is incomplete');
-                  }
-                  for (const forbidden of ['primereact', '@primereact/core', '@primeuix/themes']) {
-                      try {
-                          import.meta.resolve(forbidden);
-                          throw new Error(`Unexpected renderer dependency: ${forbidden}`);
-                      } catch (error) {
-                          if (error instanceof Error && error.message.startsWith('Unexpected')) throw error;
-                      }
-                  }
-                  NODE
+                  cp Source/scripts/lib/package-manager-consumer-probe.mjs \
+                    /tmp/components-consumer/verify.mjs
+
+            - name: Verify npm consumer
+              if: matrix.manager == 'npm'
+              working-directory: /tmp/components-consumer
+              run: |
+                  PIXI=()
+                  if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
+                  npm install --ignore-scripts --no-audit --no-fund \
+                    /tmp/cratis-components.tgz \
+                    @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
+                    @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
+                    reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
+                  node verify.mjs "${{ matrix.pixi }}"
 
             - name: Verify pnpm consumer
               if: matrix.manager == 'pnpm'
               working-directory: /tmp/components-consumer
               run: |
                   corepack prepare pnpm@10.17.1 --activate
-                  pnpm add --ignore-scripts \
+                  PIXI=()
+                  if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
+                  pnpm add --ignore-scripts --strict-peer-dependencies \
                     /tmp/cratis-components.tgz \
                     @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
-                    @cratis/fundamentals react@19 react-dom@19 reflect-metadata tsyringe
-                  pnpm exec node verify.mjs
+                    @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
+                    reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
+                  pnpm exec node verify.mjs "${{ matrix.pixi }}"
 
             - name: Verify Yarn PnP consumer
               if: matrix.manager == 'yarn-pnp'
@@ -505,9 +516,11 @@ jobs:
                       dependencies:
                         rxjs: "*"
                   YAML
+                  PIXI=()
+                  if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   yarn add \
                     /tmp/cratis-components.tgz \
                     @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
-                    @cratis/fundamentals react@19 react-dom@19 \
-                    reflect-metadata tsyringe rxjs
-                  yarn node verify.mjs
+                    @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
+                    reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2 "${PIXI[@]}"
+                  yarn node verify.mjs "${{ matrix.pixi }}"

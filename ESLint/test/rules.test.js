@@ -1,8 +1,16 @@
 import { RuleTester } from 'eslint';
-import { afterAll, describe, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import tsParser from '@typescript-eslint/parser';
 import { noPrimereactDialog } from '../lib/noPrimereactDialog.js';
 import { noRootBarrelImport } from '../lib/noRootBarrelImport.js';
+import {
+    approvedRootSymbols as eslintApprovedRootSymbols,
+    namespaceSubpaths as eslintNamespaceSubpaths,
+} from '../lib/rootNamespaceMap.js';
+import {
+    approvedRootSymbols as codemodApprovedRootSymbols,
+    namespaceSubpaths as codemodNamespaceSubpaths,
+} from '../../Codemods/lib/namespaceMap.js';
 import { onbeforeexecuteMustReturn } from '../lib/onbeforeexecuteMustReturn.js';
 import { noHooksInViewModel } from '../lib/noHooksInViewModel.js';
 import { noRawCommandFormMarker } from '../lib/noRawCommandFormMarker.js';
@@ -26,12 +34,28 @@ const tsRuleTester = new RuleTester({
     },
 });
 
+describe('root namespace map parity', () => {
+    it('keeps the ESLint and codemod namespace maps identical', () => {
+        expect(eslintNamespaceSubpaths).toEqual(codemodNamespaceSubpaths);
+    });
+
+    it('keeps the ESLint and codemod setup allowlists identical', () => {
+        expect([...eslintApprovedRootSymbols].sort()).toEqual(
+            [...codemodApprovedRootSymbols].sort(),
+        );
+    });
+});
+
 tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
     valid: [
         // Subpath imports are always fine, whatever the export.
         "import { CommandDialog } from '@cratis/components/CommandDialog';",
         "import { DataPage } from '@cratis/components/DataPage';",
         "import { useState } from 'react';",
+        "import Canvas = require('@cratis/components/Canvas');",
+        'import Canvas = Components.Canvas;',
+        "const canvas = await import('@cratis/components/Canvas');",
+        "const canvas = require('@cratis/components/Canvas');",
         // Not the same package — a longer name that merely starts the same.
         "import x from '@cratis/components-extra';",
         // Approved setup symbols remain importable from the root, singly, combined, aliased,
@@ -260,6 +284,24 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
         {
             // A side-effect-only import has no binding to infer a subpath from.
             code: "import '@cratis/components';",
+            errors: [{ messageId: 'ambiguousImport' }],
+            output: null,
+        },
+        {
+            // TypeScript import assignments bind the whole package namespace and cannot be split.
+            code: "import Components = require('@cratis/components');",
+            errors: [{ messageId: 'ambiguousImport' }],
+            output: null,
+        },
+        {
+            // Dynamic imports cannot be mapped without analyzing later member access.
+            code: "const Components = await import('@cratis/components');",
+            errors: [{ messageId: 'ambiguousImport' }],
+            output: null,
+        },
+        {
+            // CommonJS require calls have the same ambiguity.
+            code: "const Components = require('@cratis/components');",
             errors: [{ messageId: 'ambiguousImport' }],
             output: null,
         },

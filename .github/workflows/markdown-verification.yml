@@ -1,49 +1,62 @@
 name: Markdown Verification
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "Documentation/**"
-  pull_request:
-    branches:
-      - "**"
-    paths:
-      - "Documentation/**"
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+        paths:
+            - 'Documentation/**'
+            - 'README.md'
+            - 'Source/*.md'
+            - 'Codemods/*.md'
+            - 'ESLint/*.md'
+    pull_request:
+        branches:
+            - '**'
+        paths:
+            - 'Documentation/**'
+            - 'README.md'
+            - 'Source/*.md'
+            - 'Codemods/*.md'
+            - 'ESLint/*.md'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  markdown-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    markdown-lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Lint Markdown files
-        uses: DavidAnson/markdownlint-cli2-action@v18
-        with:
-          globs: 'Documentation/**/*.md'
+            - name: Lint Markdown files
+              uses: DavidAnson/markdownlint-cli2-action@v18
+              with:
+                  globs: |
+                      README.md
+                      Documentation/**/*.md
+                      Source/*.md
+                      Codemods/*.md
+                      ESLint/*.md
 
-  link-verification:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    link-verification:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Check links in Documentation
-        uses: JustinBeckwith/linkinator-action@v1
-        with:
-          paths: 'Documentation/**/*.md'
-          markdown: true
-          recurse: true
-          redirects: allow
-          statusCodes: '403:ok'
-          linksToSkip: '^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)'
+            - name: Check links in Documentation
+              uses: JustinBeckwith/linkinator-action@v1
+              with:
+                  paths: 'Documentation/**/*.md'
+                  markdown: true
+                  recurse: true
+                  redirects: allow
+                  statusCodes: '403:ok'
+                  linksToSkip: '^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)'

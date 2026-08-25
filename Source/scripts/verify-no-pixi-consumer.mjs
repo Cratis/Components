@@ -67,7 +67,15 @@ const fail = (label, detail) => {
 };
 const pass = (label) => console.log(`  ok   - ${label}`);
 
-const pkg = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
+let pkg;
+try {
+    pkg = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
+} catch (error) {
+    console.error(
+        `Could not read Source/package.json: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    process.exit(1);
+}
 
 const esmRoot = path.join(packageDir, path.dirname(pkg.module ?? 'dist/esm/index.js'));
 if (!existsSync(esmRoot)) {
@@ -79,7 +87,7 @@ if (!existsSync(esmRoot)) {
 }
 
 /** Mandatory peers only - `pixi.js` is intentionally never installed by this fixture. */
-const MANDATORY_PEERS = [
+const EXPECTED_MANDATORY_PEERS = new Set([
     '@cratis/arc',
     '@cratis/arc.react',
     '@cratis/fundamentals',
@@ -87,16 +95,35 @@ const MANDATORY_PEERS = [
     'react-dom',
     'reflect-metadata',
     'tsyringe',
-];
-for (const peer of Object.keys(pkg.peerDependencies ?? {})) {
-    if (peer !== 'pixi.js' && !MANDATORY_PEERS.includes(peer)) {
-        console.error(
-            `peerDependencies now declares '${peer}', which verify-no-pixi-consumer.mjs does not ` +
-                'know is mandatory or optional. Update MANDATORY_PEERS (or the optional-peer list) ' +
-                'in this script before trusting its result.',
-        );
-        process.exit(1);
-    }
+]);
+const optionalPeers = new Set(
+    Object.entries(pkg.peerDependenciesMeta ?? {})
+        .filter(([, metadata]) => metadata?.optional === true)
+        .map(([name]) => name),
+);
+if (optionalPeers.size !== 1 || !optionalPeers.has('pixi.js')) {
+    console.error(
+        'The no-Pixi contract requires pixi.js to be the only optional peer. ' +
+            `Found: ${[...optionalPeers].join(', ') || '(none)'}.`,
+    );
+    process.exit(1);
+}
+const mandatoryPeers = new Set(
+    Object.keys(pkg.peerDependencies ?? {}).filter((peer) => !optionalPeers.has(peer)),
+);
+const missingMandatoryPeers = [...EXPECTED_MANDATORY_PEERS].filter(
+    (peer) => !mandatoryPeers.has(peer),
+);
+const unknownMandatoryPeers = [...mandatoryPeers].filter(
+    (peer) => !EXPECTED_MANDATORY_PEERS.has(peer),
+);
+if (missingMandatoryPeers.length > 0 || unknownMandatoryPeers.length > 0) {
+    console.error(
+        'The mandatory peer set changed. Update this packed consumer fixture before trusting it. ' +
+            `Missing: ${missingMandatoryPeers.join(', ') || '(none)'}; ` +
+            `unknown: ${unknownMandatoryPeers.join(', ') || '(none)'}.`,
+    );
+    process.exit(1);
 }
 
 const isAsset = (target) => typeof target === 'string' && /\.(css|json)$/u.test(target);

@@ -20,10 +20,11 @@
  * `skipLibCheck: false` stays on for every fixture - that is the entire point of this script.
  * A subpath that reproduces a known, external, upstream issue is not silently made to pass by
  * flipping skipLibCheck; its diagnostics are matched, code-for-code and file-for-file, against
- * verify-public-types.exceptions.json. An unmatched diagnostic - most importantly, ANY diagnostic
- * whose file lives under Components' own packed declarations - fails the run. A listed exception
- * that stops reproducing also fails the run: its removal condition is presumed met, and the
- * metadata is stale and must be trimmed.
+ * verify-public-types.exceptions.json. An unmatched diagnostic fails the run. A diagnostic
+ * anchored in Components' declarations can only be recognized as an upstream cascade when the
+ * same compiler run also contains its exact reviewed TS2834/TS2835 root cause under the matching
+ * upstream package; message similarity alone can never suppress it. A listed exception that stops
+ * reproducing also fails the run: its removal condition is presumed met and the metadata is stale.
  *
  * A type-fidelity assertion accompanies every subpath: the declaration file TypeScript actually
  * resolved is hashed and compared byte-for-byte against the same member read directly out of the
@@ -55,6 +56,11 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
+import {
+    isOwnedDeclarationDiagnostic,
+    matchesExternalIssue,
+    matchesPairedOwnedCascade,
+} from './lib/public-type-exceptions.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const monorepoRoot = path.resolve(packageDir, '..');
@@ -230,6 +236,170 @@ const jsSubpaths = Object.entries(pkg.exports ?? {})
 if (jsSubpaths.length === 0)
     fail('No JavaScript subpaths found in `exports` - nothing to verify.');
 
+const rootNodeModules = path.join(monorepoRoot, 'node_modules');
+if (!existsSync(rootNodeModules)) {
+    fail(
+        `${rootNodeModules} does not exist. Run \`yarn install\` at the repo root first.`,
+    );
+}
+
+const installedPackageVersion = (packageName) => {
+    const manifest = path.join(
+        rootNodeModules,
+        ...packageName.split('/'),
+        'package.json',
+    );
+    if (!existsSync(manifest)) {
+        fail(`Exception metadata names '${packageName}', but it is not installed.`);
+    }
+    return readJson(manifest).version;
+};
+
+const parsePinnedPackage = (specifier, context) => {
+    const separator = specifier.lastIndexOf('@');
+    if (separator <= 0 || separator === specifier.length - 1) {
+        fail(`${context} must use an exact package@version value; got '${specifier}'.`);
+    }
+    return {
+        name: specifier.slice(0, separator),
+        version: specifier.slice(separator + 1),
+    };
+};
+
+const validateExceptionMetadata = () => {
+    const supportedModes = new Set(['bundler', 'nodenext']);
+    const publicSubpaths = new Set(jsSubpaths.map((entry) => entry.subpath));
+    const issuesById = new Map();
+    const referencedIssues = new Set();
+    const exactVersion = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u;
+
+    for (const issue of exceptions.upstreamIssues ?? []) {
+        if (!issue.id || issuesById.has(issue.id)) {
+            fail(`Exception metadata has a missing or duplicate issue id '${issue.id}'.`);
+        }
+        issuesById.set(issue.id, issue);
+        if (
+            !Array.isArray(issue.upstreamPackages) ||
+            issue.upstreamPackages.length === 0
+        ) {
+            fail(
+                `Exception '${issue.id}' must name at least one exact upstream package.`,
+            );
+        }
+        if (
+            !Array.isArray(issue.resolutionModes) ||
+            issue.resolutionModes.length === 0 ||
+            issue.resolutionModes.some((mode) => !supportedModes.has(mode))
+        ) {
+            fail(`Exception '${issue.id}' has invalid resolutionModes metadata.`);
+        }
+        if (
+            !Array.isArray(issue.diagnosticCodes) ||
+            issue.diagnosticCodes.length === 0 ||
+            issue.diagnosticCodes.some((code) => !/^TS\d+$/u.test(code))
+        ) {
+            fail(`Exception '${issue.id}' has invalid diagnosticCodes metadata.`);
+        }
+        if (
+            (!Array.isArray(issue.filePrefixes) || issue.filePrefixes.length === 0) &&
+            (!Array.isArray(issue.messagePatterns) || issue.messagePatterns.length === 0)
+        ) {
+            fail(`Exception '${issue.id}' must have a file prefix or message pattern.`);
+        }
+        const ownedCascadePatterns = new Set();
+        for (const cascade of issue.ownedCascades ?? []) {
+            if (
+                !cascade.messagePattern ||
+                ownedCascadePatterns.has(cascade.messagePattern) ||
+                !(issue.messagePatterns ?? []).includes(cascade.messagePattern) ||
+                !cascade.rootCauseFilePrefix ||
+                !(issue.filePrefixes ?? []).includes(cascade.rootCauseFilePrefix) ||
+                !Array.isArray(cascade.rootCauseDiagnosticCodes) ||
+                cascade.rootCauseDiagnosticCodes.length === 0 ||
+                cascade.rootCauseDiagnosticCodes.some(
+                    (code) => !issue.diagnosticCodes.includes(code),
+                )
+            ) {
+                fail(`Exception '${issue.id}' has invalid owned-cascade metadata.`);
+            }
+            ownedCascadePatterns.add(cascade.messagePattern);
+        }
+
+        for (const upstream of issue.upstreamPackages) {
+            if (!upstream.name || !exactVersion.test(upstream.version ?? '')) {
+                fail(`Exception '${issue.id}' must pin every upstream package exactly.`);
+            }
+            const installed = installedPackageVersion(upstream.name);
+            if (installed !== upstream.version) {
+                fail(
+                    `Exception '${issue.id}' pins ${upstream.name}@${upstream.version}, ` +
+                        `but ${installed} is installed. Reproduce and review the exception ` +
+                        'before updating its metadata.',
+                );
+            }
+            if (upstream.via) {
+                const via = parsePinnedPackage(
+                    upstream.via,
+                    `Exception '${issue.id}' via`,
+                );
+                if (!exactVersion.test(via.version)) {
+                    fail(`Exception '${issue.id}' must pin its via package exactly.`);
+                }
+                const installedVia = installedPackageVersion(via.name);
+                if (installedVia !== via.version) {
+                    fail(
+                        `Exception '${issue.id}' names ${via.name}@${via.version} as its ` +
+                            `source, but ${installedVia} is installed.`,
+                    );
+                }
+            }
+        }
+    }
+
+    const configuredSubpaths = new Set();
+    for (const entry of exceptions.exceptions ?? []) {
+        if (!publicSubpaths.has(entry.subpath) || configuredSubpaths.has(entry.subpath)) {
+            fail(
+                `Exception metadata has an unknown or duplicate subpath '${entry.subpath}'.`,
+            );
+        }
+        configuredSubpaths.add(entry.subpath);
+        for (const [mode, issueIds] of Object.entries(entry.resolutionModes ?? {})) {
+            if (
+                !supportedModes.has(mode) ||
+                !Array.isArray(issueIds) ||
+                issueIds.length === 0
+            ) {
+                fail(
+                    `Exception metadata for '${entry.subpath}' has invalid mode '${mode}'.`,
+                );
+            }
+            for (const issueId of issueIds) {
+                const issue = issuesById.get(issueId);
+                if (!issue) {
+                    fail(`Exception metadata references unknown issue '${issueId}'.`);
+                }
+                if (!issue.resolutionModes.includes(mode)) {
+                    fail(
+                        `Exception '${issueId}' is assigned to undeclared mode '${mode}' ` +
+                            `for '${entry.subpath}'.`,
+                    );
+                }
+                referencedIssues.add(issueId);
+            }
+        }
+    }
+
+    const unusedIssues = [...issuesById.keys()].filter((id) => !referencedIssues.has(id));
+    if (unusedIssues.length > 0) {
+        fail(
+            `Exception metadata has unused upstream issue(s): ${unusedIssues.join(', ')}.`,
+        );
+    }
+};
+
+validateExceptionMetadata();
+
 const selected = only ? jsSubpaths.filter((entry) => entry.subpath === only) : jsSubpaths;
 if (only && selected.length === 0)
     fail(`--only ${only} does not match any exports subpath.`);
@@ -266,13 +436,6 @@ if (!existsSync(tgzPath)) fail(`\`yarn pack\` did not produce ${tgzPath}.`);
 
 const scratchNodeModules = path.join(scratchRoot, 'node_modules');
 mkdirSync(scratchNodeModules, { recursive: true });
-
-const rootNodeModules = path.join(monorepoRoot, 'node_modules');
-if (!existsSync(rootNodeModules)) {
-    fail(
-        `${rootNodeModules} does not exist. Run \`yarn install\` at the repo root first.`,
-    );
-}
 
 for (const entry of readdirSync(rootNodeModules, { withFileTypes: true })) {
     if (entry.name === '@cratis' || entry.name === '.bin') continue;
@@ -492,26 +655,19 @@ for (const { subpath, specifier, declarationRelPath } of selected) {
         }
 
         const allowedIssues = allowedIssuesFor(subpath, mode);
-        // "has no exported member" cascades (TS2305/TS2694) are anchored to the *consuming* file -
-        // often one of Components' own re-exports - even though the root cause is the upstream
-        // barrel's broken extensionless import. messagePatterns lets those cascades match on the
-        // upstream module named in the diagnostic message instead of requiring the file itself to
-        // live under the upstream package.
         const matchesIssue = (diagnostic, issue) =>
-            issue.diagnosticCodes.includes(diagnostic.code) &&
-            (issue.filePrefixes.some((prefix) => diagnostic.file.startsWith(prefix)) ||
-                (issue.messagePatterns ?? []).some((pattern) =>
-                    diagnostic.message.includes(pattern),
-                ));
+            matchesExternalIssue(diagnostic, issue, pkg.name) ||
+            matchesPairedOwnedCascade(diagnostic, issue, diagnostics, pkg.name);
+        const isOwnedDeclaration = (diagnostic) =>
+            isOwnedDeclarationDiagnostic(diagnostic, pkg.name);
         const isCovered = (diagnostic) =>
             allowedIssues.some((issue) => matchesIssue(diagnostic, issue));
 
         const unexpected = diagnostics.filter((diagnostic) => !isCovered(diagnostic));
-        const ownDeclarationRegressions = unexpected.filter((diagnostic) =>
-            diagnostic.file.startsWith('@cratis/components/'),
-        );
+        const ownDeclarationRegressions = unexpected.filter(isOwnedDeclaration);
 
-        // An exception is stale once none of its codes reproduce anymore for this (subpath, mode).
+        // An exception is stale once none of its reviewed external or paired-cascade diagnostics
+        // reproduce anymore for this (subpath, mode).
         const staleIssues = allowedIssues.filter(
             (issue) => !diagnostics.some((diagnostic) => matchesIssue(diagnostic, issue)),
         );

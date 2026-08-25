@@ -22,7 +22,8 @@
     "files": [
         "index.js",
         "lib",
-        "README.md"
+        "README.md",
+        "LICENSE"
     ],
     "exports": {
         "./package.json": "./package.json",
@@ -30,6 +31,7 @@
     },
     "scripts": {
         "test": "yarn g:test",
+        "verify-package": "node ./test/verify-packed-package.mjs",
         "ci": "yarn g:test"
     },
     "peerDependencies": {

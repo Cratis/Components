@@ -267,17 +267,9 @@ The hook re-syncs state when the `filters` array reference changes — existing 
 
 ## Importing
 
-The Filter module is available at its own subpath — you do not need to import from the root package:
+The Filter module is available only at its explicit component subpath; the Components 4 package root is setup-only:
 
 ```tsx
 import { FilterPanel, FilterEditor, useFilterState } from '@cratis/components/Filter';
 import type { FilterDefinition } from '@cratis/components/Filter';
-```
-
-From the package root, the module is available under the `Filter` namespace:
-
-```tsx
-import { Filter } from '@cratis/components';
-
-// Use as Filter.FilterPanel, Filter.FilterEditor, Filter.useFilterState
 ```

@@ -16,6 +16,7 @@
         "dist",
         "LICENSE",
         "THIRD_PARTY_NOTICES.md",
+        "MIGRATION.md",
         "!dist/**/*.stories.*",
         "!dist/**/given.*",
         "!dist/**/storybook-static/**",

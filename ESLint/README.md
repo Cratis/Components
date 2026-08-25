@@ -11,7 +11,7 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 | `no-hooks-in-view-model`      | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions.                                                                                                                                                                                        |
 | `no-raw-command-form-marker`  | Disallows identifying a CommandForm field or column by a hand-written `displayName` string, in either direction. Use `markAsCommandFormField`/`markAsCommandFormColumn` and `isCommandFormField`/`isCommandFormColumn` from `@cratis/components/CommandForm` — they go through a marker a build transform cannot rewrite.                                            |
 
-The two import rules cover `import` and re-`export … from` forms.
+Both import rules cover static `import` and re-`export … from` forms. The root-barrel rule also reports TypeScript `import = require(...)`, dynamic `import(...)`, and CommonJS `require(...)` of the package root; ambiguous forms are never autofixed.
 
 ## Install
 
@@ -88,6 +88,10 @@ import { Canvas } from '@cratis/components';
 
 // ✅ the same namespace, imported from its subpath
 import * as Canvas from '@cratis/components/Canvas';
+
+// ❌ whole-package forms are ambiguous and reported without an autofix
+import Components = require('@cratis/components');
+const lazyComponents = await import('@cratis/components');
 ```
 
 A single-namespace violation is autofixed to the namespace form shown above, preserving an alias (`Canvas as C`) and `import type` (`import type { Canvas } from '@cratis/components'` becomes `import type * as Canvas from '@cratis/components/Canvas'`, and a per-specifier `type` modifier is honored the same way). The historical `CommandStepper` namespace is mapped to `@cratis/components/CommandDialog`, because that root namespace exposed the complete CommandDialog module rather than only the narrower standalone stepper entry. A mixed import naming both a setup symbol and a namespace is split — the setup symbol stays imported from the root, the namespace moves:
@@ -116,7 +120,7 @@ The rule never guesses. Each of these is flagged with guidance but **not** autof
   guidance, but re-exports are never autofixed.
 
 A companion, standalone codemod applies the same rewrite across a whole project in one pass;
-see [`Codemods`](../Codemods/README.md).
+see [`@cratis/components-codemods`](https://www.npmjs.com/package/@cratis/components-codemods).
 
 ### `onbeforeexecute-must-return`
 

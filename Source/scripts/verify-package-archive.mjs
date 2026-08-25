@@ -27,6 +27,7 @@ const entries = new Set(
 const requiredEntries = [
     'package/LICENSE',
     'package/README.md',
+    'package/MIGRATION.md',
     'package/THIRD_PARTY_NOTICES.md',
     'package/dist/esm/styles.css',
     'package/dist/esm/PatrickHand-OFL.txt',
@@ -41,6 +42,22 @@ if (missing.length > 0) {
     );
     process.exit(1);
 }
+
+const verifyPackedMarkdownLinks = (entry) => {
+    const markdown = runTar('-xOzf', normalizedArchive, entry);
+    for (const match of markdown.matchAll(/\]\((\.?\.?\/[^)#?\s]+)(?:#[^)]+)?\)/gu)) {
+        const target = path.posix.normalize(
+            path.posix.join(path.posix.dirname(entry), decodeURIComponent(match[1])),
+        );
+        if (!target.startsWith('package/') || !entries.has(target)) {
+            console.error(`${entry} links to missing packed file '${match[1]}'.`);
+            process.exit(1);
+        }
+    }
+};
+
+verifyPackedMarkdownLinks('package/README.md');
+verifyPackedMarkdownLinks('package/MIGRATION.md');
 
 const license = runTar('-xOzf', normalizedArchive, 'package/LICENSE');
 if (!license.includes('MIT License') || !license.includes('Copyright (c) 2025 Cratis')) {

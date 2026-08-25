@@ -164,9 +164,7 @@ export function transformSource(fileName, text, options = {}) {
             for (const element of node.exportClause.elements) {
                 const exportedName = (element.propertyName ?? element.name).text;
                 if (approvedRootSymbols.has(exportedName)) continue;
-                if (
-                    Object.hasOwn(namespaceSubpaths, exportedName)
-                ) {
+                if (Object.hasOwn(namespaceSubpaths, exportedName)) {
                     report(
                         element,
                         `Re-export '${exportedName}' from '${packageName}/${namespaceSubpaths[exportedName]}' instead of the package root barrel. This codemod only rewrites 'import' declarations — split this 'export … from' by hand (e.g. 'export * as ${exportedName} from ${JSON.stringify(`${packageName}/${namespaceSubpaths[exportedName]}`)}').`,
@@ -184,6 +182,16 @@ export function transformSource(fileName, text, options = {}) {
         report(
             node,
             `A wildcard 're-export … from ${JSON.stringify(packageName)}' cannot be auto-migrated: this codemod only rewrites 'import' declarations. Replace it with explicit subpath re-exports.`,
+        );
+    };
+
+    const handleImportEquals = (node) => {
+        if (!ts.isExternalModuleReference(node.moduleReference)) return;
+        if (!isRootSpecifier(node.moduleReference.expression)) return;
+
+        report(
+            node,
+            `Import-assignment of '${packageName}' ('import ${node.name.text} = require(...)') cannot be auto-migrated: which subpath each later member access belongs to cannot be inferred from the import alone. Replace it with the specific namespace subpath import(s) it needs.`,
         );
     };
 
@@ -212,6 +220,10 @@ export function transformSource(fileName, text, options = {}) {
         }
         if (ts.isExportDeclaration(node)) {
             handleExport(node);
+            return;
+        }
+        if (ts.isImportEqualsDeclaration(node)) {
+            handleImportEquals(node);
             return;
         }
         if (ts.isCallExpression(node)) {

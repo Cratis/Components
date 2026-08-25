@@ -31,9 +31,11 @@ if ! command -v npx >/dev/null 2>&1; then
 fi
 
 npx markdownlint-cli2 \
+    "README.md" \
     "Documentation/**/*.md" \
-    "Source/README.md" \
-    "Source/MIGRATION.md"
+    "Source/*.md" \
+    "Codemods/*.md" \
+    "ESLint/*.md"
 LINT_EXIT_CODE=$?
 
 echo ""

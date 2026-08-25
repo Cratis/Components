@@ -87,9 +87,9 @@ jobs:
           echo "--- .npmrc after stripping placeholder ---"
           cat "$NPM_CONFIG_USERCONFIG"
 
-      - name: Upgrade npm for trusted publishing (requires >= 11.5.1)
+      - name: Install pinned npm for trusted publishing (requires >= 11.5.1)
         run: |
-          npm install -g npm@11
+          npm install -g npm@11.6.2
           NPM_VER="$(npm --version)"
           echo "Installed npm $NPM_VER"
           node -e "
@@ -107,8 +107,7 @@ jobs:
             .yarn/cache
             **/node_modules
             **/.eslintcache
-            **/yarn.lock
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
 
       - name: Yarn install
         run: yarn
@@ -116,8 +115,16 @@ jobs:
       - name: Publish NPM packages
         run: |
           echo "npm $(npm --version) | node $(node --version)"
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL is $([ -n \"$ACTIONS_ID_TOKEN_REQUEST_URL\" ] && echo 'set' || echo 'NOT set')"
-          echo "NODE_AUTH_TOKEN is '${NODE_AUTH_TOKEN:-(unset)}'"
+          if [[ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]]; then
+            echo "ACTIONS_ID_TOKEN_REQUEST_URL is set"
+          else
+            echo "ACTIONS_ID_TOKEN_REQUEST_URL is NOT set"
+          fi
+          if [[ -n "${NODE_AUTH_TOKEN:-}" ]]; then
+            echo "NODE_AUTH_TOKEN is set"
+          else
+            echo "NODE_AUTH_TOKEN is unset"
+          fi
           echo "--- .npmrc ---"
           cat "$NPM_CONFIG_USERCONFIG" 2>/dev/null || echo "(no .npmrc)"
           echo "---"

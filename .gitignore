@@ -299,6 +299,7 @@ out
 !.yarn/versions
 yarn.lock
 coverage
+.pi/
 
 .DS_Store
 
