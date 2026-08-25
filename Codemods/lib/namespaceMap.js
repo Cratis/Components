@@ -2,9 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 /**
- * Single source of truth for the root-namespace-removal migration: every namespace
- * currently re-exported from the `@cratis/components` package root, and the small set
- * of setup symbols that remain supported at the root once the namespaces are gone.
+ * Single source of truth for the root-namespace-removal migration: every component
+ * namespace removed from the Components 3 package root, and the small setup surface
+ * that remains supported at the Components 4 root.
  *
  * Mirrors `Source/index.ts` and the `exports` map in `Source/package.json`. When a
  * namespace subpath is added, renamed, or removed there, update `namespaceSubpaths`
@@ -18,8 +18,8 @@
 export const packageName = '@cratis/components';
 
 /**
- * Every namespace name importable from the package root today, mapped to the subpath
- * it becomes: `import { Canvas } from '@cratis/components'` migrates to
+ * Every namespace name removed from the Components 3 root, mapped to the Components 4
+ * subpath it becomes: `import { Canvas } from '@cratis/components'` migrates to
  * `import * as Canvas from '@cratis/components/Canvas'`. `Types` is the one case where
  * the namespace name and its subpath differ in casing (`./types`, lowercase).
  */

@@ -17,7 +17,7 @@ function printUsage() {
             '',
             'Rewrites \'import { Namespace } from "@cratis/components"\' into',
             '\'import * as Namespace from "@cratis/components/Namespace"\' for every namespace',
-            'still reachable off the package root. Approved setup symbols (for example',
+            'removed from the Components 4 package root. Approved setup symbols (for example',
             "'CratisComponentsProvider') are left importable from the root.",
             '',
             'Options:',
@@ -62,7 +62,12 @@ function main(argv) {
         if (arg === '--check') {
             check = true;
         } else if (arg === '--package') {
-            packageName = args.shift();
+            const configuredPackage = args.shift();
+            if (!configuredPackage) {
+                console.error('--package requires a package name.');
+                return 1;
+            }
+            packageName = configuredPackage;
         } else if (arg === '--help' || arg === '-h') {
             printUsage();
             return 0;
@@ -76,7 +81,13 @@ function main(argv) {
         return 1;
     }
 
-    const files = paths.flatMap(collectFiles);
+    let files;
+    try {
+        files = paths.flatMap(collectFiles);
+    } catch (error) {
+        console.error(error instanceof Error ? error.message : String(error));
+        return 1;
+    }
     let changedCount = 0;
     let diagnosticCount = 0;
 

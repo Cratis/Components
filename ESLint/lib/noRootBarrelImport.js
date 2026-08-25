@@ -4,8 +4,8 @@ const DEFAULTS = { packageName: '@cratis/components', allow: [] };
 
 // Disallow importing a component namespace from the Cratis Components root barrel. The
 // package exposes purpose-built subpath exports (`@cratis/components/CommandDialog`,
-// `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …); importing a namespace
-// from the root pulls the whole optional-peer-heavy surface and hides intent. The small,
+// `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …); Components 4 removes
+// component namespaces from the setup-only root. The small,
 // approved setup surface (`CratisComponentsProvider` and friends) remains importable from
 // the root. Covers `import` and re-`export … from` forms; only the `import` form is
 // autofixed, and only when every named specifier in the statement is unambiguous.

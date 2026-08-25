@@ -31,6 +31,22 @@ describe('remove-root-namespace-imports CLI', () => {
         expect(result.stdout).toContain('Usage:');
     });
 
+    it('rejects --package without a package name', () => {
+        const result = run(['--package']);
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('--package requires a package name');
+    });
+
+    it('reports a missing input path without a stack trace', () => {
+        const missing = path.join(dir, 'missing');
+        const result = run([missing]);
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('no such file or directory');
+        expect(result.stderr).not.toContain('at collectFiles');
+    });
+
     it('--check reports a pending change without writing the file', () => {
         const file = path.join(dir, 'App.tsx');
         writeFileSync(file, "import { Canvas } from '@cratis/components';\n", 'utf8');
