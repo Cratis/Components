@@ -9,7 +9,7 @@ import {
     type HTMLAttributes,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsContext';
 import {
     getToastSnapshot,
     subscribeToToasts,

@@ -1,10 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
-import { Toaster, type ToasterProps } from '../Notifications';
+import { Toaster, type ToasterProps } from '../Notifications/Toaster';
+import { CratisComponentsContext } from './CratisComponentsContext';
+import { cratisDefaults } from './CratisComponentsDefaults';
+
+export { cratisDefaults } from './CratisComponentsDefaults';
+export { useCratisComponentsConfig } from './CratisComponentsContext';
 
 /** Localizable labels owned by the Cratis paginator. */
 export interface CratisPaginatorMessages {
@@ -168,70 +173,10 @@ export interface CratisComponentsProviderProps {
     children: ReactNode;
 }
 
-/** Default locale and English Components messages. */
-export const cratisDefaults: CratisComponentsConfig = {
-    locale: 'en-US',
-    messages: {
-        paginator: {
-            navigation: 'Pagination',
-            first: 'First page',
-            previous: 'Previous page',
-            next: 'Next page',
-            last: 'Last page',
-        },
-        datePicker: {
-            today: 'Today',
-            clear: 'Clear',
-            openCalendar: 'Open calendar',
-            previousMonth: 'Previous month',
-            nextMonth: 'Next month',
-            label: 'Date',
-        },
-        dropdown: {
-            showOptions: 'Show options',
-            clearSelection: 'Clear selection',
-        },
-        dialog: {
-            ok: 'Ok',
-            cancel: 'Cancel',
-            yes: 'Yes',
-            no: 'No',
-            close: 'Close',
-        },
-        stepper: {
-            next: 'Next',
-            previous: 'Previous',
-            submit: 'Submit',
-        },
-        notifications: {
-            dismiss: 'Dismiss',
-            region: 'Notifications',
-        },
-        dataTable: {
-            selectRow: 'Select row',
-            search: 'Search…',
-            searchAriaLabel: 'Search table',
-        },
-        columnFilter: {
-            matchModeAriaLabel: 'Match mode',
-            clear: 'Clear',
-            apply: 'Apply',
-            true: 'True',
-            false: 'False',
-        },
-    },
-};
-
 /** Deep-merges consumer configuration over {@link cratisDefaults}. */
 export const mergeCratisComponentsConfig = (
     value: CratisComponentsConfig | undefined,
 ): CratisComponentsConfig => merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
-
-const CratisComponentsContext = createContext<CratisComponentsConfig>(cratisDefaults);
-
-/** Returns the resolved renderer-independent Components configuration. */
-export const useCratisComponentsConfig = (): CratisComponentsConfig =>
-    useContext(CratisComponentsContext);
 
 const withLegacyLocaleMessages = (
     config: CratisComponentsConfig,

@@ -102,12 +102,6 @@
             }
         },
         {
-            "subpath": "./Common",
-            "resolutionModes": {
-                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
-            }
-        },
-        {
             "subpath": "./DataPage",
             "resolutionModes": {
                 "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
