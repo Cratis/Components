@@ -178,6 +178,181 @@ jobs:
                   path: ${{ runner.temp }}/verify-public-types-report.json
                   if-no-files-found: ignore
 
+    # Deterministic dependency-closure check for the setup-only root architecture: every
+    # non-spatial subpath (everything except ./Canvas and ./PivotViewer) must never reach
+    # a file under Canvas/ or PivotViewer/, nor the external specifier pixi.js, in either
+    # its runtime or declaration closure; ./Canvas and ./PivotViewer must still reach
+    # pixi.js; and pixi.js must never be imported directly by any emitted file outside
+    # those two directories, regardless of exports-map reachability.
+    verify-package-graph:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                      **/yarn.lock
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+
+            - name: Yarn install
+              run: yarn
+
+            - name: Build the published artifact
+              working-directory: Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn run prepare
+
+            - name: Verify package graph
+              working-directory: Source
+              run: node scripts/verify-package-graph.mjs --report "${{ runner.temp }}/verify-package-graph-report.json"
+
+            - name: Upload verify-package-graph report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: verify-package-graph-report
+                  path: ${{ runner.temp }}/verify-package-graph-report.json
+                  if-no-files-found: ignore
+
+    # Proves a consumer who installs only the mandatory peers - never pixi.js - can fully
+    # use the package root and every non-spatial subpath: runtime import, strict Bundler
+    # and NodeNext TypeScript for the root with pixi.js genuinely absent from
+    # node_modules, an SSR provider smoke test, and a clean packed root closure.
+    verify-no-pixi-consumer:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                      **/yarn.lock
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+
+            - name: Yarn install
+              run: yarn
+
+            - name: Build the published artifact
+              working-directory: Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn run prepare
+
+            - name: Verify no-Pixi consumer
+              working-directory: Source
+              run: node scripts/verify-no-pixi-consumer.mjs
+
+    # Complements verify-no-pixi-consumer: proves a consumer who installs the mandatory
+    # peers and the optional pixi.js peer can use the spatial subpaths (./Canvas,
+    # ./PivotViewer), that pixi.js resolves to exactly one instance with no nested copy,
+    # and that ./Canvas type-checks with pixi.js installed.
+    verify-spatial-consumer:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                      **/yarn.lock
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+
+            - name: Yarn install
+              run: yarn
+
+            - name: Build the published artifact
+              working-directory: Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn run prepare
+
+            - name: Verify spatial consumer
+              working-directory: Source
+              run: node scripts/verify-spatial-consumer.mjs
+
+    # Proves the shared CratisComponentsContext (custom labels) and react-aria-components'
+    # I18nProvider locale context stay one singleton across the root barrel and every
+    # separately built subpath, against the packed artifact - source-level relative
+    # imports would trivially share one module graph regardless of how the published
+    # entry points are structured, so only the packed boundary can exercise this risk.
+    verify-provider-context-identity:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                      **/yarn.lock
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+
+            - name: Yarn install
+              run: yarn
+
+            - name: Build the published artifact
+              working-directory: Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn run prepare
+
+            - name: Verify provider-context identity
+              working-directory: Source
+              run: node scripts/verify-provider-context-identity.mjs
+
     verify-arc-consumers:
         runs-on: ubuntu-latest
         timeout-minutes: 15
