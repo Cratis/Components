@@ -63,6 +63,14 @@ try {
         }
     }
 
+    const readme = readFileSync(path.join(installedRoot, 'README.md'), 'utf8');
+    for (const match of readme.matchAll(/\]\((\.?\.?\/[^)#?\s]+)(?:#[^)]+)?\)/gu)) {
+        const target = path.resolve(installedRoot, decodeURIComponent(match[1]));
+        if (!target.startsWith(`${installedRoot}${path.sep}`) || !existsSync(target)) {
+            throw new Error(`Packed README links to missing file '${match[1]}'.`);
+        }
+    }
+
     const binary = path.join(
         consumer,
         'node_modules',
@@ -73,11 +81,7 @@ try {
     );
     const help = run(binary, ['--help'], { cwd: consumer });
     assertRun('packed codemod --help', help);
-    if (
-        !help.stdout.includes(
-            'Usage: cratis-components-remove-root-namespace-imports',
-        )
-    ) {
+    if (!help.stdout.includes('Usage: cratis-components-remove-root-namespace-imports')) {
         throw new Error(`Unexpected --help output:\n${help.stdout}`);
     }
 

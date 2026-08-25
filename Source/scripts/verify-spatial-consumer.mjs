@@ -9,8 +9,9 @@
  * resolves to exactly ONE `pixi.js` instance - no nested/duplicate copy either inside
  * the packed artifact or pulled in by a second, incompatible resolution.
  *
- * What is checked against a scratch consumer that installs `pixi.js@^8.20.0` alongside
- * the mandatory peers:
+ * What is checked against an offline scratch consumer assembled from this checkout's installed
+ * mandatory peers plus `pixi.js@^8.20.0`: (real npm/pnpm/Yarn PnP install topologies are the
+ * separate `verify-package-managers` CI matrix):
  *
  *   1. Runtime: `./Canvas` and `./PivotViewer` import cleanly.
  *   2. One Pixi resolution / no nested copy: `pixi.js` resolved from the *consumer app's
@@ -18,9 +19,9 @@
  *      `Canvas` module's own realpath-adjacent resolution* both resolve to the exact
  *      same real file - proving the package never nests, bundles, or otherwise ships
  *      its own copy of Pixi instead of using the consumer's single peer resolution.
- *   3. Type-checking: a strict (`skipLibCheck: false`) TypeScript project for `./Canvas`
- *      compiles with `pixi.js` installed (`PIXI.*` types resolve, matching the bounded
- *      upstream exceptions already tracked in `verify-public-types.exceptions.json`).
+ *   3. Type-checking: strict (`skipLibCheck: false`) TypeScript projects for `./Canvas` and
+ *      `./PivotViewer` compile with `pixi.js` present (`PIXI.*` types resolve, matching the
+ *      bounded upstream exceptions already tracked in `verify-public-types.exceptions.json`).
  *
  * Usage:  node scripts/verify-spatial-consumer.mjs [--keep-fixture]
  * Exits non-zero on any check failure.

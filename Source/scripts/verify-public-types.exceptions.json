@@ -1,5 +1,5 @@
 {
-    "$comment": "Machine-readable, bounded allow-list for Cratis/Components#176. Every entry names the exact upstream package/version, the diagnostic codes it produces, why it is external to Components, and an objective, checkable removal condition. verify-public-types.mjs refuses to treat an unlisted diagnostic - or a diagnostic whose file does not match filePrefixes - as covered, and fails the run if a listed exception stops reproducing (the removal condition is presumed met and the entry is stale).",
+    "$comment": "Machine-readable, bounded allow-list for Cratis/Components#176. Every entry names exact installed upstream package versions, diagnostic codes, resolution modes, source prefixes, and an objective removal condition. Components-owned diagnostics are covered only as explicitly paired cascades when the same compiler run contains the matching TS2834/TS2835 root cause in that exact upstream package; message similarity alone is insufficient. The verifier fails on unlisted diagnostics, metadata/version drift, unpaired owned diagnostics, and exceptions that stop reproducing.",
     "typeScriptVersion": "6.0.3",
     "trackingIssue": "https://github.com/Cratis/Components/issues/176",
     "upstreamIssues": [
@@ -45,6 +45,23 @@
                 "@cratis/arc.react",
                 "@cratis/arc/",
                 "@cratis/fundamentals"
+            ],
+            "ownedCascades": [
+                {
+                    "messagePattern": "@cratis/arc.react",
+                    "rootCauseFilePrefix": "@cratis/arc.react/",
+                    "rootCauseDiagnosticCodes": ["TS2834", "TS2835"]
+                },
+                {
+                    "messagePattern": "@cratis/arc/",
+                    "rootCauseFilePrefix": "@cratis/arc/",
+                    "rootCauseDiagnosticCodes": ["TS2834", "TS2835"]
+                },
+                {
+                    "messagePattern": "@cratis/fundamentals",
+                    "rootCauseFilePrefix": "@cratis/fundamentals/",
+                    "rootCauseDiagnosticCodes": ["TS2834", "TS2835"]
+                }
             ],
             "removalCondition": "Coordinate with @cratis/fundamentals (and @cratis/arc / @cratis/arc.react, which share the same generator/build) to add explicit .js extensions to relative specifiers in published declaration files, per the issue's direction to fix this upstream rather than copy or patch their types in Components."
         }

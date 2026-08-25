@@ -7,8 +7,9 @@ const DEFAULTS = { packageName: '@cratis/components', allow: [] };
 // `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …); Components 4 removes
 // component namespaces from the setup-only root. The small,
 // approved setup surface (`CratisComponentsProvider` and friends) remains importable from
-// the root. Covers `import` and re-`export … from` forms; only the `import` form is
-// autofixed, and only when every named specifier in the statement is unambiguous.
+// the root. Covers static imports/re-exports, TypeScript import assignments, dynamic imports,
+// and CommonJS require calls. Only named static imports are autofixed, and only when every
+// specifier in the statement is unambiguous.
 export const noRootBarrelImport = {
     meta: {
         type: 'suggestion',
@@ -59,6 +60,39 @@ export const noRootBarrelImport = {
             ImportDeclaration(node) {
                 if (!isRootSpecifier(node.source)) return;
                 checkImport(context, node, packageName);
+            },
+            TSImportEqualsDeclaration(node) {
+                const reference = node.moduleReference;
+                if (
+                    reference?.type !== 'TSExternalModuleReference' ||
+                    !isRootSpecifier(reference.expression)
+                )
+                    return;
+                context.report({
+                    node: reference.expression,
+                    messageId: 'ambiguousImport',
+                    data: { packageName },
+                });
+            },
+            ImportExpression(node) {
+                if (!isRootSpecifier(node.source)) return;
+                context.report({
+                    node: node.source,
+                    messageId: 'ambiguousImport',
+                    data: { packageName },
+                });
+            },
+            CallExpression(node) {
+                if (node.callee.type !== 'Identifier' || node.callee.name !== 'require')
+                    return;
+                const [argument] = node.arguments;
+                if (!argument || argument.type === 'SpreadElement') return;
+                if (!isRootSpecifier(argument)) return;
+                context.report({
+                    node: argument,
+                    messageId: 'ambiguousImport',
+                    data: { packageName },
+                });
             },
             ExportNamedDeclaration(node) {
                 if (!isRootSpecifier(node.source)) return;

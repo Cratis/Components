@@ -133,6 +133,21 @@ describe('remove-root-namespace-imports CLI', () => {
         );
     });
 
+    it('reports a TypeScript import assignment in a .cts file', () => {
+        const file = path.join(dir, 'legacy.cts');
+        writeFileSync(
+            file,
+            "import Components = require('@cratis/components');\n",
+            'utf8',
+        );
+
+        const result = run(['--check', file]);
+
+        expect(result.status).toBe(1);
+        expect(result.stderr).toContain('Import-assignment');
+        expect(readFileSync(file, 'utf8')).toContain("require('@cratis/components')");
+    });
+
     it('running twice in a row is idempotent and the second run exits 0', () => {
         const file = path.join(dir, 'App.tsx');
         writeFileSync(

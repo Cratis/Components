@@ -93,7 +93,7 @@ npx --package @cratis/components-codemods \
   cratis-components-remove-root-namespace-imports <paths...>
 ```
 
-The codemod preserves aliases and type-only imports, splits mixed setup/namespace imports, and refuses to guess at default imports, whole-package namespace imports, dynamic imports, `require`, re-exports, side-effect imports, or unknown symbols. Review every reported unsupported case manually, then run the consuming project's lint, build, and tests.
+The codemod preserves aliases and type-only imports, splits mixed setup/namespace imports, and refuses to guess at default imports, whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, re-exports, side-effect imports, or unknown symbols. Review every reported unsupported case manually, then run the consuming project's lint, build, and tests.
 
 See [UI foundation: Capability profiles](ui-foundation.md#capability-profiles) for how these subpaths group into Foundation, Advanced React, and Spatial, and the [capability matrix](ui-foundation.md#capability-matrix) for what each profile owns.
 

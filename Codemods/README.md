@@ -1,14 +1,13 @@
 # @cratis/components-codemods
 
-Migration codemods in the Components 4 candidate move Components 3 root namespaces to Components 4 explicit subpath imports. Components 4 keeps package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). See
-[`ESLint`'s `no-root-barrel-import` rule](../ESLint/README.md) for the lint-time guard that
-enforces this once a consumer has migrated.
+Migration codemods in the Components 4 candidate move Components 3 root namespaces to Components 4 explicit subpath imports. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). The companion `@cratis/eslint-plugin-components` package's `no-root-barrel-import` rule enforces this once a consumer has migrated.
 
 ## `remove-root-namespace-imports`
 
-An idempotent, AST-based codemod built on the TypeScript compiler API (`typescript`, already
-a repository devDependency — no new dependency was added for this tool). It rewrites static
-`import` declarations only; it never guesses, and reports every case it will not touch.
+An idempotent, AST-based codemod built on the TypeScript compiler API. The published CLI
+brings its own `typescript` runtime dependency, so its parser does not depend on the consumer
+application's TypeScript version. It rewrites static `import` declarations only; it never
+guesses, and reports every case it will not touch.
 
 ### What it rewrites
 
@@ -48,9 +47,10 @@ whose module specifier is exactly `@cratis/components` (or the `--package` overr
 already-migrated subpath import is never revisited.
 
 The complete namespace → subpath map and the approved-root-symbol allowlist live in
-[`lib/namespaceMap.js`](./lib/namespaceMap.js), mirrored from `Source/index.ts`. Update both
-that file and [`ESLint/lib/rootNamespaceMap.js`](../ESLint/lib/rootNamespaceMap.js) together
-when a namespace subpath is added, renamed, or removed.
+[`lib/namespaceMap.js`](./lib/namespaceMap.js), mirrored from `Source/index.ts`. Contributors
+must update it and the
+[`ESLint` mirror](https://github.com/Cratis/Components/blob/main/ESLint/lib/rootNamespaceMap.js)
+together when a namespace subpath is added, renamed, or removed.
 
 ### What it refuses to guess
 
@@ -66,6 +66,8 @@ Each of these is left completely untouched, and reported as a diagnostic instead
 - A named import of a symbol that is neither an approved setup symbol nor a known namespace
   (for example a member like `Button` that only exists _inside_ a namespace, not at the
   root). The whole import statement is left untouched rather than partially migrated.
+- A TypeScript import assignment — `import Components = require('@cratis/components');`.
+  This is the whole package namespace, so later member access is as ambiguous as `import * as`.
 - A dynamic `import('@cratis/components')` or a CommonJS `require('@cratis/components')`,
   anywhere in the file.
 - Any `export … from '@cratis/components'` re-export form. This codemod only rewrites
@@ -109,6 +111,7 @@ that subpath.
 cd Codemods && yarn test
 ```
 
-Fixtures for every supported and unsupported case live under
-`Codemods/test/fixtures/`, each as an `input.ts`/`expected.ts` pair (`input.ts` and
-`expected.ts` are identical for an unsupported case, since nothing should change).
+Repository fixtures for every supported and unsupported case live under
+[`Codemods/test/fixtures`](https://github.com/Cratis/Components/tree/main/Codemods/test/fixtures),
+each as an `input.ts`/`expected.ts` pair (`input.ts` and `expected.ts` are identical for an
+unsupported case, since nothing should change).

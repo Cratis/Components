@@ -48,9 +48,9 @@ import { DataTableForQuery, Column } from '@cratis/components/DataTables';
 import { Canvas, CanvasItem } from '@cratis/components/Canvas';
 ```
 
-`@cratis/components` intentionally exports only `CratisComponentsProvider`, `cratisDefaults`, `mergeCratisComponentsConfig`, and their config/props types — the setup every application needs once, regardless of which components it uses. Every component family, in every [capability profile](#capability-profiles), is reached through its own subpath and never through the root.
+`@cratis/components` intentionally exports only `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, `mergeCratisComponentsConfig`, and their config/props/message types — the setup every application needs once, regardless of which components it uses. Every component family, in every [capability profile](#capability-profiles), is reached through its own subpath and never through the root.
 
-Components 4 removes the Components 3 component-family namespaces from the root. [Migrate from Components 3 to 4](migration.md) carries the current namespace-to-subpath mapping and the migration codemod's stop conditions. The `CommandStepper` mapping is intentionally special: the old namespace represented the full `CommandDialog` module, while the dedicated `@cratis/components/CommandStepper` subpath exports the standalone component.
+Components 4 removes the Components 3 component-family namespaces from the root. Imports such as `import { Canvas } from '@cratis/components'` no longer resolve; use `@cratis/components/Canvas` instead. [Migrate from Components 3 to 4](migration.md) carries the current namespace-to-subpath mapping, codemod command, and stop conditions. The `CommandStepper` mapping is intentionally special: the historical namespace represented the full `CommandDialog` module, so it migrates to `@cratis/components/CommandDialog`; the narrower `@cratis/components/CommandStepper` subpath exports only the standalone component.
 
 ## Capability profiles
 
@@ -154,11 +154,11 @@ Repository specs compare bounded behaviors needed by the current migration; they
 
 Components 4 validates every public JavaScript subpath as a strict external TypeScript 6 consumer of the actual packed artifact. Run `yarn workspace @cratis/components verify-public-types` after building the package. The verifier creates isolated Bundler and NodeNext fixtures with `skipLibCheck: false`, confirms that TypeScript resolved declarations from the fresh archive rather than source or stale output, and emits a machine-readable report when requested.
 
-Known upstream failures are bounded in `Source/scripts/verify-public-types.exceptions.json`. Each exception names exact package versions, diagnostic codes, affected subpaths and resolution modes, and an objective removal condition. Unlisted diagnostics, any diagnostic in Components-owned declarations, a TypeScript-version mismatch, or an exception that stops reproducing all fail the gate.
+Known upstream failures are bounded in `Source/scripts/verify-public-types.exceptions.json`. Each exception names exact installed package versions, diagnostic codes, affected subpaths and resolution modes, and an objective removal condition. Unlisted diagnostics, version/metadata drift, a TypeScript-version mismatch, or an exception that stops reproducing all fail the gate. A diagnostic anchored in a Components declaration is never covered by message matching alone: the same compiler run must also contain the reviewed TS2834/TS2835 root cause under the exact upstream package named by that diagnostic. Synthetic specs prove absent and unrelated root causes remain failures.
 
 The current exceptions are:
 
-- **`@webgpu/types@0.1.72` through `pixi.js@8.20.0`:** its ambient WebGPU declarations conflict with TypeScript 6's built-in DOM declarations for the root and `Canvas` subpaths (`TS2403`, `TS2687`, `TS2717`, `TS6200`).
+- **`@webgpu/types@0.1.72` through `pixi.js@8.20.0`:** its ambient WebGPU declarations conflict with TypeScript 6's built-in DOM declarations for the `Canvas` subpath (`TS2403`, `TS2687`, `TS2717`, `TS6200`). The setup-only root has no Pixi type exception.
 - **`@cratis/arc.react@22.1.0`:** its published global JSX declarations expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
 - **`@cratis/arc@22.1.0`, `@cratis/arc.react@22.1.0`, and `@cratis/fundamentals@7.18.1`:** their published ESM declarations use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
 
@@ -182,11 +182,12 @@ Repository issues may track these gaps, but an open issue is not a public roadma
 The Components 4 major candidate uses these repository release checks:
 
 - Emitted JavaScript and declarations contain no Prime imports or type references.
-- npm, pnpm, and Yarn PnP packed-consumer fixtures pass.
+- Real npm, strict pnpm, and Yarn PnP packed consumers pass with Pixi both absent and present; present topologies prove Components and the consumer resolve one Pixi instance.
+- The setup root and every non-spatial subpath load without Pixi, while Canvas and PivotViewer fail specifically on the missing optional peer until it is installed.
 - Declared Arc peer versions are exercised against the packed artifact.
 - Representative custom-theme and pass-through consumers compile after following the guide.
 - Specs, Storybook, package exports, SSR, keyboard/focus behavior, responsive layouts, dark mode, forced colors, and reduced motion pass.
 - The migration guide works without repository-specific knowledge.
-- Every packed public JavaScript subpath passes strict TypeScript 6 validation or matches a bounded machine-readable upstream exception whose removal condition is still unmet.
+- Every packed public JavaScript subpath passes strict TypeScript 6 validation or matches a bounded machine-readable upstream exception with exact installed versions and an unmet removal condition. Components-owned cascades additionally require their matching upstream TS2834/TS2835 root cause in the same compiler run.
 
 The major PR effect packet owns the exact current release evidence and limitations.

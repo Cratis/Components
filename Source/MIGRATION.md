@@ -90,7 +90,7 @@ npx --package @cratis/components-codemods \
   cratis-components-remove-root-namespace-imports <paths...>
 ```
 
-The codemod preserves aliases and type-only imports, splits mixed setup/namespace imports, and reports unsupported cases without guessing. Review its diagnostics, then run the consuming project's lint, build, and tests.
+The codemod preserves aliases and type-only imports, splits mixed setup/namespace imports, and reports unsupported cases without guessing. Those include default or whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, re-exports, side-effect imports, and unknown symbols. Review its diagnostics, then run the consuming project's lint, build, and tests.
 
 ## Keep the stylesheet entry points
 
