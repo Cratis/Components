@@ -5,6 +5,8 @@ description: Reference for the pan, zoom, minimap, overlay, and collaborative ca
 
 `@cratis/components/Canvas` provides a renderer-independent React surface for large spatial workspaces. It owns gesture coordination, transforms, controls, item measurement, minimap state, and optional Note, Region, and Chat shapes. Product appearance comes from `--cratis-*` tokens and Canvas classes; PrimeIcons and a renderer provider are not required.
 
+Canvas belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside `PivotViewer` — the only two subpaths that install the optional `pixi.js` peer. Spatial is not a lesser-supported tier: it ships at the same version, behind the same release gates, as every Foundation and Advanced React subpath.
+
 The engine renders and positions arbitrary content independently of the optional presentational shapes. Start with [Basic usage](basic-usage.md), then use the focused guides for [pan and zoom](pan-and-zoom.md), [controls chrome](controls-chrome.md), [notes](notes.md), [regions](regions.md), and the [chat bubble](chat-bubble.md). This page is the complete API reference.
 
 ## Import
@@ -28,6 +30,10 @@ npm install pixi.js@^8.20.0
 ```
 
 Keep one compatible Pixi resolution across the application and Components. Two installed copies produce nominal TypeScript incompatibilities for containers and pointer events even when their APIs look structurally similar.
+
+### Single Pixi peer
+
+This single-resolution rule is not advisory-only: `pixi.js` is declared `peerDependenciesMeta: { "pixi.js": { "optional": true } }` in Components' own `package.json`, so npm/Yarn/pnpm resolve it to whatever compatible version the application installs rather than nesting a private copy. A second, independently resolved `pixi.js` instance produces nominally distinct `PIXI.Container` and pointer-event types even though both satisfy `^8.20.0` — TypeScript treats classes from two different module instances as unrelated types regardless of their shape. Install `pixi.js` once, at the application level, and let both the application and Components resolve it there. See [Optional Pixi, clean no-Pixi core](../ui-foundation.md#optional-pixi-clean-no-pixi-core) for why the public Pixi types stay real rather than becoming a reduced Cratis facade.
 
 ## Canvas
 
@@ -90,6 +96,15 @@ const handleReady = (handle: CanvasHandle) => {
 | `getContainerRect()`                             | Returns the current viewport rectangle or `null`.           |
 | `getItemBounds()`                                | Returns measured world-space rectangles as `MinimapItem[]`. |
 
+## DOM and Pixi layers
+
+`Canvas` composes two independent rendering layers rather than choosing one, and an application can use either alone or mix both in the same instance:
+
+- **DOM layer** — `children` and `CanvasItem` position arbitrary React/DOM content with ordinary CSS transforms. No Pixi content ever mounts if an application only uses this layer.
+- **Pixi layer** — the optional `items`/`renderItem` props hand `Canvas` an array of data and a function that builds one `PIXI.Container` per item, rendered on a single shared Pixi `Application`/`world` container exposed through `onReady`'s `CanvasContext`. This exists for item counts where per-item DOM nodes (and DOM-level pan/zoom repaint cost) become the bottleneck; the Pixi layer amortizes many items on the GPU instead.
+
+Both layers share the same camera: panning and zooming transform the DOM layer's CSS and the Pixi `world` container together, so DOM and Pixi content stay registered to the same world coordinates.
+
 ## CanvasItem
 
 `CanvasItem` positions and measures DOM content inside a `Canvas`.
@@ -133,7 +148,7 @@ const captureAttributes: CanvasCaptureAttributes = {
 
 ## Overlays and SSR
 
-`CanvasOverlay` portals children to `document.body` in the browser. It renders an empty server/hydration placeholder, so importing or server-rendering a Canvas tree does not access `document` before hydration.
+`CanvasOverlay` portals children to `document.body` in the browser. It renders an empty server/hydration placeholder, so importing or server-rendering a Canvas tree does not access `document` before hydration. It uses the same `useSyncExternalStore` browser-detection pattern as `Dialog`, `FilterPanel`, `Toaster`, and `ToolbarSlot` elsewhere in Components. `Canvas`'s own `PIXI.Application` creation likewise runs inside a `useEffect`, so it never executes during server rendering — see the [capability matrix](../ui-foundation.md#capability-matrix) for the equivalent PivotViewer guarantee.
 
 Use it for floating controls that must escape canvas clipping:
 

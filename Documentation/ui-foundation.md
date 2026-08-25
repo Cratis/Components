@@ -34,6 +34,86 @@ The shipped styling contract contains:
 
 Spacing, typography, motion, elevation, and product-specific dimensions remain product design-system concerns unless a component documents a dedicated token or prop. A product can map its own token families to the Cratis semantic values and style stable parts without targeting React Aria DOM.
 
+## Import surface: setup-only root, explicit subpaths
+
+The canonical import rule: **the package root is setup-only; every component ships from its own subpath.**
+
+```ts
+// Setup surface — root
+import { CratisComponentsProvider } from '@cratis/components';
+
+// Components — explicit subpaths
+import { CommandDialog } from '@cratis/components/CommandDialog';
+import { DataTableForQuery, Column } from '@cratis/components/DataTables';
+import { Canvas, CanvasItem } from '@cratis/components/Canvas';
+```
+
+`@cratis/components` intentionally exports only `CratisComponentsProvider`, `cratisDefaults`, `mergeCratisComponentsConfig`, and their config/props types — the setup every application needs once, regardless of which components it uses. Every component family, in every [capability profile](#capability-profiles), is reached through its own subpath and never through the root.
+
+The root also re-exports every subpath as a namespace today (`import { Canvas } from '@cratis/components'`, then `Canvas.CanvasItem`), purely for source compatibility with code written before subpath imports were the documented default. That bridge is not the pattern for new code, and this release does not remove it: [Migrate from Components 3 to 4](migration.md) carries the complete namespace-to-subpath mapping, including one nuance the mapping resolves — the root's `CommandStepper` namespace is an alias of the entire `CommandDialog` module (so `CommandStepper.StepperCommandDialog` already works today), while the dedicated `@cratis/components/CommandStepper` subpath only carries `CommandStepper` itself. A removal of the root namespace bridge, if it ever happens, is a tracked, versioned change with its own migration guide — not a silent behavior change.
+
+## Capability profiles
+
+Components groups its subpaths into three capability profiles — a documentation and adoption grouping, not a support tier:
+
+- **Foundation** — the components most applications reach for immediately: `Common`, `CommandDialog` (and its `CommandStepper` alias), `CommandForm` (and `CommandForm/fields`), `DataPage`, `DataTables`, `Dialogs`, `Display`, `Dropdown`, `Filter`, `Notifications`, and `types`. Forms, dialogs, tables, and notifications for an ordinary Arc-backed CRUD screen.
+- **Advanced React** — specialized, still Pixi-free React surfaces used by fewer applications, or by fewer screens within an application: `ObjectContentEditor`, `ObjectNavigationalBar`, `SchemaEditor`, `TimeMachine`, and `Toolbar`. JSON Schema authoring, object/schema navigation, version scrubbing, and canvas-style tool palettes.
+- **Spatial** — pan/zoom and large-dataset visualization surfaces backed by Pixi: `Canvas` and `PivotViewer`. These install the optional `pixi.js` peer; see [Optional Pixi, clean no-Pixi core](#optional-pixi-clean-no-pixi-core).
+
+**Equal support, not weaker semver.** All three profiles, and the setup-only root, ship from the same package at the same version, pass the same [release gates](#release-gates) — build, specs, Storybook, package-export verification, SSR, accessibility, and strict public-type validation — and follow the same single semver line. A breaking change to `Toolbar` bumps the same major version as a breaking change to `DataTableForQuery`. "Advanced React" and "Spatial" describe what a component is _for_ and what it costs to adopt (peer install, bundle shape, typical audience) — never how carefully it is built, tested, or versioned.
+
+## Capability matrix
+
+| Capability profile | Subpaths | Extra peer | State Components owns | Data & persistence | Arc / Chronicle relationship | SSR | Performance shape |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Setup** (root) | `@cratis/components` | — | Locale, provider-owned labels, toast-region wiring | none | none | Renders no browser-only API; safe to import and render on the server | negligible |
+| **Foundation** | `Common`, `CommandDialog` / `CommandStepper`, `CommandForm` / `CommandForm/fields`, `DataPage`, `DataTables`, `Dialogs`, `Display`, `Dropdown`, `Filter`, `Notifications`, `types` | — | Widget interaction state: open/closed, focus, loaded-page sort/filter, paginator position, toast queue | Command execution and query results are `@cratis/arc.react` state; Components never fetches, caches, or persists data | Commands and queries run through Arc; Arc may itself be backed by Chronicle in an event-sourced application, but Components has no direct Chronicle dependency and behaves the same over a plain Arc.Core backend | Every surface that portals or reads `document` (`Dialog`, `FilterPanel`, `Toaster`) gates on a shared `useSyncExternalStore` browser check and renders a stable placeholder until mounted | Table/paging cost scales with the loaded page only; complete-result filtering/sorting is a server concern (see [Update tables](migration.md#update-tables)) |
+| **Advanced React** | `ObjectContentEditor`, `ObjectNavigationalBar`, `SchemaEditor`, `TimeMachine`, `Toolbar` | — | Local edit-buffer, breadcrumb, scrub-position, and active-tool/expanded-panel state | 100% host-supplied through props (`object`, `schema`, `versions`, `navigationPath`, …) — none of these components fetch, cache, or persist anything | None built in and none assumed; each page documents how a Chronicle-backed host typically supplies its data | Plain React trees; `Toolbar`'s folder/fan-out/slot pieces use the same browser-detection pattern as Foundation where they portal or attach `document` listeners | Cost is proportional to the object/schema/version data the host passes in — see each page's own performance note |
+| **Spatial** | `Canvas`, `PivotViewer` | `pixi.js@^8.20.0` (optional, single shared resolution — see [Optional Pixi](#optional-pixi-clean-no-pixi-core)) | Camera/viewport/gesture transforms, measured item bounds, worker/index/filter state | Item, shape, and card data is host-supplied; Components renders and lets you query it, never persists it | Same as Foundation: an event-sourced host may project Chronicle read models into the data it passes in, but neither component has a Chronicle dependency | `PIXI.Application` creation and PivotViewer's Web Worker setup run inside effects, guarded and skipped — with a synchronous fallback for the worker — when `window`/`Worker` is unavailable; `CanvasOverlay` uses the same browser-check pattern as Foundation | Pixi rendering and PivotViewer's Web Worker indexing exist specifically to keep large item counts off the DOM and main thread — see [Canvas](Canvas/index.md#dom-and-pixi-layers) and [PivotViewer](PivotViewer/index.md#worker-and-search-architecture) |
+
+## Optional Pixi, clean no-Pixi core
+
+Only the Spatial profile touches Pixi. `Canvas` and `PivotViewer` are the only subpaths that import `pixi.js`; every Foundation and Advanced React subpath — including `Toolbar`, which looks canvas-adjacent by name — is plain React and DOM, with no Pixi reference anywhere in its module graph.
+
+`pixi.js` is declared as an **optional peer** (`peerDependenciesMeta: { "pixi.js": { "optional": true } }`), not a Components dependency:
+
+```bash
+npm install pixi.js@^8.20.0
+```
+
+Install it once, in the application, only if that application uses `Canvas` or `PivotViewer`. Every other subpath needs nothing beyond React, Arc, and Fundamentals.
+
+**Single-peer rule.** Keep exactly one compatible Pixi resolution across the application and Components — never a nested copy pulled in only for Components. Two installed copies of `pixi.js` produce nominally incompatible `PIXI.Container` and pointer-event types even when both satisfy `^8.20.0`, because TypeScript treats structurally similar classes from two different module instances as distinct nominal types. This is why `CanvasContext`, `renderItem`, and Canvas's pointer callbacks intentionally expose real Pixi types rather than a reduced Cratis facade: consumers build arbitrary Pixi content against the one Pixi instance the application already owns, and Components does not shadow it with a second one. `PivotViewer` uses Pixi internally for its card rendering but does not expose Pixi types publicly, so it needs no equivalent declaration exception (see [Strict public-type validation](#strict-public-type-validation)).
+
+**DOM and Pixi as siblings, not a replacement.** Within the Spatial profile, `Canvas` itself composes two independent rendering layers rather than choosing one: arbitrary DOM content, positioned through `CanvasItem` and ordinary CSS transforms, and an optional Pixi `items`/`renderItem` layer for item counts where per-item DOM nodes would be the bottleneck. An application can use only the DOM layer (no `items`/`renderItem`, so no Pixi content ever mounts) or mix both in the same `Canvas`. See [Canvas: DOM and Pixi layers](Canvas/index.md#dom-and-pixi-layers).
+
+Everything Pixi-related — the peer, the install, the single-resolution rule, and the type-validation exception it requires — is a Spatial-profile concern. Choosing Foundation or Advanced React components never pulls Pixi into an application's dependency graph, install size, or type-checking surface.
+
+## Aggregate CSS today, future split criteria
+
+`@cratis/components/styles` is one manifest — `Source/styles.css` — that `@import`s every component's stylesheet, across all three capability profiles, into one compiled `dist/esm/styles.css`. Component modules import no CSS themselves; every rule reaches the browser through this single entry point. That is a deliberate constraint, not an oversight: a CSS import inside the component JavaScript module graph is what made a previous published ESM unloadable from Node (`ERR_UNKNOWN_FILE_EXTENSION` on any subpath a spec or SSR run touched), so Components' build fails if a `.css` file under `Source/` is not reachable from the manifest — the styles and the components cannot drift apart.
+
+This means Foundation, Advanced React, and Spatial CSS all ship together today: importing `@cratis/components/styles` once loads Canvas's and PivotViewer's rules alongside Dialog's and DataTable's, whether or not the application ever renders `Canvas`. That is an acceptable, and currently the simplest, aggregate cost — plain CSS custom properties and class rules are inert until a matching class or `data-cratis-part` renders, so unused component CSS costs parse time on an already-small stylesheet, not runtime behavior, layout, or a Pixi/JavaScript dependency.
+
+A future split — for example, a separate `@cratis/components/styles/spatial` alongside a slimmer default — would only be justified once one of these becomes true and measured, not merely theoretical:
+
+- The aggregate manifest's compiled size becomes large enough that a Foundation-only application's CSS payload is a demonstrated problem, not a stylistic preference.
+- A capability profile needs an independently versioned or independently loaded stylesheet — for example, a CDN-hosted or lazily loaded Spatial bundle separate from the application shell.
+- Splitting no longer risks the two-file drift the single manifest exists to prevent, or the build gate that enforces it is extended to cover multiple manifests without weakening it.
+
+Until then, one manifest is simpler to keep correct than several kept in sync, and it matches the "equal support" statement in [Capability profiles](#capability-profiles): no profile's styling is a second-class, separately loaded concern.
+
+## Package split criteria
+
+`@cratis/components` is one npm package covering all three capability profiles today, and stays that way unless a concrete, measured need crosses one of these lines:
+
+- **Peer isolation stops being enough.** The optional `pixi.js` peer plus subpath exports already means a Foundation-only application installs no Pixi code and imports no Pixi module. A split would only remove marginal package-manager or type-resolution overhead beyond what the optional peer already removes — that overhead would need to be measured and real, not assumed.
+- **A capability profile needs an independent release cadence.** For example, a Pixi major upgrade that must ship for `Canvas`/`PivotViewer` without forcing a coordinated release of every Foundation and Advanced React component, or vice versa. Today all three profiles share one version and one release process by design — see [Capability profiles](#capability-profiles).
+- **A second framework binding needs to reuse non-visual logic without pulling in React-specific Spatial code.** The [table architecture](#table-architecture) section already anticipates this for an Arc React query/table binding; the same reasoning would apply to any Foundation/Advanced React logic a future Vue or Svelte binding wants to share, while Spatial's Pixi/React composition would not be reusable as-is regardless of packaging.
+- **The aggregate CSS manifest is split first.** See [Aggregate CSS today, future split criteria](#aggregate-css-today-future-split-criteria) — a package split typically follows the same boundary as its stylesheets, so splitting packages before an already-justified CSS split would just recreate the drift problem the manifest exists to prevent, across package boundaries instead of within one.
+
+None of these conditions is met today. A single package with subpath exports, an optional Pixi peer, and one aggregate stylesheet already delivers tree-shakeable code, no forced Pixi install, one `--cratis-*` token source, and one release/versioning/CI surface — the practical benefits a split would chase — without a multi-package version matrix to keep compatible across three profiles that already share every build, spec, and release gate.
+
 ## Why React Aria
 
 [React Aria Components](https://react-aria.adobe.com/getting-started) is style-free and Apache-2.0 licensed. It supplies difficult interaction behavior such as focus management, keyboard navigation, screen-reader semantics, overlays, collection behavior, and internationalized dates.

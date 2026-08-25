@@ -31,6 +31,66 @@ Applications using Canvas or PivotViewer must install `pixi.js@^8.20.0`, now an 
 
 The supported Arc peer range remains `>=20.3.1 <23`.
 
+## Import from explicit subpaths
+
+The canonical rule going forward: **the package root is setup-only; every component ships from its own subpath.**
+
+```tsx
+// Before — root namespace (still works, not canonical)
+import { Canvas } from '@cratis/components';
+
+<Canvas.Canvas showControls>
+    <Canvas.CanvasItem x={0} y={0}>Content</Canvas.CanvasItem>
+</Canvas.Canvas>;
+```
+
+```tsx
+// After — canonical subpath, named imports
+import { Canvas, CanvasItem } from '@cratis/components/Canvas';
+
+<Canvas showControls>
+    <CanvasItem x={0} y={0}>Content</CanvasItem>
+</Canvas>;
+```
+
+This is **not a breaking change in this release.** The root still re-exports every subpath as a namespace (`import { Canvas } from '@cratis/components'`) for source compatibility, exactly as it does today; nothing in this section removes that bridge. It documents the rule new code should already follow and gives existing code a mechanical path onto it, ahead of any future removal — which, if it ever happens, is its own tracked, versioned change with its own migration guide.
+
+Every namespace maps the same way: replace `import { X } from '@cratis/components'` with either an equivalent namespace import from `@cratis/components/X`, or named imports from the same subpath.
+
+| Namespace (root, source-compatible) | Canonical subpath | Namespace-preserving migration | Named migration |
+| --- | --- | --- | --- |
+| `Canvas` | `@cratis/components/Canvas` | `import * as Canvas from '@cratis/components/Canvas'` | `import { Canvas, CanvasItem } from '@cratis/components/Canvas'` |
+| `CommandDialog` | `@cratis/components/CommandDialog` | `import * as CommandDialog from '@cratis/components/CommandDialog'` | `import { CommandDialog } from '@cratis/components/CommandDialog'` |
+| `CommandStepper` † | `@cratis/components/CommandStepper` | `import * as CommandStepper from '@cratis/components/CommandStepper'` | `import { CommandStepper } from '@cratis/components/CommandStepper'` |
+| `CommandForm` | `@cratis/components/CommandForm` | `import * as CommandForm from '@cratis/components/CommandForm'` | `import { AutoCommandForm, InputTextField } from '@cratis/components/CommandForm'` |
+| `Common` | `@cratis/components/Common` | `import * as Common from '@cratis/components/Common'` | `import { CratisComponentsProvider, Button } from '@cratis/components/Common'` |
+| `DataPage` | `@cratis/components/DataPage` | `import * as DataPage from '@cratis/components/DataPage'` | `import { DataPage, Column } from '@cratis/components/DataPage'` |
+| `DataTables` | `@cratis/components/DataTables` | `import * as DataTables from '@cratis/components/DataTables'` | `import { DataTableForQuery, Column } from '@cratis/components/DataTables'` |
+| `Dialogs` | `@cratis/components/Dialogs` | `import * as Dialogs from '@cratis/components/Dialogs'` | `import { Dialog } from '@cratis/components/Dialogs'` |
+| `Display` | `@cratis/components/Display` | `import * as Display from '@cratis/components/Display'` | `import { Tag, Badge } from '@cratis/components/Display'` |
+| `Dropdown` | `@cratis/components/Dropdown` | `import * as Dropdown from '@cratis/components/Dropdown'` | `import { Dropdown } from '@cratis/components/Dropdown'` |
+| `Filter` | `@cratis/components/Filter` | `import * as Filter from '@cratis/components/Filter'` | `import { FilterPanel } from '@cratis/components/Filter'` |
+| `Notifications` | `@cratis/components/Notifications` | `import * as Notifications from '@cratis/components/Notifications'` | `import { Toaster, toast } from '@cratis/components/Notifications'` |
+| `ObjectContentEditor` | `@cratis/components/ObjectContentEditor` | `import * as ObjectContentEditor from '@cratis/components/ObjectContentEditor'` | `import { ObjectContentEditor } from '@cratis/components/ObjectContentEditor'` |
+| `ObjectNavigationalBar` | `@cratis/components/ObjectNavigationalBar` | `import * as ObjectNavigationalBar from '@cratis/components/ObjectNavigationalBar'` | `import { ObjectNavigationalBar } from '@cratis/components/ObjectNavigationalBar'` |
+| `PivotViewer` | `@cratis/components/PivotViewer` | `import * as PivotViewer from '@cratis/components/PivotViewer'` | `import { PivotViewer } from '@cratis/components/PivotViewer'` |
+| `SchemaEditor` | `@cratis/components/SchemaEditor` | `import * as SchemaEditor from '@cratis/components/SchemaEditor'` | `import { SchemaEditor } from '@cratis/components/SchemaEditor'` |
+| `TimeMachine` | `@cratis/components/TimeMachine` | `import * as TimeMachine from '@cratis/components/TimeMachine'` | `import { TimeMachine, EventsView } from '@cratis/components/TimeMachine'` |
+| `Toolbar` | `@cratis/components/Toolbar` | `import * as Toolbar from '@cratis/components/Toolbar'` | `import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar'` |
+| `Types` | `@cratis/components/types` | `import * as Types from '@cratis/components/types'` | `import { JsonSchema, Json } from '@cratis/components/types'` |
+
+† `CommandStepper` needs care in one direction only: the root's `CommandStepper` namespace is an alias of the _entire_ `CommandDialog` module, so `CommandStepper.StepperCommandDialog` and even `CommandStepper.CommandDialog` are reachable there today. The dedicated `@cratis/components/CommandStepper` subpath only carries `CommandStepper` itself and its stepper types. Migrate anything reached as `CommandStepper.StepperCommandDialog` or `CommandStepper.CommandDialog` to the `CommandDialog` row above instead.
+
+`@cratis/components/CommandForm/fields` is the same module as `@cratis/components/CommandForm` — either subpath resolves identically, so the `CommandForm` row's migration applies to both.
+
+A codemod will automate this rewrite across a source tree once it ships:
+
+```bash
+node Source/scripts/migrate-root-imports.mjs <paths...>
+```
+
+This script has not shipped in this release — the invocation shape above is documented now so the tool and this guide describe the same command once it lands. Until then, apply the table by hand; it is a mechanical rename, not a behavioral change, so a codemod and a manual edit produce identical output.
+
 ## Keep the stylesheet entry points
 
 The three Cratis-owned stylesheet entries remain:
@@ -378,6 +438,7 @@ Complete PrimeIcons class strings remain usable where a component accepts `Icon`
 6. Exercise dialogs, filtered tables, dates, dropdowns, toasts, and steppers with keyboard-only navigation.
 7. Verify light, dark, forced-colors, reduced-motion, and responsive layouts.
 8. Run TypeScript, specs, Storybook, and the production build.
+9. Import components from their explicit subpath rather than the root namespace; apply the mapping table under [Import from explicit subpaths](#import-from-explicit-subpaths), or run the codemod once it ships.
 
 A TypeScript 6 application using `skipLibCheck: false` may see bounded upstream diagnostics from Pixi's `@webgpu/types` collision with TypeScript's built-in WebGPU declarations, from `@cratis/arc.react`'s published global JSX declarations, or under NodeNext from extensionless declaration imports in the current Arc and Fundamentals packages. Components validates every packed subpath without suppressing these diagnostics; exact versions, codes, affected subpaths, and removal conditions are documented under the published [UI foundation](https://cratis.io/components/ui-foundation/#strict-public-type-validation) explanation and tracked in [#176](https://github.com/Cratis/Components/issues/176).
 

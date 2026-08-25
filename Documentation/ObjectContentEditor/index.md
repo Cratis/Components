@@ -2,9 +2,15 @@
 
 The `ObjectContentEditor` component displays and allows exploration of complex JSON objects with schema-aware rendering and navigation.
 
+ObjectContentEditor belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install.
+
 ## Purpose
 
 ObjectContentEditor provides a structured view of JSON objects with breadcrumb navigation for exploring nested objects and arrays, rendering properties according to a JSON schema.
+
+## JSON Schema support
+
+ObjectContentEditor renders against the same `JsonSchema`/`JsonSchemaProperty` contract as [`SchemaEditor`](../SchemaEditor/index.md) — see [SchemaEditor: JSON Schema support](../SchemaEditor/index.md#json-schema-support) for the exact supported subset (type/format/description/properties/items/required/definitions/$ref) and what is intentionally not supported (composition keywords, `enum`/`const`, numeric/string constraints, `additionalProperties`, boolean schemas). A property whose schema uses an unsupported keyword still renders by its `type`/`format`; the unsupported keyword itself has no effect on rendering or validation here.
 
 ## Key Features
 
@@ -284,6 +290,8 @@ The schema should be a valid JSON Schema with:
 - `properties` defining each property's type and format
 - Optional `required` array for required properties
 - Nested schemas for object and array types
+
+This requirement list describes structure, not the full supported keyword set — see [JSON Schema support](#json-schema-support) above for exactly which JSON Schema keywords `ObjectContentEditor` reads.
 
 ## Performance Considerations
 

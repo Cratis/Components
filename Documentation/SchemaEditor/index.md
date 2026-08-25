@@ -2,6 +2,8 @@
 
 The `SchemaEditor` component provides an interactive table-based interface for creating and editing JSON schemas.
 
+SchemaEditor belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install.
+
 ## Purpose
 
 SchemaEditor allows users to define data structures by adding properties, specifying types, and configuring validation rules in a user-friendly table format.
@@ -59,6 +61,19 @@ The component works with JSON schemas following the JSON Schema specification:
     required: ['propertyName']
 }
 ```
+
+## JSON Schema support
+
+SchemaEditor and [`ObjectContentEditor`](../ObjectContentEditor/index.md) share one `JsonSchema`/`JsonSchemaProperty` contract (`@cratis/components/types`), and it is a **pragmatic authoring subset of JSON Schema, not a general-purpose validator**. The supported shape is exactly what the types declare:
+
+- `title`, `name`, `$id`, `$ref`, `type`, `format`, `description`
+- `properties` and `items` (recursively, for `object` and `array`)
+- `required` (a string array on `JsonSchema`; a `boolean` flag per property on `JsonSchemaProperty`)
+- `definitions`, for schemas reused via `$ref`
+
+The type editor offers `string`, `integer`, `number`, and `boolean` as leaf types, plus `array` and `object` as container types, with the built-in format catalog (`DEFAULT_TYPE_FORMATS`, also exported from `types`): `guid`, `date-time`, `date`, and `time` for `string`; `int16`, `int32`, and `int64` for `integer`; `float` and `double` for `number`.
+
+What is deliberately **not** supported: JSON Schema composition keywords (`oneOf`, `anyOf`, `allOf`, `not`), `enum`/`const`, numeric or string constraints (`minimum`, `maximum`, `minLength`, `maxLength`, `pattern`), `additionalProperties`/`patternProperties`, and boolean schemas (`true`/`false` in place of a schema object). A schema authored elsewhere that uses those keywords will round-trip through SchemaEditor with those keywords dropped, not preserved-but-ignored — treat SchemaEditor as an editor for the subset above, and keep any richer validation schema as a separate, hand-maintained artifact if your application needs one.
 
 ## Table Interface
 

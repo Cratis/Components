@@ -28,6 +28,8 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
     The remaining peers—React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe`—already come with an Arc frontend. Arc 20, 21, and 22 are supported.
 
+    `pixi.js@^8.20.0` is an additional **optional** peer, needed only if you use `Canvas` or `PivotViewer`. Every other component needs nothing beyond the peers above; install Pixi later, when you reach a spatial workspace or card-grid screen. See [Choosing a component](/components/choosing-a-component/#spatial-workspaces).
+
 2. **Import the Cratis-owned stylesheets once**, at your application entry point:
 
     ```typescript title="main.tsx"
@@ -146,4 +148,4 @@ You installed one UI package, imported Cratis-owned styles, and mounted a locale
 - [Displaying data](/components/displaying-data/)
 - [Choosing a component](/components/choosing-a-component/)
 - [Migrate from Components 3](/components/migration/)
-- [Understand the UI foundation](/components/ui-foundation/)
+- [Understand the UI foundation](/components/ui-foundation/) — including the capability profiles and capability matrix behind Foundation, Advanced React, and Spatial components

@@ -2,6 +2,8 @@
 
 The `ObjectNavigationalBar` component provides breadcrumb navigation for hierarchical data structures.
 
+ObjectNavigationalBar belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install. It is a fully controlled component: `navigationPath` and `onNavigate` are its entire state contract, so the host application owns navigation state, persistence, and the data at each path segment.
+
 ## Purpose
 
 ObjectNavigationalBar displays the current navigation path and allows users to jump to any level in the hierarchy with clickable breadcrumbs.
