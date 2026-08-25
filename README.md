@@ -54,8 +54,8 @@ optional:
 ```tsx
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
-import '@cratis/components/theme';
-import { CratisComponentsProvider } from '@cratis/components/Common';
+import '@cratis/components/theme'; // optional baseline appearance
+import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
     <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
@@ -85,6 +85,14 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 - [Product-owned documentation source](https://github.com/Cratis/Components/tree/main/Documentation)
 - [Package README](./Source/README.md)
 - [Components 3 to 4 migration guide](./Source/MIGRATION.md)
+
+## Migration tooling
+
+The repository contains a codemod and ESLint rule for moving Components 3 root
+namespace imports to the current explicit subpaths. The migration guide owns the
+current mapping, command, package coordinate, and limitations. Verify the exact
+published package version before running migration tooling outside this
+repository.
 
 ## Contributing
 

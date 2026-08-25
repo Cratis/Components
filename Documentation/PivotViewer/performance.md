@@ -118,8 +118,8 @@ For card images:
 - Set explicit dimensions
 
 ```typescript
-<img 
-    src={item.thumbnailUrl} 
+<img
+    src={item.thumbnailUrl}
     alt={item.name}
     width={200}
     height={150}
@@ -150,18 +150,21 @@ const dimensions = useMemo(() => [
 <PivotViewer dimensions={dimensions} />
 ```
 
-## Benchmarks
+## Establish an application performance budget
 
-Typical performance on modern hardware:
+Components does not publish universal item-count timing claims: load, filter, grouping, layout, and sprite cost depend on the data shape, accessors, card renderer, browser, device, and whether the worker path is available. Benchmark the representative production shape on the slowest supported device before choosing a maximum collection size.
 
-| Dataset Size | Initial Load | Filter Update | Dimension Change |
-|--------------|--------------|---------------|------------------|
-| 1,000 items  | < 100ms      | < 10ms        | < 20ms           |
-| 10,000 items | < 500ms      | < 50ms        | < 100ms          |
-| 50,000 items | < 2s         | < 200ms       | < 500ms          |
-| 100,000 items| < 5s         | < 500ms       | < 1s             |
+Record at least:
 
-**Note:** Performance varies based on data complexity and device
+- time from data change to the first stable collection frame;
+- filter-update latency;
+- dimension/grouping-change latency;
+- main-thread long tasks while the worker is active;
+- worker-unavailable fallback latency;
+- memory after repeated data/filter changes;
+- zoom/pan frame rate with the representative card renderer.
+
+Use fixed fixtures and repeat each run after warm-up. Keep the dataset, browser/device, build mode, and measurement method with the result so future releases can compare like-for-like. If a budget is exceeded, reduce the client collection before rendering, provide narrower `searchFields`, simplify the card renderer, or move more filtering into the application's query/data preparation path.
 
 ## Monitoring Performance
 

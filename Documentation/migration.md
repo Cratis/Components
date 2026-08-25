@@ -3,16 +3,12 @@ title: Migrate from Components 3 to 4
 description: Move from the PrimeReact-backed release to the renderer-independent React Aria foundation.
 ---
 
-Components 4 replaces the mandatory PrimeReact 11 foundation with Cratis-owned markup, styling contracts, and public types. React Aria supplies accessible interaction behavior internally. Applications no longer install, configure, license, theme, or type against PrimeReact to use Components.
+Components 4 replaces the PrimeReact-backed Components 3 foundation with Components-owned markup, styling contracts, and public types. React Aria supplies selected interaction primitives internally. The current Components 4 manifest does not declare PrimeReact, PrimeIcons, PrimeUI, or PrimeUI themes as dependencies or peers; applications retaining direct imports keep their own package and license boundaries.
 
-This is intentionally a major release. Component behavior remains familiar, but rendered markup, styling parts, provider configuration, date entry, and some deprecated props change.
+This is a major-version migration. Rendered markup, styling parts, provider configuration, date entry, root imports, and some deprecated props change.
 
 :::note
-Components 3 remains the compatibility line for an application that cannot migrate yet. A separate PrimeReact compatibility package will not be published unless PrimeTek confirms the applicable OEM and redistribution terms in writing.
-
-**What staying on Components 3 means.** Components 3 keeps PrimeReact 11 as a peer dependency, and PrimeReact 11 verifies a PrimeUI license key when its provider mounts — on every styling path, including unstyled and the MIT Cratis baseline theme, in development and production. Without a valid key the application shows a fixed _"Invalid PrimeUI License"_ banner. The free Community key is eligibility-limited and must be renewed annually; an expired Community key has a 30-day grace period before the banner returns. See [the Components 2 to 3 guide's licensing section](migration-from-2.md#licensing) for the full terms.
-
-Components 3 receives security and critical defect fixes as the migration compatibility line; it receives no new features or foundation work. Plan the move to Components 4 rather than treating Components 3 as a steady state.
+An application that has not migrated remains on its exact Components 3 package profile, including the third-party dependencies declared by that version. Components 4 does not currently publish a Prime compatibility package. Review the exact package manifests and third-party terms for the version the application keeps. This guide makes no support-window, security-fix, maintenance, or future-package commitment for either major.
 :::
 
 ## Update dependencies
@@ -32,7 +28,74 @@ Keep a Prime package only when your application still imports it directly. Migra
 
 Applications using Canvas or PivotViewer must install `pixi.js@^8.20.0`, now an optional peer rather than a nested Components dependency. Align any existing direct Pixi dependency to the same compatible resolution so public `PIXI.Container` and pointer-event types come from one package instance. Applications using only non-Pixi subpaths do not need it.
 
-The supported Arc peer range remains `>=20.3.1 <23`.
+The package declares an Arc peer range of `>=20.3.1 <23`.
+
+## Import from explicit subpaths
+
+The canonical rule going forward: **the package root is setup-only; every component ships from its own subpath.**
+
+```tsx
+// Before — Components 3 root namespace (removed in Components 4)
+import { Canvas } from '@cratis/components';
+
+<Canvas.Canvas showControls>
+    <Canvas.CanvasItem x={0} y={0}>
+        Content
+    </Canvas.CanvasItem>
+</Canvas.Canvas>;
+```
+
+```tsx
+// After — canonical subpath, named imports
+import { Canvas, CanvasItem } from '@cratis/components/Canvas';
+
+<Canvas showControls>
+    <CanvasItem x={0} y={0}>
+        Content
+    </CanvasItem>
+</Canvas>;
+```
+
+This is an intentional Components 4 breaking change. The package root now exposes setup APIs only; component namespaces no longer exist there. Every namespace maps mechanically: replace `import { X } from '@cratis/components'` with either an equivalent namespace import from the documented subpath, or named imports from that subpath.
+
+| Removed Components 3 root namespace | Components 4 subpath                                      | Namespace-preserving migration                                                      | Named migration                                                                    |
+| ----------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `Canvas`                            | `@cratis/components/Canvas`                               | `import * as Canvas from '@cratis/components/Canvas'`                               | `import { Canvas, CanvasItem } from '@cratis/components/Canvas'`                   |
+| `CommandDialog`                     | `@cratis/components/CommandDialog`                        | `import * as CommandDialog from '@cratis/components/CommandDialog'`                 | `import { CommandDialog } from '@cratis/components/CommandDialog'`                 |
+| `CommandStepper` †                  | `@cratis/components/CommandDialog` (namespace-preserving) | `import * as CommandStepper from '@cratis/components/CommandDialog'`                | `import { CommandStepper } from '@cratis/components/CommandStepper'`               |
+| `CommandForm`                       | `@cratis/components/CommandForm`                          | `import * as CommandForm from '@cratis/components/CommandForm'`                     | `import { AutoCommandForm, InputTextField } from '@cratis/components/CommandForm'` |
+| `Common`                            | `@cratis/components/Common`                               | `import * as Common from '@cratis/components/Common'`                               | `import { CratisComponentsProvider, Button } from '@cratis/components/Common'`     |
+| `DataPage`                          | `@cratis/components/DataPage`                             | `import * as DataPage from '@cratis/components/DataPage'`                           | `import { DataPage, Column } from '@cratis/components/DataPage'`                   |
+| `DataTables`                        | `@cratis/components/DataTables`                           | `import * as DataTables from '@cratis/components/DataTables'`                       | `import { DataTableForQuery, Column } from '@cratis/components/DataTables'`        |
+| `Dialogs`                           | `@cratis/components/Dialogs`                              | `import * as Dialogs from '@cratis/components/Dialogs'`                             | `import { Dialog } from '@cratis/components/Dialogs'`                              |
+| `Display`                           | `@cratis/components/Display`                              | `import * as Display from '@cratis/components/Display'`                             | `import { Tag, Badge } from '@cratis/components/Display'`                          |
+| `Dropdown`                          | `@cratis/components/Dropdown`                             | `import * as Dropdown from '@cratis/components/Dropdown'`                           | `import { Dropdown } from '@cratis/components/Dropdown'`                           |
+| `Filter`                            | `@cratis/components/Filter`                               | `import * as Filter from '@cratis/components/Filter'`                               | `import { FilterPanel } from '@cratis/components/Filter'`                          |
+| `Notifications`                     | `@cratis/components/Notifications`                        | `import * as Notifications from '@cratis/components/Notifications'`                 | `import { Toaster, toast } from '@cratis/components/Notifications'`                |
+| `ObjectContentEditor`               | `@cratis/components/ObjectContentEditor`                  | `import * as ObjectContentEditor from '@cratis/components/ObjectContentEditor'`     | `import { ObjectContentEditor } from '@cratis/components/ObjectContentEditor'`     |
+| `ObjectNavigationalBar`             | `@cratis/components/ObjectNavigationalBar`                | `import * as ObjectNavigationalBar from '@cratis/components/ObjectNavigationalBar'` | `import { ObjectNavigationalBar } from '@cratis/components/ObjectNavigationalBar'` |
+| `PivotViewer`                       | `@cratis/components/PivotViewer`                          | `import * as PivotViewer from '@cratis/components/PivotViewer'`                     | `import { PivotViewer } from '@cratis/components/PivotViewer'`                     |
+| `SchemaEditor`                      | `@cratis/components/SchemaEditor`                         | `import * as SchemaEditor from '@cratis/components/SchemaEditor'`                   | `import { SchemaEditor } from '@cratis/components/SchemaEditor'`                   |
+| `TimeMachine`                       | `@cratis/components/TimeMachine`                          | `import * as TimeMachine from '@cratis/components/TimeMachine'`                     | `import { TimeMachine, EventsView } from '@cratis/components/TimeMachine'`         |
+| `Toolbar`                           | `@cratis/components/Toolbar`                              | `import * as Toolbar from '@cratis/components/Toolbar'`                             | `import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar'`              |
+| `Types`                             | `@cratis/components/types`                                | `import * as Types from '@cratis/components/types'`                                 | `import { JsonSchema, Json } from '@cratis/components/types'`                      |
+
+† The removed root `CommandStepper` namespace aliased the _entire_ `CommandDialog` module. The codemod therefore maps that namespace to `@cratis/components/CommandDialog`, preserving `CommandStepper.StepperCommandDialog`, `CommandStepper.CommandDialog`, and `CommandStepper.CommandStepper`. New code that needs only the standalone component should use the narrower named import from `@cratis/components/CommandStepper`.
+
+`@cratis/components/CommandForm/fields` is the same module as `@cratis/components/CommandForm` — either subpath resolves identically, so the `CommandForm` row's migration applies to both.
+
+Run the migration codemod in preview mode first, then apply it:
+
+```bash
+npx --package @cratis/components-codemods \
+  cratis-components-remove-root-namespace-imports --check <paths...>
+npx --package @cratis/components-codemods \
+  cratis-components-remove-root-namespace-imports <paths...>
+```
+
+The codemod preserves aliases and type-only imports, splits mixed setup/namespace imports, and refuses to guess at default imports, whole-package namespace imports, dynamic imports, `require`, re-exports, side-effect imports, or unknown symbols. Review every reported unsupported case manually, then run the consuming project's lint, build, and tests.
+
+See [UI foundation: Capability profiles](ui-foundation.md#capability-profiles) for how these subpaths group into Foundation, Advanced React, and Spatial, and the [capability matrix](ui-foundation.md#capability-matrix) for what each profile owns.
 
 ## Keep the stylesheet entry points
 
@@ -146,7 +209,7 @@ This removes the old product-token → Prime preset → Prime variable → Crati
 
 ## Removed accidental package exports
 
-An audit of the published `exports` map ([#173](https://github.com/Cratis/Components/issues/173)) found implementation-only symbols that were unintentionally reachable from a public subpath — each was exported only because the owning module's barrel used a blanket `export *`, not because it was a supported contract. Components 4 stops re-exporting them from their public barrel; the underlying files keep the symbol for their own internal cross-file use, so this is a package-export change only, not a behavior change.
+An audit of the package `exports` map ([#173](https://github.com/Cratis/Components/issues/173)) found implementation-only symbols that were unintentionally reachable from a public subpath — each was exported only because the owning module's barrel used a blanket `export *`, not because it was a supported contract. Components 4 stops re-exporting them from their public barrel; the underlying files keep the symbol for their own internal cross-file use, so this is a package-export change only, not a behavior change.
 
 | Removed export                                                            | Subpath(s)                                                              | Migration                                                                                                                                           |
 | ------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -159,7 +222,7 @@ An audit of the published `exports` map ([#173](https://github.com/Cratis/Compon
 | `DEFAULT_EMOJIS`, `QUICK_ROW_SIZE`                                        | `@cratis/components/Canvas`                                             | Private `recentEmojis`/`rememberEmoji` constants. Not part of the public API.                                                                       |
 | `buildFilterValues`, `buildRangeValues`, `RenderedHistogramBucket`        | `@cratis/components/Filter`                                             | Private `useFilterState`/`RangeHistogramFilter` helpers. Not part of the public API.                                                                |
 
-None of these had a documented contract, and none is required by any other public API in this package. An application that imported one of these directly has no supported replacement to migrate to — inline the equivalent logic, or open an issue describing the use case if the behavior should become a supported public contract.
+None of these had a documented contract, and none is required by any other public API in this package. An application that imported one of these directly has no documented replacement to migrate to — inline the equivalent logic, or open an issue describing the use case if the behavior should become a supported public contract.
 
 The surfaces this audit confirmed as intentional and kept public — `ToastRecord`, `getToastSnapshot`, `subscribeToToasts`, `ToastDispatch`, `EmojiMemory`, `ChatAuthorKind`, `DEFAULT_TYPE_FORMATS`, `NavigationItem`, `Json`, and `TimeMachine`'s `Properties` — are unchanged and now carry TSDoc explaining their contract and, where relevant, their extension-point role.
 
@@ -464,7 +527,7 @@ Pass the parts to either query-backed table:
 - `id` identifies the focus group rather than a native text input.
 - The accessible calendar trigger is shown by default; set `showIcon={false}` only for segment-entry-only experiences.
 - `todayLabel` and `clearLabel` override the provider messages for one picker.
-- `showTime` and `hourFormat` remain supported.
+- `showTime` and `hourFormat` remain in the current API.
 
 ## Update Dropdown styling and semantics
 
@@ -590,6 +653,7 @@ Complete PrimeIcons class strings remain usable where a component accepts the pu
 6. Exercise dialogs, filtered tables, dates, dropdowns, toasts, and steppers with keyboard-only navigation.
 7. Verify light, dark, forced-colors, reduced-motion, and responsive layouts.
 8. Run TypeScript, specs, Storybook, and the production build.
+9. Import components from their explicit subpath rather than the removed root namespace; apply the mapping table under [Import from explicit subpaths](#import-from-explicit-subpaths), or run the migration codemod.
 
 A TypeScript 6 application using `skipLibCheck: false` may see bounded upstream diagnostics from Pixi's `@webgpu/types` collision with TypeScript's built-in WebGPU declarations, from `@cratis/arc.react`'s published global JSX declarations, or under NodeNext from extensionless declaration imports in the current Arc and Fundamentals packages. Components validates every packed subpath without suppressing these diagnostics; exact versions, codes, affected subpaths, and removal conditions are documented under [Strict public-type validation](ui-foundation.md#strict-public-type-validation) and tracked in [#176](https://github.com/Cratis/Components/issues/176).
 

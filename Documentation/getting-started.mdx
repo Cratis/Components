@@ -7,7 +7,7 @@ sidebar:
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` query—and `dotnet build` generated typed proxies for both. Components turns those proxies into accessible forms, dialogs, and data views without duplicating command state, validation, or query lifecycle code.
+You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` query—and `dotnet build` generated typed proxies for both. Components connects those proxies to typed forms, dialogs, and data views with documented command, validation, and query-lifecycle behavior.
 
 ## Prerequisites
 
@@ -24,9 +24,11 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
     npm install @cratis/components
     ```
 
-    React Aria and the internationalized date implementation are internal dependencies. You do not install a UI kit, theme runtime, icon package, or commercial license for Components.
+    React Aria and the internationalized date implementation are internal dependencies. The current package manifest does not declare a separate UI kit, theme runtime, or icon package as a dependency or peer.
 
-    The remaining peers—React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe`—already come with an Arc frontend. Arc 20, 21, and 22 are supported.
+    The package declares React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe` peer ranges. Its Arc range is `>=20.3.1 <23`; verify the exact manifest and application profile before installation.
+
+    `pixi.js@^8.20.0` is an additional **optional** peer, needed only if you use `Canvas` or `PivotViewer`. Every other component needs nothing beyond the peers above; install Pixi later, when you reach a spatial workspace or card-grid screen. See [Choosing a component](/components/choosing-a-component/#spatial-workspaces).
 
 2. **Import the Cratis-owned stylesheets once**, at your application entry point:
 
@@ -48,7 +50,7 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 3. **Mount the provider** around your application:
 
     ```tsx title="App.tsx"
-    import { CratisComponentsProvider } from '@cratis/components/Common';
+    import { CratisComponentsProvider } from '@cratis/components';
 
     export const App = () => (
         <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
@@ -138,7 +140,7 @@ Do not target React Aria class names or internal DOM structure. See [Styling](/c
 
 ## Recap
 
-You installed one UI package, imported Cratis-owned styles, and mounted a locale/toast provider. Components owns the public UI contract while Arc supplies command and query behavior and React Aria supplies low-level accessible interactions.
+You installed one UI package, imported Components-owned styles, and mounted a locale/toast provider. Components owns the public React contract, Arc supplies command and query behavior, and React Aria supplies selected low-level interaction primitives internally.
 
 ## Where to go next
 
@@ -146,4 +148,4 @@ You installed one UI package, imported Cratis-owned styles, and mounted a locale
 - [Displaying data](/components/displaying-data/)
 - [Choosing a component](/components/choosing-a-component/)
 - [Migrate from Components 3](/components/migration/)
-- [Understand the UI foundation](/components/ui-foundation/)
+- [Understand the UI foundation](/components/ui-foundation/) — including the capability profiles and capability matrix behind Foundation, Advanced React, and Spatial components

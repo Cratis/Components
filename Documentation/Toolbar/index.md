@@ -2,6 +2,10 @@
 
 The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, fan-out sub-panels, and drag & drop onto surfaces.
 
+Toolbar belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency, despite its canvas-adjacent purpose.
+
+**`Toolbar` is not a default page action row.** It is built for a canvas/tool-palette interaction — active tools, groups, slots, folders, and fan-out panels — not for an ordinary page's list of commands. `DataPage`'s built-in action row renders `ActionMenubar` (from `@cratis/components/Common`), not `Toolbar`. Reach for `ActionMenubar`, or a product-owned action row, for flat page-level actions; reach for `Toolbar` only when the surface is genuinely a spatial tool palette. See [Choosing a component: Actions and tool palettes](../choosing-a-component.md#actions-and-tool-palettes).
+
 Pass React icon nodes or product-owned SVGs for a dependency-free toolbar. Consumer-owned icon-font class strings remain accepted, but Components does not install an icon font or infer provider base classes; the product must load the matching stylesheet and pass the complete class string.
 
 The root renders `role='toolbar'`, orientation semantics, and an accessible name. `aria-label` defaults to `Tools`; localize it or use `aria-labelledby`. Folder and fan-out panels close on Escape, return focus to their trigger, become inert while collapsed, and suppress transitions under reduced motion.

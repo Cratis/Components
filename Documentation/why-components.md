@@ -1,13 +1,13 @@
 ---
 title: Why Components
-description: Why Cratis owns a component system around Arc proxies and accessible interaction behavior.
+description: Why Components owns React composition around Arc proxies and selected interaction primitives.
 sidebar:
     order: 1
 ---
 
 You can connect an Arc-generated command or query to any React UI. Without Components, every application repeatedly builds command execution state, validation display, dialogs, observable subscriptions, paging, selection, empty/pending states, localization, and accessibility behavior.
 
-Components centralizes that integration behind a stable Cratis-owned API.
+Components centralizes that integration behind Components-owned React APIs and documented package subpaths.
 
 ## What it removes
 
@@ -17,22 +17,22 @@ Components centralizes that integration behind a stable Cratis-owned API.
 | Bind each field manually                                                   | `<InputTextField value={command => command.name} />`                          |
 | Subscribe to query changes and manage pending/empty state                  | Query-backed Components own the result lifecycle                              |
 | Hand-roll list pages, selection, paging, and detail panels                 | `<DataPage>` composes the screen                                              |
-| Reimplement focus, overlays, keyboard interaction, and international dates | Components delegates low-level behavior to React Aria and verifies the result |
+| Reimplement focus, overlays, keyboard interaction, and international dates | Components delegates selected low-level primitives to React Aria and exercises the composed behavior in owning specs |
 
 ## What Components owns
 
 - Public React component APIs and event types
 - Arc command/query/dialog integration
-- Semantic markup and accessibility composition
+- Semantic markup plus documented ARIA, focus, and keyboard behavior
 - Stable `data-cratis-part` names and state attributes
 - `--cratis-*` design tokens and structural styles
-- Product-level behavior specs and migration guarantees
+- Product-level behavior specs and current migration mappings
 
 React Aria is an internal implementation dependency. Consumers do not type against it or style its internal DOM.
 
-## Custom design systems remain first-class
+## Custom styling remains product-owned
 
-Import the baseline theme for a ready-made appearance, or omit it and map product tokens directly onto `--cratis-*`. Every meaningful element has a stable Cratis part, and `pt` accepts ordinary HTML attributes for per-instance customization.
+Import the optional baseline theme, or omit it and map product tokens directly onto `--cratis-*`. Documented customizable parts use stable Cratis part names, and components that expose `pt` accept ordinary HTML attributes for those documented parts.
 
 This avoids coupling a product design system to a renderer preset, proprietary provider, or internal class roster.
 
@@ -44,6 +44,6 @@ Use native HTML or a product-owned presentational component for a one-off elemen
 
 ## Why the foundation changed
 
-Components 3 was backed by PrimeReact 11. PrimeUI licensing still applied through wrappers, renderer types leaked into declarations, and custom products depended on renderer-specific pass-through slots. Components 4 replaces that mandatory foundation with Cratis-owned contracts and open interaction dependencies.
+Components 3 used PrimeReact as a declared package foundation. Components 4 does not declare PrimeReact, PrimeIcons, PrimeUI, or PrimeUI themes as dependencies or peers; it replaces those package and renderer contracts with Components-owned markup, types, tokens, and documented parts. Applications retaining direct third-party imports keep their own package and license boundaries.
 
 Read [UI foundation](ui-foundation.md) for the decision and [Migrate from Components 3](migration.md) for the consumer steps.

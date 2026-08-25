@@ -28,6 +28,14 @@ The current package manifest declares these peer dependencies:
 
 The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.
 
+`pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
+
+```bash
+npm install pixi.js@^8.20.0
+```
+
+Keep exactly one compatible Pixi resolution across the application and Components; two installed copies produce nominal TypeScript incompatibilities for `PIXI.Container` and pointer-event types even when both satisfy `^8.20.0`. The capability-subpath table below identifies the current Pixi-dependent surfaces.
+
 ## Styles
 
 ```ts
@@ -43,7 +51,7 @@ A custom product design omits `theme`, imports product CSS after `tokens` and `s
 ## Provider
 
 ```tsx
-import { CratisComponentsProvider } from '@cratis/components/Common';
+import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
     <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
@@ -131,13 +139,15 @@ toast.success({
 });
 ```
 
-The queue, promise lifecycle, timers, dispatch substitution, accessible frame, and region are Cratis-owned.
+The queue, promise lifecycle, timers, dispatch substitution, toast frame, and region are Components-owned implementation surfaces.
 
 ## Custom styling
 
-Every meaningful component element carries a stable `data-cratis-part`. Components with per-instance customization expose a typed `pt` object containing ordinary HTML attributes.
+Documented customizable component parts use stable `data-cratis-part` names. Components with per-instance customization expose a typed `pt` object containing ordinary HTML attributes for their documented parts.
 
 ```tsx
+import { Dialog } from '@cratis/components/Dialogs';
+
 <Dialog
     title='Edit account'
     pt={{
@@ -173,35 +183,41 @@ Every meaningful component element carries a stable `data-cratis-part`. Componen
 
 Do not target React Aria classes or internal DOM structure.
 
-## Entry points
+## Import from explicit subpaths
 
-- `@cratis/components`
-- `@cratis/components/Canvas`
-- `@cratis/components/CommandDialog`
-- `@cratis/components/CommandStepper`
-- `@cratis/components/CommandForm`
-- `@cratis/components/CommandForm/fields`
-- `@cratis/components/Common`
-- `@cratis/components/DataPage`
-- `@cratis/components/DataTables`
-- `@cratis/components/Dialogs`
-- `@cratis/components/Display`
-- `@cratis/components/Dropdown`
-- `@cratis/components/Filter`
-- `@cratis/components/Notifications`
-- `@cratis/components/ObjectContentEditor`
-- `@cratis/components/ObjectNavigationalBar`
-- `@cratis/components/PivotViewer`
-- `@cratis/components/SchemaEditor`
-- `@cratis/components/TimeMachine`
-- `@cratis/components/Toolbar`
-- `@cratis/components/types`
+The canonical rule: **the package root is setup-only; every component ships from its own subpath.** Import `CratisComponentsProvider` (and `cratisDefaults`, `mergeCratisComponentsConfig`) from the root; import every component from the subpath in its capability profile:
 
-The root entry exports the namespace symbols listed by the current package.
-New code should import the narrow subpath it uses—especially `Common` for
-provider setup—so bundlers and readers do not traverse unrelated component
-families. [#173](https://github.com/Cratis/Components/issues/173) tracks
-declaration-level TSDoc and API-reference coverage.
+| Subpath                                    | Capability profile                |
+| ------------------------------------------ | --------------------------------- |
+| `@cratis/components/Canvas`                | Spatial (optional `pixi.js` peer) |
+| `@cratis/components/CommandDialog`         | Foundation                        |
+| `@cratis/components/CommandStepper`        | Foundation                        |
+| `@cratis/components/CommandForm`           | Foundation                        |
+| `@cratis/components/CommandForm/fields`    | Foundation                        |
+| `@cratis/components/Common`                | Foundation                        |
+| `@cratis/components/DataPage`              | Foundation                        |
+| `@cratis/components/DataTables`            | Foundation                        |
+| `@cratis/components/Dialogs`               | Foundation                        |
+| `@cratis/components/Display`               | Foundation                        |
+| `@cratis/components/Dropdown`              | Foundation                        |
+| `@cratis/components/Filter`                | Foundation                        |
+| `@cratis/components/Notifications`         | Foundation                        |
+| `@cratis/components/ObjectContentEditor`   | Advanced React                    |
+| `@cratis/components/ObjectNavigationalBar` | Advanced React                    |
+| `@cratis/components/PivotViewer`           | Spatial (optional `pixi.js` peer) |
+| `@cratis/components/SchemaEditor`          | Advanced React                    |
+| `@cratis/components/TimeMachine`           | Advanced React                    |
+| `@cratis/components/Toolbar`               | Advanced React                    |
+| `@cratis/components/types`                 | Foundation                        |
+
+Foundation, Advanced React, and Spatial describe dependency and usage
+boundaries, not stability, maturity, accessibility, support, or quality tiers.
+`Spatial` identifies the subpaths that require the optional Pixi peer.
+
+Components 4 removes component-family namespaces from the root. The root is
+setup-only so importing the provider does not traverse optional or unrelated
+component graphs. [MIGRATION.md](./MIGRATION.md) contains the current
+namespace-to-subpath mapping and migration command for existing root imports.
 
 ## Components 3 migration
 

@@ -1,0 +1,35 @@
+{
+    "name": "@cratis/components-codemods",
+    "version": "0.0.0",
+    "description": "Codemods for migrating @cratis/components consumers from Components 3 root namespaces to Components 4 subpath imports.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "files": [
+        "lib",
+        "scripts",
+        "README.md",
+        "LICENSE"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "bin": {
+        "cratis-components-remove-root-namespace-imports": "./scripts/remove-root-namespace-imports.js"
+    },
+    "scripts": {
+        "test": "yarn g:test",
+        "verify-package": "node ./test/verify-packed-package.mjs",
+        "ci": "yarn g:test"
+    },
+    "dependencies": {
+        "typescript": "^6.0.3"
+    }
+}

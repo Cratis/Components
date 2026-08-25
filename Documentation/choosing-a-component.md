@@ -42,11 +42,13 @@ actions.
 
 ## Actions and tool palettes
 
-Use `ActionMenubar` or an ordinary product action row for flat page commands. Use [`Toolbar`](./Toolbar/index.md) for a canvas/tool-palette interaction with active tools, groups, slots, folders, and fan-out panels. It is not a one-for-one replacement for a generic Prime Toolbar.
+Use `ActionMenubar` or an ordinary product action row for flat page commands. `DataPage`'s built-in toolbar already renders `ActionMenubar`, not `Toolbar` — that is the default action row for a page, not a canvas tool palette. Use [`Toolbar`](./Toolbar/index.md) only for a genuine canvas/tool-palette interaction with active tools, groups, slots, folders, and fan-out panels. It is not a one-for-one replacement for a generic Prime Toolbar, and it is not a page-level action row wearing a different name.
 
 ## Spatial workspaces
 
-Use [`Canvas`](./Canvas/index.md) for a pan/zoom workspace containing positioned DOM or Pixi items, optional minimap/controls, notes, regions, or collaborative chat shapes. Canvas owns interaction and rendering primitives; the application owns persistence and behavior. Arc can provide commands, queries, validation, authorization, and generated bindings on its own. Applications using Arc plus Chronicle can additionally project event streams into read models.
+Use [`Canvas`](./Canvas/index.md) for a pan/zoom workspace containing positioned DOM or Pixi items, optional minimap/controls, notes, regions, or collaborative chat shapes, or [`PivotViewer`](./PivotViewer/index.md) for a faceted, zoomable card grid over a large dataset. Both belong to the [Spatial capability profile](./ui-foundation.md#capability-profiles) and install the optional `pixi.js` peer — see [UI foundation: Optional Pixi, clean no-Pixi core](./ui-foundation.md#optional-pixi-clean-no-pixi-core). Spatial ships at the same version and quality bar as every other component; the profile label describes what it is for and what it costs to adopt, not a lower support tier.
+
+Canvas and PivotViewer own interaction and rendering primitives; the application owns persistence and behavior. Arc can provide commands, queries, validation, authorization, and generated bindings on its own. Applications using Arc plus Chronicle can additionally project event streams into read models — neither component has a direct Chronicle dependency; see the [UI foundation capability matrix](./ui-foundation.md#capability-matrix).
 
 ## Putting it together
 

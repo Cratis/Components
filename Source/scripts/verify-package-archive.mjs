@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { spawnSync } from 'node:child_process';
+import { gzipSync } from 'node:zlib';
 import path from 'node:path';
 
 const archive = process.argv[2];
@@ -27,6 +28,7 @@ const requiredEntries = [
     'package/LICENSE',
     'package/README.md',
     'package/THIRD_PARTY_NOTICES.md',
+    'package/dist/esm/styles.css',
     'package/dist/esm/PatrickHand-OFL.txt',
     'package/dist/esm/PatrickHand-latin.woff2',
     'package/dist/esm/PatrickHand-latin-ext.woff2',
@@ -62,6 +64,33 @@ for (const expected of [
     }
 }
 
+const styles = runTar('-xOzf', normalizedArchive, 'package/dist/esm/styles.css');
+const styleBytes = Buffer.byteLength(styles);
+const gzipBytes = gzipSync(styles, { level: 9 }).byteLength;
+const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
+const styleBudget = {
+    rawBytes: 200 * 1024,
+    gzipBytes: 32 * 1024,
+    declarationBlocks: 1200,
+};
+const exceeded = [
+    styleBytes > styleBudget.rawBytes &&
+        `raw size ${styleBytes} > ${styleBudget.rawBytes} bytes`,
+    gzipBytes > styleBudget.gzipBytes &&
+        `gzip size ${gzipBytes} > ${styleBudget.gzipBytes} bytes`,
+    declarationBlocks > styleBudget.declarationBlocks &&
+        `declaration blocks ${declarationBlocks} > ${styleBudget.declarationBlocks}`,
+].filter(Boolean);
+if (exceeded.length > 0) {
+    console.error(
+        `Published aggregate CSS exceeds its reviewed budget:\n- ${exceeded.join('\n- ')}\n` +
+            'Reduce the payload or update the budget with measured consumer evidence.',
+    );
+    process.exit(1);
+}
+
 console.log(
-    `Package archive notices and bundled assets are complete: ${normalizedArchive}`,
+    `Package archive notices/assets are complete and aggregate CSS is within budget ` +
+        `(${styleBytes} raw bytes, ${gzipBytes} gzip bytes, ${declarationBlocks} blocks): ` +
+        normalizedArchive,
 );
