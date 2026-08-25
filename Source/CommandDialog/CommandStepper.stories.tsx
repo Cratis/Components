@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { StepperPanel } from './StepperPanel';
 import { CommandStepper } from './CommandStepper';
@@ -17,7 +17,7 @@ const meta: Meta<typeof CommandStepper> = {
 export default meta;
 type Story = StoryObj<typeof CommandStepper>;
 
-class CreateProjectValidator extends CommandValidator {
+class CreateProjectValidator extends CommandValidator<CreateProjectCommand> {
     constructor() {
         super();
         this.ruleFor((c: CreateProjectCommand) => c.name).notEmpty().minLength(2).maxLength(100);
