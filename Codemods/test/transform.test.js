@@ -66,6 +66,22 @@ describe('root namespace maps', () => {
             [...eslintApprovedRootSymbols].sort(),
         );
     });
+
+    it('should keep both migration guides aligned with every namespace and the shipped command', () => {
+        const guides = [
+            readFileSync(path.join(__dirname, '..', '..', 'Documentation', 'migration.md'), 'utf8'),
+            readFileSync(path.join(__dirname, '..', '..', 'Source', 'MIGRATION.md'), 'utf8'),
+        ];
+
+        for (const guide of guides) {
+            expect(guide).toContain(
+                'node Codemods/scripts/remove-root-namespace-imports.js --check <paths...>',
+            );
+            for (const namespace of Object.keys(codemodNamespaceSubpaths)) {
+                expect(guide).toContain(`| \`${namespace}\``);
+            }
+        }
+    });
 });
 
 describe('transformSource — fixture coverage', () => {
