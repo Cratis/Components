@@ -3,9 +3,9 @@ title: Canvas
 description: Reference for the pan, zoom, minimap, overlay, and collaborative canvas primitives.
 ---
 
-`@cratis/components/Canvas` provides a renderer-independent React surface for large spatial workspaces. It owns gesture coordination, transforms, controls, item measurement, minimap state, and optional Note, Region, and Chat shapes. Product appearance comes from `--cratis-*` tokens and Canvas classes; PrimeIcons and a renderer provider are not required.
+`@cratis/components/Canvas` provides a Prime-free React surface over a shared DOM/Pixi spatial engine. It owns gesture coordination, transforms, controls, item measurement, minimap state, and optional Note, Region, and Chat shapes. Product appearance comes from `--cratis-*` tokens and Canvas classes; PrimeReact, PrimeIcons, and a renderer provider are not required.
 
-Canvas belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside `PivotViewer` — the only two subpaths that install the optional `pixi.js` peer. Spatial is not a lesser-supported tier: it ships at the same version, behind the same release gates, as every Foundation and Advanced React subpath.
+Canvas belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside `PivotViewer` — the only two subpaths that require the optional `pixi.js` peer. Spatial is not a lesser-supported tier: it ships at the same version, behind the same release gates, as every Foundation and Advanced React subpath.
 
 The engine renders and positions arbitrary content independently of the optional presentational shapes. Start with [Basic usage](basic-usage.md), then use the focused guides for [pan and zoom](pan-and-zoom.md), [controls chrome](controls-chrome.md), [notes](notes.md), [regions](regions.md), and the [chat bubble](chat-bubble.md). This page is the complete API reference.
 
@@ -23,7 +23,7 @@ import {
 
 Import `@cratis/components/tokens` and `@cratis/components/styles` once at the application root. Add `@cratis/components/theme` only when using the baseline appearance.
 
-Canvas and PivotViewer expose and render real Pixi objects. Install the optional peer once in an application that uses either surface:
+Canvas exposes and renders real Pixi objects; PivotViewer renders them internally without exposing Pixi types in its public API. Install the optional peer once in an application that uses either surface:
 
 ```bash
 npm install pixi.js@^8.20.0
@@ -98,10 +98,10 @@ const handleReady = (handle: CanvasHandle) => {
 
 ## DOM and Pixi layers
 
-`Canvas` composes two independent rendering layers rather than choosing one, and an application can use either alone or mix both in the same instance:
+`Canvas` composes two rendering layers rather than choosing one, and an application can use DOM content alone or mix DOM and Pixi items in the same instance. Canvas always initializes one transparent Pixi `Application` and empty `world` container so `CanvasContext`, `onReady`, and the shared camera have one stable contract; therefore every Canvas consumer still installs the optional Pixi peer. When the world is empty, `Canvas` skips the per-frame GPU render pass.
 
-- **DOM layer** — `children` and `CanvasItem` position arbitrary React/DOM content with ordinary CSS transforms. No Pixi content ever mounts if an application only uses this layer.
-- **Pixi layer** — the optional `items`/`renderItem` props hand `Canvas` an array of data and a function that builds one `PIXI.Container` per item, rendered on a single shared Pixi `Application`/`world` container exposed through `onReady`'s `CanvasContext`. This exists for item counts where per-item DOM nodes (and DOM-level pan/zoom repaint cost) become the bottleneck; the Pixi layer amortizes many items on the GPU instead.
+- **DOM layer** — `children` and `CanvasItem` position arbitrary React/DOM content with ordinary CSS transforms. No Pixi display-object content is created when an application uses only this layer; this is the layer shown by the `WithControlsAndMinimap` Storybook screenshot.
+- **Pixi item layer** — the optional `items`/`renderItem` props hand `Canvas` an array of data and a function that builds one `PIXI.Container` per item in the shared Pixi `world`. This exists for item counts where per-item DOM nodes (and DOM-level pan/zoom repaint cost) become the bottleneck; the Pixi layer amortizes many items on the GPU instead.
 
 Both layers share the same camera: panning and zooming transform the DOM layer's CSS and the Pixi `world` container together, so DOM and Pixi content stay registered to the same world coordinates.
 
