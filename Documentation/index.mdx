@@ -3,11 +3,67 @@ title: Components
 description: React components aligned with Arc application patterns.
 ---
 
-Components is a React component library aligned with Arc application patterns.
+import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
+import SimpleCard from '@components/SimpleCard.astro';
+import TopicHero from '@components/TopicHero.astro';
 
-The current package provides React components for Arc-generated commands and
-queries, together with dialogs, data surfaces, editors, notifications, semantic
-tokens, stable parts, and application primitives.
+<TopicHero
+  icon="laptop"
+  eyebrow="Components"
+  title="React components aligned with Arc application patterns"
+>
+  Components is a React component library aligned with Arc application patterns.
+  The current package owns its public React markup, TypeScript contracts,
+  semantic tokens, stable parts, and component behavior.
+</TopicHero>
+
+## Start here
+
+<CardGrid>
+  <SimpleCard title="Install Components" icon="rocket" link="#minimal-setup">
+    Install the package, import its structural styles, and mount the provider.
+  </SimpleCard>
+  <SimpleCard title="Choose a component area" icon="list-format" link="#component-areas">
+    Start from the screen job rather than a raw component inventory.
+  </SimpleCard>
+  <SimpleCard title="Keep Arc separate" icon="puzzle" link="#relationship-to-arc">
+    Distinguish Arc-generated contracts from the React compositions that consume them.
+  </SimpleCard>
+</CardGrid>
+
+## Minimal setup
+
+<Steps>
+1. Install the package.
+
+   ```bash
+   npm install @cratis/components
+   ```
+
+2. Import semantic tokens and component structure. The baseline theme is
+   optional.
+
+   ```tsx
+   import '@cratis/components/tokens';
+   import '@cratis/components/styles';
+   import '@cratis/components/theme';
+   ```
+
+3. Mount the provider.
+
+   ```tsx
+   import { CratisComponentsProvider } from '@cratis/components/Common';
+
+   export const App = () => (
+       <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+           <YourApp />
+       </CratisComponentsProvider>
+   );
+   ```
+</Steps>
+
+The current package manifest defines the exact React, Arc, Fundamentals, and
+optional Pixi peer ranges. Verify those ranges for the package version selected.
 
 ## Relationship to Arc
 
@@ -16,58 +72,46 @@ from Arc packages. Applications may use Arc without Components.
 
 Components does not by itself establish design-system completeness,
 accessibility conformance, browser coverage, or compatibility with every
-Arc/React/package-version combination. Verify those properties for the exact
-application and component profile shipped.
-
-## Minimal setup
-
-Install the package:
-
-```bash
-npm install @cratis/components
-```
-
-Import the token and component styles, then mount the provider. The baseline
-theme is optional.
-
-```tsx
-import '@cratis/components/tokens';
-import '@cratis/components/styles';
-import '@cratis/components/theme';
-import { CratisComponentsProvider } from '@cratis/components/Common';
-
-export const App = () => (
-    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
-        <YourApp />
-    </CratisComponentsProvider>
-);
-```
+Arc/React/package-version combination.
 
 ## Component areas
 
-| Area | Current package role |
-| --- | --- |
-| Command input | Typed fields, forms, dialogs, and multi-step command flows |
-| Data display | Query-backed and local-array tables, list pages, filters, and detail surfaces |
-| Application surfaces | Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars |
-| Structured editors | JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views |
-| Styling boundary | Semantic tokens, component styles, an optional baseline theme, and stable parts |
+<CardGrid>
+  <Card title="Command input" icon="approve-check">
+    Typed fields, forms, dialogs, and multi-step command flows.
+  </Card>
+  <Card title="Data display" icon="seti:db">
+    Query-backed and local-array tables, list pages, filters, and detail surfaces.
+  </Card>
+  <Card title="Application surfaces" icon="laptop">
+    Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars.
+  </Card>
+  <Card title="Structured editors" icon="pencil">
+    JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views.
+  </Card>
+  <Card title="Styling boundary" icon="seti:config">
+    Semantic tokens, component styles, an optional baseline theme, and stable parts.
+  </Card>
+</CardGrid>
 
-## Current boundaries
-
-- Package manifests and exports define the exact React, Arc, Fundamentals, and
-  optional Pixi peer ranges.
-- Package existence, examples, Storybook output, and passing checks do not
-  establish maturity, accessibility conformance, browser coverage, support,
-  security, or production suitability.
-- Direct third-party UI dependencies retained by an application keep their own
-  package, provider, styling, and license boundaries.
+:::caution[Evaluate the exact application profile]
+Package existence, examples, Storybook output, and passing checks do not
+establish maturity, accessibility conformance, browser coverage, support,
+security, or production suitability. Direct third-party UI dependencies retained
+by an application keep their own package, provider, styling, and license
+boundaries.
+:::
 
 ## Continue
 
-- [Components source and README](https://github.com/Cratis/Components) — package
-  setup, component map, contribution guidance, and current limits.
-- [Components on npm](https://www.npmjs.com/package/@cratis/components) —
-  published package metadata and versions.
-- [Arc](/arc/) — the CQRS framework whose application patterns Components
-  aligns with.
+<CardGrid>
+  <SimpleCard title="Components source and README" icon="seti:folder" link="https://github.com/Cratis/Components">
+    Package setup, migration guidance, contribution paths, and current limits.
+  </SimpleCard>
+  <SimpleCard title="Components on npm" icon="open-book" link="https://www.npmjs.com/package/@cratis/components">
+    Published package metadata and versions.
+  </SimpleCard>
+  <SimpleCard title="Arc" icon="puzzle" link="/arc/">
+    The CQRS framework whose application patterns Components aligns with.
+  </SimpleCard>
+</CardGrid>
