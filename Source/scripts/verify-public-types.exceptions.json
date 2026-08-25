@@ -51,19 +51,6 @@
     ],
     "exceptions": [
         {
-            "subpath": ".",
-            "resolutionModes": {
-                "bundler": [
-                    "pixi-webgpu-types-lib-conflict",
-                    "arc-react-global-jsx-namespace"
-                ],
-                "nodenext": [
-                    "pixi-webgpu-types-lib-conflict",
-                    "arc-family-nodenext-extensionless-specifiers"
-                ]
-            }
-        },
-        {
             "subpath": "./Canvas",
             "resolutionModes": {
                 "bundler": ["pixi-webgpu-types-lib-conflict"],

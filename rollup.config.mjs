@@ -280,10 +280,65 @@ function generatePackageJson(esmPath) {
     };
 }
 
+/**
+ * Derives one Rollup entry point per JavaScript `exports` map subpath instead of the
+ * single package-root `index.ts`.
+ *
+ * Why this exists: with `preserveModules: true`, Rollup emits one output file per
+ * *reachable* source module - reachable meaning "in the import graph of a declared
+ * entry point", not "present under `Source/`". A single `index.ts` entry only ever
+ * worked because the root barrel used to `import * as X from './X'` every namespace,
+ * making every subpath transitively reachable from that one file. The setup-only root
+ * (Cratis/Components root architecture) intentionally stops doing that - `index.ts` now
+ * imports only the provider/config surface - so every subpath the package promises in
+ * `exports` (`./Canvas`, `./CommandDialog`, `./DataPage`, ...) needs its own explicit
+ * entry point or its `dist/esm/<Subpath>/index.js` would silently stop being emitted.
+ *
+ * Each subpath's `types` target (`./dist/esm/Canvas/index.d.ts`) is mapped back to the
+ * source file it was compiled from (`Canvas/index.tsx` or `Canvas/index.ts`) the same
+ * way `Source/scripts/verify-api-docs.mjs`'s `resolveBarrelsFromExports` does, so the
+ * two stay in lockstep without sharing a runtime dependency. CSS/JSON asset entries and
+ * duplicate targets (`./CommandForm/fields` aliases `./CommandForm`'s own file) are
+ * skipped/deduplicated - Rollup only needs one entry per distinct source module.
+ */
+export function entryPointsFromExports(pkg, sourceDir) {
+    const seen = new Set();
+    const entries = [];
+    for (const [subpath, value] of Object.entries(pkg.exports ?? {})) {
+        if (subpath === './package.json') continue;
+        const typesTarget = value && typeof value === 'object' ? value.types : undefined;
+        if (typeof typesTarget !== 'string' || !typesTarget.endsWith('.d.ts')) continue;
+
+        const relative = typesTarget
+            .replace(/^\.\//, '')
+            .replace(/^dist\/esm\//, '')
+            .replace(/\.d\.ts$/, '');
+        const candidate = ['.tsx', '.ts']
+            .map((ext) => `${relative}${ext}`)
+            .find((file) => existsSync(join(sourceDir, file)));
+        if (!candidate) {
+            throw new Error(
+                `No source entry found for exports subpath '${subpath}' (looked for ` +
+                    `${relative}.tsx / ${relative}.ts under ${sourceDir}).`,
+            );
+        }
+        if (!seen.has(candidate)) {
+            seen.add(candidate);
+            entries.push(candidate);
+        }
+    }
+    if (entries.length === 0) {
+        throw new Error(
+            `No JavaScript entry points resolved from ${pkg.name}'s exports map.`,
+        );
+    }
+    return entries;
+}
+
 export function rollup(esmPath, tsconfigPath, pkg) {
     const sourceDir = dirname(tsconfigPath);
     return {
-        input: ['index.ts'],
+        input: entryPointsFromExports(pkg, sourceDir),
 
         output: [
             {
