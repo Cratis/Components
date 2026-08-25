@@ -1,0 +1,20 @@
+{
+    "name": "@cratis/components-codemods",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Internal codemods for migrating @cratis/components consumers off the deprecated package-root namespace barrel and onto subpath imports.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "bin": {
+        "cratis-components-remove-root-namespace-imports": "./scripts/remove-root-namespace-imports.js"
+    },
+    "scripts": {
+        "test": "yarn g:test",
+        "ci": "yarn g:test"
+    }
+}
