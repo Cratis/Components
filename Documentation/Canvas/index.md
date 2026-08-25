@@ -148,7 +148,7 @@ const captureAttributes: CanvasCaptureAttributes = {
 
 ## Overlays and SSR
 
-`CanvasOverlay` portals children to `document.body` in the browser. It renders an empty server/hydration placeholder, so importing or server-rendering a Canvas tree does not access `document` before hydration. It uses the same `useSyncExternalStore` browser-detection pattern as `Dialog`, `FilterPanel`, `Toaster`, and `ToolbarSlot` elsewhere in Components. `Canvas`'s own `PIXI.Application` creation likewise runs inside a `useEffect`, so it never executes during server rendering — see the [capability matrix](../ui-foundation.md#capability-matrix) for the equivalent PivotViewer guarantee.
+`CanvasOverlay` portals children to `document.body` in the browser. It renders an empty server/hydration placeholder, so importing or server-rendering a Canvas tree does not access `document` before hydration. It uses the same `useSyncExternalStore` browser-detection pattern as `Dialog`, `FilterPanel`, and `ToolbarSlot` elsewhere in Components. `Toaster` is also server-safe, but follows a different contract: its toast-queue store supplies a server snapshot and the component returns `null` when `document` is unavailable. `Canvas`'s own `PIXI.Application` creation likewise runs inside a `useEffect`, so it never executes during server rendering — see the [capability matrix](../ui-foundation.md#capability-matrix) for the equivalent PivotViewer guarantee.
 
 Use it for floating controls that must escape canvas clipping:
 
