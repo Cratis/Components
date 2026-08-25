@@ -1,6 +1,14 @@
 # Cratis Components
 
-A collection of React components for building modern applications with Cratis.
+Components is a React component library aligned with Arc application patterns.
+
+The `@cratis/components` package provides React compositions for Arc-generated commands and queries, together with dialogs, data surfaces, editors, notifications, styling tokens, and shared application primitives.
+
+- [Read the canonical Components documentation](https://cratis.io/components/)
+- [Review this package's dependency and licensing boundary](#licensing)
+- [Report security concerns privately](mailto:oss@cratis.io?subject=Security%3A)
+
+The package targets Arc application frontends rather than acting as a general-purpose design system. Its presence does not establish accessibility conformance or browser coverage for an application; verify those properties for the exact components and application profile you ship.
 
 ## Requirements
 
@@ -583,7 +591,7 @@ export const App = () => (
 
 Components 3 publishes its PrimeReact 11 slot and rendered-marker contract from `@cratis/components/compatibility`. In a DOM test, apply `primeReact11PassThroughSentinelPreset`, render the surfaces your application uses, and call `assertPrimeReact11PassThroughCompatibility(root, components)`. Additions pass; a missing or renamed contracted slot or marker produces an actionable error. The contract is major-version scoped and does not preserve PrimeReact 10 names.
 
-The machine-readable `components3PrimeReact11PassThroughContract` is the source of truth. Contract revision 1 covers the parts rendered by Components 3's supported compositions on PrimeReact 11, rather than every optional part an application could compose directly. See the [pass-through contract documentation](https://cratis.io/Components/styling/pass-through.html) for the supported component and slot list.
+The machine-readable `components3PrimeReact11PassThroughContract` is the source of truth. Contract revision 1 covers the parts rendered by the documented Components 3 compositions on PrimeReact 11, rather than every optional part an application could compose directly. See the [canonical Components documentation](https://cratis.io/components/) for the currently admitted component and slot guidance.
 
 #### A `pt` preset in plain CSS
 
@@ -789,7 +797,7 @@ request type is owned by `@cratis/arc.react`.
 
 If you encounter errors like:
 
-```
+```text
 Cannot find module '@cratis/components/TimeMachine' or its corresponding type declarations.
 ```
 
