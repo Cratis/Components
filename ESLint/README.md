@@ -5,7 +5,7 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 
 | Rule | What it does |
 |---|---|
-| `no-root-barrel-import` | Disallows importing from the `@cratis/components` root barrel. Use a subpath export (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …) — the root pulls the whole optional-peer-heavy surface and hides intent. |
+| `no-root-barrel-import` | Disallows importing a component namespace from the `@cratis/components` root barrel. Use a subpath export (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …) — the root pulls the whole optional-peer-heavy surface and hides intent. The approved setup surface (`CratisComponentsProvider` and friends) remains allowed at the root; a single-namespace violation is autofixed. |
 | `no-primereact-dialog` | Disallows importing `Dialog` from `primereact/dialog`. Use `CommandDialog` from `@cratis/components/CommandDialog`, or `Dialog` from `@cratis/components/Dialogs` — the wrappers add Arc command binding, overlay/focus fixes, and theming. |
 | `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. `onBeforeExecute` is a transformer — a body that can complete without returning executes the command with `undefined` (silent data loss). |
 | `no-hooks-in-view-model` | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions. |
@@ -38,7 +38,7 @@ export default [
 ```js
 '@cratis/components/no-root-barrel-import': ['error', {
     packageName: '@cratis/components',  // barrel to forbid
-    allow: [],                          // exact specifiers to permit
+    allow: [],                          // exact specifiers to permit wholesale
 }],
 '@cratis/components/no-primereact-dialog': ['error', {
     source: 'primereact/dialog',        // module to forbid
@@ -70,6 +70,57 @@ cost. Revisit a lint rule if a narrower, high-confidence pattern emerges (for ex
 owned-label prop follows one consistent naming and JSDoc convention).
 
 ## Rules
+
+### `no-root-barrel-import`
+
+`@cratis/components` re-exports every component subpath as a namespace off the package root
+(`import { Canvas } from '@cratis/components'`) purely for discoverability. The rule keeps a
+fixed map of every current namespace name to its subpath, plus a short allowlist of setup
+symbols (`CratisComponentsProvider`, `cratisDefaults`, `mergeCratisComponentsConfig`,
+`CratisComponentsConfig`, `CratisComponentsProviderProps`) that stay importable from the root:
+
+```ts
+// ✅ approved setup symbols stay at the root
+import { CratisComponentsProvider } from '@cratis/components';
+
+// ❌ a component namespace imported from the root barrel
+import { Canvas } from '@cratis/components';
+
+// ✅ the same namespace, imported from its subpath
+import * as Canvas from '@cratis/components/Canvas';
+```
+
+A single-namespace violation is autofixed to the namespace form shown above, preserving an
+alias (`Canvas as C`) and `import type` (`import type { Canvas } from '@cratis/components'`
+becomes `import type * as Canvas from '@cratis/components/Canvas'`, and a per-specifier
+`type` modifier is honored the same way). A mixed import naming both a setup symbol and a
+namespace is split — the setup symbol stays imported from the root, the namespace moves:
+
+```ts
+// Before
+import { CratisComponentsProvider, Canvas } from '@cratis/components';
+
+// After (autofixed)
+import { CratisComponentsProvider } from '@cratis/components';
+import * as Canvas from '@cratis/components/Canvas';
+```
+
+The rule never guesses. Each of these is flagged with guidance but **not** autofixed:
+
+- A namespace import of the whole package (`import * as Everything from '@cratis/components'`)
+  — which subpath each later member access belongs to cannot be inferred from the import alone.
+- A default import (`import Everything from '@cratis/components'`) — the package has no
+  default export.
+- A side-effect-only import (`import '@cratis/components'`) — there is no binding to infer a
+  subpath from.
+- A named import of a symbol that is neither an approved setup symbol nor a known namespace
+  (for example a member that only exists _inside_ a namespace, not at the root) — the whole
+  statement is left unfixed rather than partially migrated.
+- Any `export … from '@cratis/components'` re-export form — flagged with the same subpath
+  guidance, but re-exports are never autofixed.
+
+A companion, standalone codemod applies the same rewrite across a whole project in one pass;
+see [`Codemods`](../Codemods/README.md).
 
 ### `onbeforeexecute-must-return`
 

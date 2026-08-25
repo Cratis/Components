@@ -26,33 +26,218 @@ const tsRuleTester = new RuleTester({
     },
 });
 
-ruleTester.run('no-root-barrel-import', noRootBarrelImport, {
+tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
     valid: [
+        // Subpath imports are always fine, whatever the export.
         "import { CommandDialog } from '@cratis/components/CommandDialog';",
         "import { DataPage } from '@cratis/components/DataPage';",
         "import { useState } from 'react';",
-        "export { Toolbar } from '@cratis/components/Toolbar';",
         // Not the same package — a longer name that merely starts the same.
         "import x from '@cratis/components-extra';",
+        // Approved setup symbols remain importable from the root, singly, combined, aliased,
+        // and as types.
+        "import { CratisComponentsProvider } from '@cratis/components';",
+        "import { CratisComponentsProvider, cratisDefaults, mergeCratisComponentsConfig } from '@cratis/components';",
+        "import { CratisComponentsProvider as Provider } from '@cratis/components';",
+        "import type { CratisComponentsConfig, CratisComponentsProviderProps } from '@cratis/components';",
+        "import { type CratisComponentsConfig } from '@cratis/components';",
+        // Re-exporting an approved setup symbol from the root is fine too.
+        "export { CratisComponentsProvider } from '@cratis/components';",
+        // The 'allow' option still permits an exact specifier wholesale.
+        {
+            code: "import { Canvas } from '@cratis/components';",
+            options: [{ allow: ['@cratis/components'] }],
+        },
     ],
     invalid: [
         {
+            // A single namespace is autofixed to its subpath, as a namespace import.
+            code: "import { Canvas } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output: "import * as Canvas from '@cratis/components/Canvas';",
+        },
+        {
+            // 'import type' is preserved on the generated namespace import.
+            code: "import type { Canvas } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output: "import type * as Canvas from '@cratis/components/Canvas';",
+        },
+        {
+            // A per-specifier 'type' modifier is honored the same way.
+            code: "import { type Canvas } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output: "import type * as Canvas from '@cratis/components/Canvas';",
+        },
+        {
+            // Aliases are preserved on the generated namespace import.
+            code: "import { Canvas as C } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output: "import * as C from '@cratis/components/Canvas';",
+        },
+        {
+            // 'Types' is the one namespace whose subpath differs in casing from its name.
+            code: "import { Types } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Types', packageName: '@cratis/components', subpath: 'types' },
+                },
+            ],
+            output: "import * as Types from '@cratis/components/types';",
+        },
+        {
+            // Several namespaces in one import become one subpath import each, in order.
+            code: "import { Canvas, Common } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Common', packageName: '@cratis/components', subpath: 'Common' },
+                },
+            ],
+            output: "import * as Canvas from '@cratis/components/Canvas';\nimport * as Common from '@cratis/components/Common';",
+        },
+        {
+            // A mixed import is split: the approved symbol stays at the root, the namespace moves.
+            code: "import { CratisComponentsProvider, Canvas } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output:
+                "import { CratisComponentsProvider } from '@cratis/components';\nimport * as Canvas from '@cratis/components/Canvas';",
+        },
+        {
+            // An unrelated existing subpath import on the line above is left completely alone.
+            code: "import { Dialog } from '@cratis/components/Dialogs';\nimport { Canvas } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output:
+                "import { Dialog } from '@cratis/components/Dialogs';\nimport * as Canvas from '@cratis/components/Canvas';",
+        },
+        {
+            // A symbol that is neither an approved setup symbol nor a known namespace (it only
+            // exists *inside* the Common namespace) is flagged but never guessed at — no autofix.
             code: "import { Button } from '@cratis/components';",
-            errors: [{ messageId: 'useSubpath', data: { packageName: '@cratis/components' } }],
+            errors: [
+                { messageId: 'unknownSymbol', data: { name: 'Button', packageName: '@cratis/components' } },
+            ],
+            output: null,
+        },
+        {
+            // An unknown specifier alongside an approved one: still flagged, still no fix, and the
+            // approved symbol never gets a spurious report.
+            code: "import { CratisComponentsProvider, Button } from '@cratis/components';",
+            errors: [
+                { messageId: 'unknownSymbol', data: { name: 'Button', packageName: '@cratis/components' } },
+            ],
+            output: null,
+        },
+        {
+            // An unknown specifier alongside a namespace: the namespace is still reported (rich
+            // guidance), but neither gets autofixed — never guess at the whole statement.
+            code: "import { Canvas, Button } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+                { messageId: 'unknownSymbol', data: { name: 'Button', packageName: '@cratis/components' } },
+            ],
+            output: null,
+        },
+        {
+            // A namespace import of the whole package cannot be safely rewritten.
+            code: "import * as Components from '@cratis/components';",
+            errors: [{ messageId: 'ambiguousImport', data: { packageName: '@cratis/components' } }],
+            output: null,
+        },
+        {
+            // A default import — the package has no default export — is equally ambiguous.
+            code: "import Components from '@cratis/components';",
+            errors: [{ messageId: 'ambiguousImport' }],
+            output: null,
+        },
+        {
+            // A side-effect-only import has no binding to infer a subpath from.
+            code: "import '@cratis/components';",
+            errors: [{ messageId: 'ambiguousImport' }],
+            output: null,
+        },
+        {
+            // Re-exporting a namespace gets subpath guidance but is never autofixed.
+            code: "export { Canvas } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpathExport',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output: null,
+        },
+        {
+            // The export alias is preserved in the guidance name; the check is on the source-side name.
+            code: "export { Canvas as CanvasNS } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpathExport',
+                    data: { name: 'Canvas', packageName: '@cratis/components', subpath: 'Canvas' },
+                },
+            ],
+            output: null,
         },
         {
             code: "export { Button } from '@cratis/components';",
-            errors: [{ messageId: 'useSubpath' }],
+            errors: [
+                { messageId: 'unknownSymbolExport', data: { name: 'Button', packageName: '@cratis/components' } },
+            ],
+            output: null,
         },
         {
             code: "export * from '@cratis/components';",
-            errors: [{ messageId: 'useSubpath' }],
+            errors: [{ messageId: 'ambiguousExport', data: { packageName: '@cratis/components' } }],
+            output: null,
         },
         {
-            // Configurable package name.
-            code: "import x from '@acme/ui';",
+            code: "export * as Everything from '@cratis/components';",
+            errors: [{ messageId: 'ambiguousExport' }],
+            output: null,
+        },
+        {
+            // Configurable package name — the Cratis namespace map still applies to it.
+            code: "import { Canvas } from '@acme/ui';",
             options: [{ packageName: '@acme/ui' }],
-            errors: [{ messageId: 'useSubpath', data: { packageName: '@acme/ui' } }],
+            errors: [{ messageId: 'useNamespaceSubpath', data: { name: 'Canvas', packageName: '@acme/ui', subpath: 'Canvas' } }],
+            output: "import * as Canvas from '@acme/ui/Canvas';",
         },
     ],
 });
