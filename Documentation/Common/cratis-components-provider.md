@@ -17,20 +17,35 @@ export const App = () => (
 );
 ```
 
+The provider memoizes its resolved configuration by the `value` object identity. For an application root that re-renders frequently, keep a configured object stable rather than constructing a large message catalog inline on every render:
+
+```tsx
+const componentsConfig = {
+    locale: 'en-US',
+    messages: productMessages,
+};
+
+<CratisComponentsProvider value={componentsConfig} toaster>
+    <Application />
+</CratisComponentsProvider>;
+```
+
+A small inline object as in the basic example is inexpensive; the stable form matters when the value contains a larger product-owned message catalog.
+
 ## Configuration
 
-| Member                  | Purpose                                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------------------ |
-| `locale`                | BCP 47 locale used by React Aria for dates, numbers, keyboard behavior, and announcements. |
-| `messages.paginator`    | Components-owned paginator labels.                                                         |
-| `messages.datePicker`   | Components-owned date-picker action/navigation labels, plus the segmented input's fallback accessible name (`label`). |
-| `messages.dropdown`     | `Dropdown`'s show-options and clear-selection labels.                                      |
-| `messages.dialog`       | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
-| `messages.stepper`      | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`. |
-| `messages.notifications`| `Toaster`'s dismiss-action and region-landmark labels.                                     |
-| `messages.dataTable`    | `DataTableCore`'s loaded-page search and single-row-selection labels.                      |
-| `messages.columnFilter` | The built-in column filter popup's clear/apply/boolean/match-mode labels.                  |
-| `locales`               | Temporary Components 3 compatibility map; migrate to `messages`.                           |
+| Member                   | Purpose                                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `locale`                 | BCP 47 locale used by React Aria for dates, numbers, keyboard behavior, and announcements.                                      |
+| `messages.paginator`     | Components-owned paginator labels.                                                                                              |
+| `messages.datePicker`    | Components-owned date-picker action/navigation labels, plus the segmented input's fallback accessible name (`label`).           |
+| `messages.dropdown`      | `Dropdown`'s show-options and clear-selection labels.                                                                           |
+| `messages.dialog`        | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
+| `messages.stepper`       | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`.                         |
+| `messages.notifications` | `Toaster`'s dismiss-action and region-landmark labels.                                                                          |
+| `messages.dataTable`     | `DataTableCore`'s loaded-page search and single-row-selection labels.                                                           |
+| `messages.columnFilter`  | The built-in column filter popup's clear/apply/boolean/match-mode labels.                                                       |
+| `locales`                | Temporary Components 3 compatibility map; migrate to `messages`.                                                                |
 
 Unknown Components 3 renderer options are intentionally a type error. Remove `license`, `theme`, `defaults`, global `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings rather than compiling a provider whose visual configuration does nothing. Configure any remaining direct Prime provider independently.
 

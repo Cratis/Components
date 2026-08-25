@@ -106,9 +106,13 @@ export interface DataTableCoreProps<TData extends object> {
     style?: CSSProperties;
     /** Cratis-owned per-part attributes. */
     pt?: DataTableParts;
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
-    /** Retained for source compatibility; consumers always own the CSS. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
@@ -621,7 +625,9 @@ export const DataTableCore = <TData extends object>({
                                                         name={selectionGroupName}
                                                         readOnly
                                                         tabIndex={-1}
-                                                        aria-label={resolvedSelectionAriaLabel}
+                                                        aria-label={
+                                                            resolvedSelectionAriaLabel
+                                                        }
                                                         checked={isSelected}
                                                     />
                                                 ) : (

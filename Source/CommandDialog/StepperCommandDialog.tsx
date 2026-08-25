@@ -99,9 +99,13 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     dialogClassName?: string;
     /** Cratis-owned per-part attributes applied to the outer Dialog. */
     dialogPt?: DialogProps['pt'];
-    /** Legacy part merge options applied to the outer Dialog. */
+    /**
+     * @deprecated Cratis dialog parts always merge. Remove this renderer-era option.
+     */
     dialogPtOptions?: DialogProps['ptOptions'];
-    /** Legacy renderer flag retained for source compatibility; ignored on the outer Dialog. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `dialogPt` and CSS instead.
+     */
     dialogUnstyled?: boolean;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
@@ -178,7 +182,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     const dialogMessages = messages?.dialog;
     const resolvedOkLabel = okLabel ?? stepperMessages?.submit ?? 'Submit';
     const resolvedNextLabel = nextLabel ?? stepperMessages?.next ?? 'Next';
-    const resolvedPreviousLabel = previousLabel ?? stepperMessages?.previous ?? 'Previous';
+    const resolvedPreviousLabel =
+        previousLabel ?? stepperMessages?.previous ?? 'Previous';
     const resolvedCancelLabel = cancelLabel ?? dialogMessages?.cancel ?? 'Cancel';
     const {
         setCommandValues,
@@ -233,12 +238,12 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 shouldCloseThroughContext = closeResult !== false;
             }
         } else if (onCancel) {
-                const closeResult = await onCancel();
-                shouldCloseThroughContext = closeResult === true;
-            } else if (onClose) {
-                const closeResult = await onClose(result);
-                shouldCloseThroughContext = closeResult !== false;
-            }
+            const closeResult = await onCancel();
+            shouldCloseThroughContext = closeResult === true;
+        } else if (onClose) {
+            const closeResult = await onClose(result);
+            shouldCloseThroughContext = closeResult !== false;
+        }
 
         if (shouldCloseThroughContext) {
             contextCloseDialog?.(result);

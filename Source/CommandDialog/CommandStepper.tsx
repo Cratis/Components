@@ -79,9 +79,13 @@ export interface StepperCustomizationProps {
     onChangeStep?: (event: StepperChangeEvent) => void;
     /** Cratis-owned per-part attributes for the stepper. */
     pt?: StepperParts;
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
-    /** Retained for source compatibility; consumers always own the CSS. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 

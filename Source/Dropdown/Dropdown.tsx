@@ -143,9 +143,13 @@ export interface DropdownProps<T = unknown> {
     onBlur?: FocusEventHandler<HTMLElement>;
     /** Cratis-owned per-part attributes. */
     pt?: DropdownParts;
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
-    /** Retained for source compatibility; consumers always own the CSS. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
@@ -243,7 +247,9 @@ export const Dropdown = <T = unknown,>({
         dropdownMessages?.showOptions ??
         'Show options';
     const clearSelectionLabel =
-        pt?.clear?.['aria-label'] ?? dropdownMessages?.clearSelection ?? 'Clear selection';
+        pt?.clear?.['aria-label'] ??
+        dropdownMessages?.clearSelection ??
+        'Clear selection';
     const resolvedOptions = resolveOptions(options, optionLabel, optionValue);
     const selectedOption = resolvedOptions.find((option) =>
         Object.is(option.value, value),

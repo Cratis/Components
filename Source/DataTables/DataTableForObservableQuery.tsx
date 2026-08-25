@@ -95,10 +95,14 @@ export interface DataTableForObservableQueryProps<
     /** Cratis-owned per-part attributes applied to the underlying table. */
     pt?: DataTableParts;
 
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
 
-    /** Legacy renderer flag retained for source compatibility; ignored on the underlying DataTable. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 
     /** Extra CSS class name forwarded to the paginator. */
@@ -107,7 +111,9 @@ export interface DataTableForObservableQueryProps<
     /** Cratis-owned attributes for paginator parts. */
     paginatorPt?: TablePaginatorParts;
 
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis paginator parts always merge. Remove this renderer-era option.
+     */
     paginatorPtOptions?: object;
 
     /** Accessible names for the paginator controls. Override any to localize. */

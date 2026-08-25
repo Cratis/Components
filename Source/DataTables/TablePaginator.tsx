@@ -48,7 +48,9 @@ export interface TablePaginatorProps {
     className?: string;
     /** Cratis-owned paginator part attributes. */
     pt?: TablePaginatorParts;
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
 }
 

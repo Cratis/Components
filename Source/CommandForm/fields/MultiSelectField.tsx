@@ -13,8 +13,7 @@ import {
  * Component-level props for {@link MultiSelectField}.
  */
 interface MultiSelectFieldComponentProps
-    extends WrappedFieldProps<Array<string | number>>,
-        FieldAccessibilityProps {
+    extends WrappedFieldProps<Array<string | number>>, FieldAccessibilityProps {
     /** Source array of objects to populate the multi-select options. */
     options: Array<Record<string, unknown>>;
 
@@ -28,17 +27,12 @@ interface MultiSelectFieldComponentProps
     placeholder?: string;
 
     /**
-     * How the selection is displayed in the field: comma-separated or as chips.
-     *
-     * Legacy display mode retained for source compatibility; native multiple
-     * selection does not change presentation based on this value.
+     * @deprecated Native multiple selection has one presentation. Remove this renderer-era option.
      */
     display?: 'comma' | 'chip';
 
     /**
-     * Maximum number of selected labels to show before collapsing into a count.
-     *
-     * Accepted for API compatibility; not applied by native multiple selection.
+     * @deprecated Native multiple selection does not collapse labels. Remove this renderer-era option.
      */
     maxSelectedLabels?: number;
 
@@ -54,10 +48,14 @@ interface MultiSelectFieldComponentProps
     /** Cratis-owned per-part attributes applied to the underlying Select. */
     pt?: DropdownProps['pt'];
 
-    /** Legacy part merge options applied to the underlying Select. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: DropdownProps['ptOptions'];
 
-    /** Legacy renderer flag retained for source compatibility; ignored on the underlying Select. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
@@ -82,26 +80,30 @@ export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProp
         });
         return (
             <>
-        <Dropdown<Array<string | number>>
-            id={accessibility.controlId}
-            aria-label={accessibility.ariaLabel}
-            aria-describedby={accessibility.ariaDescribedBy}
-            multiple
-            value={props.value}
-            onChange={(e) => props.onChange(e.value ?? [])}
-            onBlur={props.onBlur}
-            options={props.options}
-            optionValue={props.optionValue}
-            optionLabel={props.optionLabel}
-            placeholder={props.placeholder}
-            filter={props.filter}
-            showClear={props.showClear}
-            invalid={props.invalid}
-            className={props.className ? `cratis:w-full ${props.className}` : 'cratis:w-full'}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
+                <Dropdown<Array<string | number>>
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    multiple
+                    value={props.value}
+                    onChange={(e) => props.onChange(e.value ?? [])}
+                    onBlur={props.onBlur}
+                    options={props.options}
+                    optionValue={props.optionValue}
+                    optionLabel={props.optionLabel}
+                    placeholder={props.placeholder}
+                    filter={props.filter}
+                    showClear={props.showClear}
+                    invalid={props.invalid}
+                    className={
+                        props.className
+                            ? `cratis:w-full ${props.className}`
+                            : 'cratis:w-full'
+                    }
+                    pt={props.pt}
+                    ptOptions={props.ptOptions}
+                    unstyled={props.unstyled}
+                />
                 {accessibility.hiddenError}
             </>
         );

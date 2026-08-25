@@ -32,11 +32,10 @@ import {
     toCalendarDate,
 } from '@internationalized/date';
 
-interface DatePickerPartAttributes
-    extends Omit<
-        HTMLAttributes<HTMLElement>,
-        'defaultValue' | 'onChange' | 'role'
-    > {
+interface DatePickerPartAttributes extends Omit<
+    HTMLAttributes<HTMLElement>,
+    'defaultValue' | 'onChange' | 'role'
+> {
     id?: string;
     className?: string;
     style?: CSSProperties;
@@ -133,9 +132,13 @@ export interface DatePickerInputProps {
     style?: CSSProperties;
     /** Cratis-owned per-part attributes. */
     pt?: DatePickerInputPassThrough;
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
-    /** Retained for source compatibility; consumers always own the CSS. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
     /** Localized label for the Today action. */
     todayLabel?: string;

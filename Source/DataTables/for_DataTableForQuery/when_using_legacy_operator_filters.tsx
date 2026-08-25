@@ -67,6 +67,23 @@ describe('when using legacy operator filters', () => {
     });
 
     it('should apply every constraint using the configured operator', () => {
-        expect(container.querySelectorAll('tbody tr')).to.have.lengthOf(12);
+        const names = Array.from(container.querySelectorAll('tbody tr')).map(
+            (row) => row.textContent,
+        );
+
+        expect(names).to.deep.equal([
+            'Product 1',
+            'Product 2',
+            'Product 10',
+            'Product 11',
+            'Product 12',
+            'Product 13',
+            'Product 14',
+            'Product 15',
+            'Product 16',
+            'Product 17',
+            'Product 18',
+            'Product 19',
+        ]);
     });
 });

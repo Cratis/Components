@@ -81,7 +81,9 @@ export interface DialogProps {
     style?: CSSProperties;
     /** Content-region inline style. */
     contentStyle?: CSSProperties;
-    /** Retained for source compatibility; the dialog is viewport-bounded rather than resizable. */
+    /**
+     * @deprecated The Cratis dialog is viewport-bounded rather than resizable. Remove this prop.
+     */
     resizable?: boolean;
     /** Whether the primary action is enabled. Defaults to `true`. */
     isValid?: boolean;
@@ -103,9 +105,13 @@ export interface DialogProps {
     className?: string;
     /** Cratis-owned per-part attributes. */
     pt?: DialogParts;
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
-    /** Retained for source compatibility; consumers always own the CSS. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 

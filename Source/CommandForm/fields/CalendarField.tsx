@@ -16,8 +16,7 @@ import {
  * Component-level props for {@link CalendarField}.
  */
 interface CalendarFieldComponentProps
-    extends WrappedFieldProps<Date | null>,
-        FieldAccessibilityProps {
+    extends WrappedFieldProps<Date | null>, FieldAccessibilityProps {
     /** Placeholder text shown when no date is selected. */
     placeholder?: string;
 
@@ -45,10 +44,14 @@ interface CalendarFieldComponentProps
     /** Cratis-owned per-part attributes applied to the date picker. */
     pt?: DatePickerInputPassThrough;
 
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: object;
 
-    /** Retained for source compatibility; consumers always own the CSS. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
@@ -74,26 +77,26 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
         });
         return (
             <>
-        <DatePickerInput
-            id={accessibility.controlId}
-            aria-label={accessibility.ariaLabel}
-            aria-describedby={accessibility.ariaDescribedBy}
-            value={props.value}
-            onChange={props.onChange}
-            onBlur={props.onBlur}
-            invalid={props.invalid}
-            placeholder={props.placeholder}
-            dateFormat={props.dateFormat}
-            showIcon={props.showIcon}
-            showTime={props.showTime}
-            hourFormat={props.hourFormat}
-            minDate={props.minDate}
-            maxDate={props.maxDate}
-            className={props.className}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
+                <DatePickerInput
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    value={props.value}
+                    onChange={props.onChange}
+                    onBlur={props.onBlur}
+                    invalid={props.invalid}
+                    placeholder={props.placeholder}
+                    dateFormat={props.dateFormat}
+                    showIcon={props.showIcon}
+                    showTime={props.showTime}
+                    hourFormat={props.hourFormat}
+                    minDate={props.minDate}
+                    maxDate={props.maxDate}
+                    className={props.className}
+                    pt={props.pt}
+                    ptOptions={props.ptOptions}
+                    unstyled={props.unstyled}
+                />
                 {accessibility.hiddenError}
             </>
         );

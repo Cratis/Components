@@ -153,8 +153,7 @@ export interface CratisComponentsConfig {
     /** Cratis-owned labels not supplied by the platform's internationalization APIs. */
     messages?: CratisComponentsMessages;
     /**
-     * Legacy locale map retained for source compatibility during the major migration.
-     * New code should use {@link messages}; React Aria supplies its own locale data.
+     * @deprecated Use {@link messages}; React Aria supplies its own locale data.
      */
     locales?: Record<string, LegacyLocaleMessages>;
 }

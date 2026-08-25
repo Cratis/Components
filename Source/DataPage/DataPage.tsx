@@ -332,10 +332,14 @@ export interface DataPageProps<
     /** Cratis-owned per-part attributes applied to the inner table. */
     tablePt?: DataTableParts;
 
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis table parts always merge. Remove this renderer-era option.
+     */
     tablePtOptions?: object;
 
-    /** Legacy renderer flag retained for source compatibility; ignored on the inner DataTable. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `tablePt` and CSS instead.
+     */
     tableUnstyled?: boolean;
 
     /** Extra CSS class name forwarded to the query table paginator. */
@@ -344,7 +348,9 @@ export interface DataPageProps<
     /** Cratis-owned attributes applied to the query table paginator. */
     paginatorPt?: TablePaginatorParts;
 
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis paginator parts always merge. Remove this renderer-era option.
+     */
     paginatorPtOptions?: object;
 
     /** Accessible paginator labels. Override any value to localize it. */
@@ -358,10 +364,14 @@ export interface DataPageProps<
     /** Cratis-owned part attributes applied to the action menubar's buttons. */
     menubarPt?: ButtonParts;
 
-    /** Retained for source compatibility; Cratis parts always merge. */
+    /**
+     * @deprecated Cratis menubar parts always merge. Remove this renderer-era option.
+     */
     menubarPtOptions?: object;
 
-    /** Legacy renderer flag retained for source compatibility; ignored on the action menubar's buttons. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `menubarPt` and CSS instead.
+     */
     menubarUnstyled?: boolean;
 
     /**

@@ -37,6 +37,7 @@ permissions:
 jobs:
     build:
         runs-on: ubuntu-latest
+        timeout-minutes: 15
 
         steps:
             - name: Checkout code
@@ -93,6 +94,7 @@ jobs:
     # subpaths load cleanly - so `continue-on-error` is gone and this is now a real gate.
     verify-published-exports:
         runs-on: ubuntu-latest
+        timeout-minutes: 10
 
         steps:
             - name: Checkout code
@@ -133,6 +135,7 @@ jobs:
     # unlisted diagnostic fails this job, as does an exception that stops reproducing.
     verify-public-types:
         runs-on: ubuntu-latest
+        timeout-minutes: 15
 
         steps:
             - name: Checkout code
@@ -177,6 +180,7 @@ jobs:
 
     verify-arc-consumers:
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         strategy:
             fail-fast: false
             matrix:
@@ -236,6 +240,7 @@ jobs:
 
     verify-package-managers:
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         strategy:
             fail-fast: false
             matrix:
