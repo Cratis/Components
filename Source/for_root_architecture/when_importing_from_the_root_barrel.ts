@@ -1,6 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import * as RootBarrel from '../index';
 
 /**
@@ -18,7 +20,7 @@ import * as RootBarrel from '../index';
  * boundary against the real declaration output and a real no-Pixi consumer.
  */
 describe('when importing from the root barrel', () => {
-    const ALLOWED_ROOT_EXPORTS = [
+    const allowedRootExports = [
         'CratisComponentsProvider',
         'useCratisComponentsConfig',
         'cratisDefaults',
@@ -26,26 +28,26 @@ describe('when importing from the root barrel', () => {
     ];
 
     it('should export exactly the setup-only allowlist and nothing else', () => {
-        Object.keys(RootBarrel)
-            .sort()
-            .should.deep.equal([...ALLOWED_ROOT_EXPORTS].sort());
+        expect(Object.keys(RootBarrel).sort()).to.deep.equal(
+            [...allowedRootExports].sort(),
+        );
     });
 
     it('should export CratisComponentsProvider as a function component', () => {
-        RootBarrel.CratisComponentsProvider.should.be.a('function');
+        expect(RootBarrel.CratisComponentsProvider).to.be.a('function');
     });
 
     it('should export useCratisComponentsConfig as a hook function', () => {
-        RootBarrel.useCratisComponentsConfig.should.be.a('function');
+        expect(RootBarrel.useCratisComponentsConfig).to.be.a('function');
     });
 
     it('should export mergeCratisComponentsConfig as a function', () => {
-        RootBarrel.mergeCratisComponentsConfig.should.be.a('function');
+        expect(RootBarrel.mergeCratisComponentsConfig).to.be.a('function');
     });
 
     it('should export cratisDefaults as a resolved configuration object', () => {
-        RootBarrel.cratisDefaults.should.be.an('object');
-        RootBarrel.cratisDefaults.locale!.should.equal('en-US');
+        expect(RootBarrel.cratisDefaults).to.be.an('object');
+        expect(RootBarrel.cratisDefaults.locale).to.equal('en-US');
     });
 
     it('should never export a component namespace from the root', () => {
@@ -71,7 +73,7 @@ describe('when importing from the root barrel', () => {
             'Types',
         ];
         for (const namespace of forbiddenNamespaces) {
-            Object.keys(RootBarrel).should.not.include(namespace);
+            expect(Object.keys(RootBarrel)).not.to.include(namespace);
         }
     });
 });
