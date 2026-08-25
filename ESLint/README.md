@@ -5,7 +5,7 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 
 | Rule | What it does |
 |---|---|
-| `no-root-barrel-import` | Disallows importing a component namespace from the `@cratis/components` root barrel. Use a subpath export (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …) — the root pulls the whole optional-peer-heavy surface and hides intent. The approved setup surface (`CratisComponentsProvider` and friends) remains allowed at the root; a single-namespace violation is autofixed. |
+| `no-root-barrel-import` | Disallows importing a removed Components 3 component namespace from the Components 4 setup-only root. Use the exact component subpath (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …). Package-wide provider/configuration symbols remain allowed at the root; an unambiguous namespace violation is autofixed. |
 | `no-primereact-dialog` | Disallows importing `Dialog` from `primereact/dialog`. Use `CommandDialog` from `@cratis/components/CommandDialog`, or `Dialog` from `@cratis/components/Dialogs` — the wrappers add Arc command binding, overlay/focus fixes, and theming. |
 | `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. `onBeforeExecute` is a transformer — a body that can complete without returning executes the command with `undefined` (silent data loss). |
 | `no-hooks-in-view-model` | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions. |
@@ -73,11 +73,11 @@ owned-label prop follows one consistent naming and JSDoc convention).
 
 ### `no-root-barrel-import`
 
-`@cratis/components` re-exports every component subpath as a namespace off the package root
-(`import { Canvas } from '@cratis/components'`) purely for discoverability. The rule keeps a
-fixed map of every current namespace name to its subpath, plus a short allowlist of setup
-symbols (`CratisComponentsProvider`, `cratisDefaults`, `mergeCratisComponentsConfig`,
-`CratisComponentsConfig`, `CratisComponentsProviderProps`) that stay importable from the root:
+Components 4 removes every component-family namespace from the package root. The rule keeps a fixed map from each Components 3 namespace to its Components 4 subpath, plus the exact setup allowlist that remains at the root:
+
+- `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig`;
+- `CratisComponentsConfig`, `CratisComponentsProviderProps`, and `CratisComponentsMessages`;
+- `CratisPaginatorMessages`, `CratisDatePickerMessages`, `CratisDropdownMessages`, `CratisDialogMessages`, `CratisStepperMessages`, `CratisNotificationsMessages`, `CratisDataTableMessages`, and `CratisColumnFilterMessages`.
 
 ```ts
 // ✅ approved setup symbols stay at the root
@@ -90,11 +90,7 @@ import { Canvas } from '@cratis/components';
 import * as Canvas from '@cratis/components/Canvas';
 ```
 
-A single-namespace violation is autofixed to the namespace form shown above, preserving an
-alias (`Canvas as C`) and `import type` (`import type { Canvas } from '@cratis/components'`
-becomes `import type * as Canvas from '@cratis/components/Canvas'`, and a per-specifier
-`type` modifier is honored the same way). A mixed import naming both a setup symbol and a
-namespace is split — the setup symbol stays imported from the root, the namespace moves:
+A single-namespace violation is autofixed to the namespace form shown above, preserving an alias (`Canvas as C`) and `import type` (`import type { Canvas } from '@cratis/components'` becomes `import type * as Canvas from '@cratis/components/Canvas'`, and a per-specifier `type` modifier is honored the same way). The historical `CommandStepper` namespace is mapped to `@cratis/components/CommandDialog`, because that root namespace exposed the complete CommandDialog module rather than only the narrower standalone stepper entry. A mixed import naming both a setup symbol and a namespace is split — the setup symbol stays imported from the root, the namespace moves:
 
 ```ts
 // Before

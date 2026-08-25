@@ -18,6 +18,8 @@ a repository devDependency — no new dependency was added for this tool). It re
 | `import type { Canvas } from '@cratis/components';` | `import type * as Canvas from '@cratis/components/Canvas';` |
 | `import { Canvas as C } from '@cratis/components';` | `import * as C from '@cratis/components/Canvas';`           |
 
+The historical `CommandStepper` root namespace is a special case: it aliased the complete `CommandDialog` module. The codemod therefore maps it to `@cratis/components/CommandDialog`, preserving every namespace member. New code that only needs the standalone component should use `import { CommandStepper } from '@cratis/components/CommandStepper'`.
+
 Multiple namespaces in one import become one subpath import per namespace:
 
 ```ts
