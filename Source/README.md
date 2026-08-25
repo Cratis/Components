@@ -17,15 +17,16 @@ interaction primitives internally; consumers do not import or style React Aria.
 npm install @cratis/components
 ```
 
-Supported peers:
+The current package manifest declares these peer dependencies:
 
-- React and React DOM 19
 - `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`
-- `@cratis/fundamentals`
-- `reflect-metadata`
-- `tsyringe`
+- `@cratis/fundamentals` `^7.10.3`
+- optional `pixi.js` `^8.20.0`
+- `react` and `react-dom` `^19.0.0`
+- `reflect-metadata` `0.2.2`
+- `tsyringe` `4.10.0`
 
-PrimeReact, PrimeIcons, PrimeUI themes, and a PrimeUI license are not required.
+The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.
 
 ## Styles
 
