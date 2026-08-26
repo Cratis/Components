@@ -1,7 +1,10 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
+import { NoteTextChanged } from './NoteTextChanged';
 import { whenNoteFontReady } from './noteFont';
 import { FaPlus } from 'react-icons/fa6';
 
@@ -160,6 +163,9 @@ export const Note: React.FC<NoteProps> = ({
     onTextChange,
     onExpandedChange,
 }) => {
+    // Opt-in messaging: resolves to undefined without an Arc messenger, and the publish below then
+    // simply does not happen — the `onTextChange` callback remains the note's contract either way.
+    const publish = useOptionalMessenger();
     const noteRef = useRef<HTMLDivElement>(null);
     const measurerRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -336,10 +342,14 @@ export const Note: React.FC<NoteProps> = ({
 
     const handleTextareaBlur = useCallback(
         (event: React.FocusEvent<HTMLTextAreaElement>) => {
-            onTextChange(note.id, event.currentTarget.value);
+            const text = event.currentTarget.value;
+            onTextChange(note.id, text);
+            // Published at the same commit point as the callback — once per committed edit, never
+            // per keystroke — for hosts that listen on the messenger instead of (or besides) props.
+            publish?.(new NoteTextChanged(note.id, text));
             setIsEditing(false);
         },
-        [note.id, onTextChange],
+        [note.id, onTextChange, publish],
     );
 
     const handleTextareaKeyDown = useCallback(

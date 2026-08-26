@@ -71,3 +71,7 @@ A note's font size is not fixed — `Note` measures its text against an off-scre
 When even the smallest readable size can't fit the text, `Note` shows a small expand button (a "+") in the corner instead of clipping the text. Clicking it grows the note to a height that shows everything, without changing its stored `width`/`height` — the grown state is a hover-like look, not a persisted resize, and falls back to the note's real size the moment the pointer leaves it (or the text is edited/resized back to fitting again).
 
 Because an expanded note visually reaches over whatever sits below it, `onExpandedChange` tells the host when this happens so it can raise the note above its siblings for that duration — `Note` renders inside its own stacking context via `CanvasItem`'s `transform`, so it cannot raise itself above a *different* item on its own; see the `zIndex` note in [Basic Usage](basic-usage.md).
+
+## Opt-in messaging
+
+Committing an edit (the same moment `onTextChange` fires) also publishes a `NoteTextChanged` (carrying `noteId` and the full committed `text`) over the `@cratis/arc.react` messenger — no extra prop needed, since `note.id` is already there. `onTextChange` remains the note's primary contract; see [Messaging](messaging.md) for the full catalog and why this is silently inert without Arc.

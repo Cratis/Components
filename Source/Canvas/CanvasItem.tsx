@@ -7,6 +7,17 @@ import { CanvasItemRegistryContext } from './Canvas';
 
 /** Props for a measured DOM item positioned in Canvas world space. */
 export interface CanvasItemProps {
+
+    /**
+     * Registers this item in the Canvas item registry under a caller-chosen key instead of an
+     * internally generated one. Opting in makes the item's world-space bounds addressable — a
+     * `Region` on the same board can then recognize the item and report region membership for it
+     * over the Arc messenger, keyed by exactly this id. Omit for the same behavior as before the
+     * prop existed: the item still feeds the minimap and fit-to-content, but is anonymous to
+     * everything that matches items by id.
+     */
+    id?: string;
+
     /** World-space horizontal position. */
     x: number;
     /** World-space vertical position. */
@@ -32,6 +43,7 @@ export interface CanvasItemProps {
  * show it. Observes size changes and reports bounds to the nearest Canvas registry.
  */
 export const CanvasItem: React.FC<CanvasItemProps> = ({
+    id,
     x,
     y,
     zIndex,
@@ -41,7 +53,12 @@ export const CanvasItem: React.FC<CanvasItemProps> = ({
     const elementRef = useRef<HTMLDivElement>(null);
     const onSizeRef = useRef(onSize);
     const registryContext = useContext(CanvasItemRegistryContext);
-    const itemId = useId();
+    // The registry key: the caller's id when given, otherwise a generated one — useId is called
+    // unconditionally (rules of hooks), the generated value simply goes unused when overridden.
+    // Should `id` change between renders, the effects below unregister the old key and register
+    // the new one, so the registry never holds both.
+    const generatedId = useId();
+    const itemId = id ?? generatedId;
     const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
     onSizeRef.current = onSize;

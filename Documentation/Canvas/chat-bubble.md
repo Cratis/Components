@@ -71,6 +71,10 @@ function Conversation() {
 
 `variant` (`ChatVariant.Floating`, the default, or `ChatVariant.Docked`) controls whether `Chat` renders its own header/close button (`Floating`) or leaves the frame and heading to whatever contains it (`Docked`, for a sidebar that already has its own).
 
+## Opt-in messaging — `id`
+
+`Chat` accepts an optional `id`. When given, every send additionally publishes a `ChatMessageAdded` (carrying `chatId` and `text`) over the `@cratis/arc.react` messenger, at the same moment `onSend` fires — `onSend` remains the primary contract either way. Omit `id` for exactly the previous behavior: nothing published. See [Messaging](messaging.md) for the full catalog, the opt-in rules, and why this is silently inert without Arc.
+
 ## Avatars — `buildAvatarUrl`
 
 No component in this kit stores or fetches avatar images itself. Every place an avatar appears (`Chat`, `ChatBubble`, `ChatComposer`'s mention list, the typing indicator) accepts an optional `buildAvatarUrl` callback:

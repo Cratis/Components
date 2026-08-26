@@ -111,10 +111,15 @@ Both layers share the same camera: panning and zooming transform the DOM layer's
 
 | Prop       | Type                      | Meaning                                                                                                                        |
 | ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `id`       | `string`                  | Registers the item under a caller-chosen key instead of an internally generated one, making its bounds addressable by id — what a sibling `Region` matches against for membership reporting. Omit for the same behavior as before this prop existed: still measured for the minimap/fit-to-content, but anonymous to anything matching items by id. |
 | `x` / `y`  | `number`                  | World position.                                                                                                                |
 | `zIndex`   | `number`                  | Item-root stacking order. Use this rather than a descendant z-index because each transformed item is its own stacking context. |
 | `onSize`   | `(width, height) => void` | Reports measured size changes.                                                                                                 |
 | `children` | `ReactNode`               | Item content.                                                                                                                  |
+
+### Item registry: `getSnapshot`/`subscribe`
+
+`CanvasItemRegistryContextValue` (the contract `CanvasItem` registers through) also exposes an optional `getSnapshot()`/`subscribe(listener)` pair, compatible with React's `useSyncExternalStore` — this is what lets `Region` (below) watch the registry for containment without polling. Both are optional so a consumer supplying its own registry value predating these members keeps type-checking; a reader falls back to an empty, unchanging registry when either is absent.
 
 ## Controls and minimap
 
@@ -170,6 +175,8 @@ The Canvas entry point also exports:
 - `canvasGesture`, `canvasTransformActivity`, and `createSelfSuspendingFrameLoop` for advanced canvas integrations.
 
 These shapes are optional conveniences, not domain models. Applications own persistence, authorization, and collaboration policy. Arc can own commands, queries, validation, authorization, and generated React bindings without Chronicle. Applications that choose Arc plus Chronicle additionally own event streams, projections, and read models. Pass typed data and callbacks into Canvas shapes rather than coupling them to generated proxies.
+
+`Region` additionally detects sibling `CanvasItem` containment and publishes `ItemAddedToRegion`/`ItemRemovedFromRegion`, `Note` publishes `NoteTextChanged`, and `Chat` (given an `id`) publishes `ChatMessageAdded` — all strictly opt-in, over the `@cratis/arc.react` messenger, and silently inert without an `ArcContext` above the `Canvas`. The pure `itemsWithinRegion(regionBounds, items, excludeId?)` containment function (and its `RegionContainmentBounds` parameter type) is also exported for hosts that want the same center-point math outside the messenger flow. See [Messaging](messaging.md) for the full message catalog and the opt-in rules.
 
 ## Styling
 

@@ -3,6 +3,7 @@
 
 export { Chat } from './Chat';
 export type { ChatProps, ChatLabels } from './Chat';
+export { ChatMessageAdded } from './ChatMessageAdded';
 export { ChatAuthorKind } from './ChatAuthorKind';
 export { ChatBubble } from './ChatBubble';
 export type { ChatBubbleProps } from './ChatBubble';
