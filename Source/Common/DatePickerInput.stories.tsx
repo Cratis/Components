@@ -3,12 +3,13 @@
 
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { DatePickerInput } from './DatePickerInput';
 
 const meta = {
-    title: 'Common/DatePickerInput visual parity',
+    title: 'Common/DatePickerInput',
     component: DatePickerInput,
+    args: { value: null, onChange: fn() },
     parameters: { layout: 'padded' },
     tags: ['autodocs'],
 } satisfies Meta<typeof DatePickerInput>;
@@ -55,7 +56,7 @@ export const OpenCalendar: Story = {
     render: () => <ControlledPicker initialValue={new Date(2024, 5, 15)} />,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await userEvent.click(canvas.getByRole('button', { name: 'Open calendar' }));
+        await userEvent.click(canvas.getByRole('button', { name: /open calendar/i }));
         await expect(within(document.body).getByRole('dialog')).toBeTruthy();
     },
 };

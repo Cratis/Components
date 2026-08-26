@@ -196,7 +196,7 @@ export const AllFields: Story = {
                     }}
                 >
                     <StorySection>
-                        <h3>Text Inputs</h3>
+                        <h2>Text Inputs</h2>
 
                         <InputTextField<FormFieldsCommand>
                             value={(c) => c.textInput}
@@ -261,7 +261,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Number Input</h3>
+                        <h2>Number Input</h2>
 
                         <NumberField<FormFieldsCommand>
                             value={(c) => c.numberInput}
@@ -289,7 +289,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Text Area</h3>
+                        <h2>Text Area</h2>
 
                         <TextAreaField<FormFieldsCommand>
                             value={(c) => c.textArea}
@@ -303,7 +303,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Dropdown</h3>
+                        <h2>Dropdown</h2>
 
                         <DropdownField<FormFieldsCommand>
                             value={(c) => c.dropdown}
@@ -331,7 +331,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Calendar</h3>
+                        <h2>Calendar</h2>
 
                         <CalendarField<FormFieldsCommand>
                             value={(c) => c.calendarDate}
@@ -345,7 +345,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Color Picker</h3>
+                        <h2>Color Picker</h2>
 
                         <ColorPickerField<FormFieldsCommand>
                             value={(c) => c.color}
@@ -357,7 +357,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>MultiSelect</h3>
+                        <h2>MultiSelect</h2>
 
                         <MultiSelectField<FormFieldsCommand>
                             value={(c) => c.multiSelect}
@@ -375,7 +375,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Chips</h3>
+                        <h2>Chips</h2>
 
                         <ChipsField<FormFieldsCommand>
                             value={(c) => c.chips}
@@ -389,7 +389,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Slider</h3>
+                        <h2>Slider</h2>
 
                         <SliderField<FormFieldsCommand>
                             value={(c) => c.slider}
@@ -404,7 +404,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Checkbox</h3>
+                        <h2>Checkbox</h2>
 
                         <CheckboxField<FormFieldsCommand>
                             value={(c) => c.checkbox}
@@ -415,7 +415,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Radio Button</h3>
+                        <h2>Radio Button</h2>
 
                         <RadioButtonField<FormFieldsCommand>
                             name='radio-button-options'
@@ -440,7 +440,7 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Radio Group</h3>
+                        <h2>Radio Group</h2>
 
                         <RadioGroupField<FormFieldsCommand>
                             value={(c) => c.radioGroup}

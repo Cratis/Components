@@ -6,7 +6,7 @@ import type { UserConfig as ViteConfig } from 'vite';
 
 const config: StorybookConfig = {
     stories: ['../!(dist|node_modules|storybook-static)/**/*.stories.@(ts|tsx)'],
-    addons: ['@storybook/addon-a11y'],
+    addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-vitest'],
     framework: {
         name: '@storybook/react-vite',
         options: {},

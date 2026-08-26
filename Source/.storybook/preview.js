@@ -40,6 +40,8 @@ addons.getChannel().on('STORYBOOK_THEME_CHANGE', ({ theme }) => {
     if (mode) applyAppearance(mode);
 });
 
+export const tags = ['autodocs'];
+
 export const globalTypes = {
     appearance: {
         name: 'Appearance',

@@ -171,7 +171,16 @@
     display: flex;
     width: 100%;
     align-items: center;
+    gap: 0.5rem;
+}
+
+.pv-filter-toggle {
+    appearance: none;
+    display: flex;
+    flex: 1;
+    align-items: center;
     justify-content: space-between;
+    min-width: 0;
     background: none;
     border: none;
     color: inherit;
@@ -209,6 +218,7 @@
 
 .pv-filter-clear-header {
     appearance: none;
+    flex: 0 0 auto;
     border: none;
     width: 1.5rem;
     height: 1.5rem;
@@ -325,7 +335,7 @@
 .pv-option-count {
     font-feature-settings: 'tnum';
     font-variant-numeric: tabular-nums;
-    color: var(--cratis-text-color-secondary);
+    color: var(--cratis-text-color);
     font-size: 0.75rem;
 }
 
@@ -349,6 +359,7 @@
     flex-direction: column;
     will-change: opacity, transform;
     contain: layout;
+    color: var(--cratis-text-color);
 }
 
 .pv-filter-dropdown-content {
@@ -449,11 +460,16 @@
     box-shadow: 0 4px 12px var(--cratis-primary-color);
 }
 
+.pv-range-handle:focus-visible {
+    outline: 2px solid var(--cratis-primary-color);
+    outline-offset: 3px;
+}
+
 .pv-range-labels {
     display: flex;
     justify-content: space-between;
     font-size: 0.75rem;
-    color: var(--cratis-text-color-secondary);
+    color: var(--cratis-text-color);
     font-variant-numeric: tabular-nums;
 }
 

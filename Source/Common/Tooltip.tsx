@@ -2,14 +2,18 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { cloneElement, type DOMAttributes, type ReactElement } from 'react';
-import { Pressable } from 'react-aria-components/Pressable';
-import { Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components/Tooltip';
+import {
+    Focusable,
+    Tooltip as AriaTooltip,
+    TooltipTrigger,
+} from 'react-aria-components/Tooltip';
 
 /** Position of the tooltip relative to its trigger element. */
 export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left';
 
 interface TooltipTriggerElementProps {
     className?: string;
+    disabled?: boolean;
     'data-cratis-part'?: string;
     'data-cratis-tooltip-trigger'?: string;
 }
@@ -48,9 +52,9 @@ export const Tooltip = ({
 
     return (
         <TooltipTrigger delay={350} closeDelay={100}>
-            <Pressable>
+            <Focusable isDisabled={trigger.props.disabled}>
                 {trigger as unknown as ReactElement<DOMAttributes<HTMLElement>, string>}
-            </Pressable>
+            </Focusable>
             <AriaTooltip
                 placement={position}
                 offset={8}

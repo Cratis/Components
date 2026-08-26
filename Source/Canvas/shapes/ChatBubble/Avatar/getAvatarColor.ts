@@ -1,7 +1,16 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-const AVATAR_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#0ea5e9', '#10b981', '#14b8a6'];
+const AVATAR_COLORS = [
+    '#4f46e5',
+    '#7c3aed',
+    '#be185d',
+    '#be123c',
+    '#c2410c',
+    '#0369a1',
+    '#047857',
+    '#0f766e',
+];
 
 /**
  * Computes a deterministic avatar background color from a stable seed - the person's identifier -

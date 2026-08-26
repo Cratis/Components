@@ -3,11 +3,11 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { ObjectContentEditor } from './ObjectContentEditor';
-import { JsonSchema, Json } from '../types/JsonSchema';
+import type { JsonSchema, Json } from '../types/JsonSchema';
 import { useState } from 'react';
 
 const meta: Meta<typeof ObjectContentEditor> = {
-    title: 'Components/ObjectContentEditor',
+    title: 'ObjectContentEditor/ObjectContentEditor',
     component: ObjectContentEditor,
     tags: ['autodocs'],
     parameters: {

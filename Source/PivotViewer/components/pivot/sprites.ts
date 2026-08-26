@@ -63,13 +63,16 @@ export function createCardSprite<TItem extends object>(
         const offsetY = CARD_GAP / 2;
 
         if (!sprite.titleText || sprite.titleText.destroyed) {
-            sprite.titleText = new PIXI.Text('', {
-                fontSize: 13,
-                fill: cardColors.text as string | number,
-                fontWeight: '600',
-                lineHeight: 18,
-                wordWrap: false,
-            } as PIXI.TextStyle);
+            sprite.titleText = new PIXI.Text({
+                text: '',
+                style: {
+                    fontSize: 13,
+                    fill: cardColors.text,
+                    fontWeight: '600',
+                    lineHeight: 18,
+                    wordWrap: false,
+                },
+            });
             sprite.titleText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING);
             if (sprite.container) {
                 sprite.container.addChild(sprite.titleText);
@@ -77,12 +80,15 @@ export function createCardSprite<TItem extends object>(
         }
 
         if (!sprite.labelsText || sprite.labelsText.destroyed) {
-            sprite.labelsText = new PIXI.Text('', {
-                fontSize: 11,
-                fill: cardColors.textSecondary as string | number,
-                fontWeight: '400',
-                lineHeight: 18,
-            } as PIXI.TextStyle);
+            sprite.labelsText = new PIXI.Text({
+                text: '',
+                style: {
+                    fontSize: 11,
+                    fill: cardColors.textSecondary,
+                    fontWeight: '400',
+                    lineHeight: 18,
+                },
+            });
             sprite.labelsText.position.set(
                 offsetX + CARD_PADDING,
                 offsetY + CARD_PADDING + 40,
@@ -93,13 +99,16 @@ export function createCardSprite<TItem extends object>(
         }
 
         if (!sprite.valuesText || sprite.valuesText.destroyed) {
-            sprite.valuesText = new PIXI.Text('', {
-                fontSize: 11,
-                fill: cardColors.text as string | number,
-                fontWeight: '500',
-                lineHeight: 18,
-                wordWrap: false,
-            } as PIXI.TextStyle);
+            sprite.valuesText = new PIXI.Text({
+                text: '',
+                style: {
+                    fontSize: 11,
+                    fill: cardColors.text,
+                    fontWeight: '500',
+                    lineHeight: 18,
+                    wordWrap: false,
+                },
+            });
             sprite.valuesText.position.set(
                 offsetX + CARD_PADDING + 65,
                 offsetY + CARD_PADDING + 40,
@@ -177,41 +186,56 @@ export function createCardSprite<TItem extends object>(
     const offsetX = CARD_GAP / 2;
     const offsetY = CARD_GAP / 2;
 
-    const gradient = new PIXI.FillGradient(0, offsetY, 0, offsetY + actualHeight);
-    gradient.addColorStop(0, cardColors.mid);
-    gradient.addColorStop(1, cardColors.base);
+    const gradient = new PIXI.FillGradient({
+        type: 'linear',
+        start: { x: 0, y: offsetY },
+        end: { x: 0, y: offsetY + actualHeight },
+        colorStops: [
+            { offset: 0, color: cardColors.mid },
+            { offset: 1, color: cardColors.base },
+        ],
+    });
 
     graphics.roundRect(offsetX, offsetY, actualWidth, actualHeight, CARD_RADIUS);
     graphics.fill(gradient);
 
     container.addChild(graphics);
 
-    const titleText = new PIXI.Text('', {
-        fontSize: 13,
-        fill: cardColors.text as string | number,
-        fontWeight: '600',
-        lineHeight: 18,
-        wordWrap: false,
-    } as PIXI.TextStyle);
+    const titleText = new PIXI.Text({
+        text: '',
+        style: {
+            fontSize: 13,
+            fill: cardColors.text,
+            fontWeight: '600',
+            lineHeight: 18,
+            wordWrap: false,
+        },
+    });
     titleText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING);
     container.addChild(titleText);
 
-    const labelsText = new PIXI.Text('', {
-        fontSize: 11,
-        fill: cardColors.textSecondary as string | number,
-        fontWeight: '400',
-        lineHeight: 18,
-    } as PIXI.TextStyle);
+    const labelsText = new PIXI.Text({
+        text: '',
+        style: {
+            fontSize: 11,
+            fill: cardColors.textSecondary,
+            fontWeight: '400',
+            lineHeight: 18,
+        },
+    });
     labelsText.position.set(offsetX + CARD_PADDING, offsetY + CARD_PADDING + 40);
     container.addChild(labelsText);
 
-    const valuesText = new PIXI.Text('', {
-        fontSize: 11,
-        fill: cardColors.text as string | number,
-        fontWeight: '500',
-        lineHeight: 18,
-        wordWrap: false,
-    } as PIXI.TextStyle);
+    const valuesText = new PIXI.Text({
+        text: '',
+        style: {
+            fontSize: 11,
+            fill: cardColors.text,
+            fontWeight: '500',
+            lineHeight: 18,
+            wordWrap: false,
+        },
+    });
     valuesText.position.set(offsetX + CARD_PADDING + 65, offsetY + CARD_PADDING + 40);
     container.addChild(valuesText);
 
@@ -373,14 +397,20 @@ export function updateCardContent<TItem extends object>(
     const offsetX = CARD_GAP / 2;
     const offsetY = CARD_GAP / 2;
 
-    const gradient = new PIXI.FillGradient(0, offsetY, 0, offsetY + actualHeight);
-    if (isSelected) {
-        gradient.addColorStop(0, colors.gradient);
-        gradient.addColorStop(1, colors.mid);
-    } else {
-        gradient.addColorStop(0, colors.mid);
-        gradient.addColorStop(1, colors.base);
-    }
+    const gradient = new PIXI.FillGradient({
+        type: 'linear',
+        start: { x: 0, y: offsetY },
+        end: { x: 0, y: offsetY + actualHeight },
+        colorStops: isSelected
+            ? [
+                  { offset: 0, color: colors.gradient },
+                  { offset: 1, color: colors.mid },
+              ]
+            : [
+                  { offset: 0, color: colors.mid },
+                  { offset: 1, color: colors.base },
+              ],
+    });
 
     sprite.graphics.roundRect(offsetX, offsetY, actualWidth, actualHeight, CARD_RADIUS);
 

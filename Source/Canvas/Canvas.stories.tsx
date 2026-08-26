@@ -18,7 +18,7 @@ export default meta;
 
 type Story = StoryObj<typeof Canvas>;
 
-const BOX_COLORS = ['#60a5fa', '#f472b6', '#34d399', '#fbbf24', '#a78bfa'];
+const BOX_COLORS = ['#2563eb', '#be185d', '#047857', '#b45309', '#6d28d9'];
 
 interface DragState {
     clientX: number;
@@ -124,6 +124,24 @@ export const DeclarativeChildren: Story = {
  * panning around — and the minimap's own click/drag-to-pan — are actually meaningful. Open the minimap
  * from the controls pill (bottom-left) to jump around the board.
  */
+export const LocalizedControls: Story = {
+    render: () => (
+        <div style={{ width: '100vw', height: '100vh' }}>
+            <Canvas
+                showControls
+                showMinimap
+                controlsLabels={{
+                    toggleMinimap: 'Vis eller skjul minikart',
+                    zoomOut: 'Zoom ut',
+                    resetZoom: 'Tilbakestill zoom',
+                    zoomIn: 'Zoom inn',
+                    help: 'Hjelp',
+                }}
+            />
+        </div>
+    ),
+};
+
 export const WithControlsAndMinimap: Story = {
     render: () => {
         const WithControlsAndMinimapDemo = () => {

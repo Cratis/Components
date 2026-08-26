@@ -17,6 +17,10 @@ import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
 import { ToolbarFolderContext } from './ToolbarFolderContext';
+import {
+    ToolbarItemVisibilityProvider,
+    useToolbarItemVisibility,
+} from './ToolbarItemVisibilityContext';
 import type { ToolbarFolderMode } from './ToolbarFolderContext';
 
 /** Stable part attributes for {@link ToolbarFolder}. */
@@ -85,6 +89,7 @@ export const ToolbarFolder = ({
     children,
 }: ToolbarFolderProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const isToolbarItemVisible = useToolbarItemVisibility();
     const containerRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const generatedPanelId = useId();
@@ -126,15 +131,16 @@ export const ToolbarFolder = ({
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key !== 'Escape') return;
             event.preventDefault();
+            event.stopPropagation();
             setIsExpanded(false);
-            triggerRef.current?.focus();
+            window.setTimeout(() => triggerRef.current?.focus(), 0);
         };
 
         document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('keydown', handleEscape);
+        document.addEventListener('keydown', handleEscape, true);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('keydown', handleEscape, true);
         };
     }, [isExpanded]);
 
@@ -151,7 +157,11 @@ export const ToolbarFolder = ({
                 data-cratis-part='toolbar-folder'
                 ref={containerRef}
             >
-                <Tooltip content={title} position={tooltipPosition} disabled={isExpanded}>
+                <Tooltip
+                    content={title}
+                    position={tooltipPosition}
+                    disabled={isExpanded || !isToolbarItemVisible}
+                >
                     <button
                         {...pt?.trigger}
                         ref={triggerRef}
@@ -187,7 +197,11 @@ export const ToolbarFolder = ({
                     aria-hidden={!isExpanded}
                     inert={!isExpanded}
                 >
-                    {items}
+                    <ToolbarItemVisibilityProvider
+                        value={isExpanded && isToolbarItemVisible}
+                    >
+                        {items}
+                    </ToolbarItemVisibilityProvider>
                 </div>
             </div>
         </ToolbarFolderContext.Provider>

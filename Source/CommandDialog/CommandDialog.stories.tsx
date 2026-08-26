@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState } from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { CommandDialog } from './CommandDialog';
 import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
@@ -10,6 +10,7 @@ import { InputTextField, NumberField, TextAreaField } from '../CommandForm/field
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
 import { DialogInitialFocus } from '../Dialogs/DialogInitialFocus';
 import '@cratis/arc/validation';
+import { expect, userEvent, within } from 'storybook/test';
 
 const meta: Meta<typeof CommandDialog> = {
     title: 'CommandDialog/CommandDialog',
@@ -18,6 +19,15 @@ const meta: Meta<typeof CommandDialog> = {
 
 export default meta;
 type Story = StoryObj<typeof CommandDialog>;
+
+const openCommandDialog = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    const dialog = within(document.body).queryByRole('dialog');
+    if (!dialog) {
+        await userEvent.click(canvas.getAllByRole('button')[0]);
+    }
+    await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
+};
 
 class UpdateUserCommandValidator extends CommandValidator {
     constructor() {
@@ -130,6 +140,7 @@ class UpdateUserCommandWithServer extends Command<object> {
 }
 
 export const Default: Story = {
+    play: openCommandDialog,
     render: () => {
         const [result, setResult] = useState<string>('');
 
@@ -179,6 +190,7 @@ export const Default: Story = {
 };
 
 export const WithServerValidation: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
@@ -224,10 +236,12 @@ export const WithServerValidation: Story = {
                     onCancel={() => setVisible(false)}
                     onFieldChange={async (command) => {
                         const validationResult = await command.validate();
-                        if (!validationResult.isValid) {
-                            setValidationErrors(validationResult.validationResults.map(v => v.message));
-                        } else {
+                        if (validationResult.isValid) {
                             setValidationErrors([]);
+                        } else {
+                            setValidationErrors(
+                                validationResult.validationResults.map((v) => v.message),
+                            );
                         }
                     }}
                 >
@@ -241,6 +255,7 @@ export const WithServerValidation: Story = {
 };
 
 export const WithInitialValues: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(false);
         const [selectedUser, setSelectedUser] = useState<{ name: string; email: string; age: number } | undefined>(undefined);
@@ -297,6 +312,7 @@ export const WithInitialValues: Story = {
 };
 
 export const WithCustomValidation: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
@@ -357,6 +373,7 @@ export const WithCustomValidation: Story = {
 };
 
 export const ValidationOnBlur: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -386,6 +403,7 @@ export const ValidationOnBlur: Story = {
 };
 
 export const ValidationOnChange: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -415,6 +433,7 @@ export const ValidationOnChange: Story = {
 };
 
 export const ValidateOnInit: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -445,6 +464,7 @@ export const ValidateOnInit: Story = {
 };
 
 export const ValidateAllFieldsOnChange: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -475,6 +495,7 @@ export const ValidateAllFieldsOnChange: Story = {
 };
 
 export const BeforeExecute: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [preprocessedData, setPreprocessedData] = useState<string>('');
@@ -519,6 +540,7 @@ export const BeforeExecute: Story = {
 };
 
 export const WithIcons: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -612,6 +634,7 @@ class UpdateProfileCommand extends Command<object> {
 }
 
 export const MultiColumnLayout: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -649,6 +672,7 @@ export const MultiColumnLayout: Story = {
 };
 
 export const MixedChildren: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -684,6 +708,7 @@ export const MixedChildren: Story = {
 };
 
 export const WithBusyState: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
@@ -727,6 +752,7 @@ export const WithBusyState: Story = {
 
 /** Demonstrates typed response handling with success and failure callbacks. */
 export const WithResponseTypeAndCallbacks: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
@@ -842,6 +868,7 @@ export const WithResponseTypeAndCallbacks: Story = {
  * close (X), `Escape`, or the confirm wiring that runs the command.
  */
 export const DestructiveCommandFocusesDismiss: Story = {
+    play: openCommandDialog,
     render: () => {
         const [result, setResult] = useState<string>('');
 

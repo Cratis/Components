@@ -13,6 +13,7 @@ import {
     useDialogContext,
 } from '@cratis/arc.react/dialogs';
 import { Button } from '../Common/Button';
+import { expect, userEvent, within } from 'storybook/test';
 
 const meta: Meta<typeof Dialog> = {
     title: 'Dialogs/Dialog',
@@ -65,7 +66,14 @@ const DialogWrapper = ({
     );
 };
 
+const openDialog = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: /open/i }));
+    await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
+};
+
 export const OkCancel: Story = {
+    play: openDialog,
     render: () => (
         <DialogWrapper title='Confirm Action' buttons={DialogButtons.OkCancel}>
             <p>Are you sure you want to perform this action?</p>
@@ -74,6 +82,7 @@ export const OkCancel: Story = {
 };
 
 export const YesNo: Story = {
+    play: openDialog,
     render: () => (
         <DialogWrapper title='Delete Item' buttons={DialogButtons.YesNo}>
             <p>Do you want to delete this item? This cannot be undone.</p>
@@ -82,6 +91,7 @@ export const YesNo: Story = {
 };
 
 export const YesNoCancel: Story = {
+    play: openDialog,
     render: () => (
         <DialogWrapper title='Save Changes' buttons={DialogButtons.YesNoCancel}>
             <p>You have unsaved changes. Do you want to save them before closing?</p>
@@ -90,6 +100,7 @@ export const YesNoCancel: Story = {
 };
 
 export const Ok: Story = {
+    play: openDialog,
     render: () => (
         <DialogWrapper title='Information' buttons={DialogButtons.Ok}>
             <p>The operation completed successfully.</p>
@@ -104,6 +115,7 @@ export const Ok: Story = {
  * on the trigger button to see the difference against the stories above.
  */
 export const DestructiveFocusesDismiss: Story = {
+    play: openDialog,
     render: () => (
         <DialogWrapper
             title='Delete personal data?'
@@ -124,6 +136,7 @@ export const DestructiveFocusesDismiss: Story = {
  * content. Use it when the dialog should be read before it is answered.
  */
 export const DestructiveArmsNothing: Story = {
+    play: openDialog,
     render: () => (
         <DialogWrapper
             title='Delete personal data?'
@@ -139,6 +152,7 @@ export const DestructiveArmsNothing: Story = {
 };
 
 export const WithForm: Story = {
+    play: openDialog,
     render: () => {
         type NameResult = { name: string };
 
@@ -197,6 +211,7 @@ export const WithForm: Story = {
 };
 
 export const IsBusy: Story = {
+    play: openDialog,
     render: () => {
         const [busy, setBusy] = useState(false);
 
@@ -237,6 +252,7 @@ export const IsBusy: Story = {
 };
 
 export const CustomButtons: Story = {
+    play: openDialog,
     render: () => {
         type ActionResult = { action: 'draft' | 'publish' };
 

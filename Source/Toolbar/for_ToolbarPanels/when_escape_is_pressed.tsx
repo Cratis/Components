@@ -53,7 +53,10 @@ describe('when Escape is pressed in an expanded Toolbar panel', () => {
         nested.focus();
 
         await act(async () => {
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            nested.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+            );
+            await new Promise((resolve) => window.setTimeout(resolve, 0));
         });
 
         expect(panel.hasAttribute('inert')).to.equal(true);
@@ -63,7 +66,11 @@ describe('when Escape is pressed in an expanded Toolbar panel', () => {
     it('should_close_a_folder_and_restore_trigger_focus', async () => {
         await verifyEscape(
             <ToolbarFolder icon={icon} title='Tools'>
-                <ToolbarButton icon={icon} title='Nested tool' />
+                <ToolbarButton
+                    icon={icon}
+                    title='Nested tool'
+                    pt={{ root: { onKeyDown: (event) => event.stopPropagation() } }}
+                />
             </ToolbarFolder>,
             'toolbar-folder-trigger',
             'toolbar-folder-panel',
@@ -73,7 +80,11 @@ describe('when Escape is pressed in an expanded Toolbar panel', () => {
     it('should_close_a_fanout_and_restore_trigger_focus', async () => {
         await verifyEscape(
             <ToolbarFanOutItem icon={icon} tooltip='Shapes'>
-                <ToolbarButton icon={icon} title='Nested shape' />
+                <ToolbarButton
+                    icon={icon}
+                    title='Nested shape'
+                    pt={{ root: { onKeyDown: (event) => event.stopPropagation() } }}
+                />
             </ToolbarFanOutItem>,
             'fanout-trigger',
             'fanout-panel',

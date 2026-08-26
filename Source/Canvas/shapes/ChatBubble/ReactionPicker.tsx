@@ -112,24 +112,26 @@ export const ReactionPicker = ({
 
     return (
         <div ref={rootRef} className='reaction-picker'>
-            <div
-                className='reaction-picker__quick'
-                role='listbox'
-                aria-label={labels?.pickEmoji ?? 'Pick an emoji'}
-            >
-                {quickEmojis.map((emoji) => (
-                    <button
-                        key={emoji}
-                        type='button'
-                        role='option'
-                        aria-selected={emoji === ownEmoji}
-                        className={`reaction-picker__item${emoji === ownEmoji ? ' reaction-picker__item--selected' : ''}`}
-                        onMouseDown={(event) => event.preventDefault()}
-                        onClick={() => pick(emoji)}
-                    >
-                        {emoji}
-                    </button>
-                ))}
+            <div className='reaction-picker__quick'>
+                <div
+                    role='listbox'
+                    aria-label={labels?.pickEmoji ?? 'Pick an emoji'}
+                    className='reaction-picker__options'
+                >
+                    {quickEmojis.map((emoji) => (
+                        <button
+                            key={emoji}
+                            type='button'
+                            role='option'
+                            aria-selected={emoji === ownEmoji}
+                            className={`reaction-picker__item${emoji === ownEmoji ? ' reaction-picker__item--selected' : ''}`}
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => pick(emoji)}
+                        >
+                            {emoji}
+                        </button>
+                    ))}
+                </div>
                 <button
                     type='button'
                     className={`reaction-picker__more${showingAll ? ' reaction-picker__more--open' : ''}`}

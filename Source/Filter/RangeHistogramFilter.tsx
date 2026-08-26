@@ -41,6 +41,10 @@ export interface RangeHistogramFilterProps {
     formatValue?: (value: number) => string;
     /** Unit shown after a histogram bar count. Override to localize. Defaults to `'items'`. */
     itemsLabel?: string;
+    /** Accessible name for the lower-bound slider. Defaults to `'Minimum value'`. */
+    minimumAriaLabel?: string;
+    /** Accessible name for the upper-bound slider. Defaults to `'Maximum value'`. */
+    maximumAriaLabel?: string;
 }
 
 const defaultFormatValue = (value: number) => {
@@ -85,6 +89,8 @@ export function RangeHistogramFilter({
     onChange,
     formatValue = defaultFormatValue,
     itemsLabel = 'items',
+    minimumAriaLabel = 'Minimum value',
+    maximumAriaLabel = 'Maximum value',
 }: RangeHistogramFilterProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState<'left' | 'right' | 'range' | null>(null);
@@ -188,6 +194,43 @@ export function RangeHistogramFilter({
         onChange([bucket.start, bucket.end]);
     };
 
+    const rangeSpan = max - min;
+    const minimumGap = rangeSpan * 0.01;
+    const keyboardStep = rangeSpan / Math.max(1, buckets);
+
+    const handleHandleKeyDown = (
+        event: React.KeyboardEvent<HTMLDivElement>,
+        handle: 'left' | 'right',
+    ) => {
+        if (keyboardStep <= 0) return;
+
+        let next: number | undefined;
+        const current = handle === 'left' ? currentRange[0] : currentRange[1];
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+            next = current - keyboardStep;
+        } else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+            next = current + keyboardStep;
+        } else if (event.key === 'Home') {
+            next = handle === 'left' ? min : currentRange[0] + minimumGap;
+        } else if (event.key === 'End') {
+            next = handle === 'left' ? currentRange[1] - minimumGap : max;
+        } else return;
+
+        event.preventDefault();
+        const rounded = Number(next.toFixed(10));
+        if (handle === 'left') {
+            onChange([
+                Math.max(min, Math.min(rounded, currentRange[1] - minimumGap)),
+                currentRange[1],
+            ]);
+        } else {
+            onChange([
+                currentRange[0],
+                Math.min(max, Math.max(rounded, currentRange[0] + minimumGap)),
+            ]);
+        }
+    };
+
     const leftPos = getPositionFromValue(currentRange[0]);
     const rightPos = getPositionFromValue(currentRange[1]);
 
@@ -227,12 +270,28 @@ export function RangeHistogramFilter({
                 <div
                     className='pv-range-handle pv-range-handle-left'
                     style={{ left: `${leftPos}%` }}
+                    role='slider'
+                    tabIndex={0}
+                    aria-label={minimumAriaLabel}
+                    aria-valuemin={min}
+                    aria-valuemax={currentRange[1] - minimumGap}
+                    aria-valuenow={currentRange[0]}
+                    aria-valuetext={formatValue(currentRange[0])}
                     onMouseDown={(e) => handleMouseDown(e, 'left')}
+                    onKeyDown={(event) => handleHandleKeyDown(event, 'left')}
                 />
                 <div
                     className='pv-range-handle pv-range-handle-right'
                     style={{ left: `${rightPos}%` }}
+                    role='slider'
+                    tabIndex={0}
+                    aria-label={maximumAriaLabel}
+                    aria-valuemin={currentRange[0] + minimumGap}
+                    aria-valuemax={max}
+                    aria-valuenow={currentRange[1]}
+                    aria-valuetext={formatValue(currentRange[1])}
                     onMouseDown={(e) => handleMouseDown(e, 'right')}
+                    onKeyDown={(event) => handleHandleKeyDown(event, 'right')}
                 />
             </div>
 

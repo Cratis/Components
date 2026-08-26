@@ -111,4 +111,13 @@ describe('when the FilterPanel clear buttons are localized', () => {
             expect(button.title).not.to.equal('Clear range');
         }
     });
+
+    it('should keep each clear action outside the expand button', () => {
+        const headers = document.querySelectorAll('.pv-filter-trigger');
+        expect(headers).to.have.length(3);
+        for (const header of headers) {
+            expect(header.tagName).to.equal('DIV');
+            expect(header.querySelector('button button')).to.equal(null);
+        }
+    });
 });

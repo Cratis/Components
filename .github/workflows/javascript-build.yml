@@ -95,6 +95,17 @@ jobs:
             - name: Build Storybook
               run: yarn workspace @cratis/components build-storybook
 
+            - name: Verify Storybook stories and autodocs
+              working-directory: Source
+              run: yarn verify-storybook-index
+
+            - name: Install Storybook browser
+              run: yarn playwright install --with-deps chromium
+
+            - name: Test every Storybook story
+              working-directory: Source
+              run: yarn test-storybook
+
     # Builds the artifact that actually ships to npm (the `prepare` script: tsc -b +
     # rollup + copy-css) and loads every subpath of the `exports` map from it.
     #

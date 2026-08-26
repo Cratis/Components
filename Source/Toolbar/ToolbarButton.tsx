@@ -11,6 +11,7 @@ import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
 import { useToolbarDragContext } from './ToolbarDragContext';
 import { useToolbarFolderMode } from './ToolbarFolderContext';
+import { useToolbarItemVisibility } from './ToolbarItemVisibilityContext';
 
 /** Stable part attributes for {@link ToolbarButton}. */
 export interface ToolbarButtonParts {
@@ -87,6 +88,7 @@ export const ToolbarButton = ({
 }: ToolbarButtonProps) => {
     const dragContext = useToolbarDragContext();
     const folderMode = useToolbarFolderMode();
+    const isToolbarItemVisible = useToolbarItemVisibility();
     const isListMode = folderMode === 'list';
     const isDraggable = draggable ?? dragContext.draggable;
 
@@ -159,7 +161,11 @@ export const ToolbarButton = ({
     );
 
     return (
-        <Tooltip content={title} position={tooltipPosition}>
+        <Tooltip
+            content={title}
+            position={tooltipPosition}
+            disabled={!isToolbarItemVisible}
+        >
             <button
                 {...pt?.root}
                 type='button'

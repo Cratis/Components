@@ -8,6 +8,7 @@ import { Column } from './Column';
 import { Tag, type TagSeverity } from '../Display/Tag';
 import { ObservableQueryFor, QueryResult, ObservableQuerySubscription } from '@cratis/arc/queries';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
+import { expect, within } from 'storybook/test';
 
 const meta: Meta<typeof DataTableForObservableQuery> = {
     title: 'DataTables/DataTableForObservableQuery',
@@ -64,6 +65,49 @@ class TasksQuery extends ObservableQueryFor<Task, object> {
     }
 }
 
+class LiveTasksQuery extends TasksQuery {
+    override subscribe(
+        callback: (result: QueryResult<Task>) => void,
+    ): ObservableQuerySubscription<Task> {
+        const publish = (data: Task[]) =>
+            callback({
+                data,
+                paging: {
+                    totalItems: data.length,
+                    totalPages: 1,
+                    page: 0,
+                    size: data.length,
+                },
+                isSuccess: true,
+                isAuthorized: true,
+                isValid: true,
+                hasExceptions: false,
+                validationResults: [],
+                exceptionMessages: [],
+                exceptionStackTrace: '',
+            } as unknown as QueryResult<Task>);
+
+        publish(mockTasks);
+        const timer = setTimeout(
+            () =>
+                publish([
+                    ...mockTasks,
+                    {
+                        id: 9,
+                        title: 'Live update received',
+                        status: 'todo',
+                        priority: 'high',
+                        assignee: 'Dana',
+                    },
+                ]),
+            250,
+        );
+        return {
+            unsubscribe: () => clearTimeout(timer),
+        } as unknown as ObservableQuerySubscription<Task>;
+    }
+}
+
 // Status/priority render as theme-aware Tags with a severity, which stay
 // WCAG-legible on both light and dark surfaces (unlike fixed text colors).
 const getStatusSeverity = (status: string): TagSeverity => {
@@ -114,6 +158,28 @@ export const Default: Story = {
             </DataTableForObservableQuery>
         </div>
     )
+};
+
+export const LiveUpdate: Story = {
+    render: () => (
+        <div className='cratis:p-4'>
+            <p>The query pushes a ninth row after mount.</p>
+            <DataTableForObservableQuery<LiveTasksQuery, Task, object>
+                query={LiveTasksQuery}
+                emptyMessage='No tasks found'
+                dataKey='id'
+            >
+                <Column field='id' header='ID' />
+                <Column field='title' header='Task Title' />
+                <Column field='status' header='Status' />
+            </DataTableForObservableQuery>
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        await expect(
+            await within(canvasElement).findByText('Live update received'),
+        ).toBeTruthy();
+    },
 };
 
 export const WithSelection: Story = {

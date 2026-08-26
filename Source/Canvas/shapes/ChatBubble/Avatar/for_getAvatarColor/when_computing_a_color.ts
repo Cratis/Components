@@ -17,7 +17,16 @@ describe('when computing colors for different initials', () => {
 
 describe('when computing a color', () => {
     it('should return a value from the predefined palette', () => {
-        const palette = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#0ea5e9', '#10b981', '#14b8a6'];
+        const palette = [
+            '#4f46e5',
+            '#7c3aed',
+            '#be185d',
+            '#be123c',
+            '#c2410c',
+            '#0369a1',
+            '#047857',
+            '#0f766e',
+        ];
         palette.should.contain(getAvatarColor('AB'));
     });
 });

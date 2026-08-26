@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useMemo, useState, type DragEvent } from 'react';
 import type { IconType } from 'react-icons';
 import {
@@ -69,7 +70,7 @@ import { ToolbarSlot, ToolbarSlotProvider } from './ToolbarSlot';
 import { ToolbarLayout } from './ToolbarLayout';
 
 const meta: Meta<typeof Toolbar> = {
-    title: 'Components/Toolbar',
+    title: 'Toolbar/Toolbar',
     component: Toolbar,
     parameters: {
         layout: 'centered',
@@ -79,6 +80,31 @@ const meta: Meta<typeof Toolbar> = {
 export default meta;
 
 type Story = StoryObj<typeof Toolbar>;
+
+const exerciseToolbarOverlay = async (
+    canvasElement: HTMLElement,
+    triggerName: string,
+    itemName: string,
+    triggerIndex = 0,
+) => {
+    const canvas = within(canvasElement);
+    const findTrigger = () =>
+        canvas
+            .getAllByRole('button', { name: triggerName })
+            .filter((button) => button.hasAttribute('aria-expanded'))[triggerIndex];
+    const trigger = findTrigger();
+    if (!trigger) throw new Error(`Could not find the ${triggerName} toolbar trigger.`);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(trigger);
+    await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'true'));
+    const item = await canvas.findByRole('button', { name: itemName });
+    await userEvent.click(item);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'false'));
+    await waitFor(() => expect(findTrigger()).toHaveFocus());
+    await userEvent.click(findTrigger());
+    await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'true'));
+};
 
 const toolIcons: Record<string, IconType> = {
     'align-center': FaAlignCenter,
@@ -168,6 +194,8 @@ const folderIcons: string[] = [
  * Consumer-owned icon-font class strings remain supported, while React nodes work without extra CSS.
  */
 export const WithReactNodeIcons: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'More shapes', 'Triangle'),
     render: () => {
         const CircleIcon = () => (
             <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='currentColor' aria-hidden='true'>
@@ -380,6 +408,7 @@ export const ZoomBar: Story = {
  * Click the button again or anywhere outside the panel to collapse it.
  */
 export const WithFanOut: Story = {
+    play: ({ canvasElement }) => exerciseToolbarOverlay(canvasElement, 'Shapes', 'Info'),
     render: () => {
         const WithFanOutDemo = () => {
             const [activeTool, setActiveTool] = useState<string>('select');
@@ -430,6 +459,7 @@ export const WithFanOut: Story = {
 
 /** Demonstrates a {@link ToolbarFanOutItem} that fans out downwards. */
 export const WithFanOutDown: Story = {
+    play: ({ canvasElement }) => exerciseToolbarOverlay(canvasElement, 'Shapes', 'Info'),
     render: () => (
         <Toolbar orientation='horizontal'>
             <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' tooltipPosition='bottom' />
@@ -450,6 +480,8 @@ export const WithFanOutDown: Story = {
 
 /** Demonstrates a folder with a single nested button. */
 export const WithFolderOneButton: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Folder (1 item)', 'Action 1'),
     render: () => (
         <Toolbar>
             <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
@@ -463,6 +495,8 @@ export const WithFolderOneButton: Story = {
 
 /** Demonstrates a folder with four nested buttons in a balanced 2x2 grid. */
 export const WithFolderFourButtons: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Folder (4 items)', 'Action 2'),
     render: () => (
         <Toolbar>
             <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
@@ -478,6 +512,8 @@ export const WithFolderFourButtons: Story = {
 
 /** Demonstrates a folder with twenty nested buttons and dynamic multi-row sizing. */
 export const WithFolderTwentyButtons: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Folder (20 items)', 'Action 20'),
     render: () => (
         <Toolbar>
             <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
@@ -590,6 +626,8 @@ export const WithGroups: Story = {
  * adds important context.
  */
 export const WithFolderListMode: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Tools', 'Draw freehand'),
     render: () => (
         <Toolbar>
             <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
@@ -608,6 +646,10 @@ export const WithFolderListMode: Story = {
  * Side-by-side comparison of grid mode (default) and list mode for {@link ToolbarFolder}.
  */
 export const FolderGridVsList: Story = {
+    play: async ({ canvasElement }) => {
+        await exerciseToolbarOverlay(canvasElement, 'Tools', 'Draw', 0);
+        await exerciseToolbarOverlay(canvasElement, 'Tools', 'Draw freehand', 1);
+    },
     render: () => (
         <div className='cratis:flex cratis:gap-8 cratis:items-start'>
             <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>

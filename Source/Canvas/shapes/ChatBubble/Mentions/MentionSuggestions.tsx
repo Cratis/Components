@@ -22,6 +22,9 @@ export interface MentionSuggestionsProps {
     /** Invoked when the pointer moves onto a candidate, so hover and keyboard stay in step. */
     onHighlight: (index: number) => void;
 
+    /** Accessible name for the suggestion list. Defaults to `'Mention suggestions'`. */
+    'aria-label'?: string;
+
     /** Builds the avatar image URL. Omit to always show initials — see {@link PersonAvatarCircleProps}. */
     buildAvatarUrl?: (params: BuildAvatarUrlParams) => string;
 }
@@ -36,8 +39,9 @@ export const MentionSuggestions = ({
     onSelect,
     onHighlight,
     buildAvatarUrl,
+    'aria-label': ariaLabel = 'Mention suggestions',
 }: MentionSuggestionsProps) => (
-    <div className='mention-suggestions' role='listbox'>
+    <div className='mention-suggestions' role='listbox' aria-label={ariaLabel}>
         {candidates.map((candidate, index) => (
             <button
                 key={candidate.id}

@@ -19,8 +19,9 @@ const people: Person[] = [
 ];
 
 const meta = {
-    title: 'DataTables/DataTableCore visual parity',
+    title: 'DataTables/DataTableCore',
     component: DataTableCore,
+    args: { data: [], emptyMessage: 'No people' },
     parameters: { layout: 'padded' },
     tags: ['autodocs'],
 } satisfies Meta<typeof DataTableCore>;
@@ -37,7 +38,7 @@ const LocalTable = () => {
             emptyMessage='No people'
             selectionMode='single'
             selection={selection}
-            onSelectionChange={(event) => setSelection(event.value)}
+            onSelectionChange={(event) => setSelection(event.value ?? undefined)}
             globalFilterFields={['name', 'role']}
             globalSearchPlaceholder='Search people'
             globalSearchAriaLabel='Search people'

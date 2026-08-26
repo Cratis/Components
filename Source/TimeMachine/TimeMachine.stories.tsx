@@ -140,6 +140,28 @@ export const StartAtLatestVersion: Story = {
     )
 };
 
+export const LocalizedLabels: Story = {
+    args: {
+        versions: sampleVersions,
+        currentVersionIndex: 1,
+        labels: {
+            readModelView: 'Lesemodell',
+            eventsView: 'Hendelser',
+            previousVersion: 'Forrige versjon',
+            nextVersion: 'Neste versjon',
+            showRelatedEvents: 'Vis relaterte hendelser',
+            showReadModelSnapshot: 'Vis lesemodell',
+            scrollToTop: 'Rull til toppen',
+            scrollToBottom: 'Rull til bunnen',
+        },
+    },
+    render: (args) => (
+        <div style={{ height: '100vh', width: '100vw' }}>
+            <TimeMachine {...args} />
+        </div>
+    ),
+};
+
 export const HighScrollSensitivity: Story = {
     args: {
         versions: sampleVersions,

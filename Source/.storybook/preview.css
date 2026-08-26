@@ -53,6 +53,9 @@ body.storybook-product-theme {
 
 html,
 body {
+    /* Arc's current command-form validation message uses this upstream token. Map it to
+       the Components semantic error color so integrated command stories remain legible. */
+    --color-error: var(--cratis-red-500);
     min-height: 100vh;
     margin: 0;
     color: var(--cratis-text-color);

@@ -15,6 +15,10 @@ import { IconDisplay } from '../Common/Icon';
 import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
+import {
+    ToolbarItemVisibilityProvider,
+    useToolbarItemVisibility,
+} from './ToolbarItemVisibilityContext';
 
 /** Stable part attributes for {@link ToolbarFanOutItem}. */
 export interface ToolbarFanOutParts {
@@ -71,6 +75,7 @@ export const ToolbarFanOutItem = ({
 }: ToolbarFanOutItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isSettled, setIsSettled] = useState(false);
+    const isToolbarItemVisible = useToolbarItemVisibility();
     const containerRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
@@ -129,15 +134,16 @@ export const ToolbarFanOutItem = ({
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key !== 'Escape') return;
             event.preventDefault();
+            event.stopPropagation();
             collapse();
-            triggerRef.current?.focus();
+            window.setTimeout(() => triggerRef.current?.focus(), 0);
         };
 
         document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('keydown', handleEscape);
+        document.addEventListener('keydown', handleEscape, true);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
-            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('keydown', handleEscape, true);
         };
     }, [isExpanded, collapse]);
 
@@ -154,7 +160,11 @@ export const ToolbarFanOutItem = ({
             data-cratis-part='fanout-root'
             ref={containerRef}
         >
-            <Tooltip content={tooltip} position={tooltipPosition} disabled={isExpanded}>
+            <Tooltip
+                content={tooltip}
+                position={tooltipPosition}
+                disabled={isExpanded || !isToolbarItemVisible}
+            >
                 <button
                     {...pt?.trigger}
                     ref={triggerRef}
@@ -184,7 +194,9 @@ export const ToolbarFanOutItem = ({
                 inert={!isExpanded}
                 onTransitionEnd={handleTransitionEnd}
             >
-                {children}
+                <ToolbarItemVisibilityProvider value={isExpanded && isToolbarItemVisible}>
+                    {children}
+                </ToolbarItemVisibilityProvider>
             </div>
         </div>
     );

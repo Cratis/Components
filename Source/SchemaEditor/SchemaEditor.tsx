@@ -38,6 +38,12 @@ export interface SchemaEditorLabels {
     navigateToItemDefinition: string;
     /** Accessible name for the "drill into object properties" button. */
     navigateToProperties: string;
+    /** Accessible name for a property-name input. */
+    propertyName: string;
+    /** Accessible name for a property-type selector. */
+    propertyType: string;
+    /** Accessible name for an array item-type selector. */
+    arrayItemType: string;
     /** Accessible name for the "remove property" button. */
     deleteProperty: string;
 }
@@ -53,6 +59,9 @@ export const defaultSchemaEditorLabels: SchemaEditorLabels = {
     emptyMessage: 'No properties defined',
     navigateToItemDefinition: 'Navigate to item definition',
     navigateToProperties: 'Navigate to object properties',
+    propertyName: 'Property name',
+    propertyType: 'Property type',
+    arrayItemType: 'Array item type',
     deleteProperty: 'Delete property',
 };
 
@@ -445,10 +454,13 @@ export const SchemaEditor = ({
                                             content={canNotEditReason}
                                             position='bottom'
                                         >
-                                            <span
-                                                tabIndex={0}
-                                                role='note'
+                                            <button
+                                                type='button'
+                                                aria-disabled='true'
                                                 style={{
+                                                    border: 0,
+                                                    background: 'transparent',
+                                                    color: 'inherit',
                                                     cursor: 'not-allowed',
                                                     opacity: 0.6,
                                                     display: 'inline-flex',
@@ -458,7 +470,7 @@ export const SchemaEditor = ({
                                             >
                                                 {item.icon}
                                                 <span>{item.label}</span>
-                                            </span>
+                                            </button>
                                         </Tooltip>
                                     )
                                   : undefined,
@@ -641,6 +653,7 @@ export const SchemaEditor = ({
                                 isEditMode={isEditMode}
                                 onUpdate={updateProperty}
                                 validationError={validationErrors[rowData.id!]}
+                                propertyNameLabel={l.propertyName}
                             />
                         )}
                         style={{ width: '30%' }}

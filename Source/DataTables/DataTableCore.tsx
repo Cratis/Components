@@ -448,6 +448,11 @@ export const DataTableCore = <TData extends object>({
                                         {...pt?.headerCell}
                                         key={index}
                                         scope='col'
+                                        aria-label={
+                                            column.props.selectionMode
+                                                ? resolvedSelectionAriaLabel
+                                                : undefined
+                                        }
                                         aria-sort={ariaSort}
                                         style={{
                                             ...pt?.headerCell?.style,
@@ -465,6 +470,11 @@ export const DataTableCore = <TData extends object>({
                                             className='cratis-datatable-header-cell'
                                             data-cratis-part='header-content'
                                         >
+                                            {column.props.selectionMode && (
+                                                <span className='cratis-datatable__sr-only'>
+                                                    {resolvedSelectionAriaLabel}
+                                                </span>
+                                            )}
                                             {column.props.sortable &&
                                             column.props.field ? (
                                                 <button

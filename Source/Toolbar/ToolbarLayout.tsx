@@ -11,6 +11,7 @@ import {
     useState,
 } from 'react';
 import { useToolbarSlot } from './ToolbarSlot';
+import { ToolbarItemVisibilityProvider } from './ToolbarItemVisibilityContext';
 
 /** How long the fade-out animation runs (ms). React unmounts exiting content after this. */
 const LAYOUT_TRANSITION_MS = 220;
@@ -108,7 +109,9 @@ const LayoutTransition = ({
                     aria-hidden='true'
                     inert
                 >
-                    {exiting}
+                    <ToolbarItemVisibilityProvider value={false}>
+                        {exiting}
+                    </ToolbarItemVisibilityProvider>
                 </div>
             )}
         </div>

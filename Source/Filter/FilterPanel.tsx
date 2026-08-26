@@ -343,6 +343,22 @@ export function FilterPanel({
                                 const isCustom =
                                     filter.type === 'custom' ||
                                     editorRender !== undefined;
+                                const hasCustomValue =
+                                    customValue !== undefined && customValue !== null;
+                                const canClear = isNumeric
+                                    ? Boolean(rangeSelection)
+                                    : isCustom
+                                      ? hasCustomValue
+                                      : selections.size > 0;
+                                const clearLabel = isNumeric
+                                    ? clearRangeAriaLabel
+                                    : clearFilterAriaLabel;
+                                const clearValue = () => {
+                                    if (isNumeric) onRangeChange(filter.key, null);
+                                    else if (isCustom) {
+                                        onCustomValueChange?.(filter.key, undefined);
+                                    } else onFilterClear(filter.key);
+                                };
                                 const formatRangeValue = isDate
                                     ? (value: number) => new Date(value).toLocaleString()
                                     : undefined;
@@ -352,97 +368,53 @@ export function FilterPanel({
                                         key={filter.key}
                                         className={`pv-filter ${isExpanded ? 'expanded' : ''}`}
                                     >
-                                        <button
-                                            type='button'
-                                            className='pv-filter-trigger'
-                                            onClick={() =>
-                                                onExpandedFilterChange(
-                                                    isExpanded ? null : filter.key,
-                                                )
-                                            }
-                                        >
-                                            <span className='pv-filter-label'>
-                                                {filter.label}
-                                            </span>
-                                            <span className='pv-filter-trigger-meta'>
-                                                {!isNumeric &&
-                                                    !isCustom &&
-                                                    selections.size > 0 && (
-                                                        <>
+                                        <div className='pv-filter-trigger'>
+                                            <button
+                                                type='button'
+                                                className='pv-filter-toggle'
+                                                aria-expanded={isExpanded}
+                                                onClick={() =>
+                                                    onExpandedFilterChange(
+                                                        isExpanded ? null : filter.key,
+                                                    )
+                                                }
+                                            >
+                                                <span className='pv-filter-label'>
+                                                    {filter.label}
+                                                </span>
+                                                <span className='pv-filter-trigger-meta'>
+                                                    {!isNumeric &&
+                                                        !isCustom &&
+                                                        selections.size > 0 && (
                                                             <span className='pv-filter-count'>
                                                                 {selections.size}
                                                             </span>
-                                                            <button
-                                                                type='button'
-                                                                className='pv-filter-clear-header'
-                                                                title={clearFilterAriaLabel}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    onFilterClear(
-                                                                        filter.key,
-                                                                    );
-                                                                }}
-                                                                aria-label={
-                                                                    clearFilterAriaLabel
-                                                                }
-                                                            >
-                                                                ×
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                {isNumeric && rangeSelection && (
-                                                    <>
+                                                        )}
+                                                    {isNumeric && rangeSelection && (
                                                         <span className='pv-filter-count'>
                                                             Range
                                                         </span>
-                                                        <button
-                                                            type='button'
-                                                            className='pv-filter-clear-header'
-                                                            title={clearRangeAriaLabel}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                onRangeChange(
-                                                                    filter.key,
-                                                                    null,
-                                                                );
-                                                            }}
-                                                            aria-label={
-                                                                clearRangeAriaLabel
-                                                            }
-                                                        >
-                                                            ×
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {isCustom &&
-                                                    customValue !== undefined &&
-                                                    customValue !== null && (
-                                                        <>
-                                                            <span className='pv-filter-count'>
-                                                                •
-                                                            </span>
-                                                            <button
-                                                                type='button'
-                                                                className='pv-filter-clear-header'
-                                                                title={clearFilterAriaLabel}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    onCustomValueChange?.(
-                                                                        filter.key,
-                                                                        undefined,
-                                                                    );
-                                                                }}
-                                                                aria-label={
-                                                                    clearFilterAriaLabel
-                                                                }
-                                                            >
-                                                                ×
-                                                            </button>
-                                                        </>
                                                     )}
-                                                <span className='pv-filter-chevron' />
-                                            </span>
-                                        </button>
+                                                    {isCustom && hasCustomValue && (
+                                                        <span className='pv-filter-count'>
+                                                            •
+                                                        </span>
+                                                    )}
+                                                    <span className='pv-filter-chevron' />
+                                                </span>
+                                            </button>
+                                            {canClear && (
+                                                <button
+                                                    type='button'
+                                                    className='pv-filter-clear-header'
+                                                    title={clearLabel}
+                                                    aria-label={clearLabel}
+                                                    onClick={clearValue}
+                                                >
+                                                    ×
+                                                </button>
+                                            )}
+                                        </div>
                                         <div
                                             className={`pv-filter-content ${isExpanded ? 'expanded' : ''}`}
                                         >

@@ -16,6 +16,7 @@ import {
 
 import type { ToolbarContextProps } from './ToolbarContext';
 import { useToolbarSlot } from './ToolbarSlot';
+import { ToolbarItemVisibilityProvider } from './ToolbarItemVisibilityContext';
 
 /** Width/height transition duration used by the section resize animation (ms). */
 const SECTION_TRANSITION_MS = 350;
@@ -214,7 +215,11 @@ export const ToolbarSection = ({
                         aria-hidden={!isActive}
                         inert={!isActive}
                     >
-                        <ContextRenderer slotName={slotName}>{contextChildren}</ContextRenderer>
+                        <ToolbarItemVisibilityProvider value={isActive}>
+                            <ContextRenderer slotName={slotName}>
+                                {contextChildren}
+                            </ContextRenderer>
+                        </ToolbarItemVisibilityProvider>
                     </div>
                 );
             })}

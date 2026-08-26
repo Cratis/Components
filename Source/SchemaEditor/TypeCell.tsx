@@ -159,6 +159,7 @@ export const TypeCell = ({
     return (
         <div className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full' style={{ minHeight: '2.5rem' }}>
             <Dropdown<string>
+                aria-label={labels.propertyType}
                 value={currentValue}
                 options={allTypeOptions}
                 optionLabel='label'
@@ -178,6 +179,7 @@ export const TypeCell = ({
                         of
                     </span>
                     <Dropdown<string>
+                        aria-label={labels.arrayItemType}
                         value={rowData.items.type || 'string'}
                         options={allTypeOptions}
                         optionLabel='label'

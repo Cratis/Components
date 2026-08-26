@@ -9,6 +9,10 @@ export interface ProgressBarProps {
     mode?: 'determinate' | 'indeterminate';
     /** Whether to render the percentage label. Defaults to `true` (determinate only). */
     showValue?: boolean;
+    /** Accessible name. Defaults to `'Progress'`; override to describe the operation. */
+    'aria-label'?: string;
+    /** Identifies an external element that labels the progress indicator. */
+    'aria-labelledby'?: string;
     /** Extra class name. */
     className?: string;
 }
@@ -18,6 +22,8 @@ export const ProgressBar = ({
     value = 0,
     mode = 'determinate',
     showValue = true,
+    'aria-label': ariaLabel = 'Progress',
+    'aria-labelledby': ariaLabelledBy,
     className,
 }: ProgressBarProps) => {
     const boundedValue = Math.min(100, Math.max(0, value));
@@ -29,6 +35,8 @@ export const ProgressBar = ({
             data-cratis-part='root'
             data-mode={mode}
             role='progressbar'
+            aria-label={ariaLabelledBy ? undefined : ariaLabel}
+            aria-labelledby={ariaLabelledBy}
             aria-valuemin={mode === 'determinate' ? 0 : undefined}
             aria-valuemax={mode === 'determinate' ? 100 : undefined}
             aria-valuenow={ariaValue}

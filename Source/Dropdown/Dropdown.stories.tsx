@@ -13,7 +13,7 @@ const roles = [
 ];
 
 const meta = {
-    title: 'Dropdown/Visual parity',
+    title: 'Dropdown/Dropdown',
     component: Dropdown,
     parameters: { layout: 'padded' },
     tags: ['autodocs'],
@@ -68,7 +68,7 @@ export const FilteredAndOpen: Story = {
     render: () => <ControlledDropdown filter />,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await userEvent.click(canvas.getByLabelText('Role'));
-        await expect(within(document.body).getByRole('listbox')).toBeTruthy();
+        await userEvent.click(canvas.getByRole('button', { name: /show options/i }));
+        await expect(await within(document.body).findByRole('listbox')).toBeTruthy();
     },
 };

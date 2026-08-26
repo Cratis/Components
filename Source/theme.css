@@ -21,7 +21,7 @@
 .cratis-theme.cratis-light,
 .cratis-dark .cratis-theme.cratis-light {
     color-scheme: light;
-    --cratis-primary-color: #3b82f6;
+    --cratis-primary-color: #2563eb;
     --cratis-primary-color-text: #ffffff;
     --cratis-primary-300: #93c5fd;
     --cratis-primary-400: #60a5fa;
@@ -79,6 +79,7 @@
     --cratis-action-background-hover: #93c5fd;
     --cratis-action-background-active: #bfdbfe;
     --cratis-action-text: #030712;
+    --cratis-red-500: #f87171;
     --cratis-info-background: #38bdf8;
     --cratis-info-text: #082f49;
     --cratis-success-background: #4ade80;
@@ -123,6 +124,7 @@
         --cratis-action-background-hover: #93c5fd;
         --cratis-action-background-active: #bfdbfe;
         --cratis-action-text: #030712;
+        --cratis-red-500: #f87171;
         --cratis-info-background: #38bdf8;
         --cratis-info-text: #082f49;
         --cratis-success-background: #4ade80;

@@ -10,6 +10,7 @@ import { InputTextField, NumberField, TextAreaField } from '../CommandForm/field
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
 import { StepperPanel } from './StepperPanel';
 import '@cratis/arc/validation';
+import { expect, userEvent, within } from 'storybook/test';
 
 const meta: Meta<typeof StepperCommandDialog> = {
     title: 'CommandDialog/StepperCommandDialog',
@@ -18,6 +19,15 @@ const meta: Meta<typeof StepperCommandDialog> = {
 
 export default meta;
 type Story = StoryObj<typeof StepperCommandDialog>;
+
+const openStepperDialog = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    const dialog = within(document.body).queryByRole('dialog');
+    if (!dialog) {
+        await userEvent.click(canvas.getAllByRole('button')[0]);
+    }
+    await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
+};
 
 class CreateProjectValidator extends CommandValidator<CreateProjectCommand> {
     constructor() {
@@ -74,6 +84,7 @@ class SlowCreateProjectCommand extends CreateProjectCommand {
 }
 
 export const Default: Story = {
+    play: openStepperDialog,
     render: () => {
         const [result, setResult] = useState<string>('');
 
@@ -147,6 +158,7 @@ export const Default: Story = {
 };
 
 export const ThreeSteps: Story = {
+    play: openStepperDialog,
     render: () => {
         const [visible, setVisible] = useState(false);
         const [result, setResult] = useState<string>('');
@@ -213,6 +225,7 @@ export const ThreeSteps: Story = {
 };
 
 export const WithValidationIndicators: Story = {
+    play: openStepperDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
@@ -269,6 +282,7 @@ export const WithValidationIndicators: Story = {
 };
 
 export const WithBusyState: Story = {
+    play: openStepperDialog,
     render: () => {
         const [visible, setVisible] = useState(false);
 
@@ -324,6 +338,7 @@ export const WithBusyState: Story = {
 
 /** Demonstrates typed response handling with success and failure callbacks. */
 export const WithResponseTypeAndCallbacks: Story = {
+    play: openStepperDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
@@ -459,6 +474,7 @@ export const WithResponseTypeAndCallbacks: Story = {
  * of the dialog: the footer Cancel greys out and the header X disappears until the command returns.
  */
 export const WithFooterCancel: Story = {
+    play: openStepperDialog,
     render: () => {
         const [visible, setVisible] = useState(false);
         const [outcome, setOutcome] = useState('');
@@ -537,6 +553,7 @@ export const WithFooterCancel: Story = {
  * wizard: Submit shows on "Details" instead of a Next button that leads to an empty step.
  */
 export const ConditionalSteps: Story = {
+    play: openStepperDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [includeBudgetStep, setIncludeBudgetStep] = useState(false);

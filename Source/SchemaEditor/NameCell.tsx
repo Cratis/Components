@@ -10,6 +10,8 @@ export interface NameCellProps {
     isEditMode: boolean;
     onUpdate: (oldName: string, field: keyof JsonSchemaProperty, value: unknown) => void;
     validationError?: string;
+    /** Accessible name for the property-name input. */
+    propertyNameLabel: string;
 }
 
 export const NameCell = ({
@@ -17,6 +19,7 @@ export const NameCell = ({
     isEditMode,
     onUpdate,
     validationError,
+    propertyNameLabel,
 }: NameCellProps) => {
     if (!isEditMode) {
         const isNavigable =
@@ -34,10 +37,16 @@ export const NameCell = ({
                 </span>
                 {rowData.description && (
                     <Tooltip content={rowData.description} position='right'>
-                        <span
-                            tabIndex={0}
-                            role='img'
+                        <button
+                            type='button'
                             aria-label='Property description'
+                            style={{
+                                display: 'inline-flex',
+                                padding: 0,
+                                border: 0,
+                                background: 'transparent',
+                                color: 'inherit',
+                            }}
                         >
                             <faIcons.FaCircleInfo
                                 aria-hidden='true'
@@ -46,7 +55,7 @@ export const NameCell = ({
                                     fontSize: '0.875rem',
                                 }}
                             />
-                        </span>
+                        </button>
                     </Tooltip>
                 )}
             </div>
@@ -56,6 +65,7 @@ export const NameCell = ({
     return (
         <Tooltip content={validationError} position='top' className='cratis:w-full'>
             <input
+                aria-label={propertyNameLabel}
                 value={rowData.name || ''}
                 onChange={(event) =>
                     onUpdate(rowData.name || '', 'name', event.target.value)

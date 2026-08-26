@@ -5,7 +5,7 @@ import { Tooltip } from '../Common/Tooltip';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import * as faIcons from 'react-icons/fa6';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
-import { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
+import type { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { getValueAtPath } from './objectHelpers';
 
 import { DatePickerInput } from '../Common/DatePickerInput';
@@ -290,6 +290,7 @@ export const ObjectContentEditor = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <input
                         type='checkbox'
+                        aria-label={propertyName}
                         checked={Boolean(value)}
                         onChange={(event) => handleChange(event.target.checked)}
                         aria-invalid={Boolean(error) || undefined}
@@ -305,6 +306,7 @@ export const ObjectContentEditor = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <input
                         type='number'
+                        aria-label={propertyName}
                         value={value === null || value === undefined ? '' : Number(value)}
                         onChange={(event) =>
                             handleChange(
@@ -326,6 +328,7 @@ export const ObjectContentEditor = ({
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <DatePickerInput
+                        aria-label={propertyName}
                         value={dateValue}
                         onChange={(date) =>
                             handleChange(date ? date.toISOString() : null)
@@ -344,6 +347,7 @@ export const ObjectContentEditor = ({
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <DatePickerInput
+                        aria-label={propertyName}
                         value={dateValue}
                         onChange={(date) =>
                             handleChange(date ? date.toISOString().split('T')[0] : null)
@@ -390,6 +394,7 @@ export const ObjectContentEditor = ({
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <textarea
+                        aria-label={propertyName}
                         value={String(value ?? '')}
                         onChange={(event) => handleChange(event.target.value)}
                         rows={3}
@@ -404,6 +409,7 @@ export const ObjectContentEditor = ({
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <input
+                    aria-label={propertyName}
                     value={String(value ?? '')}
                     onChange={(event) => handleChange(event.target.value)}
                     aria-invalid={Boolean(error) || undefined}
@@ -586,17 +592,23 @@ export const ObjectContentEditor = ({
                                                     content={description}
                                                     position='right'
                                                 >
-                                                    <span
-                                                        tabIndex={0}
-                                                        role='img'
+                                                    <button
+                                                        type='button'
                                                         aria-label='Property description'
+                                                        style={{
+                                                            display: 'inline-flex',
+                                                            padding: 0,
+                                                            border: 0,
+                                                            background: 'transparent',
+                                                            color: 'inherit',
+                                                        }}
                                                     >
                                                         <faIcons.FaCircleInfo
                                                             aria-hidden='true'
                                                             className='property-info-icon'
                                                             style={infoIconStyle}
                                                         />
-                                                    </span>
+                                                    </button>
                                                 </Tooltip>
                                             )}
                                         </span>
@@ -637,7 +649,7 @@ export const ObjectContentEditor = ({
                         background: 'var(--cratis-highlight-bg)',
                         borderRadius: '8px',
                         fontSize: '12px',
-                        color: 'var(--cratis-text-color-secondary)',
+                        color: 'var(--cratis-text-color)',
                     }}
                 >
                     Snapshot captured: {timestamp.toLocaleString()}

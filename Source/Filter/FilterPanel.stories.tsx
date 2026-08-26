@@ -3,6 +3,7 @@
 
 import React, { useMemo, useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { FilterPanel } from './FilterPanel';
 import { FilterEditor } from './FilterEditor';
 import { useFilterState } from './useFilterState';
@@ -18,6 +19,34 @@ const meta: Meta<typeof FilterPanel> = {
 
 export default meta;
 type Story = StoryObj<typeof FilterPanel>;
+
+const openFilterGroup = async (
+    canvasElement: HTMLElement,
+    triggerName: string,
+    groupName: string,
+) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: triggerName }));
+    const body = within(document.body);
+    const findGroup = () =>
+        body
+            .getAllByRole('button', { name: groupName })
+            .find((button) => button.hasAttribute('aria-expanded'));
+    await body.findAllByRole('button', { name: groupName });
+    const group = findGroup();
+    if (!group) throw new Error(`Could not find the ${groupName} filter group trigger.`);
+    if (group.getAttribute('aria-expanded') !== 'true') {
+        await userEvent.click(group);
+    }
+    await waitFor(() => expect(findGroup()).toHaveAttribute('aria-expanded', 'true'));
+    const panel = group.closest('aside');
+    const content = group.closest('.pv-filter')?.querySelector('.pv-filter-content');
+    await waitFor(() => {
+        expect(panel ? getComputedStyle(panel).opacity : '').toBe('1');
+        expect(content ? getComputedStyle(content).opacity : '').toBe('1');
+    });
+    return { body, canvas };
+};
 
 // ---------------------------------------------------------------------------
 // Shared wrapper styles
@@ -61,6 +90,15 @@ const activeButtonStyle: React.CSSProperties = {
 
 export const SingleSelectFilter: Story = {
     name: 'Single-select string filter',
+    play: async ({ canvasElement }) => {
+        const { body, canvas } = await openFilterGroup(canvasElement, 'Status', 'Status');
+        const active = await body.findByRole('radio', { name: /^Active/ });
+        await userEvent.click(active);
+        await expect(active).toBeChecked();
+        await expect(canvas.getByRole('button', { name: 'Status (1)' })).toBeTruthy();
+        await userEvent.click(body.getByRole('button', { name: 'Clear filter' }));
+        await expect(active).not.toBeChecked();
+    },
     render: () => {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
@@ -94,8 +132,10 @@ export const SingleSelectFilter: Story = {
         return (
             <div style={pageStyle}>
                 <div>
-                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Single-select Filter</h2>
-                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
+                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>
+                        Single-select Filter
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
                         Radio-button style — only one option can be selected at a time.
                     </p>
                 </div>
@@ -108,8 +148,9 @@ export const SingleSelectFilter: Story = {
                         Status{activeCount > 0 ? ` (${activeCount})` : ''}
                     </button>
                     {activeCount > 0 && (
-                        <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                            Selected: {Array.from(filterValues['status'] ?? []).join(', ')}
+                        <span style={{ fontSize: '0.85rem' }}>
+                            Selected:{' '}
+                            {Array.from(filterValues['status'] ?? []).join(', ')}
                         </span>
                     )}
                 </div>
@@ -137,6 +178,23 @@ export const SingleSelectFilter: Story = {
 
 export const MultiSelectFilter: Story = {
     name: 'Multi-select string filter',
+    play: async ({ canvasElement }) => {
+        const { body, canvas } = await openFilterGroup(
+            canvasElement,
+            'Department',
+            'Department',
+        );
+        const engineering = await body.findByRole('checkbox', { name: /^Engineering/ });
+        const design = body.getByRole('checkbox', { name: /^Design/ });
+        await userEvent.click(engineering);
+        await userEvent.click(design);
+        await expect(engineering).toBeChecked();
+        await expect(design).toBeChecked();
+        await expect(canvas.getByRole('button', { name: 'Department (2)' })).toBeTruthy();
+        await userEvent.click(body.getByRole('button', { name: 'Clear filter' }));
+        await expect(engineering).not.toBeChecked();
+        await expect(design).not.toBeChecked();
+    },
     render: () => {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
@@ -168,8 +226,10 @@ export const MultiSelectFilter: Story = {
         return (
             <div style={pageStyle}>
                 <div>
-                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Multi-select Filter</h2>
-                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
+                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>
+                        Multi-select Filter
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
                         Checkbox style — multiple options can be selected simultaneously.
                     </p>
                 </div>
@@ -182,8 +242,9 @@ export const MultiSelectFilter: Story = {
                         Department{activeCount > 0 ? ` (${activeCount})` : ''}
                     </button>
                     {activeCount > 0 && (
-                        <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                            Selected: {Array.from(filterValues['department'] ?? []).join(', ')}
+                        <span style={{ fontSize: '0.85rem' }}>
+                            Selected:{' '}
+                            {Array.from(filterValues['department'] ?? []).join(', ')}
                         </span>
                     )}
                 </div>
@@ -223,6 +284,13 @@ const ageValues = generateAgeValues(500);
 
 export const NumericRangeFilter: Story = {
     name: 'Numeric range filter (histogram)',
+    play: async ({ canvasElement }) => {
+        const { body, canvas } = await openFilterGroup(canvasElement, 'Age', 'Age');
+        await userEvent.click(await body.findByRole('button', { name: /^20 - 22:/ }));
+        await expect(canvas.getByRole('button', { name: 'Age: 20–22' })).toBeTruthy();
+        await userEvent.click(body.getByRole('button', { name: 'Clear range' }));
+        await expect(canvas.getByRole('button', { name: 'Age' })).toBeTruthy();
+    },
     render: () => {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
@@ -249,9 +317,12 @@ export const NumericRangeFilter: Story = {
         return (
             <div style={pageStyle}>
                 <div>
-                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Numeric Range Filter</h2>
-                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
-                        Histogram with draggable range handles. Click a bar to jump-select that bucket.
+                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>
+                        Numeric Range Filter
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                        Histogram with draggable range handles. Click a bar to jump-select
+                        that bucket.
                     </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -293,7 +364,9 @@ function RatingEditor({ value, onChange }: { value: unknown; onChange: (v: unkno
                 {[1, 2, 3, 4, 5].map((star) => (
                     <button
                         key={star}
-                        type="button"
+                        type='button'
+                        aria-label={`${star} star${star !== 1 ? 's' : ''}`}
+                        aria-pressed={rating === star}
                         onClick={() => onChange(rating === star ? 0 : star)}
                         style={{
                             appearance: 'none',
@@ -322,8 +395,17 @@ function DateRangeEditor({ value, onChange }: { value: unknown; onChange: (v: un
     const range = value as { from?: string; to?: string } | undefined;
     return (
         <div style={{ padding: '0.5rem 0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.75rem', opacity: 0.7 }}>
+            <div
+                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}
+            >
+                <label
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem',
+                        fontSize: '0.75rem',
+                    }}
+                >
                     From
                     <input
                         type="date"
@@ -339,7 +421,14 @@ function DateRangeEditor({ value, onChange }: { value: unknown; onChange: (v: un
                         }}
                     />
                 </label>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.75rem', opacity: 0.7 }}>
+                <label
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem',
+                        fontSize: '0.75rem',
+                    }}
+                >
                     To
                     <input
                         type="date"
@@ -362,6 +451,17 @@ function DateRangeEditor({ value, onChange }: { value: unknown; onChange: (v: un
 
 export const CustomEditor: Story = {
     name: 'Custom filter editor',
+    play: async ({ canvasElement }) => {
+        const { body, canvas } = await openFilterGroup(
+            canvasElement,
+            'Filters',
+            'Rating',
+        );
+        await userEvent.click(await body.findByRole('button', { name: '4 stars' }));
+        await expect(canvas.getByText(/Rating ≥ 4/)).toBeTruthy();
+        await userEvent.click(body.getByRole('button', { name: 'Clear filter' }));
+        await expect(canvas.queryByText(/Rating ≥ 4/)).toBeNull();
+    },
     render: () => {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
@@ -389,9 +489,19 @@ export const CustomEditor: Story = {
         return (
             <div style={pageStyle}>
                 <div>
-                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Custom Filter Editors</h2>
-                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
-                        Declare a <code style={{ fontFamily: 'monospace', fontSize: '0.8em', opacity: 0.8 }}>&lt;FilterEditor&gt;</code> child inside <code style={{ fontFamily: 'monospace', fontSize: '0.8em', opacity: 0.8 }}>&lt;FilterPanel&gt;</code> to provide a custom editor for any filter group.
+                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>
+                        Custom Filter Editors
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                        Declare a{' '}
+                        <code style={{ fontFamily: 'monospace', fontSize: '0.8em' }}>
+                            &lt;FilterEditor&gt;
+                        </code>{' '}
+                        child inside{' '}
+                        <code style={{ fontFamily: 'monospace', fontSize: '0.8em' }}>
+                            &lt;FilterPanel&gt;
+                        </code>{' '}
+                        to provide a custom editor for any filter group.
                     </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -403,8 +513,10 @@ export const CustomEditor: Story = {
                         Filters{hasFilters ? ' •' : ''}
                     </button>
                     {hasFilters && (
-                        <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                            {typeof rating === 'number' && rating > 0 && `Rating ≥ ${rating} ★`}
+                        <span style={{ fontSize: '0.85rem' }}>
+                            {typeof rating === 'number' &&
+                                rating > 0 &&
+                                `Rating ≥ ${rating} ★`}
                             {dateRange?.from && ` · From ${dateRange.from}`}
                             {dateRange?.to && ` · To ${dateRange.to}`}
                         </span>
@@ -452,6 +564,20 @@ const salaryValues = Array.from({ length: 300 }, () => {
 
 export const MixedFilters: Story = {
     name: 'Mixed filter types',
+    play: async ({ canvasElement }) => {
+        const { body, canvas } = await openFilterGroup(
+            canvasElement,
+            'Filters',
+            'Department',
+        );
+        const search = body.getByPlaceholderText('Search filters…');
+        await userEvent.type(search, 'department');
+        await expect(search).toHaveValue('department');
+        const engineering = await body.findByRole('checkbox', { name: /^Engineering/ });
+        await userEvent.click(engineering);
+        await expect(engineering).toBeChecked();
+        await expect(canvas.getByRole('button', { name: 'Filters (1)' })).toBeTruthy();
+    },
     render: () => {
         const buttonRef = useRef<HTMLButtonElement>(null!);
         const [isOpen, setIsOpen] = useState(false);
@@ -510,9 +636,12 @@ export const MixedFilters: Story = {
         return (
             <div style={pageStyle}>
                 <div>
-                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Mixed Filter Types</h2>
-                    <p style={{ margin: 0, opacity: 0.8, fontSize: '0.9rem' }}>
-                        Single-select, multi-select, numeric range and custom editor in one panel, plus a search box.
+                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>
+                        Mixed Filter Types
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                        Single-select, multi-select, numeric range and custom editor in
+                        one panel, plus a search box.
                     </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -524,8 +653,9 @@ export const MixedFilters: Story = {
                         Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
                     </button>
                     {activeFilterCount > 0 && (
-                        <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                            {activeFilterCount} active filter{activeFilterCount !== 1 ? 's' : ''}
+                        <span style={{ fontSize: '0.85rem' }}>
+                            {activeFilterCount} active filter
+                            {activeFilterCount !== 1 ? 's' : ''}
                         </span>
                     )}
                 </div>

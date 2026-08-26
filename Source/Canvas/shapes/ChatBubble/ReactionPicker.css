@@ -23,6 +23,10 @@
     padding: 4px;
 }
 
+.reaction-picker__options {
+    display: contents;
+}
+
 .reaction-picker__item {
     display: flex;
     align-items: center;

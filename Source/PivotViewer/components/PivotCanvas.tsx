@@ -171,8 +171,6 @@ export function PivotCanvas<TItem extends object>({
 
     (async () => {
       try {
-        // Prefer the new init API (v8+) to avoid deprecation issues. Fall back
-        // to the constructor options when `init` is not available.
         const options = {
           backgroundAlpha: 0,
           antialias: false,
@@ -183,17 +181,8 @@ export function PivotCanvas<TItem extends object>({
           height: viewportHeight > 0 ? viewportHeight : 600,
         } as PIXI.ApplicationOptions;
 
-          app = new PIXI.Application();
-        if ((app as unknown as { init?: unknown }).init && typeof (app as unknown as { init: (...args: unknown[]) => unknown }).init === 'function') {
-          // init may return a promise in some builds
-           
-          // @ts-ignore
-          await app.init(options);
-        } else {
-          // Fall back to constructor that accepts options
-          app.destroy?.();
-          app = new PIXI.Application(options);
-        }
+        app = new PIXI.Application();
+        await app.init(options);
 
         if (!mountedRef.current || !parentContainerRef.current) {
           // Component unmounted during initialization
@@ -212,9 +201,7 @@ export function PivotCanvas<TItem extends object>({
         rootRef.current = root;
         app.stage.addChild(root);
 
-        // Resolve canvas element (different Pixi builds expose it as `view` or
-        // `canvas`).
-        const canvasEl = (app.view ?? (app as unknown as { canvas?: HTMLCanvasElement }).canvas ?? app.renderer?.view) as HTMLCanvasElement | undefined;
+        const canvasEl = app.canvas;
 
         // Place canvas outside the scrollable content so native scrolling
         // doesn't move the canvas DOM element itself. We overlay the canvas
@@ -230,15 +217,8 @@ export function PivotCanvas<TItem extends object>({
           }
           overlayParent.appendChild(canvasEl);
           canvasRef.current = canvasEl;
-        } else if ((app as unknown as { canvas?: HTMLCanvasElement }).canvas) {
-          const c = (app as unknown as { canvas: HTMLCanvasElement }).canvas;
-          if (c.parentElement) {
-            c.parentElement.removeChild(c);
-          }
-          overlayParent.appendChild(c);
-          canvasRef.current = c;
         } else {
-             console.error('PivotCanvas: Could not find canvas element from Pixi application');
+          console.error('PivotCanvas: Could not find canvas element from Pixi application');
         }
 
         // Position the canvas to overlay the scrollable container area.
