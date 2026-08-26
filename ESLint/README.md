@@ -123,8 +123,11 @@ The rule never guesses. Each of these is flagged with guidance but **not** autof
 - Any `export … from '@cratis/components'` re-export form — flagged with the same subpath
   guidance, but re-exports are never autofixed.
 
-A companion, standalone codemod applies the same rewrite across a whole project in one pass;
-see [`@cratis/components-codemods`](https://www.npmjs.com/package/@cratis/components-codemods).
+A companion, standalone codemod applies the equivalent rewrite across a whole project in one
+pass, and additionally autofixes a named `export { Canvas } from '@cratis/components'`
+re-export the same way it autofixes the matching import — this rule flags every re-export
+form with guidance but never autofixes any of them; see
+[`@cratis/components-codemods`](https://www.npmjs.com/package/@cratis/components-codemods).
 
 ### `onbeforeexecute-must-return`
 

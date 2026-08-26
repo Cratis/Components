@@ -23,7 +23,7 @@ npm install @cratis/components
 
 Keep a Prime package only when your application still imports it directly. Migrate those imports separately; Components no longer supplies or requires them.
 
-Applications using Canvas or PivotViewer must install `pixi.js@^8.20.0`, now an optional peer rather than a nested Components dependency. Align any existing direct Pixi dependency to the same compatible resolution so public Pixi types come from one package instance. Applications using only non-Pixi subpaths do not need it.
+Applications using Canvas or PivotViewer must install `pixi.js@^8.20.0`, now an optional peer rather than a nested Components dependency. Align any existing direct Pixi dependency to the same compatible resolution so public `PIXI.Container` and pointer-event types come from one package instance. Applications using only non-Pixi subpaths do not need it.
 
 The package declares an Arc peer range of `>=20.3.1 <23`.
 
@@ -93,7 +93,7 @@ npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
 
 If the exact codemod package version is unavailable, stop rather than substituting `latest` or a different Components version. Keep the application on its current package, apply the table manually, or wait for a corrected publication.
 
-The codemod scans JavaScript/JSX and TypeScript/TSX (including `.mjs`, `.cjs`, `.mts`, and `.cts`), preserves aliases and type-only imports, splits mixed setup/namespace imports, and reports unsupported cases without guessing. Those include default or whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, re-exports, side-effect imports, and unknown symbols. Review its diagnostics, then run the consuming project's lint, build, and tests.
+The codemod scans JavaScript/JSX and TypeScript/TSX (including `.mjs`, `.cjs`, `.mts`, and `.cts`), preserves aliases and type-only imports, splits mixed setup/namespace imports, and rewrites a named `export { X } from '@cratis/components'` re-export the same way as the matching import. It reports unsupported cases without guessing: default or whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, wildcard or whole-package re-exports (`export * from '@cratis/components'` / `export * as X from '@cratis/components'`), side-effect imports, and unknown symbols. Review its diagnostics, then run the consuming project's lint, build, and tests.
 
 Install the matching ESLint plugin version after migration and compose its recommended config after `@cratis/eslint-config`; `no-root-barrel-import` prevents component namespaces from returning:
 

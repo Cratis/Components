@@ -7,6 +7,12 @@ sidebar:
 
 Components 4 owns its public React markup, TypeScript types, tokens, documented parts, and component behavior without exposing its internal interaction library as a consumer contract. React Aria supplies selected focus, keyboard, overlay, collection, and date interaction primitives internally. These implementation facts do not establish accessibility conformance for every component or application.
 
+## Why this changed
+
+Components 3 shipped with PrimeReact, PrimeIcons, and PrimeUI theme packages as its declared foundation, so installing `@cratis/components` inherited that dependency tree, its release cadence, and its license terms whether or not an application's own code imported Prime directly. Components 4 removes that inherited coupling: the package manifest declares no Prime dependency or peer, and a [release gate](#release-gates) confirms the emitted JavaScript and declarations contain no Prime imports or type references. Components-owned public types, typed parts, `data-cratis-part` state attributes, and server-paged table contracts (see [Table architecture](#table-architecture)) replace the Prime renderer contracts a consumer previously had to target.
+
+Long term, that ownership is what the rest of this page documents: one `--cratis-*` token source instead of a translation chain through a third-party preset, a package/version/license boundary an application controls directly instead of inheriting it transitively (see [Prime dependency boundary](#prime-dependency-boundary)), and a public API surface Components validates and evolves on its own release cadence rather than one bound to an upstream renderer's compatibility timeline. React Aria remains an internal implementation dependency rather than a second inherited public contract — see [Why React Aria](#why-react-aria) — so this change moves ownership to Components rather than moving the same coupling to a different upstream package.
+
 ## Shipped architecture
 
 ```mermaid
