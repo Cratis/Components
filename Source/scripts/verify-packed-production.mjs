@@ -26,9 +26,9 @@ import { buildScratchNodeModules, packArtifact } from './lib/packed-artifact.mjs
 import {
     assertExpectedCascadeLayerOrder,
     assertNoPrimeFamilyReferences,
+    cascadeLayerEstablishmentOrder,
     EXPECTED_CASCADE_LAYER_ORDER,
     findPrimeFamilyReferences,
-    firstBindingCascadeLayerOrder,
 } from './lib/release-package-guards.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -36,15 +36,50 @@ const monorepoRoot = path.resolve(packageDir, '..');
 const keepFixture = process.argv.includes('--keep-fixture');
 
 function runGuardSelfTests() {
+    // Regression fixture for the actual packed shape: Tailwind's leading, single-name
+    // `@layer properties;` forward declaration ahead of the statement that binds Cratis's own
+    // precedence must NOT be rejected as an incomplete/incorrect order-binding statement.
     const correctlyOrderedStyles =
-        '/* comment */\n@layer cratis-theme, cratis-components, cratis-utilities;\n@layer cratis-components {}';
+        '/* comment */\n@layer properties;\n' +
+        '@layer cratis-theme, cratis-components, cratis-utilities;\n' +
+        '@layer cratis-theme {}\n@layer cratis-utilities {}\n@layer properties { @supports (color: red) { * { color: red; } } }\n' +
+        '@layer cratis-components {}';
     assert.deepEqual(
-        firstBindingCascadeLayerOrder(correctlyOrderedStyles),
+        cascadeLayerEstablishmentOrder(correctlyOrderedStyles),
         EXPECTED_CASCADE_LAYER_ORDER,
     );
+    assert.doesNotThrow(() =>
+        assertExpectedCascadeLayerOrder(correctlyOrderedStyles, 'synthetic.css'),
+    );
+
+    // Missing the leading `properties` forward declaration entirely must still fail.
     assert.throws(() =>
         assertExpectedCascadeLayerOrder(
-            '@layer cratis-components, cratis-theme, cratis-utilities;',
+            '@layer cratis-theme, cratis-components, cratis-utilities;',
+            'synthetic.css',
+        ),
+    );
+    // Reordered relative to the reviewed sequence must fail.
+    assert.throws(() =>
+        assertExpectedCascadeLayerOrder(
+            '@layer properties;\n@layer cratis-components, cratis-theme, cratis-utilities;',
+            'synthetic.css',
+        ),
+    );
+    // A layer established out of order by its opening block - not just by the order-binding
+    // statement's own listed sequence - must fail: cratis-utilities is first established before
+    // cratis-components here even though the statement below lists them correctly.
+    assert.throws(() =>
+        assertExpectedCascadeLayerOrder(
+            '@layer properties;\n@layer cratis-theme {}\n@layer cratis-utilities {}\n' +
+                '@layer cratis-theme, cratis-components, cratis-utilities;\n@layer cratis-components {}',
+            'synthetic.css',
+        ),
+    );
+    // A missing layer must fail, even with the rest correctly ordered.
+    assert.throws(() =>
+        assertExpectedCascadeLayerOrder(
+            '@layer properties;\n@layer cratis-theme, cratis-components;',
             'synthetic.css',
         ),
     );
