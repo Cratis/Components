@@ -157,7 +157,8 @@ const renderCellContent = (
 const dateNumber = (value: unknown) => {
     // A cloned Date is normalized in place so caller-owned Date instances (row
     // values and filter constraints alike) are never mutated by comparison.
-    const date = value instanceof Date ? new Date(value.getTime()) : new Date(String(value));
+    const date =
+        value instanceof Date ? new Date(value.getTime()) : new Date(String(value));
     return Number.isNaN(date.getTime()) ? undefined : date.setHours(0, 0, 0, 0);
 };
 

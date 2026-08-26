@@ -69,9 +69,7 @@ describe('when filtering by date', () => {
     });
 
     it('should match rows on the same calendar day regardless of time-of-day', () => {
-        expect(
-            container.querySelectorAll('[data-cratis-part="row"]'),
-        ).to.have.length(1);
+        expect(container.querySelectorAll('[data-cratis-part="row"]')).to.have.length(1);
     });
 
     it('should not mutate Date values when comparing with dateBefore', async () => {
