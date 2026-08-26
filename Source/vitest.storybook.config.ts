@@ -10,6 +10,11 @@ import { defineConfig } from 'vitest/config';
 const directory = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+    optimizeDeps: {
+        // Canvas messaging is loaded only by a subset of stories. Pre-bundle it before the browser
+        // run so Vite never discovers it mid-suite, reloads the test page, and loses in-flight cases.
+        include: ['@cratis/arc.react/messaging'],
+    },
     plugins: [
         storybookTest({
             configDir: path.join(directory, '.storybook'),
