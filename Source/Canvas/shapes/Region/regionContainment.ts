@@ -7,7 +7,6 @@
  * pure, dependency-free function usable on any `{x, y, width, height}` shape.
  */
 export interface RegionContainmentBounds {
-
     /** The rectangle's left edge in world space. */
     x: number;
 
@@ -37,7 +36,8 @@ export interface RegionContainmentBounds {
 export function itemsWithinRegion(
     regionBounds: RegionContainmentBounds,
     items: Iterable<[string, RegionContainmentBounds]>,
-    excludeId?: string): string[] {
+    excludeId?: string,
+): string[] {
     const left = regionBounds.x;
     const top = regionBounds.y;
     const right = regionBounds.x + regionBounds.width;

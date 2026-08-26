@@ -18,10 +18,15 @@ describe('when items lie inside and outside the region', () => {
         ['center-just-out', { x: 55, y: 255, width: 100, height: 100 }],
     ]);
 
-    it('should include the item whose center is inside', () => result.should.contain('inside'));
-    it('should include the overhanging item whose center is inside', () => result.should.contain('overhanging'));
-    it('should not include the item left of the region', () => result.should.not.contain('outside-left'));
-    it('should not include the item below the region', () => result.should.not.contain('outside-below'));
-    it('should not include the overlapping item whose center is outside', () => result.should.not.contain('center-just-out'));
+    it('should include the item whose center is inside', () =>
+        result.should.contain('inside'));
+    it('should include the overhanging item whose center is inside', () =>
+        result.should.contain('overhanging'));
+    it('should not include the item left of the region', () =>
+        result.should.not.contain('outside-left'));
+    it('should not include the item below the region', () =>
+        result.should.not.contain('outside-below'));
+    it('should not include the overlapping item whose center is outside', () =>
+        result.should.not.contain('center-just-out'));
     it('should report only the contained items', () => result.length.should.equal(2));
 });

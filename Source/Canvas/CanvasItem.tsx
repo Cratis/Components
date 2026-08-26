@@ -7,7 +7,6 @@ import { CanvasItemRegistryContext } from './Canvas';
 
 /** Props for a measured DOM item positioned in Canvas world space. */
 export interface CanvasItemProps {
-
     /**
      * Registers this item in the Canvas item registry under a caller-chosen key instead of an
      * internally generated one. Opting in makes the item's world-space bounds addressable — a

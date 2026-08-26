@@ -13,10 +13,12 @@ import { useOnMessage } from '@cratis/arc.react/messaging';
 import { ItemAddedToRegion, ItemRemovedFromRegion } from '@cratis/components/Canvas';
 
 function Board() {
-    useOnMessage(ItemAddedToRegion, message => {
+    useOnMessage(ItemAddedToRegion, (message) => {
         // message.regionId, message.itemId — persist membership, issue a command, whatever the board means by it
     });
-    useOnMessage(ItemRemovedFromRegion, message => { /* ... */ });
+    useOnMessage(ItemRemovedFromRegion, (message) => {
+        /* ... */
+    });
     // ... render the Canvas
 }
 ```
@@ -32,12 +34,12 @@ Messages are keyed by ids the host already owns, opted in per shape:
 
 ## Message catalog
 
-| Message | Fields | Published when |
-|---|---|---|
-| `ItemAddedToRegion` | `regionId`, `itemId` | A sibling `CanvasItem` carrying an `id` newly has its center point within a `Region`'s bounds — whether the item moved into the region, or the region was moved/resized over it. Also published on mount for every item already contained, so a subscriber never misses the initial state. |
-| `ItemRemovedFromRegion` | `regionId`, `itemId` | Such an item's center point leaves the region's bounds — including by the item unmounting. |
-| `NoteTextChanged` | `noteId`, `text` | A `Note` edit is committed (the editor loses focus) — the same moment `onTextChange` fires, never per keystroke. Carries the full committed text. |
-| `ChatMessageAdded` | `chatId`, `text` | A `Chat` given an `id` sends a message from its composer — the same moment `onSend` fires. |
+| Message                 | Fields               | Published when                                                                                                                                                                                                                                                                             |
+| ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ItemAddedToRegion`     | `regionId`, `itemId` | A sibling `CanvasItem` carrying an `id` newly has its center point within a `Region`'s bounds — whether the item moved into the region, or the region was moved/resized over it. Also published on mount for every item already contained, so a subscriber never misses the initial state. |
+| `ItemRemovedFromRegion` | `regionId`, `itemId` | Such an item's center point leaves the region's bounds — including by the item unmounting.                                                                                                                                                                                                 |
+| `NoteTextChanged`       | `noteId`, `text`     | A `Note` edit is committed (the editor loses focus) — the same moment `onTextChange` fires, never per keystroke. Carries the full committed text.                                                                                                                                          |
+| `ChatMessageAdded`      | `chatId`, `text`     | A `Chat` given an `id` sends a message from its composer — the same moment `onSend` fires.                                                                                                                                                                                                 |
 
 All of them are plain classes with `constructor(readonly ...)` fields, importable from `@cratis/components/Canvas`.
 
@@ -61,7 +63,7 @@ import { useMessenger } from '@cratis/arc.react/messaging';
 
 const messenger = useMessenger();
 const handleFlip = () => {
-    onFlip(card.id);                                   // the callback contract stays primary
+    onFlip(card.id); // the callback contract stays primary
     messenger.publish(new CardFlipped(card.id, !card.faceUp));
 };
 ```

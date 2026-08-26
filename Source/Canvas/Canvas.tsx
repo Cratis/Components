@@ -347,33 +347,41 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     // is a faithful change signal for useSyncExternalStore consumers — same reference back means
     // nothing changed. Entry objects are replaced wholesale on update, never mutated, so entries
     // shared between an old snapshot and a new one are safe to hold onto.
-    const registrySnapshotRef = useRef<ReadonlyMap<string, CanvasItemRegistryEntry>>(new Map());
+    const registrySnapshotRef = useRef<ReadonlyMap<string, CanvasItemRegistryEntry>>(
+        new Map(),
+    );
     const registryListenersRef = useRef<Set<() => void>>(new Set());
 
     const notifyRegistryChanged = useCallback(() => {
         registrySnapshotRef.current = new Map(itemRegistryRef.current);
-        setItemRegistryVersion(version => version + 1);
-        registryListenersRef.current.forEach(listener => listener());
+        setItemRegistryVersion((version) => version + 1);
+        registryListenersRef.current.forEach((listener) => listener());
     }, []);
 
-    const registerItem = useCallback((id: string, entry: CanvasItemRegistryEntry) => {
-        const existing = itemRegistryRef.current.get(id);
-        if (
-            existing &&
-            existing.x === entry.x &&
-            existing.y === entry.y &&
-            existing.width === entry.width &&
-            existing.height === entry.height
-        )
-            return;
-        itemRegistryRef.current.set(id, entry);
-        notifyRegistryChanged();
-    }, [notifyRegistryChanged]);
+    const registerItem = useCallback(
+        (id: string, entry: CanvasItemRegistryEntry) => {
+            const existing = itemRegistryRef.current.get(id);
+            if (
+                existing &&
+                existing.x === entry.x &&
+                existing.y === entry.y &&
+                existing.width === entry.width &&
+                existing.height === entry.height
+            )
+                return;
+            itemRegistryRef.current.set(id, entry);
+            notifyRegistryChanged();
+        },
+        [notifyRegistryChanged],
+    );
 
-    const unregisterItem = useCallback((id: string) => {
-        if (!itemRegistryRef.current.delete(id)) return;
-        notifyRegistryChanged();
-    }, [notifyRegistryChanged]);
+    const unregisterItem = useCallback(
+        (id: string) => {
+            if (!itemRegistryRef.current.delete(id)) return;
+            notifyRegistryChanged();
+        },
+        [notifyRegistryChanged],
+    );
 
     const getRegistrySnapshot = useCallback(
         (): ReadonlyMap<string, CanvasItemRegistryEntry> => registrySnapshotRef.current,

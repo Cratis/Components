@@ -2,7 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type React from 'react';
-import { useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import {
+    useCallback,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+    useSyncExternalStore,
+} from 'react';
 import { CanvasItemRegistryContext, type CanvasItemRegistryEntry } from '../../Canvas';
 import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
 import { ItemAddedToRegion } from './ItemAddedToRegion';
@@ -17,27 +24,35 @@ const MIN_SIZE = 100;
 // permanently empty. Module-level so their identities never change between renders — a changing
 // subscribe identity would make useSyncExternalStore resubscribe every render.
 const EMPTY_REGISTRY: ReadonlyMap<string, CanvasItemRegistryEntry> = new Map();
-const getEmptyRegistry = (): ReadonlyMap<string, CanvasItemRegistryEntry> => EMPTY_REGISTRY;
-const subscribeToNothing = (): (() => void) => () => { /* nothing to unsubscribe */ };
+const getEmptyRegistry = (): ReadonlyMap<string, CanvasItemRegistryEntry> =>
+    EMPTY_REGISTRY;
+const subscribeToNothing = (): (() => void) => () => {
+    /* nothing to unsubscribe */
+};
 
 const HANDLE_KEYS = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'] as const;
 type HandleKey = (typeof HANDLE_KEYS)[number];
 
 const HANDLE_POSITIONS: Record<HandleKey, React.CSSProperties> = {
     nw: { top: -4, left: -4 },
-    n:  { top: -4, left: '50%', transform: 'translateX(-50%)' },
+    n: { top: -4, left: '50%', transform: 'translateX(-50%)' },
     ne: { top: -4, right: -4 },
-    e:  { top: '50%', right: -4, transform: 'translateY(-50%)' },
+    e: { top: '50%', right: -4, transform: 'translateY(-50%)' },
     se: { bottom: -4, right: -4 },
-    s:  { bottom: -4, left: '50%', transform: 'translateX(-50%)' },
+    s: { bottom: -4, left: '50%', transform: 'translateX(-50%)' },
     sw: { bottom: -4, left: -4 },
-    w:  { top: '50%', left: -4, transform: 'translateY(-50%)' },
+    w: { top: '50%', left: -4, transform: 'translateY(-50%)' },
 };
 
 const RESIZE_CURSORS: Record<HandleKey, string> = {
-    nw: 'nw-resize', n: 'n-resize', ne: 'ne-resize',
-    e: 'e-resize',   se: 'se-resize',
-    s: 's-resize',   sw: 'sw-resize', w: 'w-resize',
+    nw: 'nw-resize',
+    n: 'n-resize',
+    ne: 'ne-resize',
+    e: 'e-resize',
+    se: 'se-resize',
+    s: 's-resize',
+    sw: 'sw-resize',
+    w: 'w-resize',
 };
 
 /** Controlled data rendered by {@link Region}. */
@@ -107,7 +122,17 @@ export interface RegionProps {
  * this region is given `id={region.id}`, which is how the region recognizes and excludes itself.
  * Without an `ArcContext.Provider` (or with items that carry no `id`) all of this is silently inert.
  */
-export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize, onResizeEnd, onNameChange, children }: RegionProps) => {
+export const Region = ({
+    region,
+    selected,
+    onSelect,
+    onMove,
+    onMoveEnd,
+    onResize,
+    onResizeEnd,
+    onNameChange,
+    children,
+}: RegionProps) => {
     const [isEditing, setIsEditing] = useState(false);
 
     const regionRef = useRef<HTMLDivElement>(null);
@@ -146,14 +171,23 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
         );
         const current = new Set(within);
         const previous = membershipRef.current;
-        current.forEach(itemId => {
+        current.forEach((itemId) => {
             if (!previous.has(itemId)) publish(new ItemAddedToRegion(region.id, itemId));
         });
-        previous.forEach(itemId => {
-            if (!current.has(itemId)) publish(new ItemRemovedFromRegion(region.id, itemId));
+        previous.forEach((itemId) => {
+            if (!current.has(itemId))
+                publish(new ItemRemovedFromRegion(region.id, itemId));
         });
         membershipRef.current = current;
-    }, [publish, registrySnapshot, region.id, region.x, region.y, region.width, region.height]);
+    }, [
+        publish,
+        registrySnapshot,
+        region.id,
+        region.x,
+        region.y,
+        region.width,
+        region.height,
+    ]);
 
     const dragRef = useRef<{
         clientX: number;
@@ -189,7 +223,8 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
     const handlePointerDown = useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
             if (isEditing) return;
-            clickedTitleBarRef.current = titleBarRef.current?.contains(event.target as Node) ?? false;
+            clickedTitleBarRef.current =
+                titleBarRef.current?.contains(event.target as Node) ?? false;
             if (!clickedTitleBarRef.current) return;
             event.stopPropagation();
             onSelect(region.id, event.shiftKey || event.metaKey || event.ctrlKey);
@@ -202,7 +237,7 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
             };
             event.currentTarget.setPointerCapture(event.pointerId);
         },
-        [isEditing, region.id, region.x, region.y, onSelect, readEffectiveZoom]
+        [isEditing, region.id, region.x, region.y, onSelect, readEffectiveZoom],
     );
 
     const handlePointerMove = useCallback(
@@ -213,7 +248,7 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
             const deltaY = (event.clientY - clientY) / zoom;
             onMove(region.id, startX + deltaX, startY + deltaY);
         },
-        [region.id, onMove]
+        [region.id, onMove],
     );
 
     const handlePointerUp = useCallback(() => {
@@ -241,13 +276,22 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
             };
             event.currentTarget.setPointerCapture(event.pointerId);
         },
-        [region.x, region.y, region.width, region.height, readEffectiveZoom]
+        [region.x, region.y, region.width, region.height, readEffectiveZoom],
     );
 
     const handleResizePointerMove = useCallback(
         (event: React.PointerEvent<HTMLDivElement>) => {
             if (!resizeRef.current || !event.buttons) return;
-            const { handle, clientX, clientY, startX, startY, startWidth, startHeight, zoom } = resizeRef.current;
+            const {
+                handle,
+                clientX,
+                clientY,
+                startX,
+                startY,
+                startWidth,
+                startHeight,
+                zoom,
+            } = resizeRef.current;
             const deltaX = (event.clientX - clientX) / zoom;
             const deltaY = (event.clientY - clientY) / zoom;
 
@@ -273,7 +317,7 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
 
             onResize(region.id, newX, newY, newWidth, newHeight);
         },
-        [region.id, onResize]
+        [region.id, onResize],
     );
 
     const handleResizePointerUp = useCallback(() => {
@@ -291,15 +335,19 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
         setIsEditing(true);
     }, []);
 
-    const commitRename = useCallback((newName: string) => {
-        setIsEditing(false);
-        const trimmed = newName.trim();
-        if (trimmed && trimmed !== region.name) onNameChange(region.id, trimmed);
-    }, [region.id, region.name, onNameChange]);
+    const commitRename = useCallback(
+        (newName: string) => {
+            setIsEditing(false);
+            const trimmed = newName.trim();
+            if (trimmed && trimmed !== region.name) onNameChange(region.id, trimmed);
+        },
+        [region.id, region.name, onNameChange],
+    );
 
     const handleInputBlur = useCallback(
-        (event: React.FocusEvent<HTMLInputElement>) => commitRename(event.currentTarget.value),
-        [commitRename]
+        (event: React.FocusEvent<HTMLInputElement>) =>
+            commitRename(event.currentTarget.value),
+        [commitRename],
     );
 
     const handleInputKeyDown = useCallback(
@@ -307,7 +355,7 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
             if (event.key === 'Enter') commitRename(event.currentTarget.value);
             else if (event.key === 'Escape') setIsEditing(false);
         },
-        [commitRename]
+        [commitRename],
     );
 
     return (
@@ -331,32 +379,34 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
                             autoFocus
                             onBlur={handleInputBlur}
                             onKeyDown={handleInputKeyDown}
-                            onPointerDown={event => event.stopPropagation()}
+                            onPointerDown={(event) => event.stopPropagation()}
                         />
                     ) : (
                         <span className='canvas-region__name'>{region.name}</span>
                     )}
                 </div>
 
-                {selected && HANDLE_KEYS.map(handle => (
-                    <div
-                        key={handle}
-                        className='canvas-region__handle'
-                        style={{ ...HANDLE_POSITIONS[handle], cursor: RESIZE_CURSORS[handle] }}
-                        onPointerDown={handleResizePointerDown(handle)}
-                        onPointerMove={handleResizePointerMove}
-                        onPointerUp={handleResizePointerUp}
-                        onPointerCancel={handleResizePointerUp}
-                    />
-                ))}
+                {selected &&
+                    HANDLE_KEYS.map((handle) => (
+                        <div
+                            key={handle}
+                            className='canvas-region__handle'
+                            style={{
+                                ...HANDLE_POSITIONS[handle],
+                                cursor: RESIZE_CURSORS[handle],
+                            }}
+                            onPointerDown={handleResizePointerDown(handle)}
+                            onPointerMove={handleResizePointerMove}
+                            onPointerUp={handleResizePointerUp}
+                            onPointerCancel={handleResizePointerUp}
+                        />
+                    ))}
             </div>
             {/* Member items are positioned relative to the region's top-left (region.x/region.y). They
                 live outside the bordered box so the region's border does not offset their coordinate
                 origin — otherwise items would jump by the border width when moved into or out of a
                 region. */}
-            <div className='canvas-region__items'>
-                {children}
-            </div>
+            <div className='canvas-region__items'>{children}</div>
         </>
     );
 };

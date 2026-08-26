@@ -42,9 +42,12 @@ export type OptionalPublish = <TMessage extends object>(message: TMessage) => vo
 export function useOptionalMessenger(): OptionalPublish | undefined {
     const messenger = useMessenger() as ReturnType<typeof useMessenger> | undefined;
 
-    const publish = useCallback(<TMessage extends object>(message: TMessage) => {
-        messenger?.publish(message);
-    }, [messenger]);
+    const publish = useCallback(
+        <TMessage extends object>(message: TMessage) => {
+            messenger?.publish(message);
+        },
+        [messenger],
+    );
 
     return messenger ? publish : undefined;
 }

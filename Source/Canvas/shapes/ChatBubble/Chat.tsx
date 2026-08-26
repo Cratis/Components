@@ -55,7 +55,6 @@ export interface ChatLabels {
  * Accepts message data and reports sends/reactions/actions; owns no state except the draft being typed.
  */
 export interface ChatProps {
-
     /**
      * Identifies this conversation for opt-in messaging: when set, every send additionally
      * publishes a {@link ChatMessageAdded} carrying this id over the Arc messenger, at the same
@@ -220,10 +219,13 @@ export const Chat: React.FC<ChatProps> = ({
     // the `id` prop — without one there is nothing to key a {@link ChatMessageAdded} by.
     const publish = useOptionalMessenger();
 
-    const handleSend = useCallback((text: string) => {
-        onSend(text);
-        if (id) publish?.(new ChatMessageAdded(id, text));
-    }, [onSend, id, publish]);
+    const handleSend = useCallback(
+        (text: string) => {
+            onSend(text);
+            if (id) publish?.(new ChatMessageAdded(id, text));
+        },
+        [onSend, id, publish],
+    );
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

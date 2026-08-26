@@ -109,13 +109,13 @@ Both layers share the same camera: panning and zooming transform the DOM layer's
 
 `CanvasItem` positions and measures DOM content inside a `Canvas`.
 
-| Prop       | Type                      | Meaning                                                                                                                        |
-| ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Prop       | Type                      | Meaning                                                                                                                                                                                                                                                                                                                                             |
+| ---------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`       | `string`                  | Registers the item under a caller-chosen key instead of an internally generated one, making its bounds addressable by id — what a sibling `Region` matches against for membership reporting. Omit for the same behavior as before this prop existed: still measured for the minimap/fit-to-content, but anonymous to anything matching items by id. |
-| `x` / `y`  | `number`                  | World position.                                                                                                                |
-| `zIndex`   | `number`                  | Item-root stacking order. Use this rather than a descendant z-index because each transformed item is its own stacking context. |
-| `onSize`   | `(width, height) => void` | Reports measured size changes.                                                                                                 |
-| `children` | `ReactNode`               | Item content.                                                                                                                  |
+| `x` / `y`  | `number`                  | World position.                                                                                                                                                                                                                                                                                                                                     |
+| `zIndex`   | `number`                  | Item-root stacking order. Use this rather than a descendant z-index because each transformed item is its own stacking context.                                                                                                                                                                                                                      |
+| `onSize`   | `(width, height) => void` | Reports measured size changes.                                                                                                                                                                                                                                                                                                                      |
+| `children` | `ReactNode`               | Item content.                                                                                                                                                                                                                                                                                                                                       |
 
 ### Item registry: `getSnapshot`/`subscribe`
 
