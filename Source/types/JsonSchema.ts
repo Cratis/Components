@@ -49,8 +49,8 @@ export interface JsonSchemaProperty {
     items?: JsonSchema;
     /** Nested object property definitions (when `type` is "object"). */
     properties?: Record<string, JsonSchemaProperty>;
-    /** Whether this property is required in its parent object. */
-    required?: boolean;
+    /** List of required property names within this property's own `properties` (when `type` is "object"). Matches {@link JsonSchema.required}. */
+    required?: string[];
     /** Reference to another schema definition (URI fragment or external reference). */
     $ref?: string;
 }

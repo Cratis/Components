@@ -100,15 +100,21 @@ For `string` types, select a format to provide hints about expected value patter
 }
 ```
 
-## Toggling Required
+## Required Properties
 
-Click the checkbox in the Required column to mark a property as required or optional.
+SchemaEditor does not currently render a Required column or an interactive
+checkbox to toggle a property's required state — there is no in-table
+control for this. Set and unset required properties by editing the schema's
+`required` array yourself (for example before passing `schema`, or by
+transforming the value your own `onChange` handler receives).
 
-Required properties:
+What SchemaEditor _does_ guarantee is that the `required` array on each
+object schema stays internally consistent as you edit that object's other
+properties:
 
-- Must be present in valid data
-- Are listed in the schema's `required` array
-- Show a checkmark in the table
+- Renaming a required property updates the `required` array to the new name.
+- Deleting a required property removes it from the `required` array as well as from `properties` — no separate step is needed.
+- Each nested `object` schema's `required` array is scoped to its own `properties`, independent of its parent's or any sibling's `required` array.
 
 ```typescript
 {

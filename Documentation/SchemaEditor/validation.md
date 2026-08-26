@@ -9,9 +9,9 @@ Property names must:
 1. **Be unique** within the schema
 2. **Not be empty**
 3. **Follow identifier conventions** (recommended but not enforced)
-   - Start with letter or underscore
-   - Contain only letters, numbers, underscores
-   - Avoid JavaScript reserved words
+    - Start with letter or underscore
+    - Contain only letters, numbers, underscores
+    - Avoid JavaScript reserved words
 
 ### Uniqueness Check
 
@@ -102,16 +102,20 @@ The `required` array lists properties that must be present:
 ### Validation Rules
 
 1. **Required properties must exist** in `properties`
-2. **Cannot remove required property** without unmarking as required first
+2. **Deleting a required property** removes it from both `properties` and `required` in one step — there is no separate "unmark as required first" gate
 3. **Renaming a required property** updates the `required` array
+4. **Required tracking is scoped per object schema** — a nested `object` property's own `required` array only names its own properties, never those of its parent or siblings
 
 ```typescript
 // Before rename
-required: ['oldName']
+required: ['oldName'];
 
 // After renaming 'oldName' to 'newName'
-required: ['newName']  // Automatically updated
+required: ['newName']; // Automatically updated
 ```
+
+SchemaEditor does not currently expose an in-table control for toggling a
+property's required state; see [Editing Properties](editing.md#required-properties).
 
 ## Schema Structure Validation
 
@@ -235,21 +239,21 @@ Validation checks:
 As you edit, SchemaEditor validates:
 
 1. **On property name change**
-   - Check uniqueness
-   - Update required array if needed
+    - Check uniqueness
+    - Update required array if needed
 
 2. **On type change**
-   - Clear incompatible format
-   - Remove incompatible constraints
-   - Prompt for type-specific requirements
+    - Clear incompatible format
+    - Remove incompatible constraints
+    - Prompt for type-specific requirements
 
 3. **On format change**
-   - Verify format is valid for type
-   - Show format examples
+    - Verify format is valid for type
+    - Show format examples
 
 4. **On required toggle**
-   - Add/remove from required array
-   - Update visual indicators
+    - Add/remove from required array
+    - Update visual indicators
 
 ## Validation Messages
 

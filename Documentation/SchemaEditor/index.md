@@ -13,7 +13,7 @@ SchemaEditor allows users to define data structures by adding properties, specif
 - Interactive property editing
 - Type selection from JSON schema types
 - Format specification for common patterns
-- Required/optional property flags
+- `required` array tracking per object schema, kept consistent across renames and deletes (see [Editing Properties](editing.md#required-properties) — no in-table toggle control yet)
 - Array and object type support
 - Inline editing with validation
 - Add/remove properties
@@ -79,12 +79,17 @@ What is deliberately **not** supported: JSON Schema composition keywords (`oneOf
 
 Properties are displayed in a table:
 
-| Name      | Type   | Format    | Required |
-| --------- | ------ | --------- | -------- |
-| name      | string | -         | ✓        |
-| email     | string | email     | ✓        |
-| age       | number | -         |          |
-| createdAt | string | date-time |          |
+| Property  | Type      |
+| --------- | --------- |
+| name      | string    |
+| email     | email     |
+| age       | number    |
+| createdAt | date-time |
+
+The Type column shows the property's format when one is set, falling back to
+its JSON type otherwise. There is no separate Required column; see
+[Editing Properties](editing.md#required-properties) for how `required` is
+tracked.
 
 ## See Also
 

@@ -69,33 +69,64 @@ export const defaultSchemaEditorLabels: SchemaEditorLabels = {
     invalidJson: 'The schema must contain valid JSON before it can be edited.',
 };
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Recursively validates that a parsed schema node, and every nested
+ * `properties` value and `items` schema it contains, is a well-formed object
+ * shape. A JSON-valid document can still smuggle malformed nested values
+ * (e.g. `properties.foo: null` or `items: "string"`) that later code
+ * dereferences as schema objects; those are rejected here rather than
+ * crashing downstream.
+ */
+const isValidSchemaNode = (node: unknown): node is JsonSchema => {
+    if (!isPlainObject(node)) {
+        return false;
+    }
+
+    if (node.properties !== undefined) {
+        if (!isPlainObject(node.properties)) {
+            return false;
+        }
+        for (const propertyValue of Object.values(node.properties)) {
+            if (!isValidSchemaNode(propertyValue)) {
+                return false;
+            }
+        }
+    }
+
+    if (node.items !== undefined && !isValidSchemaNode(node.items)) {
+        return false;
+    }
+
+    return true;
+};
+
 const cloneSchema = (schema: JsonSchema): JsonSchema | undefined => {
     try {
         const serializedSchema = JSON.stringify(schema);
         if (serializedSchema === undefined) return undefined;
 
         const parsedSchema: unknown = JSON.parse(serializedSchema);
-        if (
-            typeof parsedSchema !== 'object' ||
-            parsedSchema === null ||
-            Array.isArray(parsedSchema)
-        ) {
+        if (!isValidSchemaNode(parsedSchema)) {
             return undefined;
         }
 
-        return parsedSchema as JsonSchema;
+        return parsedSchema;
     } catch {
         return undefined;
     }
 };
 
 const asJsonSchema = (property: JsonSchemaProperty): JsonSchema => {
-    // SAFETY: A nested schema property has the same editable shape; its row-only required flag is not read here.
+    // SAFETY: A nested "object" property has the same editable shape as a schema —
+    // `properties`, `items`, and `required` all mean the same thing on both types.
     return property as unknown as JsonSchema;
 };
 
 const asJsonSchemaProperty = (schema: JsonSchema): JsonSchemaProperty => {
-    // SAFETY: A nested schema is stored in the property's schema-shaped fields; required is not changed here.
+    // SAFETY: The inverse of asJsonSchema; the shapes are structurally interchangeable.
     return schema as unknown as JsonSchemaProperty;
 };
 
@@ -210,8 +241,7 @@ export const SchemaEditor = ({
             const errors: Record<string, string> = {};
 
             properties.forEach((prop) => {
-                if (!prop.name) return;
-                const error = validatePropertyName(prop.name, prop.id!, properties);
+                const error = validatePropertyName(prop.name ?? '', prop.id!, properties);
                 if (error) {
                     errors[prop.id!] = error;
                 }
@@ -265,10 +295,12 @@ export const SchemaEditor = ({
                     description: property.description,
                     items: property.items,
                     properties: property.properties,
-                    required:
-                        (currentSchema.required as string[] | undefined)?.includes(
-                            name,
-                        ) || false,
+                    // A property's own `required` array (populated when its `type`
+                    // is "object") lists which of *its* properties are required.
+                    // It is scoped to this property alone — never to the parent
+                    // schema's `required` array — and is carried through verbatim
+                    // so navigating into it (see asJsonSchema) sees it intact.
+                    required: property.required,
                 });
             }
         }
@@ -344,7 +376,18 @@ export const SchemaEditor = ({
             updateSchemaAtPath(currentPath, (schema) => {
                 const newProps = { ...(schema.properties || {}) };
                 delete newProps[propertyName];
-                return { ...schema, properties: newProps };
+
+                // Deleting a property must also drop it from this schema's own
+                // `required` array, or the array keeps naming a property that no
+                // longer exists in `properties`.
+                const updated: JsonSchema = { ...schema, properties: newProps };
+                if (schema.required?.includes(propertyName)) {
+                    updated.required = schema.required.filter(
+                        (name) => name !== propertyName,
+                    );
+                }
+
+                return updated;
             });
         },
         [currentPath, updateSchemaAtPath],
@@ -361,23 +404,43 @@ export const SchemaEditor = ({
                 const newProps = { ...(schema.properties || {}) };
                 const prop = { ...(newProps[oldName] || {}) };
 
+                let newRequired = schema.required;
+
                 if (field === 'name') {
-                    if (value !== oldName && !newProps[value as string]) {
-                        newProps[value as string] = prop;
+                    const newName = value as string;
+                    if (newName !== oldName && !newProps[newName]) {
+                        newProps[newName] = prop;
                         delete newProps[oldName];
+
+                        // Renaming a required property must keep the `required`
+                        // array pointing at the new name, or it goes stale and
+                        // silently references a property that no longer exists.
+                        if (schema.required?.includes(oldName)) {
+                            newRequired = schema.required.map((name) =>
+                                name === oldName ? newName : name,
+                            );
+                        }
                     }
                 } else if (field === 'type') {
                     prop.type = value as string;
                     if (value === 'array') {
                         prop.items = { type: 'string' };
                         delete prop.format;
+                        // Only an "object" property has a meaningful `required`
+                        // array of its own; any prior one is now stale.
+                        delete prop.required;
                     } else if (value === 'object') {
                         prop.properties = {};
                         delete prop.format;
                         delete prop.items;
+                        // Starting fresh with empty `properties`, so any prior
+                        // `required` array (naming properties that no longer
+                        // exist here) would be stale.
+                        delete prop.required;
                     } else {
                         delete prop.items;
                         delete prop.properties;
+                        delete prop.required;
                     }
 
                     if (additionalUpdates) {
@@ -400,7 +463,7 @@ export const SchemaEditor = ({
                     newProps[oldName] = prop;
                 }
 
-                return { ...schema, properties: newProps };
+                return { ...schema, properties: newProps, required: newRequired };
             });
         },
         [currentPath, updateSchemaAtPath],
