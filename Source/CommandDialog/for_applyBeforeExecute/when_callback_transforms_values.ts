@@ -4,7 +4,7 @@
 import { applyBeforeExecute } from '../applyBeforeExecute';
 
 describe('when applyBeforeExecute is given a transforming callback', () => {
-    const current = { id: '', name: 'Ada' };
+    const current = { id: '', name: 'Sample User' };
     let result: { id: string; name: string };
 
     beforeEach(async () => {
@@ -16,6 +16,6 @@ describe('when applyBeforeExecute is given a transforming callback', () => {
     });
 
     it('should_preserve_untouched_values', () => {
-        result.name.should.equal('Ada');
+        result.name.should.equal('Sample User');
     });
 });

@@ -22,11 +22,11 @@ export default meta;
 type Story = StoryObj<typeof Chat>;
 
 const you = Guid.create();
-const ada = Guid.create();
+const sampleUserId = Guid.create();
 const agent = Guid.create();
 
 const mentionCandidates: MentionCandidate[] = [
-    { id: ada.toString(), name: 'Ada', hasAvatar: false, kind: ChatAuthorKind.User },
+    { id: sampleUserId.toString(), name: 'Sample User', hasAvatar: false, kind: ChatAuthorKind.User },
     { id: agent.toString(), name: 'Review Agent', hasAvatar: false, kind: ChatAuthorKind.Agent },
 ];
 
@@ -34,9 +34,9 @@ function seedMessages(): ChatMessage[] {
     return [
         {
             id: Guid.create(),
-            authorId: ada,
-            authorName: 'Ada',
-            authorInitials: 'A',
+            authorId: sampleUserId,
+            authorName: 'Sample User',
+            authorInitials: 'SU',
             hasAvatar: false,
             authorKind: ChatAuthorKind.User,
             text: 'What do you think of the new layout?',

@@ -11,7 +11,7 @@ import {
 describe('when using built-in match modes', () => {
     const filters: DataTableFilterMeta = {
         name: {
-            value: 'Ada',
+            value: 'Sample User',
             matchMode: DataTableFilterMatchMode.Contains,
         },
         legacyCustomField: {
