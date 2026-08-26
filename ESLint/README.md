@@ -7,7 +7,7 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `no-root-barrel-import`       | Disallows importing a removed Components 3 component namespace from the Components 4 setup-only root. Use the exact component subpath (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …). Package-wide provider/configuration symbols remain allowed at the root; an unambiguous namespace violation is autofixed. |
 | `no-primereact-dialog`        | Disallows importing `Dialog` from `primereact/dialog`. Use `CommandDialog` from `@cratis/components/CommandDialog`, or `Dialog` from `@cratis/components/Dialogs` — the wrappers add Arc command binding, overlay/focus fixes, and theming.                                                                                                                          |
-| `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. `onBeforeExecute` is a transformer — a body that can complete without returning silently skips the transform (the runtime keeps the previous values and warns instead of executing with `undefined`).                                                                                           |
+| `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. The runtime guards a missing return by keeping the current object and warning, but a replacement value is discarded and the callback violates the transformer contract.                                                                                                                           |
 | `no-hooks-in-view-model`      | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions.                                                                                                                                                                                        |
 | `no-raw-command-form-marker`  | Disallows identifying a CommandForm field or column by a hand-written `displayName` string, in either direction. Use `markAsCommandFormField`/`markAsCommandFormColumn` and `isCommandFormField`/`isCommandFormColumn` from `@cratis/components/CommandForm` — they go through a marker a build transform cannot rewrite.                                            |
 
@@ -134,21 +134,20 @@ form with guidance but never autofixes any of them; see
 `onBeforeExecute` (on `CommandDialog`, `StepperCommandDialog`, `CommandScope`, …) is a
 **transformer**: it receives the current command values and must **return** them (mutated or
 not). A callback that returns nothing does not run the command with `undefined` — a runtime
-guard (`applyBeforeExecute`) keeps the current values and logs a `console.warn` instead. But
-the callback's intended changes never applied, and that warning is easy to miss outside a
-fully-typed call site, so the bug still ships silently in practice. TypeScript catches this at
-fully-typed call sites; this rule is the static backstop for JavaScript and loosely-typed
-consumers.
+guard (`applyBeforeExecute`) falls back to the current object and logs a `console.warn`.
+In-place mutations may therefore remain, but a replacement object is discarded and the call
+still violates the transformer contract. TypeScript catches this at fully typed call sites;
+this rule is the static backstop for JavaScript and loosely typed consumers, so behavior never
+relies on the fallback.
 
 ```tsx
 // ✅ returns the values
 <CommandDialog onBeforeExecute={values => { values.id = Guid.create(); return values; }} />
 <CommandDialog onBeforeExecute={values => values} />
 
-// ❌ side-effect only — the transform is silently skipped: the runtime keeps the previous
-// values and warns, `values.id` is never applied
-<CommandDialog onBeforeExecute={values => { values.id = Guid.create(); }} />
-// ❌ bare return — same silent skip
+// ❌ replacement is discarded — the runtime falls back to `values` and warns
+<CommandDialog onBeforeExecute={values => { const updated = { ...values, id: Guid.create() }; }} />
+// ❌ bare return — same guarded fallback
 <CommandDialog onBeforeExecute={values => { return; }} />
 ```
 

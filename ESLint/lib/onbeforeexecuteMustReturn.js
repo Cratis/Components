@@ -68,12 +68,12 @@ const isOnBeforeExecuteCallback = (node) => {
 };
 
 // Require an `onBeforeExecute` callback to return the command values on every path. It is a
-// transformer, not a side-effect hook: a body that can complete without returning silently
-// skips the transform — a runtime guard (`applyBeforeExecute`) keeps the current values and
-// logs a `console.warn` instead of executing the command with `undefined`, but the callback's
-// intended changes never applied and that warning is easy to miss outside a fully-typed call
-// site. A lint backstop for consumers whose call sites are not fully typed — it flags a
-// block-bodied callback that returns nothing, or a bare `return;`. It does not do full path
+// transformer, not a side-effect hook. A runtime guard (`applyBeforeExecute`) prevents a
+// missing return from executing with `undefined`: it falls back to the current object and logs
+// a warning. In-place mutations may remain because the callback received that same object, but
+// a replacement object is discarded and the callback still violates its contract. This lint
+// backstop keeps JavaScript and loosely typed call sites from relying on that fallback. It flags
+// a block-bodied callback that returns nothing, or a bare `return;`. It does not do full path
 // analysis, so a callback that returns a value on some branches but can still fall through is
 // not flagged.
 export const onbeforeexecuteMustReturn = {
@@ -81,16 +81,16 @@ export const onbeforeexecuteMustReturn = {
         type: 'problem',
         docs: {
             description:
-                'Require an onBeforeExecute callback to return the command values; a callback that returns nothing silently skips the transform (the runtime keeps the previous values and warns instead of applying it).',
+                'Require an onBeforeExecute callback to return the command values; on a missing return the runtime falls back to the current object and warns, so replacement values are discarded.',
             recommended: true,
             url: 'https://github.com/Cratis/Components/blob/main/ESLint/README.md',
         },
         schema: [],
         messages: {
             missingReturn:
-                'onBeforeExecute is a transformer and must return the command values. This callback can complete without returning, which silently skips the transform: the runtime keeps the current values and logs a warning instead of applying your changes. Return the values (mutated or not).',
+                'onBeforeExecute is a transformer and must return the command values. This callback can complete without returning, so the runtime falls back to the current object and logs a warning; any replacement value is discarded. Return the values (mutated or not).',
             emptyReturn:
-                'onBeforeExecute must return the command values, not `return;`. A bare return silently skips the transform: the runtime keeps the current values and logs a warning instead of applying your changes. Return the values (mutated or not).',
+                'onBeforeExecute must return the command values, not `return;`. The runtime falls back to the current object and logs a warning; any replacement value is discarded. Return the values (mutated or not).',
         },
     },
     create(context) {

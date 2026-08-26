@@ -442,11 +442,9 @@ tsRuleTester.run('onbeforeexecute-must-return', onbeforeexecuteMustReturn, {
 });
 
 describe('onbeforeexecute-must-return message wording', () => {
-    // The runtime guard (applyBeforeExecute) keeps the previous command values and warns
-    // instead of executing with `undefined` — it does not wipe the command values. The rule's
-    // messages must describe that current behavior (a silently skipped transform), not the
-    // pre-guard "executes with undefined"/"wiped" wording, so the guidance never drifts back
-    // out of sync with the runtime it backstops.
+    // The runtime guard (applyBeforeExecute) falls back to the current object and warns instead
+    // of executing with `undefined`; in-place mutations may remain, while replacement values are
+    // discarded. Keep the rule aligned with that behavior rather than the pre-guard data-loss claim.
     const { missingReturn, emptyReturn } = onbeforeexecuteMustReturn.meta.messages;
 
     it('does not claim the command executes with undefined values', () => {
@@ -459,11 +457,13 @@ describe('onbeforeexecute-must-return message wording', () => {
         expect(emptyReturn).not.toMatch(/wipe/i);
     });
 
-    it('describes the transform being silently skipped and the values kept', () => {
-        expect(missingReturn).toMatch(/silently skips the transform/);
-        expect(missingReturn).toMatch(/keeps the current values/);
-        expect(emptyReturn).toMatch(/silently skips the transform/);
-        expect(emptyReturn).toMatch(/keeps the current values/);
+    it('describes the guarded fallback and discarded replacement value', () => {
+        expect(missingReturn).toMatch(/falls back to the current object/);
+        expect(missingReturn).toMatch(/logs a warning/);
+        expect(missingReturn).toMatch(/replacement value is discarded/);
+        expect(emptyReturn).toMatch(/falls back to the current object/);
+        expect(emptyReturn).toMatch(/logs a warning/);
+        expect(emptyReturn).toMatch(/replacement value is discarded/);
     });
 });
 
