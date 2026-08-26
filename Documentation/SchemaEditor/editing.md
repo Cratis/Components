@@ -78,12 +78,12 @@ const schema = {
         address: {
             type: 'object',
             properties: {
-                city: { type: 'string' }
+                city: { type: 'string' },
             },
-            required: ['city']
-        }
+            required: ['city'],
+        },
     },
-    required: ['name']
+    required: ['name'],
 };
 ```
 
@@ -112,10 +112,7 @@ Do not infer batch or history behavior from the underlying table component; Sche
 Set `canEdit={false}` to keep the schema browsable without exposing editing actions:
 
 ```tsx
-<SchemaEditor
-    schema={schema}
-    canEdit={false}
-/>
+<SchemaEditor schema={schema} canEdit={false} />
 ```
 
 Nested object/array navigation and descriptions remain available for review. Add, delete, type, format, Save, and Cancel actions are unavailable.

@@ -90,9 +90,7 @@ try {
     process.exit(1);
 }
 
-const declarationWithDocs = readPackedText(
-    'package/dist/esm/Common/ErrorBoundary.d.ts',
-);
+const declarationWithDocs = readPackedText('package/dist/esm/Common/ErrorBoundary.d.ts');
 const declarationWithDeprecations = readPackedText(
     'package/dist/esm/Common/DatePickerInput.d.ts',
 );

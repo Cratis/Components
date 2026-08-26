@@ -31,17 +31,12 @@ export function MySchemaEditor() {
         type: 'object',
         properties: {
             name: { type: 'string' },
-            age: { type: 'number' }
+            age: { type: 'number' },
         },
-        required: ['name']
+        required: ['name'],
     });
 
-    return (
-        <SchemaEditor
-            schema={schema}
-            onChange={setSchema}
-        />
-    );
+    return <SchemaEditor schema={schema} onChange={setSchema} />;
 }
 ```
 

@@ -44,7 +44,14 @@
  * is missing a TSDoc comment.
  */
 
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
+import {
+    mkdtempSync,
+    rmSync,
+    writeFileSync,
+    mkdirSync,
+    existsSync,
+    readFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -163,7 +170,9 @@ const DECLARATION_KINDS = new Set([
  * the documentation for that member, even with no separate summary line above it).
  */
 function hasDocComment(checker, symbol) {
-    const summary = ts.displayPartsToString(symbol.getDocumentationComment(checker)).trim();
+    const summary = ts
+        .displayPartsToString(symbol.getDocumentationComment(checker))
+        .trim();
     if (summary.length > 0) return true;
     return symbol
         .getJsDocTags(checker)
@@ -269,9 +278,7 @@ function membersRequiringDocs(checker, target) {
     if ((target.flags & ts.SymbolFlags.Class) !== 0) {
         return ownPublicClassMembersOf(checker, target);
     }
-    if (
-        (target.flags & (ts.SymbolFlags.RegularEnum | ts.SymbolFlags.ConstEnum)) !== 0
-    ) {
+    if ((target.flags & (ts.SymbolFlags.RegularEnum | ts.SymbolFlags.ConstEnum)) !== 0) {
         return ownEnumMembersOf(checker, target);
     }
     return [];
@@ -340,7 +347,10 @@ export function findMissingDocs(root, fileToSubpaths) {
     /** @type {Map<ts.Symbol, { namePaths: Set<string>, subpaths: Set<string> }>} */
     const reachable = new Map();
     const record = (target, namePath, subpaths) => {
-        const entry = reachable.get(target) ?? { namePaths: new Set(), subpaths: new Set() };
+        const entry = reachable.get(target) ?? {
+            namePaths: new Set(),
+            subpaths: new Set(),
+        };
         entry.namePaths.add(namePath);
         for (const subpath of subpaths) entry.subpaths.add(subpath);
         reachable.set(target, entry);
@@ -529,9 +539,18 @@ export enum Mode {
         ]) {
             assert(symbols.includes(expected), `expected ${expected} to be flagged`);
         }
-        assert(!symbols.includes('Worker.hidden'), 'private class members must be ignored');
-        assert(!symbols.includes('Worker.hiddenId'), 'private parameter properties must be ignored');
-        assert(!symbols.some((symbol) => symbol.includes('constructor')), 'constructors must be ignored');
+        assert(
+            !symbols.includes('Worker.hidden'),
+            'private class members must be ignored',
+        );
+        assert(
+            !symbols.includes('Worker.hiddenId'),
+            'private parameter properties must be ignored',
+        );
+        assert(
+            !symbols.some((symbol) => symbol.includes('constructor')),
+            'constructors must be ignored',
+        );
     } finally {
         rmSync(dir, { recursive: true, force: true });
     }
@@ -590,10 +609,14 @@ function selfTestDeclarationEmitRetainsDocs() {
     const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
     assert(!configFile.error, 'Source/tsconfig.json must parse');
     const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, packageDir);
-    assert(parsed.options.removeComments !== true, 'declaration emit must retain TSDoc comments');
+    assert(
+        parsed.options.removeComments !== true,
+        'declaration emit must retain TSDoc comments',
+    );
 
     const dir = makeFixture({
-        'Widget.ts': '/** Public widget contract. */\nexport interface Widget {\n    /** Visible label. */\n    label: string;\n}\n',
+        'Widget.ts':
+            '/** Public widget contract. */\nexport interface Widget {\n    /** Visible label. */\n    label: string;\n}\n',
     });
     try {
         const source = path.join(dir, 'Widget.ts');
@@ -662,8 +685,7 @@ function selfTestUnreachableLocalExportIsIgnored() {
 function selfTestNamespaceReExportIsFollowedAndDeduped() {
     const dir = makeFixture({
         'tsconfig.json': FIXTURE_TSCONFIG,
-        'index.ts':
-            "import * as Widget from './Widget';\nexport { Widget };\n",
+        'index.ts': "import * as Widget from './Widget';\nexport { Widget };\n",
         'Widget/index.ts': 'export interface WidgetProps {\n    label: string;\n}\n',
     });
     try {
@@ -699,7 +721,10 @@ function selfTestNamespaceReExportIsFollowedAndDeduped() {
 const SELF_TESTS = [
     ['flags an undocumented interface and member', selfTestUndocumentedIsFlagged],
     ['passes a fully documented barrel', selfTestDocumentedPasses],
-    ['flags undocumented public class and enum members', selfTestClassAndEnumMembersAreFlagged],
+    [
+        'flags undocumented public class and enum members',
+        selfTestClassAndEnumMembersAreFlagged,
+    ],
     ['passes documented class and enum members', selfTestDocumentedClassAndEnumPasses],
     ['preserves TSDoc in declaration emit', selfTestDeclarationEmitRetainsDocs],
     ['ignores an unreachable local export', selfTestUnreachableLocalExportIsIgnored],
