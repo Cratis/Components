@@ -29,7 +29,7 @@ The current package manifest declares these peer dependencies:
 Strict installers can declare them explicitly; keep both Arc packages on the same application version:
 
 ```bash
-ARC_VERSION=22.1.0
+ARC_VERSION=22.3.0
 npm install @cratis/components \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
@@ -38,7 +38,7 @@ npm install @cratis/components \
 
 The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.
 
-**Yarn PnP note:** the current `@cratis/arc.react@22.1.0` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.1.0`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
+**Yarn PnP note:** the current `@cratis/arc.react@22.3.0` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.3.0`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
 `pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
 

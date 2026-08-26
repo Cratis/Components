@@ -158,7 +158,7 @@
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "22.1.0",
+        "@cratis/arc.vite": "22.3.0",
         "pixi.js": "^8.20.0"
     },
     "peerDependencies": {

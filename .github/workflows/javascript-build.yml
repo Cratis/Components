@@ -1,5 +1,9 @@
 name: JavaScript Build
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 on:
     workflow_dispatch:
         inputs:
@@ -34,10 +38,6 @@ on:
             - 'rollup.config.mjs'
             - 'yarn.lock'
             - '.github/workflows/javascript-build.yml'
-
-concurrency:
-    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-    cancel-in-progress: true
 
 permissions:
     contents: read
@@ -381,7 +381,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                arc-version: ['20.3.1', '21.19.4', '22.1.0']
+                arc-version: ['20.3.1', '21.19.4', '22.3.0']
 
         steps:
             - name: Checkout code
@@ -494,7 +494,7 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   npm install --ignore-scripts --no-audit --no-fund \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
+                    @cratis/arc@22.3.0 @cratis/arc.react@22.3.0 \
                     @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
                   node verify.mjs "${{ matrix.pixi }}"
@@ -508,7 +508,7 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   pnpm add --ignore-scripts --strict-peer-dependencies \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
+                    @cratis/arc@22.3.0 @cratis/arc.react@22.3.0 \
                     @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
                   pnpm exec node verify.mjs "${{ matrix.pixi }}"
@@ -531,7 +531,7 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   yarn add \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.1.0 @cratis/arc.react@22.1.0 \
+                    @cratis/arc@22.3.0 @cratis/arc.react@22.3.0 \
                     @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2 "${PIXI[@]}"
                   yarn node verify.mjs "${{ matrix.pixi }}"
