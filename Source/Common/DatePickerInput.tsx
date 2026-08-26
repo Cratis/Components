@@ -89,7 +89,7 @@ export interface DatePickerInputPassThrough {
     cell?: DatePickerPartAttributes;
     /** Today/clear action row. */
     buttonBar?: DatePickerPartAttributes;
-    /** Today action. */
+    /** Today action; disabled and non-interactive when today falls outside `minDate`/`maxDate`. */
     today?: DatePickerButtonAttributes;
     /** Clear action. */
     clear?: DatePickerButtonAttributes;
@@ -200,6 +200,12 @@ export const DatePickerInput = ({
     const datePickerMessages = messages?.datePicker;
     const resolvedTodayLabel = todayLabel ?? datePickerMessages?.today ?? 'Today';
     const resolvedClearLabel = clearLabel ?? datePickerMessages?.clear ?? 'Clear';
+    const minValue = asDateValue(minDate ?? null, showTime) ?? undefined;
+    const maxValue = asDateValue(maxDate ?? null, showTime) ?? undefined;
+    const todayValue = today(getLocalTimeZone());
+    const isTodayOutOfBounds =
+        (minValue !== undefined && todayValue.compare(minValue) < 0) ||
+        (maxValue !== undefined && todayValue.compare(maxValue) > 0);
     const rootClassName = classNames(
         'cratis-date-picker',
         pt?.root?.className,
@@ -249,8 +255,8 @@ export const DatePickerInput = ({
                 isDisabled={effectiveDisabled}
                 isReadOnly={effectiveReadOnly}
                 isInvalid={effectiveInvalid}
-                minValue={asDateValue(minDate ?? null, showTime) ?? undefined}
-                maxValue={asDateValue(maxDate ?? null, showTime) ?? undefined}
+                minValue={minValue}
+                maxValue={maxValue}
                 granularity={showTime ? 'minute' : 'day'}
                 hourCycle={
                     hourFormat === '12' ? 12 : hourFormat === '24' ? 24 : undefined
@@ -444,13 +450,12 @@ export const DatePickerInput = ({
                                         pt?.today?.className,
                                     )}
                                     data-cratis-part='today'
-                                    onClick={() =>
-                                        onChange(
-                                            today(getLocalTimeZone()).toDate(
-                                                getLocalTimeZone(),
-                                            ),
-                                        )
-                                    }
+                                    disabled={isTodayOutOfBounds}
+                                    aria-disabled={isTodayOutOfBounds || undefined}
+                                    onClick={() => {
+                                        if (isTodayOutOfBounds) return;
+                                        onChange(todayValue.toDate(getLocalTimeZone()));
+                                    }}
                                 >
                                     {resolvedTodayLabel}
                                 </button>

@@ -211,6 +211,7 @@ const withLegacyLocaleMessages = (
                     config.messages?.paginator?.last,
             },
             datePicker: {
+                ...config.messages?.datePicker,
                 today:
                     explicitMessages?.datePicker?.today ??
                     legacy.today ??
