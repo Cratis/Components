@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
+import { NoteTextChanged } from './NoteTextChanged';
 import { whenNoteFontReady } from './noteFont';
 
 const MIN_SIZE = 80;
@@ -132,6 +134,9 @@ export interface NoteProps {
 }
 
 export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, onMoveEnd, onResize, onResizeEnd, onTextChange, onExpandedChange }) => {
+    // Opt-in messaging: resolves to undefined without an Arc messenger, and the publish below then
+    // simply does not happen — the `onTextChange` callback remains the note's contract either way.
+    const publish = useOptionalMessenger();
     const noteRef = useRef<HTMLDivElement>(null);
     const measurerRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -294,10 +299,14 @@ export const Note: React.FC<NoteProps> = ({ note, selected, onSelect, onMove, on
 
     const handleTextareaBlur = useCallback(
         (event: React.FocusEvent<HTMLTextAreaElement>) => {
-            onTextChange(note.id, event.currentTarget.value);
+            const text = event.currentTarget.value;
+            onTextChange(note.id, text);
+            // Published at the same commit point as the callback — once per committed edit, never
+            // per keystroke — for hosts that listen on the messenger instead of (or besides) props.
+            publish?.(new NoteTextChanged(note.id, text));
             setIsEditing(false);
         },
-        [note.id, onTextChange]
+        [note.id, onTextChange, publish]
     );
 
     const handleTextareaKeyDown = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {

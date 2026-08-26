@@ -3,3 +3,7 @@
 
 export { Region } from './Region';
 export type { RegionProps, RegionData } from './Region';
+export { ItemAddedToRegion } from './ItemAddedToRegion';
+export { ItemRemovedFromRegion } from './ItemRemovedFromRegion';
+export { itemsWithinRegion } from './regionContainment';
+export type { RegionContainmentBounds } from './regionContainment';
