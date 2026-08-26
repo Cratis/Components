@@ -16,7 +16,7 @@
 > Redistributing a library that others build with needs a separate OEM License.
 >
 > Need to stay MIT-only? **`@cratis/components` 2.x remains on PrimeReact 10.** See
-> [Licensing](/components/migration/#licensing).
+> [Licensing](/components/migration/2-to-3/#licensing).
 
 Cratis Components is built on top of PrimeReact 11 and stays out of your way when it comes to styling. PrimeReact 11 is **unstyled-first** — it ships no widget chrome by default — so you decide the look: use the Cratis baseline theme, run PrimeReact's own styled mode, keep a theme's structure while painting your own palette, or take complete control and provide every visual yourself — all without forking the library or fighting it.
 

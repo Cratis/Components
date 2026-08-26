@@ -25,11 +25,38 @@
     opacity: 0.5;
 }
 
+/* The header button has no built-in spacing between its number badge and
+   title in v11 — without this, consecutive steps read as "1Basic Info2Details". */
+.cratis-command-stepper [data-scope="stepper"][data-part="header"] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cratis-command-stepper [data-scope="stepper"][data-part="number"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
+    font-size: 0.85rem;
+}
+
+.cratis-command-stepper [data-scope="stepper"][data-part="step"][data-active] [data-part="number"] {
+    background: var(--cratis-primary-color);
+    color: var(--cratis-primary-color-text);
+}
+
 /* Horizontal (default): the step list flows left-to-right. */
 .cratis-command-stepper--horizontal [data-scope="stepper"][data-part="list"] {
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: 1rem;
 }
 
 /* Vertical: the step list is a stacked column beside the panels. */

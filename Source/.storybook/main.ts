@@ -24,6 +24,15 @@ const config: StorybookConfig = {
       // it is documentation output rather than a consumer package chunk.
       chunkSizeWarningLimit: 1800
     };
+    // Vite's Storybook builder only forwards env vars prefixed `STORYBOOK_`/`VITE_`
+    // into `import.meta.env` (its `envPrefix` default) — a plain `PRIMEUI_LICENSE`,
+    // the name developers already export per PrimeReact's own docs, does not pass
+    // that filter. Relay it explicitly via `define` rather than asking every
+    // developer to keep a renamed `STORYBOOK_`-prefixed copy in sync.
+    cfg.define = {
+      ...(cfg.define || {}),
+      'import.meta.env.PRIMEUI_LICENSE': JSON.stringify(process.env.PRIMEUI_LICENSE ?? '')
+    };
     return cfg;
   }
 };

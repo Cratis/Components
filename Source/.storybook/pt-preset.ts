@@ -139,7 +139,15 @@ export const tailwindPtPreset = {
                     'px-5 py-3 bg-slate-800 border-t border-slate-700 flex justify-end gap-2',
             },
             backdrop: {
-                className: 'bg-slate-950/70 backdrop-blur-sm',
+                // PrimeReact 11 renders the backdrop and positioner as siblings under the
+                // portal and leaves placing them to CSS — without `fixed inset-0` the
+                // backdrop is a zero-height block and the popup flows in after the page
+                // content, below the fold (see theme.css's `.cratis-theme` dialog rules,
+                // which hit and fixed the same gap for the baseline theme).
+                className: 'fixed inset-0 bg-slate-950/70 backdrop-blur-sm',
+            },
+            positioner: {
+                className: 'fixed inset-0 flex items-center justify-center p-8',
             },
         },
     },

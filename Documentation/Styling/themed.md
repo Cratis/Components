@@ -5,7 +5,7 @@ You want components to look the way PrimeReact's own do — one of its design sy
 > [!IMPORTANT]
 > **A preset alone styles nothing.** PrimeReact 11's `primereact` package is unstyled primitives: they render structural markup identified by `data-scope` / `data-part` attributes and **no `p-*` class names**. Handing the provider `theme: { preset }` by itself emits the `--p-*` tokens, but with no class names on the elements the preset has nothing to paint. PrimeReact's own styled components (`@primereact/ui`) are just the primitives with their `styles` prop preset from `@primereact/styles` — and `@cratis/components` builds on the primitives, so it needs the same gluing. That is what `styledMode()` does.
 
-**Licensing.** A **PrimeUI license key** is required to run PrimeReact 11 at all — styled mode does not change that, and neither does going unstyled. See [Licensing](../migration.md#licensing). What styled mode *does* add is two dependencies, `@primereact/styles` and `@primeuix/themes`; the [Cratis baseline theme](baseline-theme.md) gives a polished look without them.
+**Licensing.** A **PrimeUI license key** is required to run PrimeReact 11 at all — styled mode does not change that, and neither does going unstyled. See [Licensing](../Migration/2-to-3.md#licensing). What styled mode *does* add is two dependencies, `@primereact/styles` and `@primeuix/themes`; the [Cratis baseline theme](baseline-theme.md) gives a polished look without them.
 
 ## Setup
 
@@ -152,7 +152,7 @@ When CSS overrides aren't enough — for example, when you need to attach a clas
 
 ## Coming from a PrimeReact 10 theme stylesheet
 
-If your CSS was written against the variables a v10 theme published on `:root` — `--surface-ground`, `--surface-card`, `--surface-border`, `--text-color`, `--primary-color`, the `--surface-0…900` and `--blue-*` / `--gray-*` scales — those names resolve to nothing on PrimeReact 11. `@cratis/components/primereact-v10-palette` restores every one of them with the `lara-light-blue` / `lara-dark-blue` values, following the active preset where v11 has an equivalent. Import it after `tokens` and `styles`; nothing new should be written against those names. See [the migration guide](../migration.md#theming-without-a-theme-stylesheet).
+If your CSS was written against the variables a v10 theme published on `:root` — `--surface-ground`, `--surface-card`, `--surface-border`, `--text-color`, `--primary-color`, the `--surface-0…900` and `--blue-*` / `--gray-*` scales — those names resolve to nothing on PrimeReact 11. `@cratis/components/primereact-v10-palette` restores every one of them with the `lara-light-blue` / `lara-dark-blue` values, following the active preset where v11 has an equivalent. Import it after `tokens` and `styles`; nothing new should be written against those names. See [the migration guide](../Migration/2-to-3.md#theming-without-a-theme-stylesheet).
 
 ## When to choose another setup
 

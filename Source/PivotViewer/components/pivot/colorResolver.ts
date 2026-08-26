@@ -4,34 +4,23 @@
 import { DEFAULT_COLORS, type CardColors } from './constants';
 
 export function createCssColorResolver() {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  const parseHex = (val: string): number | null => {
-    if (!val.startsWith('#')) return null;
-    const hex = val.slice(1);
-    const normalized = hex.length === 3
-      ? hex.split('').map((c) => c + c).join('')
-      : hex.length === 4
-        ? hex.slice(0, 3).split('').map((c) => c + c).join('')
-        : hex.length === 6
-          ? hex
-          : hex.length === 8
-            ? hex.slice(0, 6)
-            : null;
-    return normalized ? Number.parseInt(normalized, 16) : null;
-  };
-
+  // A detached canvas's `fillStyle` setter cannot parse relative color functions
+  // such as `light-dark(...)` — assigning an unparseable value is a silent no-op,
+  // so it stays at the canvas default (opaque black). `--cratis-*`/`--surface-*`
+  // resolve to exactly that syntax once the v10-palette fallback chain kicks in
+  // (custom properties substitute `var()` textually but leave `light-dark()`
+  // unresolved), so every card silently rendered black. A real, attached DOM
+  // element resolves any CSS <color> — including `light-dark()` and unresolved
+  // `var()` chains — to its used `rgb()`/`rgba()` value via `getComputedStyle`.
   return (cssValue: string, fallback: number): number => {
-    if (!ctx) {
-      return fallback;
-    }
-    ctx.fillStyle = cssValue.trim();
-    const resolved = ctx.fillStyle; // normalized by canvas
-    const hex = parseHex(resolved);
-    if (hex !== null && Number.isFinite(hex)) {
-      return hex;
-    }
+    const probe = document.createElement('div');
+    probe.style.position = 'absolute';
+    probe.style.visibility = 'hidden';
+    probe.style.pointerEvents = 'none';
+    probe.style.color = cssValue.trim();
+    document.body.appendChild(probe);
+    const resolved = getComputedStyle(probe).color;
+    probe.remove();
 
     if (resolved.startsWith('rgb')) {
       const nums = resolved
