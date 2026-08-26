@@ -9,10 +9,10 @@ const meta = {
     title: 'Canvas/ChatBubble',
     component: ChatBubble,
     args: {
-        authorId: 'ada-lovelace',
-        authorName: 'Ada Lovelace',
+        authorId: 'sample-user',
+        authorName: 'Sample User',
         hasAvatar: false,
-        previewMessage: 'The event model is ready for review.',
+        previewMessage: 'This is a sample preview message.',
         previewTimestamp: new Date(),
         replyCount: 4,
     },
@@ -30,7 +30,7 @@ export const Preview: Story = {
         await userEvent.unhover(avatar);
         await userEvent.hover(avatar);
         await expect(
-            await canvas.findByText('The event model is ready for review.'),
+            await canvas.findByText('This is a sample preview message.'),
         ).toBeTruthy();
     },
 };

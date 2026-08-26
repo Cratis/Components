@@ -21,48 +21,48 @@ export default meta;
 
 type Story = StoryObj<typeof Chat>;
 
-const you = Guid.create();
-const ada = Guid.create();
-const agent = Guid.create();
+const currentUserId = Guid.create();
+const sampleUserId = Guid.create();
+const demoAssistantId = Guid.create();
 
 const mentionCandidates: MentionCandidate[] = [
-    { id: ada.toString(), name: 'Ada', hasAvatar: false, kind: ChatAuthorKind.User },
-    { id: agent.toString(), name: 'Review Agent', hasAvatar: false, kind: ChatAuthorKind.Agent },
+    { id: sampleUserId.toString(), name: 'Sample User', hasAvatar: false, kind: ChatAuthorKind.User },
+    { id: demoAssistantId.toString(), name: 'Demo Assistant', hasAvatar: false, kind: ChatAuthorKind.Agent },
 ];
 
 function seedMessages(): ChatMessage[] {
     return [
         {
             id: Guid.create(),
-            authorId: ada,
-            authorName: 'Ada',
-            authorInitials: 'A',
+            authorId: sampleUserId,
+            authorName: 'Sample User',
+            authorInitials: 'SU',
             hasAvatar: false,
             authorKind: ChatAuthorKind.User,
-            text: 'What do you think of the new layout?',
+            text: 'Can you review this sample layout?',
             timestamp: new Date(Date.now() - 6 * 60_000),
         },
         {
             id: Guid.create(),
-            authorId: agent,
-            authorName: 'Review Agent',
-            authorInitials: 'R',
+            authorId: demoAssistantId,
+            authorName: 'Demo Assistant',
+            authorInitials: 'DA',
             hasAvatar: false,
             authorKind: ChatAuthorKind.Agent,
-            text: 'Looks solid — the spacing between cards reads cleanly at every zoom level I tried.',
+            text: 'The spacing remains clear at each demonstrated zoom level.',
             timestamp: new Date(Date.now() - 4 * 60_000),
             reactions: [
-                { emoji: '👍', users: [{ id: you, name: 'You', reactionId: Guid.create() }] },
+                { emoji: '👍', users: [{ id: currentUserId, name: 'You', reactionId: Guid.create() }] },
             ],
         },
         {
             id: Guid.create(),
-            authorId: you,
+            authorId: currentUserId,
             authorName: 'You',
             authorInitials: 'Y',
             hasAvatar: false,
             authorKind: ChatAuthorKind.User,
-            text: 'Great, shipping it then.',
+            text: 'Thanks, the sample is ready.',
             timestamp: new Date(Date.now() - 60_000),
         },
     ];
@@ -71,8 +71,8 @@ function seedMessages(): ChatMessage[] {
 /**
  * A working conversation: reactions (click the smiley on a message, or pick the same emoji again to
  * take it back), quick reply (the reply arrow prefills the composer with `@name`), `@`-mention
- * suggestions in the composer, and a "Zephyr is typing…" indicator toggled from outside the panel to
- * show the typing indicator without needing a second person in the room.
+ * suggestions in the composer, and a typing indicator toggled from outside the panel to
+ * show the typing indicator without needing another participant in the room.
  */
 export const BasicThread: Story = {
     render: () => {
@@ -83,7 +83,7 @@ export const BasicThread: Story = {
             const send = (text: string) => {
                 setMessages(current => [...current, {
                     id: Guid.create(),
-                    authorId: you,
+                    authorId: currentUserId,
                     authorName: 'You',
                     authorInitials: 'Y',
                     hasAvatar: false,
@@ -99,17 +99,17 @@ export const BasicThread: Story = {
 
                     // A person has one reaction per message: drop any existing reaction from "you" first.
                     const withoutYou = (message.reactions ?? [])
-                        .map(reaction => ({ ...reaction, users: reaction.users.filter(user => !user.id.equals(you)) }))
+                        .map(reaction => ({ ...reaction, users: reaction.users.filter(user => !user.id.equals(currentUserId)) }))
                         .filter(reaction => reaction.users.length > 0);
 
                     const alreadyGaveThisEmoji = message.reactions?.some(
-                        reaction => reaction.emoji === emoji && reaction.users.some(user => user.id.equals(you)));
+                        reaction => reaction.emoji === emoji && reaction.users.some(user => user.id.equals(currentUserId)));
 
                     // Picking the same emoji again takes the reaction back.
                     if (alreadyGaveThisEmoji) return { ...message, reactions: withoutYou };
 
                     const target = withoutYou.find(reaction => reaction.emoji === emoji);
-                    const yourReaction = { id: you, name: 'You', reactionId: Guid.create() };
+                    const yourReaction = { id: currentUserId, name: 'You', reactionId: Guid.create() };
                     const reactions = target
                         ? withoutYou.map(reaction => (reaction.emoji === emoji ? { ...reaction, users: [...reaction.users, yourReaction] } : reaction))
                         : [...withoutYou, { emoji, users: [yourReaction] }];
@@ -121,17 +121,17 @@ export const BasicThread: Story = {
             return (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: 380 }}>
                     <button type='button' onClick={() => setIsTyping(current => !current)}>
-                        {isTyping ? 'Stop Zephyr typing' : 'Simulate Zephyr typing'}
+                        {isTyping ? 'Stop demo assistant typing' : 'Simulate demo assistant typing'}
                     </button>
                     <div style={{ height: 480, border: '1px solid var(--surface-border)', borderRadius: 12, overflow: 'hidden' }}>
                         <Chat
                             messages={messages}
                             onSend={send}
                             onClose={() => { /* Chat is embedded inline in the story; there is no panel to close. */ }}
-                            currentUserId={you}
+                            currentUserId={currentUserId}
                             onReact={react}
                             mentionCandidates={mentionCandidates}
-                            typingAuthors={isTyping ? [{ id: agent.toString(), name: 'Zephyr', hasAvatar: false, kind: ChatAuthorKind.Agent }] : []}
+                            typingAuthors={isTyping ? [{ id: demoAssistantId.toString(), name: 'Demo Assistant', hasAvatar: false, kind: ChatAuthorKind.Agent }] : []}
                         />
                     </div>
                 </div>
@@ -154,14 +154,14 @@ export const WithFailedTurn: Story = {
                 ...seedMessages().slice(0, 1),
                 {
                     id: Guid.create(),
-                    authorId: agent,
-                    authorName: 'Review Agent',
-                    authorInitials: 'R',
+                    authorId: demoAssistantId,
+                    authorName: 'Demo Assistant',
+                    authorInitials: 'DA',
                     hasAvatar: false,
                     authorKind: ChatAuthorKind.Agent,
                     text: '',
                     timestamp: new Date(),
-                    failureDetail: 'Request timed out after 30s while calling the review service.\n\nTraceId: 4f2a-9c31',
+                    failureDetail: 'The sample request timed out before a response was available.',
                 },
             ]);
 
@@ -171,7 +171,7 @@ export const WithFailedTurn: Story = {
                         messages={messages}
                         onSend={() => { /* This story only shows the failed-turn line; sending is not wired up. */ }}
                         onClose={() => { /* Chat is embedded inline in the story; there is no panel to close. */ }}
-                        buildReportUrl={details => `https://github.com/example/repo/issues/new?title=${encodeURIComponent(details.title)}`}
+                        buildReportUrl={details => `https://example.invalid/report?title=${encodeURIComponent(details.title)}`}
                     />
                 </div>
             );

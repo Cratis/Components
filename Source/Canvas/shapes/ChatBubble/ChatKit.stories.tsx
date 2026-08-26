@@ -50,35 +50,35 @@ const reactions: ChatMessageReaction[] = [
         emoji: '👍',
         users: [
             { id: viewerId, name: 'You', reactionId: Guid.create() },
-            { id: Guid.create(), name: 'Grace', reactionId: Guid.create() },
+            { id: Guid.create(), name: 'Example Participant', reactionId: Guid.create() },
         ],
     },
     {
         emoji: '🎉',
-        users: [{ id: Guid.create(), name: 'Linus', reactionId: Guid.create() }],
+        users: [{ id: Guid.create(), name: 'Demo Participant', reactionId: Guid.create() }],
     },
 ];
 const message: ChatMessage = {
     id: messageId,
     authorId,
-    authorName: 'Ada Lovelace',
-    authorInitials: 'AL',
+    authorName: 'Sample User',
+    authorInitials: 'SU',
     hasAvatar: false,
     authorKind: ChatAuthorKind.User,
-    text: 'The event model is ready for review.',
+    text: 'This is a sample message.',
     timestamp: new Date(),
     reactions,
 };
 const candidates: MentionCandidate[] = [
     {
         id: authorId.toString(),
-        name: 'Ada Lovelace',
+        name: 'Sample User',
         hasAvatar: false,
         kind: ChatAuthorKind.User,
     },
     {
         id: Guid.create().toString(),
-        name: 'Review Agent',
+        name: 'Demo Assistant',
         hasAvatar: false,
         kind: ChatAuthorKind.Agent,
     },
@@ -116,7 +116,7 @@ export const Avatar: Story = {
     render: () => (
         <PersonAvatarCircle
             userId={authorId}
-            name='Ada Lovelace'
+            name='Sample User'
             hasAvatar={false}
             size={56}
         />
@@ -194,12 +194,12 @@ export const Typing: Story = {
             authors={[
                 {
                     id: authorId.toString(),
-                    name: 'Ada Lovelace',
+                    name: 'Sample User',
                     hasAvatar: false,
                     kind: ChatAuthorKind.User,
                 },
             ]}
-            label='Ada is typing…'
+            label='Sample User is typing…'
         />
     ),
 };

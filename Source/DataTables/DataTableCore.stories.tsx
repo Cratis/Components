@@ -13,9 +13,9 @@ interface Person {
 }
 
 const people: Person[] = [
-    { id: 1, name: 'Ada Lovelace', role: 'Administrator' },
-    { id: 2, name: 'Grace Hopper', role: 'Developer' },
-    { id: 3, name: 'Margaret Hamilton', role: 'Viewer' },
+    { id: 1, name: 'Sample Administrator', role: 'Administrator' },
+    { id: 2, name: 'Example Developer', role: 'Developer' },
+    { id: 3, name: 'Demo Viewer', role: 'Viewer' },
 ];
 
 const meta = {

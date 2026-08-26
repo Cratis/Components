@@ -22,7 +22,7 @@ type Story = StoryObj<typeof Note>;
 
 const initialNotes: NoteData[] = [
     { id: '1', x: 40, y: 40, width: 220, height: 160, text: 'Ideas for the kickoff meeting' },
-    { id: '2', x: 320, y: 100, width: 160, height: 120, text: 'Ping Ada about the API contract' },
+    { id: '2', x: 320, y: 100, width: 160, height: 120, text: 'Review the sample API contract' },
     { id: '3', x: 640, y: 60, width: 140, height: 140, text: 'Ship it 🚀' },
     {
         id: '4',
