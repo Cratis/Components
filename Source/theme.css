@@ -179,7 +179,7 @@
 .cratis-theme [data-invalid] > [data-scope='inputtext'],
 .cratis-theme [data-scope='inputtext'][aria-invalid='true'] { border-color: var(--cratis-red-500); }
 
-/* ── Select / datepicker popup ───────────────────────────────────────────── */
+/* ── Select popup ────────────────────────────────────────────────────────── */
 .cratis-theme [data-scope='select'][data-part='list'],
 .cratis-theme [data-scope='select'][data-part='popup'] {
     background: var(--cratis-surface-overlay);
@@ -191,6 +191,77 @@
 .cratis-theme [data-scope='select'][data-part='option'] { padding: 0.5rem 0.75rem; cursor: pointer; }
 .cratis-theme [data-scope='select'][data-part='option']:hover,
 .cratis-theme [data-scope='select'][data-part='option'][data-selected] { background: var(--cratis-surface-hover); }
+
+/* ── DatePicker popup ────────────────────────────────────────────────────── */
+.cratis-theme [data-scope='datepicker'][data-part='popup'] {
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius, 6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    padding: 0.75rem;
+}
+.cratis-theme [data-scope='datepicker'][data-part='header'] {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.cratis-theme [data-scope='datepicker'][data-part='title'] { display: flex; align-items: center; gap: 0.35rem; font-weight: 600; }
+.cratis-theme [data-scope='datepicker'][data-part='prev'],
+.cratis-theme [data-scope='datepicker'][data-part='next'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.cratis-theme [data-scope='datepicker'][data-part='selectmonth'],
+.cratis-theme [data-scope='datepicker'][data-part='selectyear'] {
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--cratis-border-radius, 6px);
+    cursor: pointer;
+}
+.cratis-theme [data-scope='datepicker'][data-part='prev']:hover,
+.cratis-theme [data-scope='datepicker'][data-part='next']:hover,
+.cratis-theme [data-scope='datepicker'][data-part='selectmonth']:hover,
+.cratis-theme [data-scope='datepicker'][data-part='selectyear']:hover { background: var(--cratis-surface-hover); }
+.cratis-theme [data-scope='datepicker'][data-part='table'] { width: 100%; border-collapse: collapse; }
+.cratis-theme [data-scope='datepicker'][data-part='tableheadcell'] {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--cratis-text-color-secondary);
+    text-align: center;
+}
+.cratis-theme [data-scope='datepicker'][data-part='tablebodycell'] { padding: 0.15rem; text-align: center; }
+.cratis-theme [data-scope='datepicker'][data-part='day'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.cratis-theme [data-scope='datepicker'][data-part='day']:hover { background: var(--cratis-surface-hover); }
+.cratis-theme [data-scope='datepicker'][data-part='day'][data-selected] {
+    background: var(--cratis-primary-color);
+    color: var(--cratis-primary-color-text);
+}
+.cratis-theme [data-scope='datepicker'][data-part='day'][data-today] { border: 1px solid var(--cratis-primary-color); }
+.cratis-theme [data-scope='datepicker'][data-part='day'][data-outside] { color: var(--cratis-text-color-secondary); opacity: 0.5; }
+.cratis-theme [data-scope='datepicker'][data-part='day'][data-disabled] { cursor: not-allowed; opacity: 0.4; }
+.cratis-theme [data-scope='datepicker'][data-part='buttonbar'] {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--cratis-surface-border);
+}
 
 /* ── Checkbox / radio ────────────────────────────────────────────────────── */
 .cratis-theme [data-scope='checkboxbox'],
