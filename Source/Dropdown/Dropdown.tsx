@@ -29,6 +29,11 @@ import {
     Popover as ComboBoxPopover,
 } from 'react-aria-components/ComboBox';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import {
+    asReactAriaButtonProps,
+    asReactAriaListBoxItemProps,
+    asReactAriaListBoxProps,
+} from '../Common/reactAriaProps';
 
 /** Change event emitted by {@link Dropdown}. */
 export interface DropdownChangeEvent<T = unknown> {
@@ -362,7 +367,7 @@ export const Dropdown = <T = unknown,>({
                             data-cratis-part='filter'
                         />
                         <ComboBoxButton
-                            {...pt?.trigger}
+                            {...asReactAriaButtonProps(pt?.trigger)}
                             className={classNames(
                                 'cratis-dropdown__indicator',
                                 pt?.trigger?.className,
@@ -402,7 +407,7 @@ export const Dropdown = <T = unknown,>({
                             data-cratis-part='popover'
                         >
                             <ComboBoxListBox
-                                {...pt?.listbox}
+                                {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
                                 items={resolvedOptions}
                                 className={classNames(
                                     'cratis-dropdown__listbox',
@@ -412,7 +417,9 @@ export const Dropdown = <T = unknown,>({
                             >
                                 {(option) => (
                                     <ComboBoxListBoxItem
-                                        {...pt?.option}
+                                        {...asReactAriaListBoxItemProps<ResolvedOption>(
+                                            pt?.option,
+                                        )}
                                         id={option.key}
                                         textValue={option.label}
                                         isDisabled={option.disabled}
@@ -539,7 +546,7 @@ export const Dropdown = <T = unknown,>({
                         data-cratis-part='filter'
                     />
                     <ComboBoxButton
-                        {...pt?.trigger}
+                        {...asReactAriaButtonProps(pt?.trigger)}
                         className={classNames(
                             'cratis-dropdown__indicator',
                             pt?.trigger?.className,
@@ -579,7 +586,7 @@ export const Dropdown = <T = unknown,>({
                         data-cratis-part='popover'
                     >
                         <ComboBoxListBox
-                            {...pt?.listbox}
+                            {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
                             items={resolvedOptions}
                             className={classNames(
                                 'cratis-dropdown__listbox',
@@ -589,7 +596,9 @@ export const Dropdown = <T = unknown,>({
                         >
                             {(option) => (
                                 <ComboBoxListBoxItem
-                                    {...pt?.option}
+                                    {...asReactAriaListBoxItemProps<ResolvedOption>(
+                                        pt?.option,
+                                    )}
                                     id={option.key}
                                     textValue={option.label}
                                     isDisabled={option.disabled}
@@ -631,7 +640,7 @@ export const Dropdown = <T = unknown,>({
                 className='cratis-dropdown__select'
             >
                 <AriaButton
-                    {...pt?.trigger}
+                    {...asReactAriaButtonProps(pt?.trigger)}
                     ref={applyTriggerState}
                     id={triggerId}
                     excludeFromTabOrder={tabIndex === -1}
@@ -696,7 +705,7 @@ export const Dropdown = <T = unknown,>({
                     data-cratis-part='popover'
                 >
                     <ListBox
-                        {...pt?.listbox}
+                        {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
                         items={resolvedOptions}
                         className={classNames(
                             'cratis-dropdown__listbox',
@@ -706,7 +715,9 @@ export const Dropdown = <T = unknown,>({
                     >
                         {(option) => (
                             <ListBoxItem
-                                {...pt?.option}
+                                {...asReactAriaListBoxItemProps<ResolvedOption>(
+                                    pt?.option,
+                                )}
                                 id={option.key}
                                 textValue={option.label}
                                 isDisabled={option.disabled}

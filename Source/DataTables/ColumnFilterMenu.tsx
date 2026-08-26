@@ -17,6 +17,7 @@ import { Popover } from 'react-aria-components/Popover';
 import { Button, type ButtonParts } from '../Common/Button';
 import { DatePickerInput } from '../Common/DatePickerInput';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import { asReactAriaButtonProps } from '../Common/reactAriaProps';
 import { Dropdown, type DropdownParts } from '../Dropdown/Dropdown';
 import {
     DataTableFilterMatchMode,
@@ -328,7 +329,7 @@ export const ColumnFilterMenu = ({
     return (
         <DialogTrigger>
             <AriaButton
-                {...pt?.trigger}
+                {...asReactAriaButtonProps(pt?.trigger)}
                 aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
                 className={classNames(
                     'cratis-filter-trigger',

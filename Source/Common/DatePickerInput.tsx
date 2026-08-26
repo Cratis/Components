@@ -25,6 +25,7 @@ import {
 import { Dialog } from 'react-aria-components/Dialog';
 import { Heading } from 'react-aria-components/Heading';
 import { useCratisComponentsConfig } from './CratisComponentsProvider';
+import { asReactAriaButtonProps } from './reactAriaProps';
 import {
     fromDate,
     getLocalTimeZone,
@@ -307,7 +308,7 @@ export const DatePickerInput = ({
                     )}
                     {showIcon && (
                         <Button
-                            {...pt?.trigger}
+                            {...asReactAriaButtonProps(pt?.trigger)}
                             isDisabled={effectiveDisabled || effectiveReadOnly}
                             className={classNames(
                                 'cratis-date-picker__trigger',
@@ -358,7 +359,7 @@ export const DatePickerInput = ({
                                 data-cratis-part='header'
                             >
                                 <Button
-                                    {...pt?.previous}
+                                    {...asReactAriaButtonProps(pt?.previous)}
                                     slot='previous'
                                     className={classNames(
                                         'cratis-date-picker__nav',
@@ -382,7 +383,7 @@ export const DatePickerInput = ({
                                     data-cratis-part='heading'
                                 />
                                 <Button
-                                    {...pt?.next}
+                                    {...asReactAriaButtonProps(pt?.next)}
                                     slot='next'
                                     className={classNames(
                                         'cratis-date-picker__nav',
