@@ -5,7 +5,7 @@ import { rowFromSelectionKeys } from '../selectionKeys';
 
 interface Row { id: number; name: string; }
 
-const data: Row[] = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }, { id: 3, name: 'Carol' }];
+const data: Row[] = [{ id: 1, name: 'Sample User 01' }, { id: 2, name: 'Sample User 02' }, { id: 3, name: 'Sample User 03' }];
 
 describe('when resolving a row from a selection-keys map with a selected key', () => {
     let row: Row | null;
@@ -15,7 +15,7 @@ describe('when resolving a row from a selection-keys map with a selected key', (
     });
 
     it('should return the matching row', () => {
-        (row?.name ?? '').should.equal('Bob');
+        (row?.name ?? '').should.equal('Sample User 02');
     });
 });
 

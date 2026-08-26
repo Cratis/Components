@@ -28,7 +28,7 @@ export const AddAuthor = ({ closeDialog }: DialogProps) => (
         <InputTextField<RegisterAuthor>
             value={(i) => i.name}
             title='Name'
-            placeholder='Jane Austen'
+            placeholder='Sample Author'
         />
         <TextAreaField<RegisterAuthor> value={(i) => i.bio} title='Bio' />
     </CommandDialog>

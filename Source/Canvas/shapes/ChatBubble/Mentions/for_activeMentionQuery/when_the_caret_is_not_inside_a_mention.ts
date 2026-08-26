@@ -8,7 +8,9 @@ describe('when there is no @ before the caret', () => {
 });
 
 describe('when the @ is part of an email address', () => {
-    it('should find no mention', () => (activeMentionQuery('write to jane@example.com', 25) === null).should.be.true);
+    const text = 'write to sample.user@example.invalid';
+
+    it('should find no mention', () => (activeMentionQuery(text, text.length) === null).should.be.true);
 });
 
 describe('when a newline has been typed since the @', () => {

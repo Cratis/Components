@@ -1,8 +1,8 @@
 ---
-applyTo: "**/for_*/**/*.cs, **/when_*/**/*.cs"
+applyTo: '**/for_*/**/*.cs, **/when_*/**/*.cs'
 paths:
-  - "**/for_*/**/*.cs"
-  - "**/when_*/**/*.cs"
+    - '**/for_*/**/*.cs'
+    - '**/when_*/**/*.cs'
 profile: application
 ---
 
@@ -16,13 +16,13 @@ Specs are **mandatory for every slice type**, including reactors.
 
 For Cratis application behavior, prefer the four in-process scenario helpers over full out-of-process Chronicle host specs. They target different concerns and are additive.
 
-| Tool | Tests | Use when |
-|---|---|---|
-| `Specification` (unit) | an isolated class with mocked collaborators | pure function / injected services to mock |
-| `CommandScenario<TCommand>` | the real Arc command pipeline — authorization + validators + `Provide()` + `Handle()` + appended events | **default for State Change slices** |
-| `EventScenario` | Chronicle-level append semantics, no command pipeline | constraint violations, raw stream sequencing/concurrency |
-| `ReadModelScenario<TReadModel>` | projection/reducer state from a sequence of events (auto-detects model-bound / fluent / reducer) | **default for State View slices** |
-| `ReactorScenario<TReactor>` | reactor handler invocation + side effects via mocked services | Automation / Translation slices |
+| Tool                            | Tests                                                                                                   | Use when                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `Specification` (unit)          | an isolated class with mocked collaborators                                                             | pure function / injected services to mock                |
+| `CommandScenario<TCommand>`     | the real Arc command pipeline — authorization + validators + `Provide()` + `Handle()` + appended events | **default for State Change slices**                      |
+| `EventScenario`                 | Chronicle-level append semantics, no command pipeline                                                   | constraint violations, raw stream sequencing/concurrency |
+| `ReadModelScenario<TReadModel>` | projection/reducer state from a sequence of events (auto-detects model-bound / fluent / reducer)        | **default for State View slices**                        |
+| `ReactorScenario<TReactor>`     | reactor handler invocation + side effects via mocked services                                           | Automation / Translation slices                          |
 
 > **Out-of-process Chronicle integration specs are an advanced case** — reserve them for host wiring, real infrastructure, serialization/transport, or end-to-end boundaries the scenario helpers can't exercise. They are not the default vertical-slice test shape.
 
@@ -42,11 +42,11 @@ public class and_all_information_is_valid : Specification
     readonly AuthorId _id = AuthorId.New();
     CommandResult _result;
 
-    async Task Because() => _result = await _scenario.Execute(new RegisterAuthor(_id, "Jane Austen"));
+    async Task Because() => _result = await _scenario.Execute(new RegisterAuthor(_id, "Sample Author"));
 
     [Fact] void should_succeed() => _result.ShouldBeSuccessful();
     [Fact] async Task should_have_appended_registered_event() =>
-        await _scenario.ShouldHaveAppendedEvent<RegisterAuthor, AuthorRegistered>(_id, e => e.Name == "Jane Austen");
+        await _scenario.ShouldHaveAppendedEvent<RegisterAuthor, AuthorRegistered>(_id, e => e.Name == "Sample Author");
 }
 #endif
 ```
@@ -67,11 +67,11 @@ Every unhappy-path spec asserts **both**:
 [Fact] void should_have_validation_errors() => _result.ShouldHaveValidationErrors();
 ```
 
-`ShouldNotBeSuccessful()` alone can't tell a validation rejection from an unhandled exception. **Never assert on message strings** — they're presentation text. Authorization failures use `ShouldNotBeAuthorized()` (an unauthorized result has *no* validation errors, so `ShouldHaveValidationErrors()` would silently flip). To exercise a command that carries authorization attributes, register the identity the authorization evaluator reads into `_scenario.Services` (substitute the identity provider your app uses). **Adding `[Roles]` to an existing command breaks its happy-path AND validation-failure `.Execute()` specs** — an unauthorized result is not successful and carries no validation errors; switch those assertions to `ShouldNotBeAuthorized()`.
+`ShouldNotBeSuccessful()` alone can't tell a validation rejection from an unhandled exception. **Never assert on message strings** — they're presentation text. Authorization failures use `ShouldNotBeAuthorized()` (an unauthorized result has _no_ validation errors, so `ShouldHaveValidationErrors()` would silently flip). To exercise a command that carries authorization attributes, register the identity the authorization evaluator reads into `_scenario.Services` (substitute the identity provider your app uses). **Adding `[Roles]` to an existing command breaks its happy-path AND validation-failure `.Execute()` specs** — an unauthorized result is not successful and carries no validation errors; switch those assertions to `ShouldNotBeAuthorized()`.
 
-`CommandResult` assertions (from `Cratis.Arc.Testing.Commands`; failures throw `CommandResultAssertionException`): `ShouldBeSuccessful()` (`isAuthorized && isValid && !hasExceptions`), `ShouldNotBeSuccessful()`, `ShouldBeValid()` (no validation errors — does *not* check authz/exceptions), `ShouldHaveValidationErrors()`, `ShouldHaveValidationErrorFor(message)`, `ShouldBeAuthorized()`, `ShouldNotBeAuthorized()`, `ShouldHaveExceptions()`.
+`CommandResult` assertions (from `Cratis.Arc.Testing.Commands`; failures throw `CommandResultAssertionException`): `ShouldBeSuccessful()` (`isAuthorized && isValid && !hasExceptions`), `ShouldNotBeSuccessful()`, `ShouldBeValid()` (no validation errors — does _not_ check authz/exceptions), `ShouldHaveValidationErrors()`, `ShouldHaveValidationErrorFor(message)`, `ShouldBeAuthorized()`, `ShouldNotBeAuthorized()`, `ShouldHaveExceptions()`.
 
-> **Validator-state order-sensitivity:** the command-scenario pipeline can cache enough state to make injected-validator branches order-sensitive when xUnit runs classes in parallel. Use `CommandScenario` for the valid path, test rejected state-variants by **instantiating the validator directly**, and — only for that validator-state case — put the command's specs in a **small xUnit `[Collection]`**. (This is distinct from the unique-value-collision rule below, where `[Collection]` is the *wrong* fix.)
+> **Validator-state order-sensitivity:** the command-scenario pipeline can cache enough state to make injected-validator branches order-sensitive when xUnit runs classes in parallel. Use `CommandScenario` for the valid path, test rejected state-variants by **instantiating the validator directly**, and — only for that validator-state case — put the command's specs in a **small xUnit `[Collection]`**. (This is distinct from the unique-value-collision rule below, where `[Collection]` is the _wrong_ fix.)
 
 ### `EventScenario` — constraints & append semantics
 
@@ -80,10 +80,10 @@ readonly EventScenario _scenario = new();
 IAppendResult _result;
 
 async Task Establish() =>
-    await _scenario.Given.ForEventSource(AuthorId.New()).Events(new AuthorRegistered("Jane Austen"));
+    await _scenario.Given.ForEventSource(AuthorId.New()).Events(new AuthorRegistered("Sample Author"));
 
 async Task Because() =>
-    _result = await _scenario.EventLog.Append(AuthorId.New(), new AuthorRegistered("Jane Austen"));
+    _result = await _scenario.EventLog.Append(AuthorId.New(), new AuthorRegistered("Sample Author"));
 
 [Fact] void should_be_failed() => _result.ShouldBeFailed();
 [Fact] void should_violate_unique_constraint() => _result.ShouldHaveConstraintViolationFor(AuthorConstraintNames.UniqueName);
@@ -100,7 +100,7 @@ ReadModelScenario<Author> _scenario = null!;
 void Establish() => _scenario = new();
 
 async Task Because() =>
-    await _scenario.Given.ForEventSource(_id).Events(new AuthorRegistered("Jane Austen"), new AuthorArchived());
+    await _scenario.Given.ForEventSource(_id).Events(new AuthorRegistered("Sample Author"), new AuthorArchived());
 
 [Fact] void should_be_archived() => Assert.True(_scenario.Instance!.IsArchived);
 ```
@@ -109,7 +109,7 @@ Use the named-parameter constructor when services/initial state are needed: `new
 
 **Bridging `IReadModels` into a `CommandScenario`** (current harness limitation): when a command handler injects `IReadModels` directly, build a focused `ReadModelScenario<T>`, seed it via `Given.ForEventSourceId(id).ReadModel(...)`, then register its read models into the command scenario — `_scenario.Services.AddSingleton(readModelScenario.ReadModels)`. Pass `scenario.ReadModels` into code under test for keyed `GetInstanceById` reads; for non-key searches/filters, register a fake lookup or an `IMongoCollection<T>` mock in the scenario services instead.
 
-**Skip discipline:** don't pre-emptively `[Fact(Skip=...)]` a read-model assertion — assume scalar `ConceptAs<string>`, enum, and identifier properties populate correctly; if one fails, investigate the projection. Only skip on a *reproduced* harness gap, and put the specific reason in the skip message.
+**Skip discipline:** don't pre-emptively `[Fact(Skip=...)]` a read-model assertion — assume scalar `ConceptAs<string>`, enum, and identifier properties populate correctly; if one fails, investigate the projection. Only skip on a _reproduced_ harness gap, and put the specific reason in the skip message.
 
 ### `ReactorScenario<TReactor>` — Automation / Translation
 
@@ -121,8 +121,8 @@ void Establish()
     _service = Substitute.For<IMyService>();
     _scenario = new(new ServiceCollection().AddSingleton(_service).BuildServiceProvider());
 }
-async Task Because() => await _scenario.Given.ForEventSource(_id).Events(new AuthorRegistered("Jane Austen"));
-[Fact] async Task should_notify() => await _service.Received(1).Notify("Jane Austen");
+async Task Because() => await _scenario.Given.ForEventSource(_id).Events(new AuthorRegistered("Sample Author"));
+[Fact] async Task should_notify() => await _service.Received(1).Notify("Sample Author");
 ```
 
 ## Out-of-process Chronicle integration specs (advanced)
@@ -139,7 +139,7 @@ public class and_name_already_exists(context context) : Given<context>(context)
 {
     public class context(ChronicleOutOfProcessFixture fixture) : given.an_http_client(fixture)
     {
-        public const string AuthorName = "John Doe";
+        public const string AuthorName = "Sample Author";
         public CommandResult<object>? Result;
 
         async Task Establish() => await EventStore.EventLog.Append(AuthorId.New(), new AuthorRegistered(AuthorName));
@@ -160,7 +160,7 @@ public class and_name_already_exists(context context) : Given<context>(context)
 
 These supplement the universal conventions in [specs.csharp.md](./specs.csharp.md#conventions):
 
-- **Per-test values for anything in a uniqueness check** — `$"{Guid.NewGuid():N}@example.com"`, a fresh `Guid`, or a truncated id `Guid.NewGuid().ToString("N")[..9]`. Hardcoded values cause order-dependent flakes. Do not add `[Collection(...)]` to work around *collisions* (it's the wrong fix here).
+- **Per-test values for anything in a uniqueness check** — `$"{Guid.NewGuid():N}@example.com"`, a fresh `Guid`, or a truncated id `Guid.NewGuid().ToString("N")[..9]`. Hardcoded values cause order-dependent flakes. Do not add `[Collection(...)]` to work around _collisions_ (it's the wrong fix here).
 - **Sequence numbers are zero-based** — first event = `0`, tail of two events = `1`, tail of three = `2`. Never write "tail of 1" for a single appended event; the tail of `[A]` is `0`. (A common first-pass defect.)
 - A slice covering **multiple subjects** (several read models/constraints/aspects) groups its specs under `<Slice>/for_<Subject>/when_<behavior>/`.
 

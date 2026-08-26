@@ -81,8 +81,9 @@ consumers are left exactly as they are.
 The packaged CLI requires Node.js 20 or newer and brings its own TypeScript parser; it does
 not depend on the consumer application's TypeScript version. It scans JavaScript, JSX,
 TypeScript, and TSX sources, including `.mjs`, `.cjs`, `.mts`, and `.cts` variants. Use the
-same exact published version as the installed Components package; all three workspaces are
-released together. Contributors can run the repository source directly. If the exact codemod version is unavailable, do not substitute `latest`
+same exact published version as the installed Components package. Automated coordinated
+publication is currently disabled while source provenance is reviewed. Contributors can run
+the repository source directly. If the exact codemod version is unavailable, do not substitute `latest`
 or another Components version: keep the application on its current package, apply the
 mapping table manually, or wait for a corrected publication.
 

@@ -8,7 +8,7 @@
             "summary": "pixi.js bundles @webgpu/types, whose WebGPU ambient declarations duplicate identifiers TypeScript 6 now ships in lib.dom.d.ts (GPUTextureFormat, GPUDevice, GPUBindGroupDescriptor.entries, ...) with incompatible shapes.",
             "reason": "external - upstream declaration collision between @webgpu/types (a pixi.js dependency) and TypeScript's own built-in DOM lib; not a Components authoring defect.",
             "upstreamPackages": [
-                { "name": "@webgpu/types", "version": "0.1.72", "via": "pixi.js@8.20.0" }
+                { "name": "@webgpu/types", "version": "0.1.72", "via": "pixi.js@8.20.1" }
             ],
             "resolutionModes": ["bundler", "nodenext"],
             "diagnosticCodes": ["TS2403", "TS2687", "TS2717", "TS6200"],

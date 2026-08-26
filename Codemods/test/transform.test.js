@@ -200,7 +200,7 @@ describe('root namespace maps', () => {
     it('should keep both migration guides aligned with every namespace and the shipped command', () => {
         const guides = [
             readFileSync(
-                path.join(__dirname, '..', '..', 'Documentation', 'migration.md'),
+                path.join(__dirname, '..', '..', 'Documentation', 'Migration', '3-to-4.md'),
                 'utf8',
             ),
             readFileSync(

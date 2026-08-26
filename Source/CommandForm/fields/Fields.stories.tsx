@@ -506,7 +506,7 @@ export const InputTextFieldExample: Story = {
                         value={(c) => c.emailInput}
                         title='Email'
                         type='email'
-                        placeholder='your@email.com'
+                        placeholder='sample.user@example.invalid'
                     />
 
                     <InputTextField<FormFieldsCommand>

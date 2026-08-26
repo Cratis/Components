@@ -19,9 +19,10 @@
  *      `Canvas` module's own realpath-adjacent resolution* both resolve to the exact
  *      same real file - proving the package never nests, bundles, or otherwise ships
  *      its own copy of Pixi instead of using the consumer's single peer resolution.
- *   3. Type-checking: strict (`skipLibCheck: false`) TypeScript projects for `./Canvas` and
- *      `./PivotViewer` compile with `pixi.js` present (`PIXI.*` types resolve, matching the
- *      bounded upstream exceptions already tracked in `verify-public-types.exceptions.json`).
+ *   3. Topology type-checking: a `skipLibCheck: true` consumer project proves that `./Canvas`
+ *      and `./PivotViewer` resolve their public Pixi types from the installed peer. The separate
+ *      `verify-public-types.mjs` matrix owns strict `skipLibCheck: false` diagnostics and bounded
+ *      upstream exceptions.
  *
  * Usage:  node scripts/verify-spatial-consumer.mjs [--keep-fixture]
  * Exits non-zero on any check failure.
@@ -142,48 +143,52 @@ for (const subpath of SPATIAL_SUBPATHS) {
 const canvasDir = path.dirname(
     path.join(packedComponentsDir, 'dist/esm/Canvas/index.js'),
 );
-const identityScript = `
-const consumerResolved = import.meta.resolve('pixi.js');
-const canvasAdjacentResolved = import.meta.resolve('pixi.js', ${JSON.stringify(`file://${canvasDir}/`)});
-console.log(JSON.stringify({ consumerResolved, canvasAdjacentResolved }));
-`;
-const identityResult = spawnSync(
+const canvasResolutionProbe = path.join(canvasDir, '__resolve-pixi-peer.mjs');
+writeFileSync(canvasResolutionProbe, "console.log(import.meta.resolve('pixi.js'));\n");
+
+const consumerIdentityResult = spawnSync(
     process.execPath,
-    ['--input-type', 'module', '--eval', identityScript],
+    ['--input-type', 'module', '--eval', "console.log(import.meta.resolve('pixi.js'));"],
     {
         cwd: scratchRoot,
         encoding: 'utf8',
         timeout: 30_000,
     },
 );
-if (identityResult.status === 0) {
-    try {
-        const { consumerResolved, canvasAdjacentResolved } = JSON.parse(
-            (identityResult.stdout ?? '').trim(),
-        );
-        const nestedCopy = path.join(packedComponentsDir, 'node_modules', 'pixi.js');
-        if (consumerResolved !== canvasAdjacentResolved) {
-            fail(
-                'pixi.js must resolve to one identical file from both the consumer and Canvas',
-                `consumer: ${consumerResolved}\n    canvas-adjacent: ${canvasAdjacentResolved}`,
-            );
-        } else if (existsSync(nestedCopy)) {
-            fail('the packed artifact must not ship a nested pixi.js copy', nestedCopy);
-        } else {
-            pass(
-                `pixi.js resolves to one identical file for both the consumer and Canvas (${consumerResolved})`,
-            );
-        }
-    } catch (error) {
+const canvasIdentityResult = spawnSync(process.execPath, [canvasResolutionProbe], {
+    cwd: scratchRoot,
+    encoding: 'utf8',
+    timeout: 30_000,
+});
+
+if (consumerIdentityResult.status === 0 && canvasIdentityResult.status === 0) {
+    const consumerResolved = (consumerIdentityResult.stdout ?? '').trim();
+    const canvasAdjacentResolved = (canvasIdentityResult.stdout ?? '').trim();
+    const nestedCopy = path.join(packedComponentsDir, 'node_modules', 'pixi.js');
+    if (!consumerResolved || !canvasAdjacentResolved) {
         fail(
-            'could not parse the pixi.js resolution identity probe',
-            identityResult.stdout ?? String(error),
+            'pixi.js resolution probes must both produce a resolved URL',
+            `consumer: ${consumerResolved || '<empty>'}\n    canvas-adjacent: ${canvasAdjacentResolved || '<empty>'}`,
+        );
+    } else if (consumerResolved !== canvasAdjacentResolved) {
+        fail(
+            'pixi.js must resolve to one identical file from both the consumer and Canvas',
+            `consumer: ${consumerResolved}\n    canvas-adjacent: ${canvasAdjacentResolved}`,
+        );
+    } else if (existsSync(nestedCopy)) {
+        fail('the packed artifact must not ship a nested pixi.js copy', nestedCopy);
+    } else {
+        pass(
+            `pixi.js resolves to one identical file for both the consumer and Canvas (${consumerResolved})`,
         );
     }
 } else {
     fail(
         'pixi.js must resolve from both the consumer and Canvas',
-        (identityResult.stderr ?? '').slice(0, 500),
+        [consumerIdentityResult.stderr, canvasIdentityResult.stderr]
+            .filter(Boolean)
+            .join('\n')
+            .slice(0, 500),
     );
 }
 
@@ -214,8 +219,9 @@ if (tscBin) {
                     module: 'ES2022',
                     moduleResolution: 'bundler',
                     strict: true,
-                    // Matches the bounded pixi-webgpu-types-lib-conflict exception already tracked
-                    // in verify-public-types.exceptions.json for ./Canvas - not re-litigated here.
+                    // This fixture checks peer topology and public-type resolution. The strict
+                    // skipLibCheck: false matrix and its bounded upstream diagnostics run in
+                    // verify-public-types.mjs.
                     skipLibCheck: true,
                     noEmit: true,
                     jsx: 'react-jsx',

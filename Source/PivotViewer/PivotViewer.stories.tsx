@@ -2,49 +2,90 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
+import { expect } from 'storybook/test';
 import { PivotViewer } from './PivotViewer';
+import { createCssColorResolver } from './components/pivot/colorResolver';
 
 // ---------------------------------------------------------------------------
 // Large-dataset generator
 // ---------------------------------------------------------------------------
 
-const FIRST_NAMES = [
-    'Alice', 'Bob', 'Charlie', 'Diana', 'Edward', 'Fiona', 'George', 'Hannah',
-    'Isaac', 'Julia', 'Kevin', 'Laura', 'Michael', 'Natalie', 'Oliver', 'Penelope',
-    'Quinn', 'Rachel', 'Samuel', 'Tara', 'Ursula', 'Victor', 'Wendy', 'Xavier',
-    'Yvonne', 'Zachary', 'Amelia', 'Benjamin', 'Clara', 'Daniel', 'Eleanor', 'Frank',
-    'Grace', 'Henry', 'Iris', 'James', 'Katherine', 'Leo', 'Mia', 'Noah',
-];
-
-const LAST_NAMES = [
-    'Johnson', 'Smith', 'Brown', 'Prince', 'Norton', 'Lee', 'Miller', 'Davis',
-    'Newton', 'Taylor', 'Anderson', 'Wilson', 'Moore', 'Jackson', 'Martin', 'White',
-    'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis', 'Walker',
-    'Hall', 'Allen', 'Young', 'King', 'Wright', 'Scott', 'Green', 'Baker',
-    'Adams', 'Nelson', 'Carter', 'Mitchell', 'Perez', 'Roberts', 'Turner', 'Phillips',
-];
+const FIRST_NAMES = ['Sample', 'Example', 'Demo'];
+const LAST_NAMES = Array.from(
+    { length: 40 },
+    (_, index) => `User ${String(index + 1).padStart(2, '0')}`,
+);
 
 const DEPARTMENTS = [
-    'Engineering', 'Product', 'Design', 'Marketing', 'Sales',
-    'Finance', 'Human Resources', 'Legal', 'Operations', 'Support',
-    'Research', 'Data Science', 'Security', 'Infrastructure', 'Customer Success',
+    'Engineering',
+    'Product',
+    'Design',
+    'Marketing',
+    'Sales',
+    'Finance',
+    'Human Resources',
+    'Legal',
+    'Operations',
+    'Support',
+    'Research',
+    'Data Science',
+    'Security',
+    'Infrastructure',
+    'Customer Success',
 ];
 
 const OFFICES = [
-    'Seattle', 'San Francisco', 'Austin', 'New York', 'Boston',
-    'Chicago', 'Denver', 'Los Angeles', 'Atlanta', 'London',
-    'Berlin', 'Amsterdam', 'Singapore', 'Tokyo', 'Sydney',
+    'Seattle',
+    'San Francisco',
+    'Austin',
+    'New York',
+    'Boston',
+    'Chicago',
+    'Denver',
+    'Los Angeles',
+    'Atlanta',
+    'London',
+    'Berlin',
+    'Amsterdam',
+    'Singapore',
+    'Tokyo',
+    'Sydney',
 ];
 
-const SENIORITY_LEVELS = ['Intern', 'Junior', 'Mid-level', 'Senior', 'Staff', 'Principal', 'Director', 'VP'];
+const SENIORITY_LEVELS = [
+    'Intern',
+    'Junior',
+    'Mid-level',
+    'Senior',
+    'Staff',
+    'Principal',
+    'Director',
+    'VP',
+];
 
 const EMPLOYMENT_STATUSES = ['Active', 'On Leave', 'Contractor', 'Part-time'];
 
 const SKILL_TAGS = [
-    'TypeScript', 'Python', 'Go', 'Rust', 'Java', 'C#', 'React', 'Node.js',
-    'Kubernetes', 'AWS', 'Azure', 'GCP', 'ML/AI', 'Data Engineering', 'Security',
-    'Product Management', 'UX Design', 'DevOps', 'Agile', 'Communication',
+    'TypeScript',
+    'Python',
+    'Go',
+    'Rust',
+    'Java',
+    'C#',
+    'React',
+    'Node.js',
+    'Kubernetes',
+    'AWS',
+    'Azure',
+    'GCP',
+    'ML/AI',
+    'Data Engineering',
+    'Security',
+    'Product Management',
+    'UX Design',
+    'DevOps',
+    'Agile',
+    'Communication',
 ];
 
 function seededRng(seed: number) {
@@ -139,15 +180,69 @@ interface Person {
 }
 
 const sampleData: Person[] = [
-    { id: 1, name: 'Alice Johnson', age: 28, department: 'Engineering', address: { street: '123 Main St', city: 'Seattle', zipCode: '98101' } },
-    { id: 2, name: 'Bob Smith', age: 35, department: 'Marketing', address: { street: '456 Oak Ave', city: 'Portland', zipCode: '97201' } },
-    { id: 3, name: 'Charlie Brown', age: 42, department: 'Engineering', address: { street: '789 Pine Rd', city: 'Seattle', zipCode: '98102' } },
-    { id: 4, name: 'Diana Prince', age: 31, department: 'Sales', address: { street: '321 Elm St', city: 'San Francisco', zipCode: '94102' } },
-    { id: 5, name: 'Edward Norton', age: 29, department: 'Engineering', address: { street: '654 Maple Dr', city: 'Portland', zipCode: '97202' } },
-    { id: 6, name: 'Fiona Lee', age: 33, department: 'Human Resources', address: { street: '852 Cedar St', city: 'Seattle', zipCode: '98103' } },
-    { id: 7, name: 'George Miller', age: 27, department: 'Support', address: { street: '147 Birch Ln', city: 'Portland', zipCode: '97204' } },
-    { id: 8, name: 'Hannah Davis', age: 45, department: 'Finance', address: { street: '963 Walnut Ave', city: 'San Francisco', zipCode: '94103' } },
-    { id: 9, name: 'Isaac Newton', age: 38, department: 'Research', address: { street: '753 Spruce Rd', city: 'Austin', zipCode: '73301' } },
+    {
+        id: 1,
+        name: 'Sample User 01',
+        age: 28,
+        department: 'Engineering',
+        address: { street: '123 Main St', city: 'Seattle', zipCode: '98101' },
+    },
+    {
+        id: 2,
+        name: 'Sample User 02',
+        age: 35,
+        department: 'Marketing',
+        address: { street: '456 Oak Ave', city: 'Portland', zipCode: '97201' },
+    },
+    {
+        id: 3,
+        name: 'Sample User 03',
+        age: 42,
+        department: 'Engineering',
+        address: { street: '789 Pine Rd', city: 'Seattle', zipCode: '98102' },
+    },
+    {
+        id: 4,
+        name: 'Sample User 04',
+        age: 31,
+        department: 'Sales',
+        address: { street: '321 Elm St', city: 'San Francisco', zipCode: '94102' },
+    },
+    {
+        id: 5,
+        name: 'Sample User 05',
+        age: 29,
+        department: 'Engineering',
+        address: { street: '654 Maple Dr', city: 'Portland', zipCode: '97202' },
+    },
+    {
+        id: 6,
+        name: 'Sample User 06',
+        age: 33,
+        department: 'Human Resources',
+        address: { street: '852 Cedar St', city: 'Seattle', zipCode: '98103' },
+    },
+    {
+        id: 7,
+        name: 'Sample User 07',
+        age: 27,
+        department: 'Support',
+        address: { street: '147 Birch Ln', city: 'Portland', zipCode: '97204' },
+    },
+    {
+        id: 8,
+        name: 'Sample User 08',
+        age: 45,
+        department: 'Finance',
+        address: { street: '963 Walnut Ave', city: 'San Francisco', zipCode: '94103' },
+    },
+    {
+        id: 9,
+        name: 'Sample User 09',
+        age: 38,
+        department: 'Research',
+        address: { street: '753 Spruce Rd', city: 'Austin', zipCode: '73301' },
+    },
 ];
 
 export const Default: Story = {
@@ -164,7 +259,7 @@ export const Default: Story = {
                 getValue: (item: Person) => item.address.city,
             },
         ];
-        
+
         const filters = [
             {
                 key: 'age',
@@ -173,9 +268,20 @@ export const Default: Story = {
                 type: 'number' as const,
             },
         ];
-        
+
         return (
-            <div className="storybook-wrapper" style={{ height: 'calc(100vh - 2rem)', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden', alignItems: 'stretch', justifyContent: 'flex-start' }}>
+            <div
+                className='storybook-wrapper'
+                style={{
+                    height: 'calc(100vh - 2rem)',
+                    minHeight: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    alignItems: 'stretch',
+                    justifyContent: 'flex-start',
+                }}
+            >
                 <PivotViewer<Person>
                     data={sampleData}
                     dimensions={dimensions}
@@ -190,7 +296,12 @@ export const Default: Story = {
                     cardRenderer={(item) => ({
                         title: item.name,
                         labels: ['Id', 'Age', 'Department', 'City'],
-                        values: [String(item.id),String(item.age), item.department, item.address.city],
+                        values: [
+                            String(item.id),
+                            String(item.age),
+                            item.department,
+                            item.address.city,
+                        ],
                     })}
                     // Example: override a couple of theme variables
                     colors={{
@@ -200,16 +311,40 @@ export const Default: Story = {
                     // Example: custom content inside the built-in detail drawer
                     detailRenderer={(item, onClose) => (
                         <section>
-                            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                            <header
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                }}
+                            >
                                 <div>
                                     <h3 style={{ margin: 0 }}>{item.name}</h3>
-                                    <p style={{ margin: 0, opacity: 0.8 }}>Department • {item.department}</p>
+                                    <p style={{ margin: 0, opacity: 0.8 }}>
+                                        Department • {item.department}
+                                    </p>
                                 </div>
-                                <button type="button" onClick={onClose} title="Close" className="cratis-button" data-variant="text" data-severity="secondary" data-size="normal" >
+                                <button
+                                    type='button'
+                                    onClick={onClose}
+                                    title='Close'
+                                    className='cratis-button'
+                                    data-variant='text'
+                                    data-severity='secondary'
+                                    data-size='normal'
+                                >
                                     Close
                                 </button>
                             </header>
-                            <dl style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.35rem 0.75rem' }}>
+                            <dl
+                                style={{
+                                    marginTop: '1rem',
+                                    display: 'grid',
+                                    gridTemplateColumns: 'auto 1fr',
+                                    gap: '0.35rem 0.75rem',
+                                }}
+                            >
                                 <div>
                                     <dt>Age</dt>
                                     <dd>{item.age}</dd>
@@ -229,6 +364,21 @@ export const Default: Story = {
                 />
             </div>
         );
+    },
+    play: async ({ canvasElement }) => {
+        const host = canvasElement.querySelector('.pivot-viewer') ?? canvasElement;
+        const resolveColor = createCssColorResolver();
+        const fallback = '#010101';
+
+        const oklch = resolveColor('oklch(62% 0.2 250)', fallback, host);
+        const displayP3WithAlpha = resolveColor(
+            'color(display-p3 1 0 0 / 0.5)',
+            fallback,
+            host,
+        );
+
+        await expect(oklch).not.toBe(fallback);
+        await expect(displayP3WithAlpha).toMatch(/^#[0-9a-f]{6}80$/i);
     },
 };
 
@@ -311,7 +461,7 @@ export const LargeDataset: Story = {
 
         return (
             <div
-                className="storybook-wrapper"
+                className='storybook-wrapper'
                 style={{
                     height: 'calc(100vh - 2rem)',
                     minHeight: 0,
@@ -325,7 +475,7 @@ export const LargeDataset: Story = {
                     data={largeDataset}
                     dimensions={dimensions}
                     filters={filters}
-                    defaultDimensionKey="department"
+                    defaultDimensionKey='department'
                     searchFields={[
                         (item) => item.name,
                         (item) => item.department,
@@ -345,22 +495,55 @@ export const LargeDataset: Story = {
                     })}
                     detailRenderer={(item, onClose) => (
                         <section>
-                            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <header
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'flex-start',
+                                    gap: '0.5rem',
+                                }}
+                            >
                                 <div>
                                     <h3 style={{ margin: 0 }}>{item.name}</h3>
-                                    <p style={{ margin: 0, opacity: 0.7 }}>{item.seniority} · {item.department}</p>
+                                    <p style={{ margin: 0, opacity: 0.7 }}>
+                                        {item.seniority} · {item.department}
+                                    </p>
                                 </div>
-                                <button type="button" onClick={onClose} title="Close" className="cratis-button" data-variant="text" data-severity="secondary" data-size="normal" >
+                                <button
+                                    type='button'
+                                    onClick={onClose}
+                                    title='Close'
+                                    className='cratis-button'
+                                    data-variant='text'
+                                    data-severity='secondary'
+                                    data-size='normal'
+                                >
                                     Close
                                 </button>
                             </header>
-                            <dl style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.35rem 0.75rem' }}>
-                                <dt>Office</dt><dd>{item.office}</dd>
-                                <dt>Age</dt><dd>{item.age}</dd>
-                                <dt>Status</dt><dd>{item.status}</dd>
-                                <dt>Salary</dt><dd>${item.salary.toLocaleString()}</dd>
-                                <dt>Tenure</dt><dd>{item.yearsAtCompany} yr{item.yearsAtCompany !== 1 ? 's' : ''}</dd>
-                                <dt>Skills</dt><dd>{item.skills.join(', ')}</dd>
+                            <dl
+                                style={{
+                                    marginTop: '1rem',
+                                    display: 'grid',
+                                    gridTemplateColumns: 'auto 1fr',
+                                    gap: '0.35rem 0.75rem',
+                                }}
+                            >
+                                <dt>Office</dt>
+                                <dd>{item.office}</dd>
+                                <dt>Age</dt>
+                                <dd>{item.age}</dd>
+                                <dt>Status</dt>
+                                <dd>{item.status}</dd>
+                                <dt>Salary</dt>
+                                <dd>${item.salary.toLocaleString()}</dd>
+                                <dt>Tenure</dt>
+                                <dd>
+                                    {item.yearsAtCompany} yr
+                                    {item.yearsAtCompany !== 1 ? 's' : ''}
+                                </dd>
+                                <dt>Skills</dt>
+                                <dd>{item.skills.join(', ')}</dd>
                             </dl>
                         </section>
                     )}

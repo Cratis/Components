@@ -262,8 +262,8 @@ export const WithInitialValues: Story = {
         const [result, setResult] = useState<string>('');
 
         const users = [
-            { name: 'Jane Doe', email: 'jane@example.com', age: 30 },
-            { name: 'John Smith', email: 'john@example.com', age: 45 },
+            { name: 'Sample User', email: 'sample.user@example.invalid', age: 30 },
+            { name: 'Example Participant', email: 'example.participant@example.invalid', age: 45 },
         ];
 
         const handleEdit = (user: typeof users[0]) => {
@@ -364,7 +364,7 @@ export const WithCustomValidation: Story = {
                     }}
                 >
                     <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder='Try "test123" or numbers' />
-                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder='Try user@example.com' type="email" />
+                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder='Try sample.user@example.invalid' type="email" />
                     <NumberField value={(c: UpdateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
                 </CommandDialog>
             </div>
@@ -531,7 +531,7 @@ export const BeforeExecute: Story = {
                     onCancel={() => setVisible(false)}
                 >
                     <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder='Try "  Extra   Spaces  "' />
-                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder="Try UPPERCASE@EMAIL.COM" type="email" />
+                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder="Try SAMPLE.USER@EXAMPLE.INVALID" type="email" />
                     <NumberField value={(c: UpdateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
                 </CommandDialog>
             </div>

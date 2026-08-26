@@ -26,8 +26,18 @@ const sampleUserId = Guid.create();
 const demoAssistantId = Guid.create();
 
 const mentionCandidates: MentionCandidate[] = [
-    { id: sampleUserId.toString(), name: 'Sample User', hasAvatar: false, kind: ChatAuthorKind.User },
-    { id: demoAssistantId.toString(), name: 'Demo Assistant', hasAvatar: false, kind: ChatAuthorKind.Agent },
+    {
+        id: sampleUserId.toString(),
+        name: 'Sample User',
+        hasAvatar: false,
+        kind: ChatAuthorKind.User,
+    },
+    {
+        id: demoAssistantId.toString(),
+        name: 'Demo Assistant',
+        hasAvatar: false,
+        kind: ChatAuthorKind.Agent,
+    },
 ];
 
 function seedMessages(): ChatMessage[] {
@@ -52,7 +62,12 @@ function seedMessages(): ChatMessage[] {
             text: 'The spacing remains clear at each demonstrated zoom level.',
             timestamp: new Date(Date.now() - 4 * 60_000),
             reactions: [
-                { emoji: '👍', users: [{ id: currentUserId, name: 'You', reactionId: Guid.create() }] },
+                {
+                    emoji: '👍',
+                    users: [
+                        { id: currentUserId, name: 'You', reactionId: Guid.create() },
+                    ],
+                },
             ],
         },
         {
@@ -81,57 +96,118 @@ export const BasicThread: Story = {
             const [isTyping, setIsTyping] = useState(false);
 
             const send = (text: string) => {
-                setMessages(current => [...current, {
-                    id: Guid.create(),
-                    authorId: currentUserId,
-                    authorName: 'You',
-                    authorInitials: 'Y',
-                    hasAvatar: false,
-                    authorKind: ChatAuthorKind.User,
-                    text,
-                    timestamp: new Date(),
-                }]);
+                setMessages((current) => [
+                    ...current,
+                    {
+                        id: Guid.create(),
+                        authorId: currentUserId,
+                        authorName: 'You',
+                        authorInitials: 'Y',
+                        hasAvatar: false,
+                        authorKind: ChatAuthorKind.User,
+                        text,
+                        timestamp: new Date(),
+                    },
+                ]);
             };
 
             const react = (messageId: Guid, emoji: string) => {
-                setMessages(current => current.map(message => {
-                    if (!message.id.equals(messageId)) return message;
+                setMessages((current) =>
+                    current.map((message) => {
+                        if (!message.id.equals(messageId)) return message;
 
-                    // A person has one reaction per message: drop any existing reaction from "you" first.
-                    const withoutYou = (message.reactions ?? [])
-                        .map(reaction => ({ ...reaction, users: reaction.users.filter(user => !user.id.equals(currentUserId)) }))
-                        .filter(reaction => reaction.users.length > 0);
+                        // A person has one reaction per message: drop any existing reaction from "you" first.
+                        const withoutYou = (message.reactions ?? [])
+                            .map((reaction) => ({
+                                ...reaction,
+                                users: reaction.users.filter(
+                                    (user) => !user.id.equals(currentUserId),
+                                ),
+                            }))
+                            .filter((reaction) => reaction.users.length > 0);
 
-                    const alreadyGaveThisEmoji = message.reactions?.some(
-                        reaction => reaction.emoji === emoji && reaction.users.some(user => user.id.equals(currentUserId)));
+                        const alreadyGaveThisEmoji = message.reactions?.some(
+                            (reaction) =>
+                                reaction.emoji === emoji &&
+                                reaction.users.some((user) =>
+                                    user.id.equals(currentUserId),
+                                ),
+                        );
 
-                    // Picking the same emoji again takes the reaction back.
-                    if (alreadyGaveThisEmoji) return { ...message, reactions: withoutYou };
+                        // Picking the same emoji again takes the reaction back.
+                        if (alreadyGaveThisEmoji)
+                            return { ...message, reactions: withoutYou };
 
-                    const target = withoutYou.find(reaction => reaction.emoji === emoji);
-                    const yourReaction = { id: currentUserId, name: 'You', reactionId: Guid.create() };
-                    const reactions = target
-                        ? withoutYou.map(reaction => (reaction.emoji === emoji ? { ...reaction, users: [...reaction.users, yourReaction] } : reaction))
-                        : [...withoutYou, { emoji, users: [yourReaction] }];
+                        const target = withoutYou.find(
+                            (reaction) => reaction.emoji === emoji,
+                        );
+                        const yourReaction = {
+                            id: currentUserId,
+                            name: 'You',
+                            reactionId: Guid.create(),
+                        };
+                        const reactions = target
+                            ? withoutYou.map((reaction) =>
+                                  reaction.emoji === emoji
+                                      ? {
+                                            ...reaction,
+                                            users: [...reaction.users, yourReaction],
+                                        }
+                                      : reaction,
+                              )
+                            : [...withoutYou, { emoji, users: [yourReaction] }];
 
-                    return { ...message, reactions };
-                }));
+                        return { ...message, reactions };
+                    }),
+                );
             };
 
             return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: 380 }}>
-                    <button type='button' onClick={() => setIsTyping(current => !current)}>
-                        {isTyping ? 'Stop demo assistant typing' : 'Simulate demo assistant typing'}
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 12,
+                        width: 380,
+                    }}
+                >
+                    <button
+                        type='button'
+                        onClick={() => setIsTyping((current) => !current)}
+                    >
+                        {isTyping
+                            ? 'Stop demo assistant typing'
+                            : 'Simulate demo assistant typing'}
                     </button>
-                    <div style={{ height: 480, border: '1px solid var(--surface-border)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div
+                        style={{
+                            height: 480,
+                            border: '1px solid var(--cratis-surface-border)',
+                            borderRadius: 12,
+                            overflow: 'hidden',
+                        }}
+                    >
                         <Chat
                             messages={messages}
                             onSend={send}
-                            onClose={() => { /* Chat is embedded inline in the story; there is no panel to close. */ }}
+                            onClose={() => {
+                                /* Chat is embedded inline in the story; there is no panel to close. */
+                            }}
                             currentUserId={currentUserId}
                             onReact={react}
                             mentionCandidates={mentionCandidates}
-                            typingAuthors={isTyping ? [{ id: demoAssistantId.toString(), name: 'Demo Assistant', hasAvatar: false, kind: ChatAuthorKind.Agent }] : []}
+                            typingAuthors={
+                                isTyping
+                                    ? [
+                                          {
+                                              id: demoAssistantId.toString(),
+                                              name: 'Demo Assistant',
+                                              hasAvatar: false,
+                                              kind: ChatAuthorKind.Agent,
+                                          },
+                                      ]
+                                    : []
+                            }
                         />
                     </div>
                 </div>
@@ -161,17 +237,32 @@ export const WithFailedTurn: Story = {
                     authorKind: ChatAuthorKind.Agent,
                     text: '',
                     timestamp: new Date(),
-                    failureDetail: 'The sample request timed out before a response was available.',
+                    failureDetail:
+                        'The sample request timed out before a response was available.',
                 },
             ]);
 
             return (
-                <div style={{ height: 420, width: 380, border: '1px solid var(--surface-border)', borderRadius: 12, overflow: 'hidden' }}>
+                <div
+                    style={{
+                        height: 420,
+                        width: 380,
+                        border: '1px solid var(--cratis-surface-border)',
+                        borderRadius: 12,
+                        overflow: 'hidden',
+                    }}
+                >
                     <Chat
                         messages={messages}
-                        onSend={() => { /* This story only shows the failed-turn line; sending is not wired up. */ }}
-                        onClose={() => { /* Chat is embedded inline in the story; there is no panel to close. */ }}
-                        buildReportUrl={details => `https://example.invalid/report?title=${encodeURIComponent(details.title)}`}
+                        onSend={() => {
+                            /* This story only shows the failed-turn line; sending is not wired up. */
+                        }}
+                        onClose={() => {
+                            /* Chat is embedded inline in the story; there is no panel to close. */
+                        }}
+                        buildReportUrl={(details) =>
+                            `https://example.invalid/report?title=${encodeURIComponent(details.title)}`
+                        }
                     />
                 </div>
             );

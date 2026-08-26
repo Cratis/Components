@@ -75,8 +75,8 @@ const userSchema: JsonSchema = {
 
 const sampleUser: Json = {
     id: '123e4567-e89b-12d3-a456-426614174000',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: 'Sample User',
+    email: 'sample.user@example.invalid',
     age: 30,
     isActive: true,
     address: {
@@ -179,11 +179,11 @@ const editableSchema: JsonSchema = {
 };
 
 const editableObject: Json = {
-    name: 'Jane Smith',
-    email: 'jane@example.com',
+    name: 'Example Participant',
+    email: 'sample.user@example.invalid',
     age: 28,
     isActive: true,
-    website: 'https://example.com',
+    website: 'https://example.invalid',
     birthDate: '1996-03-15',
     notes: 'This field is intentionally long to demonstrate the textarea input. It contains more than fifty characters.'
 };

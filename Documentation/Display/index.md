@@ -69,8 +69,8 @@ A user/entity avatar showing an image, initials, or an icon fallback.
 ```tsx
 import { Avatar } from '@cratis/components/Display';
 
-<Avatar image="/users/jane.png" />
-<Avatar label="JD" />
+<Avatar image="/users/sample-user.png" />
+<Avatar label="SU" />
 ```
 
 | Prop | Type | Description |

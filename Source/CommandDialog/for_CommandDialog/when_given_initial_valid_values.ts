@@ -37,7 +37,7 @@ describe('when CommandDialog is given initial valid values', () => {
     beforeEach(() => {
         const element = React.createElement(CommandDialog, {
             command: TestCommand as unknown as new () => object,
-            initialValues: { name: 'John Doe' } as Partial<TestCommand>,
+            initialValues: { name: 'Sample User' } as Partial<TestCommand>,
             visible: true,
             title: 'Test Dialog'
         });

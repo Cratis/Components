@@ -1,5 +1,4 @@
 .pivot-viewer {
-    color-scheme: dark;
     position: relative;
     /* CRITICAL: Don't set explicit height - let parent control it via container constraints */
     display: flex;
@@ -1366,6 +1365,9 @@
     .pv-toolbar {
         flex-wrap: wrap;
         gap: 1rem;
+        /* The base rule uses a fixed single-row height. Once controls wrap,
+           let the toolbar grow so the second row pushes the canvas down. */
+        height: auto;
     }
 
     .pv-toolbar-right {

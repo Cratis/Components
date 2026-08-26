@@ -11,7 +11,7 @@ const ownReactionId = Guid.create();
 
 describe('when the person has reacted', () => {
     const reactions: ChatMessageReaction[] = [
-        { emoji: '👍', users: [{ id: otherUserId, name: 'Bob', reactionId: Guid.create() }] },
+        { emoji: '👍', users: [{ id: otherUserId, name: 'Sample User 02', reactionId: Guid.create() }] },
         { emoji: '🎉', users: [{ id: currentUserId, name: 'You', reactionId: ownReactionId }] },
     ];
 
@@ -21,7 +21,7 @@ describe('when the person has reacted', () => {
 
 describe('when the person has not reacted', () => {
     const reactions: ChatMessageReaction[] = [
-        { emoji: '👍', users: [{ id: otherUserId, name: 'Bob', reactionId: Guid.create() }] },
+        { emoji: '👍', users: [{ id: otherUserId, name: 'Sample User 02', reactionId: Guid.create() }] },
     ];
 
     it('should return undefined', () => (findOwnReaction(reactions, currentUserId) === undefined).should.be.true);

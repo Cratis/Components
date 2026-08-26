@@ -11,11 +11,11 @@ import {
 describe('when using built-in match modes', () => {
     const filters: DataTableFilterMeta = {
         name: {
-            value: 'Morgan',
+            value: 'Sample User',
             matchMode: DataTableFilterMatchMode.Contains,
         },
         legacyCustomField: {
-            value: 'Grace',
+            value: 'sample-value',
             matchMode: 'matcherRegisteredByTheConsumer',
         },
     };

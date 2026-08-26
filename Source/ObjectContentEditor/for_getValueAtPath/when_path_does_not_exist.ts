@@ -5,7 +5,7 @@ import { getValueAtPath } from '../objectHelpers';
 import type { Json } from '../../types/JsonSchema';
 
 describe('when getting a value at a path that does not exist', () => {
-    const data: Json = { name: 'Alice' };
+    const data: Json = { name: 'Sample User 01' };
     let result: Json | null;
 
     beforeEach(() => {

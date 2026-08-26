@@ -24,8 +24,8 @@ const sampleEvents: Event[] = [
         occurred: new Date('2024-02-10T09:00:00'),
         content: {
             userId: 'user-001',
-            email: 'john.doe@example.com',
-            username: 'john.doe',
+            email: 'sample.user@example.invalid',
+            username: 'sample.user',
             role: 'user'
         }
     },
@@ -35,8 +35,8 @@ const sampleEvents: Event[] = [
         occurred: new Date('2024-02-10T10:15:00'),
         content: {
             userId: 'user-001',
-            firstName: 'John',
-            lastName: 'Doe',
+            firstName: 'Sample',
+            lastName: 'User',
             bio: 'Software developer'
         }
     },
@@ -65,7 +65,7 @@ const sampleEvents: Event[] = [
         occurred: new Date('2024-02-10T13:00:00'),
         content: {
             userId: 'user-001',
-            email: 'john.doe@example.com',
+            email: 'sample.user@example.invalid',
             verifiedAt: new Date('2024-02-10T13:00:00')
         }
     }

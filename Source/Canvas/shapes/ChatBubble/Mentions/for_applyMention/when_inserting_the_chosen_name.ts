@@ -24,8 +24,8 @@ describe('when there is text after the mention', () => {
 describe('when the chosen name contains a space', () => {
     let result: MentionApplied;
 
-    beforeEach(() => { result = applyMention('@Ali', 4, { start: 0, text: 'Ali' }, 'Alice Johnson'); });
+    beforeEach(() => { result = applyMention('@Sam', 4, { start: 0, text: 'Sam' }, 'Sample User'); });
 
-    it('should insert the whole name', () => result.text.should.equal('@Alice Johnson '));
-    it('should leave the caret after the trailing space', () => result.caret.should.equal(15));
+    it('should insert the whole name', () => result.text.should.equal('@Sample User '));
+    it('should leave the caret after the trailing space', () => result.caret.should.equal(13));
 });

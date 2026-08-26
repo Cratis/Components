@@ -27,7 +27,7 @@ describe('when a controlled selection is given', () => {
                 selection: {
                     id: 2,
                     name: 'Person 2',
-                    email: 'person2@example.com',
+                    email: 'sample02@example.invalid',
                 },
             }),
         );

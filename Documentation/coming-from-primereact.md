@@ -63,4 +63,4 @@ A PrimeReact 10 / Components 2 application may migrate directly to Components 4.
 
 Components tables render one Arc-provided page. Filtering and sorting the complete dataset belongs on the server before paging. Do not reproduce a client-side DataTable mode over partial data.
 
-Follow the complete [Components 3 to 4 migration](migration.md).
+Follow the complete [Components 3 to 4 migration](Migration/3-to-4.md).

@@ -28,5 +28,5 @@ describe('when the mention is at the very start of the message', () => {
 });
 
 describe('when a name containing a space is being typed', () => {
-    it('should keep the space as part of what was typed', () => activeMentionQuery('@Alice Jo', 9)!.text.should.equal('Alice Jo'));
+    it('should keep the space as part of what was typed', () => activeMentionQuery('@Sample U', 9)!.text.should.equal('Sample U'));
 });

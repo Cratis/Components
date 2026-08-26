@@ -10,7 +10,7 @@ export interface JsonSchema {
     title?: string;
     /** Name of the schema or type being defined. */
     name?: string;
-    /** Unique identifier URI for this schema (e.g. "https://example.com/schemas/person.json"). */
+    /** Unique identifier URI for this schema (e.g. "https://example.invalid/schemas/person.json"). */
     $id?: string;
     /** Reference to another schema definition (URI fragment or external reference). */
     $ref?: string;

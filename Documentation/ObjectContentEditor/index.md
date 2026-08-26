@@ -32,8 +32,8 @@ import { JsonSchema } from '@cratis/components/types';
 function MyObjectViewer() {
     const data = {
         id: 'user-123',
-        name: 'John Doe',
-        email: 'john@example.com',
+        name: 'Sample User',
+        email: 'example.participant@example.invalid',
         profile: {
             age: 30,
             city: 'Oslo'
@@ -132,7 +132,7 @@ function EditableProduct() {
         price: 1299.99,
         inStock: true,
         releaseDate: '2024-01-15T10:00:00Z',
-        website: 'https://example.com'
+        website: 'https://example.invalid'
     });
 
     const [hasErrors, setHasErrors] = useState(false);
@@ -214,7 +214,7 @@ function ProductViewer() {
             storage: '512GB'
         },
         tags: ['electronics', 'computers', 'featured'],
-        website: 'https://example.com/laptop-pro',
+        website: 'https://example.invalid/laptop-pro',
         releaseDate: '2024-01-15T10:00:00Z'
     };
 

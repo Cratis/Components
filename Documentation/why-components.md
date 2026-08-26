@@ -46,4 +46,4 @@ Use native HTML or a product-owned presentational component for a one-off elemen
 
 Components 3 used PrimeReact as a declared package foundation. Components 4 does not declare PrimeReact, PrimeIcons, PrimeUI, or PrimeUI themes as dependencies or peers; it replaces those package and renderer contracts with Components-owned markup, types, tokens, and documented parts. Applications retaining direct third-party imports keep their own package and license boundaries.
 
-Read [UI foundation](ui-foundation.md) for the decision and [Migrate from Components 3](migration.md) for the consumer steps.
+Read [UI foundation](ui-foundation.md) for the decision and [Migrate from Components 3](Migration/3-to-4.md) for the consumer steps.

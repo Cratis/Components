@@ -16,7 +16,7 @@ interface Person {
 }
 
 describe('when selecting by object reference', () => {
-    const selected: Person = { name: 'Grace' };
+    const selected: Person = { name: 'sample-value' };
     let container: HTMLDivElement;
     let root: Root;
 
@@ -27,7 +27,7 @@ describe('when selecting by object reference', () => {
         container = document.createElement('div');
         document.body.append(container);
         root = createRoot(container);
-        await render([selected, { name: 'Morgan' }], selected);
+        await render([selected, { name: 'Sample User' }], selected);
     });
 
     afterEach(async () => {
@@ -57,7 +57,7 @@ describe('when selecting by object reference', () => {
         rows().filter((row) => row.getAttribute('aria-selected') === 'true');
     const selectedRow = () =>
         Array.from(container.querySelectorAll('[data-cratis-part="row"]')).find((row) =>
-            row.textContent?.includes('Grace'),
+            row.textContent?.includes('sample-value'),
         );
 
     it('should mark the referenced row selected without a data key', () => {
@@ -73,7 +73,7 @@ describe('when selecting by object reference', () => {
                 HTMLInputElement.prototype,
                 'value',
             )!.set!;
-            setValue.call(search, 'Grace');
+            setValue.call(search, 'sample-value');
             search.dispatchEvent(new Event('input', { bubbles: true }));
         });
 

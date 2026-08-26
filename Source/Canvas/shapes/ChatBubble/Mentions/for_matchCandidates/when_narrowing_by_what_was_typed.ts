@@ -10,8 +10,8 @@ const candidate = (name: string, kind = ChatAuthorKind.User): MentionCandidate =
 
 const candidates = [
     candidate('Modeler', ChatAuthorKind.Agent),
-    candidate('Alice Johnson'),
-    candidate('Bob Smith'),
+    candidate('Sample User 01'),
+    candidate('Sample User 02'),
     candidate('Model Reviewer', ChatAuthorKind.Agent),
 ];
 
@@ -31,22 +31,27 @@ describe('when what was typed matches the start of a name', () => {
 describe('when what was typed appears in the middle of a name', () => {
     let matches: MentionCandidate[];
 
-    beforeEach(() => { matches = matchCandidates(candidates, 'John'); });
+    beforeEach(() => { matches = matchCandidates(candidates, 'User 01'); });
 
     it('should still offer that name', () => matches.should.have.lengthOf(1));
-    it('should offer the right one', () => matches[0].name.should.equal('Alice Johnson'));
+    it('should offer the right one', () => matches[0].name.should.equal('Sample User 01'));
 });
 
 describe('when what was typed is in a different case', () => {
-    it('should still match', () => matchCandidates(candidates, 'bob').should.have.lengthOf(1));
+    it('should still match', () => matchCandidates(candidates, 'sample user 02').should.have.lengthOf(1));
 });
 
 describe('when a name that starts with the query is not first in the list', () => {
     let matches: MentionCandidate[];
 
-    beforeEach(() => { matches = matchCandidates([candidate('Alice Bobson'), candidate('Bob Smith')], 'Bob'); });
+    beforeEach(() => {
+        matches = matchCandidates(
+            [candidate('Example Sample'), candidate('Sample User 02')],
+            'Sample',
+        );
+    });
 
-    it('should offer the one that starts with it first', () => matches[0].name.should.equal('Bob Smith'));
+    it('should offer the one that starts with it first', () => matches[0].name.should.equal('Sample User 02'));
 });
 
 describe('when nothing matches', () => {
@@ -55,6 +60,8 @@ describe('when nothing matches', () => {
 
 describe('when there are more matches than the list can show', () => {
     it('should cap how many are offered', () =>
-        matchCandidates(Array.from({ length: 20 }, (_, index) => candidate(`Person ${index}`)), 'Person')
-            .should.have.lengthOf(6));
+        matchCandidates(
+            Array.from({ length: 20 }, (_, index) => candidate(`Sample User ${index}`)),
+            'Sample User',
+        ).should.have.lengthOf(6));
 });

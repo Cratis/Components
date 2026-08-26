@@ -454,6 +454,6 @@ Complete PrimeIcons class strings remain usable where a component accepts `Icon`
 
 A TypeScript 6 application using `skipLibCheck: false` may see bounded upstream diagnostics from Pixi's `@webgpu/types` collision with TypeScript's built-in WebGPU declarations, from `@cratis/arc.react`'s published global JSX declarations, or under NodeNext from extensionless declaration imports in the current Arc and Fundamentals packages. Components validates every packed subpath without suppressing these diagnostics; exact versions, codes, affected subpaths, and removal conditions are recorded in the owning repository at `Documentation/ui-foundation.md#strict-public-type-validation` and tracked in [#176](https://github.com/Cratis/Components/issues/176).
 
-For the current decision, trade-offs, and validation gates, read `Documentation/ui-foundation.md` in the owning repository. The older 2.x → 3.x path remains in `Documentation/migration-from-2.md`.
+For the current decision, trade-offs, and validation gates, read `Documentation/ui-foundation.md` in the owning repository. The older 2.x → 3.x path remains in `Documentation/Migration/2-to-3.md`.
 
 Open issues may track adjacent gaps, but they do not establish a public roadmap, support window, stable-release date, or compatibility promise for Components 4.

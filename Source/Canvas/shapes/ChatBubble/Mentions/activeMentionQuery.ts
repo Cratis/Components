@@ -23,7 +23,7 @@ export const activeMentionQuery = (text: string, caret: number): MentionQuery | 
         return null;
     }
 
-    // A mention starts a word — "name@example.com" is an address, not a mention of "example.com".
+    // A mention starts a word — "sample.user@example.invalid" is an address, not a mention of "example.invalid".
     const preceding = start === 0 ? '' : before[start - 1];
     if (preceding !== '' && !/\s/.test(preceding)) {
         return null;

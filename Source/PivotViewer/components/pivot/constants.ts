@@ -10,38 +10,38 @@ export const CARD_GAP = 8; // Gap between cards (must match layout gap)
 
 // Fallbacks tuned to the Cratis dark baseline; actual values resolved from CSS variables
 export const DEFAULT_COLORS = {
-  base: 0x0f2745,        // surface-b-ish deep blue
-  mid: 0x163359,         // surface-a-ish
-  gradient: 0x0b1e36,    // ground backdrop
-  border: 0x2e66ba,      // primary-500 for accents
-  text: 0xffffff,
-  textSecondary: 0xa8b2c2,
+    base: '#0f2745', // surface-b-ish deep blue
+    mid: '#163359', // surface-a-ish
+    gradient: '#0b1e36', // ground backdrop
+    border: '#2e66ba', // primary-500 for accents
+    text: '#ffffff',
+    textSecondary: '#a8b2c2',
 };
 
 export type CardColors = typeof DEFAULT_COLORS;
 
 export interface CardSprite {
-  container: PIXI.Container;
-  graphics: PIXI.Graphics;
-  titleText: PIXI.Text;
-  labelsText: PIXI.Text;
-  valuesText: PIXI.Text;
-  itemId: number | string;
-  targetX: number;
-  targetY: number;
-  currentX: number;
-  currentY: number;
-  // Animation state
-  animationStartTime?: number;
-  animationDelay?: number;
-  startX?: number;
-  startY?: number;
-  // Cache state to avoid unnecessary redraws
-  lastSelectedId?: string | number | null;
-  lastCardColors?: CardColors;
-  lastTitle?: string;
-  lastLabels?: string;
-  lastValues?: string;
+    container: PIXI.Container;
+    graphics: PIXI.Graphics;
+    titleText: PIXI.Text;
+    labelsText: PIXI.Text;
+    valuesText: PIXI.Text;
+    itemId: number | string;
+    targetX: number;
+    targetY: number;
+    currentX: number;
+    currentY: number;
+    // Animation state
+    animationStartTime?: number;
+    animationDelay?: number;
+    startX?: number;
+    startY?: number;
+    // Cache state to avoid unnecessary redraws
+    lastSelectedId?: string | number | null;
+    lastCardColors?: CardColors;
+    lastTitle?: string;
+    lastLabels?: string;
+    lastValues?: string;
 }
 
 export default {};

@@ -16,10 +16,10 @@ describe('when existing Pixi card colors change', () => {
             valuesText: text('old-value'),
         } as unknown as CardSprite;
         const colors: CardColors = {
-            base: 0,
-            mid: 0,
-            gradient: 0,
-            border: 0,
+            base: '#000000',
+            mid: '#000000',
+            gradient: '#000000',
+            border: '#000000',
             text: '#112233',
             textSecondary: '#445566',
         };

@@ -126,7 +126,7 @@ describe('when every owned label is overridden through the provider', () => {
                     </CommandStepperContent>
                     <Toaster timeout={60_000} />
                     <DataTableCore
-                        data={[{ name: 'Morgan', role: true }]}
+                        data={[{ name: 'Sample User', role: true }]}
                         dataKey='name'
                         emptyMessage='No rows'
                         globalFilterFields={['name']}

@@ -46,7 +46,7 @@ describe('when DataTableCore uses provider messages', () => {
         await render(
             <CratisComponentsProvider>
                 <DataTableCore
-                    data={[{ name: 'Morgan' }]}
+                    data={[{ name: 'Sample User' }]}
                     dataKey='name'
                     emptyMessage='No people'
                     globalFilterFields={['name']}
@@ -76,7 +76,7 @@ describe('when DataTableCore uses provider messages', () => {
                 }}
             >
                 <DataTableCore
-                    data={[{ name: 'Morgan' }]}
+                    data={[{ name: 'Sample User' }]}
                     dataKey='name'
                     emptyMessage='No people'
                     globalFilterFields={['name']}
@@ -106,7 +106,7 @@ describe('when DataTableCore uses provider messages', () => {
                 }}
             >
                 <DataTableCore
-                    data={[{ name: 'Morgan' }]}
+                    data={[{ name: 'Sample User' }]}
                     dataKey='name'
                     emptyMessage='No people'
                     globalFilterFields={['name']}

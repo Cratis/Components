@@ -64,7 +64,5 @@
   href: Common/toc.yml
 - name: Types
   href: Types/toc.yml
-- name: Migrate from Components 3 to 4
-  href: migration.md
-- name: Migrate from Components 2 to 3
-  href: migration-from-2.md
+- name: Migration
+  href: Migration/toc.yml

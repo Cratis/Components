@@ -24,7 +24,7 @@ describe('when rendering global search', () => {
         await act(async () => {
             root.render(
                 <DataTableCore
-                    data={[{ name: 'Morgan' }]}
+                    data={[{ name: 'Sample User' }]}
                     emptyMessage='No people'
                     globalFilterFields={['name']}
                     globalSearchPlaceholder='Find people'
