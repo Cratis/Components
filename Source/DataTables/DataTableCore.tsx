@@ -155,7 +155,9 @@ const renderCellContent = (
 };
 
 const dateNumber = (value: unknown) => {
-    const date = value instanceof Date ? value : new Date(String(value));
+    // A cloned Date is normalized in place so caller-owned Date instances (row
+    // values and filter constraints alike) are never mutated by comparison.
+    const date = value instanceof Date ? new Date(value.getTime()) : new Date(String(value));
     return Number.isNaN(date.getTime()) ? undefined : date.setHours(0, 0, 0, 0);
 };
 
@@ -569,7 +571,7 @@ export const DataTableCore = <TData extends object>({
                                 </td>
                             </tr>
                         ) : (
-                            filteredRows.map(({ row, loadedIndex }, filteredIndex) => {
+                            filteredRows.map(({ row, loadedIndex }) => {
                                 const identity = dataKey
                                     ? dataKeyIdentity(row)
                                     : 'loaded-row';
@@ -598,7 +600,7 @@ export const DataTableCore = <TData extends object>({
                                         data-selected={isSelected || undefined}
                                         data-interactive={isInteractive || undefined}
                                         onClick={(event) =>
-                                            activateRow(row, filteredIndex, event)
+                                            activateRow(row, loadedIndex, event)
                                         }
                                         onKeyDown={(event) => {
                                             if (
@@ -609,7 +611,7 @@ export const DataTableCore = <TData extends object>({
                                                 return;
                                             }
                                             event.preventDefault();
-                                            activateRow(row, filteredIndex, event);
+                                            activateRow(row, loadedIndex, event);
                                         }}
                                     >
                                         {columns.map((column, columnIndex) => (
