@@ -39,8 +39,11 @@ export function getValueByPath<TItem>(item: TItem, path: string): PivotPropertyV
         if (value === null || value === undefined || typeof value !== 'object') {
             return undefined;
         }
-        // SAFETY: Property paths are consumer-provided runtime keys over the current object.
-        value = (value as Record<string, PivotPropertyValue>)[part];
+        const record = value as Record<string, PivotPropertyValue>;
+        if (!Object.hasOwn(record, part)) return undefined;
+        // SAFETY: The own-property guard excludes prototype-chain traversal; the remaining key is
+        // read from the current object without mutation.
+        value = record[part];
     }
     return value;
 }

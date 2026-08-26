@@ -1,10 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import {
-    resolveInternalItemIndex,
-    resolveLayoutItemId,
-} from '../utils/idResolution';
+import { resolveInternalItemIndex, resolveLayoutItemId } from '../utils/idResolution';
 import type { LayoutResult } from '../engine/types';
 
 interface TestItem {
@@ -24,8 +21,7 @@ describe('when the item is not present in data by reference', () => {
         totalHeight: 100,
     };
     const getItemId = (item: TestItem) => item.id;
-    const resolveId = (item: TestItem) =>
-        resolveInternalItemIndex(data, item, getItemId);
+    const resolveId = (item: TestItem) => resolveInternalItemIndex(data, item, getItemId);
 
     it('should relocate an equivalent item by consumer identity and return its array index', () => {
         const result = resolveLayoutItemId(data, staleEquivalent, layout, resolveId);

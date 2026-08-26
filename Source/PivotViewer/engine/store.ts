@@ -400,9 +400,7 @@ function groupByNumeric(
         };
     }
 
-    const bucketCount = Number.isFinite(buckets)
-        ? Math.max(1, Math.floor(buckets))
-        : 10;
+    const bucketCount = Number.isFinite(buckets) ? Math.max(1, Math.floor(buckets)) : 10;
     const range = max - min;
     const bucketSize = range / bucketCount;
 

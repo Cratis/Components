@@ -11,9 +11,7 @@ describe('when the numeric bucket count is not positive', () => {
     const data: TestItem[] = [{ price: 10 }, { price: 20 }, { price: 30 }];
     const store = buildStore(
         data,
-        new Map<string, (item: TestItem) => number>([
-            ['price', (item) => item.price],
-        ]),
+        new Map<string, (item: TestItem) => number>([['price', (item) => item.price]]),
     );
     const indexes = buildIndexes(store, ['price']);
     const result = computeGrouping(store, indexes, store.ids, {
