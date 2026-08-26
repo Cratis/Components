@@ -25,9 +25,12 @@ type Story = StoryObj<typeof meta>;
 export const Preview: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await userEvent.hover(canvas.getByText('AL'));
+        const avatar = canvasElement.querySelector<HTMLElement>('.person-avatar-circle');
+        if (!avatar) throw new Error('The primary chat avatar did not render.');
+        await userEvent.unhover(avatar);
+        await userEvent.hover(avatar);
         await expect(
-            canvas.getByText('The event model is ready for review.'),
+            await canvas.findByText('The event model is ready for review.'),
         ).toBeTruthy();
     },
 };
