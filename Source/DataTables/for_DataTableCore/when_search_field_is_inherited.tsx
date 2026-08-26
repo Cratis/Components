@@ -61,9 +61,7 @@ describe('when a configured search field is inherited', () => {
     });
 
     it('should not expose prototype-chain data to search', () => {
-        expect(container.querySelectorAll('[data-cratis-part="row"]')).to.have.length(
-            0,
-        );
+        expect(container.querySelectorAll('[data-cratis-part="row"]')).to.have.length(0);
         expect(container.textContent).to.contain('No rows');
     });
 });
