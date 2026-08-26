@@ -34,6 +34,7 @@ describe('when bounding the Today action by minDate/maxDate', () => {
     const mount = async (options: {
         minDate?: Date;
         maxDate?: Date;
+        showTime?: boolean;
         onChange: (value: Date | null) => void;
     }) => {
         // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
@@ -52,6 +53,7 @@ describe('when bounding the Today action by minDate/maxDate', () => {
                         onChange={options.onChange}
                         aria-label='Appointment date'
                         showButtonBar
+                        showTime={options.showTime}
                         minDate={options.minDate}
                         maxDate={options.maxDate}
                     />
@@ -97,6 +99,18 @@ describe('when bounding the Today action by minDate/maxDate', () => {
         const todayButton = await mount({ minDate: tomorrow, onChange });
         await act(async () => todayButton.click());
         expect(onChange.mock.calls).to.deep.equal([]);
+    });
+
+    it('should honor the time portion of bounds in date-time mode', async () => {
+        const onChange = vi.fn();
+        const middayToday = new Date(today);
+        middayToday.setHours(12);
+        const todayButton = await mount({
+            minDate: middayToday,
+            showTime: true,
+            onChange,
+        });
+        expect(todayButton.disabled).to.equal(true);
     });
 
     it('should keep the Today action enabled when today is within bounds', async () => {

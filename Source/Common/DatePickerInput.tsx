@@ -200,9 +200,14 @@ export const DatePickerInput = ({
     const datePickerMessages = messages?.datePicker;
     const resolvedTodayLabel = todayLabel ?? datePickerMessages?.today ?? 'Today';
     const resolvedClearLabel = clearLabel ?? datePickerMessages?.clear ?? 'Clear';
+    const timeZone = getLocalTimeZone();
     const minValue = asDateValue(minDate ?? null, showTime) ?? undefined;
     const maxValue = asDateValue(maxDate ?? null, showTime) ?? undefined;
-    const todayValue = today(getLocalTimeZone());
+    const todayDate = today(timeZone).toDate(timeZone);
+    // Compare the same granularity that the action emits. In date-time mode the Today action
+    // retains its existing local-midnight value, which can legitimately fall before a same-day
+    // minDate carrying a later time.
+    const todayValue = asDateValue(todayDate, showTime)!;
     const isTodayOutOfBounds =
         (minValue !== undefined && todayValue.compare(minValue) < 0) ||
         (maxValue !== undefined && todayValue.compare(maxValue) > 0);
@@ -454,7 +459,7 @@ export const DatePickerInput = ({
                                     aria-disabled={isTodayOutOfBounds || undefined}
                                     onClick={() => {
                                         if (isTodayOutOfBounds) return;
-                                        onChange(todayValue.toDate(getLocalTimeZone()));
+                                        onChange(todayDate);
                                     }}
                                 >
                                     {resolvedTodayLabel}
