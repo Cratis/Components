@@ -7,10 +7,7 @@ import { expect } from 'chai';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, it } from 'vitest';
-import {
-    CanvasItemRegistryContext,
-    type CanvasItemRegistryEntry,
-} from '../Canvas';
+import { CanvasItemRegistryContext, type CanvasItemRegistryEntry } from '../Canvas';
 import { CanvasItem } from '../CanvasItem';
 
 // A caller-chosen id is the opt-in that makes an item addressable by a Region's containment
