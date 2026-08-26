@@ -74,6 +74,8 @@ jobs:
                       Documentation/**/*.mdx
                   markdown: true
                   recurse: true
-                  concurrency: 10
+                  # Avoid GitHub's unauthenticated burst limit while checking several immutable
+                  # repository links; retry remains enabled for 429 responses with Retry-After.
+                  concurrency: 2
                   retry: true
                   linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/'
