@@ -269,7 +269,9 @@ function membersRequiringDocs(checker, target) {
     if ((target.flags & ts.SymbolFlags.Class) !== 0) {
         return ownPublicClassMembersOf(checker, target);
     }
-    if ((target.flags & ts.SymbolFlags.RegularEnum) !== 0) {
+    if (
+        (target.flags & (ts.SymbolFlags.RegularEnum | ts.SymbolFlags.ConstEnum)) !== 0
+    ) {
         return ownEnumMembersOf(checker, target);
     }
     return [];
