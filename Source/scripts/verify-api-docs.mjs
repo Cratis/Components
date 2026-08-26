@@ -31,9 +31,13 @@
  *   - For an interface (or a type alias whose type is an object literal), every
  *     member *declared directly on that interface/type* (not one inherited through
  *     `extends`/`Omit<...>` from a type this package does not itself export) must
- *     also carry a TSDoc comment. Enum members and function parameters are not
- *     individually required to reduce noise on self-describing enums - the enum
- *     declaration itself still needs a comment.
+ *     also carry a TSDoc comment.
+ *   - Every directly declared public class member is checked, including static
+ *     members and constructor parameter properties. Constructors themselves and
+ *     private/protected/#private members are excluded because they are not separate
+ *     public symbols a consumer can use.
+ *   - Every enum member is checked. Function parameters remain documented through
+ *     the owning function's `@param` tags rather than as independent symbols.
  *
  * Usage:  node scripts/verify-api-docs.mjs [--self-test-only] [--skip-self-test]
  * Exits non-zero if the self-tests regress, or if any reachable declaration/member
@@ -196,6 +200,81 @@ function ownMembersOf(target) {
     return members;
 }
 
+const modifiersOf = (node) =>
+    ts.canHaveModifiers(node) ? (ts.getModifiers(node) ?? []) : [];
+
+const hasModifier = (node, ...kinds) =>
+    modifiersOf(node).some((modifier) => kinds.includes(modifier.kind));
+
+const isPrivateOrProtected = (node) =>
+    hasModifier(node, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ProtectedKeyword);
+
+const addNamedSymbol = (checker, node, members, seen) => {
+    if (!node || ts.isPrivateIdentifier(node)) return;
+    const symbol = checker.getSymbolAtLocation(node);
+    if (!symbol || seen.has(symbol)) return;
+    seen.add(symbol);
+    members.push(symbol);
+};
+
+/** Public members declared directly by a class, including constructor parameter properties. */
+function ownPublicClassMembersOf(checker, target) {
+    const members = [];
+    const seen = new Set();
+    for (const declaration of target.declarations ?? []) {
+        if (!ts.isClassDeclaration(declaration)) continue;
+        for (const member of declaration.members) {
+            if (ts.isConstructorDeclaration(member)) {
+                for (const parameter of member.parameters) {
+                    const isParameterProperty = modifiersOf(parameter).some((modifier) =>
+                        [
+                            ts.SyntaxKind.PublicKeyword,
+                            ts.SyntaxKind.PrivateKeyword,
+                            ts.SyntaxKind.ProtectedKeyword,
+                            ts.SyntaxKind.ReadonlyKeyword,
+                        ].includes(modifier.kind),
+                    );
+                    if (!isParameterProperty || isPrivateOrProtected(parameter)) continue;
+                    addNamedSymbol(checker, parameter.name, members, seen);
+                }
+                continue;
+            }
+            if (isPrivateOrProtected(member)) continue;
+            addNamedSymbol(checker, member.name, members, seen);
+        }
+    }
+    return members;
+}
+
+/** Members declared directly by an enum. */
+function ownEnumMembersOf(checker, target) {
+    const members = [];
+    const seen = new Set();
+    for (const declaration of target.declarations ?? []) {
+        if (!ts.isEnumDeclaration(declaration)) continue;
+        for (const member of declaration.members) {
+            addNamedSymbol(checker, member.name, members, seen);
+        }
+    }
+    return members;
+}
+
+function membersRequiringDocs(checker, target) {
+    if (
+        (target.flags & ts.SymbolFlags.Interface) !== 0 ||
+        (target.flags & ts.SymbolFlags.TypeAlias) !== 0
+    ) {
+        return ownMembersOf(target);
+    }
+    if ((target.flags & ts.SymbolFlags.Class) !== 0) {
+        return ownPublicClassMembersOf(checker, target);
+    }
+    if ((target.flags & ts.SymbolFlags.RegularEnum) !== 0) {
+        return ownEnumMembersOf(checker, target);
+    }
+    return [];
+}
+
 /**
  * Walks every reachable exported declaration starting from `rootFile`, calling
  * `visit(target, path)` once per unique concrete declaration reached (`path` is a
@@ -296,12 +375,7 @@ export function findMissingDocs(root, fileToSubpaths) {
             });
         }
 
-        const isInterfaceLike =
-            (target.flags & ts.SymbolFlags.Interface) !== 0 ||
-            (target.flags & ts.SymbolFlags.TypeAlias) !== 0;
-        if (!isInterfaceLike) continue;
-
-        for (const member of ownMembersOf(target)) {
+        for (const member of membersRequiringDocs(checker, target)) {
             if (hasDocComment(checker, member)) continue;
             const { file: declFile, line } = locationOf(member);
             violations.push({
@@ -413,6 +487,145 @@ function selfTestDocumentedPasses() {
     }
 }
 
+function selfTestClassAndEnumMembersAreFlagged() {
+    const dir = makeFixture({
+        'tsconfig.json': FIXTURE_TSCONFIG,
+        'Widget/index.ts': `/** A public worker. */
+export class Worker {
+    missing = 1;
+    constructor(readonly missingId: string, private hiddenId: string) {}
+    static missingStatic() {}
+    private hidden = true;
+}
+/** Available modes. */
+export enum Mode {
+    Missing = 'missing',
+}
+`,
+    });
+    try {
+        const { fileToSubpaths } = resolveBarrelsFromExports(
+            {
+                name: '@fixture/pkg',
+                exports: {
+                    './Widget': {
+                        types: './dist/esm/Widget/index.d.ts',
+                        import: './dist/esm/Widget/index.js',
+                    },
+                },
+            },
+            dir,
+        );
+        const symbols = findMissingDocs(dir, fileToSubpaths).map(
+            (violation) => violation.symbol,
+        );
+        for (const expected of [
+            'Worker.missing',
+            'Worker.missingId',
+            'Worker.missingStatic',
+            'Mode.Missing',
+        ]) {
+            assert(symbols.includes(expected), `expected ${expected} to be flagged`);
+        }
+        assert(!symbols.includes('Worker.hidden'), 'private class members must be ignored');
+        assert(!symbols.includes('Worker.hiddenId'), 'private parameter properties must be ignored');
+        assert(!symbols.some((symbol) => symbol.includes('constructor')), 'constructors must be ignored');
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+}
+
+function selfTestDocumentedClassAndEnumPasses() {
+    const dir = makeFixture({
+        'tsconfig.json': FIXTURE_TSCONFIG,
+        'Widget/index.ts': `/** A public worker. */
+export class Worker {
+    /** Current state. */
+    state = 1;
+    constructor(
+        /** Stable identity. */
+        readonly id: string,
+        private hiddenId: string,
+    ) {}
+    /** Creates a worker. */
+    static create() { return new Worker('sample', 'hidden'); }
+    /** Runs the worker. */
+    run() {}
+    private hidden = true;
+}
+/** Available modes. */
+export enum Mode {
+    /** The active mode. */
+    Active = 'active',
+}
+`,
+    });
+    try {
+        const { fileToSubpaths } = resolveBarrelsFromExports(
+            {
+                name: '@fixture/pkg',
+                exports: {
+                    './Widget': {
+                        types: './dist/esm/Widget/index.d.ts',
+                        import: './dist/esm/Widget/index.js',
+                    },
+                },
+            },
+            dir,
+        );
+        const violations = findMissingDocs(dir, fileToSubpaths);
+        assert(
+            violations.length === 0,
+            `expected documented class/enum members to pass, got: ${JSON.stringify(violations)}`,
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+}
+
+function selfTestDeclarationEmitRetainsDocs() {
+    const configPath = path.join(packageDir, 'tsconfig.json');
+    const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+    assert(!configFile.error, 'Source/tsconfig.json must parse');
+    const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, packageDir);
+    assert(parsed.options.removeComments !== true, 'declaration emit must retain TSDoc comments');
+
+    const dir = makeFixture({
+        'Widget.ts': '/** Public widget contract. */\nexport interface Widget {\n    /** Visible label. */\n    label: string;\n}\n',
+    });
+    try {
+        const source = path.join(dir, 'Widget.ts');
+        const output = new Map();
+        const options = {
+            ...parsed.options,
+            composite: false,
+            incremental: false,
+            noEmit: false,
+            declaration: true,
+            declarationMap: false,
+            sourceMap: false,
+            emitDeclarationOnly: true,
+            outDir: path.join(dir, 'dist'),
+        };
+        const host = ts.createCompilerHost(options);
+        host.writeFile = (fileName, content) => output.set(fileName, content);
+        const program = ts.createProgram({ rootNames: [source], options, host });
+        const result = program.emit();
+        assert(!result.emitSkipped, 'declaration-fidelity fixture must emit');
+        const declaration = [...output.entries()].find(([fileName]) =>
+            fileName.endsWith('.d.ts'),
+        )?.[1];
+        assert(declaration, 'declaration-fidelity fixture must produce a .d.ts');
+        assert(
+            declaration.includes('/** Public widget contract. */') &&
+                declaration.includes('/** Visible label. */'),
+            'published declaration emit must preserve declaration and member TSDoc',
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+}
+
 function selfTestUnreachableLocalExportIsIgnored() {
     const dir = makeFixture({
         'tsconfig.json': FIXTURE_TSCONFIG,
@@ -484,6 +697,9 @@ function selfTestNamespaceReExportIsFollowedAndDeduped() {
 const SELF_TESTS = [
     ['flags an undocumented interface and member', selfTestUndocumentedIsFlagged],
     ['passes a fully documented barrel', selfTestDocumentedPasses],
+    ['flags undocumented public class and enum members', selfTestClassAndEnumMembersAreFlagged],
+    ['passes documented class and enum members', selfTestDocumentedClassAndEnumPasses],
+    ['preserves TSDoc in declaration emit', selfTestDeclarationEmitRetainsDocs],
     ['ignores an unreachable local export', selfTestUnreachableLocalExportIsIgnored],
     [
         'follows and dedupes a namespace re-export',

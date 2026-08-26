@@ -9,7 +9,9 @@
  */
 export class ItemRemovedFromRegion {
     constructor(
+        /** Caller-owned identity of the region that no longer contains the item. */
         readonly regionId: string,
+        /** Caller-owned identity of the item whose center left the region. */
         readonly itemId: string,
     ) {}
 }

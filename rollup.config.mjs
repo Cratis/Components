@@ -386,6 +386,12 @@ export function rollup(esmPath, tsconfigPath, pkg) {
                     declaration: false,
                     declarationMap: false,
                     composite: false,
+                    // This pass produces the actual shipped runtime JS (it overwrites the
+                    // `.js` files `tsc -b` wrote, in place). Declaration emit is off here, so
+                    // stripping comments only affects runtime bytes, never the published
+                    // `.d.ts` - those come from the earlier `tsc -b` pass, which intentionally
+                    // keeps comments (root tsconfig.json) so TSDoc reaches consumers.
+                    removeComments: true,
                 },
             }),
             generatePackageJson(esmPath),

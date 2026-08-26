@@ -8,7 +8,9 @@
  */
 export class NoteTextChanged {
     constructor(
+        /** Caller-owned identity of the edited note. */
         readonly noteId: string,
+        /** Full text committed when editing ended. */
         readonly text: string,
     ) {}
 }

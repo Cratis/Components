@@ -8,7 +8,9 @@
  */
 export class ChatMessageAdded {
     constructor(
+        /** Caller-owned identity of the conversation that accepted the message. */
         readonly chatId: string,
+        /** Full text submitted by the composer. */
         readonly text: string,
     ) {}
 }

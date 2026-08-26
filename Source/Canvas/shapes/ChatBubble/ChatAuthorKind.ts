@@ -6,6 +6,9 @@
  * is resolved when a conversation is rendered — it decides which avatar the message shows.
  */
 export enum ChatAuthorKind {
+    /** A message authored by an application user. */
     User = 'user',
+
+    /** A message authored by an automated agent. */
     Agent = 'agent',
 }

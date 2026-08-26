@@ -90,6 +90,27 @@ try {
     process.exit(1);
 }
 
+const declarationWithDocs = readPackedText(
+    'package/dist/esm/Common/ErrorBoundary.d.ts',
+);
+const declarationWithDeprecations = readPackedText(
+    'package/dist/esm/Common/DatePickerInput.d.ts',
+);
+const runtimeWithoutDocs = readPackedText('package/dist/esm/Common/ErrorBoundary.js');
+const apiDocMarker = 'React error boundary that catches errors thrown by its descendants';
+if (!declarationWithDocs.includes(apiDocMarker)) {
+    console.error('Published declarations stripped the ErrorBoundary TSDoc contract.');
+    process.exit(1);
+}
+if (!declarationWithDeprecations.includes('@deprecated')) {
+    console.error('Published declarations stripped @deprecated migration guidance.');
+    process.exit(1);
+}
+if (runtimeWithoutDocs.includes(apiDocMarker)) {
+    console.error('Published runtime JavaScript retained declaration-only TSDoc text.');
+    process.exit(1);
+}
+
 const stylesEntry = 'package/dist/esm/styles.css';
 const styles = readPackedText(stylesEntry);
 try {
