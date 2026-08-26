@@ -4,6 +4,7 @@
 import { addons } from 'storybook/preview-api';
 import React from 'react';
 import 'primeicons/primeicons.css';
+import '../tokens.css';
 import '../styles.css';
 import './preview.css';
 import '../theme.css';
@@ -23,9 +24,12 @@ import { tailwindPtPreset } from './pt-preset';
 const DARK_SELECTOR = 'cratis-dark';
 
 // PrimeReact 11 verifies a PrimeUI license key when its provider mounts, whatever the
-// styling path; without one a nag banner appears. Set STORYBOOK_PRIMEUI_LICENSE to your
-// own key. The default mode below is the unstyled + Tailwind `pt` path.
-const PRIMEUI_LICENSE = import.meta.env?.STORYBOOK_PRIMEUI_LICENSE;
+// styling path — unstyled and the Cratis baseline theme are not exempt (see §"Licensing"
+// in MIGRATION.md). Set PRIMEUI_LICENSE in your shell to your own key; main.ts relays it
+// into import.meta.env (Storybook's Vite builder only forwards STORYBOOK_-prefixed vars
+// by default, so a plain PRIMEUI_LICENSE needs that explicit relay). The default mode
+// below is the unstyled + Tailwind `pt` path.
+const PRIMEUI_LICENSE = import.meta.env?.PRIMEUI_LICENSE ?? import.meta.env?.STORYBOOK_PRIMEUI_LICENSE;
 const withLicense = (value) => (PRIMEUI_LICENSE ? { ...value, license: PRIMEUI_LICENSE } : value);
 
 const STYLING_MODES = {
@@ -33,13 +37,13 @@ const STYLING_MODES = {
         title: 'Path C — Unstyled + Tailwind pt (default)',
         dark: true,
         bodyClass: 'cratis-unstyled-pt',
-        providerValue: { unstyled: true, pt: tailwindPtPreset },
+        providerValue: withLicense({ unstyled: true, pt: tailwindPtPreset }),
     },
     'unstyled-bare': {
         title: 'Path C — Unstyled (bare structure)',
         dark: true,
         bodyClass: 'cratis-unstyled-bare',
-        providerValue: { unstyled: true },
+        providerValue: withLicense({ unstyled: true }),
     },
     'styled-dark': {
         title: 'Path A — Styled mode, Cratis preset, dark',
@@ -60,16 +64,16 @@ const STYLING_MODES = {
         providerValue: withLicense({ ripple: true, ...styledMode({ preset: Aura }) }),
     },
     'cratis-theme': {
-        title: 'Path B — Cratis baseline theme, dark (no license)',
+        title: 'Path B — Cratis baseline theme, dark',
         dark: true,
         bodyClass: 'cratis-theme',
-        providerValue: { unstyled: true },
+        providerValue: withLicense({ unstyled: true }),
     },
     'cratis-theme-light': {
-        title: 'Path B — Cratis baseline theme, light (no license)',
+        title: 'Path B — Cratis baseline theme, light',
         dark: false,
         bodyClass: 'cratis-theme',
-        providerValue: { unstyled: true },
+        providerValue: withLicense({ unstyled: true }),
     },
 };
 
