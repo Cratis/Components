@@ -89,6 +89,20 @@ describe('when the schema contains a malformed nested property', () => {
         expect(saveButton?.disabled).to.equal(true);
     });
 
+    it('should reject a non-array required value', async () => {
+        const malformedRequired: JsonSchema = { type: 'object', properties: {} };
+        Reflect.set(malformedRequired, 'required', {});
+        await act(async () => root.render(<SchemaEditor schema={malformedRequired} />));
+        expect(container.querySelector('[role="alert"]')).not.to.equal(null);
+    });
+
+    it('should reject a malformed schema definition', async () => {
+        const malformedDefinition: JsonSchema = { type: 'object', properties: {} };
+        Reflect.set(malformedDefinition, 'definitions', { sample: null });
+        await act(async () => root.render(<SchemaEditor schema={malformedDefinition} />));
+        expect(container.querySelector('[role="alert"]')).not.to.equal(null);
+    });
+
     it('should recover and preserve valid sibling data once the malformed value is fixed', async () => {
         const correctedSchema: JsonSchema = {
             type: 'object',

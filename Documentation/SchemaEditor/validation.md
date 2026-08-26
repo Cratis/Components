@@ -1,310 +1,111 @@
 # SchemaEditor - Validation
 
-## Property Name Validation
+SchemaEditor validates the subset it actively edits. It prevents malformed schema structure and invalid property names from being saved, but it is not a general-purpose JSON Schema validator.
 
-### Rules
+## Supported structural validation
+
+Before SchemaEditor copies an incoming schema into editable state, it verifies that:
+
+- The root schema is a JSON object.
+- `properties` and `definitions`, when present, are objects whose values are valid schema objects.
+- `items`, when present, is a valid schema object.
+- `required`, when present, is an array of strings.
+- The complete structure can round-trip through JSON without circular references, `BigInt`, or other non-JSON values.
+
+A malformed schema does not crash the editor. SchemaEditor shows its localized invalid-schema message as an alert and disables Edit, Save, and Add Property until a valid `schema` prop is supplied. Supplying valid data clears the error and resynchronizes the editor.
+
+Boolean schemas (`true` or `false` in place of a schema object), tuple-valued `items`, and other shapes outside the declared `JsonSchema` contract are not supported.
+
+## Property name validation
 
 Property names must:
 
-1. **Be unique** within the schema
-2. **Not be empty**
-3. **Follow identifier conventions** (recommended but not enforced)
-    - Start with letter or underscore
-    - Contain only letters, numbers, underscores
-    - Avoid JavaScript reserved words
-
-### Uniqueness Check
+1. Not be empty or whitespace-only.
+2. Start with a letter or underscore.
+3. Contain only letters, numbers, and underscores.
+4. Be unique among siblings in the current object schema.
 
 ```typescript
-// ✅ Valid - unique names
+// Valid sibling names
 {
     properties: {
         firstName: { type: 'string' },
         lastName: { type: 'string' }
     }
 }
-
-// ❌ Invalid - duplicate names
-{
-    properties: {
-        name: { type: 'string' },
-        name: { type: 'number' }  // Error: duplicate
-    }
-}
 ```
 
-### Visual Feedback
+SchemaEditor validates names while you edit. An invalid input receives `aria-invalid` and `data-invalid`, its tooltip explains the error, and Save remains disabled. Clearing a name is therefore an error rather than a way to bypass validation.
 
-- **Green checkmark**: Valid, unique name
-- **Red highlight**: Duplicate or invalid name
-- **Tooltip**: Error message explaining issue
+JSON itself cannot represent duplicate keys in one object. The uniqueness rule applies while a property is renamed toward the name of an existing sibling.
 
-## Type Validation
+## Required-property consistency
 
-### Type Compatibility
-
-Ensure selected type matches intended data:
-
-```typescript
-// ✅ Compatible
-{
-    age: { type: 'integer' },
-    price: { type: 'number' },
-    name: { type: 'string' }
-}
-
-// ⚠️ Type mismatch (functional but semantic issue)
-{
-    age: { type: 'string' },      // Should be integer
-    isActive: { type: 'string' }  // Should be boolean
-}
-```
-
-### Format-Type Compatibility
-
-Formats only apply to string types:
-
-```typescript
-// ✅ Valid
-{
-    email: { type: 'string', format: 'email' }
-}
-
-// ❌ Invalid - format ignored
-{
-    count: { type: 'integer', format: 'email' }  // Format has no effect
-}
-```
-
-SchemaEditor automatically:
-
-- Clears format when changing from string to another type
-- Enables format dropdown only for string types
-
-## Required Field Validation
-
-### Required Array
-
-The `required` array lists properties that must be present:
+Each object schema owns its own `required` array:
 
 ```typescript
 {
     type: 'object',
     properties: {
         name: { type: 'string' },
-        email: { type: 'string' },
-        phone: { type: 'string' }
+        address: {
+            type: 'object',
+            properties: {
+                city: { type: 'string' }
+            },
+            required: ['city']
+        }
     },
-    required: ['name', 'email']  // name and email are required
+    required: ['name']
 }
 ```
 
-### Validation Rules
+SchemaEditor preserves required semantics while properties are edited:
 
-1. **Required properties must exist** in `properties`
-2. **Deleting a required property** removes it from both `properties` and `required` in one step — there is no separate "unmark as required first" gate
-3. **Renaming a required property** updates the `required` array
-4. **Required tracking is scoped per object schema** — a nested `object` property's own `required` array only names its own properties, never those of its parent or siblings
+- Renaming a required property updates the matching name in that object's `required` array.
+- Deleting a required property removes the stale required entry.
+- Nested required arrays remain scoped to their own nested object.
+- Replacing an object's type or property set removes required names that no longer describe that property.
 
-```typescript
-// Before rename
-required: ['oldName'];
+SchemaEditor does not currently provide a Required column or an interactive required/optional toggle. Set initial required names in the schema, or transform the schema in application code. See [Editing Properties](editing.md#required-properties).
 
-// After renaming 'oldName' to 'newName'
-required: ['newName']; // Automatically updated
-```
+## Type and format normalization
 
-SchemaEditor does not currently expose an in-table control for toggling a
-property's required state; see [Editing Properties](editing.md#required-properties).
+When a property's type changes, SchemaEditor keeps the supported shape internally consistent:
 
-## Schema Structure Validation
+- `array` starts with `items: { type: 'string' }` and removes an incompatible format.
+- `object` starts with empty `properties` and removes stale `items`, format, and nested required names.
+- A leaf type removes stale `items`, `properties`, and nested required names.
+- Selecting no format removes the existing `format` value.
 
-### Object Type Requirements
+Available format options come from the configured `TypeFormat[]`. The maintained defaults are documented in [Types and formats](types-formats.md).
 
-Objects should have `properties` defined:
+## What SchemaEditor does not validate
 
-```typescript
-// ✅ Well-defined object
-{
-    type: 'object',
-    properties: {
-        id: { type: 'string' },
-        value: { type: 'number' }
-    }
-}
+SchemaEditor does not validate JSON Schema keywords it does not edit, including:
 
-// ⚠️ Empty object (valid but not useful)
-{
-    type: 'object',
-    properties: {}
-}
-```
+- Composition keywords such as `oneOf`, `anyOf`, `allOf`, and `not`.
+- `enum` and `const`.
+- Numeric/string/array constraints such as `minimum`, `pattern`, or `minItems`.
+- `additionalProperties`, `patternProperties`, dependencies, and conditional schemas.
+- Whether external `$ref` targets resolve.
+- Whether instance data conforms to the authored schema.
 
-### Array Type Requirements
+Unknown fields are generally preserved by clone-and-spread updates, but targeted type changes can make richer external constraints obsolete. Validate the result with the application's authoritative JSON Schema tooling when those keywords matter.
 
-Arrays should have `items` schema defined:
+## External validation
 
-```typescript
-// ✅ Well-defined array
-{
-    type: 'array',
-    items: { type: 'string' }
-}
-
-// ⚠️ Missing items schema
-{
-    type: 'array'
-    // What type are the items?
-}
-```
-
-SchemaEditor may:
-
-- Prompt for items schema when creating array type
-- Default to `{ type: 'string' }` for items
-- Show warning for array without items definition
-
-## Constraint Validation
-
-### Numeric Constraints
-
-For `number` and `integer` types:
-
-```typescript
-{
-    age: {
-        type: 'integer',
-        minimum: 0,
-        maximum: 150
-    },
-    price: {
-        type: 'number',
-        minimum: 0,
-        multipleOf: 0.01  // Two decimal places
-    }
-}
-```
-
-Validation checks:
-
-- `minimum` ≤ `maximum`
-- `multipleOf` > 0
-- `exclusiveMinimum` < `exclusiveMaximum`
-
-### String Constraints
-
-For `string` type:
-
-```typescript
-{
-    username: {
-        type: 'string',
-        minLength: 3,
-        maxLength: 20,
-        pattern: '^[a-zA-Z0-9_]+$'
-    }
-}
-```
-
-Validation checks:
-
-- `minLength` ≥ 0
-- `maxLength` ≥ `minLength`
-- `pattern` is valid regex
-
-### Array Constraints
-
-For `array` type:
-
-```typescript
-{
-    tags: {
-        type: 'array',
-        items: { type: 'string' },
-        minItems: 1,
-        maxItems: 10,
-        uniqueItems: true
-    }
-}
-```
-
-Validation checks:
-
-- `minItems` ≥ 0
-- `maxItems` ≥ `minItems`
-- `items` schema is valid
-
-## Real-Time Validation
-
-As you edit, SchemaEditor validates:
-
-1. **On property name change**
-    - Check uniqueness
-    - Update required array if needed
-
-2. **On type change**
-    - Clear incompatible format
-    - Remove incompatible constraints
-    - Prompt for type-specific requirements
-
-3. **On format change**
-    - Verify format is valid for type
-    - Show format examples
-
-4. **On required toggle**
-    - Add/remove from required array
-    - Update visual indicators
-
-## Validation Messages
-
-Types of validation feedback:
-
-### Error (Red)
-
-Prevents saving, must be fixed:
-
-- Duplicate property name
-- Empty property name
-- Invalid schema structure
-
-### Warning (Yellow)
-
-Can save but may cause issues:
-
-- Property name with special characters
-- Missing items schema for array
-- No properties defined for object
-
-### Info (Blue)
-
-Helpful suggestions:
-
-- Recommended format for data type
-- Common patterns for validation
-- Best practices
-
-## External Validation
-
-Validate generated schema against JSON Schema spec:
+For example, an application using Ajv can validate the resulting schema before persistence:
 
 ```typescript
 import Ajv from 'ajv';
 
 const ajv = new Ajv();
+const valid = ajv.validateSchema(schema);
 
-const isValidSchema = ajv.validateSchema(schema);
-
-if (!isValidSchema) {
+if (!valid) {
     console.error('Schema validation errors:', ajv.errors);
 }
 ```
 
-## Validation Best Practices
-
-1. **Use required sparingly**: Only mark truly required fields
-2. **Choose appropriate types**: Match data semantics
-3. **Add constraints**: Use min/max, patterns for data quality
-4. **Test with data**: Validate real data against schema
-5. **Document expectations**: Use descriptions for complex rules
-6. **Version schemas**: Track changes over time
-7. **Validate early**: Catch errors during editing, not at runtime
+Choose the validator and JSON Schema draft that the application actually supports; Components does not impose either one.

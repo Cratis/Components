@@ -6,7 +6,7 @@ SchemaEditor belongs to the [Advanced React capability profile](../ui-foundation
 
 ## Purpose
 
-SchemaEditor allows users to define data structures by adding properties, specifying types, and configuring validation rules in a user-friendly table format.
+SchemaEditor lets users define data structures by adding properties, choosing supported types and formats, and navigating nested object/array schemas in a table interface.
 
 ## Key Features
 
@@ -21,11 +21,12 @@ SchemaEditor allows users to define data structures by adding properties, specif
 
 ## Quick Start
 
-```typescript
+```tsx
+import { useState } from 'react';
 import { SchemaEditor } from '@cratis/components/SchemaEditor';
-import { JsonSchema } from '@cratis/components/types';
+import type { JsonSchema } from '@cratis/components/types';
 
-function MySchemaEditor() {
+export function MySchemaEditor() {
     const [schema, setSchema] = useState<JsonSchema>({
         type: 'object',
         properties: {
@@ -48,17 +49,16 @@ function MySchemaEditor() {
 
 The component works with JSON schemas following the JSON Schema specification:
 
-```typescript
+```json
 {
-    type: 'object',
-    properties: {
-        propertyName: {
-            type: 'string' | 'number' | 'boolean' | 'object' | 'array',
-            format?: 'date' | 'time' | 'date-time' | 'email' | 'uri' | 'uuid' | ...,
-            // ... other validation rules
+    "type": "object",
+    "properties": {
+        "propertyName": {
+            "type": "string",
+            "format": "date"
         }
     },
-    required: ['propertyName']
+    "required": ["propertyName"]
 }
 ```
 
@@ -68,7 +68,7 @@ SchemaEditor and [`ObjectContentEditor`](../ObjectContentEditor/index.md) share 
 
 - `title`, `name`, `$id`, `$ref`, `type`, `format`, `description`
 - `properties` and `items` (recursively, for `object` and `array`)
-- `required` (a string array on `JsonSchema`; a `boolean` flag per property on `JsonSchemaProperty`)
+- `required` (a string array on every object schema, including an object-valued property, naming required children in that same `properties` object)
 - `definitions`, for schemas reused via `$ref`
 
 The type editor offers `string`, `integer`, `number`, and `boolean` as leaf types, plus `array` and `object` as container types, with the built-in format catalog (`DEFAULT_TYPE_FORMATS`, also exported from `types`): `guid`, `date-time`, `date`, and `time` for `string`; `int16`, `int32`, and `int64` for `integer`; `float` and `double` for `number`.

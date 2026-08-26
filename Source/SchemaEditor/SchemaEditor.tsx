@@ -73,26 +73,30 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /**
- * Recursively validates that a parsed schema node, and every nested
- * `properties` value and `items` schema it contains, is a well-formed object
- * shape. A JSON-valid document can still smuggle malformed nested values
- * (e.g. `properties.foo: null` or `items: "string"`) that later code
- * dereferences as schema objects; those are rejected here rather than
- * crashing downstream.
+ * Recursively validates that a parsed schema node, its required names, and every nested
+ * `properties`, `definitions`, and `items` schema match the supported object shape. A JSON-valid
+ * document can still contain malformed nested values (for example `properties.foo: null`,
+ * `required: {}`, or `items: "string"`) that later code dereferences as schema data; those are
+ * rejected here rather than crashing downstream.
  */
 const isValidSchemaNode = (node: unknown): node is JsonSchema => {
     if (!isPlainObject(node)) {
         return false;
     }
 
-    if (node.properties !== undefined) {
-        if (!isPlainObject(node.properties)) {
-            return false;
-        }
-        for (const propertyValue of Object.values(node.properties)) {
-            if (!isValidSchemaNode(propertyValue)) {
-                return false;
-            }
+    if (
+        node.required !== undefined &&
+        (!Array.isArray(node.required) ||
+            !node.required.every((propertyName) => typeof propertyName === 'string'))
+    ) {
+        return false;
+    }
+
+    for (const nestedSchemas of [node.properties, node.definitions]) {
+        if (nestedSchemas === undefined) continue;
+        if (!isPlainObject(nestedSchemas)) return false;
+        for (const nestedSchema of Object.values(nestedSchemas)) {
+            if (!isValidSchemaNode(nestedSchema)) return false;
         }
     }
 
