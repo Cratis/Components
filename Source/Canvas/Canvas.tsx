@@ -58,6 +58,25 @@ export interface CanvasItemRegistryContextValue {
     register: (id: string, entry: CanvasItemRegistryEntry) => void;
 
     unregister: (id: string) => void;
+
+    /**
+     * The registry's current content, as a stable-reference snapshot: the returned map's identity only
+     * changes when the content actually changed (an item registered, unregistered, or moved/resized),
+     * making it safe to feed straight into `useSyncExternalStore`. The map is rebuilt on change — never
+     * mutated in place — so a held snapshot stays internally consistent. Optional so a consumer
+     * providing its own registry value predating this member keeps type-checking; readers must
+     * fall back gracefully when absent.
+     */
+    getSnapshot?: () => ReadonlyMap<string, CanvasItemRegistryEntry>;
+
+    /**
+     * Subscribes to registry changes; the listener fires after every register/unregister/bounds-update
+     * that actually changed content. Bounds updates can arrive per-frame during a drag — listeners
+     * decide how much work to do per notification. Returns the unsubscribe function.
+     * `useSyncExternalStore`-compatible. Optional for the same compatibility reason as
+     * {@link getSnapshot}.
+     */
+    subscribe?: (listener: () => void) => () => void;
 }
 
 export const CanvasItemRegistryContext = React.createContext<CanvasItemRegistryContextValue | null>(null);
@@ -278,24 +297,48 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     const itemRegistryRef = useRef<Map<string, CanvasItemRegistryEntry>>(new Map());
     const [itemRegistryVersion, setItemRegistryVersion] = useState(0);
 
+    // The read/subscribe side of the registry. The snapshot is a fresh shallow copy taken on every
+    // actual content change (register/unregister guard against no-op writes below), so its identity
+    // is a faithful change signal for useSyncExternalStore consumers — same reference back means
+    // nothing changed. Entry objects are replaced wholesale on update, never mutated, so entries
+    // shared between an old snapshot and a new one are safe to hold onto.
+    const registrySnapshotRef = useRef<ReadonlyMap<string, CanvasItemRegistryEntry>>(new Map());
+    const registryListenersRef = useRef<Set<() => void>>(new Set());
+
+    const notifyRegistryChanged = useCallback(() => {
+        registrySnapshotRef.current = new Map(itemRegistryRef.current);
+        setItemRegistryVersion(version => version + 1);
+        registryListenersRef.current.forEach(listener => listener());
+    }, []);
+
     const registerItem = useCallback((id: string, entry: CanvasItemRegistryEntry) => {
         const existing = itemRegistryRef.current.get(id);
         if (existing &&
             existing.x === entry.x && existing.y === entry.y &&
             existing.width === entry.width && existing.height === entry.height) return;
         itemRegistryRef.current.set(id, entry);
-        setItemRegistryVersion(version => version + 1);
-    }, []);
+        notifyRegistryChanged();
+    }, [notifyRegistryChanged]);
 
     const unregisterItem = useCallback((id: string) => {
-        itemRegistryRef.current.delete(id);
-        setItemRegistryVersion(version => version + 1);
+        if (!itemRegistryRef.current.delete(id)) return;
+        notifyRegistryChanged();
+    }, [notifyRegistryChanged]);
+
+    const getRegistrySnapshot = useCallback((): ReadonlyMap<string, CanvasItemRegistryEntry> =>
+        registrySnapshotRef.current, []);
+
+    const subscribeToRegistry = useCallback((listener: () => void): (() => void) => {
+        registryListenersRef.current.add(listener);
+        return () => { registryListenersRef.current.delete(listener); };
     }, []);
 
     const registryContextValue = useMemo<CanvasItemRegistryContextValue>(() => ({
         register: registerItem,
         unregister: unregisterItem,
-    }), [registerItem, unregisterItem]);
+        getSnapshot: getRegistrySnapshot,
+        subscribe: subscribeToRegistry,
+    }), [registerItem, unregisterItem, getRegistrySnapshot, subscribeToRegistry]);
 
 
     const autoMinimapItems = useMemo((): MinimapItem[] => {

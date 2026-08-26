@@ -1,9 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Guid } from '@cratis/fundamentals';
+import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
 import type { BuildAvatarUrlParams } from './Avatar';
+import { ChatMessageAdded } from './ChatMessageAdded';
 import { ChatComposer, type ChatComposerHandle, type ChatComposerLabels } from './ChatComposer';
 import { ChatMessageBubble, type ChatMessageBubbleLabels } from './ChatMessageBubble';
 import type { ChatMessage } from './ChatMessage';
@@ -40,6 +42,14 @@ export interface ChatLabels {
 }
 
 export interface ChatProps {
+
+    /**
+     * Identifies this conversation for opt-in messaging: when set, every send additionally
+     * publishes a {@link ChatMessageAdded} carrying this id over the Arc messenger, at the same
+     * moment `onSend` fires. Omit for exactly the previous behavior — `onSend` alone, nothing
+     * published.
+     */
+    id?: string;
 
     messages: ChatMessage[];
 
@@ -155,6 +165,7 @@ function typingLabel(authors: ChatTypingAuthor[], labels: ChatLabels | undefined
 }
 
 export const Chat: React.FC<ChatProps> = ({
+    id,
     messages,
     onSend,
     onClose,
@@ -176,6 +187,14 @@ export const Chat: React.FC<ChatProps> = ({
     const renderInfo = useMemo(() => computeRenderInfo(messages), [messages]);
     const isDocked = variant === ChatVariant.Docked;
     const resolvedTitle = title ?? labels?.title ?? 'Comments';
+    // Opt-in messaging: resolves to undefined without an Arc messenger. Publishing also requires
+    // the `id` prop — without one there is nothing to key a {@link ChatMessageAdded} by.
+    const publish = useOptionalMessenger();
+
+    const handleSend = useCallback((text: string) => {
+        onSend(text);
+        if (id) publish?.(new ChatMessageAdded(id, text));
+    }, [onSend, id, publish]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -234,7 +253,7 @@ export const Chat: React.FC<ChatProps> = ({
             <ChatComposer
                 ref={composerRef}
                 mentionCandidates={mentionCandidates}
-                onSend={onSend}
+                onSend={handleSend}
                 autoFocus={autoFocus}
                 buildAvatarUrl={buildAvatarUrl}
                 labels={labels?.composer}
