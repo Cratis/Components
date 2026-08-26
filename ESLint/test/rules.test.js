@@ -441,6 +441,32 @@ tsRuleTester.run('onbeforeexecute-must-return', onbeforeexecuteMustReturn, {
     ],
 });
 
+describe('onbeforeexecute-must-return message wording', () => {
+    // The runtime guard (applyBeforeExecute) keeps the previous command values and warns
+    // instead of executing with `undefined` — it does not wipe the command values. The rule's
+    // messages must describe that current behavior (a silently skipped transform), not the
+    // pre-guard "executes with undefined"/"wiped" wording, so the guidance never drifts back
+    // out of sync with the runtime it backstops.
+    const { missingReturn, emptyReturn } = onbeforeexecuteMustReturn.meta.messages;
+
+    it('does not claim the command executes with undefined values', () => {
+        expect(missingReturn).not.toMatch(/executes.*undefined/i);
+        expect(emptyReturn).not.toMatch(/executes.*undefined/i);
+    });
+
+    it('does not claim values are wiped', () => {
+        expect(missingReturn).not.toMatch(/wipe/i);
+        expect(emptyReturn).not.toMatch(/wipe/i);
+    });
+
+    it('describes the transform being silently skipped and the values kept', () => {
+        expect(missingReturn).toMatch(/silently skips the transform/);
+        expect(missingReturn).toMatch(/keeps the current values/);
+        expect(emptyReturn).toMatch(/silently skips the transform/);
+        expect(emptyReturn).toMatch(/keeps the current values/);
+    });
+});
+
 tsRuleTester.run('no-hooks-in-view-model', noHooksInViewModel, {
     valid: [
         // A view model with no hooks.
