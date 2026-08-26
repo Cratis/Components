@@ -27,9 +27,12 @@ import {
  *   import.
  * - An import naming several namespaces produces one subpath import per namespace, in
  *   their original left-to-right order.
- * - Applying the codemod again is a no-op: it only ever matches an import whose
- *   module specifier is exactly the configured package name, so an already-migrated
- *   subpath import is never revisited.
+ * - A named re-export follows the same rules: `export { Canvas } from '@cratis/components'`
+ *   becomes `export * as Canvas from '@cratis/components/Canvas'`, with the same alias,
+ *   type-only, mixed-setup-symbol, and multiple-namespace handling as the import case.
+ * - Applying the codemod again is a no-op: it only ever matches an import or named
+ *   re-export whose module specifier is exactly the configured package name, so an
+ *   already-migrated subpath import or re-export is never revisited.
  *
  * What it deliberately refuses to guess, reporting a diagnostic instead of editing:
  * - A namespace import of the whole package (`import * as Components from '...'`) —
@@ -39,12 +42,15 @@ import {
  *   export.
  * - A side-effect-only import (`import '...'`) — there is no binding to infer a
  *   subpath from.
- * - A named import of a symbol that is neither an approved setup symbol nor a known
- *   namespace — the whole import statement is left untouched so a partial, silently
- *   incomplete migration is never produced.
+ * - A named import or named re-export of a symbol that is neither an approved setup
+ *   symbol nor a known namespace — the whole statement is left untouched so a
+ *   partial, silently incomplete migration is never produced.
  * - A dynamic `import('...')` or CommonJS `require('...')` call anywhere in the file.
- * - Any `export ... from '@cratis/components'` re-export form — this codemod only
- *   rewrites `import` declarations.
+ * - A wildcard re-export of the whole package (`export * from '@cratis/components'`)
+ *   or a namespace re-export of the whole package (`export * as X from
+ *   '@cratis/components'`) — the same ambiguity as a whole-package namespace import:
+ *   which subpath each later access belongs to cannot be determined from the
+ *   re-export alone.
  *
  * @param {string} fileName - Used only to select the TypeScript/TSX/JS/JSX grammar.
  * @param {string} text - The source file's current contents.
@@ -120,7 +126,7 @@ export function transformSource(fileName, text, options = {}) {
 
             if (approvedRootSymbols.has(importedName)) {
                 kept.push({
-                    importedName,
+                    name: importedName,
                     localName,
                     elementTypeOnly: element.isTypeOnly,
                 });
@@ -148,7 +154,8 @@ export function transformSource(fileName, text, options = {}) {
         // Nothing to migrate — the import already only names approved root symbols.
         if (namespaced.length === 0) return;
 
-        const replacement = buildReplacementText({
+        const replacement = buildSubpathReplacementText({
+            keyword: 'import',
             packageName,
             declTypeOnly,
             kept,
@@ -160,29 +167,65 @@ export function transformSource(fileName, text, options = {}) {
     const handleExport = (node) => {
         if (!isRootSpecifier(node.moduleSpecifier)) return;
 
-        if (node.exportClause && ts.isNamedExports(node.exportClause)) {
-            for (const element of node.exportClause.elements) {
-                const exportedName = (element.propertyName ?? element.name).text;
-                if (approvedRootSymbols.has(exportedName)) continue;
-                if (Object.hasOwn(namespaceSubpaths, exportedName)) {
-                    report(
-                        element,
-                        `Re-export '${exportedName}' from '${packageName}/${namespaceSubpaths[exportedName]}' instead of the package root barrel. This codemod only rewrites 'import' declarations — split this 'export … from' by hand (e.g. 'export * as ${exportedName} from ${JSON.stringify(`${packageName}/${namespaceSubpaths[exportedName]}`)}').`,
-                    );
-                    continue;
-                }
-                report(
-                    element,
-                    `'${exportedName}' is not a recognized '${packageName}' root export; migrate this re-export by hand.`,
-                );
-            }
+        if (!node.exportClause || !ts.isNamedExports(node.exportClause)) {
+            // A bare `export * from '@cratis/components'` or a namespace re-export
+            // (`export * as X from '@cratis/components'`) is exactly as ambiguous as a
+            // whole-package namespace import: there is no way to know, from the
+            // re-export alone, which subpath a later consumer's member access needs.
+            report(
+                node,
+                `A wildcard 're-export … from ${JSON.stringify(packageName)}' cannot be auto-migrated: which subpath each later member access belongs to cannot be inferred from the re-export alone. Replace it with explicit subpath re-export(s).`,
+            );
             return;
         }
 
-        report(
-            node,
-            `A wildcard 're-export … from ${JSON.stringify(packageName)}' cannot be auto-migrated: this codemod only rewrites 'import' declarations. Replace it with explicit subpath re-exports.`,
-        );
+        const declTypeOnly = node.isTypeOnly;
+        const kept = [];
+        const namespaced = [];
+        let hasUnknown = false;
+
+        for (const element of node.exportClause.elements) {
+            const exportedName = (element.propertyName ?? element.name).text;
+            const localName = element.name.text;
+
+            if (approvedRootSymbols.has(exportedName)) {
+                kept.push({
+                    name: exportedName,
+                    localName,
+                    elementTypeOnly: element.isTypeOnly,
+                });
+                continue;
+            }
+            if (Object.hasOwn(namespaceSubpaths, exportedName)) {
+                namespaced.push({
+                    localName,
+                    subpath: namespaceSubpaths[exportedName],
+                    typeOnly: declTypeOnly || element.isTypeOnly,
+                });
+                continue;
+            }
+
+            hasUnknown = true;
+            report(
+                element,
+                `'${exportedName}' is not a recognized '${packageName}' root export (neither an approved setup symbol nor a known namespace). Leaving this re-export untouched — add '${exportedName}' to the migration map, or migrate it by hand.`,
+            );
+        }
+
+        // Never guess: an unrecognized specifier means the whole statement is left as-is,
+        // even for the specifiers this codemod does recognize.
+        if (hasUnknown) return;
+        // Nothing to migrate — the re-export already only names approved root symbols.
+        if (namespaced.length === 0) return;
+
+        const replacement = buildSubpathReplacementText({
+            keyword: 'export',
+            packageName,
+            declTypeOnly,
+            kept,
+            namespaced,
+        });
+        edits.push({ start: node.getStart(sourceFile), end: node.getEnd(), replacement });
     };
 
     const handleImportEquals = (node) => {
@@ -247,25 +290,32 @@ export function transformSource(fileName, text, options = {}) {
     return { text: output, changed: true, diagnostics };
 }
 
-function buildReplacementText({ packageName, declTypeOnly, kept, namespaced }) {
+/**
+ * Builds replacement source text for both the import and named-re-export cases, which
+ * share an identical shape: an optional statement that keeps the approved root symbols
+ * (`{ name, localName, elementTypeOnly }` entries), followed by one `* as localName from
+ * '<package>/<subpath>'` statement per namespace (`{ localName, subpath, typeOnly }`
+ * entries). `keyword` is `'import'` or `'export'`.
+ */
+function buildSubpathReplacementText({ keyword, packageName, declTypeOnly, kept, namespaced }) {
     const lines = [];
 
     if (kept.length > 0) {
         const specifiers = kept
-            .map(({ importedName, localName, elementTypeOnly }) => {
+            .map(({ name, localName, elementTypeOnly }) => {
                 const prefix = !declTypeOnly && elementTypeOnly ? 'type ' : '';
-                const alias = localName === importedName ? '' : ` as ${localName}`;
-                return `${prefix}${importedName}${alias}`;
+                const alias = localName === name ? '' : ` as ${localName}`;
+                return `${prefix}${name}${alias}`;
             })
             .join(', ');
         lines.push(
-            `import ${declTypeOnly ? 'type ' : ''}{ ${specifiers} } from '${packageName}';`,
+            `${keyword} ${declTypeOnly ? 'type ' : ''}{ ${specifiers} } from '${packageName}';`,
         );
     }
 
     for (const { localName, subpath, typeOnly } of namespaced) {
         lines.push(
-            `import ${typeOnly ? 'type ' : ''}* as ${localName} from '${packageName}/${subpath}';`,
+            `${keyword} ${typeOnly ? 'type ' : ''}* as ${localName} from '${packageName}/${subpath}';`,
         );
     }
 

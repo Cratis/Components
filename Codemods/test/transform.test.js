@@ -30,6 +30,12 @@ const supportedCases = [
     'mixed-import',
     'multiple-namespaces',
     'command-stepper-alias',
+    'export-value',
+    'export-alias',
+    'export-type',
+    'export-mixed',
+    'export-multiple-namespaces',
+    'export-command-stepper-alias',
 ];
 
 // Fixtures where the codemod must leave the file completely untouched: either because it
@@ -46,6 +52,8 @@ const unchangedCases = [
     'unsupported-unknown-symbol',
     'unsupported-side-effect-only',
     'unsupported-export',
+    'unsupported-export-namespace',
+    'unsupported-export-unknown-symbol',
 ];
 
 const unsupportedCases = new Set([
@@ -57,6 +65,8 @@ const unsupportedCases = new Set([
     'unsupported-unknown-symbol',
     'unsupported-side-effect-only',
     'unsupported-export',
+    'unsupported-export-namespace',
+    'unsupported-export-unknown-symbol',
 ]);
 
 describe('root namespace maps', () => {
@@ -368,5 +378,51 @@ describe('transformSource — targeted behavior', () => {
         expect(result.changed).toBe(false);
         expect(result.diagnostics).toHaveLength(1);
         expect(result.diagnostics[0].message).toContain("'Button'");
+    });
+
+    it('rewrites an import and a named re-export of the root package in the same file independently', () => {
+        const input = [
+            "import { Canvas } from '@cratis/components';",
+            "export { Common } from '@cratis/components';",
+            '',
+            'export const shapes = Canvas;',
+            '',
+        ].join('\n');
+
+        const result = transformSource('file.ts', input);
+
+        expect(result.text).toBe(
+            [
+                "import * as Canvas from '@cratis/components/Canvas';",
+                "export * as Common from '@cratis/components/Common';",
+                '',
+                'export const shapes = Canvas;',
+                '',
+            ].join('\n'),
+        );
+        expect(result.changed).toBe(true);
+        expect(result.diagnostics).toEqual([]);
+    });
+
+    it('leaves the whole re-export statement untouched when one specifier is unrecognized, even with a recognized namespace alongside it', () => {
+        const input = "export { Canvas, Button } from '@cratis/components';\n";
+
+        const result = transformSource('file.ts', input);
+
+        expect(result.text).toBe(input);
+        expect(result.changed).toBe(false);
+        expect(result.diagnostics).toHaveLength(1);
+        expect(result.diagnostics[0].message).toContain("'Button'");
+    });
+
+    it('reports a namespace re-export of the whole package as unsupported, distinct from a named re-export', () => {
+        const input = "export * as Components from '@cratis/components';\n";
+
+        const result = transformSource('file.ts', input);
+
+        expect(result.text).toBe(input);
+        expect(result.changed).toBe(false);
+        expect(result.diagnostics).toHaveLength(1);
+        expect(result.diagnostics[0].message).toContain('wildcard');
     });
 });
