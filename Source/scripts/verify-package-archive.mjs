@@ -1,9 +1,13 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { spawnSync } from 'node:child_process';
 import { gzipSync } from 'node:zlib';
 import path from 'node:path';
+import { readTarEntries } from './lib/packed-artifact.mjs';
+import {
+    assertExpectedCascadeLayerOrder,
+    assertNoPrimeFamilyReferences,
+} from './lib/release-package-guards.mjs';
 
 const archive = process.argv[2];
 if (!archive) {
@@ -11,19 +15,17 @@ if (!archive) {
     process.exit(1);
 }
 
-const runTar = (...args) => {
-    const result = spawnSync('tar', args, { encoding: 'utf8' });
-    if (result.status !== 0) {
-        console.error(result.stderr || `tar ${args.join(' ')} failed`);
+const normalizedArchive = path.resolve(archive);
+const packedEntries = readTarEntries(normalizedArchive);
+const entries = new Set(packedEntries.keys());
+const readPackedText = (entry) => {
+    const content = packedEntries.get(entry);
+    if (!content) {
+        console.error(`Package archive is missing '${entry}'.`);
         process.exit(1);
     }
-    return result.stdout;
+    return content.toString('utf8');
 };
-
-const normalizedArchive = path.resolve(archive);
-const entries = new Set(
-    runTar('-tzf', normalizedArchive).split(/\r?\n/u).filter(Boolean),
-);
 const requiredEntries = [
     'package/LICENSE',
     'package/README.md',
@@ -44,7 +46,7 @@ if (missing.length > 0) {
 }
 
 const verifyPackedMarkdownLinks = (entry) => {
-    const markdown = runTar('-xOzf', normalizedArchive, entry);
+    const markdown = readPackedText(entry);
     for (const match of markdown.matchAll(/\]\((\.?\.?\/[^)#?\s]+)(?:#[^)]+)?\)/gu)) {
         const target = path.posix.normalize(
             path.posix.join(path.posix.dirname(entry), decodeURIComponent(match[1])),
@@ -59,13 +61,13 @@ const verifyPackedMarkdownLinks = (entry) => {
 verifyPackedMarkdownLinks('package/README.md');
 verifyPackedMarkdownLinks('package/MIGRATION.md');
 
-const license = runTar('-xOzf', normalizedArchive, 'package/LICENSE');
+const license = readPackedText('package/LICENSE');
 if (!license.includes('MIT License') || !license.includes('Copyright (c) 2025 Cratis')) {
     console.error('Package LICENSE does not contain the expected Cratis MIT notice.');
     process.exit(1);
 }
 
-const notices = runTar('-xOzf', normalizedArchive, 'package/THIRD_PARTY_NOTICES.md');
+const notices = readPackedText('package/THIRD_PARTY_NOTICES.md');
 for (const expected of [
     'Allotment structural stylesheet',
     'John Walley',
@@ -81,7 +83,22 @@ for (const expected of [
     }
 }
 
-const styles = runTar('-xOzf', normalizedArchive, 'package/dist/esm/styles.css');
+try {
+    assertNoPrimeFamilyReferences(packedEntries);
+} catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+}
+
+const stylesEntry = 'package/dist/esm/styles.css';
+const styles = readPackedText(stylesEntry);
+try {
+    assertExpectedCascadeLayerOrder(styles, stylesEntry);
+} catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+}
+
 const styleBytes = Buffer.byteLength(styles);
 const gzipBytes = gzipSync(styles, { level: 9 }).byteLength;
 const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;

@@ -33,6 +33,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertExpectedCascadeLayerOrder } from './lib/release-package-guards.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const packageJsonPath = path.join(packageDir, 'package.json');
@@ -186,13 +187,13 @@ if (mapProblems.length > 0) {
 }
 console.log('Published source-map references are valid.');
 
-const publishedStyles = readFileSync(path.join(esmRoot, 'styles.css'), 'utf8');
-const requiredStyleLayers = ['cratis-components', 'cratis-utilities'];
-for (const layer of requiredStyleLayers) {
-    if (!publishedStyles.includes(layer)) {
-        console.error(`Published styles are missing the '${layer}' cascade layer.`);
-        process.exit(1);
-    }
+const publishedStylesPath = path.join(esmRoot, 'styles.css');
+const publishedStyles = readFileSync(publishedStylesPath, 'utf8');
+try {
+    assertExpectedCascadeLayerOrder(publishedStyles, publishedStylesPath);
+} catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
 }
 if (
     /::file-selector-button[^{}]*\{[^{}]*box-sizing:\s*border-box/u.test(publishedStyles)

@@ -152,6 +152,10 @@ jobs:
                   export NODE_OPTIONS="--max-old-space-size=4096"
                   yarn run prepare
 
+            - name: Verify packed production tree shaking
+              working-directory: Source
+              run: yarn verify-packed-production
+
             - name: Verify published exports
               working-directory: Source
               run: node scripts/verify-exports.mjs

@@ -130,6 +130,7 @@
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
+        "verify-packed-production": "node ./scripts/verify-packed-production.mjs",
         "verify-api-docs": "node ./scripts/verify-api-docs.mjs",
         "verify-public-types": "node ./scripts/verify-public-types.mjs",
         "verify-package-graph": "node ./scripts/verify-package-graph.mjs",
