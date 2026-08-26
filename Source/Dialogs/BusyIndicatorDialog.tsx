@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { BusyIndicatorDialogRequest } from '@cratis/arc.react/dialogs';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '../Display/ProgressSpinner';
 import { Dialog } from './Dialog';
 import { DialogInitialFocus } from './DialogInitialFocus';
 
@@ -68,7 +68,7 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             <div className="flex flex-col items-center justify-center gap-4 py-4">
                 {/* The spinner's role="progressbar" needs an accessible name; use the
                     consumer-supplied message/title (already localized), never a baked-in string. */}
-                <ProgressSpinner.Root aria-label={props.message || props.title || 'Loading'} />
+                <ProgressSpinner aria-label={props.message || props.title || 'Loading'} />
                 <p className="m-0 text-center">
                     {props.message}
                 </p>

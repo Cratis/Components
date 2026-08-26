@@ -50,6 +50,7 @@
 @import './DataTables/ColumnFilterMenu.css';
 @import './DataTables/DataTableCore.css';
 @import './DataTables/TablePaginator.css';
+@import './Display/ProgressSpinner.css';
 @import './Filter/FilterPanel.css';
 @import './Notifications/Toaster.css';
 @import './ObjectNavigationalBar/ObjectNavigationalBar.css';

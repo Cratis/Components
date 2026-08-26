@@ -439,16 +439,6 @@
 .cratis-theme [data-scope='rating'] .pi-star { color: var(--cratis-surface-border); }
 .cratis-theme [data-scope='rating'] .pi-star-fill { color: var(--cratis-orange-500, #f59e0b); }
 
-/* ── ProgressSpinner (BusyIndicatorDialog) ───────────────────────────────────
-   The unstyled primitive is a bare SVG circle with no stroke or motion; give it
-   a visible ring and spin it so the busy indicator actually shows. */
-.cratis-theme [data-scope='progressspinner'][data-part='root'] {
-    display: inline-block; width: 2.5rem; height: 2.5rem;
-    animation: cratis-spin 1s linear infinite;
-}
-.cratis-theme [data-scope='progressspinner'] svg { width: 100%; height: 100%; }
-.cratis-theme [data-scope='progressspinner'] circle {
-    fill: none; stroke: var(--cratis-primary-color, #3b82f6); stroke-width: 4;
-    stroke-linecap: round; stroke-dasharray: 80 200;
-}
-@keyframes cratis-spin { to { transform: rotate(360deg); } }
+/* ProgressSpinner sizing/stroke/motion is unconditional (not theme-gated) —
+   see Display/ProgressSpinner.css. It reads --cratis-primary-color, so it
+   still follows whichever preset this theme or styled mode applies. */
