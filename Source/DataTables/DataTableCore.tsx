@@ -138,9 +138,10 @@ const valueAtPath = (
     if (!path) return undefined;
     let current: CellValue = row;
     for (const segment of path.split('.')) {
-        if (current === null || typeof current !== 'object' || !(segment in current))
-            return undefined;
-        current = asCellValue((current as Record<string, unknown>)[segment]);
+        if (current === null || typeof current !== 'object') return undefined;
+        const record = current as Record<string, unknown>;
+        if (!Object.hasOwn(record, segment)) return undefined;
+        current = asCellValue(record[segment]);
     }
     return current;
 };
