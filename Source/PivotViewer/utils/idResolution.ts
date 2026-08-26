@@ -59,6 +59,28 @@ export function normalizeIdToLayoutKey(
 }
 
 /**
+ * Resolves the layout key for a specific, currently-selected item.
+ *
+ * Internal layout ids are the array index the item occupies in `data` (see `buildStore`'s
+ * `ids[i] = i` and `computeLayout`, which key `positions` by those same indices) - never the
+ * consumer-supplied numeric id from `resolveId`/`getItemId`, which need not match the array
+ * index (e.g. 1-based ids). This mirrors the id-resolution pattern used consistently by
+ * `useDetailPanelClose` and `useViewModeScrollHandling`: prefer `item`'s position in `data`,
+ * and only fall back to `resolveId` when the item can't be located there (e.g. a stale
+ * reference no longer present in `data`).
+ */
+export function resolveLayoutItemId<TItem extends object>(
+    data: TItem[],
+    item: TItem,
+    layout: Layout,
+    resolveId: (item: TItem, index: number) => string | number,
+): string | number {
+    const index = data.indexOf(item);
+    const itemId = index !== -1 ? index : resolveId(item, 0);
+    return normalizeIdToLayoutKey(itemId, layout);
+}
+
+/**
  * Gets the card position from the layout, handling ID type mismatches
  */
 export function getCardPositionFromLayout(
