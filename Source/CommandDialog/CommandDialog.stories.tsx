@@ -29,7 +29,7 @@ const openCommandDialog = async ({ canvasElement }: { canvasElement: HTMLElement
     await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
 };
 
-class UpdateUserCommandValidator extends CommandValidator {
+class UpdateUserCommandValidator extends CommandValidator<UpdateUserCommand> {
     constructor() {
         super();
         this.ruleFor((c: UpdateUserCommand) => c.name).notEmpty().minLength(2).maxLength(50);
@@ -584,7 +584,7 @@ export const WithIcons: Story = {
     },
 };
 
-class UpdateProfileCommandValidator extends CommandValidator {
+class UpdateProfileCommandValidator extends CommandValidator<UpdateProfileCommand> {
     constructor() {
         super();
         this.ruleFor((c: UpdateProfileCommand) => c.firstName).notEmpty().minLength(2);

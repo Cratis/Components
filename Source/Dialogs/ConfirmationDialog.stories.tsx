@@ -11,13 +11,13 @@ import {
 } from '@cratis/arc.react/dialogs';
 import { expect, userEvent, within } from 'storybook/test';
 
-const meta: Meta<typeof ConfirmationDialog> = {
+const meta: Meta<{ title: string; message: string }> = {
     title: 'Dialogs/ConfirmationDialog',
     component: ConfirmationDialog,
 };
 
 export default meta;
-type Story = StoryObj<typeof ConfirmationDialog>;
+type Story = StoryObj<{ title: string; message: string }>;
 
 const DialogWrapper = ({ title, message }: { title: string; message: string }) => {
     const [showDialog] = useConfirmationDialog(title, message, DialogButtons.YesNoCancel);
