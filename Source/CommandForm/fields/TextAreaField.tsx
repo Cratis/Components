@@ -7,6 +7,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { fieldValueFromEvent } from './fieldValueFromEvent';
 
 /** Stable part attributes for {@link TextAreaField}. */
 export interface TextAreaParts {
@@ -66,7 +67,6 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
     },
     {
         defaultValue: '',
-        extractValue: (event: React.ChangeEvent<HTMLTextAreaElement>) =>
-            event.target.value,
+        extractValue: (event: unknown) => fieldValueFromEvent(event, 'value'),
     },
 );

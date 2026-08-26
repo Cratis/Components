@@ -7,6 +7,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { fieldValueFromEvent } from './fieldValueFromEvent';
 
 /** Stable part attributes for {@link SliderField}. */
 export interface SliderParts {
@@ -84,7 +85,6 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
     },
     {
         defaultValue: 0,
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
-            event.target.valueAsNumber,
+        extractValue: (event: unknown) => fieldValueFromEvent(event, 'valueAsNumber'),
     },
 );

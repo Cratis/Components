@@ -7,6 +7,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { fieldValueFromEvent } from './fieldValueFromEvent';
 
 /** Stable part attributes for {@link CheckboxField}. */
 export interface CheckboxParts {
@@ -94,7 +95,6 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
     },
     {
         defaultValue: false,
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
-            event.target.checked,
+        extractValue: (event: unknown) => fieldValueFromEvent(event, 'checked'),
     },
 );

@@ -7,6 +7,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { fieldValueFromEvent } from './fieldValueFromEvent';
 
 /** Stable part attributes for {@link NumberField}. */
 export interface NumberFieldParts {
@@ -76,7 +77,9 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
     },
     {
         defaultValue: 0,
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
-            Number.isNaN(event.target.valueAsNumber) ? 0 : event.target.valueAsNumber,
+        extractValue: (event: unknown) => {
+            const value = fieldValueFromEvent(event, 'valueAsNumber');
+            return Number.isNaN(value) ? 0 : value;
+        },
     },
 );

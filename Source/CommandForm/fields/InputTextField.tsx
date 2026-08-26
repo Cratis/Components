@@ -7,6 +7,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { fieldValueFromEvent } from './fieldValueFromEvent';
 
 /** Stable part attributes for {@link InputTextField}. */
 export interface InputTextParts {
@@ -73,6 +74,6 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
     },
     {
         defaultValue: '',
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) => event.target.value,
+        extractValue: (event: unknown) => fieldValueFromEvent(event, 'value'),
     },
 );

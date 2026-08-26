@@ -12,6 +12,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { fieldValueFromEvent } from './fieldValueFromEvent';
 
 /** Stable part attributes for {@link PasswordField}. */
 export interface PasswordParts {
@@ -98,6 +99,6 @@ export const PasswordField = asCommandFormField<PasswordFieldComponentProps>(
     PasswordControl,
     {
         defaultValue: '',
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) => event.target.value,
+        extractValue: (event: unknown) => fieldValueFromEvent(event, 'value'),
     },
 );

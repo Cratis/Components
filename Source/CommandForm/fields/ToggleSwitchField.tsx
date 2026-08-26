@@ -7,6 +7,7 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import { fieldValueFromEvent } from './fieldValueFromEvent';
 
 /** Stable part attributes for {@link ToggleSwitchField}. */
 export interface ToggleSwitchParts {
@@ -90,7 +91,6 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
     },
     {
         defaultValue: false,
-        extractValue: (event: React.ChangeEvent<HTMLInputElement>) =>
-            event.target.checked,
+        extractValue: (event: unknown) => fieldValueFromEvent(event, 'checked'),
     },
 );
