@@ -374,7 +374,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                 existing.x === entry.x &&
                 existing.y === entry.y &&
                 existing.width === entry.width &&
-                existing.height === entry.height
+                existing.height === entry.height &&
+                existing.anonymous === entry.anonymous
             )
                 return;
             itemRegistryRef.current.set(id, entry);

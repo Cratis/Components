@@ -23,6 +23,8 @@ describe('when an explicit id is given', () => {
     const registered: Array<[string, CanvasItemRegistryEntry]> = [];
 
     beforeEach(async () => {
+        registered.length = 0;
+
         // SAFETY: jsdom omits ResizeObserver; CanvasItem only calls the observer methods below, and
         // performs its own explicit initial measurement independently of the callback firing.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
