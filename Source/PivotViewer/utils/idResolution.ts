@@ -59,15 +59,41 @@ export function normalizeIdToLayoutKey(
 }
 
 /**
- * Resolves the layout key for a specific, currently-selected item.
- *
- * Internal layout ids are the array index the item occupies in `data` (see `buildStore`'s
- * `ids[i] = i` and `computeLayout`, which key `positions` by those same indices) - never the
- * consumer-supplied numeric id from `resolveId`/`getItemId`, which need not match the array
- * index (e.g. 1-based ids). This mirrors the id-resolution pattern used consistently by
- * `useDetailPanelClose` and `useViewModeScrollHandling`: prefer `item`'s position in `data`,
- * and only fall back to `resolveId` when the item can't be located there (e.g. a stale
- * reference no longer present in `data`).
+ * Resolves an item to the engine's canonical array-index identity. A stale object reference is
+ * relocated by its consumer identity when a stable `getItemId` is available; raw consumer ids are
+ * never returned as layout keys.
+ */
+export function resolveInternalItemIndex<TItem extends object>(
+    data: TItem[],
+    item: TItem,
+    getItemId?: (item: TItem, index: number) => string | number,
+): number {
+    const referenceIndex = data.indexOf(item);
+    if (referenceIndex !== -1) return referenceIndex;
+
+    const implicitId = (item as Record<string, unknown>)['id'];
+    const identity = getItemId
+        ? getItemId(item, 0)
+        : typeof implicitId === 'string' || typeof implicitId === 'number'
+          ? implicitId
+          : undefined;
+    if (identity === undefined) return -1;
+
+    return data.findIndex((candidate, index) => {
+        const candidateImplicitId = (candidate as Record<string, unknown>)['id'];
+        const candidateIdentity = getItemId
+            ? getItemId(candidate, index)
+            : typeof candidateImplicitId === 'string' ||
+                typeof candidateImplicitId === 'number'
+              ? candidateImplicitId
+              : undefined;
+        return Object.is(candidateIdentity, identity);
+    });
+}
+
+/**
+ * Resolves the layout key for a specific item. `resolveId` must return the internal array index (or
+ * `-1` when the item cannot be relocated), never a consumer-supplied id.
  */
 export function resolveLayoutItemId<TItem extends object>(
     data: TItem[],

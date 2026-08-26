@@ -80,6 +80,8 @@ The worker is optional infrastructure, not a hard requirement: `usePivotEngine` 
 
 `searchFields` drives PivotViewer's free-text search: an array of property-accessor functions (`PropertyAccessor<TItem>[]`, i.e. `(item: TItem) => value`), one per field the search box should match against. A search term matches an item when it matches the value returned by any accessor in the array — there is no default set of searched fields, so search is a no-op until `searchFields` is supplied.
 
+Facet/range filtering and grouping run in the worker when available. Free-text search is then applied on the main thread only to the already-visible item IDs returned by that engine step, with accessor paths resolved once per search pass. This keeps worker/fallback behavior identical while avoiding a second scan of records that filters already excluded.
+
 ## See Also
 
 - [Configuration](configuration.md) - Props and options

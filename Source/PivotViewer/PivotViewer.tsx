@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PivotViewerProps } from './types';
-import type { GroupingResult, GroupSpec } from './engine/types';
+import type { GroupingResult } from './engine/types';
 import { usePivotEngine } from './hooks/usePivotEngine';
 import { computeLayout } from './engine/layout';
 import { useFilterState } from './hooks/useFilterState';
@@ -24,6 +24,7 @@ import type { ViewMode } from './components/Toolbar';
 import { useFieldExtractors } from './hooks/useFieldExtractors';
 import { useCurrentFilters, useCurrentGroupBy } from './hooks/useCurrentFilters';
 import { filterVisibleIdsBySearch } from './utils/search';
+import { resolveInternalItemIndex } from './utils/idResolution';
 import { useCardSelection } from './hooks/useCardSelection';
 import { useDetailPanelClose } from './hooks/useDetailPanelClose';
 import { useScrollSync } from './hooks/useScrollSync';
@@ -175,7 +176,9 @@ export function PivotViewer<TItem extends object>({
     useEffect(() => {
         if (!ready) return;
 
-        engineApplyFilters(currentFilters).then((result) => {
+        let cancelled = false;
+        void engineApplyFilters(currentFilters).then((result) => {
+            if (cancelled) return;
             let ids = result.visibleIds;
 
             // If the engine failed to return any IDs while no filters are active,
@@ -190,27 +193,25 @@ export function PivotViewer<TItem extends object>({
 
             setVisibleIds(filterVisibleIdsBySearch(data, ids, search, searchFields));
         });
+        return () => {
+            cancelled = true;
+        };
     }, [ready, currentFilters, engineApplyFilters, data, search, searchFields]);
 
-    // Compute grouping
-    const lastGroupingRequest = useRef<{
-        viewMode: ViewMode;
-        groupBy: GroupSpec;
-        visibleIds: Uint32Array;
-    } | null>(null);
-
+    // Compute grouping. Every async branch ignores a result after its dependencies change, so an
+    // older worker response can never overwrite a newer filter/search/view selection.
     useEffect(() => {
         if (!ready || visibleIds.length === 0) {
             setGrouping({ groups: [] });
-            lastGroupingRequest.current = null;
             return;
         }
 
+        let cancelled = false;
         if (viewMode === 'collection') {
-            // In collection mode, create a single group with all items
-            // Sort items if activeDimensionKey is set
+            // In collection mode, create a single group with all items.
             if (activeDimensionKey) {
-                sortIds(visibleIds, activeDimensionKey).then((sortedIds) => {
+                void sortIds(visibleIds, activeDimensionKey).then((sortedIds) => {
+                    if (cancelled) return;
                     setGrouping({
                         groups: [
                             {
@@ -236,26 +237,15 @@ export function PivotViewer<TItem extends object>({
                     ],
                 });
             }
-            lastGroupingRequest.current = null;
-            return;
+        } else {
+            void computeGrouping(visibleIds, currentGroupBy).then((result) => {
+                if (!cancelled) setGrouping(result);
+            });
         }
 
-        // Check if this is the same request as last time to prevent duplicate computations
-        const lastRequest = lastGroupingRequest.current;
-        if (
-            lastRequest &&
-            lastRequest.viewMode === viewMode &&
-            lastRequest.groupBy.field === currentGroupBy.field &&
-            lastRequest.visibleIds === visibleIds
-        ) {
-            return;
-        }
-
-        lastGroupingRequest.current = { viewMode, groupBy: currentGroupBy, visibleIds };
-
-        computeGrouping(visibleIds, currentGroupBy).then((result) => {
-            setGrouping(result);
-        });
+        return () => {
+            cancelled = true;
+        };
     }, [
         ready,
         visibleIds,
@@ -298,15 +288,8 @@ export function PivotViewer<TItem extends object>({
     ]);
 
     const resolveId = useCallback(
-        (item: TItem, index: number) => {
-            if (getItemId) {
-                const id = getItemId(item, index);
-                return typeof id === 'number' ? id : index;
-            }
-            const id = (item as Record<string, unknown>)['id'];
-            return typeof id === 'number' ? id : index;
-        },
-        [getItemId],
+        (item: TItem) => resolveInternalItemIndex(data, item, getItemId),
+        [data, getItemId],
     );
 
     // Track animation mode changes

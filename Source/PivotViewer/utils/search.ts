@@ -24,11 +24,12 @@ export function filterVisibleIdsBySearch<TItem extends object>(
         return visibleIds;
     }
 
+    const propertyPaths = searchFields.map((accessor) => getPropertyPath(accessor));
     const matches: number[] = [];
     for (let i = 0; i < visibleIds.length; i++) {
         const id = visibleIds[i];
         const item = data[id];
-        if (item !== undefined && matchesSearchFields(item, term, searchFields)) {
+        if (item !== undefined && matchesSearchFields(item, term, propertyPaths)) {
             matches.push(id);
         }
     }
@@ -39,10 +40,9 @@ export function filterVisibleIdsBySearch<TItem extends object>(
 function matchesSearchFields<TItem extends object>(
     item: TItem,
     term: string,
-    searchFields: PropertyAccessor<TItem>[],
+    propertyPaths: string[],
 ): boolean {
-    for (const accessor of searchFields) {
-        const propertyPath = getPropertyPath(accessor);
+    for (const propertyPath of propertyPaths) {
         const value = getValueByPath(item, propertyPath);
         if (value !== undefined && String(value).toLowerCase().indexOf(term) !== -1) {
             return true;

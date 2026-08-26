@@ -49,13 +49,12 @@ export function usePivotEngine<TItem extends object>({
     const indexesRef = useRef<PivotIndexes | null>(null);
     const fallbackRef = useRef(false);
     const storeRef = useRef<PivotStore | null>(null);
-    // Every filter/grouping/sort request/response pair is correlated by a unique request id
-    // (see createRequestCorrelator) so overlapping or out-of-order worker responses resolve
-    // their own promise. groupingRequestIdRef separately tracks the in-flight grouping request,
-    // preserving the intentional single-flight de-dup below (an overlapping grouping call
-    // resolves immediately with an empty result instead of queuing behind the worker).
-    const correlatorRef = useRef(createRequestCorrelator<unknown>());
-    const groupingRequestIdRef = useRef<number | null>(null);
+    // Each operation owns a typed request correlator. Overlapping requests can share numeric ids
+    // across operation types because worker responses are dispatched by type before correlation;
+    // within one operation, every response resolves only its own promise even out of order.
+    const filterCorrelatorRef = useRef(createRequestCorrelator<FilterResult>());
+    const groupingCorrelatorRef = useRef(createRequestCorrelator<GroupingResult>());
+    const sortCorrelatorRef = useRef(createRequestCorrelator<Uint32Array>());
 
     useEffect(() => {
         if (typeof window === 'undefined' || typeof Worker === 'undefined') {
@@ -107,20 +106,26 @@ export function usePivotEngine<TItem extends object>({
                         break;
 
                     case 'filterResult': {
-                        correlatorRef.current.resolve(message.requestId, message.result);
+                        filterCorrelatorRef.current.resolve(
+                            message.requestId,
+                            message.result,
+                        );
                         break;
                     }
 
                     case 'groupingResult': {
-                        correlatorRef.current.resolve(message.requestId, message.result);
-                        if (groupingRequestIdRef.current === message.requestId) {
-                            groupingRequestIdRef.current = null;
-                        }
+                        groupingCorrelatorRef.current.resolve(
+                            message.requestId,
+                            message.result,
+                        );
                         break;
                     }
 
                     case 'sortResult': {
-                        correlatorRef.current.resolve(message.requestId, message.result);
+                        sortCorrelatorRef.current.resolve(
+                            message.requestId,
+                            message.result,
+                        );
                         break;
                     }
                 }
@@ -208,11 +213,8 @@ export function usePivotEngine<TItem extends object>({
                     return;
                 }
 
-                const requestId = correlatorRef.current.nextId();
-                correlatorRef.current.register(
-                    requestId,
-                    resolve as (result: unknown) => void,
-                );
+                const requestId = filterCorrelatorRef.current.nextId();
+                filterCorrelatorRef.current.register(requestId, resolve);
 
                 const message: WorkerInMessage = {
                     type: 'applyFilters',
@@ -228,11 +230,6 @@ export function usePivotEngine<TItem extends object>({
 
     const computeGroupingCallback = useCallback(
         (visibleIds: Uint32Array, groupBy: GroupSpec): Promise<GroupingResult> => {
-            // Check if there's already a pending grouping request
-            if (groupingRequestIdRef.current !== null) {
-                return Promise.resolve({ groups: [] });
-            }
-
             return new Promise((resolve) => {
                 // synchronous fallback if worker unavailable
                 if (!workerRef.current || fallbackRef.current) {
@@ -257,12 +254,8 @@ export function usePivotEngine<TItem extends object>({
                     return;
                 }
 
-                const requestId = correlatorRef.current.nextId();
-                groupingRequestIdRef.current = requestId;
-                correlatorRef.current.register(
-                    requestId,
-                    resolve as (result: unknown) => void,
-                );
+                const requestId = groupingCorrelatorRef.current.nextId();
+                groupingCorrelatorRef.current.register(requestId, resolve);
 
                 const message: WorkerInMessage = {
                     type: 'computeGrouping',
@@ -297,11 +290,8 @@ export function usePivotEngine<TItem extends object>({
                     return;
                 }
 
-                const requestId = correlatorRef.current.nextId();
-                correlatorRef.current.register(
-                    requestId,
-                    resolve as (result: unknown) => void,
-                );
+                const requestId = sortCorrelatorRef.current.nextId();
+                sortCorrelatorRef.current.register(requestId, resolve);
 
                 const message: WorkerInMessage = {
                     type: 'sort',

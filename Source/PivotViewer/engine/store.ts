@@ -400,10 +400,13 @@ function groupByNumeric(
         };
     }
 
+    const bucketCount = Number.isFinite(buckets)
+        ? Math.max(1, Math.floor(buckets))
+        : 10;
     const range = max - min;
-    const bucketSize = range / buckets;
+    const bucketSize = range / bucketCount;
 
-    const bucketLists: number[][] = Array.from({ length: buckets }, () => []);
+    const bucketLists: number[][] = Array.from({ length: bucketCount }, () => []);
 
     for (let i = 0; i < visibleIds.length; i++) {
         const id = visibleIds[i];
@@ -411,14 +414,15 @@ function groupByNumeric(
         if (isNaN(value)) continue;
 
         let bucketIndex = Math.floor((value - min) / bucketSize);
-        if (bucketIndex >= buckets) bucketIndex = buckets - 1;
+        if (bucketIndex >= bucketCount) bucketIndex = bucketCount - 1;
+        if (bucketIndex < 0) bucketIndex = 0;
 
         bucketLists[bucketIndex].push(id);
     }
 
     const groups: GroupResult[] = [];
 
-    for (let i = 0; i < buckets; i++) {
+    for (let i = 0; i < bucketCount; i++) {
         const list = bucketLists[i];
         if (list.length === 0) continue;
 
