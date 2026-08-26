@@ -23,7 +23,8 @@ Property names must:
 1. Not be empty or whitespace-only.
 2. Start with a letter or underscore.
 3. Contain only letters, numbers, and underscores.
-4. Be unique among siblings in the current object schema.
+4. Not be the reserved prototype keys `__proto__`, `constructor`, or `prototype`.
+5. Be unique among siblings in the current object schema.
 
 ```typescript
 // Valid sibling names

@@ -3,12 +3,18 @@
 
 import { JsonSchemaProperty, NavigationItem } from '../types/JsonSchema';
 
+const reservedPrototypeKeys = new Set(['__proto__', 'constructor', 'prototype']);
+
 /**
  * Validates a property name, returning an error string or undefined if valid.
  */
 export function validatePropertyName(name: string, propertyId: string, allProperties: JsonSchemaProperty[]): string | undefined {
     if (!name || name.trim() === '') {
         return 'Property name cannot be empty';
+    }
+
+    if (reservedPrototypeKeys.has(name)) {
+        return 'Property name cannot be a reserved prototype key';
     }
 
     const validIdentifierPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
