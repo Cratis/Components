@@ -7,7 +7,7 @@ The `--cratis-*` CSS variable layer is the Cratis-scoped tint surface every Crat
 /*                            ^ v11 (@primeuix/themes)      ^ v10 legacy      */
 ```
 
-`@cratis/components` 3.0 requires `primereact@^11` as a peer, so the **v11 arm is the one that resolves in a correctly installed app**. The v10 arm is kept deliberately for the upgrade window, when an app still has a compiled v10 theme stylesheet on the page while it ports its own screens — or imports [`@cratis/components/primereact-v10-palette`](../migration.md#theming-without-a-theme-stylesheet), which restores those v10 names for CSS already written against them. Nothing breaks the day that stylesheet is removed — the v11 arm was already winning.
+`@cratis/components` 3.0 requires `primereact@^11` as a peer, so the **v11 arm is the one that resolves in a correctly installed app**. The v10 arm is kept deliberately for the upgrade window, when an app still has a compiled v10 theme stylesheet on the page while it ports its own screens — or imports [`@cratis/components/primereact-v10-palette`](../Migration/2-to-3.md#theming-without-a-theme-stylesheet), which restores those v10 names for CSS already written against them. Nothing breaks the day that stylesheet is removed — the v11 arm was already winning.
 
 This indirection is the single seam that insulates your code (and your consumers' `--cratis-*` overrides) from PrimeReact's token system changing underneath you. It is the reason this library could span a PrimeReact major version at all.
 

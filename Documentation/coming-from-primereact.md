@@ -5,7 +5,7 @@ description: You already know PrimeReact. Here's how forms and tables map onto C
 
 Cratis Components isn't a different component kit — it's built **on** PrimeReact. Your `Column`, your `Button`, your icons all still apply. What changes is the *wiring*: instead of keeping form state and query subscriptions in the screen, you point a component at an Arc-generated proxy and let the component own that integration. This page maps familiar PrimeReact code onto its Components equivalent — and, because `@cratis/components` 3.0 moved to **PrimeReact 11**, tells you what PrimeReact itself renamed, removed, and rebuilt underneath.
 
-If you already have an app on `@cratis/components` 2.x, read the [migration guide](migration.md) first — it is the ordered checklist. This page is the map you keep open while you work through it.
+If you already have an app on `@cratis/components` 2.x, read the [migration guide](Migration/2-to-3.md) first — it is the ordered checklist. This page is the map you keep open while you work through it.
 
 ## The one-paragraph version
 
@@ -179,7 +179,7 @@ Three things bite even when you only use Cratis wrappers.
 
 **PrimeReact is now a peer dependency.** You install `primereact`, `@primereact/core`, `@primereact/headless` and `primeicons` yourself. Two copies of PrimeReact means two `PrimeReactProvider` contexts, which breaks overlays and `pt` with no error to point at — the peer declaration is what prevents that. See [Getting started](/components/getting-started/).
 
-**PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist. A theme is now [PrimeReact's styled mode](Styling/themed.md) — `styledMode()` from `@cratis/components/styled`, which hands the provider a `@primeuix/themes` preset (a JavaScript token object turned into `--p-*` custom properties at runtime) together with PrimeReact's own component styles; a preset by itself paints nothing — or the [Cratis baseline theme](Styling/baseline-theme.md), or your own `pt`. **PrimeReact 11 needs a PrimeUI license key whichever you pick** — the check runs when the provider mounts, not when a theme is applied. See [Licensing](migration.md#licensing) and [Styling](/components/styling/).
+**PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist. A theme is now [PrimeReact's styled mode](Styling/themed.md) — `styledMode()` from `@cratis/components/styled`, which hands the provider a `@primeuix/themes` preset (a JavaScript token object turned into `--p-*` custom properties at runtime) together with PrimeReact's own component styles; a preset by itself paints nothing — or the [Cratis baseline theme](Styling/baseline-theme.md), or your own `pt`. **PrimeReact 11 needs a PrimeUI license key whichever you pick** — the check runs when the provider mounts, not when a theme is applied. See [Licensing](Migration/2-to-3.md#licensing) and [Styling](/components/styling/).
 
 **Outside styled mode, elements carry no `p-*` class.** The `primereact` primitives identify parts by data attributes — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`; the `p-*` class names come from PrimeReact's component styles, which only `styledMode()` applies. Elsewhere, CSS selectors written against v10 class names silently match nothing. (`pt` slot keys are unaffected, though the top-level keys follow the renames above: `select`, not `dropdown`.)
 

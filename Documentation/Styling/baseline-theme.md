@@ -1,6 +1,6 @@
 # Use the Cratis baseline theme
 
-PrimeReact 11 is unstyled-first, and [its styled mode](themed.md) needs two more packages — `@primereact/styles` and `@primeuix/themes`. If you want a polished default look **without them**, ship the components unstyled and import the **Cratis baseline theme** — a token-based stylesheet that skins every component from the `--cratis-*` layer. (A PrimeUI license key is still required to run PrimeReact 11 itself — see [Licensing](../migration.md#licensing).)
+PrimeReact 11 is unstyled-first, and [its styled mode](themed.md) needs two more packages — `@primereact/styles` and `@primeuix/themes`. If you want a polished default look **without them**, ship the components unstyled and import the **Cratis baseline theme** — a token-based stylesheet that skins every component from the `--cratis-*` layer. (A PrimeUI license key is still required to run PrimeReact 11 itself — see [Licensing](../Migration/2-to-3.md#licensing).)
 
 ## Setup
 
