@@ -32,7 +32,7 @@ Object.assign(plugin.configs, {
     recommended: [
         {
             name: '@cratis/components/recommended',
-            files: ['**/*.ts', '**/*.tsx'],
+            files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
             plugins: { '@cratis/components': plugin },
             rules: {
                 '@cratis/components/no-primereact-dialog': 'error',

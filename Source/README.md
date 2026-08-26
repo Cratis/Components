@@ -26,7 +26,19 @@ The current package manifest declares these peer dependencies:
 - `reflect-metadata` `0.2.2`
 - `tsyringe` `4.10.0`
 
+Strict installers can declare them explicitly; keep both Arc packages on the same application version:
+
+```bash
+ARC_VERSION=22.1.0
+npm install @cratis/components \
+  "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
+  @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
+  reflect-metadata@0.2.2 tsyringe@4.10.0
+```
+
 The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.
+
+**Yarn PnP note:** the current `@cratis/arc.react@22.1.0` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.1.0`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
 `pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
 
@@ -185,7 +197,7 @@ Do not target React Aria classes or internal DOM structure.
 
 ## Import from explicit subpaths
 
-The canonical rule: **the package root is setup-only; every component ships from its own subpath.** Import `CratisComponentsProvider` (and `cratisDefaults`, `mergeCratisComponentsConfig`) from the root; import every component from the subpath in its capability profile:
+The canonical rule: **the package root is setup-only; every component ships from its own subpath.** Import `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig` from the root; import every component from the subpath in its capability profile:
 
 | Subpath                                    | Capability profile                |
 | ------------------------------------------ | --------------------------------- |
@@ -224,8 +236,9 @@ namespace-to-subpath mapping and migration command for existing root imports.
 The current package manifest does not declare PrimeReact as a required runtime
 or peer. Follow the [Components 3 to 4 migration guide](https://github.com/Cratis/Components/blob/main/Source/MIGRATION.md)
 for dependency removal, provider changes, product token mapping, stable part
-names, DatePicker changes, table behavior, notifications, and direct Prime
-import replacements.
+names, DatePicker changes, table behavior, notifications, direct Prime import
+replacements, the exact-version `@cratis/components-codemods` command, and the
+`@cratis/eslint-plugin-components` guard.
 
 The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeReactStyles` renderer exports are removed. Move styling to tokens and stable parts before upgrading.
 

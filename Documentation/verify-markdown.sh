@@ -33,6 +33,7 @@ fi
 npx markdownlint-cli2 \
     "README.md" \
     "Documentation/**/*.md" \
+    "Documentation/**/*.mdx" \
     "Source/*.md" \
     "Codemods/*.md" \
     "ESLint/*.md"

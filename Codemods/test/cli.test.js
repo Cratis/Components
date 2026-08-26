@@ -133,6 +133,31 @@ describe('remove-root-namespace-imports CLI', () => {
         );
     });
 
+    it('rewrites JavaScript and JSX files instead of silently skipping them', () => {
+        const javascript = path.join(dir, 'legacy.js');
+        const jsx = path.join(dir, 'Component.jsx');
+        writeFileSync(
+            javascript,
+            "import { Canvas } from '@cratis/components';\n",
+            'utf8',
+        );
+        writeFileSync(
+            jsx,
+            "import { DataPage } from '@cratis/components';\nexport const Page = () => <DataPage.DataPage />;\n",
+            'utf8',
+        );
+
+        const result = run([dir]);
+
+        expect(result.status).toBe(0);
+        expect(readFileSync(javascript, 'utf8')).toContain(
+            "import * as Canvas from '@cratis/components/Canvas';",
+        );
+        expect(readFileSync(jsx, 'utf8')).toContain(
+            "import * as DataPage from '@cratis/components/DataPage';",
+        );
+    });
+
     it('reports a TypeScript import assignment in a .cts file', () => {
         const file = path.join(dir, 'legacy.cts');
         writeFileSync(

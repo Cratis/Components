@@ -7,7 +7,16 @@ import { join, extname } from 'node:path';
 import { transformSource } from '../lib/transform.js';
 import { packageName as defaultPackageName } from '../lib/namespaceMap.js';
 
-const EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts']);
+const EXTENSIONS = new Set([
+    '.js',
+    '.jsx',
+    '.mjs',
+    '.cjs',
+    '.ts',
+    '.tsx',
+    '.mts',
+    '.cts',
+]);
 const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.yarn']);
 
 function printUsage() {
@@ -26,7 +35,8 @@ function printUsage() {
             '  --package <name>  Package to migrate away from (default: @cratis/components).',
             '',
             '<path...> may be files or directories; directories are walked recursively for',
-            '.ts/.tsx/.mts/.cts files, skipping node_modules, dist, .git, and .yarn.',
+            '.js/.jsx/.mjs/.cjs/.ts/.tsx/.mts/.cts files, skipping node_modules,',
+            'dist, .git, and .yarn.',
         ].join('\n'),
     );
 }

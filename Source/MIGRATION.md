@@ -61,7 +61,7 @@ This is an intentional Components 4 breaking change. The package root now expose
 | `CommandDialog`                     | `@cratis/components/CommandDialog`                        | `import * as CommandDialog from '@cratis/components/CommandDialog'`                 | `import { CommandDialog } from '@cratis/components/CommandDialog'`                 |
 | `CommandStepper` †                  | `@cratis/components/CommandDialog` (namespace-preserving) | `import * as CommandStepper from '@cratis/components/CommandDialog'`                | `import { CommandStepper } from '@cratis/components/CommandStepper'`               |
 | `CommandForm`                       | `@cratis/components/CommandForm`                          | `import * as CommandForm from '@cratis/components/CommandForm'`                     | `import { AutoCommandForm, InputTextField } from '@cratis/components/CommandForm'` |
-| `Common`                            | `@cratis/components/Common`                               | `import * as Common from '@cratis/components/Common'`                               | `import { CratisComponentsProvider, Button } from '@cratis/components/Common'`     |
+| `Common`                            | `@cratis/components/Common`                               | `import * as Common from '@cratis/components/Common'`                               | `import { Button } from '@cratis/components/Common'`                               |
 | `DataPage`                          | `@cratis/components/DataPage`                             | `import * as DataPage from '@cratis/components/DataPage'`                           | `import { DataPage, Column } from '@cratis/components/DataPage'`                   |
 | `DataTables`                        | `@cratis/components/DataTables`                           | `import * as DataTables from '@cratis/components/DataTables'`                       | `import { DataTableForQuery, Column } from '@cratis/components/DataTables'`        |
 | `Dialogs`                           | `@cratis/components/Dialogs`                              | `import * as Dialogs from '@cratis/components/Dialogs'`                             | `import { Dialog } from '@cratis/components/Dialogs'`                              |
@@ -79,18 +79,29 @@ This is an intentional Components 4 breaking change. The package root now expose
 
 † The removed root `CommandStepper` namespace aliased the _entire_ `CommandDialog` module. The codemod therefore maps that namespace to `@cratis/components/CommandDialog`, preserving all existing namespace members. New code that needs only the standalone component should use the narrower named import from `@cratis/components/CommandStepper`.
 
-`@cratis/components/CommandForm/fields` is the same module as `@cratis/components/CommandForm` — either subpath resolves identically, so the `CommandForm` row's migration applies to both.
+`@cratis/components/CommandForm/fields` is the same module as `@cratis/components/CommandForm` — either subpath resolves identically, so the `CommandForm` row's migration applies to both. Provider/configuration/message setup stays on the package root; only Common components such as `Button` move to `@cratis/components/Common`.
 
 Run the migration codemod in preview mode first, then apply it:
 
 ```bash
-npx --package @cratis/components-codemods \
+COMPONENTS_VERSION="$(node -p "require('@cratis/components/package.json').version")"
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
   cratis-components-remove-root-namespace-imports --check <paths...>
-npx --package @cratis/components-codemods \
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
   cratis-components-remove-root-namespace-imports <paths...>
 ```
 
-The codemod preserves aliases and type-only imports, splits mixed setup/namespace imports, and reports unsupported cases without guessing. Those include default or whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, re-exports, side-effect imports, and unknown symbols. Review its diagnostics, then run the consuming project's lint, build, and tests.
+If the exact codemod package version is unavailable, stop rather than substituting `latest` or a different Components version. Keep the application on its current package, apply the table manually, or wait for a corrected publication.
+
+The codemod scans JavaScript/JSX and TypeScript/TSX (including `.mjs`, `.cjs`, `.mts`, and `.cts`), preserves aliases and type-only imports, splits mixed setup/namespace imports, and reports unsupported cases without guessing. Those include default or whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, re-exports, side-effect imports, and unknown symbols. Review its diagnostics, then run the consuming project's lint, build, and tests.
+
+Install the matching ESLint plugin version after migration and compose its recommended config after `@cratis/eslint-config`; `no-root-barrel-import` prevents component namespaces from returning:
+
+```bash
+npm install --save-dev "@cratis/eslint-plugin-components@$COMPONENTS_VERSION"
+```
+
+See the `@cratis/eslint-plugin-components` README included with that package for the flat-config example and the other Components consumer rules.
 
 ## Keep the stylesheet entry points
 
@@ -113,7 +124,7 @@ A custom product design can omit `theme`, define the `--cratis-*` variables itse
 The provider now owns locale and Components-specific labels. Unknown renderer keys are a type error so a migrated app cannot silently lose its theme, license, global pass-through, ripple, or z-index behavior. Remove those keys from `CratisComponentsProvider` and configure any remaining direct Prime provider independently.
 
 ```tsx
-import { CratisComponentsProvider } from '@cratis/components/Common';
+import { CratisComponentsProvider } from '@cratis/components';
 
 export const ApplicationRoot = ({ children }: { children: React.ReactNode }) => (
     <CratisComponentsProvider

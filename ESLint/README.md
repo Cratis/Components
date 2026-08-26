@@ -15,8 +15,12 @@ Both import rules cover static `import` and re-`export … from` forms. The root
 
 ## Install
 
+Use the same exact version as the installed Components package:
+
 ```sh
-yarn add -D @cratis/eslint-plugin-components @cratis/eslint-config eslint
+COMPONENTS_VERSION="$(node -p "require('@cratis/components/package.json').version")"
+yarn add -D "@cratis/eslint-plugin-components@$COMPONENTS_VERSION" \
+  @cratis/eslint-config eslint
 ```
 
 ## Use

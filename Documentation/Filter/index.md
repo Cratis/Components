@@ -114,7 +114,7 @@ Renders a checkbox list — multiple values may be selected simultaneously.
 
 ### Numeric range with histogram (`type: 'number'`)
 
-Renders a `RangeHistogramFilter` — a draggable range slider overlaid on a histogram of the actual data distribution.
+Renders a `RangeHistogramFilter` — a range slider overlaid on a histogram of the actual data distribution. Users can drag either handle, focus the named minimum/maximum sliders and use Arrow/Home/End keys, or activate a histogram bar to snap to its bounds.
 
 ```tsx
 {
@@ -254,16 +254,19 @@ The hook re-syncs state when the `filters` array reference changes — existing 
 
 `RangeHistogramFilter` can also be used standalone, independently of `FilterPanel`.
 
-| Prop | Type | Required | Description |
-|---|---|---|---|
-| `values` | `FilterValue[]` | ✓ | Raw data values used to compute the histogram |
-| `min` | `number` | ✓ | Lower bound of the full range |
-| `max` | `number` | ✓ | Upper bound of the full range |
-| `buckets` | `number` | | Number of histogram bars (default `20`) |
-| `selectedRange` | `[number, number] \| null` | ✓ | Currently selected range, or `null` for none |
-| `onChange` | `(range: [number, number] \| null) => void` | ✓ | Called when the range changes |
-| `formatValue` | `(value: number) => string` | — | Formatter for endpoint labels and bar-tooltip numbers (default: a plain numeric formatter) |
-| `itemsLabel` | `string` | — | Unit word shown after a bar tooltip's count, e.g. `'42 items'` (default: `'items'`) |
+| Prop               | Type                                        | Required | Description                                                                                |
+| ------------------ | ------------------------------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `values`           | `FilterValue[]`                             | —        | Raw data values used to compute the histogram. Omit when `histogram` is supplied.          |
+| `histogram`        | `HistogramBucket[]`                         | —        | Pre-counted buckets, typically covering the complete server-side result set.               |
+| `min`              | `number`                                    | ✓        | Lower bound of the full range                                                              |
+| `max`              | `number`                                    | ✓        | Upper bound of the full range                                                              |
+| `buckets`          | `number`                                    |          | Number of histogram bars (default `20`)                                                    |
+| `selectedRange`    | `[number, number] \| null`                  | ✓        | Currently selected range, or `null` for none                                               |
+| `onChange`         | `(range: [number, number] \| null) => void` | ✓        | Called when the range changes                                                              |
+| `formatValue`      | `(value: number) => string`                 | —        | Formatter for endpoint labels and bar-tooltip numbers (default: a plain numeric formatter) |
+| `itemsLabel`       | `string`                                    | —        | Unit word shown after a bar tooltip's count, e.g. `'42 items'` (default: `'items'`)        |
+| `minimumAriaLabel` | `string`                                    | —        | Accessible name for the lower-bound slider (default: `'Minimum value'`)                    |
+| `maximumAriaLabel` | `string`                                    | —        | Accessible name for the upper-bound slider (default: `'Maximum value'`)                    |
 
 ## Importing
 

@@ -49,7 +49,7 @@ already-migrated subpath import is never revisited.
 The complete namespace → subpath map and the approved-root-symbol allowlist live in
 [`lib/namespaceMap.js`](./lib/namespaceMap.js), mirrored from `Source/index.ts`. Contributors
 must update it and the
-[`ESLint` mirror](https://github.com/Cratis/Components/blob/main/ESLint/lib/rootNamespaceMap.js)
+`ESLint/lib/rootNamespaceMap.js` mirror
 together when a namespace subpath is added, renamed, or removed.
 
 ### What it refuses to guess
@@ -79,17 +79,23 @@ consumers are left exactly as they are.
 ### Use
 
 The packaged CLI requires Node.js 20 or newer and brings its own TypeScript parser; it does
-not depend on the consumer application's TypeScript version. Use the `npx` commands only with
-an exact published package version that contains this tool; contributors can run the repository
-source directly.
+not depend on the consumer application's TypeScript version. It scans JavaScript, JSX,
+TypeScript, and TSX sources, including `.mjs`, `.cjs`, `.mts`, and `.cts` variants. Use the
+same exact published version as the installed Components package; all three workspaces are
+released together. Contributors can run the repository source directly. If the exact codemod version is unavailable, do not substitute `latest`
+or another Components version: keep the application on its current package, apply the
+mapping table manually, or wait for a corrected publication.
 
 ```sh
+# Read the exact installed Components version (stable or prerelease):
+COMPONENTS_VERSION="$(node -p "require('@cratis/components/package.json').version")"
+
 # Preview what would change, without writing anything:
-npx --package @cratis/components-codemods \
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
 
 # Apply the rewrite:
-npx --package @cratis/components-codemods \
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
   cratis-components-remove-root-namespace-imports path/to/app/src
 
 # Contributors to this repository can run the workspace source directly:
@@ -112,6 +118,6 @@ cd Codemods && yarn test
 ```
 
 Repository fixtures for every supported and unsupported case live under
-[`Codemods/test/fixtures`](https://github.com/Cratis/Components/tree/main/Codemods/test/fixtures),
+`Codemods/test/fixtures`,
 each as an `input.ts`/`expected.ts` pair (`input.ts` and `expected.ts` are identical for an
 unsupported case, since nothing should change).

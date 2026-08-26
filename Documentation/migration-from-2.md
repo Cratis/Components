@@ -1,15 +1,19 @@
-# Migration — `@cratis/components` 2.x → 3.0 (PrimeReact 10 → 11)
+---
+title: Migrate from Components 2 to 3
+description: Historical guide for moving from PrimeReact 10 to the Components 3 PrimeReact 11 package profile.
+---
 
-> This is the historical Components 3 guide. Links to version-specific styling/provider pages use the immutable Components 3 merge commit so they cannot drift to Components 4 behavior.
+This is the historical Components 3 guide. Links to version-specific styling/provider pages use the immutable Components 3 merge commit so they cannot drift to Components 4 behavior.
 
 `@cratis/components` 3.0 moves the library from PrimeReact 10 to **PrimeReact 11**. Most wrapper APIs survive unchanged, so many apps upgrade with the find-and-replace in [Import moves](#import-moves-removed-primereact-paths) plus the install and import changes in [PrimeReact is now a peer dependency](#primereact-is-now-a-peer-dependency) and [Stylesheets are now an explicit import](#stylesheets-are-now-an-explicit-import). This guide lists every change a consuming app can feel.
 
-> [!IMPORTANT]
-> **The three things you must do**, even if you change no component code:
->
-> 1. **Install the PrimeReact peers yourself** — they are no longer our dependency.
-> 2. **Import `@cratis/components/styles`** — component CSS no longer rides along with the JavaScript.
-> 3. **Choose a theming path** — there is no `resources/themes/*.css` to import any more.
+:::caution[Three required changes]
+Even if no component code changes:
+
+1. **Install the PrimeReact peers yourself** — they are no longer our dependency.
+2. **Import `@cratis/components/styles`** — component CSS no longer rides along with the JavaScript.
+3. **Choose a theming path** — there is no `resources/themes/*.css` to import any more.
+   :::
 
 ## PrimeReact is now a peer dependency
 
@@ -47,8 +51,9 @@ Notes:
 
 `@cratis/arc` and `@cratis/arc.react` now support `>=20.3.1 <23`. Arc 20, Arc 21 and Arc 22 are supported.
 
-> [!WARNING]
-> **Keep `@cratis/arc`, `@cratis/arc.react` and `@cratis/arc.vite` on the same version.** `@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if your own `@cratis/arc` drifts by even a patch your installer nests a second copy. `ObservableQuerySubscription` has a `private` field, which makes it nominally typed, so two copies produce a type error like _"types have separate declarations of a private property `_connection`"_ in any code touching an observable query. This is an Arc packaging issue, not a Components one; `DataTableForObservableQuery` is hardened against it internally so the library itself still compiles either way ([#135](https://github.com/Cratis/Components/issues/135)).
+:::caution[Keep Arc package versions aligned]
+`@cratis/arc.react` depends on `@cratis/arc` with an **exact** pin, so if the application's `@cratis/arc` drifts by even a patch the installer nests a second copy. `ObservableQuerySubscription` has a `private` field, which makes it nominally typed, so two copies produce a type error like _"types have separate declarations of a private property `_connection`"_ in any code touching an observable query. This is an Arc packaging issue, not a Components one; `DataTableForObservableQuery` is hardened against it internally so the library itself still compiles either way ([#135](https://github.com/Cratis/Components/issues/135)).
+:::
 
 ## Stylesheets are now an explicit import
 
@@ -95,8 +100,9 @@ PrimeReact 11 ships **80** modules where v10 shipped 117. Replace the removed on
 
 The full rename table, the removed-with-no-replacement list, and the `Sidebar` trap are on [PrimeReact and Components](https://github.com/Cratis/Components/blob/9b45cfeb3719ec113ee4e939f9d49be38a877a14/Documentation/coming-from-primereact.md#the-v11-module-renames). The short version: **v11 is compositional**, so a rename is often not a one-line edit — `primereact/select` exports `Select.Root` / `Select.Trigger` / `Select.Value` / `Select.Portal` / `Select.Popup` / `Select.List` / `Select.Option`, and you assemble them. Prefer a Cratis wrapper where one exists.
 
-> [!CAUTION]
-> **The `Sidebar` trap.** v10's `Sidebar` (an overlay drawer) is now **`primereact/drawer`**. `primereact/sidebar` still exists in v11 but is a **different, new app-shell primitive**. A name-preserving migration compiles cleanly and silently swaps your overlay for an app shell. Check every `Sidebar` usage by hand.
+:::caution[The Sidebar trap]
+v10's `Sidebar` (an overlay drawer) is now **`primereact/drawer`**. `primereact/sidebar` still exists in v11 but is a **different, new app-shell primitive**. A name-preserving migration compiles cleanly and silently swaps your overlay for an app shell. Check every `Sidebar` usage by hand.
+:::
 
 Where the library needed a removed module, it now owns a replacement: a Cratis action toolbar (for `menubar`, driven by the same `model` array shape and reached through `<DataPage.MenuItems>`), [`Column`](DataTables/column-configuration.md) plus its filter menu (for `column`), [`StepperPanel`](StepperCommandDialog/index.md) (for `stepperpanel`), and `MultiSelectField` re-expressed over our own [`Dropdown`](Dropdown/index.md) wrapper (v11's `Select` has no `multiple` prop of the v10 shape).
 

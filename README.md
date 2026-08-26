@@ -71,6 +71,11 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 
 - The package manifest, exports, source, and migration guide define the current
   Components major-version surface.
+- Workspace manifest versions in a source checkout are development inputs, not release
+  identity. The release workflow stamps all three workspaces with the same requested
+  version, then publishes them sequentially. It collects failures and fails the release,
+  but a registry-side error can still leave a partial publication; verify all three exact
+  coordinates before migration or release claims.
 - Package existence, examples, Storybook output, and passing checks do not
   establish maturity, accessibility conformance, browser coverage, support,
   security, or production suitability.
@@ -88,11 +93,12 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 
 ## Migration tooling
 
-The repository contains a codemod and ESLint rule for moving Components 3 root
-namespace imports to the current explicit subpaths. The migration guide owns the
-current mapping, command, package coordinate, and limitations. Verify the exact
-published package version before running migration tooling outside this
-repository.
+The repository ships `@cratis/components-codemods` and
+`@cratis/eslint-plugin-components` for moving Components 3 root namespace imports to
+explicit subpaths and preventing regressions afterward. The [migration guide](./Source/MIGRATION.md)
+owns the exact-version codemod command and stop cases; the [ESLint plugin
+README](./ESLint/README.md) owns installation and flat-config composition. Use the same
+published version as `@cratis/components` for both migration packages.
 
 ## Contributing
 

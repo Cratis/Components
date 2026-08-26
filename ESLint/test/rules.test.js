@@ -1,6 +1,7 @@
 import { RuleTester } from 'eslint';
 import { afterAll, describe, expect, it } from 'vitest';
 import tsParser from '@typescript-eslint/parser';
+import componentsPlugin from '../index.js';
 import { noPrimereactDialog } from '../lib/noPrimereactDialog.js';
 import { noRootBarrelImport } from '../lib/noRootBarrelImport.js';
 import {
@@ -32,6 +33,14 @@ const tsRuleTester = new RuleTester({
         sourceType: 'module',
         parserOptions: { ecmaFeatures: { jsx: true } },
     },
+});
+
+describe('recommended consumer coverage', () => {
+    it('applies the migration guards to every source extension the codemod scans', () => {
+        expect(componentsPlugin.configs.recommended[0].files).toEqual([
+            '**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}',
+        ]);
+    });
 });
 
 describe('root namespace map parity', () => {

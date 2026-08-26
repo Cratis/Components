@@ -8,27 +8,31 @@ import SimpleCard from '@components/SimpleCard.astro';
 import TopicHero from '@components/TopicHero.astro';
 
 <TopicHero
-  icon="laptop"
-  eyebrow="Components"
-  title="React components aligned with Arc application patterns"
+    icon='laptop'
+    eyebrow='Components'
+    title='React components aligned with Arc application patterns'
 >
-  Components is a React component library aligned with Arc application patterns.
-  The current package owns its public React markup, TypeScript contracts,
-  semantic tokens, stable parts, and component behavior.
+    Components is a React component library aligned with Arc application patterns. The
+    current package owns its public React markup, TypeScript contracts, semantic tokens,
+    stable parts, and component behavior.
 </TopicHero>
 
 ## Start here
 
 <CardGrid>
-  <SimpleCard title="Install Components" icon="rocket" link="#minimal-setup">
-    Install the package, import its structural styles, and mount the provider.
-  </SimpleCard>
-  <SimpleCard title="Choose a component area" icon="list-format" link="#component-areas">
-    Start from the screen job rather than a raw component inventory.
-  </SimpleCard>
-  <SimpleCard title="Keep Arc separate" icon="puzzle" link="#relationship-to-arc">
-    Distinguish Arc-generated contracts from the React compositions that consume them.
-  </SimpleCard>
+    <SimpleCard title='Install Components' icon='rocket' link='#minimal-setup'>
+        Install the package, import its structural styles, and mount the provider.
+    </SimpleCard>
+    <SimpleCard
+        title='Choose a component area'
+        icon='list-format'
+        link='#component-areas'
+    >
+        Start from the screen job rather than a raw component inventory.
+    </SimpleCard>
+    <SimpleCard title='Keep Arc separate' icon='puzzle' link='#relationship-to-arc'>
+        Distinguish Arc-generated contracts from the React compositions that consume them.
+    </SimpleCard>
 </CardGrid>
 
 ## Minimal setup
@@ -36,30 +40,31 @@ import TopicHero from '@components/TopicHero.astro';
 <Steps>
 1. Install the package.
 
-   ```bash
-   npm install @cratis/components
-   ```
+```bash
+npm install @cratis/components
+```
 
-2. Import semantic tokens and component structure. The baseline theme is
+1. Import semantic tokens and component structure. The baseline theme is
    optional.
 
-   ```tsx
-   import '@cratis/components/tokens';
-   import '@cratis/components/styles';
-   import '@cratis/components/theme'; // optional baseline appearance
-   ```
+    ```tsx
+    import '@cratis/components/tokens';
+    import '@cratis/components/styles';
+    import '@cratis/components/theme'; // optional baseline appearance
+    ```
 
-3. Mount the provider.
+1. Mount the provider.
 
-   ```tsx
-   import { CratisComponentsProvider } from '@cratis/components';
+    ```tsx
+    import { CratisComponentsProvider } from '@cratis/components';
 
-   export const App = () => (
-       <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
-           <YourApp />
-       </CratisComponentsProvider>
-   );
-   ```
+    export const App = () => (
+        <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+            <YourApp />
+        </CratisComponentsProvider>
+    );
+    ```
+
 </Steps>
 
 The current package manifest defines the exact React, Arc, Fundamentals, and
@@ -77,21 +82,21 @@ Arc/React/package-version combination.
 ## Component areas
 
 <CardGrid>
-  <Card title="Command input" icon="approve-check">
-    Typed fields, forms, dialogs, and multi-step command flows.
-  </Card>
-  <Card title="Data display" icon="seti:db">
-    Query-backed and local-array tables, list pages, filters, and detail surfaces.
-  </Card>
-  <Card title="Application surfaces" icon="laptop">
-    Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars.
-  </Card>
-  <Card title="Structured editors" icon="pencil">
-    JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views.
-  </Card>
-  <Card title="Styling boundary" icon="seti:config">
-    Semantic tokens, component styles, an optional baseline theme, and stable parts.
-  </Card>
+    <Card title='Command input' icon='approve-check'>
+        Typed fields, forms, dialogs, and multi-step command flows.
+    </Card>
+    <Card title='Data display' icon='seti:db'>
+        Query-backed and local-array tables, list pages, filters, and detail surfaces.
+    </Card>
+    <Card title='Application surfaces' icon='laptop'>
+        Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars.
+    </Card>
+    <Card title='Structured editors' icon='pencil'>
+        JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views.
+    </Card>
+    <Card title='Styling boundary' icon='seti:config'>
+        Semantic tokens, component styles, an optional baseline theme, and stable parts.
+    </Card>
 </CardGrid>
 
 :::caution[Evaluate the exact application profile]
@@ -105,13 +110,21 @@ boundaries.
 ## Continue
 
 <CardGrid>
-  <SimpleCard title="Components source and README" icon="seti:folder" link="https://github.com/Cratis/Components">
-    Package setup, migration guidance, contribution paths, and current limits.
-  </SimpleCard>
-  <SimpleCard title="Components on npm" icon="open-book" link="https://www.npmjs.com/package/@cratis/components">
-    Published package metadata and versions.
-  </SimpleCard>
-  <SimpleCard title="Arc" icon="puzzle" link="/arc/">
-    The CQRS framework whose application patterns Components aligns with.
-  </SimpleCard>
+    <SimpleCard
+        title='Components source and README'
+        icon='seti:folder'
+        link='https://github.com/Cratis/Components'
+    >
+        Package setup, migration guidance, contribution paths, and current limits.
+    </SimpleCard>
+    <SimpleCard
+        title='Components on npm'
+        icon='open-book'
+        link='https://www.npmjs.com/package/@cratis/components'
+    >
+        Published package metadata and versions.
+    </SimpleCard>
+    <SimpleCard title='Arc' icon='puzzle' link='/arc/'>
+        The CQRS framework whose application patterns Components aligns with.
+    </SimpleCard>
 </CardGrid>

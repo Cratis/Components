@@ -41,6 +41,7 @@ jobs:
                   globs: |
                       README.md
                       Documentation/**/*.md
+                      Documentation/**/*.mdx
                       Source/*.md
                       Codemods/*.md
                       ESLint/*.md
@@ -51,12 +52,26 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Check links in Documentation
+            - name: Setup node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 23.x
+
+            - name: Check repository-local Markdown and MDX links
+              run: node Documentation/verify-local-links.mjs Documentation
+
+            - name: Check external links in consumer documentation
               uses: JustinBeckwith/linkinator-action@v1
               with:
-                  paths: 'Documentation/**/*.md'
+                  paths: |
+                      README.md
+                      Source/*.md
+                      Codemods/*.md
+                      ESLint/*.md
+                      Documentation/**/*.md
+                      Documentation/**/*.mdx
                   markdown: true
                   recurse: true
-                  redirects: allow
-                  statusCodes: '403:ok'
-                  linksToSkip: '^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)'
+                  concurrency: 10
+                  retry: true
+                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/'
