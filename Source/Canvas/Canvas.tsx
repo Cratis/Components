@@ -65,6 +65,14 @@ export interface CanvasItemRegistryEntry {
     width: number;
     /** Measured height. */
     height: number;
+
+    /**
+     * Whether this entry is registered under an internally generated id rather than one the caller
+     * supplied through {@link CanvasItem}'s `id` prop. An anonymous entry still feeds every consumer
+     * of the registry — the minimap, fit-to-content — but `Region` (via `itemsWithinRegion`) never
+     * reports it as a region member, since there is no caller-owned id a host could recognize it by.
+     */
+    anonymous?: boolean;
 }
 
 /** Registry contract used by {@link CanvasItem} to publish measured bounds. */

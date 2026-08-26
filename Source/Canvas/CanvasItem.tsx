@@ -83,7 +83,10 @@ export const CanvasItem: React.FC<CanvasItemProps> = ({
         return () => observer.disconnect();
     }, [itemId]);
 
-    // Register with the Canvas registry whenever position or size changes
+    // Register with the Canvas registry whenever position or size changes. `anonymous` records
+    // whether the caller ever supplied an `id` at all — not just what key ended up in the registry —
+    // so a `Region` reading this entry back can tell a generated key from a real one and keep
+    // anonymous items out of region-membership reports while still feeding the minimap/fit-to-content.
     useEffect(() => {
         if (!size || !registryContext) return;
         registryContext.register(itemId, {
@@ -91,8 +94,9 @@ export const CanvasItem: React.FC<CanvasItemProps> = ({
             y,
             width: size.width,
             height: size.height,
+            anonymous: id === undefined,
         });
-    }, [x, y, size, registryContext, itemId]);
+    }, [x, y, size, registryContext, itemId, id]);
 
     // Unregister when unmounting
     useEffect(() => {
