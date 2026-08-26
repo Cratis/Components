@@ -32,15 +32,15 @@ import { primeReact11PassThroughSentinelPreset } from '../primeReact11PassThroug
 const SupportedSurface = () => (
     <>
         <Button>Save</Button>
-        <InputText value='Ada' readOnly />
+        <InputText value='Sample User' readOnly />
         <Textarea value='Notes' readOnly />
         <InputNumber.Root value={44}>
             <InputNumber.Input />
         </InputNumber.Root>
         <Select.Root
             open
-            value='ada'
-            options={[{ label: 'Ada', value: 'ada' }]}
+            value='sample-user'
+            options={[{ label: 'Sample User', value: 'sample-user' }]}
             optionLabel='label'
             optionValue='value'
         >
@@ -63,7 +63,7 @@ const SupportedSurface = () => (
                 <Checkbox.Indicator />
             </Checkbox.Box>
         </Checkbox.Root>
-        <RadioButton.Root checked value='ada'>
+        <RadioButton.Root checked value='sample-user'>
             <RadioButton.Box>
                 <RadioButton.Indicator />
             </RadioButton.Box>
@@ -102,7 +102,7 @@ const SupportedSurface = () => (
             </Slider.Track>
             <Slider.Handle />
         </Slider.Root>
-        <InputTags.Root value={['Ada']}>
+        <InputTags.Root value={['Sample User']}>
             <InputTags.Items>
                 {({ item, index, itemProps }) => (
                     <span {...itemProps} key={index}>
@@ -151,7 +151,7 @@ const SupportedSurface = () => (
         <CratisDialog title='Compatibility' unstyled>
             Content
         </CratisDialog>
-        <DataTable.Root data={[{ name: 'Ada' }]}>
+        <DataTable.Root data={[{ name: 'Sample User' }]}>
             <DataTable.TableContainer>
                 <DataTable.Table>
                     <DataTable.THead>

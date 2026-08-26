@@ -18,8 +18,8 @@ function Conversation() {
         {
             id: Guid.create(),
             authorId: Guid.create(),
-            authorName: 'Ada',
-            authorInitials: 'A',
+            authorName: 'Sample User',
+            authorInitials: 'SU',
             hasAvatar: false,
             authorKind: ChatAuthorKind.User,
             text: 'What do you think of this layout?',

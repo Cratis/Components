@@ -201,7 +201,7 @@ import {
 
 const filters: DataTableFilterMeta = {
     name: {
-        value: 'Ada',
+        value: 'Sample User',
         matchMode: DataTableFilterMatchMode.Contains,
     },
 };
