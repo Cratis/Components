@@ -78,6 +78,7 @@ jobs:
                   # repository links; retry remains enabled for 429 responses with Retry-After.
                   concurrency: 2
                   retry: true
-                  # Historical self-links are immutable evidence anchors and repeatedly trigger
-                  # GitHub's unauthenticated 429 limit; current-tree links are covered above.
-                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/, ^https:\/\/github\.com\/Cratis\/Components\/blob\/[0-9a-f]{40}\/Documentation\/'
+                  # Stable Cratis repository anchors repeatedly trigger GitHub's unauthenticated
+                  # 429 limit; current-tree links are verified locally above, so skip only exact
+                  # organization guidance and immutable historical evidence anchors here.
+                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/, ^https:\/\/github\.com\/Cratis\/Components\/blob\/[0-9a-f]{40}\/Documentation\/, ^https:\/\/github\.com\/Cratis\/\.github\/blob\/main\/contributing\.md$'
