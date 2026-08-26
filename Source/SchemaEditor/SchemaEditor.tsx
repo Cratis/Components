@@ -7,6 +7,7 @@ import { DataTableCore } from '../DataTables/DataTableCore';
 import { Column } from '../DataTables/Column';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
 import { Tooltip } from '../Common/Tooltip';
+import { Message } from '../Display/Message';
 import * as faIcons from 'react-icons/fa6';
 import { NameCell } from './NameCell';
 import { TypeCell } from './TypeCell';
@@ -46,6 +47,8 @@ export interface SchemaEditorLabels {
     arrayItemType: string;
     /** Accessible name for the "remove property" button. */
     deleteProperty: string;
+    /** Validation message shown when the schema cannot be represented as valid JSON. */
+    invalidJson: string;
 }
 
 /** English defaults for {@link SchemaEditorLabels}. */
@@ -63,6 +66,37 @@ export const defaultSchemaEditorLabels: SchemaEditorLabels = {
     propertyType: 'Property type',
     arrayItemType: 'Array item type',
     deleteProperty: 'Delete property',
+    invalidJson: 'The schema must contain valid JSON before it can be edited.',
+};
+
+const cloneSchema = (schema: JsonSchema): JsonSchema | undefined => {
+    try {
+        const serializedSchema = JSON.stringify(schema);
+        if (serializedSchema === undefined) return undefined;
+
+        const parsedSchema: unknown = JSON.parse(serializedSchema);
+        if (
+            typeof parsedSchema !== 'object' ||
+            parsedSchema === null ||
+            Array.isArray(parsedSchema)
+        ) {
+            return undefined;
+        }
+
+        return parsedSchema as JsonSchema;
+    } catch {
+        return undefined;
+    }
+};
+
+const asJsonSchema = (property: JsonSchemaProperty): JsonSchema => {
+    // SAFETY: A nested schema property has the same editable shape; its row-only required flag is not read here.
+    return property as unknown as JsonSchema;
+};
+
+const asJsonSchemaProperty = (schema: JsonSchema): JsonSchemaProperty => {
+    // SAFETY: A nested schema is stored in the property's schema-shaped fields; required is not changed here.
+    return schema as unknown as JsonSchemaProperty;
 };
 
 /**
@@ -150,9 +184,19 @@ export const SchemaEditor = ({
     const l = useMemo(() => ({ ...defaultSchemaEditorLabels, ...labels }), [labels]);
     const [currentPath, setCurrentPath] = useState<string[]>([]);
     const [properties, setProperties] = useState<JsonSchemaProperty[]>([]);
-    const [currentSchema, setCurrentSchema] = useState<JsonSchema>(schema);
+    const [initialParsedSchema] = useState<JsonSchema | undefined>(() =>
+        cloneSchema(schema),
+    );
+    const [currentSchema, setCurrentSchema] = useState<JsonSchema>(
+        initialParsedSchema ?? {},
+    );
     const [isEditMode, setIsEditMode] = useState(editMode ?? false);
-    const [initialSchema, setInitialSchema] = useState<JsonSchema>(schema);
+    const [initialSchema, setInitialSchema] = useState<JsonSchema>(
+        initialParsedSchema ?? {},
+    );
+    const [schemaJsonIsInvalid, setSchemaJsonIsInvalid] = useState(
+        initialParsedSchema === undefined,
+    );
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
@@ -180,8 +224,15 @@ export const SchemaEditor = ({
     );
 
     useEffect(() => {
-        setCurrentSchema(schema);
-        setInitialSchema(JSON.parse(JSON.stringify(schema)));
+        const parsedSchema = cloneSchema(schema);
+        if (!parsedSchema) {
+            setSchemaJsonIsInvalid(true);
+            return;
+        }
+
+        setSchemaJsonIsInvalid(false);
+        setCurrentSchema(parsedSchema);
+        setInitialSchema(parsedSchema);
     }, [schema]);
 
     useEffect(() => {
@@ -230,7 +281,11 @@ export const SchemaEditor = ({
 
     const updateSchemaAtPath = useCallback(
         (path: string[], updater: (schema: JsonSchema) => JsonSchema) => {
-            const newSchema = JSON.parse(JSON.stringify(currentSchema));
+            const newSchema = cloneSchema(currentSchema);
+            if (!newSchema) {
+                setSchemaJsonIsInvalid(true);
+                return;
+            }
 
             if (path.length === 0) {
                 const updated = updater(newSchema);
@@ -248,7 +303,7 @@ export const SchemaEditor = ({
                     }
                     targetSchema = targetSchema.items;
                 } else if (targetSchema.properties && targetSchema.properties[segment]) {
-                    targetSchema = targetSchema.properties[segment];
+                    targetSchema = asJsonSchema(targetSchema.properties[segment]);
                 }
             }
 
@@ -259,8 +314,9 @@ export const SchemaEditor = ({
                 if (!targetSchema.properties) {
                     targetSchema.properties = {};
                 }
-                targetSchema.properties[lastSegment] = updater(
-                    targetSchema.properties[lastSegment] || {},
+                const propertySchema = targetSchema.properties[lastSegment];
+                targetSchema.properties[lastSegment] = asJsonSchemaProperty(
+                    updater(propertySchema ? asJsonSchema(propertySchema) : {}),
                 );
             }
 
@@ -400,21 +456,38 @@ export const SchemaEditor = ({
     );
 
     const handleSave = useCallback(() => {
+        if (schemaJsonIsInvalid) return;
+
         onSave?.();
         setIsEditMode(false);
-    }, [onSave]);
+    }, [onSave, schemaJsonIsInvalid]);
 
     const handleCancel = useCallback(() => {
-        setCurrentSchema(JSON.parse(JSON.stringify(initialSchema)));
-        onChange?.(JSON.parse(JSON.stringify(initialSchema)));
+        const restoredSchema = cloneSchema(initialSchema);
+        const changedSchema = cloneSchema(initialSchema);
+        if (!restoredSchema || !changedSchema) {
+            setSchemaJsonIsInvalid(true);
+            return;
+        }
+
+        setCurrentSchema(restoredSchema);
+        onChange?.(changedSchema);
         setIsEditMode(false);
         onCancel?.();
     }, [initialSchema, onChange, onCancel]);
 
     const handleEdit = useCallback(() => {
-        setInitialSchema(JSON.parse(JSON.stringify(currentSchema)));
+        if (schemaJsonIsInvalid) return;
+
+        const parsedSchema = cloneSchema(currentSchema);
+        if (!parsedSchema) {
+            setSchemaJsonIsInvalid(true);
+            return;
+        }
+
+        setInitialSchema(parsedSchema);
         setIsEditMode(true);
-    }, [currentSchema]);
+    }, [currentSchema, schemaJsonIsInvalid]);
 
     const getBreadcrumbItems = () => buildBreadcrumbItems(eventTypeName, currentPath);
 
@@ -435,7 +508,8 @@ export const SchemaEditor = ({
         return targetSchema.description;
     }, [currentSchema, currentPath]);
 
-    const hasValidationErrors = Object.keys(validationErrors).length > 0;
+    const hasValidationErrors =
+        schemaJsonIsInvalid || Object.keys(validationErrors).length > 0;
 
     const menuItems = useMemo<ActionMenuItem[]>(
         () => [
@@ -445,7 +519,9 @@ export const SchemaEditor = ({
                       {
                           label: l.edit,
                           icon: <faIcons.FaPencil className='cratis:mr-2' />,
-                          command: canEdit ? handleEdit : undefined,
+                          command:
+                              canEdit && !schemaJsonIsInvalid ? handleEdit : undefined,
+                          disabled: schemaJsonIsInvalid,
                           className: canEdit ? undefined : 'edit-disabled-with-reason',
                           template:
                               !canEdit && canNotEditReason
@@ -500,7 +576,8 @@ export const SchemaEditor = ({
                       {
                           label: l.addProperty,
                           icon: <faIcons.FaPlus className='cratis:mr-2' />,
-                          command: addProperty,
+                          command: schemaJsonIsInvalid ? undefined : addProperty,
+                          disabled: schemaJsonIsInvalid,
                       },
                   ]
                 : []),
@@ -514,6 +591,7 @@ export const SchemaEditor = ({
             canEdit,
             canNotEditReason,
             hasValidationErrors,
+            schemaJsonIsInvalid,
             saveDisabled,
             cancelDisabled,
             l,
@@ -533,6 +611,13 @@ export const SchemaEditor = ({
                 <div className='schema-editor-menubar'>
                     <ActionMenubar aria-label={l.actions} model={menuItems} />
                 </div>
+                {schemaJsonIsInvalid && (
+                    <Message
+                        severity='error'
+                        text={l.invalidJson}
+                        className='cratis:mt-3'
+                    />
+                )}
             </div>
 
             <div className='cratis:px-4 cratis:py-2 cratis-schema-editor-bottom-border'>
