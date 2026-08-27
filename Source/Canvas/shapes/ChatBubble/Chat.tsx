@@ -200,8 +200,8 @@ export const Chat: React.FC<ChatProps> = ({
     // the `id` prop — without one there is nothing to key a {@link ChatMessageAdded} by.
     const publish = useOptionalMessenger();
 
-    const handleSend = useCallback((text: string) => {
-        onSend(text);
+    const handleSend = useCallback((text: string, mentions: MentionCandidate[]) => {
+        onSend(text, mentions);
         if (id) publish?.(new ChatMessageAdded(id, text));
     }, [onSend, id, publish]);
 
