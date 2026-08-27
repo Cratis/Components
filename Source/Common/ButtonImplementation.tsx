@@ -7,7 +7,7 @@ import type {
     ButtonSeverity,
     ButtonTone,
 } from './Button';
-import { Tooltip } from './Tooltip';
+import { TooltipImplementation } from './TooltipImplementation';
 
 const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
@@ -163,13 +163,13 @@ export const ButtonImplementation = forwardRef<HTMLButtonElement, ButtonProps>(
         );
 
         return tooltip ? (
-            <Tooltip
+            <TooltipImplementation
                 content={tooltip}
                 position={tooltipOptions?.position}
                 className={tooltipOptions?.className}
             >
                 {button}
-            </Tooltip>
+            </TooltipImplementation>
         ) : (
             button
         );
