@@ -106,7 +106,7 @@ export const TablePaginator = ({
                 </span>
             )}
             <Button
-                text
+                variant='ghost'
                 disabled={isFirst}
                 onClick={() => onPageChange(0)}
                 aria-label={labels.first}
@@ -115,7 +115,7 @@ export const TablePaginator = ({
                 <span aria-hidden='true'>«</span>
             </Button>
             <Button
-                text
+                variant='ghost'
                 disabled={isFirst}
                 onClick={() => onPageChange(page - 1)}
                 aria-label={labels.previous}
@@ -133,7 +133,7 @@ export const TablePaginator = ({
                 {page + 1} / {Math.max(pageCount, 1)}
             </span>
             <Button
-                text
+                variant='ghost'
                 disabled={isLast}
                 onClick={() => onPageChange(page + 1)}
                 aria-label={labels.next}
@@ -142,7 +142,7 @@ export const TablePaginator = ({
                 <span aria-hidden='true'>›</span>
             </Button>
             <Button
-                text
+                variant='ghost'
                 disabled={isLast}
                 onClick={() => onPageChange(pageCount - 1)}
                 aria-label={labels.last}

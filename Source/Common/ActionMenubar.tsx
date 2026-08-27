@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Fragment, type ReactNode } from 'react';
-import { Button, type ButtonParts, type ButtonSeverity } from './Button';
+import { Button, type ButtonParts, type ButtonSeverity, type ButtonTone } from './Button';
 
 /** A single action in an {@link ActionMenubar}. */
 export interface ActionMenuItem {
@@ -42,6 +42,16 @@ export interface ActionMenubarProps {
     unstyled?: boolean;
 }
 
+const buttonToneForSeverity: Record<ButtonSeverity, ButtonTone> = {
+    secondary: 'neutral',
+    info: 'accent',
+    help: 'accent',
+    success: 'positive',
+    warn: 'caution',
+    danger: 'critical',
+    contrast: 'neutral',
+};
+
 /** A horizontal, accessible toolbar of command actions. */
 export const ActionMenubar = ({
     model,
@@ -62,8 +72,10 @@ export const ActionMenubar = ({
             return (
                 <Button
                     key={index}
-                    text
-                    severity={item.severity}
+                    variant='ghost'
+                    tone={
+                        item.severity ? buttonToneForSeverity[item.severity] : undefined
+                    }
                     onClick={item.command}
                     disabled={item.disabled}
                     className={item.className}

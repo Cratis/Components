@@ -221,10 +221,22 @@ export const ColumnFilterMenu = ({
             labels?.matchModeLabel ??
             columnFilterMessages?.matchModeLabel ??
             defaultColumnFilterMenuLabels.matchModeLabel,
-        clear: labels?.clear ?? columnFilterMessages?.clear ?? defaultColumnFilterMenuLabels.clear,
-        apply: labels?.apply ?? columnFilterMessages?.apply ?? defaultColumnFilterMenuLabels.apply,
-        true: labels?.true ?? columnFilterMessages?.true ?? defaultColumnFilterMenuLabels.true,
-        false: labels?.false ?? columnFilterMessages?.false ?? defaultColumnFilterMenuLabels.false,
+        clear:
+            labels?.clear ??
+            columnFilterMessages?.clear ??
+            defaultColumnFilterMenuLabels.clear,
+        apply:
+            labels?.apply ??
+            columnFilterMessages?.apply ??
+            defaultColumnFilterMenuLabels.apply,
+        true:
+            labels?.true ??
+            columnFilterMessages?.true ??
+            defaultColumnFilterMenuLabels.true,
+        false:
+            labels?.false ??
+            columnFilterMessages?.false ??
+            defaultColumnFilterMenuLabels.false,
     };
     const modeOptions = optionsFor(dataType).map((option) => ({
         ...option,
@@ -331,10 +343,7 @@ export const ColumnFilterMenu = ({
             <AriaButton
                 {...asReactAriaButtonProps(pt?.trigger)}
                 aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
-                className={classNames(
-                    'cratis-filter-trigger',
-                    pt?.trigger?.className,
-                )}
+                className={classNames('cratis-filter-trigger', pt?.trigger?.className)}
                 data-active={
                     (constraint?.value !== null &&
                         constraint?.value !== undefined &&
@@ -347,10 +356,7 @@ export const ColumnFilterMenu = ({
             </AriaButton>
             <Popover
                 {...pt?.popover}
-                className={classNames(
-                    'cratis-filter-popover',
-                    pt?.popover?.className,
-                )}
+                className={classNames('cratis-filter-popover', pt?.popover?.className)}
                 data-cratis-part='filter-popover'
                 placement='bottom end'
             >
@@ -383,7 +389,7 @@ export const ColumnFilterMenu = ({
                         data-cratis-part='filter-actions'
                     >
                         <Button
-                            outlined
+                            variant='outline'
                             onClick={clear}
                             label={resolvedLabels.clear}
                             pt={pt?.clear}

@@ -157,7 +157,10 @@ export const TypeCell = ({
     }
 
     return (
-        <div className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full' style={{ minHeight: '2.5rem' }}>
+        <div
+            className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full'
+            style={{ minHeight: '2.5rem' }}
+        >
             <Dropdown<string>
                 aria-label={labels.propertyType}
                 value={currentValue}
@@ -204,7 +207,7 @@ export const TypeCell = ({
                     rowData.name && (
                         <Tooltip content={labels.navigateToItemDefinition} position='top'>
                             <Button
-                                text
+                                variant='ghost'
                                 size='small'
                                 icon={<faIcons.FaArrowRight />}
                                 onClick={() => onNavigateToArrayItems(rowData.name!)}
@@ -215,7 +218,7 @@ export const TypeCell = ({
                 {rowData.type === 'object' && rowData.name && (
                     <Tooltip content={labels.navigateToProperties} position='top'>
                         <Button
-                            text
+                            variant='ghost'
                             size='small'
                             icon={<faIcons.FaArrowRight />}
                             onClick={() => onNavigateToProperty(rowData.name!)}
@@ -226,8 +229,8 @@ export const TypeCell = ({
                 {rowData.name && (
                     <Tooltip content={labels.deleteProperty} position='top'>
                         <Button
-                            text
-                            severity='danger'
+                            variant='ghost'
+                            tone='critical'
                             size='small'
                             icon={<faIcons.FaTrash />}
                             onClick={() => onRemoveProperty(rowData.name!)}

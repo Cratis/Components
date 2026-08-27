@@ -58,7 +58,7 @@ export function ObjectNavigationalBar({
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Tooltip content={backLabel} position='top'>
                     <Button
-                        text
+                        variant='ghost'
                         size='small'
                         icon={<faIcons.FaArrowLeft />}
                         onClick={() => onNavigate(navigationPath.length - 1)}

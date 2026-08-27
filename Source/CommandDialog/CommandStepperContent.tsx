@@ -363,7 +363,7 @@ export const CommandStepperContent = ({
                 >
                     {!isFirstStep && (
                         <Button
-                            outlined
+                            variant='outline'
                             onClick={handlePrevious}
                             disabled={isBusy}
                             style={{ width: 'auto' }}

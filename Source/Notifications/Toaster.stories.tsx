@@ -55,7 +55,7 @@ export const Playground: Story = {
                 <span>Success</span>
             </Button>
             <Button
-                severity='info'
+                tone='accent'
                 onClick={() =>
                     toast.info({
                         title: 'Heads up',
@@ -66,7 +66,7 @@ export const Playground: Story = {
                 <span>Info</span>
             </Button>
             <Button
-                severity='warn'
+                tone='caution'
                 onClick={() =>
                     toast.warn({
                         title: 'Careful',
@@ -77,7 +77,7 @@ export const Playground: Story = {
                 <span>Warn</span>
             </Button>
             <Button
-                severity='danger'
+                tone='critical'
                 onClick={() =>
                     toast.error({ title: 'Failed', description: 'Please try again.' })
                 }
@@ -85,7 +85,7 @@ export const Playground: Story = {
                 <span>Error</span>
             </Button>
             <Button
-                outlined
+                variant='outline'
                 onClick={() =>
                     toastCommandResult(
                         makeResult({
@@ -103,7 +103,7 @@ export const Playground: Story = {
                 <span>Command validation failure</span>
             </Button>
             <Button
-                outlined
+                variant='outline'
                 onClick={() =>
                     toastCommandResult(makeResult({ isSuccess: true }), {
                         successTitle: 'Author registered',

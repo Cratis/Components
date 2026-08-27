@@ -691,7 +691,7 @@ export const SchemaEditor = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Tooltip content={l.navigateBack} position='top'>
                         <Button
-                            text
+                            variant='ghost'
                             size='small'
                             icon={<faIcons.FaArrowLeft />}
                             onClick={navigateBack}

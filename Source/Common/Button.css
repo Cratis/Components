@@ -23,18 +23,18 @@
         color 140ms ease,
         opacity 140ms ease;
 }
-.cratis-button:not([data-severity])[data-variant='filled']:hover:not(:disabled) {
+.cratis-button:not([data-tone])[data-variant='solid']:hover:not(:disabled) {
     border-color: var(--cratis-action-background-hover);
     background: var(--cratis-action-background-hover);
 }
-.cratis-button:not([data-severity])[data-variant='filled']:active:not(:disabled) {
+.cratis-button:not([data-tone])[data-variant='solid']:active:not(:disabled) {
     border-color: var(--cratis-action-background-active);
     background: var(--cratis-action-background-active);
 }
-.cratis-button:is([data-variant='outlined'], [data-variant='text']):hover:not(:disabled) {
+.cratis-button:is([data-variant='outline'], [data-variant='ghost']):hover:not(:disabled) {
     background: color-mix(in srgb, currentColor 4%, transparent);
 }
-.cratis-button:is([data-variant='outlined'], [data-variant='text']):active:not(
+.cratis-button:is([data-variant='outline'], [data-variant='ghost']):active:not(
         :disabled
     ) {
     background: color-mix(in srgb, currentColor 16%, transparent);
@@ -57,7 +57,7 @@
     padding: 0.875rem 1.5rem;
     font-size: 1rem;
 }
-.cratis-button[data-rounded='true'],
+.cratis-button[data-shape='pill'],
 .cratis-button[data-icon-only='true'] {
     border-radius: 999px;
 }
@@ -72,12 +72,12 @@
     width: var(--cratis-control-height-large);
 }
 
-.cratis-button[data-variant='outlined'] {
+.cratis-button[data-variant='outline'] {
     border-color: currentColor;
     background: transparent;
     color: var(--cratis-primary-color);
 }
-.cratis-button[data-variant='text'] {
+.cratis-button[data-variant='ghost'] {
     background: transparent;
     color: var(--cratis-text-color);
 }
@@ -89,57 +89,57 @@
     text-decoration: underline;
 }
 
-.cratis-button[data-severity='secondary'] {
+.cratis-button[data-tone='neutral'] {
     --cratis-button-tone: var(--cratis-text-color);
     --cratis-button-fill: var(--cratis-surface-100);
     --cratis-button-fill-text: var(--cratis-text-color);
 }
-.cratis-button[data-severity='info'] {
+.cratis-button[data-tone='accent'] {
     --cratis-button-tone: var(--cratis-info-background);
     --cratis-button-fill: var(--cratis-info-background);
     --cratis-button-fill-text: var(--cratis-info-text);
 }
-.cratis-button[data-severity='success'] {
+.cratis-button[data-tone='positive'] {
     --cratis-button-tone: var(--cratis-success-background);
     --cratis-button-fill: var(--cratis-success-background);
     --cratis-button-fill-text: var(--cratis-success-text);
 }
-.cratis-button[data-severity='warn'] {
+.cratis-button[data-tone='caution'] {
     --cratis-button-tone: var(--cratis-warning-background);
     --cratis-button-fill: var(--cratis-warning-background);
     --cratis-button-fill-text: var(--cratis-warning-text);
 }
-.cratis-button[data-severity='danger'] {
+.cratis-button[data-tone='critical'] {
     --cratis-button-tone: var(--cratis-danger-background);
     --cratis-button-fill: var(--cratis-danger-background);
     --cratis-button-fill-text: var(--cratis-danger-text);
 }
-.cratis-button[data-severity='help'] {
+.cratis-button[data-tone='accent'][data-severity='help'] {
     --cratis-button-tone: var(--cratis-primary-600);
     --cratis-button-fill: var(--cratis-primary-600);
     --cratis-button-fill-text: #ffffff;
 }
-.cratis-button[data-severity='contrast'] {
+.cratis-button[data-tone='neutral'][data-severity='contrast'] {
     --cratis-button-tone: var(--cratis-text-color);
     --cratis-button-fill: var(--cratis-text-color);
     --cratis-button-fill-text: var(--cratis-surface-0);
 }
-.cratis-button[data-severity][data-variant='filled'] {
+.cratis-button[data-tone][data-variant='solid'] {
     border-color: var(--cratis-button-fill);
     background: var(--cratis-button-fill);
     color: var(--cratis-button-fill-text);
 }
-.cratis-button[data-severity][data-variant='filled']:hover:not(:disabled) {
+.cratis-button[data-tone][data-variant='solid']:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--cratis-button-fill) 88%, black);
     background: color-mix(in srgb, var(--cratis-button-fill) 88%, black);
 }
-.cratis-button[data-severity][data-variant='filled']:active:not(:disabled) {
+.cratis-button[data-tone][data-variant='solid']:active:not(:disabled) {
     border-color: color-mix(in srgb, var(--cratis-button-fill) 76%, black);
     background: color-mix(in srgb, var(--cratis-button-fill) 76%, black);
 }
-.cratis-button[data-severity]:is(
-        [data-variant='outlined'],
-        [data-variant='text'],
+.cratis-button[data-tone]:is(
+        [data-variant='outline'],
+        [data-variant='ghost'],
         [data-variant='link']
     ) {
     color: var(--cratis-button-tone);

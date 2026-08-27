@@ -265,7 +265,7 @@ export const CustomButtons: Story = {
                     buttons={
                         <>
                             <Button
-                                severity='secondary'
+                                tone='neutral'
                                 onClick={() =>
                                     closeDialog(DialogResult.Ok, { action: 'draft' })
                                 }

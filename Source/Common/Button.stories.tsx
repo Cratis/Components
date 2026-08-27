@@ -32,14 +32,17 @@ export const IconOnly: Story = {
     args: {
         icon: <span aria-hidden='true'>◆</span>,
         'aria-label': 'Delete',
-        severity: 'danger',
+        tone: 'critical',
     },
 };
 export const Loading: Story = { args: { label: 'Saving', loading: true } };
-export const Text: Story = { args: { label: 'Cancel', text: true } };
-export const Link: Story = { args: { label: 'Learn more', link: true } };
-export const Outlined: Story = {
-    args: { label: 'Details', outlined: true, severity: 'secondary' },
+export const Ghost: Story = { args: { label: 'Cancel', variant: 'ghost' } };
+export const Link: Story = { args: { label: 'Learn more', variant: 'link' } };
+export const Outline: Story = {
+    args: { label: 'Details', variant: 'outline', tone: 'neutral' },
+};
+export const Pill: Story = {
+    args: { label: 'Continue', shape: 'pill' },
 };
 export const WithTooltip: Story = {
     args: {
@@ -54,13 +57,11 @@ export const VisualMatrix: Story = {
         <div style={{ display: 'grid', width: '100%', minWidth: 0, gap: '1rem' }}>
             <div style={matrixRowStyle}>
                 <Button label='Primary' />
-                <Button label='Secondary' severity='secondary' />
-                <Button label='Info' severity='info' />
-                <Button label='Success' severity='success' />
-                <Button label='Warning' severity='warn' />
-                <Button label='Danger' severity='danger' />
-                <Button label='Help' severity='help' />
-                <Button label='Contrast' severity='contrast' />
+                <Button label='Neutral' tone='neutral' />
+                <Button label='Accent' tone='accent' />
+                <Button label='Positive' tone='positive' />
+                <Button label='Caution' tone='caution' />
+                <Button label='Critical' tone='critical' />
             </div>
             <div style={matrixRowStyle}>
                 <Button label='Small' size='small' />
@@ -70,10 +71,11 @@ export const VisualMatrix: Story = {
                 <Button label='Loading' loading />
             </div>
             <div style={matrixRowStyle}>
-                <Button label='Filled' />
-                <Button label='Outlined' outlined />
-                <Button label='Text' text />
-                <Button label='Link' link />
+                <Button label='Solid' variant='solid' />
+                <Button label='Outline' variant='outline' />
+                <Button label='Ghost' variant='ghost' />
+                <Button label='Link' variant='link' />
+                <Button label='Pill' shape='pill' />
             </div>
         </div>
     ),

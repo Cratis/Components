@@ -305,7 +305,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         >
             {showCancel && (
                 <Button
-                    outlined
+                    variant='outline'
                     onClick={() => handleClose(DialogResult.Cancelled)}
                     disabled={isBusy}
                     style={{ width: 'auto' }}
@@ -315,7 +315,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             )}
             {!isFirstStep && (
                 <Button
-                    outlined
+                    variant='outline'
                     onClick={() => setActiveStep(Math.max(0, currentStep - 1))}
                     disabled={isBusy}
                     style={{ width: 'auto' }}
