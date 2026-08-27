@@ -167,6 +167,40 @@ export const partDefinitions = {
         aliasOf: 'Button',
         sources: ['Common/ActionMenubar.tsx'],
     },
+    IconButton: {
+        aliasOf: 'Button',
+        sources: ['Common/IconButton.tsx'],
+    },
+    TextInput: {
+        parts: ['root'],
+        sources: ['Common/TextInput.tsx'],
+        ptKeys: ['root'],
+    },
+    TextArea: {
+        parts: ['root'],
+        sources: ['Common/TextArea.tsx'],
+        ptKeys: ['root'],
+    },
+    Checkbox: {
+        parts: ['root', 'input', 'box', 'indicator', 'label'],
+        sources: ['Common/Checkbox.tsx'],
+        ptKeys: ['root', 'input', 'box', 'indicator', 'label'],
+    },
+    Radio: {
+        parts: ['root', 'input', 'box', 'indicator', 'label'],
+        sources: ['Common/Radio.tsx'],
+        ptKeys: ['root', 'input', 'box', 'indicator', 'label'],
+    },
+    Switch: {
+        parts: ['root', 'input', 'control', 'handle', 'label'],
+        sources: ['Common/Switch.tsx'],
+        ptKeys: ['root', 'input', 'control', 'handle', 'label'],
+    },
+    Surface: {
+        parts: ['root'],
+        sources: ['Common/Surface.tsx'],
+        ptKeys: ['root'],
+    },
     Tooltip: {
         parts: ['trigger', 'popup'],
         sources: ['Common/Tooltip.tsx'],
@@ -526,6 +560,36 @@ export const partStateDefinitions = {
         spinner: [],
         icon: [],
         label: [],
+    },
+    TextInput: {
+        root: ['disabled', 'invalid', 'readonly'],
+    },
+    TextArea: {
+        root: ['disabled', 'invalid', 'readonly'],
+    },
+    Checkbox: {
+        root: ['disabled', 'selected', 'invalid', 'readonly'],
+        input: ['disabled', 'selected', 'invalid', 'readonly'],
+        box: ['disabled', 'selected', 'invalid', 'readonly'],
+        indicator: ['disabled', 'selected', 'invalid', 'readonly'],
+        label: ['disabled', 'selected', 'invalid', 'readonly'],
+    },
+    Radio: {
+        root: ['disabled', 'selected', 'invalid', 'readonly'],
+        input: ['disabled', 'selected', 'invalid', 'readonly'],
+        box: ['disabled', 'selected', 'invalid', 'readonly'],
+        indicator: ['disabled', 'selected', 'invalid', 'readonly'],
+        label: ['disabled', 'selected', 'invalid', 'readonly'],
+    },
+    Switch: {
+        root: ['disabled', 'selected', 'invalid', 'readonly'],
+        input: ['disabled', 'selected', 'invalid', 'readonly'],
+        control: ['disabled', 'selected', 'invalid', 'readonly'],
+        handle: ['disabled', 'selected', 'invalid', 'readonly'],
+        label: ['disabled', 'selected', 'invalid', 'readonly'],
+    },
+    Surface: {
+        root: [],
     },
     Tooltip: {
         trigger: [],

@@ -9,8 +9,15 @@ import axe from 'axe-core';
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { Button } from '../Common/Button';
+import { Checkbox } from '../Common/Checkbox';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import { DatePickerInput } from '../Common/DatePickerInput';
+import { IconButton } from '../Common/IconButton';
+import { Radio } from '../Common/Radio';
+import { Surface } from '../Common/Surface';
+import { Switch } from '../Common/Switch';
+import { TextArea } from '../Common/TextArea';
+import { TextInput } from '../Common/TextInput';
 import { Column } from '../DataTables/Column';
 import { DataTableCore } from '../DataTables/DataTableCore';
 import { Dropdown } from '../Dropdown/Dropdown';
@@ -32,6 +39,17 @@ describe('when scanning representative foundation surfaces', () => {
             root.render(
                 <CratisComponentsProvider value={{ locale: 'en-US' }}>
                     <main>
+                        <Surface as='section' aria-label='Basic controls'>
+                            <TextInput aria-label='Display name' />
+                            <TextArea aria-label='Notes' />
+                            <Checkbox label='Include archived items' />
+                            <Radio label='Daily' name='frequency' value='daily' />
+                            <Switch label='Enable notifications' />
+                            <IconButton
+                                icon={<span aria-hidden='true'>+</span>}
+                                aria-label='Add item'
+                            />
+                        </Surface>
                         <Button label='Save' />
                         <Dropdown
                             aria-label='Role'
