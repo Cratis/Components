@@ -70,7 +70,13 @@ export const Currency: Story = {
             canvas.getByRole('slider', { name: 'Minimum order value' }),
         ).toBeTruthy();
         await userEvent.click(canvas.getByRole('button', { name: /^\$0 - \$10:/ }));
-        await expect(args.onChange).toHaveBeenCalledWith([0, 10]);
+        await expect(args.onChange).toHaveBeenCalledWith(
+            [0, 10],
+            expect.objectContaining({
+                source: 'user',
+                nativeEvent: expect.objectContaining({ type: 'click' }),
+            }),
+        );
     },
     args: {
         min: 0,
