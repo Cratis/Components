@@ -1,9 +1,23 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { CanvasItemRegistryContext, CanvasItemRegistryEntry } from '../../Canvas';
+import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
+import { ItemAddedToRegion } from './ItemAddedToRegion';
+import { ItemRemovedFromRegion } from './ItemRemovedFromRegion';
+import { itemsWithinRegion } from './regionContainment';
 
 const MIN_SIZE = 100;
+
+// Stable fallbacks for a Region rendered without a Canvas item registry above it (or with a
+// registry value predating getSnapshot/subscribe): the store below then reads an unchanging empty
+// map and never notifies, keeping every render on the exact same code path with membership
+// permanently empty. Module-level so their identities never change between renders — a changing
+// subscribe identity would make useSyncExternalStore resubscribe every render.
+const EMPTY_REGISTRY: ReadonlyMap<string, CanvasItemRegistryEntry> = new Map();
+const getEmptyRegistry = (): ReadonlyMap<string, CanvasItemRegistryEntry> => EMPTY_REGISTRY;
+const subscribeToNothing = (): (() => void) => () => { /* nothing to unsubscribe */ };
 
 const HANDLE_KEYS = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'] as const;
 type HandleKey = (typeof HANDLE_KEYS)[number];
@@ -64,9 +78,12 @@ export interface RegionProps {
 
     /**
      * Visual nesting only — rendered inside the region's own coordinate space (its top-left corner) so
-     * a host that also places other shapes at region-relative coordinates lines them up correctly. This
-     * component does no containment math and tracks no membership: deciding which items "belong" to a
-     * region, and moving them along with it, is board-level orchestration left entirely to the host.
+     * a host that also places other shapes at region-relative coordinates lines them up correctly.
+     * Rendering something here does not make it a "member": the region detects containment against
+     * sibling `CanvasItem`s that carry an `id` and *reports* it over the Arc messenger (see
+     * {@link ItemAddedToRegion}/{@link ItemRemovedFromRegion}), but it never moves members, persists
+     * nothing, and knows nothing about item types — deciding what membership means, storing it, and
+     * moving members along with the region is board-level orchestration left entirely to the host.
      */
     children?: React.ReactNode;
 }
@@ -78,6 +95,13 @@ export interface RegionProps {
  * reporting every change through callbacks instead of committing anything locally. A host that is slow
  * to feed a new `region` back after a callback will see the box spring back to its last known value —
  * the same trade-off `Note` makes for its own drag/resize/rename.
+ *
+ * Opt-in membership reporting: when an Arc messenger is resolvable, the region watches the Canvas
+ * item registry and publishes {@link ItemAddedToRegion}/{@link ItemRemovedFromRegion} whenever a
+ * sibling `CanvasItem` carrying an `id` gains or loses containment (by center point) — including
+ * when the region itself is moved or resized over items. By convention the `CanvasItem` wrapping
+ * this region is given `id={region.id}`, which is how the region recognizes and excludes itself.
+ * Without an `ArcContext.Provider` (or with items that carry no `id`) all of this is silently inert.
  */
 export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize, onResizeEnd, onNameChange, children }: RegionProps) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -85,6 +109,47 @@ export const Region = ({ region, selected, onSelect, onMove, onMoveEnd, onResize
     const regionRef = useRef<HTMLDivElement>(null);
     const titleBarRef = useRef<HTMLDivElement>(null);
     const clickedTitleBarRef = useRef(false);
+
+    // ── Membership reporting ────────────────────────────────────────────────
+
+    const registry = useContext(CanvasItemRegistryContext);
+    const publish = useOptionalMessenger();
+
+    // The registry's stable-reference snapshot: its identity only changes when content actually
+    // changed, so this re-renders exactly once per register/unregister/bounds-update. Bounds
+    // updates can arrive per-frame during a drag — acceptable, since the diff below only publishes
+    // when membership itself changed. The third argument keeps the hook safe under server
+    // rendering, where there is nothing to subscribe to.
+    const registrySnapshot = useSyncExternalStore(
+        registry?.subscribe ?? subscribeToNothing,
+        registry?.getSnapshot ?? getEmptyRegistry,
+        getEmptyRegistry,
+    );
+
+    // Membership as of the last published state. A ref, not state: it is bookkeeping for diffing,
+    // and updating it must not itself cause a render.
+    const membershipRef = useRef<ReadonlySet<string>>(new Set());
+
+    useEffect(() => {
+        // No resolvable messenger means the whole mechanism is opted out: no containment math, no
+        // diffing, nothing published — identical to the component's behavior before it existed.
+        if (!publish) return;
+
+        const within = itemsWithinRegion(
+            { x: region.x, y: region.y, width: region.width, height: region.height },
+            registrySnapshot,
+            region.id,
+        );
+        const current = new Set(within);
+        const previous = membershipRef.current;
+        current.forEach(itemId => {
+            if (!previous.has(itemId)) publish(new ItemAddedToRegion(region.id, itemId));
+        });
+        previous.forEach(itemId => {
+            if (!current.has(itemId)) publish(new ItemRemovedFromRegion(region.id, itemId));
+        });
+        membershipRef.current = current;
+    }, [publish, registrySnapshot, region.id, region.x, region.y, region.width, region.height]);
 
     const dragRef = useRef<{
         clientX: number;

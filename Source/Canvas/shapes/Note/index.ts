@@ -3,3 +3,4 @@
 
 export { Note } from './Note';
 export type { NoteProps, NoteData } from './Note';
+export { NoteTextChanged } from './NoteTextChanged';
