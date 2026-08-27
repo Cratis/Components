@@ -50,6 +50,18 @@ if (missing.length > 0) {
     );
     process.exit(1);
 }
+const expectedFonts = new Set(
+    requiredEntries.filter((entry) => /\.(?:otf|ttf|woff2?)$/iu.test(entry)),
+);
+const unexpectedFonts = [...entries].filter(
+    (entry) => /\.(?:otf|ttf|woff2?)$/iu.test(entry) && !expectedFonts.has(entry),
+);
+if (unexpectedFonts.length > 0) {
+    console.error(
+        `Package archive contains undeclared font assets:\n- ${unexpectedFonts.join('\n- ')}`,
+    );
+    process.exit(1);
+}
 
 const verifyPackedMarkdownLinks = (entry) => {
     const markdown = readPackedText(entry);
