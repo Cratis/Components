@@ -840,10 +840,8 @@ const checkEnvironmentalEvidence = async (
         const native = fixture.container.querySelector(profile.nativeSelector);
         const inputs = {
             rtl: Boolean(native) && native?.closest('[dir="rtl"]') === host,
-            forcedColors:
-                Boolean(native) && host.style.forcedColorAdjust === 'auto',
-            'motion.reduced':
-                Boolean(native) && host.style.transitionDuration === '0s',
+            forcedColors: Boolean(native) && host.style.forcedColorAdjust === 'auto',
+            'motion.reduced': Boolean(native) && host.style.transitionDuration === '0s',
         } as const;
         for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
             addCheck(

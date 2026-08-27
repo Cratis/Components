@@ -21,13 +21,17 @@ const temporary = mkdtempSync(path.join(os.tmpdir(), 'cratis-conformance-package
 const run = (command, arguments_, cwd = packageDirectory) => {
     const result = spawnSync(command, arguments_, { cwd, encoding: 'utf8' });
     if (result.status !== 0) {
-        throw new Error(`${command} ${arguments_.join(' ')} failed:\n${result.stdout}${result.stderr}`);
+        throw new Error(
+            `${command} ${arguments_.join(' ')} failed:\n${result.stdout}${result.stderr}`,
+        );
     }
     return result.stdout;
 };
 
 try {
-    const packedJson = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', temporary]));
+    const packedJson = JSON.parse(
+        run('npm', ['pack', '--json', '--pack-destination', temporary]),
+    );
     const packed = packedJson[0];
     const fileNames = new Set(packed.files.map((file) => file.path));
     for (const required of [
@@ -38,7 +42,8 @@ try {
         'LICENSE',
         'package.json',
     ]) {
-        if (!fileNames.has(required)) throw new Error(`Packed archive is missing '${required}'.`);
+        if (!fileNames.has(required))
+            throw new Error(`Packed archive is missing '${required}'.`);
     }
     if ([...fileNames].some((file) => /(?:for_|vitest|\.tsbuildinfo)/u.test(file))) {
         throw new Error('Packed archive contains test or build-cache files.');
@@ -48,7 +53,9 @@ try {
     const unpacked = path.join(temporary, 'unpacked');
     mkdirSync(unpacked);
     run('tar', ['-xzf', archive, '-C', unpacked]);
-    const packageJson = JSON.parse(readFileSync(path.join(unpacked, 'package/package.json'), 'utf8'));
+    const packageJson = JSON.parse(
+        readFileSync(path.join(unpacked, 'package/package.json'), 'utf8'),
+    );
     const sourcePackageJson = JSON.parse(
         readFileSync(path.join(repositoryDirectory, 'Source/package.json'), 'utf8'),
     );
@@ -63,7 +70,9 @@ try {
         );
     }
     if (packageJson.dependencies?.['@cratis/components']) {
-        throw new Error('Conformance must not install Components as a runtime dependency.');
+        throw new Error(
+            'Conformance must not install Components as a runtime dependency.',
+        );
     }
 
     const declarationFiles = [...fileNames].filter((file) => file.endsWith('.d.ts'));
@@ -134,31 +143,35 @@ try {
     const typescript = path.join(repositoryDirectory, 'node_modules/typescript/bin/tsc');
     for (const resolution of ['bundler', 'nodenext']) {
         const moduleKind = resolution === 'bundler' ? 'ESNext' : 'NodeNext';
-        run(process.execPath, [
-            typescript,
-            '--ignoreConfig',
-            '--noEmit',
-            '--strict',
-            '--skipLibCheck',
-            'false',
-            '--target',
-            'ES2022',
-            '--module',
-            moduleKind,
-            '--moduleResolution',
-            resolution,
-            '--jsx',
-            'react-jsx',
-            '--lib',
-            'ESNext,DOM,DOM.Iterable',
-            'fixture.ts',
-            'jsx-shim.d.ts',
-        ], temporary);
+        run(
+            process.execPath,
+            [
+                typescript,
+                '--ignoreConfig',
+                '--noEmit',
+                '--strict',
+                '--skipLibCheck',
+                'false',
+                '--target',
+                'ES2022',
+                '--module',
+                moduleKind,
+                '--moduleResolution',
+                resolution,
+                '--jsx',
+                'react-jsx',
+                '--lib',
+                'ESNext,DOM,DOM.Iterable',
+                'fixture.ts',
+                'jsx-shim.d.ts',
+            ],
+            temporary,
+        );
     }
 
     console.log(
         `Verified ${packageJson.name}@${packageJson.version}: archive contents, independent ABI metadata, ` +
-        `${declarationFiles.length} pure declaration files, packed runtime import, and strict Bundler/NodeNext consumers.`,
+            `${declarationFiles.length} pure declaration files, packed runtime import, and strict Bundler/NodeNext consumers.`,
     );
 } finally {
     rmSync(temporary, { recursive: true, force: true });

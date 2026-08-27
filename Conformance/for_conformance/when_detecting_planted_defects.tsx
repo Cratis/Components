@@ -56,7 +56,10 @@ const metadataFor = (library: unstable_UiLibrary) => {
         export: 'TestFixture',
         slots,
         modes: Object.fromEntries(
-            slots.map((slotId) => [slotId, library.slots[slotId as unstable_SlotId]?.mode]),
+            slots.map((slotId) => [
+                slotId,
+                library.slots[slotId as unstable_SlotId]?.mode,
+            ]),
         ),
         capabilities: [...library.capabilities],
         ssr: 'safe',
@@ -108,8 +111,7 @@ describe('when detecting planted adapter defects', () => {
             (props, ref) => {
                 // SAFETY: The planted fixture reads only the typed root pass-through attributes.
                 const pt = props.pt as
-                    | { readonly root?: HTMLAttributes<HTMLElement> }
-                    | undefined;
+                    { readonly root?: HTMLAttributes<HTMLElement> } | undefined;
                 return createElement(
                     'article',
                     {
@@ -143,9 +145,7 @@ describe('when detecting planted adapter defects', () => {
             'paging.server',
         ]);
 
-        expect(await failureIds(library)).to.deep.equal([
-            'manifest.noOverDeclaration',
-        ]);
+        expect(await failureIds(library)).to.deep.equal(['manifest.noOverDeclaration']);
     });
 
     it('should reject an undeclared skip', async () => {
@@ -181,8 +181,6 @@ describe('when detecting planted adapter defects', () => {
             render: duplicateOwnerRender,
         });
 
-        expect(await failureIds(library)).to.deep.equal([
-            'ownership.dialogs.dialog',
-        ]);
+        expect(await failureIds(library)).to.deep.equal(['ownership.dialogs.dialog']);
     });
 });
