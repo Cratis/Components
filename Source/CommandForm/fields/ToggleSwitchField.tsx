@@ -8,6 +8,8 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { fieldValueFromEvent } from './fieldValueFromEvent';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link ToggleSwitchField}. */
 export interface ToggleSwitchParts {
@@ -20,6 +22,9 @@ export interface ToggleSwitchParts {
     /** Visual switch handle. */
     handle?: HTMLAttributes<HTMLSpanElement>;
 }
+
+const toggleSwitchPartsMatchManifest: ExactPartKeys<ToggleSwitchParts, PartsOf<'ToggleSwitchField'>> = true;
+void toggleSwitchPartsMatchManifest;
 
 interface ToggleSwitchFieldComponentProps
     extends WrappedFieldProps<boolean>,

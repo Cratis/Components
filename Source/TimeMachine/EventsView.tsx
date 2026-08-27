@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, type HTMLAttributes } from 'react';
 import type { Event } from './types';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { Properties } from './Properties';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
 
 /** Stable part attributes for {@link EventsView}. */
 export interface EventsViewParts {
@@ -21,6 +23,9 @@ export interface EventsViewParts {
     /** Content panel showing the event card (type, timestamp, properties). */
     content?: HTMLAttributes<HTMLDivElement>;
 }
+
+const eventsViewPartsMatchManifest: ExactPartKeys<EventsViewParts, PartsOf<'EventsView'>> = true;
+void eventsViewPartsMatchManifest;
 
 /** Props for the standalone, localized event timeline. */
 export interface EventsViewProps {

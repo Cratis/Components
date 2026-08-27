@@ -14,6 +14,8 @@ import {
     CommandStepperContent,
     type CommandStepperContentProps,
 } from './CommandStepperContent';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
 
 /**
  * Event passed to {@link StepperCustomizationProps.onChangeStep} when the user
@@ -57,6 +59,9 @@ export interface StepperParts {
     /** Active step panel. */
     panel?: HTMLAttributes<HTMLElement>;
 }
+
+const stepperPartsMatchManifest: ExactPartKeys<StepperParts, PartsOf<'CommandStepper'>> = true;
+void stepperPartsMatchManifest;
 
 /** Public layout, navigation, and stable-part customization shared by both steppers. */
 export interface StepperCustomizationProps {

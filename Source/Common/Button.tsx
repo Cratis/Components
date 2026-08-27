@@ -9,6 +9,8 @@ import {
     type ReactNode,
 } from 'react';
 import { Tooltip, type TooltipPosition } from './Tooltip';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
 
 /** Severity tone of a {@link Button}. */
 export type ButtonSeverity =
@@ -25,6 +27,9 @@ export interface ButtonParts {
     /** Loading spinner. */
     spinner?: HTMLAttributes<HTMLSpanElement>;
 }
+
+const buttonPartsMatchManifest: ExactPartKeys<ButtonParts, PartsOf<'Button'>> = true;
+void buttonPartsMatchManifest;
 
 /** Props for {@link Button}. */
 export interface ButtonProps extends Omit<

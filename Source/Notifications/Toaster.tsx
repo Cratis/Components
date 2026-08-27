@@ -17,6 +17,8 @@ import {
     type ToastRecord,
     type ToastSeverity,
 } from './toast';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
 
 /** Supported viewport positions for the global toast region. */
 export type ToasterPosition =
@@ -46,6 +48,9 @@ export interface ToasterPassThrough {
     /** Optional toast action button. */
     action?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
+
+const toasterPartsMatchManifest: ExactPartKeys<ToasterPassThrough, PartsOf<'Toaster'>> = true;
+void toasterPartsMatchManifest;
 
 /** Props for the global accessible toast region. */
 export interface ToasterProps {

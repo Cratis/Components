@@ -3,12 +3,17 @@
 
 import { type HTMLAttributes, type ReactNode } from 'react';
 import { ToolbarDragContext } from './ToolbarDragContext';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
 
 /** Stable part attributes for {@link Toolbar}. */
 export interface ToolbarParts {
     /** Toolbar root. */
     root?: HTMLAttributes<HTMLDivElement>;
 }
+
+const toolbarPartsMatchManifest: ExactPartKeys<ToolbarParts, PartsOf<'Toolbar'>> = true;
+void toolbarPartsMatchManifest;
 
 /** Props for the {@link Toolbar} component. */
 export interface ToolbarProps {

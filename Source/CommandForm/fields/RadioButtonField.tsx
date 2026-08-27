@@ -7,6 +7,8 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link RadioButtonField}. */
 export interface RadioParts {
@@ -19,6 +21,9 @@ export interface RadioParts {
     /** Visual selected indicator. */
     indicator?: HTMLAttributes<HTMLSpanElement>;
 }
+
+const radioPartsMatchManifest: ExactPartKeys<RadioParts, PartsOf<'RadioButtonField'>> = true;
+void radioPartsMatchManifest;
 
 interface RadioButtonFieldComponentProps
     extends WrappedFieldProps<string | number>,

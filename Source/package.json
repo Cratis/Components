@@ -127,10 +127,12 @@
         "./theme": "./dist/esm/theme.css"
     },
     "scripts": {
-        "prepare": "yarn clean && yarn g:build",
+        "generate-parts": "node ./scripts/generate-parts.mjs",
+        "verify-parts-manifest": "node ./scripts/verify-parts-manifest.mjs",
+        "prepare": "yarn generate-parts && yarn clean && yarn g:build",
         "clean": "rm -rf dist && yarn g:clean",
-        "build": "tsc -p tsconfig.json",
-        "compile": "tsc -p tsconfig.json -noEmit && yarn g:lint",
+        "build": "yarn generate-parts && tsc -p tsconfig.json",
+        "compile": "yarn generate-parts && tsc -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
@@ -149,7 +151,7 @@
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
-        "ci": "yarn g:ci && yarn typecheck-stories",
+        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn g:ci && yarn typecheck-stories",
         "up": "yarn g:up",
         "dev": "npx storybook dev -p 6006",
         "build-storybook": "npx storybook build"

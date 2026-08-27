@@ -7,6 +7,8 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link RatingField}. */
 export interface RatingParts {
@@ -19,6 +21,9 @@ export interface RatingParts {
     /** Visual star. */
     star?: HTMLAttributes<HTMLSpanElement>;
 }
+
+const ratingPartsMatchManifest: ExactPartKeys<RatingParts, PartsOf<'RatingField'>> = true;
+void ratingPartsMatchManifest;
 
 interface RatingFieldComponentProps
     extends WrappedFieldProps<number>,

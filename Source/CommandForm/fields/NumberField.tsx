@@ -8,6 +8,8 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { fieldValueFromEvent } from './fieldValueFromEvent';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link NumberField}. */
 export interface NumberFieldParts {
@@ -16,6 +18,9 @@ export interface NumberFieldParts {
     /** Native number input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
 }
+
+const numberFieldPartsMatchManifest: ExactPartKeys<NumberFieldParts, PartsOf<'NumberField'>> = true;
+void numberFieldPartsMatchManifest;
 
 interface NumberFieldComponentProps
     extends WrappedFieldProps<number>,

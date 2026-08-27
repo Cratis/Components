@@ -8,6 +8,8 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { fieldValueFromEvent } from './fieldValueFromEvent';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link SliderField}. */
 export interface SliderParts {
@@ -18,6 +20,9 @@ export interface SliderParts {
     /** Current-value display. */
     value?: HTMLAttributes<HTMLSpanElement>;
 }
+
+const sliderPartsMatchManifest: ExactPartKeys<SliderParts, PartsOf<'SliderField'>> = true;
+void sliderPartsMatchManifest;
 
 interface SliderFieldComponentProps
     extends WrappedFieldProps<number>,

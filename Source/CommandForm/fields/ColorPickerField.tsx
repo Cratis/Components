@@ -8,6 +8,8 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { fieldValueFromEvent } from './fieldValueFromEvent';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link ColorPickerField}. */
 export interface ColorPickerParts {
@@ -18,6 +20,9 @@ export interface ColorPickerParts {
     /** Selected hexadecimal value output. */
     value?: HTMLAttributes<HTMLOutputElement>;
 }
+
+const colorPickerPartsMatchManifest: ExactPartKeys<ColorPickerParts, PartsOf<'ColorPickerField'>> = true;
+void colorPickerPartsMatchManifest;
 
 interface ColorPickerFieldComponentProps
     extends WrappedFieldProps<string>,

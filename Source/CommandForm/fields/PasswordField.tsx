@@ -13,6 +13,8 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { fieldValueFromEvent } from './fieldValueFromEvent';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link PasswordField}. */
 export interface PasswordParts {
@@ -23,6 +25,9 @@ export interface PasswordParts {
     /** Visibility toggle button. */
     toggle?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
+
+const passwordPartsMatchManifest: ExactPartKeys<PasswordParts, PartsOf<'PasswordField'>> = true;
+void passwordPartsMatchManifest;
 
 interface PasswordFieldComponentProps
     extends WrappedFieldProps<string>,

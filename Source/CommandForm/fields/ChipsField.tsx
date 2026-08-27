@@ -8,6 +8,8 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { appendChipCandidates } from './chipValues';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link ChipsField}. */
 export interface ChipsParts {
@@ -20,6 +22,9 @@ export interface ChipsParts {
     /** Native draft-value input. */
     input?: InputHTMLAttributes<HTMLInputElement>;
 }
+
+const chipsPartsMatchManifest: ExactPartKeys<ChipsParts, PartsOf<'ChipsField'>> = true;
+void chipsPartsMatchManifest;
 
 interface ChipsFieldComponentProps
     extends WrappedFieldProps<string[]>, FieldAccessibilityProps {

@@ -14,6 +14,8 @@ import type { ChatTopicListLabels } from './ChatTopicList';
 import { ChatTopicList } from './ChatTopicList';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { shouldRequestTopicName } from './shouldRequestTopicName';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
 
 type ChatSidebarPartAttributes<TElement> = HTMLAttributes<TElement> & {
     [attribute: `data-${string}`]: string | number | boolean | undefined;
@@ -41,6 +43,9 @@ export interface ChatSidebarParts {
     /** The topic list / conversation content region. */
     content?: ChatSidebarPartAttributes<HTMLDivElement>;
 }
+
+const chatSidebarPartsMatchManifest: ExactPartKeys<ChatSidebarParts, PartsOf<'ChatSidebar'>> = true;
+void chatSidebarPartsMatchManifest;
 
 /** Overrides for every label the {@link ChatSidebar} and its children render. Any field left
  *  unset falls back to a literal English default. */

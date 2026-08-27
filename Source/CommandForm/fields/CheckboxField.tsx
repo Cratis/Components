@@ -8,6 +8,8 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { fieldValueFromEvent } from './fieldValueFromEvent';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
 /** Stable part attributes for {@link CheckboxField}. */
 export interface CheckboxParts {
@@ -20,6 +22,9 @@ export interface CheckboxParts {
     /** Visual checked indicator. */
     indicator?: HTMLAttributes<HTMLSpanElement>;
 }
+
+const checkboxPartsMatchManifest: ExactPartKeys<CheckboxParts, PartsOf<'CheckboxField'>> = true;
+void checkboxPartsMatchManifest;
 
 interface CheckboxFieldComponentProps
     extends WrappedFieldProps<boolean>,
