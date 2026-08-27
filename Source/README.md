@@ -8,7 +8,7 @@ contracts, stable parts, and design tokens. React Aria supplies selected
 interaction primitives internally; consumers do not import or style React Aria.
 
 - [Canonical Components documentation](https://cratis.io/components/)
-- [Migration guide](https://github.com/Cratis/Components/blob/main/Source/MIGRATION.md)
+- [Migration guide](./MIGRATION.md)
 - [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)
 
 ## Install
@@ -235,7 +235,7 @@ namespace-to-subpath mapping and migration command for existing root imports.
 ## Components 3 migration
 
 The current package manifest does not declare PrimeReact as a required runtime
-or peer. Follow the [Components 3 to 4 migration guide](https://github.com/Cratis/Components/blob/main/Source/MIGRATION.md)
+or peer. Follow the [Components 3 to 4 migration guide](./MIGRATION.md)
 for dependency removal, provider changes, product token mapping, stable part
 names, DatePicker changes, table behavior, notifications, direct Prime import
 replacements, the exact-version `@cratis/components-codemods` command, and the
