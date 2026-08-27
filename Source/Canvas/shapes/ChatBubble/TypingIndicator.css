@@ -1,8 +1,8 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* Rendered inside the chat panel, which is a dark surface of its own — these colors match that
-   panel deliberately rather than following the light/dark theme tokens. */
+/* Every color comes from the --cratis-* token seam, so the indicator follows whatever theme the
+   host runs. */
 .chat-typing {
     display: flex;
     align-items: center;
@@ -21,7 +21,7 @@
 
 .chat-typing__label {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--cratis-text-color-secondary);
 }
 
 .chat-typing__dots {
@@ -35,7 +35,7 @@
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.55);
+    background: var(--cratis-text-color-secondary);
     animation: chat-typing-jump 1.2s infinite ease-in-out;
 }
 

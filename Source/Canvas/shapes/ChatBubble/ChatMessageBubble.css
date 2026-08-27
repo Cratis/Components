@@ -1,6 +1,9 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
+/* Every color comes from the --cratis-* token seam, so the bubble follows whatever theme the host
+   runs. */
+
 /* The positioning context for the corner buttons — the message panel itself, so they straddle its
    bottom edge rather than sitting below whatever else the bubble carries. */
 .chat-bubble-panel {
@@ -33,7 +36,7 @@
 
 /* A stroke around a solid fill: the button lies across the bubble's edge, so a translucent fill would
    let that edge run straight through it and stop it reading as one round control. The fill is the
-   panel's own color, which is what the half hanging outside is sitting on. */
+   panel's own surface, which is what the half hanging outside is sitting on. */
 .chat-bubble-action {
     display: flex;
     align-items: center;
@@ -41,10 +44,10 @@
     width: 22px;
     height: 22px;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 999px;
-    background: #24243a;
-    color: rgba(255, 255, 255, 0.55);
+    background: var(--cratis-surface-overlay);
+    color: var(--cratis-text-color-secondary);
     font-size: 12px;
     line-height: 1;
     cursor: pointer;
@@ -52,16 +55,16 @@
 
 .chat-bubble-action:hover,
 .chat-bubble-action:focus-visible {
-    border-color: rgba(255, 255, 255, 0.55);
-    background: #32324e;
-    color: rgba(255, 255, 255, 0.95);
+    border-color: var(--cratis-text-color-secondary);
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
 }
 
 /* Once a person has reacted, the button shows their emoji as real state rather than a hover-only
    affordance, so it stays visible without hovering. */
 .chat-bubble-action--own-reaction {
-    border-color: rgba(255, 255, 255, 0.45);
-    background: #32324e;
-    color: rgba(255, 255, 255, 0.9);
+    border-color: var(--cratis-text-color-secondary);
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
     font-size: 13px;
 }

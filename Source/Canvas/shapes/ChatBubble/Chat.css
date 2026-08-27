@@ -1,16 +1,19 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
+/* Every color comes from the --cratis-* token seam, so the conversation follows whatever theme
+   the host runs — light, dark, or its own. */
+
 /* ── Chat panel (floating dropdown from the chat button) ─────────────────── */
 .chat-panel {
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
     width: 280px;
-    background: #1e1e2e;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 12px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
     z-index: 300;
@@ -23,14 +26,14 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 14px 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--cratis-surface-border);
     flex-shrink: 0;
 }
 
 .chat-panel-title {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--cratis-text-color);
 }
 
 .chat-panel-close {
@@ -39,14 +42,14 @@
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--cratis-text-color-secondary);
     padding: 0 2px;
     border-radius: 4px;
     transition: color 0.12s;
 }
 
 .chat-panel-close:hover {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--cratis-text-color);
 }
 
 /* ── Scrollable messages area ─────────────────────────────────────────────── */
@@ -62,7 +65,7 @@
 
 .chat-panel-empty {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--cratis-text-color-secondary);
     text-align: center;
     margin: 16px 0;
 }
@@ -88,7 +91,7 @@
 .chat-bubble-name {
     font-size: 11px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--cratis-text-color);
 }
 
 .chat-bubble-body {
@@ -99,12 +102,12 @@
 }
 
 .chat-bubble-text {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--cratis-surface-section);
     border-radius: 0 10px 10px 10px;
     padding: 7px 10px;
     margin: 0;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--cratis-text-color);
     line-height: 1.45;
     white-space: pre-wrap;
     word-break: break-word;
@@ -112,7 +115,7 @@
 
 .chat-bubble-time {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--cratis-text-color-secondary);
     padding-left: 2px;
 }
 
