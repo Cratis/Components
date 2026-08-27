@@ -89,7 +89,7 @@ Two field props refine this per field - both work on every field type in this pa
 - `noInitialValue` - skip this field entirely, even if the query result has a same-named property.
 - `initialValue` - override how the field's value is derived from the query result, either a property accessor matched by name or a function composing a value from the whole result.
 
-See Arc's [Populating a Form from a Query](https://github.com/Cratis/Arc/blob/main/Documentation/frontend/react/command-form/data-loading.md) for the full behavior, including how the populated data becomes the form's change-tracking baseline.
+See Arc's [Populating a Form from a Query](https://www.cratis.io/arc/frontend/react/command-form/data-loading/) for the full behavior, including how the populated data becomes the form's change-tracking baseline.
 
 ## How a child is recognized as a field
 
