@@ -7,7 +7,7 @@ import {
     Tooltip as AriaTooltip,
     TooltipTrigger,
 } from 'react-aria-components/Tooltip';
-import { UNSAFE_PortalProvider } from 'react-aria/PortalProvider';
+import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type { TooltipProps } from './Tooltip';
 

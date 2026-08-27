@@ -20,7 +20,7 @@ import {
     ListBoxItem as ComboBoxListBoxItem,
     Popover as ComboBoxPopover,
 } from 'react-aria-components/ComboBox';
-import { UNSAFE_PortalProvider } from 'react-aria/PortalProvider';
+import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import type { DropdownProps } from './Dropdown';

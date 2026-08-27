@@ -4,7 +4,7 @@
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
-import { UNSAFE_PortalProvider } from 'react-aria/PortalProvider';
+import { UNSAFE_PortalProvider } from 'react-aria';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';

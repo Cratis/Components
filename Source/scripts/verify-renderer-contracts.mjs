@@ -176,7 +176,7 @@ const overlayImplementationFiles = [
 for (const relative of overlayImplementationFiles) {
     const source = readFileSync(path.join(packageDir, relative), 'utf8');
     if (
-        !source.includes("from 'react-aria/PortalProvider'") ||
+        !source.includes("from 'react-aria'") ||
         !source.includes('getContainer={overlayEnvironment.getContainer}')
     ) {
         console.error(
