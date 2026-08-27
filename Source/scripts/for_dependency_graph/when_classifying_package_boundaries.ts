@@ -222,4 +222,30 @@ describe('when classifying package boundaries', () => {
             'runtime closure reaches browser DOM globals: kernel.js:window',
         ]);
     });
+
+    it('should report browser DOM types in an emitted kernel declaration closure', () => {
+        const sourceFile = ts.createSourceFile(
+            'kernel.d.ts',
+            'export interface Port { element: HTMLElement; event: Event; }',
+            ts.ScriptTarget.Latest,
+            true,
+            ts.ScriptKind.TS,
+        );
+        const references = browserRuntimeReferences(sourceFile);
+        const result = analyzeKernelBoundary(
+            emptyClosure,
+            emptyClosure,
+            [],
+            references.map((name) => ({ file: 'kernel.d.ts', name })),
+        );
+
+        expect(references).toEqual(['Event', 'HTMLElement']);
+        expect(result.browserDeclarationEdges).toEqual([
+            { file: 'kernel.d.ts', name: 'Event' },
+            { file: 'kernel.d.ts', name: 'HTMLElement' },
+        ]);
+        expect(result.violations).toEqual([
+            'declaration closure reaches browser DOM globals: kernel.d.ts:Event, kernel.d.ts:HTMLElement',
+        ]);
+    });
 });

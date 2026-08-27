@@ -25,7 +25,7 @@ A declared kernel module must not:
 - import, require, dynamically import, or re-export `react`, `react-dom`, `react-aria-components`, or any subpath of those packages;
 - reference browser DOM globals, including DOM element/event types and browser runtime services;
 - reach one of those package dependencies through its emitted runtime or declaration closure; or
-- reach a browser DOM global through its emitted runtime closure.
+- reach a browser DOM global through its emitted runtime or declaration closure.
 
 This boundary is separate from the existing Pixi, renderer-vendor, renderer export, and private `renderer/coreSlots` package-graph assertions. Those rules remain unchanged.
 
@@ -94,7 +94,7 @@ The initial inventory deliberately excludes candidates that are not React-free a
 
 - `Source/PivotViewer/engine/pivot.worker.ts` uses the Web Worker `self` and message-event runtime. PivotViewer components, hooks, Pixi sprite/animation code, and environment observers remain outside the kernel.
 - Canvas focus and selection guards, pointer-target and scrollable-content normalization, `zoomMechanism.ts`, `selfSuspendingFrameLoop.ts`, `noteFont.ts`, every React hook, every TSX component, and Pixi-backed code remain outside. `Canvas/*.ts` is not a safe folder-wide pattern.
-- `Source/Filter/useFilterState.ts` is a React hook. Filter editors and histogram UI components remain outside; only their state and histogram computations are included.
+- `Source/Filter/useFilterState.ts` is a React hook. `FilterEditorProps.ts` carries the DOM-aware public `ChangeHandler` metadata contract. Filter editors and histogram UI components remain outside; only their state and histogram computations are included.
 - `Source/DataTables/DataTableSelectionChangeEvent.ts` carries React's `SyntheticEvent`. Table components, keyboard/focus behavior, and renderer adapters remain outside.
 - `Source/CommandDialog/stepChildren.ts` uses React's runtime child traversal. Dialog, stepper, focus, portal, and component modules remain outside.
 - `Source/CommandForm/FieldTypeProvider.ts` exposes React `ComponentType`, so `fieldTypeProviderRegistry.ts` reaches React through its declaration closure. Default providers and every field component also remain outside. The initial inventory includes only marker, coercion, and validation-mapping helpers with clean closures.
@@ -114,6 +114,6 @@ A source rename or deletion may update the literal path, but it must preserve or
 
 Kernel computations receive an immediate source diagnostic when React or browser behavior crosses the boundary. The packed plugin carries the same rule implementation, while the Components root config owns activation and scope.
 
-The package graph catches transitive and declaration-only React edges that a direct-import rule cannot see. It also checks emitted runtime browser references, so compilation or bundling cannot silently introduce a platform dependency.
+The package graph catches transitive and declaration-only React and browser-DOM edges that a direct-import rule cannot see. It checks both emitted runtime references and declaration types, so compilation or bundling cannot silently introduce a platform dependency.
 
 Mixed folders remain mixed. This decision creates no source moves, renderer facades, component behavior changes, or consumer contract changes. The inventory records only boundaries the current source already satisfies.

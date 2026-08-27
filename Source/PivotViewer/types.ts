@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
-import type { FilterEditorProps } from '../Filter/types';
+import type { FilterEditorProps } from '../Filter/FilterEditorProps';
 
 /** Primitive value types that a pivot property can hold. */
 export type PivotPrimitive = string | number | boolean | Date | null | undefined;

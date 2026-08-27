@@ -33,7 +33,7 @@
  *      outside the table's DataTables, Dialogs, Display, and Dropdown family directories.
  *   6. Every source module in the canonical repository-owned kernel inventory has emitted
  *      runtime and declaration closures with no React, React DOM, or React Aria Components
- *      dependency, and no emitted runtime reference to a browser DOM global.
+ *      dependency, and no emitted runtime or declaration reference to a browser DOM global.
  *
  * `./Canvas` and `./PivotViewer` are additionally asserted to actually reach
  * `pixi.js` - a subpath that stopped needing Pixi should have its optional peer
@@ -239,6 +239,7 @@ for (const sourcePath of kernelSourcePaths) {
             runtimeReactDependencies: [],
             declarationReactDependencies: [],
             browserRuntimeEdges: [],
+            browserDeclarationEdges: [],
             violations: [`missing emitted output: ${missing.join(', ')}`],
         });
         continue;
@@ -261,10 +262,26 @@ for (const sourcePath of kernelSourcePaths) {
             name,
         }));
     });
+    const browserDeclarationEdges = declarations.files.flatMap((relative) => {
+        if (!relative.endsWith('.d.ts')) return [];
+        const file = path.join(esmRoot, relative);
+        const sourceFile = ts.createSourceFile(
+            file,
+            readFileSync(file, 'utf8'),
+            ts.ScriptTarget.Latest,
+            true,
+            ts.ScriptKind.TS,
+        );
+        return browserRuntimeReferences(sourceFile).map((name) => ({
+            file: relative,
+            name,
+        }));
+    });
     const analysis = analyzeKernelBoundary(
         runtime,
         declarations,
         browserRuntimeEdges,
+        browserDeclarationEdges,
     );
     for (const violation of analysis.violations) {
         violations.push(`${sourcePath}: ${violation}.`);
@@ -408,7 +425,7 @@ console.log(
     `\nAll ${subpathReports.length} subpath(s) respect the spatial/non-spatial module-graph boundary; ` +
         `'pixi.js' is reachable only from Canvas/ and PivotViewer/, emitted Core files ` +
         `have no renderer-vendor imports, and ${kernelBoundary.length} declared kernel module(s) ` +
-        `have React-free and browser-runtime-free emitted closures.`,
+        `have React-free and browser-DOM-free runtime and declaration closures.`,
 );
 if (rendererBoundary.status === 'deferred') {
     console.log(

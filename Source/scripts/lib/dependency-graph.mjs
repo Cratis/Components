@@ -54,7 +54,7 @@ export function moduleSpecifiers(sourceFile) {
     return specifiers;
 }
 
-/** Browser DOM global references in one emitted runtime source file. */
+/** Browser DOM global references in one emitted runtime or declaration source file. */
 export function browserRuntimeReferences(sourceFile) {
     const forbidden = new Set(browserDomGlobals);
     const references = new Set();
@@ -96,6 +96,7 @@ export function analyzeKernelBoundary(
     runtimeClosure,
     declarationClosure,
     browserRuntimeEdges = [],
+    browserDeclarationEdges = [],
 ) {
     const runtimeReactDependencies = [
         ...new Set(runtimeClosure.external.filter(isKernelReactSpecifier)),
@@ -103,8 +104,11 @@ export function analyzeKernelBoundary(
     const declarationReactDependencies = [
         ...new Set(declarationClosure.external.filter(isKernelReactSpecifier)),
     ].sort();
-    const normalizedBrowserRuntimeEdges = [...browserRuntimeEdges].sort((left, right) =>
-        `${left.file}:${left.name}`.localeCompare(`${right.file}:${right.name}`),
+    const byFileAndName = (left, right) =>
+        `${left.file}:${left.name}`.localeCompare(`${right.file}:${right.name}`);
+    const normalizedBrowserRuntimeEdges = [...browserRuntimeEdges].sort(byFileAndName);
+    const normalizedBrowserDeclarationEdges = [...browserDeclarationEdges].sort(
+        byFileAndName,
     );
     const violations = [];
 
@@ -126,11 +130,20 @@ export function analyzeKernelBoundary(
                     .join(', '),
         );
     }
+    if (normalizedBrowserDeclarationEdges.length > 0) {
+        violations.push(
+            'declaration closure reaches browser DOM globals: ' +
+                normalizedBrowserDeclarationEdges
+                    .map(({ file, name }) => `${file}:${name}`)
+                    .join(', '),
+        );
+    }
 
     return {
         runtimeReactDependencies,
         declarationReactDependencies,
         browserRuntimeEdges: normalizedBrowserRuntimeEdges,
+        browserDeclarationEdges: normalizedBrowserDeclarationEdges,
         violations,
     };
 }

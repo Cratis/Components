@@ -15,11 +15,11 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import type {
     FilterDefinition,
-    FilterEditorProps,
     FilterValues,
     RangeValues,
     CustomFilterValues,
 } from './types';
+import type { FilterEditorProps } from './FilterEditorProps';
 import { FilterEditor } from './FilterEditor';
 import { RangeHistogramFilter } from './RangeHistogramFilter';
 

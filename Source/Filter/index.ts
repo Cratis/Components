@@ -5,6 +5,7 @@ export { FilterPanel } from './FilterPanel';
 export type { FilterPanelProps } from './FilterPanel';
 export { FilterEditor } from './FilterEditor';
 export type { FilterEditorSlotProps } from './FilterEditor';
+export type { FilterEditorProps } from './FilterEditorProps';
 export { RangeHistogramFilter } from './RangeHistogramFilter';
 export type { RangeHistogramFilterProps } from './RangeHistogramFilter';
 export { useFilterState } from './useFilterState';
@@ -16,7 +17,6 @@ export { buildHistogram } from './utils';
 export type {
   FilterValue,
   FilterOption,
-  FilterEditorProps,
   FilterDefinition,
   HistogramBucket,
   FilterValues,
