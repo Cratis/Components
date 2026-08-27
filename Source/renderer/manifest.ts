@@ -51,6 +51,8 @@ export interface unstable_UiLibrary {
  * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
  */
 // Adapter packages add only their own vendor key through declaration merging.
+// biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires an interface.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface unstable_RendererExtensions extends Record<never, never> {}
 
 /**

@@ -11,6 +11,8 @@ import type { ComponentType } from 'react';
  * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
  */
 // Core slot members are supplied by the renderer subpath barrel's type augmentation.
+// biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires an interface.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface unstable_CratisSlots extends Record<never, never> {}
 
 /**
