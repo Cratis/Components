@@ -9,10 +9,12 @@ deferred.
 
 The initial slot table contains only components with real standalone public contracts:
 
-- `common.button` — presentation candidate.
-- `common.tooltip`, `dropdown.select`, `dialogs.dialog`, `display.datePicker` — interaction-heavy.
+- `common.button`, `common.iconButton`, `common.textInput`, `common.textArea`,
+  `common.checkbox`, `common.radio`, `common.switch`, `common.progress`, and `common.surface` —
+  element-bounded presentation candidates.
+- `common.tooltip`, `dropdown.select`, `dialogs.dialog`, and `display.datePicker` —
+  interaction-heavy.
 - `datatables.paginator` — interaction-heavy and composite-adjacent.
 
-Icon button, text input, text area, checkbox, radio, switch, progress, and surface are intentionally
-absent because Components does not yet expose matching standalone primitives. Arc-bound
-`CommandForm` fields are not substitutes and must never be registered as those slots.
+The basic controls are standalone Common primitives. Arc-bound `CommandForm` fields remain
+high-order composites and must never be registered as substitutes for these slots.
