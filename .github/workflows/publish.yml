@@ -16,8 +16,8 @@ name: Publish
 #     specifically for a V4 release, not restored wholesale from main's automatic publisher)
 #   - trusted-publisher / OIDC bootstrap configured and verified against the npm registry for
 #     every package this workspace ships
-#   - a reproducible install decision (npm vs. yarn, lockfile strategy) that the release workflow
-#     and local development both honor
+#   - an approved release workflow that installs with `yarn install --immutable` from the
+#     committed root `yarn.lock`, with local development honoring the same lockfile
 #   - a package set synchronized across every workspace, including any renderer packages not yet
 #     published
 #   - retained exact tarballs and checksums for whatever gets published, so a release can be
@@ -55,7 +55,9 @@ jobs:
                     1. An approved manual, tooling-first candidate publish workflow built and staged
                        for V4 (not main's automatic source-first/continue-on-failure publisher).
                     2. Trusted-publisher/OIDC bootstrap configured and verified for every package.
-                    3. A reproducible install decision (npm vs. yarn, lockfile strategy).
+                    3. An approved release workflow that installs with `yarn install --immutable`
+                       from the committed root `yarn.lock`, with local development honoring the
+                       same lockfile.
                     4. A package set synchronized across every workspace, including future renderer
                        packages.
                     5. Retained exact tarballs and checksums for whatever gets published.

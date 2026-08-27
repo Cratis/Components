@@ -26,6 +26,8 @@ on:
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
+            - '.yarnrc.yml'
+            - '.yarn/releases/yarn-4.5.3.cjs'
             - '.github/workflows/javascript-build.yml'
     pull_request:
         branches:
@@ -37,6 +39,8 @@ on:
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
+            - '.yarnrc.yml'
+            - '.yarn/releases/yarn-4.5.3.cjs'
             - '.github/workflows/javascript-build.yml'
 
 permissions:
@@ -64,10 +68,10 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build JS/TS
               run: |
@@ -141,10 +145,10 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build the published artifact
               working-directory: Source
@@ -185,10 +189,10 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build the published artifact
               working-directory: Source
@@ -235,10 +239,10 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build the published artifact
               working-directory: Source
@@ -283,10 +287,10 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build the published artifact
               working-directory: Source
@@ -323,10 +327,10 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build the published artifact
               working-directory: Source
@@ -364,10 +368,10 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('**/package.json', '.yarnrc.yml') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build the published artifact
               working-directory: Source
@@ -398,7 +402,7 @@ jobs:
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build and pack Components
               run: |
@@ -473,7 +477,7 @@ jobs:
               run: corepack enable
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build and pack Components
               run: |
