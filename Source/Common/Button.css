@@ -78,12 +78,14 @@
     color: var(--cratis-primary-color);
 }
 .cratis-button[data-variant='ghost'] {
+    border-color: transparent;
     background: transparent;
     color: var(--cratis-text-color);
 }
 .cratis-button[data-variant='link'] {
     min-height: auto;
     padding: 0;
+    border-color: transparent;
     background: transparent;
     color: var(--cratis-primary-color);
     text-decoration: underline;

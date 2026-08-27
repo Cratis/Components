@@ -198,7 +198,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         variant ?? (link ? 'link' : text ? 'ghost' : outlined ? 'outline' : 'solid');
     const selectedTone = tone ?? (severity ? toneForSeverity[severity] : undefined);
     const selectedShape = shape ?? (rounded ? 'pill' : 'default');
-    const legacySeverity = severity ?? (tone ? severityForTone[tone] : undefined);
+    const legacySeverity = tone ? severityForTone[tone] : severity;
     const effectiveDisabled = Boolean(disabled || loading);
     const iconOnly = Boolean(icon) && label === undefined && !children;
     const rootClassName = ['cratis-button', pt?.root?.className, className]

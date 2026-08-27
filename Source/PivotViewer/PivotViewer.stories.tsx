@@ -330,8 +330,10 @@ export const Default: Story = {
                                     onClick={onClose}
                                     title='Close'
                                     className='cratis-button'
-                                    data-variant='text'
+                                    data-variant='ghost'
+                                    data-tone='neutral'
                                     data-severity='secondary'
+                                    data-shape='default'
                                     data-size='normal'
                                 >
                                     Close
@@ -514,8 +516,10 @@ export const LargeDataset: Story = {
                                     onClick={onClose}
                                     title='Close'
                                     className='cratis-button'
-                                    data-variant='text'
+                                    data-variant='ghost'
+                                    data-tone='neutral'
                                     data-severity='secondary'
+                                    data-shape='default'
                                     data-size='normal'
                                 >
                                     Close

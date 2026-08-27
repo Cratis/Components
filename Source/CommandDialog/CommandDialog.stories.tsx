@@ -168,7 +168,7 @@ export const Default: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={async () => {
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={async () => {
                     const [dialogResult, commandResult] = await showUpdateUserDialog();
                     if (dialogResult === DialogResult.Ok && commandResult) {
                         setResult(JSON.stringify(commandResult));
@@ -198,7 +198,7 @@ export const WithServerValidation: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
                     setVisible(true);
                     setValidationErrors([]);
                     setResult('');
@@ -276,7 +276,7 @@ export const WithInitialValues: Story = {
             <div className="storybook-wrapper">
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                     {users.map(user => (
-                        <button key={user.email} className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => handleEdit(user)}>
+                        <button key={user.email} className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => handleEdit(user)}>
                             Edit {user.name}</button>
                     ))}
                 </div>
@@ -319,7 +319,7 @@ export const WithCustomValidation: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
                     setResult('');
                     setVisible(true);
                 }}>
@@ -379,7 +379,7 @@ export const ValidationOnBlur: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -409,7 +409,7 @@ export const ValidationOnChange: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -439,7 +439,7 @@ export const ValidateOnInit: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -470,7 +470,7 @@ export const ValidateAllFieldsOnChange: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -502,7 +502,7 @@ export const BeforeExecute: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => { setVisible(true); setPreprocessedData(''); }}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => { setVisible(true); setPreprocessedData(''); }}>
                     Open Dialog
                 </button>
 
@@ -546,7 +546,7 @@ export const WithIcons: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -640,7 +640,7 @@ export const MultiColumnLayout: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateProfileCommand>
@@ -678,7 +678,7 @@ export const MixedChildren: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateProfileCommand>
@@ -715,7 +715,7 @@ export const WithBusyState: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
                     setResult('');
                     setVisible(true);
                 }}>
@@ -807,7 +807,7 @@ export const WithResponseTypeAndCallbacks: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => {
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
                     setResult('');
                     setError('');
                     setVisible(true);
@@ -930,7 +930,7 @@ export const DestructiveCommandFocusesDismiss: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={async () => {
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={async () => {
                     const [dialogResult] = await showDeletePersonalDataDialog();
                     setResult(dialogResult === DialogResult.Ok ? 'Deleted' : 'Kept');
                 }}>

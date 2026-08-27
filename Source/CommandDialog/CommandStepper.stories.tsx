@@ -172,8 +172,8 @@ export const InDialogFrame: Story = {
                         )}
                     </div>
                     <div className="command-stepper-stories-footer">
-                        <button className="cratis-button" data-variant="outlined" data-severity="secondary" data-size="normal" >Cancel</button>
-                        <button  className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" >Create</button>
+                        <button className="cratis-button" data-variant="outline" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Cancel</button>
+                        <button  className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Create</button>
                     </div>
                 </div>
             </div>
@@ -235,8 +235,8 @@ export const InDialogFrameWithCenteredHeader: Story = {
                         )}
                     </div>
                     <div className="command-stepper-stories-footer">
-                        <button className="cratis-button" data-variant="outlined" data-severity="secondary" data-size="normal" >Cancel</button>
-                        <button  className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" >Complete</button>
+                        <button className="cratis-button" data-variant="outline" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Cancel</button>
+                        <button  className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Complete</button>
                     </div>
                 </div>
             </div>
@@ -362,7 +362,7 @@ export const ConditionalSteps: Story = {
 
         return (
             <div style={{ width: '600px', padding: '1.5rem' }}>
-                <button className="cratis-button cratis:mb-3" data-variant="filled" data-severity="secondary" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
                 <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
                     The Budget step is currently <strong>{includeBudgetStep ? 'shown' : 'hidden'}</strong>, so the
                     wizard has {includeBudgetStep ? 'three' : 'two'} steps.

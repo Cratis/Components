@@ -216,7 +216,7 @@ export const EditModeWithValidation: Story = {
                     onValidationChange={setHasErrors}
                 />
                 <div className="cratis:mt-4">
-                    <button className="cratis-button" data-variant="filled" data-severity="secondary" data-size="normal" disabled={hasErrors}
+                    <button className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" data-disabled={hasErrors || undefined} disabled={hasErrors}
                     onClick={() => alert('Saved: ' + JSON.stringify(obj, null, 2))}>
                         Save
                     </button>
