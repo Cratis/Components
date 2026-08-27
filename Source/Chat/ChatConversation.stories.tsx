@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
 import { useState } from 'react';
 import { FaCirclePlus, FaCopy } from 'react-icons/fa6';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { ChatConversation } from './ChatConversation';
 import type { ChatIdentifier } from './ChatIdentifier';

@@ -4,7 +4,7 @@
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Guid } from '@cratis/fundamentals';
-import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
+import { useOptionalMessenger } from '../../Common/messaging/useOptionalMessenger';
 import type { BuildAvatarUrlParams } from './Avatar';
 import { ChatMessageAdded } from './ChatMessageAdded';
 import {

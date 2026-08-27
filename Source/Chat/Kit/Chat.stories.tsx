@@ -10,7 +10,7 @@ import type { ChatMessage } from './ChatMessage';
 import type { MentionCandidate } from './Mentions';
 
 const meta: Meta<typeof Chat> = {
-    title: 'Canvas/Chat',
+    title: 'Chat/Kit/Chat',
     component: Chat,
     parameters: {
         layout: 'centered',

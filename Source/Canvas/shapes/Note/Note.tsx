@@ -3,7 +3,7 @@
 
 import type React from 'react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
+import { useOptionalMessenger } from '../../../Common/messaging/useOptionalMessenger';
 import { NoteTextChanged } from './NoteTextChanged';
 import { whenNoteFontReady } from './noteFont';
 import { FaPlus } from 'react-icons/fa6';

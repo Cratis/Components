@@ -11,7 +11,7 @@ import {
     useSyncExternalStore,
 } from 'react';
 import { CanvasItemRegistryContext, type CanvasItemRegistryEntry } from '../../Canvas';
-import { useOptionalMessenger } from '../../messaging/useOptionalMessenger';
+import { useOptionalMessenger } from '../../../Common/messaging/useOptionalMessenger';
 import { ItemAddedToRegion } from './ItemAddedToRegion';
 import { ItemRemovedFromRegion } from './ItemRemovedFromRegion';
 import { itemsWithinRegion } from './regionContainment';

@@ -6,7 +6,7 @@ import { expect, userEvent, within } from 'storybook/test';
 import { ChatBubble } from './ChatBubble';
 
 const meta = {
-    title: 'Canvas/ChatBubble',
+    title: 'Chat/Kit/ChatBubble',
     component: ChatBubble,
     args: {
         authorId: 'sample-user',

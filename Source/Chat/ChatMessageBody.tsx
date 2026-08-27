@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React from 'react';
-import { mentionSegments } from '../Canvas/shapes/ChatBubble/Mentions';
+import { mentionSegments } from './Kit/Mentions';
 import type { ChatMention } from './ChatMention';
 
 /**

@@ -21,7 +21,7 @@ import { ReactionPicker } from './ReactionPicker';
 import { TypingIndicator } from './TypingIndicator';
 
 const meta = {
-    title: 'Canvas/ChatKit',
+    title: 'Chat/Kit/ChatKit',
     parameters: { layout: 'centered' },
     decorators: [
         (Story) => (
@@ -55,7 +55,9 @@ const reactions: ChatMessageReaction[] = [
     },
     {
         emoji: '🎉',
-        users: [{ id: Guid.create(), name: 'Demo Participant', reactionId: Guid.create() }],
+        users: [
+            { id: Guid.create(), name: 'Demo Participant', reactionId: Guid.create() },
+        ],
     },
 ];
 const message: ChatMessage = {

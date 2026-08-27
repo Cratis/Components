@@ -1,12 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { type ReactNode } from 'react';
-import {
-    PersonAvatarCircle,
-    type BuildAvatarUrlParams,
-} from '../Canvas/shapes/ChatBubble/Avatar';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import type { ReactNode } from 'react';
+import { PersonAvatarCircle, type BuildAvatarUrlParams } from './Kit/Avatar';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatTopic } from './ChatTopic';

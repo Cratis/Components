@@ -2,19 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useEffect, useMemo, useRef, type ReactNode } from 'react';
-import {
-    PersonAvatarCircle,
-    type BuildAvatarUrlParams,
-} from '../Canvas/shapes/ChatBubble/Avatar';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { PersonAvatarCircle, type BuildAvatarUrlParams } from './Kit/Avatar';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import {
     ChatComposer,
     type ChatComposerHandle,
     type ChatComposerLabels,
-} from '../Canvas/shapes/ChatBubble/ChatComposer';
-import type { ChatTypingAuthor } from '../Canvas/shapes/ChatBubble/ChatTypingAuthor';
-import type { MentionCandidate } from '../Canvas/shapes/ChatBubble/Mentions';
-import { TypingIndicator } from '../Canvas/shapes/ChatBubble/TypingIndicator';
+} from './Kit/ChatComposer';
+import type { ChatTypingAuthor } from './Kit/ChatTypingAuthor';
+import type { MentionCandidate } from './Kit/Mentions';
+import { TypingIndicator } from './Kit/TypingIndicator';
 import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';

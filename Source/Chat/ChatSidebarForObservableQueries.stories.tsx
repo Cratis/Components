@@ -8,7 +8,7 @@ import {
     type QueryResult,
     type ObservableQuerySubscription,
 } from '@cratis/arc/queries';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import type { ChatIdentifier } from './ChatIdentifier';
 import type { ChatMessage } from './ChatMessage';

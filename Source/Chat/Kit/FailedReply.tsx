@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { DialogButtons } from '@cratis/arc.react/dialogs';
-import { Dialog } from '../../../Dialogs/Dialog';
+import { Dialog } from '../../Dialogs/Dialog';
 import type { ChatMessage } from './ChatMessage';
 import { FaTriangleExclamation } from 'react-icons/fa6';
 

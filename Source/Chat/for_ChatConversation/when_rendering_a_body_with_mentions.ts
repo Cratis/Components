@@ -4,7 +4,7 @@
 // @vitest-environment jsdom
 
 import { createElement } from 'react';
-import { ChatAuthorKind } from '../../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { ChatAuthorKind } from '../Kit/ChatAuthorKind';
 import { ChatConversation } from '../ChatConversation';
 import type { ChatMessage } from '../ChatMessage';
 import {

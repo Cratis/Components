@@ -4,6 +4,8 @@ The `ChatBubble` kit is a full commenting/chat system — a message thread, a co
 
 Like `Note` and `Region`, none of these components live inside a `CanvasItem` by requirement — `Chat` is a normal floating/docked panel, most often placed inside a `CanvasItem` so it can sit next to whatever it is commenting on, or rendered outside the `Canvas` entirely for a docked sidebar.
 
+The kit itself is generic and needs no `pixi.js` — it lives in source at `Source/Chat/Kit`, the shared, non-spatial implementation both `@cratis/components/Canvas` (below) and `@cratis/components/Chat` build on. Import it from `@cratis/components/Canvas` as shown here; `@cratis/components/Chat`'s [conversation components](../Chat/index.md) build their own higher-level `ChatConversation`/`ChatSidebar` on top of the same kit.
+
 ## `Chat` — the conversation panel
 
 ```tsx

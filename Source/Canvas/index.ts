@@ -30,4 +30,7 @@ export type { SelfSuspendingFrameLoop } from './selfSuspendingFrameLoop';
 
 export * from './shapes/Note';
 export * from './shapes/Region';
-export * from './shapes/ChatBubble';
+// The generic, Pixi-free chat kit lives in the shared, non-spatial `Source/Chat/Kit` — Canvas
+// consumes the same canonical implementation `./Chat` does. `./shapes/ChatBubble` still holds a
+// compatibility barrel re-exporting it, for anything still importing that physical path.
+export * from '../Chat/Kit';
