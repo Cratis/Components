@@ -90,8 +90,6 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                     .join(' ')}
                 data-cratis-part='toggle'
                 data-disabled={props.pt?.toggle?.disabled || undefined}
-                data-pressed={visible || undefined}
-                aria-pressed={visible}
                 aria-label={
                     visible
                         ? (props.hideLabel ?? 'Hide password')

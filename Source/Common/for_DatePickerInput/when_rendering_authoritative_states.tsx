@@ -45,8 +45,40 @@ describe('when DatePickerInput renders authoritative states', () => {
         });
     };
 
-    const part = (name: string) =>
-        container.querySelector<HTMLElement>(`[data-cratis-part="${name}"]`);
+    const part = (name: string, parent: ParentNode = container) => {
+        switch (name) {
+            case 'root':
+                return parent.querySelector<HTMLElement>(
+                    '[data-cratis-part="root"]',
+                );
+            case 'group':
+                return parent.querySelector<HTMLElement>(
+                    '[data-cratis-part="group"]',
+                );
+            case 'input':
+                return parent.querySelector<HTMLElement>(
+                    '[data-cratis-part="input"]',
+                );
+            case 'trigger':
+                return parent.querySelector<HTMLElement>(
+                    '[data-cratis-part="trigger"]',
+                );
+            case 'popover':
+                return parent.querySelector<HTMLElement>(
+                    '[data-cratis-part="popover"]',
+                );
+            case 'dialog':
+                return parent.querySelector<HTMLElement>(
+                    '[data-cratis-part="dialog"]',
+                );
+            case 'calendar':
+                return parent.querySelector<HTMLElement>(
+                    '[data-cratis-part="calendar"]',
+                );
+            default:
+                throw new Error(`Unknown DatePickerInput part: ${name}`);
+        }
+    };
 
     it('should put selected, invalid, disabled, and readonly on root and control pt destinations', async () => {
         await renderPicker(
@@ -126,9 +158,7 @@ describe('when DatePickerInput renders authoritative states', () => {
             expect(part(name)?.dataset.open).to.equal('true');
         }
         for (const name of ['popover', 'dialog', 'calendar']) {
-            const element = document.querySelector<HTMLElement>(
-                `[data-cratis-part="${name}"]`,
-            );
+            const element = part(name, document);
             expect(element?.dataset.open).to.equal('true');
             expect(element?.getAttribute('data-testid')).to.equal(`date-${name}`);
         }

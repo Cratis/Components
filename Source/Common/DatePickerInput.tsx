@@ -1,6 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { useState } from 'react';
 import type {
     ButtonHTMLAttributes,
     CSSProperties,
@@ -197,6 +198,7 @@ export const DatePickerInput = ({
     'aria-labelledby': ariaLabelledby,
     'aria-describedby': ariaDescribedby,
 }: DatePickerInputProps) => {
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
     const { messages } = useCratisComponentsConfig();
     const datePickerMessages = messages?.datePicker;
     const resolvedTodayLabel = todayLabel ?? datePickerMessages?.today ?? 'Today';
@@ -253,6 +255,8 @@ export const DatePickerInput = ({
             data-invalid={effectiveInvalid || undefined}
             data-disabled={effectiveDisabled || undefined}
             data-readonly={effectiveReadOnly || undefined}
+            data-open={isPickerOpen || undefined}
+            data-selected={value !== null || undefined}
             onBlur={onBlur}
         >
             <AriaDatePicker
@@ -261,6 +265,7 @@ export const DatePickerInput = ({
                 isDisabled={effectiveDisabled}
                 isReadOnly={effectiveReadOnly}
                 isInvalid={effectiveInvalid}
+                onOpenChange={setIsPickerOpen}
                 minValue={minValue}
                 maxValue={maxValue}
                 granularity={showTime ? 'minute' : 'day'}
@@ -291,6 +296,7 @@ export const DatePickerInput = ({
                                     data-invalid={effectiveInvalid || undefined}
                                     data-disabled={effectiveDisabled || undefined}
                                     data-readonly={effectiveReadOnly || undefined}
+                                    data-selected={value !== null || undefined}
                                 />
                             )}
                         >
@@ -310,6 +316,7 @@ export const DatePickerInput = ({
                                         data-invalid={effectiveInvalid || undefined}
                                         data-disabled={effectiveDisabled || undefined}
                                         data-readonly={effectiveReadOnly || undefined}
+                                        data-selected={value !== null || undefined}
                                     />
                                 )}
                             >
@@ -372,6 +379,7 @@ export const DatePickerInput = ({
                                                 undefined
                                             }
                                             data-readonly={effectiveReadOnly || undefined}
+                                            data-selected={value !== null || undefined}
                                         />
                                     )}
                                     aria-label={

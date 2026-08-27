@@ -75,8 +75,48 @@ describe('when CommandStepper renders authoritative states', () => {
         });
     };
 
-    const parts = (name: string) =>
-        container.querySelectorAll<HTMLElement>(`[data-cratis-part="${name}"]`);
+    const parts = (name: string) => {
+        switch (name) {
+            case 'root':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="root"]',
+                );
+            case 'list':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="list"]',
+                );
+            case 'step':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="step"]',
+                );
+            case 'header':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="header"]',
+                );
+            case 'number':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="number"]',
+                );
+            case 'title':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="title"]',
+                );
+            case 'separator':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="separator"]',
+                );
+            case 'panels':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="panels"]',
+                );
+            case 'panel':
+                return container.querySelectorAll<HTMLElement>(
+                    '[data-cratis-part="panel"]',
+                );
+            default:
+                throw new Error(`Unknown CommandStepper part: ${name}`);
+        }
+    };
 
     it('should put busy and aggregate invalid state on root collection parts and pt destinations', async () => {
         await renderStepper(true, true);

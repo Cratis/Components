@@ -1,6 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { useState } from 'react';
 import type {
     ButtonHTMLAttributes,
     CSSProperties,
@@ -248,6 +249,7 @@ export const Dropdown = <T = unknown,>({
     onBlur,
     pt,
 }: DropdownProps<T>) => {
+    const [isOpen, setIsOpen] = useState(false);
     const { messages } = useCratisComponentsConfig();
     const dropdownMessages = messages?.dropdown;
     const showOptionsLabel =
@@ -331,11 +333,14 @@ export const Dropdown = <T = unknown,>({
                     data-cratis-part='root'
                     data-invalid={effectiveInvalid || undefined}
                     data-disabled={disabled || undefined}
+                    data-open={isOpen || undefined}
+                    data-selected={selectedKeys.length > 0 || undefined}
                     style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
                     onBlur={onBlur}
                 >
                     <ComboBox
                         selectionMode='multiple'
+                        onOpenChange={setIsOpen}
                         value={selectedKeys}
                         onChange={selectOptions}
                         isDisabled={disabled}
@@ -355,6 +360,10 @@ export const Dropdown = <T = unknown,>({
                                 pt?.value?.className,
                             )}
                             data-cratis-part='value'
+                            data-disabled={disabled || undefined}
+                            data-invalid={effectiveInvalid || undefined}
+                            data-open={isOpen || undefined}
+                            data-selected={selectedKeys.length > 0 || undefined}
                         />
                         <Input
                             {...pt?.filter}
@@ -371,6 +380,7 @@ export const Dropdown = <T = unknown,>({
                             data-cratis-part='filter'
                             data-disabled={disabled || undefined}
                             data-invalid={effectiveInvalid || undefined}
+                            data-open={isOpen || undefined}
                         />
                         <ComboBoxButton
                             {...asReactAriaButtonProps(pt?.trigger)}
@@ -381,6 +391,7 @@ export const Dropdown = <T = unknown,>({
                             data-cratis-part='trigger'
                             data-disabled={disabled || undefined}
                             data-invalid={effectiveInvalid || undefined}
+                            data-selected={selectedKeys.length > 0 || undefined}
                             render={renderTriggerWithOpenState}
                             aria-label={showOptionsLabel}
                         >
@@ -467,6 +478,7 @@ export const Dropdown = <T = unknown,>({
                 data-cratis-part='root'
                 data-invalid={effectiveInvalid || undefined}
                 data-disabled={disabled || undefined}
+                data-selected={selectedKeys.length > 0 || undefined}
                 style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
                 onBlur={onBlur}
             >
@@ -490,6 +502,7 @@ export const Dropdown = <T = unknown,>({
                     data-cratis-part='multiple'
                     data-disabled={disabled || undefined}
                     data-invalid={effectiveInvalid || undefined}
+                    data-selected={selectedKeys.length > 0 || undefined}
                     onChange={(event) => {
                         const keys = Array.from(
                             event.currentTarget.selectedOptions,
@@ -550,10 +563,13 @@ export const Dropdown = <T = unknown,>({
                 data-cratis-part='root'
                 data-invalid={effectiveInvalid || undefined}
                 data-disabled={disabled || undefined}
+                data-open={isOpen || undefined}
+                data-selected={selectedKey !== null || undefined}
                 style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
                 onBlur={onBlur}
             >
                 <ComboBox
+                    onOpenChange={setIsOpen}
                     value={selectedKey}
                     onChange={selectOption}
                     isDisabled={disabled}
@@ -580,6 +596,7 @@ export const Dropdown = <T = unknown,>({
                         data-cratis-part='filter'
                         data-disabled={disabled || undefined}
                         data-invalid={effectiveInvalid || undefined}
+                        data-open={isOpen || undefined}
                     />
                     <ComboBoxButton
                         {...asReactAriaButtonProps(pt?.trigger)}
@@ -590,6 +607,7 @@ export const Dropdown = <T = unknown,>({
                         data-cratis-part='trigger'
                         data-disabled={disabled || undefined}
                         data-invalid={effectiveInvalid || undefined}
+                        data-selected={selectedKey !== null || undefined}
                         render={renderTriggerWithOpenState}
                         aria-label={showOptionsLabel}
                     >
@@ -676,10 +694,13 @@ export const Dropdown = <T = unknown,>({
             data-cratis-part='root'
             data-invalid={effectiveInvalid || undefined}
             data-disabled={disabled || undefined}
+            data-open={isOpen || undefined}
+            data-selected={selectedKey !== null || undefined}
             style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
             onBlur={onBlur}
         >
             <AriaSelect
+                onOpenChange={setIsOpen}
                 value={selectedKey}
                 onChange={selectOption}
                 isDisabled={disabled}
@@ -705,6 +726,7 @@ export const Dropdown = <T = unknown,>({
                     data-cratis-part='trigger'
                     data-disabled={disabled || undefined}
                     data-invalid={effectiveInvalid || undefined}
+                    data-selected={selectedKey !== null || undefined}
                     render={renderTriggerWithOpenState}
                 >
                     <SelectValue
@@ -714,6 +736,10 @@ export const Dropdown = <T = unknown,>({
                             pt?.value?.className,
                         )}
                         data-cratis-part='value'
+                        data-disabled={disabled || undefined}
+                        data-invalid={effectiveInvalid || undefined}
+                        data-open={isOpen || undefined}
+                        data-selected={selectedKey !== null || undefined}
                     >
                         {selectedOption?.label ?? placeholder}
                     </SelectValue>
@@ -724,6 +750,9 @@ export const Dropdown = <T = unknown,>({
                             pt?.indicator?.className,
                         )}
                         data-cratis-part='indicator'
+                        data-disabled={disabled || undefined}
+                        data-invalid={effectiveInvalid || undefined}
+                        data-open={isOpen || undefined}
                         aria-hidden='true'
                     >
                         ⌄

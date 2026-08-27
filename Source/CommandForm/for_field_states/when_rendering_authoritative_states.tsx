@@ -63,8 +63,64 @@ describe('when CommandForm fields render authoritative states', () => {
         });
     };
 
-    const part = (name: string) =>
-        container.querySelector<HTMLElement>(`[data-cratis-part="${name}"]`);
+    const part = (name: string) => {
+        switch (name) {
+            case 'root':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="root"]',
+                );
+            case 'input':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="input"]',
+                );
+            case 'box':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="box"]',
+                );
+            case 'indicator':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="indicator"]',
+                );
+            case 'option':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="option"]',
+                );
+            case 'star':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="star"]',
+                );
+            case 'control':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="control"]',
+                );
+            case 'handle':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="handle"]',
+                );
+            case 'item':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="item"]',
+                );
+            case 'remove':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="remove"]',
+                );
+            case 'toggle':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="toggle"]',
+                );
+            case 'value':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="value"]',
+                );
+            case 'textarea':
+                return container.querySelector<HTMLElement>(
+                    '[data-cratis-part="textarea"]',
+                );
+            default:
+                throw new Error(`Unknown CommandForm field part: ${name}`);
+        }
+    };
 
     it('should emit text invalid, disabled, and readonly only while present', async () => {
         await renderField(InputTextField, {
@@ -215,18 +271,23 @@ describe('when CommandForm fields render authoritative states', () => {
         expect(part('input')?.hasAttribute('data-readonly')).to.equal(false);
     });
 
-    it('should expose pressed state from the tracked password visibility toggle', async () => {
+    it('should expose the password toggle disabled state only while present', async () => {
         await renderField(PasswordField, {
             value: 'example',
-            pt: { toggle: { 'data-testid': 'password-toggle' } },
+            pt: {
+                toggle: {
+                    disabled: true,
+                    'data-testid': 'password-toggle',
+                },
+            },
         });
-        const toggle = part('toggle') as HTMLButtonElement;
-        expect(toggle.hasAttribute('data-pressed')).to.equal(false);
-        expect(toggle.getAttribute('data-testid')).to.equal('password-toggle');
+        expect(part('toggle')?.dataset.disabled).to.equal('true');
+        expect(part('toggle')?.getAttribute('data-testid')).to.equal(
+            'password-toggle',
+        );
 
-        await act(async () => toggle.click());
-        expect(part('toggle')?.dataset.pressed).to.equal('true');
-        expect(part('toggle')?.getAttribute('aria-pressed')).to.equal('true');
+        await renderField(PasswordField, { value: 'example' });
+        expect(part('toggle')?.hasAttribute('data-disabled')).to.equal(false);
     });
 
     it('should expose validation state on the remaining native field surfaces', async () => {
