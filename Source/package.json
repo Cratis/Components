@@ -157,7 +157,7 @@
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
-        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn g:ci && yarn typecheck-stories",
+        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts",
         "up": "yarn g:up",
         "dev": "npx storybook dev -p 6006",
         "build-storybook": "npx storybook build"
