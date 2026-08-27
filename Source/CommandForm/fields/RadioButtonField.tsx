@@ -66,7 +66,7 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                 name={props.name}
                 checked={props.value === props.buttonValue}
                 onChange={(event) => {
-                    if (event.target.checked) props.onChange(props.buttonValue);
+                    if (event.currentTarget.checked) props.onChange(props.buttonValue);
                 }}
                 aria-invalid={props.invalid || undefined}
                 className={['cratis-choice-field__native', props.pt?.input?.className]
@@ -98,5 +98,5 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
             </>
         );
     },
-    { defaultValue: '', extractValue: (value: unknown) => value as string | number },
+    { defaultValue: '' },
 );

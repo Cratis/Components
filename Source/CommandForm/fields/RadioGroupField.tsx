@@ -93,7 +93,7 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                                 name={name}
                                 checked={props.value === value}
                                 onChange={(event) => {
-                                    if (event.target.checked) props.onChange(value);
+                                    if (event.currentTarget.checked) props.onChange(value);
                                 }}
                                 aria-invalid={props.invalid || undefined}
                                 className={[
@@ -131,5 +131,5 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
             </div>
         );
     },
-    { defaultValue: '', extractValue: (value: unknown) => value as string | number },
+    { defaultValue: '' },
 );

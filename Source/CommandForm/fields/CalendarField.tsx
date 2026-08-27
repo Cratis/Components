@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 import {
     DatePickerInput,
     type DatePickerInputPassThrough,
@@ -82,7 +82,7 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
                     aria-label={accessibility.ariaLabel}
                     aria-describedby={accessibility.ariaDescribedBy}
                     value={props.value}
-                    onChange={props.onChange}
+                    onChange={(value) => props.onChange(value)}
                     onBlur={props.onBlur}
                     invalid={props.invalid}
                     placeholder={props.placeholder}
@@ -101,8 +101,5 @@ export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
             </>
         );
     },
-    {
-        defaultValue: null,
-        extractValue: (e: unknown) => (e instanceof Date ? e : null),
-    },
+    { defaultValue: null },
 );

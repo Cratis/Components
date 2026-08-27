@@ -99,10 +99,10 @@ export interface ColumnFilterElementOptions {
     value: unknown;
     /** Current draft match mode. */
     matchMode: FilterMatchMode;
-    /** Updates the draft value. */
+    /** Updates the draft value and may describe how the custom editor produced it. */
     onChange: ChangeHandler<unknown>;
     /** Updates the draft match mode independently of the value. */
-    onMatchModeChange: ChangeHandler<FilterMatchMode>;
+    onMatchModeChange: (matchMode: FilterMatchMode) => void;
     /** Applies the draft filter. */
     onApply: (event: SyntheticEvent) => void;
     /** Clears the field filter. */

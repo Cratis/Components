@@ -147,8 +147,4 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
 /** A token input bound to a string array property on an Arc command. */
 export const ChipsField = asCommandFormField<ChipsFieldComponentProps>(ChipsControl, {
     defaultValue: [],
-    extractValue: (value: unknown) =>
-        Array.isArray(value)
-            ? value.filter((item): item is string => typeof item === 'string')
-            : [],
 });

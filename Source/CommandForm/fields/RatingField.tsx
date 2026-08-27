@@ -92,7 +92,7 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                                 name={name}
                                 checked={props.value === starValue}
                                 onChange={(event) => {
-                                    if (event.target.checked) props.onChange(starValue);
+                                    if (event.currentTarget.checked) props.onChange(starValue);
                                 }}
                                 aria-label={label}
                                 className={[
@@ -124,8 +124,5 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
             </div>
         );
     },
-    {
-        defaultValue: 0,
-        extractValue: (value: unknown) => (typeof value === 'number' ? value : 0),
-    },
+    { defaultValue: 0 },
 );
