@@ -158,6 +158,7 @@ export const ToolbarFanOutItem = ({
             {...pt?.root}
             className={`toolbar-fanout-item ${pt?.root?.className ?? ''} ${className ?? ''}`}
             data-cratis-part='fanout-root'
+            data-open={isExpanded || undefined}
             ref={containerRef}
         >
             <Tooltip
@@ -175,6 +176,7 @@ export const ToolbarFanOutItem = ({
                     onClick={handleToggle}
                     className={`toolbar-button cratis:w-10 cratis:h-10 cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
                     data-cratis-part='fanout-trigger'
+                    data-open={isExpanded || undefined}
                 >
                     <IconDisplay icon={icon} className='cratis:text-lg' />
                 </button>
@@ -188,6 +190,7 @@ export const ToolbarFanOutItem = ({
                 className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass} ${pt?.panel?.className ?? ''}`}
                 data-cratis-part='fanout-panel'
                 data-expanded={isExpanded || undefined}
+                data-open={isExpanded || undefined}
                 data-direction={fanOutDirection}
                 data-settled={isSettled || undefined}
                 aria-hidden={!isExpanded}

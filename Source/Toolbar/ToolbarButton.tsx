@@ -117,6 +117,7 @@ export const ToolbarButton = ({
                 className={`toolbar-button toolbar-button--list cratis:h-10 cratis:px-3 cratis:w-full cratis:flex cratis:items-center cratis:justify-start cratis:gap-2 cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='button'
                 data-active={active || undefined}
+                data-selected={active || undefined}
             >
                 {resolvedIcon !== null && (
                     <span
@@ -176,6 +177,7 @@ export const ToolbarButton = ({
                 className={`toolbar-button ${buttonSizeClass} cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${draggableClass} ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='button'
                 data-active={active || undefined}
+                data-selected={active || undefined}
             >
                 {buttonContent}
             </button>

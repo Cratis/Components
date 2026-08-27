@@ -155,6 +155,7 @@ export const ToolbarFolder = ({
                 {...pt?.root}
                 className={`toolbar-folder-item ${pt?.root?.className ?? ''} ${className ?? ''}`}
                 data-cratis-part='toolbar-folder'
+                data-open={isExpanded || undefined}
                 ref={containerRef}
             >
                 <Tooltip
@@ -172,6 +173,7 @@ export const ToolbarFolder = ({
                         onClick={toggleExpanded}
                         className={`toolbar-button cratis:w-10 cratis:h-10 cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
                         data-cratis-part='toolbar-folder-trigger'
+                        data-open={isExpanded || undefined}
                     >
                         <IconDisplay icon={icon} className='cratis:text-lg' />
                     </button>
@@ -192,6 +194,7 @@ export const ToolbarFolder = ({
                     }}
                     data-cratis-part='toolbar-folder-panel'
                     data-expanded={isExpanded || undefined}
+                    data-open={isExpanded || undefined}
                     data-direction={folderDirection}
                     data-mode={mode}
                     aria-hidden={!isExpanded}

@@ -28,12 +28,15 @@ export const ProgressBar = ({
 }: ProgressBarProps) => {
     const boundedValue = Math.min(100, Math.max(0, value));
     const ariaValue = mode === 'determinate' ? boundedValue : undefined;
+    const isBusy = mode === 'indeterminate' || boundedValue < 100;
 
     return (
         <div
             className={['cratis-progress-bar', className].filter(Boolean).join(' ')}
             data-cratis-part='root'
             data-mode={mode}
+            data-busy={isBusy || undefined}
+            data-loading={mode === 'indeterminate' || undefined}
             role='progressbar'
             aria-label={ariaLabelledBy ? undefined : ariaLabel}
             aria-labelledby={ariaLabelledBy}

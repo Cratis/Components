@@ -212,6 +212,7 @@ export const ToolbarSection = ({
                         data-cratis-part='toolbar-context'
                         data-context-name={name}
                         data-active={isActive || undefined}
+                        data-selected={isActive || undefined}
                         aria-hidden={!isActive}
                         inert={!isActive}
                     >
