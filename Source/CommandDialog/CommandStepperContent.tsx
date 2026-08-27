@@ -228,7 +228,7 @@ export const CommandStepperContent = ({
                 const selected = index === currentStep;
                 const visited = visitedSteps.has(index);
                 const invalid = stepErrors[index] ?? false;
-                const headerDisabled = isStepperBusy || (linear && !selected);
+                const headerDisabled = linear && !selected;
 
                 return (
                     <li

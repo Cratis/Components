@@ -28,6 +28,7 @@ describe('when CommandStepper renders authoritative states', () => {
     let root: Root;
 
     beforeEach(() => {
+        // SAFETY: React's test-only act flag is intentionally absent from the DOM global type.
         (
             globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
         ).IS_REACT_ACT_ENVIRONMENT = true;
@@ -54,15 +55,15 @@ describe('when CommandStepper renders authoritative states', () => {
                             withError && fieldName === 'sample' ? 'Required' : undefined
                         }
                         pt={{
-                            root: { 'data-testid': 'stepper-root' },
-                            list: { 'data-testid': 'stepper-list' },
-                            step: { 'data-testid': 'stepper-step' },
-                            header: { 'data-testid': 'stepper-header' },
-                            number: { 'data-testid': 'stepper-number' },
-                            title: { 'data-testid': 'stepper-title' },
-                            separator: { 'data-testid': 'stepper-separator' },
-                            panels: { 'data-testid': 'stepper-panels' },
-                            panel: { 'data-testid': 'stepper-panel' },
+                            root: { id: 'stepper-root' },
+                            list: { id: 'stepper-list' },
+                            step: { id: 'stepper-step' },
+                            header: { id: 'stepper-header' },
+                            number: { id: 'stepper-number' },
+                            title: { id: 'stepper-title' },
+                            separator: { id: 'stepper-separator' },
+                            panels: { id: 'stepper-panels' },
+                            panel: { id: 'stepper-panel' },
                         }}
                     >
                         <StepperPanel header='First'>
@@ -125,7 +126,7 @@ describe('when CommandStepper renders authoritative states', () => {
             const element = parts(name)[0];
             expect(element.dataset.busy).to.equal('true');
             expect(element.dataset.invalid).to.equal('true');
-            expect(element.getAttribute('data-testid')).to.equal(`stepper-${name}`);
+            expect(element.getAttribute('id')).to.equal(`stepper-${name}`);
         }
     });
 
@@ -137,7 +138,7 @@ describe('when CommandStepper renders authoritative states', () => {
         expect(steps[0].dataset.visited).to.equal('true');
         expect(steps[0].dataset.invalid).to.equal('true');
         expect(steps[0].dataset.busy).to.equal('true');
-        expect(steps[0].getAttribute('data-testid')).to.equal('stepper-step');
+        expect(steps[0].getAttribute('id')).to.equal('stepper-step');
         expect(steps[1].dataset.selected).to.equal('true');
         expect(steps[1].dataset.active).to.equal('true');
         expect(steps[1].dataset.visited).to.equal('true');
@@ -152,22 +153,22 @@ describe('when CommandStepper renders authoritative states', () => {
             expect(elements[1].dataset.visited).to.equal('true');
             expect(elements[1].hasAttribute('data-invalid')).to.equal(false);
             expect(elements[1].dataset.busy).to.equal('true');
-            expect(elements[1].getAttribute('data-testid')).to.equal(
+            expect(elements[1].getAttribute('id')).to.equal(
                 `stepper-${name}`,
             );
         }
 
         const headers = parts('header') as NodeListOf<HTMLButtonElement>;
-        expect(headers[0].dataset.disabled).to.equal('true');
-        expect(headers[0].disabled).to.equal(true);
-        expect(headers[1].dataset.disabled).to.equal('true');
-        expect(headers[1].disabled).to.equal(true);
+        expect(headers[0].hasAttribute('data-disabled')).to.equal(false);
+        expect(headers[0].disabled).to.equal(false);
+        expect(headers[1].hasAttribute('data-disabled')).to.equal(false);
+        expect(headers[1].disabled).to.equal(false);
 
         const separator = parts('separator')[0];
         expect(separator.dataset.visited).to.equal('true');
         expect(separator.dataset.invalid).to.equal('true');
         expect(separator.dataset.busy).to.equal('true');
-        expect(separator.getAttribute('data-testid')).to.equal('stepper-separator');
+        expect(separator.getAttribute('id')).to.equal('stepper-separator');
     });
 
     it('should put selected, visited, invalid, and busy on the corresponding panels', async () => {
@@ -181,7 +182,7 @@ describe('when CommandStepper renders authoritative states', () => {
         expect(panels[1].dataset.selected).to.equal('true');
         expect(panels[1].dataset.visited).to.equal('true');
         expect(panels[1].hasAttribute('data-invalid')).to.equal(false);
-        expect(panels[1].getAttribute('data-testid')).to.equal('stepper-panel');
+        expect(panels[1].getAttribute('id')).to.equal('stepper-panel');
     });
 
     it('should omit false invalid and busy states while preserving selected and visited migration attributes', async () => {
