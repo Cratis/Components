@@ -4,6 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
 import { useRef, useState } from 'react';
+import { FaCopy } from 'react-icons/fa6';
 import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import type { ChatIdentifier } from './ChatIdentifier';
@@ -193,7 +194,7 @@ export const InteractiveHost: Story = {
                             {
                                 id: 'copy',
                                 label: 'Copy the message',
-                                icon: 'pi pi-copy',
+                                icon: <FaCopy />,
                                 onInvoke: (message) =>
                                     navigator.clipboard?.writeText(message.body),
                             },

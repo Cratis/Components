@@ -15,13 +15,13 @@ export interface ChatSidebarInTheDom {
 }
 
 /**
- * Renders an element into a real document and lets PrimeReact's show transition complete, so the
- * drawer has settled by the time the spec looks at it.
+ * Renders an element into a real document and lets the sidebar's open transition complete, so it
+ * has settled by the time the spec looks at it.
  *
- * PrimeReact 11 components resolve their configuration from a `PrimeReactProvider` and throw
- * without one, so the element is mounted inside the Cratis provider that supplies it.
- * `ResizeObserver` is stubbed because jsdom has no layout engine, and `scrollIntoView` because
- * the conversation keeps its newest message in view with it.
+ * The sidebar is built on React Aria's overlay primitives, which read locale (and other shared
+ * configuration) from the `I18nProvider` `CratisComponentsProvider` supplies, so the element is
+ * mounted inside it. `ResizeObserver` is stubbed because jsdom has no layout engine, and
+ * `scrollIntoView` because the conversation keeps its newest message in view with it.
  * @param element - The element to render.
  * @returns The mounted sidebar, to be passed to {@link unmount}.
  */

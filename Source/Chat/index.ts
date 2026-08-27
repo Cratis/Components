@@ -12,7 +12,11 @@ export type { ChatMessageAction } from './ChatMessageAction';
 export { ChatMessageBody } from './ChatMessageBody';
 export type { ChatMessageBodyProps } from './ChatMessageBody';
 export { ChatSidebar } from './ChatSidebar';
-export type { ChatSidebarProps, ChatSidebarLabels } from './ChatSidebar';
+export type {
+    ChatSidebarProps,
+    ChatSidebarLabels,
+    ChatSidebarParts,
+} from './ChatSidebar';
 export { ChatSidebarForObservableQueries } from './ChatSidebarForObservableQueries';
 export type { ChatSidebarForObservableQueriesProps } from './ChatSidebarForObservableQueries';
 export type { ChatTopic } from './ChatTopic';

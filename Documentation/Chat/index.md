@@ -12,7 +12,7 @@ Everything about _data_ stays with your application:
 
 ## Key Features
 
-- Sidebar (PrimeReact Drawer) opening to the right of the view, with a topics list and per-topic conversations
+- Sidebar (an accessible overlay panel, built on Components' own React Aria-based primitives) opening to the right of the view, with a topics list and per-topic conversations
 - Host-side topic auto-naming contract with a pending placeholder until the name arrives
 - `@`-mentions from a list you hold or a provider callback you resolve, rendered distinctly in message bodies
 - Emoji picker in the composer, with a quick row of recently used emoji
@@ -22,12 +22,12 @@ Everything about _data_ stays with your application:
 
 ## Components
 
-| Component                         | What it is                                                                                |
-| --------------------------------- | ----------------------------------------------------------------------------------------- |
-| `ChatSidebar`                     | The whole thing in a Drawer: topics list ⇄ conversation, back navigation, naming contract |
-| `ChatTopicList`                   | Just the topics — pick one, start a new one                                               |
-| `ChatConversation`                | Just one conversation — messages plus composer                                            |
-| `ChatSidebarForObservableQueries` | Optional: `ChatSidebar` bound to two Cratis Arc observable queries                        |
+| Component                         | What it is                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `ChatSidebar`                     | The whole thing in an overlay panel: topics list ⇄ conversation, back navigation, naming contract |
+| `ChatTopicList`                   | Just the topics — pick one, start a new one                                                       |
+| `ChatConversation`                | Just one conversation — messages plus composer                                                    |
+| `ChatSidebarForObservableQueries` | Optional: `ChatSidebar` bound to two Cratis Arc observable queries                                |
 
 ## Basic Usage
 
@@ -100,11 +100,14 @@ interface ProjectMessage extends ChatMessage {
     actions={[{
         id: 'open-project',
         label: 'Open the project',
-        icon: 'pi pi-folder-open',
+        icon: <FaFolderOpen />, // or a CSS class name for an icon font your app already uses
         onInvoke: message => navigate(`/projects/${message.projectId}`),
     }]}
 />
 ```
+
+`icon` is opaque to the library — a ready element (as above) or a CSS class name string for
+whatever icon font the host provides. The chat itself does not depend on any icon library.
 
 ## Authors are resolved, not stored
 
@@ -124,7 +127,7 @@ A message deliberately carries only `authorId`. The `authorOf` callback resolves
 
 ## Styling
 
-Every color comes from the `--cratis-*` token layer, so the chat follows the PrimeReact theme the application runs — light, dark, or its own overrides. The Drawer itself accepts `pt`, `ptOptions`, and `unstyled` for full control.
+Every color comes from the `--cratis-*` token layer, so the chat follows whatever theme the application runs — light, dark, or its own overrides. `ChatSidebar` accepts a `pt` prop typed as `ChatSidebarParts` — per-part attributes (`className`, `style`, `data-*`, and more) for its backdrop, root panel, header, title, back/close buttons, and content region — for full control over structure and styling.
 
 ## See also
 

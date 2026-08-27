@@ -1,9 +1,9 @@
 {
     "private": true,
     "workspaces": [
-        "Source",
         "ESLint",
-        "Codemods"
+        "Codemods",
+        "Source"
     ],
     "engines": {
         "node": ">=23.0.0"

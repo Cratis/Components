@@ -4,6 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
 import { useState } from 'react';
+import { FaCirclePlus, FaCopy } from 'react-icons/fa6';
 import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { ChatConversation } from './ChatConversation';
@@ -87,7 +88,7 @@ export const Playground: Story = {
             {
                 id: 'create-issue',
                 label: 'Create an issue',
-                icon: 'pi pi-plus-circle',
+                icon: <FaCirclePlus />,
                 onInvoke: fn(),
             },
         ],
@@ -149,7 +150,7 @@ export const Interactive: Story = {
                             {
                                 id: 'copy',
                                 label: 'Copy the message',
-                                icon: 'pi pi-copy',
+                                icon: <FaCopy />,
                                 onInvoke: (message) =>
                                     navigator.clipboard?.writeText(message.body),
                             },

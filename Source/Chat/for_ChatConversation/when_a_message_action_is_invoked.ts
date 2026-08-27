@@ -36,7 +36,7 @@ describe('when a message action is invoked', () => {
                     {
                         id: 'create-issue',
                         label: 'Create an issue',
-                        icon: 'pi pi-plus-circle',
+                        icon: 'icon-create-issue',
                         onInvoke: (invoked) => {
                             invokedWith = invoked;
                         },
@@ -44,7 +44,7 @@ describe('when a message action is invoked', () => {
                     {
                         id: 'never-offered',
                         label: 'Never offered',
-                        icon: 'pi pi-ban',
+                        icon: 'icon-ban',
                         isAvailable: () => false,
                         onInvoke: () => {},
                     },
