@@ -5,6 +5,13 @@
         "ESLint",
         "Codemods"
     ],
+    "resolutions": {
+        "react-aria": "3.51.0",
+        "react-stately": "3.49.0",
+        "@internationalized/date": "3.12.3",
+        "@internationalized/string": "3.2.10",
+        "@internationalized/number": "3.6.7"
+    },
     "engines": {
         "node": ">=23.0.0"
     },
