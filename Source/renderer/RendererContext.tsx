@@ -206,24 +206,28 @@ export const unstable_useSlot = <K extends unstable_SlotId>(
         context?.coreSlots ?? unstable_emptyCoreRendererSlots,
     );
 
-    if (result.usedCoreFallback) {
-        const diagnostic = fallbackDiagnostic(context, slotId);
+    const diagnostic = result.usedCoreFallback
+        ? fallbackDiagnostic(context, slotId)
+        : undefined;
+
+    useEffect(() => {
+        if (!diagnostic) return;
         if (context) {
             context.reportDiagnostic(diagnostic);
-        } else {
-            const key = unstable_diagnosticKey(diagnostic);
-            if (!localReportedDiagnostics.current.has(key)) {
-                localReportedDiagnostics.current.add(key);
-                unstable_logDiagnostic(diagnostic);
-            }
+            return;
         }
-    }
+        const key = unstable_diagnosticKey(diagnostic);
+        if (!localReportedDiagnostics.current.has(key)) {
+            localReportedDiagnostics.current.add(key);
+            unstable_logDiagnostic(diagnostic);
+        }
+    }, [context, diagnostic]);
 
     if (
         !result.declaration &&
         (context?.rendererFallback ?? 'core') === 'throw'
     ) {
-        throw new unstable_AdapterError(fallbackDiagnostic(context, slotId));
+        throw new unstable_AdapterError(diagnostic ?? fallbackDiagnostic(context, slotId));
     }
 
     return result.declaration;

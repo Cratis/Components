@@ -1,8 +1,10 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { expect } from 'chai';
 import { renderToStaticMarkup } from 'react-dom/server';
 import sinon from 'sinon';
+import { describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 import {
     unstable_AdapterError,
@@ -53,7 +55,7 @@ describe('when resolving renderer slots', () => {
             </CratisComponentsProvider>,
         );
 
-        html.should.contain('data-button="last"');
+        expect(html).to.contain('data-button="last"');
     });
 
     it('should use the nearest scope only for its allowed slots', () => {
@@ -74,13 +76,14 @@ describe('when resolving renderer slots', () => {
             </CratisComponentsProvider>,
         );
 
-        html.should.contain('data-button="last"');
-        html.should.contain('data-tooltip="first"');
+        expect(html).to.contain('data-button="last"');
+        expect(html).to.contain('data-tooltip="first"');
     });
 
     it('should reject unknown runtime scope slots', () => {
         const outer = createTestLibrary('outer', buttonSlot(FirstButton));
         const inner = createTestLibrary('inner', buttonSlot(LastButton));
+        // SAFETY: The fixture intentionally bypasses the public slot union to exercise runtime validation.
         const invalidOnly = ['unknown.slot'] as unknown as readonly unstable_SlotId[];
         let error: unknown;
 
@@ -96,13 +99,13 @@ describe('when resolving renderer slots', () => {
             error = caught;
         }
 
-        error.should.be.instanceOf(unstable_AdapterError);
-        (error as unstable_AdapterError).code.should.equal(
+        expect(error).to.be.instanceOf(unstable_AdapterError);
+        expect((error as unstable_AdapterError).code).to.equal(
             unstable_adapterErrorCodes.missingRequirement,
         );
     });
 
-    it('should use the empty Core fallback deterministically and log once per provider', () => {
+    it('should use the empty Core fallback deterministically without logging during SSR render', () => {
         const consoleError = sinon.stub(console, 'error');
         const DuplicateFallbackProbe = () => {
             unstable_useSlot('common.tooltip');
@@ -117,17 +120,14 @@ describe('when resolving renderer slots', () => {
                 </CratisComponentsProvider>,
             );
 
-            html.should.equal('<span>missing</span>');
-            consoleError.callCount.should.equal(1);
-            String(consoleError.firstCall.firstArg).should.contain(
-                unstable_adapterErrorCodes.strictProfileFallback,
-            );
+            expect(html).to.equal('<span>missing</span>');
+            expect(consoleError.callCount).to.equal(0);
         } finally {
             consoleError.restore();
         }
     });
 
-    it('should allow fallback outside a declared profile promise', () => {
+    it('should allow fallback outside a declared profile promise without render side effects', () => {
         const library = createTestLibrary('button-only', buttonSlot(FirstButton), {
             profileSlots: ['common.button'],
         });
@@ -140,8 +140,8 @@ describe('when resolving renderer slots', () => {
                 </CratisComponentsProvider>,
             );
 
-            html.should.equal('<span>missing</span>');
-            consoleError.callCount.should.equal(1);
+            expect(html).to.equal('<span>missing</span>');
+            expect(consoleError.callCount).to.equal(0);
         } finally {
             consoleError.restore();
         }
@@ -163,8 +163,8 @@ describe('when resolving renderer slots', () => {
             consoleError.restore();
         }
 
-        error.should.be.instanceOf(unstable_AdapterError);
-        (error as unstable_AdapterError).code.should.equal(
+        expect(error).to.be.instanceOf(unstable_AdapterError);
+        expect((error as unstable_AdapterError).code).to.equal(
             unstable_adapterErrorCodes.strictProfileFallback,
         );
     });
