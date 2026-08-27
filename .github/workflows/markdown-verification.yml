@@ -34,10 +34,12 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              with:
+                  persist-credentials: false
 
             - name: Lint Markdown files
-              uses: DavidAnson/markdownlint-cli2-action@v18
+              uses: DavidAnson/markdownlint-cli2-action@eb5ca3ab411449c66620fe7f1b3c9e10547144b0 # v18
               with:
                   globs: |
                       README.md
@@ -52,10 +54,12 @@ jobs:
         timeout-minutes: 15
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              with:
+                  persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
 
@@ -63,7 +67,7 @@ jobs:
               run: node Documentation/verify-local-links.mjs Documentation
 
             - name: Check external links in consumer documentation
-              uses: JustinBeckwith/linkinator-action@v1
+              uses: JustinBeckwith/linkinator-action@7b6b0bc671f6264e1a8daa4488a5bd91ce61dcd4 # v2.4.2
               with:
                   paths: |
                       README.md
@@ -75,9 +79,11 @@ jobs:
                   markdown: true
                   recurse: true
                   # Avoid GitHub's unauthenticated burst limit while checking several immutable
-                  # repository links; retry remains enabled for 429 responses with Retry-After.
+                  # repository links. Retry 429 responses carrying Retry-After; treat any remaining
+                  # 429 as a transient warning rather than a broken-link result.
                   concurrency: 2
                   retry: true
+                  statusCodes: '{"429":"warn"}'
                   # Stable Cratis repository anchors repeatedly trigger GitHub's unauthenticated
                   # 429 limit; current-tree links are verified locally above, so skip only exact
                   # organization guidance and immutable historical evidence anchors here.
