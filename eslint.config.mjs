@@ -9,6 +9,8 @@ import header from '@tony.ganchev/eslint-plugin-header';
 import noNull from 'eslint-plugin-no-null';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import componentsPlugin from './ESLint/index.js';
+import { kernelSourcePaths } from './ESLint/lib/kernelBoundary.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -128,6 +130,18 @@ const defaultConfig = [
             react: {
                 version: 'detect',
             },
+        },
+    },
+    {
+        files: kernelSourcePaths,
+        plugins: {
+            '@cratis/components': componentsPlugin,
+        },
+        rules: {
+            '@cratis/components/no-react-in-kernel': [
+                'error',
+                { kernelPaths: kernelSourcePaths },
+            ],
         },
     },
     {

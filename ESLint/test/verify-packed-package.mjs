@@ -4,6 +4,7 @@
 import { spawnSync } from 'node:child_process';
 import {
     existsSync,
+    mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
@@ -95,6 +96,11 @@ try {
             "    languageOptions: { parser: tsParser, parserOptions: { sourceType: 'module' } },",
             "    plugins: { '@cratis/components': components },",
             "    rules: { '@cratis/components/no-root-barrel-import': 'error' },",
+            '}, {',
+            "    files: ['Source/PivotViewer/engine/store.ts'],",
+            "    languageOptions: { parser: tsParser, parserOptions: { sourceType: 'module' } },",
+            "    plugins: { '@cratis/components': components },",
+            "    rules: { '@cratis/components/no-react-in-kernel': 'error' },",
             '}];',
             '',
         ].join('\n'),
@@ -131,6 +137,23 @@ try {
         'packed ESLint migrated subpath',
         run(binary, ['legacy.cts'], { cwd: consumer }),
     );
+
+    const kernelDir = path.join(consumer, 'Source', 'PivotViewer', 'engine');
+    mkdirSync(kernelDir, { recursive: true });
+    const kernelSource = path.join(kernelDir, 'store.ts');
+    writeFileSync(kernelSource, "const react = await import('react');\nvoid react;\n");
+    const kernelViolation = run(binary, [kernelSource, '--format', 'json'], {
+        cwd: consumer,
+    });
+    assertRun('packed ESLint kernel violation', kernelViolation, 1);
+    const kernelResults = JSON.parse(kernelViolation.stdout);
+    if (
+        kernelResults.length !== 1 ||
+        kernelResults[0].messages.length !== 1 ||
+        kernelResults[0].messages[0].ruleId !== '@cratis/components/no-react-in-kernel'
+    ) {
+        throw new Error(`Unexpected packed kernel ESLint output:\n${kernelViolation.stdout}`);
+    }
 
     console.log('Packed @cratis/eslint-plugin-components verified.');
 } finally {

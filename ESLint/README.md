@@ -10,6 +10,7 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 | `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. The runtime guards a missing return by keeping the current object and warning, but a replacement value is discarded and the callback violates the transformer contract.                                                                                                                         |
 | `no-hooks-in-view-model`      | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions.                                                                                                                                                                                        |
 | `no-raw-command-form-marker`  | Disallows identifying a CommandForm field or column by a hand-written `displayName` string, in either direction. Use `markAsCommandFormField`/`markAsCommandFormColumn` and `isCommandFormField`/`isCommandFormColumn` from `@cratis/components/CommandForm` — they go through a marker a build transform cannot rewrite.                                            |
+| `no-react-in-kernel`          | Repository architecture rule that rejects React, React DOM, React Aria Components, and browser DOM globals in the explicit Components kernel inventory. It is intentionally not part of the consumer `recommended` config.                                                                                                                                        |
 
 Both import rules cover static `import` and re-`export … from` forms. The root-barrel rule also reports TypeScript `import = require(...)`, dynamic `import(...)`, and CommonJS `require(...)` of the package root; ambiguous forms are never autofixed.
 
@@ -50,6 +51,12 @@ export default [
 ```
 
 `onbeforeexecute-must-return`, `no-hooks-in-view-model` and `no-raw-command-form-marker` take no options.
+
+`no-react-in-kernel` is a repository-owned architecture guard and is not enabled by the consumer preset. Components configures it with the canonical inventory in `lib/kernelBoundary.js`; an explicit `kernelPaths` array may be supplied when testing or applying the rule to another owned tree.
+
+## Repository kernel boundary
+
+`no-react-in-kernel` applies only when the linted filename is one of the explicitly declared `kernelPaths`. It reports static imports and re-exports, TypeScript import assignments, dynamic imports, CommonJS `require(...)`, package subpaths, and browser DOM global references. Near-miss package names and files outside the inventory are left alone. The repository decision and exact included/excluded modules are documented in `Documentation/decisions/0003-kernel-boundary.md`.
 
 ## Considered and rejected: a hardcoded-owned-label rule
 

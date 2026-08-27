@@ -15,6 +15,11 @@ import {
 import { onbeforeexecuteMustReturn } from '../lib/onbeforeexecuteMustReturn.js';
 import { noHooksInViewModel } from '../lib/noHooksInViewModel.js';
 import { noRawCommandFormMarker } from '../lib/noRawCommandFormMarker.js';
+import { noReactInKernel } from '../lib/noReactInKernel.js';
+import {
+    isKernelReactSpecifier,
+    kernelSourcePaths,
+} from '../lib/kernelBoundary.js';
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;
@@ -493,6 +498,113 @@ tsRuleTester.run('no-hooks-in-view-model', noHooksInViewModel, {
             // A class registered via withViewModel, even without the naming/decorator signals.
             code: 'class Vm { method() { useIdentity(); } } const C = withViewModel(Vm, () => null);',
             errors: [{ messageId: 'noHook', data: { name: 'useIdentity' } }],
+        },
+    ],
+});
+
+describe('kernel boundary inventory', () => {
+    it('exposes one canonical list to the repository config', () => {
+        expect(kernelSourcePaths).toContain('Source/PivotViewer/engine/store.ts');
+        expect(kernelSourcePaths).toContain('Source/SchemaEditor/schemaHelpers.ts');
+    });
+
+    it.each([
+        'react',
+        'react/jsx-runtime',
+        'react-dom',
+        'react-dom/client',
+        'react-aria-components',
+        'react-aria-components/Button',
+    ])('classifies React kernel dependency %s', (specifier) => {
+        expect(isKernelReactSpecifier(specifier)).toBe(true);
+    });
+
+    it.each([
+        'reactive',
+        'react-dom-extra',
+        'react-aria',
+        'react-aria-components-extra',
+        '@react/components',
+    ])('allows near-miss kernel dependency %s', (specifier) => {
+        expect(isKernelReactSpecifier(specifier)).toBe(false);
+    });
+});
+
+tsRuleTester.run('no-react-in-kernel', noReactInKernel, {
+    valid: [
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "import { compute } from 'reactive'; compute();",
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "const renderer = await import('react-dom-extra'); void renderer;",
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: 'const document = { title: \'local\' }; document.title;',
+        },
+        {
+            filename: 'Source/Canvas/Canvas.tsx',
+            code: "import React from 'react'; document.createElement('div'); void React;",
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "import type { Event } from './events'; const event = {} as Event; void event;",
+        },
+    ],
+    invalid: [
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "import React from 'react'; void React;",
+            errors: [
+                {
+                    messageId: 'forbiddenDependency',
+                    data: {
+                        file: 'Source/PivotViewer/engine/store.ts',
+                        specifier: 'react',
+                    },
+                },
+            ],
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "import { createRoot } from 'react-dom/client'; void createRoot;",
+            errors: [{ messageId: 'forbiddenDependency' }],
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "const aria = await import('react-aria-components/Button'); void aria;",
+            errors: [{ messageId: 'forbiddenDependency' }],
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "const server = require('react-dom/server'); void server;",
+            errors: [{ messageId: 'forbiddenDependency' }],
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "export { useState } from 'react';",
+            errors: [{ messageId: 'forbiddenDependency' }],
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: "document.createElement('div');",
+            languageOptions: { globals: { document: 'readonly' } },
+            errors: [
+                {
+                    messageId: 'forbiddenBrowserGlobal',
+                    data: {
+                        file: 'Source/PivotViewer/engine/store.ts',
+                        name: 'document',
+                    },
+                },
+            ],
+        },
+        {
+            filename: 'Source/PivotViewer/engine/store.ts',
+            code: 'const element = {} as HTMLElement; void element;',
+            errors: [{ messageId: 'forbiddenBrowserGlobal' }],
         },
     ],
 });
