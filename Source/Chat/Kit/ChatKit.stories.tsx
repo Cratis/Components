@@ -29,8 +29,9 @@ const meta = {
                 style={{
                     padding: '1.5rem',
                     borderRadius: '0.75rem',
-                    background: '#15151f',
-                    color: 'rgba(255, 255, 255, 0.9)',
+                    background: 'var(--cratis-surface-overlay)',
+                    color: 'var(--cratis-text-color)',
+                    border: '1px solid var(--cratis-surface-border)',
                 }}
             >
                 <Story />
@@ -99,8 +100,9 @@ const AnchoredOverlayDemo = () => {
                     style={{
                         padding: '0.75rem',
                         borderRadius: '0.5rem',
-                        background: '#262637',
-                        color: 'rgba(255, 255, 255, 0.9)',
+                        background: 'var(--cratis-surface-overlay)',
+                        color: 'var(--cratis-text-color)',
+                        border: '1px solid var(--cratis-surface-border)',
                     }}
                 >
                     Portaled beyond the board boundary

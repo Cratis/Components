@@ -115,7 +115,7 @@
 
 .chat-bubble-time {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--cratis-text-color-secondary);
     padding-left: 2px;
 }
 

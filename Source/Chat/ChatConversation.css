@@ -74,7 +74,7 @@
 }
 
 .cratis-chat-message__mention {
-    color: var(--cratis-primary-color);
+    color: var(--cratis-highlight-text-color);
     background: var(--cratis-highlight-bg);
     border-radius: 4px;
     padding: 0 0.2em;

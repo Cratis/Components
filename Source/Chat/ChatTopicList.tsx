@@ -145,7 +145,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                     {labels?.empty ?? 'No topics yet. Start the first one!'}
                 </p>
             )}
-            <div className='cratis-chat-topics__list' role='list'>
+            <ul className='cratis-chat-topics__list'>
                 {topicsByActivity(topics).map((topic) => {
                     const starter =
                         topic.startedBy === undefined
@@ -155,61 +155,61 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                     const activity = topic.lastActivity ?? topic.started;
 
                     return (
-                        <button
-                            key={chatIdentifierString(topic.id)}
-                            type='button'
-                            role='listitem'
-                            className='cratis-chat-topics__topic'
-                            onClick={() => onOpen(topic)}
-                        >
-                            {topic.startedBy !== undefined &&
-                                starter &&
-                                (renderAvatar ? (
-                                    renderAvatar(topic.startedBy, starter)
-                                ) : (
-                                    <PersonAvatarCircle
-                                        userId={chatIdentifierString(topic.startedBy)}
-                                        name={starter.name}
-                                        hasAvatar={starter.hasAvatar ?? false}
-                                        size={28}
-                                        ownerType={
-                                            starter.kind === ChatAuthorKind.Agent
-                                                ? 'Agents'
-                                                : 'Users'
-                                        }
-                                        version={starter.avatarVersion}
-                                        buildAvatarUrl={buildAvatarUrl}
-                                    />
-                                ))}
-                            <span className='cratis-chat-topics__details'>
-                                <span
-                                    className={`cratis-chat-topics__name${isPending ? ' cratis-chat-topics__name--pending' : ''}`}
-                                >
-                                    {isPending
-                                        ? (labels?.unnamedTopic ?? 'New topic')
-                                        : topic.name}
-                                </span>
-                                {starter && (
-                                    <span className='cratis-chat-topics__started-by'>
-                                        {(
-                                            labels?.startedBy ?? 'Started by {name}'
-                                        ).replace('{name}', starter.name)}
+                        <li key={chatIdentifierString(topic.id)}>
+                            <button
+                                type='button'
+                                className='cratis-chat-topics__topic'
+                                onClick={() => onOpen(topic)}
+                            >
+                                {topic.startedBy !== undefined &&
+                                    starter &&
+                                    (renderAvatar ? (
+                                        renderAvatar(topic.startedBy, starter)
+                                    ) : (
+                                        <PersonAvatarCircle
+                                            userId={chatIdentifierString(topic.startedBy)}
+                                            name={starter.name}
+                                            hasAvatar={starter.hasAvatar ?? false}
+                                            size={28}
+                                            ownerType={
+                                                starter.kind === ChatAuthorKind.Agent
+                                                    ? 'Agents'
+                                                    : 'Users'
+                                            }
+                                            version={starter.avatarVersion}
+                                            buildAvatarUrl={buildAvatarUrl}
+                                        />
+                                    ))}
+                                <span className='cratis-chat-topics__details'>
+                                    <span
+                                        className={`cratis-chat-topics__name${isPending ? ' cratis-chat-topics__name--pending' : ''}`}
+                                    >
+                                        {isPending
+                                            ? (labels?.unnamedTopic ?? 'New topic')
+                                            : topic.name}
                                     </span>
-                                )}
-                            </span>
-                            {activity !== undefined && (
-                                <span className='cratis-chat-topics__activity'>
-                                    {relativeTimestamp(
-                                        activity,
-                                        new Date(),
-                                        labels?.timestamps,
+                                    {starter && (
+                                        <span className='cratis-chat-topics__started-by'>
+                                            {(
+                                                labels?.startedBy ?? 'Started by {name}'
+                                            ).replace('{name}', starter.name)}
+                                        </span>
                                     )}
                                 </span>
-                            )}
-                        </button>
+                                {activity !== undefined && (
+                                    <span className='cratis-chat-topics__activity'>
+                                        {relativeTimestamp(
+                                            activity,
+                                            new Date(),
+                                            labels?.timestamps,
+                                        )}
+                                    </span>
+                                )}
+                            </button>
+                        </li>
                     );
                 })}
-            </div>
+            </ul>
         </div>
     );
 };

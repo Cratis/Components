@@ -42,7 +42,7 @@
     border: none;
     padding: 0;
     font-size: 11px;
-    color: var(--cratis-text-color-secondary);
+    color: var(--cratis-text-color);
     text-decoration: underline;
     cursor: pointer;
 }
