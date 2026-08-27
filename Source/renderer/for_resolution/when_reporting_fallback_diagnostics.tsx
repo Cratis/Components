@@ -9,10 +9,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import sinon, { type SinonStub } from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
-import {
-    unstable_adapterErrorCodes,
-    unstable_useSlot,
-} from '..';
+import { unstable_adapterErrorCodes, unstable_useSlot } from '..';
+import { buttonSlot, createTestLibrary, FirstButton } from './testLibrary';
 
 const DuplicateFallbackProbe = () => {
     unstable_useSlot('common.tooltip');
@@ -42,10 +40,14 @@ describe('when reporting renderer fallback diagnostics', () => {
         consoleError.restore();
     });
 
-    it('should report one actionable diagnostic after mount, never during render', async () => {
+    it('should report one actionable diagnostic after an adapter falls back, never during render', async () => {
+        const library = createTestLibrary('button-only', buttonSlot(FirstButton), {
+            profileSlots: ['common.button'],
+        });
+
         await act(async () => {
             root.render(
-                <CratisComponentsProvider>
+                <CratisComponentsProvider library={library}>
                     <DuplicateFallbackProbe />
                 </CratisComponentsProvider>,
             );
@@ -59,12 +61,25 @@ describe('when reporting renderer fallback diagnostics', () => {
 
         await act(async () => {
             root.render(
-                <CratisComponentsProvider>
+                <CratisComponentsProvider library={library}>
                     <DuplicateFallbackProbe />
                 </CratisComponentsProvider>,
             );
         });
 
         expect(consoleError.callCount).to.equal(1);
+    });
+
+    it('should treat the zero-config Core path as the default rather than a fallback warning', async () => {
+        await act(async () => {
+            root.render(
+                <CratisComponentsProvider>
+                    <DuplicateFallbackProbe />
+                </CratisComponentsProvider>,
+            );
+        });
+
+        expect(container.textContent).to.equal('missing');
+        expect(consoleError.callCount).to.equal(0);
     });
 });

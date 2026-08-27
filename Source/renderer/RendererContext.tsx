@@ -62,8 +62,9 @@ export interface unstable_RendererRootProps {
 }
 
 /** One source-owned context singleton. It is deliberately not exported from the renderer barrel. */
-export const unstable_RendererContext =
-    createContext<unstable_RendererContextValue | undefined>(undefined);
+export const unstable_RendererContext = createContext<
+    unstable_RendererContextValue | undefined
+>(undefined);
 
 const nestedLibraryDiagnostic = (
     library: unstable_UiLibrary,
@@ -86,7 +87,8 @@ export const unstable_RendererRoot = ({
     const parent = useContext(unstable_RendererContext);
     const selected = useMemo(() => unstable_resolveLibraryInput(library), [library]);
     const layer = useMemo(
-        () => selected.library ? unstable_createRendererLayer(selected.library) : undefined,
+        () =>
+            selected.library ? unstable_createRendererLayer(selected.library) : undefined,
         [selected],
     );
     const reportedDiagnostics = useRef(new Set<string>());
@@ -98,10 +100,12 @@ export const unstable_RendererRoot = ({
     }, []);
 
     const diagnostics = useMemo(() => {
-        if (!selected.library) return Object.freeze([]) as readonly unstable_AdapterDiagnostic[];
+        if (!selected.library)
+            return Object.freeze([]) as readonly unstable_AdapterDiagnostic[];
 
-        const currentDiagnostics = selected.references.flatMap(reference =>
-            unstable_validateUiLibrary(reference));
+        const currentDiagnostics = selected.references.flatMap((reference) =>
+            unstable_validateUiLibrary(reference),
+        );
         if (
             parent?.providerLibraryReferences.length &&
             !unstable_sameLibraryReferences(
@@ -125,49 +129,48 @@ export const unstable_RendererRoot = ({
     }
 
     const layers = useMemo(
-        () => Object.freeze([
-            ...(parent?.layers ?? []),
-            ...(layer ? [layer] : []),
-        ]),
+        () => Object.freeze([...(parent?.layers ?? []), ...(layer ? [layer] : [])]),
         [layer, parent?.layers],
     );
-    const slots = useMemo(
-        () => unstable_createResolvedSlotTable(layers),
-        [layers],
-    );
+    const slots = useMemo(() => unstable_createResolvedSlotTable(layers), [layers]);
     const resolvedCoreSlots = useMemo(
-        () => coreSlots
-            ? Object.freeze({ ...coreSlots })
-            : parent?.coreSlots ?? unstable_emptyCoreRendererSlots,
+        () =>
+            coreSlots
+                ? Object.freeze({ ...coreSlots })
+                : (parent?.coreSlots ?? unstable_emptyCoreRendererSlots),
         [coreSlots, parent?.coreSlots],
     );
-    const value = useMemo<unstable_RendererContextValue>(() => Object.freeze({
-        layers,
-        slots,
-        libraryMode,
-        rendererFallback,
-        overlayEnvironment:
-            overlayEnvironment ??
-            parent?.overlayEnvironment ??
-            unstable_defaultOverlayEnvironment,
-        coreSlots: resolvedCoreSlots,
-        providerLibraryReferences:
-            selected.references.length > 0
-                ? selected.references
-                : parent?.providerLibraryReferences ?? selected.references,
-        reportDiagnostic,
-    }), [
-        layers,
-        libraryMode,
-        overlayEnvironment,
-        parent?.overlayEnvironment,
-        parent?.providerLibraryReferences,
-        rendererFallback,
-        reportDiagnostic,
-        resolvedCoreSlots,
-        selected.references,
-        slots,
-    ]);
+    const value = useMemo<unstable_RendererContextValue>(
+        () =>
+            Object.freeze({
+                layers,
+                slots,
+                libraryMode,
+                rendererFallback,
+                overlayEnvironment:
+                    overlayEnvironment ??
+                    parent?.overlayEnvironment ??
+                    unstable_defaultOverlayEnvironment,
+                coreSlots: resolvedCoreSlots,
+                providerLibraryReferences:
+                    selected.references.length > 0
+                        ? selected.references
+                        : (parent?.providerLibraryReferences ?? selected.references),
+                reportDiagnostic,
+            }),
+        [
+            layers,
+            libraryMode,
+            overlayEnvironment,
+            parent?.overlayEnvironment,
+            parent?.providerLibraryReferences,
+            rendererFallback,
+            reportDiagnostic,
+            resolvedCoreSlots,
+            selected.references,
+            slots,
+        ],
+    );
 
     const LibraryProvider = selected.library?.Provider;
     return (
@@ -182,8 +185,7 @@ const fallbackDiagnostic = (
     slotId: unstable_SlotId,
 ): unstable_AdapterDiagnostic => ({
     code: unstable_adapterErrorCodes.strictProfileFallback,
-    adapterId:
-        context?.layers[context.layers.length - 1]?.library.id ?? 'core',
+    adapterId: context?.layers[context.layers.length - 1]?.library.id ?? 'core',
     slotId,
     message: `Renderer resolution requested Core fallback for slot '${slotId}'.`,
     remedy: `Provide a supported '${slotId}' renderer declaration or intentionally retain the Core fallback.`,
@@ -206,9 +208,10 @@ export const unstable_useSlot = <K extends unstable_SlotId>(
         context?.coreSlots ?? unstable_emptyCoreRendererSlots,
     );
 
-    const diagnostic = result.usedCoreFallback
-        ? fallbackDiagnostic(context, slotId)
-        : undefined;
+    const diagnostic =
+        result.usedCoreFallback && (context?.layers.length ?? 0) > 0
+            ? fallbackDiagnostic(context, slotId)
+            : undefined;
 
     useEffect(() => {
         if (!diagnostic) return;
@@ -223,23 +226,23 @@ export const unstable_useSlot = <K extends unstable_SlotId>(
         }
     }, [context, diagnostic]);
 
-    if (
-        !result.declaration &&
-        (context?.rendererFallback ?? 'core') === 'throw'
-    ) {
-        throw new unstable_AdapterError(diagnostic ?? fallbackDiagnostic(context, slotId));
+    if (!result.declaration && (context?.rendererFallback ?? 'core') === 'throw') {
+        throw new unstable_AdapterError(
+            diagnostic ?? fallbackDiagnostic(context, slotId),
+        );
     }
 
     return result.declaration;
 };
 
 /** Returns whether any active renderer layer advertises a Core-owned capability. */
-export const unstable_useCapability = (
-    capability: unstable_CapabilityId,
-): boolean => {
+export const unstable_useCapability = (capability: unstable_CapabilityId): boolean => {
     const context = useContext(unstable_RendererContext);
-    return context?.layers.some(layer =>
-        layer.library.capabilities.includes(capability)) ?? false;
+    return (
+        context?.layers.some((layer) =>
+            layer.library.capabilities.includes(capability),
+        ) ?? false
+    );
 };
 
 /**

@@ -26,8 +26,10 @@ import {
 const ResolutionProbe = () => {
     const button = unstable_useSlot('common.button')?.render;
     const tooltip = unstable_useSlot('common.tooltip')?.render;
-    const buttonId = button === FirstButton ? 'first' : button === LastButton ? 'last' : 'missing';
-    const tooltipId = tooltip === FirstTooltip ? 'first' : tooltip === LastTooltip ? 'last' : 'missing';
+    const buttonId =
+        button === FirstButton ? 'first' : button === LastButton ? 'last' : 'missing';
+    const tooltipId =
+        tooltip === FirstTooltip ? 'first' : tooltip === LastTooltip ? 'last' : 'missing';
     return <span data-button={buttonId} data-tooltip={tooltipId} />;
 };
 
@@ -36,10 +38,7 @@ const MissingProbe = () => {
     return <span>{declaration ? 'found' : 'missing'}</span>;
 };
 
-const combinedSlots = (
-    button: typeof FirstButton,
-    tooltip: typeof FirstTooltip,
-) => ({
+const combinedSlots = (button: typeof FirstButton, tooltip: typeof FirstTooltip) => ({
     ...buttonSlot(button),
     ...tooltipSlot(tooltip),
 });
@@ -63,10 +62,7 @@ describe('when resolving renderer slots', () => {
             'outer',
             combinedSlots(FirstButton, FirstTooltip),
         );
-        const inner = createTestLibrary(
-            'inner',
-            combinedSlots(LastButton, LastTooltip),
-        );
+        const inner = createTestLibrary('inner', combinedSlots(LastButton, LastTooltip));
 
         const html = renderToStaticMarkup(
             <CratisComponentsProvider library={outer}>
