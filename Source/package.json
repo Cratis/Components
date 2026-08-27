@@ -220,6 +220,7 @@
         "verify-api-docs": "node ./scripts/verify-api-docs.mjs",
         "verify-public-types": "node ./scripts/verify-public-types.mjs",
         "verify-package-graph": "node ./scripts/verify-package-graph.mjs",
+        "verify-package-graph-report": "node ./scripts/verify-package-graph-report.mjs",
         "verify-no-pixi-consumer": "node ./scripts/verify-no-pixi-consumer.mjs",
         "verify-spatial-consumer": "node ./scripts/verify-spatial-consumer.mjs",
         "verify-provider-context-identity": "node ./scripts/verify-provider-context-identity.mjs",
@@ -232,7 +233,7 @@
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
-        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts",
+        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts && yarn verify-package-graph-report",
         "up": "yarn g:up",
         "dev": "npx storybook dev -p 6006",
         "build-storybook": "npx storybook build"

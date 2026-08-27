@@ -223,8 +223,8 @@ for (const sourcePath of kernelSourcePaths) {
 
     if (!existsSync(runtimeEntry) || !existsSync(declarationEntry)) {
         const missing = [
-            !existsSync(runtimeEntry) ? runtimeEntryRelative : undefined,
-            !existsSync(declarationEntry) ? declarationEntryRelative : undefined,
+            existsSync(runtimeEntry) ? undefined : runtimeEntryRelative,
+            existsSync(declarationEntry) ? undefined : declarationEntryRelative,
         ].filter(Boolean);
         violations.push(
             `${sourcePath}: declared kernel module is missing emitted output: ${missing.join(', ')}.`,
@@ -323,6 +323,7 @@ const componentImplementationDirectories = [
     ),
 ].sort();
 const BUILTIN_RENDERER_SUBPATH = './renderer/builtin';
+const coreSlotIsolationSubpaths = new Set([BUILTIN_RENDERER_SUBPATH]);
 const leanCoreSlotSubpaths = new Set(['.', './Common']);
 const coreSlotCrossFamilyDirectories = [
     'DataTables/',
@@ -338,10 +339,7 @@ for (const row of subpathReports) {
         ['declaration', row.declarations],
     ]) {
         const coreSlotFiles = reachesCoreSlots(closure);
-        if (
-            coreSlotFiles.length > 0 &&
-            row.subpath !== BUILTIN_RENDERER_SUBPATH
-        ) {
+        if (coreSlotFiles.length > 0 && row.subpath !== BUILTIN_RENDERER_SUBPATH) {
             violations.push(
                 `${row.subpath}: ${kind} closure reaches private all-family Core slot table; ` +
                     `only ${BUILTIN_RENDERER_SUBPATH} may reach ${coreSlotFiles.join(', ')}.`,
