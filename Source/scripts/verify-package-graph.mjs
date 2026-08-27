@@ -9,7 +9,7 @@
  * `Source/package.json`'s `exports` map, using the shared walker in
  * `scripts/lib/dependency-graph.mjs`.
  *
- * Two module boundaries are asserted, independent of any one subpath's current
+ * Package boundaries are asserted independently of any one subpath's current
  * behavior:
  *
  *   1. Every *non-spatial* subpath (every subpath except `./Canvas` and
@@ -21,6 +21,13 @@
  *      *own* specifiers (not just the closures reachable from a public subpath), so
  *      an internal-only file could not quietly reintroduce a Pixi edge without being
  *      reachable from any `exports` entry.
+ *
+ *   3. Renderer-vendor imports (`@mui/*`, `@emotion/*`, PrimeReact, and PrimeUIX)
+ *      are forbidden from every emitted runtime and declaration file.
+ *   4. When `./renderer` is exported, its runtime closure has no external dependency
+ *      and reaches no component implementation directory. Its declaration closure may
+ *      reach Components-owned prop declarations and React types, but no renderer vendor.
+ *      The check is explicitly deferred until that export exists.
  *
  * `./Canvas` and `./PivotViewer` are additionally asserted to actually reach
  * `pixi.js` - a subpath that stopped needing Pixi should have its optional peer
@@ -39,6 +46,8 @@ import {
     closureOf,
     closureTouchesSpatialDirectory,
     isPixiSpecifier,
+    isRendererVendorSpecifier,
+    rendererBoundaryReport,
 } from './lib/dependency-graph.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -162,17 +171,18 @@ for (const { subpath, jsEntry, dtsEntry } of jsSubpaths) {
 
 // Project-wide direct-import scan: pixi.js may only ever be imported by a file that
 // itself lives under Canvas/ or PivotViewer/, regardless of exports-map reachability.
-// Renderer runtime modules are a second strict tier: they may depend only on sibling renderer
-// runtime modules. Public component contracts enter renderer declarations through type-only imports.
+// Renderer-vendor packages may not be imported by any emitted runtime or declaration file.
 const allEmitted = emittedFiles(esmRoot);
 const directPixiImporters = [];
-const rendererRuntimeBoundaryViolations = [];
+const rendererVendorImporters = [];
 {
     const { moduleSpecifiers } = await import('./lib/dependency-graph.mjs');
     const ts = (await import('typescript')).default;
     const { readFileSync } = await import('node:fs');
     for (const file of allEmitted) {
         const relative = path.relative(esmRoot, file).split(path.sep).join('/');
+        const isSpatialFile =
+            relative.startsWith('Canvas/') || relative.startsWith('PivotViewer/');
         const source = readFileSync(file, 'utf8');
         const sourceFile = ts.createSourceFile(
             file,
@@ -182,24 +192,17 @@ const rendererRuntimeBoundaryViolations = [];
             file.endsWith('.d.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS,
         );
         const specifiers = moduleSpecifiers(sourceFile);
-
-        if (
-            !relative.startsWith('Canvas/') &&
-            !relative.startsWith('PivotViewer/') &&
-            specifiers.some(isPixiSpecifier)
-        ) {
+        if (!isSpatialFile && specifiers.some(isPixiSpecifier)) {
             directPixiImporters.push(relative);
         }
-
-        if (relative.startsWith('renderer/') && file.endsWith('.js')) {
-            for (const specifier of specifiers) {
-                const target = specifier.startsWith('.')
-                    ? path.resolve(path.dirname(file), specifier)
-                    : undefined;
-                if (!target || !target.startsWith(`${path.join(esmRoot, 'renderer')}${path.sep}`)) {
-                    rendererRuntimeBoundaryViolations.push(`${relative} -> ${specifier}`);
-                }
-            }
+        for (const specifier of new Set(
+            specifiers.filter(isRendererVendorSpecifier),
+        )) {
+            rendererVendorImporters.push({
+                file: relative,
+                specifier,
+                kind: file.endsWith('.d.ts') ? 'declaration' : 'runtime',
+            });
         }
     }
 }
@@ -210,11 +213,36 @@ if (directPixiImporters.length > 0) {
             directPixiImporters.join(', '),
     );
 }
-if (rendererRuntimeBoundaryViolations.length > 0) {
+
+for (const importer of rendererVendorImporters) {
     violations.push(
-        `renderer runtime modules import outside the renderer contract directory: ` +
-            rendererRuntimeBoundaryViolations.join(', '),
+        `renderer-vendor specifier '${importer.specifier}' is imported by ` +
+            `${importer.file} (${importer.kind}).`,
     );
+}
+
+const componentImplementationDirectories = [
+    ...new Set(
+        jsSubpaths.flatMap(({ subpath, jsEntry }) => {
+            if (
+                subpath === '.' ||
+                subpath === './renderer' ||
+                subpath === './types'
+            )
+                return [];
+            const relative = path.relative(esmRoot, jsEntry).split(path.sep).join('/');
+            const separator = relative.indexOf('/');
+            return separator > 0 ? [relative.slice(0, separator)] : [];
+        }),
+    ),
+].sort();
+const rendererSubpath = subpathReports.find((row) => row.subpath === './renderer');
+const rendererBoundary = rendererBoundaryReport(
+    rendererSubpath,
+    componentImplementationDirectories,
+);
+for (const violation of rendererBoundary.violations) {
+    violations.push(`./renderer: ${violation}.`);
 }
 
 console.log(`\nverify-package-graph: ${pkg.name}@${pkg.version}`);
@@ -242,7 +270,8 @@ if (reportPath) {
                 spatialSubpaths: [...SPATIAL_SUBPATHS],
                 subpaths: subpathReports,
                 directPixiImportersOutsideSpatialSubpaths: directPixiImporters,
-                rendererRuntimeBoundaryViolations,
+                rendererVendorImporters,
+                rendererBoundary,
                 violations,
             },
             null,
@@ -260,6 +289,16 @@ if (violations.length > 0) {
 
 console.log(
     `\nAll ${subpathReports.length} subpath(s) respect the spatial/non-spatial module-graph boundary; ` +
-        `'pixi.js' is reachable only from Canvas/ and PivotViewer/, and renderer runtime modules ` +
-        `have no component-family or external edges.`,
+        `'pixi.js' is reachable only from Canvas/ and PivotViewer/, and emitted Core files ` +
+        `have no renderer-vendor imports.`,
 );
+if (rendererBoundary.status === 'deferred') {
+    console.log(
+        `Renderer boundary check deferred: ${rendererBoundary.reason} It will activate automatically when the export is added.`,
+    );
+} else {
+    console.log(
+        `Renderer boundary check passed: runtime has no external or component-implementation edges, ` +
+            `and declarations have no renderer-vendor type edges.`,
+    );
+}

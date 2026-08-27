@@ -113,6 +113,95 @@ export function closureOf(entryFile, root) {
 export const isPixiSpecifier = (specifier) =>
     specifier === 'pixi.js' || specifier.startsWith('pixi.js/');
 
+/** True when `specifier` names a renderer vendor package forbidden from Components Core. */
+export const isRendererVendorSpecifier = (specifier) =>
+    specifier.startsWith('@mui/') ||
+    specifier.startsWith('@emotion/') ||
+    specifier === 'primereact' ||
+    specifier.startsWith('primereact/') ||
+    specifier.startsWith('@primereact/') ||
+    specifier.startsWith('@primeuix/');
+
+/**
+ * Classifies the renderer export's runtime and declaration closures without reading the file system.
+ * Runtime code may not depend on external packages or component implementations. Declarations may
+ * refer to Components-owned prop declarations and React types, but never renderer-vendor types.
+ */
+export function analyzeRendererBoundary(
+    runtimeClosure,
+    declarationClosure,
+    componentImplementationDirectories,
+) {
+    const runtimeExternalDependencies = [...new Set(runtimeClosure.external)].sort();
+    const runtimeComponentImplementationFiles = [
+        ...new Set(
+            runtimeClosure.files.filter((file) =>
+                componentImplementationDirectories.some((directory) =>
+                    file.startsWith(`${directory}/`),
+                ),
+            ),
+        ),
+    ].sort();
+    const declarationVendorDependencies = [
+        ...new Set(declarationClosure.external.filter(isRendererVendorSpecifier)),
+    ].sort();
+    const violations = [];
+
+    if (runtimeExternalDependencies.length > 0) {
+        violations.push(
+            `runtime closure reaches external dependencies: ${runtimeExternalDependencies.join(', ')}`,
+        );
+    }
+    if (runtimeComponentImplementationFiles.length > 0) {
+        violations.push(
+            'runtime closure reaches component implementation files: ' +
+                runtimeComponentImplementationFiles.join(', '),
+        );
+    }
+    if (declarationVendorDependencies.length > 0) {
+        violations.push(
+            `declaration closure reaches renderer-vendor types: ${declarationVendorDependencies.join(', ')}`,
+        );
+    }
+
+    return {
+        runtimeExternalDependencies,
+        runtimeComponentImplementationFiles,
+        declarationVendorDependencies,
+        violations,
+    };
+}
+
+/** Produces the stable machine-report shape for an optional `./renderer` export. */
+export function rendererBoundaryReport(
+    rendererSubpath,
+    componentImplementationDirectories,
+) {
+    if (!rendererSubpath) {
+        return {
+            status: 'deferred',
+            reason: "The './renderer' export is not present.",
+            componentImplementationDirectories,
+            runtimeExternalDependencies: [],
+            runtimeComponentImplementationFiles: [],
+            declarationVendorDependencies: [],
+            violations: [],
+        };
+    }
+
+    const result = analyzeRendererBoundary(
+        rendererSubpath.runtime,
+        rendererSubpath.declarations,
+        componentImplementationDirectories,
+    );
+    return {
+        status: result.violations.length === 0 ? 'passed' : 'failed',
+        reason: '',
+        componentImplementationDirectories,
+        ...result,
+    };
+}
+
 /** True when a closure's `files` list contains a module under `Canvas/` or `PivotViewer/`. */
 export const closureTouchesSpatialDirectory = (files) =>
     files.some(
