@@ -50,8 +50,8 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
-        "@cratis/arc": "22.3.0",
-        "@cratis/arc.react": "22.3.0",
+        "@cratis/arc": "22.4.0",
+        "@cratis/arc.react": "22.4.0",
         "@cratis/components": "workspace:^",
         "@cratis/fundamentals": "^7.10.3",
         "react": "^19.0.0",

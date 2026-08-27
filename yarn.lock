@@ -251,38 +251,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc.react@npm:22.3.0":
-  version: 22.3.0
-  resolution: "@cratis/arc.react@npm:22.3.0"
+"@cratis/arc.react@npm:22.4.0":
+  version: 22.4.0
+  resolution: "@cratis/arc.react@npm:22.4.0"
   dependencies:
-    "@cratis/arc": "npm:22.3.0"
+    "@cratis/arc": "npm:22.4.0"
     "@cratis/fundamentals": "npm:^7.18.0"
     tsyringe: "npm:^4.10.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/41687fa4364fa4e4200efa397979c19e06982d3cf5e575ff4a9993d7b3c2fb5e394e9a1963b424881971b33514e1bae98db7eda33527cc12e5b978f03bd39ec8
+  checksum: 10/9551831c10213a289ef453ad8e50b0d0258600f0fdc7fc5606f44ab7bdea6d78db24a7870bfe0529f3049a0c6f8e1b1027e0cfd509f2de3479e4f211fb524399
   languageName: node
   linkType: hard
 
-"@cratis/arc.vite@npm:22.3.0":
-  version: 22.3.0
-  resolution: "@cratis/arc.vite@npm:22.3.0"
+"@cratis/arc.vite@npm:22.4.0":
+  version: 22.4.0
+  resolution: "@cratis/arc.vite@npm:22.4.0"
   dependencies:
-    "@cratis/arc": "npm:22.3.0"
+    "@cratis/arc": "npm:22.4.0"
     "@swc/core": "npm:^1.15.43"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/0a085be5338038028fce224bbbbda302cac4af09c866bea3d94efe101803397c8aa3a5d0b983200db3a1062c4340dd6a392944aff68377b237976f68bed891d7
+  checksum: 10/21cb30cfa131e605201611308e9f7633cb6bec99c32726a7b366eed2feee0692b785ad3803b2aea62eb3b1e04694a5db8e7d7bf75302c115a8518539171de5f4
   languageName: node
   linkType: hard
 
-"@cratis/arc@npm:22.3.0":
-  version: 22.3.0
-  resolution: "@cratis/arc@npm:22.3.0"
+"@cratis/arc@npm:22.4.0":
+  version: 22.4.0
+  resolution: "@cratis/arc@npm:22.4.0"
   dependencies:
     "@cratis/fundamentals": "npm:^7.18.0"
     rxjs: "npm:^7.8.2"
-  checksum: 10/b53abd51531852dfc18b03812ff7059561979591bde5334b2836cc994ab1c71a8c4d1c09cba52667bae4a79233596dc758228fb9752bbba4e2a17a58536f182d
+  checksum: 10/500d009e95c74ba16919a087b959eeebe05b77be5ea8f0ddf0aab8b1b65f3c6e3dba900da8eb11a847d6462955d983d747822556c32463f5746462320fc8901d
   languageName: node
   linkType: hard
 
@@ -302,8 +302,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.conformance@workspace:Conformance"
   dependencies:
-    "@cratis/arc": "npm:22.3.0"
-    "@cratis/arc.react": "npm:22.3.0"
+    "@cratis/arc": "npm:22.4.0"
+    "@cratis/arc.react": "npm:22.4.0"
     "@cratis/components": "workspace:^"
     "@cratis/fundamentals": "npm:^7.10.3"
     axe-core: "npm:^4.13.0"
@@ -322,11 +322,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components@workspace:Source"
   dependencies:
-    "@cratis/arc.vite": "npm:22.3.0"
+    "@cratis/arc.vite": "npm:22.4.0"
     "@internationalized/date": "npm:3.12.3"
     allotment: "npm:1.20.5"
     framer-motion: "npm:13.1.1"
-    pixi.js: "npm:^8.20.0"
+    pixi.js: "npm:^8.20.1"
     react-aria: "npm:3.51.0"
     react-aria-components: "npm:1.20.0"
     react-icons: "npm:5.7.0"
@@ -2466,7 +2466,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^26.3.0":
+"@types/node@npm:^26.4.0":
   version: 26.4.0
   resolution: "@types/node@npm:26.4.0"
   dependencies:
@@ -6508,7 +6508,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pixi.js@npm:^8.20.0":
+"pixi.js@npm:^8.20.1":
   version: 8.20.1
   resolution: "pixi.js@npm:8.20.1"
   dependencies:
@@ -7100,9 +7100,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
-    "@cratis/arc": "npm:22.3.0"
-    "@cratis/arc.react": "npm:22.3.0"
-    "@cratis/arc.vite": "npm:22.3.0"
+    "@cratis/arc": "npm:22.4.0"
+    "@cratis/arc.react": "npm:22.4.0"
+    "@cratis/arc.vite": "npm:22.4.0"
     "@eslint/eslintrc": "npm:^3.3.6"
     "@eslint/js": "npm:^10.0.1"
     "@rollup/plugin-node-resolve": "npm:^16.0.3"
@@ -7118,7 +7118,7 @@ __metadata:
     "@types/chai": "npm:^5.2.3"
     "@types/chai-as-promised": "npm:^8.0.2"
     "@types/mocha": "npm:^10.0.10"
-    "@types/node": "npm:^26.3.0"
+    "@types/node": "npm:^26.4.0"
     "@types/react": "npm:^19.2.18"
     "@types/react-dom": "npm:^19.2.5"
     "@types/sinon": "npm:^22.0.0"
