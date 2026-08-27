@@ -113,14 +113,14 @@ export const unstable_composeUiLibraries = (
 
     const last = libraries[libraries.length - 1];
     const capabilities = [
-        ...new Set(libraries.flatMap(library => library.capabilities)),
+        ...new Set(libraries.flatMap((library) => library.capabilities)),
     ];
-    const slots = Object.assign({}, ...libraries.map(library => library.slots));
+    const slots = Object.assign({}, ...libraries.map((library) => library.slots));
 
     return unstable_defineUiLibrary({
         ...last,
         capabilities,
-        profileSlots: last.profileSlots ?? Object.keys(slots) as unstable_SlotId[],
+        profileSlots: last.profileSlots ?? (Object.keys(slots) as unstable_SlotId[]),
         slots,
     });
 };

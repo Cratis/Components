@@ -1,12 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import {
-    useContext,
-    useEffect,
-    useMemo,
-    type ReactNode,
-} from 'react';
+import { useContext, useEffect, useMemo, type ReactNode } from 'react';
 import {
     unstable_AdapterError,
     unstable_adapterErrorCodes,
@@ -59,24 +54,24 @@ export const unstable_RendererScope = ({
 }: unstable_RendererScopeProps) => {
     const parent = useContext(unstable_RendererContext);
     const selected = useMemo(() => unstable_resolveLibraryInput(use), [use]);
-    const acceptedOnly = useMemo(
-        () => only?.filter(unstable_isKnownSlot),
-        [only],
-    );
+    const acceptedOnly = useMemo(() => only?.filter(unstable_isKnownSlot), [only]);
     const layer = useMemo(
-        () => selected.library
-            ? unstable_createRendererLayer(selected.library, acceptedOnly)
-            : undefined,
+        () =>
+            selected.library
+                ? unstable_createRendererLayer(selected.library, acceptedOnly)
+                : undefined,
         [acceptedOnly, selected],
     );
     const diagnostics = useMemo(() => {
-        if (!selected.library) return Object.freeze([]) as readonly unstable_AdapterDiagnostic[];
+        if (!selected.library)
+            return Object.freeze([]) as readonly unstable_AdapterDiagnostic[];
         return Object.freeze([
-            ...selected.references.flatMap(reference =>
-                unstable_validateUiLibrary(reference)),
+            ...selected.references.flatMap((reference) =>
+                unstable_validateUiLibrary(reference),
+            ),
             ...(only ?? [])
-                .filter(slotId => !unstable_isKnownSlot(slotId))
-                .map(slotId => invalidOnlyDiagnostic(selected.library!, slotId)),
+                .filter((slotId) => !unstable_isKnownSlot(slotId))
+                .map((slotId) => invalidOnlyDiagnostic(selected.library!, slotId)),
         ]);
     }, [only, selected]);
 
@@ -91,23 +86,22 @@ export const unstable_RendererScope = ({
     }
 
     const layers = useMemo(
-        () => parent && layer
-            ? Object.freeze([...parent.layers, layer])
-            : undefined,
+        () => (parent && layer ? Object.freeze([...parent.layers, layer]) : undefined),
         [layer, parent],
     );
     const slots = useMemo(
-        () => layers ? unstable_createResolvedSlotTable(layers) : undefined,
+        () => (layers ? unstable_createResolvedSlotTable(layers) : undefined),
         [layers],
     );
     const value = useMemo<unstable_RendererContextValue | undefined>(
-        () => parent && layers && slots
-            ? Object.freeze({
-                ...parent,
-                layers,
-                slots,
-            })
-            : undefined,
+        () =>
+            parent && layers && slots
+                ? Object.freeze({
+                      ...parent,
+                      layers,
+                      slots,
+                  })
+                : undefined,
         [layers, parent, slots],
     );
     const LibraryProvider = selected.library?.Provider;

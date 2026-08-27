@@ -181,7 +181,8 @@ export const unstable_createResolvedSlotTable = (
                 !declaration ||
                 declaration.fidelity === 'unsupported' ||
                 (layer.only && !layer.only.has(slotId as unstable_SlotId))
-            ) continue;
+            )
+                continue;
             resolved[slotId] = declaration;
         }
     }
@@ -204,10 +205,13 @@ export const unstable_resolveSlot = <K extends unstable_SlotId>(
 };
 
 /** Stable log key used to de-duplicate diagnostics within one provider identity. */
-export const unstable_diagnosticKey = (
-    diagnostic: unstable_AdapterDiagnostic,
-): string =>
-    [diagnostic.code, diagnostic.adapterId, diagnostic.slotId ?? '', diagnostic.message].join('|');
+export const unstable_diagnosticKey = (diagnostic: unstable_AdapterDiagnostic): string =>
+    [
+        diagnostic.code,
+        diagnostic.adapterId,
+        diagnostic.slotId ?? '',
+        diagnostic.message,
+    ].join('|');
 
 /** Emits one actionable renderer diagnostic without exposing manifest contents. */
 export const unstable_logDiagnostic = (diagnostic: unstable_AdapterDiagnostic): void => {

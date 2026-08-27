@@ -140,7 +140,7 @@ export function analyzeRendererBoundary(
     const runtimeExternalDependencies = [
         ...new Set(
             runtimeClosure.external.filter(
-                specifier => !isRendererFrameworkRuntimeSpecifier(specifier),
+                (specifier) => !isRendererFrameworkRuntimeSpecifier(specifier),
             ),
         ),
     ].sort();

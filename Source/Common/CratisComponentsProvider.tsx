@@ -282,7 +282,9 @@ export const CratisComponentsProvider = ({
             <CratisComponentsContext.Provider value={resolved}>
                 <I18nProvider locale={validLocale(resolved.locale)}>
                     {children}
-                    {toaster && <Toaster {...(typeof toaster === 'object' ? toaster : {})} />}
+                    {toaster && (
+                        <Toaster {...(typeof toaster === 'object' ? toaster : {})} />
+                    )}
                 </I18nProvider>
             </CratisComponentsContext.Provider>
         </RendererRoot>
