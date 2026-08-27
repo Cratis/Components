@@ -195,9 +195,7 @@ const rendererVendorImporters = [];
         if (!isSpatialFile && specifiers.some(isPixiSpecifier)) {
             directPixiImporters.push(relative);
         }
-        for (const specifier of new Set(
-            specifiers.filter(isRendererVendorSpecifier),
-        )) {
+        for (const specifier of new Set(specifiers.filter(isRendererVendorSpecifier))) {
             rendererVendorImporters.push({
                 file: relative,
                 specifier,
@@ -224,11 +222,7 @@ for (const importer of rendererVendorImporters) {
 const componentImplementationDirectories = [
     ...new Set(
         jsSubpaths.flatMap(({ subpath, jsEntry }) => {
-            if (
-                subpath === '.' ||
-                subpath === './renderer' ||
-                subpath === './types'
-            )
+            if (subpath === '.' || subpath === './renderer' || subpath === './types')
                 return [];
             const relative = path.relative(esmRoot, jsEntry).split(path.sep).join('/');
             const separator = relative.indexOf('/');
