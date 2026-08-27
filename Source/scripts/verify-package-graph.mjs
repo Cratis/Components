@@ -31,6 +31,9 @@
  *   5. The setup-only root, `./Common`, and public `./renderer` closures never reach the
  *      private all-family `renderer/coreSlots` ABI-proof table. Root and `./Common` also stay
  *      outside the table's DataTables, Dialogs, Display, and Dropdown family directories.
+ *   6. Every source module in the canonical repository-owned kernel inventory has emitted
+ *      runtime and declaration closures with no React, React DOM, or React Aria Components
+ *      dependency, and no emitted runtime reference to a browser DOM global.
  *
  * `./Canvas` and `./PivotViewer` are additionally asserted to actually reach
  * `pixi.js` - a subpath that stopped needing Pixi should have its optional peer
@@ -45,11 +48,19 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 import {
+    kernelEmittedPath,
+    kernelSourcePaths,
+} from '../../ESLint/lib/kernelBoundary.js';
+import {
+    analyzeKernelBoundary,
+    browserRuntimeReferences,
     closureOf,
     closureTouchesSpatialDirectory,
     isPixiSpecifier,
     isRendererVendorSpecifier,
+    moduleSpecifiers,
     rendererBoundaryReport,
 } from './lib/dependency-graph.mjs';
 
@@ -179,9 +190,6 @@ const allEmitted = emittedFiles(esmRoot);
 const directPixiImporters = [];
 const rendererVendorImporters = [];
 {
-    const { moduleSpecifiers } = await import('./lib/dependency-graph.mjs');
-    const ts = (await import('typescript')).default;
-    const { readFileSync } = await import('node:fs');
     for (const file of allEmitted) {
         const relative = path.relative(esmRoot, file).split(path.sep).join('/');
         const isSpatialFile =
@@ -206,6 +214,68 @@ const rendererVendorImporters = [];
             });
         }
     }
+}
+
+const kernelBoundary = [];
+for (const sourcePath of kernelSourcePaths) {
+    const runtimeEntryRelative = kernelEmittedPath(sourcePath, '.js');
+    const declarationEntryRelative = kernelEmittedPath(sourcePath, '.d.ts');
+    const runtimeEntry = path.join(esmRoot, runtimeEntryRelative);
+    const declarationEntry = path.join(esmRoot, declarationEntryRelative);
+
+    if (!existsSync(runtimeEntry) || !existsSync(declarationEntry)) {
+        const missing = [
+            !existsSync(runtimeEntry) ? runtimeEntryRelative : undefined,
+            !existsSync(declarationEntry) ? declarationEntryRelative : undefined,
+        ].filter(Boolean);
+        violations.push(
+            `${sourcePath}: declared kernel module is missing emitted output: ${missing.join(', ')}.`,
+        );
+        kernelBoundary.push({
+            sourcePath,
+            status: 'failed',
+            runtime: { files: [], external: [] },
+            declarations: { files: [], external: [] },
+            runtimeReactDependencies: [],
+            declarationReactDependencies: [],
+            browserRuntimeEdges: [],
+            violations: [`missing emitted output: ${missing.join(', ')}`],
+        });
+        continue;
+    }
+
+    const runtime = closureOf(runtimeEntry, esmRoot);
+    const declarations = closureOf(declarationEntry, esmRoot);
+    const browserRuntimeEdges = runtime.files.flatMap((relative) => {
+        if (!relative.endsWith('.js')) return [];
+        const file = path.join(esmRoot, relative);
+        const sourceFile = ts.createSourceFile(
+            file,
+            readFileSync(file, 'utf8'),
+            ts.ScriptTarget.Latest,
+            true,
+            ts.ScriptKind.JS,
+        );
+        return browserRuntimeReferences(sourceFile).map((name) => ({
+            file: relative,
+            name,
+        }));
+    });
+    const analysis = analyzeKernelBoundary(
+        runtime,
+        declarations,
+        browserRuntimeEdges,
+    );
+    for (const violation of analysis.violations) {
+        violations.push(`${sourcePath}: ${violation}.`);
+    }
+    kernelBoundary.push({
+        sourcePath,
+        status: analysis.violations.length === 0 ? 'passed' : 'failed',
+        runtime,
+        declarations,
+        ...analysis,
+    });
 }
 
 if (directPixiImporters.length > 0) {
@@ -314,6 +384,8 @@ if (reportPath) {
                 directPixiImportersOutsideSpatialSubpaths: directPixiImporters,
                 rendererVendorImporters,
                 rendererBoundary,
+                kernelSourcePaths,
+                kernelBoundary,
                 coreSlotIsolationSubpaths: [...coreSlotIsolationSubpaths],
                 leanCoreSlotSubpaths: [...leanCoreSlotSubpaths],
                 coreSlotCrossFamilyDirectories,
@@ -334,8 +406,9 @@ if (violations.length > 0) {
 
 console.log(
     `\nAll ${subpathReports.length} subpath(s) respect the spatial/non-spatial module-graph boundary; ` +
-        `'pixi.js' is reachable only from Canvas/ and PivotViewer/, and emitted Core files ` +
-        `have no renderer-vendor imports.`,
+        `'pixi.js' is reachable only from Canvas/ and PivotViewer/, emitted Core files ` +
+        `have no renderer-vendor imports, and ${kernelBoundary.length} declared kernel module(s) ` +
+        `have React-free and browser-runtime-free emitted closures.`,
 );
 if (rendererBoundary.status === 'deferred') {
     console.log(

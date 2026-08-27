@@ -2,8 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { describe, expect, it } from 'vitest';
+import ts from 'typescript';
 import {
+    isKernelReactSpecifier,
+    kernelEmittedPath,
+    kernelSourcePaths,
+} from '../../../ESLint/lib/kernelBoundary.js';
+import {
+    analyzeKernelBoundary,
     analyzeRendererBoundary,
+    browserRuntimeReferences,
     isPixiSpecifier,
     isRendererFrameworkRuntimeSpecifier,
     isRendererVendorSpecifier,
@@ -158,4 +166,60 @@ describe('when classifying package boundaries', () => {
             expect(isPixiSpecifier(specifier)).toBe(false);
         },
     );
+
+    it('should derive emitted kernel entries from the canonical source inventory', () => {
+        expect(kernelSourcePaths).toContain('Source/PivotViewer/engine/store.ts');
+        expect(
+            kernelEmittedPath('Source/PivotViewer/engine/store.ts', '.d.ts'),
+        ).toBe('PivotViewer/engine/store.d.ts');
+    });
+
+    it.each([
+        'react',
+        'react/jsx-runtime',
+        'react-dom/client',
+        'react-aria-components/Button',
+    ])('should classify forbidden kernel dependency %s', (specifier: string) => {
+        expect(isKernelReactSpecifier(specifier)).toBe(true);
+    });
+
+    it.each(['reactive', 'react-dom-extra', 'react-aria-components-extra'])(
+        'should allow kernel dependency near miss %s',
+        (specifier: string) => {
+            expect(isKernelReactSpecifier(specifier)).toBe(false);
+        },
+    );
+
+    it('should report React dependencies in either emitted kernel closure', () => {
+        const result = analyzeKernelBoundary(
+            { files: ['kernel.js'], external: ['react-dom/client', 'left-pad'] },
+            { files: ['kernel.d.ts'], external: ['react', '@cratis/fundamentals'] },
+        );
+
+        expect(result.runtimeReactDependencies).toEqual(['react-dom/client']);
+        expect(result.declarationReactDependencies).toEqual(['react']);
+        expect(result.violations).toHaveLength(2);
+    });
+
+    it('should report browser DOM globals in an emitted kernel runtime closure', () => {
+        const sourceFile = ts.createSourceFile(
+            'kernel.js',
+            "const local = { document: 'near miss' }; window.addEventListener('load', () => local.document);",
+            ts.ScriptTarget.Latest,
+            true,
+            ts.ScriptKind.JS,
+        );
+        const references = browserRuntimeReferences(sourceFile);
+        const result = analyzeKernelBoundary(emptyClosure, emptyClosure, [
+            { file: 'kernel.js', name: references[0] },
+        ]);
+
+        expect(references).toEqual(['window']);
+        expect(result.browserRuntimeEdges).toEqual([
+            { file: 'kernel.js', name: 'window' },
+        ]);
+        expect(result.violations).toEqual([
+            'runtime closure reaches browser DOM globals: kernel.js:window',
+        ]);
+    });
 });

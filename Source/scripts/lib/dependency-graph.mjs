@@ -19,6 +19,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import {
+    browserDomGlobals,
+    isKernelReactSpecifier,
+} from '../../../ESLint/lib/kernelBoundary.js';
 
 /** Module-specifier string literals from every import/export/dynamic-import/import-type form. */
 export function moduleSpecifiers(sourceFile) {
@@ -48,6 +52,87 @@ export function moduleSpecifiers(sourceFile) {
     };
     visit(sourceFile);
     return specifiers;
+}
+
+/** Browser DOM global references in one emitted runtime source file. */
+export function browserRuntimeReferences(sourceFile) {
+    const forbidden = new Set(browserDomGlobals);
+    const references = new Set();
+
+    const isReference = (node) => {
+        const parent = node.parent;
+        if (!parent) return false;
+        if (ts.isPropertyAccessExpression(parent) && parent.name === node) return false;
+        if (ts.isPropertyAssignment(parent) && parent.name === node) return false;
+        if (ts.isMethodDeclaration(parent) && parent.name === node) return false;
+        if (ts.isPropertyDeclaration(parent) && parent.name === node) return false;
+        if (ts.isVariableDeclaration(parent) && parent.name === node) return false;
+        if (ts.isParameter(parent) && parent.name === node) return false;
+        if (ts.isFunctionDeclaration(parent) && parent.name === node) return false;
+        if (ts.isClassDeclaration(parent) && parent.name === node) return false;
+        if (
+            ts.isImportClause(parent) ||
+            ts.isImportSpecifier(parent) ||
+            ts.isNamespaceImport(parent) ||
+            ts.isExportSpecifier(parent)
+        ) {
+            return false;
+        }
+        return true;
+    };
+
+    const visit = (node) => {
+        if (ts.isIdentifier(node) && forbidden.has(node.text) && isReference(node)) {
+            references.add(node.text);
+        }
+        ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
+    return [...references].sort();
+}
+
+/** Classifies one declared kernel module's emitted runtime and declaration closures. */
+export function analyzeKernelBoundary(
+    runtimeClosure,
+    declarationClosure,
+    browserRuntimeEdges = [],
+) {
+    const runtimeReactDependencies = [
+        ...new Set(runtimeClosure.external.filter(isKernelReactSpecifier)),
+    ].sort();
+    const declarationReactDependencies = [
+        ...new Set(declarationClosure.external.filter(isKernelReactSpecifier)),
+    ].sort();
+    const normalizedBrowserRuntimeEdges = [...browserRuntimeEdges].sort((left, right) =>
+        `${left.file}:${left.name}`.localeCompare(`${right.file}:${right.name}`),
+    );
+    const violations = [];
+
+    if (runtimeReactDependencies.length > 0) {
+        violations.push(
+            `runtime closure reaches React dependencies: ${runtimeReactDependencies.join(', ')}`,
+        );
+    }
+    if (declarationReactDependencies.length > 0) {
+        violations.push(
+            `declaration closure reaches React dependencies: ${declarationReactDependencies.join(', ')}`,
+        );
+    }
+    if (normalizedBrowserRuntimeEdges.length > 0) {
+        violations.push(
+            'runtime closure reaches browser DOM globals: ' +
+                normalizedBrowserRuntimeEdges
+                    .map(({ file, name }) => `${file}:${name}`)
+                    .join(', '),
+        );
+    }
+
+    return {
+        runtimeReactDependencies,
+        declarationReactDependencies,
+        browserRuntimeEdges: normalizedBrowserRuntimeEdges,
+        violations,
+    };
 }
 
 /** Parses one emitted `.js`/`.d.ts` file's own specifiers (does not recurse). */
