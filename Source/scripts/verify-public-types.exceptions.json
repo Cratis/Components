@@ -78,6 +78,12 @@
             }
         },
         {
+            "subpath": "./Chat",
+            "resolutionModes": {
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
+        },
+        {
             "subpath": "./CommandDialog",
             "resolutionModes": {
                 "bundler": ["arc-react-global-jsx-namespace"],
