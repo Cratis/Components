@@ -20,6 +20,8 @@ import {
     ListBoxItem as ComboBoxListBoxItem,
     Popover as ComboBoxPopover,
 } from 'react-aria-components/ComboBox';
+import { UNSAFE_PortalProvider } from 'react-aria/PortalProvider';
+import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import type { DropdownProps } from './Dropdown';
 import {
@@ -129,6 +131,7 @@ export const DropdownImplementation = <T = unknown,>({
     pt,
 }: DropdownProps<T>) => {
     const [isOpen, setIsOpen] = useState(false);
+    const overlayEnvironment = unstable_useOverlayEnvironment();
     const { messages } = useCratisComponentsConfig();
     const dropdownMessages = messages?.dropdown;
     const showOptionsLabel =
@@ -217,135 +220,140 @@ export const DropdownImplementation = <T = unknown,>({
                     style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
                     onBlur={onBlur}
                 >
-                    <ComboBox
-                        selectionMode='multiple'
-                        onOpenChange={setIsOpen}
-                        value={selectedKeys}
-                        onChange={selectOptions}
-                        isDisabled={disabled}
-                        isInvalid={effectiveInvalid}
-                        name={name}
-                        aria-label={effectiveAriaLabel}
-                        aria-labelledby={effectiveAriaLabelledby}
-                        aria-describedby={effectiveAriaDescribedby}
-                        allowsEmptyCollection
-                        className='cratis-dropdown__combobox'
-                    >
-                        <ComboBoxValue
-                            {...pt?.value}
-                            placeholder={placeholder}
-                            className={classNames(
-                                'cratis-dropdown__value',
-                                pt?.value?.className,
-                            )}
-                            data-cratis-part='value'
-                            data-disabled={disabled || undefined}
-                            data-invalid={effectiveInvalid || undefined}
-                            data-open={isOpen || undefined}
-                            data-selected={selectedKeys.length > 0 || undefined}
-                        />
-                        <Input
-                            {...pt?.filter}
-                            id={triggerId}
-                            placeholder={filterPlaceholder ?? placeholder}
-                            tabIndex={tabIndex}
-                            aria-invalid={effectiveInvalid || undefined}
-                            className={classNames(
-                                'cratis-dropdown__filter',
-                                pt?.input?.className,
-                                pt?.filter?.className,
-                            )}
-                            style={{ ...pt?.input?.style, ...pt?.filter?.style }}
-                            data-cratis-part='filter'
-                            data-disabled={disabled || undefined}
-                            data-invalid={effectiveInvalid || undefined}
-                            data-open={isOpen || undefined}
-                        />
-                        <ComboBoxButton
-                            {...asReactAriaButtonProps(pt?.trigger)}
-                            className={classNames(
-                                'cratis-dropdown__indicator',
-                                pt?.trigger?.className,
-                            )}
-                            data-cratis-part='trigger'
-                            data-disabled={disabled || undefined}
-                            data-invalid={effectiveInvalid || undefined}
-                            data-selected={selectedKeys.length > 0 || undefined}
-                            render={renderTriggerWithOpenState}
-                            aria-label={showOptionsLabel}
+                    <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
+                        <ComboBox
+                            selectionMode='multiple'
+                            onOpenChange={setIsOpen}
+                            value={selectedKeys}
+                            onChange={selectOptions}
+                            isDisabled={disabled}
+                            isInvalid={effectiveInvalid}
+                            name={name}
+                            aria-label={effectiveAriaLabel}
+                            aria-labelledby={effectiveAriaLabelledby}
+                            aria-describedby={effectiveAriaDescribedby}
+                            allowsEmptyCollection
+                            className='cratis-dropdown__combobox'
                         >
-                            <span aria-hidden='true'>⌄</span>
-                        </ComboBoxButton>
-                        {showClear && selectedKeys.length > 0 && (
-                            <button
-                                {...pt?.clear}
-                                type='button'
-                                disabled={disabled}
+                            <ComboBoxValue
+                                {...pt?.value}
+                                placeholder={placeholder}
                                 className={classNames(
-                                    'cratis-dropdown__clear',
-                                    pt?.clear?.className,
+                                    'cratis-dropdown__value',
+                                    pt?.value?.className,
                                 )}
-                                data-cratis-part='clear'
+                                data-cratis-part='value'
                                 data-disabled={disabled || undefined}
-                                aria-label={clearSelectionLabel}
-                                onClick={(event) =>
-                                    onChange?.([] as T, {
-                                        source: 'user',
-                                        nativeEvent: event.nativeEvent,
-                                    })
-                                }
-                            >
-                                <span aria-hidden='true'>×</span>
-                            </button>
-                        )}
-                        <ComboBoxPopover
-                            {...pt?.popover}
-                            className={classNames(
-                                'cratis-dropdown__popover',
-                                pt?.popover?.className,
-                                panelClassName,
-                            )}
-                            style={{
-                                zIndex: 'var(--cratis-z-index-overlay)',
-                                ...pt?.popover?.style,
-                            }}
-                            data-cratis-part='popover'
-                            data-open
-                        >
-                            <ComboBoxListBox
-                                {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
-                                items={resolvedOptions}
+                                data-invalid={effectiveInvalid || undefined}
+                                data-open={isOpen || undefined}
+                                data-selected={selectedKeys.length > 0 || undefined}
+                            />
+                            <Input
+                                {...pt?.filter}
+                                id={triggerId}
+                                placeholder={filterPlaceholder ?? placeholder}
+                                tabIndex={tabIndex}
+                                aria-invalid={effectiveInvalid || undefined}
                                 className={classNames(
-                                    'cratis-dropdown__listbox',
-                                    pt?.listbox?.className,
+                                    'cratis-dropdown__filter',
+                                    pt?.input?.className,
+                                    pt?.filter?.className,
                                 )}
-                                data-cratis-part='listbox'
+                                style={{ ...pt?.input?.style, ...pt?.filter?.style }}
+                                data-cratis-part='filter'
+                                data-disabled={disabled || undefined}
+                                data-invalid={effectiveInvalid || undefined}
+                                data-open={isOpen || undefined}
+                            />
+                            <ComboBoxButton
+                                {...asReactAriaButtonProps(pt?.trigger)}
+                                className={classNames(
+                                    'cratis-dropdown__indicator',
+                                    pt?.trigger?.className,
+                                )}
+                                data-cratis-part='trigger'
+                                data-disabled={disabled || undefined}
+                                data-invalid={effectiveInvalid || undefined}
+                                data-selected={selectedKeys.length > 0 || undefined}
+                                render={renderTriggerWithOpenState}
+                                aria-label={showOptionsLabel}
+                            >
+                                <span aria-hidden='true'>⌄</span>
+                            </ComboBoxButton>
+                            {showClear && selectedKeys.length > 0 && (
+                                <button
+                                    {...pt?.clear}
+                                    type='button'
+                                    disabled={disabled}
+                                    className={classNames(
+                                        'cratis-dropdown__clear',
+                                        pt?.clear?.className,
+                                    )}
+                                    data-cratis-part='clear'
+                                    data-disabled={disabled || undefined}
+                                    aria-label={clearSelectionLabel}
+                                    onClick={(event) =>
+                                        onChange?.([] as T, {
+                                            source: 'user',
+                                            nativeEvent: event.nativeEvent,
+                                        })
+                                    }
+                                >
+                                    <span aria-hidden='true'>×</span>
+                                </button>
+                            )}
+                            <ComboBoxPopover
+                                {...pt?.popover}
+                                className={classNames(
+                                    'cratis-dropdown__popover',
+                                    pt?.popover?.className,
+                                    panelClassName,
+                                )}
+                                style={{
+                                    zIndex: 'var(--cratis-z-index-overlay)',
+                                    ...pt?.popover?.style,
+                                }}
+                                data-cratis-part='popover'
                                 data-open
                             >
-                                {(option) => (
-                                    <ComboBoxListBoxItem
-                                        {...asReactAriaListBoxItemProps<ResolvedOption>(
-                                            pt?.option,
-                                        )}
-                                        id={option.key}
-                                        textValue={option.label}
-                                        isDisabled={option.disabled}
-                                        className={classNames(
-                                            'cratis-dropdown__option',
-                                            pt?.option?.className,
-                                        )}
-                                        data-cratis-part='option'
-                                        data-disabled={option.disabled || undefined}
-                                        data-selected={
-                                            selectedKeys.includes(option.key) || undefined
-                                        }
-                                    >
-                                        {option.label}
-                                    </ComboBoxListBoxItem>
-                                )}
-                            </ComboBoxListBox>
-                        </ComboBoxPopover>
-                    </ComboBox>
+                                <ComboBoxListBox
+                                    {...asReactAriaListBoxProps<ResolvedOption>(
+                                        pt?.listbox,
+                                    )}
+                                    items={resolvedOptions}
+                                    className={classNames(
+                                        'cratis-dropdown__listbox',
+                                        pt?.listbox?.className,
+                                    )}
+                                    data-cratis-part='listbox'
+                                    data-open
+                                >
+                                    {(option) => (
+                                        <ComboBoxListBoxItem
+                                            {...asReactAriaListBoxItemProps<ResolvedOption>(
+                                                pt?.option,
+                                            )}
+                                            id={option.key}
+                                            textValue={option.label}
+                                            isDisabled={option.disabled}
+                                            className={classNames(
+                                                'cratis-dropdown__option',
+                                                pt?.option?.className,
+                                            )}
+                                            data-cratis-part='option'
+                                            data-disabled={option.disabled || undefined}
+                                            data-selected={
+                                                selectedKeys.includes(option.key) ||
+                                                undefined
+                                            }
+                                        >
+                                            {option.label}
+                                        </ComboBoxListBoxItem>
+                                    )}
+                                </ComboBoxListBox>
+                            </ComboBoxPopover>
+                        </ComboBox>
+                    </UNSAFE_PortalProvider>
                 </span>
             );
         }
@@ -447,7 +455,141 @@ export const DropdownImplementation = <T = unknown,>({
                 style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
                 onBlur={onBlur}
             >
-                <ComboBox
+                <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
+                    <ComboBox
+                        onOpenChange={setIsOpen}
+                        value={selectedKey}
+                        onChange={selectOption}
+                        isDisabled={disabled}
+                        isInvalid={effectiveInvalid}
+                        name={name}
+                        aria-label={effectiveAriaLabel}
+                        aria-labelledby={effectiveAriaLabelledby}
+                        aria-describedby={effectiveAriaDescribedby}
+                        allowsEmptyCollection
+                        className='cratis-dropdown__combobox'
+                    >
+                        <Input
+                            {...pt?.filter}
+                            id={triggerId}
+                            placeholder={filterPlaceholder ?? placeholder}
+                            tabIndex={tabIndex}
+                            aria-invalid={effectiveInvalid || undefined}
+                            className={classNames(
+                                'cratis-dropdown__filter',
+                                pt?.input?.className,
+                                pt?.filter?.className,
+                            )}
+                            style={{ ...pt?.input?.style, ...pt?.filter?.style }}
+                            data-cratis-part='filter'
+                            data-disabled={disabled || undefined}
+                            data-invalid={effectiveInvalid || undefined}
+                            data-open={isOpen || undefined}
+                        />
+                        <ComboBoxButton
+                            {...asReactAriaButtonProps(pt?.trigger)}
+                            className={classNames(
+                                'cratis-dropdown__indicator',
+                                pt?.trigger?.className,
+                            )}
+                            data-cratis-part='trigger'
+                            data-disabled={disabled || undefined}
+                            data-invalid={effectiveInvalid || undefined}
+                            data-selected={selectedKey !== null || undefined}
+                            render={renderTriggerWithOpenState}
+                            aria-label={showOptionsLabel}
+                        >
+                            <span aria-hidden='true'>⌄</span>
+                        </ComboBoxButton>
+                        {showClear && selectedKey !== null && (
+                            <button
+                                {...pt?.clear}
+                                type='button'
+                                disabled={disabled}
+                                className={classNames(
+                                    'cratis-dropdown__clear',
+                                    pt?.clear?.className,
+                                )}
+                                data-cratis-part='clear'
+                                data-disabled={disabled || undefined}
+                                aria-label={clearSelectionLabel}
+                                onClick={(event) =>
+                                    onChange?.(null as T, {
+                                        source: 'user',
+                                        nativeEvent: event.nativeEvent,
+                                    })
+                                }
+                            >
+                                <span aria-hidden='true'>×</span>
+                            </button>
+                        )}
+                        <ComboBoxPopover
+                            {...pt?.popover}
+                            className={classNames(
+                                'cratis-dropdown__popover',
+                                pt?.popover?.className,
+                                panelClassName,
+                            )}
+                            style={{
+                                zIndex: 'var(--cratis-z-index-overlay)',
+                                ...pt?.popover?.style,
+                            }}
+                            data-cratis-part='popover'
+                            data-open
+                        >
+                            <ComboBoxListBox
+                                {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
+                                items={resolvedOptions}
+                                className={classNames(
+                                    'cratis-dropdown__listbox',
+                                    pt?.listbox?.className,
+                                )}
+                                data-cratis-part='listbox'
+                                data-open
+                            >
+                                {(option) => (
+                                    <ComboBoxListBoxItem
+                                        {...asReactAriaListBoxItemProps<ResolvedOption>(
+                                            pt?.option,
+                                        )}
+                                        id={option.key}
+                                        textValue={option.label}
+                                        isDisabled={option.disabled}
+                                        className={classNames(
+                                            'cratis-dropdown__option',
+                                            pt?.option?.className,
+                                        )}
+                                        data-cratis-part='option'
+                                        data-disabled={option.disabled || undefined}
+                                        data-selected={
+                                            option.key === selectedKey || undefined
+                                        }
+                                    >
+                                        {option.label}
+                                    </ComboBoxListBoxItem>
+                                )}
+                            </ComboBoxListBox>
+                        </ComboBoxPopover>
+                    </ComboBox>
+                </UNSAFE_PortalProvider>
+            </span>
+        );
+    }
+
+    return (
+        <span
+            {...pt?.root}
+            className={rootClassName}
+            data-cratis-part='root'
+            data-invalid={effectiveInvalid || undefined}
+            data-disabled={disabled || undefined}
+            data-open={isOpen || undefined}
+            data-selected={selectedKey !== null || undefined}
+            style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
+            onBlur={onBlur}
+        >
+            <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
+                <AriaSelect
                     onOpenChange={setIsOpen}
                     value={selectedKey}
                     onChange={selectOption}
@@ -457,41 +599,55 @@ export const DropdownImplementation = <T = unknown,>({
                     aria-label={effectiveAriaLabel}
                     aria-labelledby={effectiveAriaLabelledby}
                     aria-describedby={effectiveAriaDescribedby}
-                    allowsEmptyCollection
-                    className='cratis-dropdown__combobox'
+                    className='cratis-dropdown__select'
                 >
-                    <Input
-                        {...pt?.filter}
+                    <AriaButton
+                        {...asReactAriaButtonProps(pt?.trigger)}
+                        ref={applyTriggerState}
                         id={triggerId}
-                        placeholder={filterPlaceholder ?? placeholder}
-                        tabIndex={tabIndex}
+                        excludeFromTabOrder={tabIndex === -1}
                         aria-invalid={effectiveInvalid || undefined}
                         className={classNames(
-                            'cratis-dropdown__filter',
+                            'cratis-dropdown__trigger',
                             pt?.input?.className,
-                            pt?.filter?.className,
-                        )}
-                        style={{ ...pt?.input?.style, ...pt?.filter?.style }}
-                        data-cratis-part='filter'
-                        data-disabled={disabled || undefined}
-                        data-invalid={effectiveInvalid || undefined}
-                        data-open={isOpen || undefined}
-                    />
-                    <ComboBoxButton
-                        {...asReactAriaButtonProps(pt?.trigger)}
-                        className={classNames(
-                            'cratis-dropdown__indicator',
                             pt?.trigger?.className,
                         )}
+                        style={{ ...pt?.input?.style, ...pt?.trigger?.style }}
                         data-cratis-part='trigger'
                         data-disabled={disabled || undefined}
                         data-invalid={effectiveInvalid || undefined}
                         data-selected={selectedKey !== null || undefined}
                         render={renderTriggerWithOpenState}
-                        aria-label={showOptionsLabel}
                     >
-                        <span aria-hidden='true'>⌄</span>
-                    </ComboBoxButton>
+                        <SelectValue
+                            {...pt?.value}
+                            className={classNames(
+                                'cratis-dropdown__value',
+                                pt?.value?.className,
+                            )}
+                            data-cratis-part='value'
+                            data-disabled={disabled || undefined}
+                            data-invalid={effectiveInvalid || undefined}
+                            data-open={isOpen || undefined}
+                            data-selected={selectedKey !== null || undefined}
+                        >
+                            {selectedOption?.label ?? placeholder}
+                        </SelectValue>
+                        <span
+                            {...pt?.indicator}
+                            className={classNames(
+                                'cratis-dropdown__indicator',
+                                pt?.indicator?.className,
+                            )}
+                            data-cratis-part='indicator'
+                            data-disabled={disabled || undefined}
+                            data-invalid={effectiveInvalid || undefined}
+                            data-open={isOpen || undefined}
+                            aria-hidden='true'
+                        >
+                            ⌄
+                        </span>
+                    </AriaButton>
                     {showClear && selectedKey !== null && (
                         <button
                             {...pt?.clear}
@@ -514,7 +670,7 @@ export const DropdownImplementation = <T = unknown,>({
                             <span aria-hidden='true'>×</span>
                         </button>
                     )}
-                    <ComboBoxPopover
+                    <Popover
                         {...pt?.popover}
                         className={classNames(
                             'cratis-dropdown__popover',
@@ -528,7 +684,7 @@ export const DropdownImplementation = <T = unknown,>({
                         data-cratis-part='popover'
                         data-open
                     >
-                        <ComboBoxListBox
+                        <ListBox
                             {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
                             items={resolvedOptions}
                             className={classNames(
@@ -539,7 +695,7 @@ export const DropdownImplementation = <T = unknown,>({
                             data-open
                         >
                             {(option) => (
-                                <ComboBoxListBoxItem
+                                <ListBoxItem
                                     {...asReactAriaListBoxItemProps<ResolvedOption>(
                                         pt?.option,
                                     )}
@@ -557,154 +713,12 @@ export const DropdownImplementation = <T = unknown,>({
                                     }
                                 >
                                     {option.label}
-                                </ComboBoxListBoxItem>
+                                </ListBoxItem>
                             )}
-                        </ComboBoxListBox>
-                    </ComboBoxPopover>
-                </ComboBox>
-            </span>
-        );
-    }
-
-    return (
-        <span
-            {...pt?.root}
-            className={rootClassName}
-            data-cratis-part='root'
-            data-invalid={effectiveInvalid || undefined}
-            data-disabled={disabled || undefined}
-            data-open={isOpen || undefined}
-            data-selected={selectedKey !== null || undefined}
-            style={{ ...pt?.root?.style, ...pt?.select?.style, ...style }}
-            onBlur={onBlur}
-        >
-            <AriaSelect
-                onOpenChange={setIsOpen}
-                value={selectedKey}
-                onChange={selectOption}
-                isDisabled={disabled}
-                isInvalid={effectiveInvalid}
-                name={name}
-                aria-label={effectiveAriaLabel}
-                aria-labelledby={effectiveAriaLabelledby}
-                aria-describedby={effectiveAriaDescribedby}
-                className='cratis-dropdown__select'
-            >
-                <AriaButton
-                    {...asReactAriaButtonProps(pt?.trigger)}
-                    ref={applyTriggerState}
-                    id={triggerId}
-                    excludeFromTabOrder={tabIndex === -1}
-                    aria-invalid={effectiveInvalid || undefined}
-                    className={classNames(
-                        'cratis-dropdown__trigger',
-                        pt?.input?.className,
-                        pt?.trigger?.className,
-                    )}
-                    style={{ ...pt?.input?.style, ...pt?.trigger?.style }}
-                    data-cratis-part='trigger'
-                    data-disabled={disabled || undefined}
-                    data-invalid={effectiveInvalid || undefined}
-                    data-selected={selectedKey !== null || undefined}
-                    render={renderTriggerWithOpenState}
-                >
-                    <SelectValue
-                        {...pt?.value}
-                        className={classNames(
-                            'cratis-dropdown__value',
-                            pt?.value?.className,
-                        )}
-                        data-cratis-part='value'
-                        data-disabled={disabled || undefined}
-                        data-invalid={effectiveInvalid || undefined}
-                        data-open={isOpen || undefined}
-                        data-selected={selectedKey !== null || undefined}
-                    >
-                        {selectedOption?.label ?? placeholder}
-                    </SelectValue>
-                    <span
-                        {...pt?.indicator}
-                        className={classNames(
-                            'cratis-dropdown__indicator',
-                            pt?.indicator?.className,
-                        )}
-                        data-cratis-part='indicator'
-                        data-disabled={disabled || undefined}
-                        data-invalid={effectiveInvalid || undefined}
-                        data-open={isOpen || undefined}
-                        aria-hidden='true'
-                    >
-                        ⌄
-                    </span>
-                </AriaButton>
-                {showClear && selectedKey !== null && (
-                    <button
-                        {...pt?.clear}
-                        type='button'
-                        disabled={disabled}
-                        className={classNames(
-                            'cratis-dropdown__clear',
-                            pt?.clear?.className,
-                        )}
-                        data-cratis-part='clear'
-                        data-disabled={disabled || undefined}
-                        aria-label={clearSelectionLabel}
-                        onClick={(event) =>
-                            onChange?.(null as T, {
-                                source: 'user',
-                                nativeEvent: event.nativeEvent,
-                            })
-                        }
-                    >
-                        <span aria-hidden='true'>×</span>
-                    </button>
-                )}
-                <Popover
-                    {...pt?.popover}
-                    className={classNames(
-                        'cratis-dropdown__popover',
-                        pt?.popover?.className,
-                        panelClassName,
-                    )}
-                    style={{
-                        zIndex: 'var(--cratis-z-index-overlay)',
-                        ...pt?.popover?.style,
-                    }}
-                    data-cratis-part='popover'
-                    data-open
-                >
-                    <ListBox
-                        {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
-                        items={resolvedOptions}
-                        className={classNames(
-                            'cratis-dropdown__listbox',
-                            pt?.listbox?.className,
-                        )}
-                        data-cratis-part='listbox'
-                        data-open
-                    >
-                        {(option) => (
-                            <ListBoxItem
-                                {...asReactAriaListBoxItemProps<ResolvedOption>(
-                                    pt?.option,
-                                )}
-                                id={option.key}
-                                textValue={option.label}
-                                isDisabled={option.disabled}
-                                className={classNames(
-                                    'cratis-dropdown__option',
-                                    pt?.option?.className,
-                                )}
-                                data-cratis-part='option'
-                                data-disabled={option.disabled || undefined}
-                                data-selected={option.key === selectedKey || undefined}
-                            >
-                                {option.label}
-                            </ListBoxItem>
-                        )}
-                    </ListBox>
-                </Popover>
-            </AriaSelect>
+                        </ListBox>
+                    </Popover>
+                </AriaSelect>
+            </UNSAFE_PortalProvider>
         </span>
     );
 };

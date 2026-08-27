@@ -7,6 +7,8 @@ import {
     Tooltip as AriaTooltip,
     TooltipTrigger,
 } from 'react-aria-components/Tooltip';
+import { UNSAFE_PortalProvider } from 'react-aria/PortalProvider';
+import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type { TooltipProps } from './Tooltip';
 
 interface TooltipTriggerElementProps {
@@ -24,6 +26,7 @@ export const TooltipImplementation = ({
     className,
     children,
 }: TooltipProps) => {
+    const overlayEnvironment = unstable_useOverlayEnvironment();
     if (!content || disabled) return children;
 
     const trigger = cloneElement(children, {
@@ -35,19 +38,26 @@ export const TooltipImplementation = ({
     } as TooltipTriggerElementProps);
 
     return (
-        <TooltipTrigger delay={350} closeDelay={100}>
-            <Focusable isDisabled={trigger.props.disabled}>
-                {trigger as unknown as ReactElement<DOMAttributes<HTMLElement>, string>}
-            </Focusable>
-            <AriaTooltip
-                placement={position}
-                offset={8}
-                className='cratis-tooltip-popup'
-                data-cratis-part='popup'
-                data-open
-            >
-                {content}
-            </AriaTooltip>
-        </TooltipTrigger>
+        <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
+            <TooltipTrigger delay={350} closeDelay={100}>
+                <Focusable isDisabled={trigger.props.disabled}>
+                    {
+                        trigger as unknown as ReactElement<
+                            DOMAttributes<HTMLElement>,
+                            string
+                        >
+                    }
+                </Focusable>
+                <AriaTooltip
+                    placement={position}
+                    offset={8}
+                    className='cratis-tooltip-popup'
+                    data-cratis-part='popup'
+                    data-open
+                >
+                    {content}
+                </AriaTooltip>
+            </TooltipTrigger>
+        </UNSAFE_PortalProvider>
     );
 };

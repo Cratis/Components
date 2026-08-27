@@ -4,7 +4,9 @@
 import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
+import { UNSAFE_PortalProvider } from 'react-aria/PortalProvider';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
@@ -47,6 +49,7 @@ export const DialogImplementation = ({
     className,
     pt,
 }: DialogProps) => {
+    const overlayEnvironment = unstable_useOverlayEnvironment();
     const { messages } = useCratisComponentsConfig();
     const dialogMessages = messages?.dialog;
     const resolvedOkLabel = okLabel ?? dialogMessages?.ok ?? 'Ok';
@@ -354,49 +357,51 @@ export const DialogImplementation = ({
     }
 
     return (
-        <ModalOverlay
-            {...pt?.backdrop}
-            isOpen={visible}
-            onOpenChange={(open) => {
-                if (!open && !isBusy) void handleClose(DialogResult.Cancelled);
-            }}
-            isDismissable={isDismissable}
-            isKeyboardDismissDisabled={!isDismissable}
-            className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
-            style={{
-                zIndex: 'var(--cratis-z-index-dialog)',
-                ...pt?.backdrop?.style,
-            }}
-            data-cratis-part='backdrop'
-            data-open={visible || undefined}
-            data-busy={isBusy || undefined}
-        >
-            <div
-                {...pt?.positioner}
-                className={classNames(
-                    'cratis-dialog__positioner',
-                    pt?.positioner?.className,
-                )}
-                style={pt?.positioner?.style}
-                data-cratis-part='positioner'
+        <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>
+            <ModalOverlay
+                {...pt?.backdrop}
+                isOpen={visible}
+                onOpenChange={(open) => {
+                    if (!open && !isBusy) void handleClose(DialogResult.Cancelled);
+                }}
+                isDismissable={isDismissable}
+                isKeyboardDismissDisabled={!isDismissable}
+                className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
+                style={{
+                    zIndex: 'var(--cratis-z-index-dialog)',
+                    ...pt?.backdrop?.style,
+                }}
+                data-cratis-part='backdrop'
                 data-open={visible || undefined}
                 data-busy={isBusy || undefined}
             >
-                <Modal
-                    {...pt?.root}
+                <div
+                    {...pt?.positioner}
                     className={classNames(
-                        'cratis-dialog',
-                        pt?.root?.className,
-                        className,
+                        'cratis-dialog__positioner',
+                        pt?.positioner?.className,
                     )}
-                    style={dialogStyle}
-                    data-cratis-part='root'
+                    style={pt?.positioner?.style}
+                    data-cratis-part='positioner'
                     data-open={visible || undefined}
                     data-busy={isBusy || undefined}
                 >
-                    {dialogDocument}
-                </Modal>
-            </div>
-        </ModalOverlay>
+                    <Modal
+                        {...pt?.root}
+                        className={classNames(
+                            'cratis-dialog',
+                            pt?.root?.className,
+                            className,
+                        )}
+                        style={dialogStyle}
+                        data-cratis-part='root'
+                        data-open={visible || undefined}
+                        data-busy={isBusy || undefined}
+                    >
+                        {dialogDocument}
+                    </Modal>
+                </div>
+            </ModalOverlay>
+        </UNSAFE_PortalProvider>
     );
 };

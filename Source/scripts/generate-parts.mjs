@@ -87,7 +87,8 @@ export const partDefinitions = {
             'multiple',
             'indicator',
         ],
-        sources: ['Dropdown/Dropdown.tsx'],
+        sources: ['Dropdown/DropdownImplementation.tsx'],
+        ptFiles: ['Dropdown/Dropdown.tsx'],
         ptKeys: [
             'root',
             'input',
@@ -132,7 +133,8 @@ export const partDefinitions = {
             'today',
             'clear',
         ],
-        sources: ['Common/DatePickerInput.tsx'],
+        sources: ['Common/DatePickerInputImplementation.tsx'],
+        ptFiles: ['Common/DatePickerInput.tsx'],
         ptKeys: [
             'root',
             'group',
@@ -211,7 +213,7 @@ export const partDefinitions = {
     },
     Tooltip: {
         parts: ['trigger', 'popup'],
-        sources: ['Common/Tooltip.tsx'],
+        sources: ['Common/TooltipImplementation.tsx'],
     },
     Dialog: {
         parts: [
@@ -227,7 +229,8 @@ export const partDefinitions = {
             'confirm',
             'cancel',
         ],
-        sources: ['Dialogs/Dialog.tsx'],
+        sources: ['Dialogs/DialogImplementation.tsx'],
+        ptFiles: ['Dialogs/Dialog.tsx'],
         ptKeys: [
             'backdrop',
             'positioner',
@@ -330,7 +333,8 @@ export const partDefinitions = {
     },
     TablePaginator: {
         parts: ['root', 'range', 'info'],
-        sources: ['DataTables/TablePaginator.tsx'],
+        sources: ['DataTables/TablePaginatorImplementation.tsx'],
+        ptFiles: ['DataTables/TablePaginator.tsx'],
         ptKeys: ['root', 'range', 'info', 'first', 'previous', 'next', 'last'],
     },
     Toaster: {

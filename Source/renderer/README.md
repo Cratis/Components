@@ -3,16 +3,16 @@
 
 # Experimental renderer contracts
 
-This directory contains the D1 contracts, D2 provider/context/resolution infrastructure, and E1
-presentation self-hosting. `preloadRenderer` and lazy renderer entries remain deferred:
+This directory contains the D1 contracts, D2 provider/context/resolution infrastructure, and E1/E2
+presentation plus atomic self-hosting. `preloadRenderer` and lazy renderer entries remain deferred:
 `SlotDeclaration` has no load contract yet, so adding preload behavior now would invent an ABI that
 adapter declarations cannot honor.
 
-The nine element-bounded presentation facades resolve external scopes/providers first and then pass
-a frozen, facade-local Core declaration to `unstable_useSlot`. This keeps the application provider
-and package root setup-only: neither imports the private all-family `coreSlots.ts` ABI-proof table.
-Zero-configuration local Core resolution is silent, an active partial adapter reports fallback once
-after mount, and `rendererFallback='throw'` rejects every Core fallback.
+All fourteen facades resolve external scopes/providers first and then pass a frozen, facade-local
+Core declaration to `unstable_useSlot`. This keeps the application provider and package root
+setup-only: neither imports the private all-family `coreSlots.ts` ABI-proof table. Zero-configuration
+local Core resolution is silent, an active partial adapter reports fallback once after mount, and
+`rendererFallback='throw'` rejects every Core fallback.
 
 The initial slot table contains only components with real standalone public contracts:
 
@@ -26,7 +26,13 @@ The initial slot table contains only components with real standalone public cont
 The basic controls are standalone Common primitives. Arc-bound `CommandForm` fields remain
 high-order composites and must never be registered as substitutes for these slots.
 
-E1 routes only the nine presentation candidates. Tooltip, dropdown, dialog, date picker, and table
-paginator remain atomic E2 work; `coreSlots.ts` names their current public components only to prove
-the complete 14-slot ABI and must not become provider or public-barrel runtime input until E2
-extracts recursion-safe implementations.
+E1 routes the nine presentation candidates. E2 routes tooltip, dropdown, dialog, date picker, and
+table paginator as atomic slots whose external adapters replace Core interaction ownership entirely.
+Their Core implementations self-host React Aria portals through the local overlay environment only
+around the overlay-owning subtree; merely reading the hook, rendering a closed control, or rendering
+SSR never looks up a container. `null` defers the overlay rather than falling back to `document.body`.
+
+`ButtonImplementation` composes `TooltipImplementation` directly to avoid slot recursion. Core
+`TablePaginatorImplementation` intentionally composes public `Button` as a distinct nested
+presentation slot. The private `coreSlots.ts` table names only non-facade implementations and remains
+unreachable from the setup-only root, `./Common`, and public `./renderer` closures.

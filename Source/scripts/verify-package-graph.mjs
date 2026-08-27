@@ -28,9 +28,10 @@
  *      beyond the React framework peer and reaches no component implementation directory. Its declaration closure may
  *      reach Components-owned prop declarations and React types, but no renderer vendor.
  *      The check is explicitly deferred until that export exists.
- *   5. The setup-only root, `./Common`, and public `./renderer` closures never reach the
- *      private all-family `renderer/coreSlots` ABI-proof table. Root and `./Common` also stay
- *      outside the table's DataTables, Dialogs, Display, and Dropdown family directories.
+ *   5. All fourteen self-hosting facades use local Core declarations. The setup-only root,
+ *      `./Common`, and public `./renderer` closures never reach the private all-family
+ *      `renderer/coreSlots` ABI-proof table. Root and `./Common` also stay outside the table's
+ *      DataTables, Dialogs, Display, and Dropdown family directories.
  *   6. Every source module in the canonical repository-owned kernel inventory has emitted
  *      runtime and declaration closures with no React, React DOM, or React Aria Components
  *      dependency, and no emitted runtime or declaration reference to a browser DOM global.
@@ -222,8 +223,8 @@ for (const sourcePath of kernelSourcePaths) {
 
     if (!existsSync(runtimeEntry) || !existsSync(declarationEntry)) {
         const missing = [
-            !existsSync(runtimeEntry) ? runtimeEntryRelative : undefined,
-            !existsSync(declarationEntry) ? declarationEntryRelative : undefined,
+            existsSync(runtimeEntry) ? undefined : runtimeEntryRelative,
+            existsSync(declarationEntry) ? undefined : declarationEntryRelative,
         ].filter(Boolean);
         violations.push(
             `${sourcePath}: declared kernel module is missing emitted output: ${missing.join(', ')}.`,

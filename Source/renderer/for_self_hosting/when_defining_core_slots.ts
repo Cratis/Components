@@ -3,6 +3,11 @@
 
 import { expect } from 'chai';
 import { describe, it } from 'vitest';
+import { DatePickerInputImplementation } from '../../Common/DatePickerInputImplementation';
+import { TooltipImplementation } from '../../Common/TooltipImplementation';
+import { TablePaginatorImplementation } from '../../DataTables/TablePaginatorImplementation';
+import { DialogImplementation } from '../../Dialogs/DialogImplementation';
+import { DropdownImplementation } from '../../Dropdown/DropdownImplementation';
 import { unstable_coreSlots } from '../coreSlots';
 
 const presentationSlots = [
@@ -40,12 +45,30 @@ describe('when defining the private Core slot inventory', () => {
         }
     });
 
-    it('should distinguish E1 presentation ownership from deferred E2 atomic ownership', () => {
+    it('should distinguish presentation ownership from atomic ownership', () => {
         for (const slotId of presentationSlots) {
             expect(unstable_coreSlots[slotId]?.mode).to.equal('presentation');
         }
         for (const slotId of atomicSlots) {
             expect(unstable_coreSlots[slotId]?.mode).to.equal('atomic');
         }
+    });
+
+    it('should point all five atomic declarations at non-facade Core implementations', () => {
+        expect(unstable_coreSlots['common.tooltip']?.render).to.equal(
+            TooltipImplementation,
+        );
+        expect(unstable_coreSlots['dropdown.select']?.render).to.equal(
+            DropdownImplementation,
+        );
+        expect(unstable_coreSlots['dialogs.dialog']?.render).to.equal(
+            DialogImplementation,
+        );
+        expect(unstable_coreSlots['display.datePicker']?.render).to.equal(
+            DatePickerInputImplementation,
+        );
+        expect(unstable_coreSlots['datatables.paginator']?.render).to.equal(
+            TablePaginatorImplementation,
+        );
     });
 });

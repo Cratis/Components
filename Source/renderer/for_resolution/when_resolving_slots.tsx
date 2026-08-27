@@ -183,14 +183,14 @@ describe('when resolving renderer slots', () => {
         }
     });
 
-    it('should throw CRATIS-UI-1003 at a throw fallback terminal', () => {
+    it('should throw CRATIS-UI-1003 for a facade-local Core declaration at a throw fallback terminal', () => {
         const consoleError = sinon.stub(console, 'error');
         let error: unknown;
 
         try {
             renderToStaticMarkup(
                 <CratisComponentsProvider rendererFallback='throw'>
-                    <MissingProbe />
+                    <LocalCoreProbe />
                 </CratisComponentsProvider>,
             );
         } catch (caught: unknown) {
@@ -202,6 +202,9 @@ describe('when resolving renderer slots', () => {
         expect(error).to.be.instanceOf(unstable_AdapterError);
         expect((error as unstable_AdapterError).code).to.equal(
             unstable_adapterErrorCodes.strictProfileFallback,
+        );
+        expect((error as unstable_AdapterError).diagnostic.slotId).to.equal(
+            'common.button',
         );
     });
 });
