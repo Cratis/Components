@@ -20,7 +20,9 @@ export interface ChangeMeta {
      * Native browser event that caused the change, when one exists at the public boundary.
      *
      * This is always a DOM {@link Event}; React synthetic events and renderer-specific event
-     * objects are never exposed through this property.
+     * objects are never exposed through this property. Use it only for immediate interaction
+     * handling—do not serialize, log, or transmit it because native events can retain references
+     * to form controls and user input.
      */
     readonly nativeEvent?: Event;
 }
