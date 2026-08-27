@@ -17,11 +17,13 @@ import { markAsCommandFormField } from '../../CommandForm/commandFormMarkers';
 import { CommandStepperContent } from '../CommandStepperContent';
 import { StepperPanel } from '../StepperPanel';
 
-const SampleField = markAsCommandFormField(
-    (({ value: _value }: { value: (command: { sample: string }) => string }) => (
-        <input aria-label='Sample field' />
-    )) as ComponentType<{ value: (command: { sample: string }) => string }>,
-);
+const SampleField = markAsCommandFormField((({
+    value: _value,
+}: {
+    value: (command: { sample: string }) => string;
+}) => <input aria-label='Sample field' />) as ComponentType<{
+    value: (command: { sample: string }) => string;
+}>);
 
 describe('when CommandStepper renders authoritative states', () => {
     let container: HTMLDivElement;
@@ -153,9 +155,7 @@ describe('when CommandStepper renders authoritative states', () => {
             expect(elements[1].dataset.visited).to.equal('true');
             expect(elements[1].hasAttribute('data-invalid')).to.equal(false);
             expect(elements[1].dataset.busy).to.equal('true');
-            expect(elements[1].getAttribute('id')).to.equal(
-                `stepper-${name}`,
-            );
+            expect(elements[1].getAttribute('id')).to.equal(`stepper-${name}`);
         }
 
         const headers = parts('header') as NodeListOf<HTMLButtonElement>;

@@ -234,10 +234,7 @@ export const CommandStepperContent = ({
                     <li
                         {...pt?.step}
                         key={index}
-                        className={[
-                            'cratis-command-stepper__step',
-                            pt?.step?.className,
-                        ]
+                        className={['cratis-command-stepper__step', pt?.step?.className]
                             .filter(Boolean)
                             .join(' ')}
                         data-cratis-part='step'
