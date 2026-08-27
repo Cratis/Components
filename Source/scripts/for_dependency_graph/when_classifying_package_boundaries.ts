@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
     analyzeRendererBoundary,
     isPixiSpecifier,
+    isRendererFrameworkRuntimeSpecifier,
     isRendererVendorSpecifier,
     rendererBoundaryReport,
 } from '../lib/dependency-graph.mjs';
@@ -61,8 +62,8 @@ describe('when classifying package boundaries', () => {
                 ['Common'],
             ),
         ).toMatchObject({
-            status: 'failed',
-            runtimeExternalDependencies: ['react'],
+            status: 'passed',
+            runtimeExternalDependencies: [],
         });
     });
 
@@ -83,16 +84,29 @@ describe('when classifying package boundaries', () => {
         expect(result.violations).toEqual([]);
     });
 
-    it('should report runtime external dependencies', () => {
+    it.each(['react', 'react/jsx-runtime'])(
+        'should allow renderer framework runtime dependency %s',
+        (specifier: string) => {
+            expect(isRendererFrameworkRuntimeSpecifier(specifier)).toBe(true);
+            const result = analyzeRendererBoundary(
+                { files: ['renderer/index.js'], external: [specifier] },
+                emptyClosure,
+                ['Common'],
+            );
+            expect(result.violations).toEqual([]);
+        },
+    );
+
+    it('should report non-framework runtime external dependencies', () => {
         const result = analyzeRendererBoundary(
-            { files: ['renderer/index.js'], external: ['react', 'react'] },
+            { files: ['renderer/index.js'], external: ['react', 'left-pad'] },
             emptyClosure,
             ['Common'],
         );
 
-        expect(result.runtimeExternalDependencies).toEqual(['react']);
+        expect(result.runtimeExternalDependencies).toEqual(['left-pad']);
         expect(result.violations).toEqual([
-            'runtime closure reaches external dependencies: react',
+            'runtime closure reaches external dependencies: left-pad',
         ]);
     });
 

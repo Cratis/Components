@@ -25,7 +25,7 @@
  *   3. Renderer-vendor imports (`@mui/*`, `@emotion/*`, PrimeReact, and PrimeUIX)
  *      are forbidden from every emitted runtime and declaration file.
  *   4. When `./renderer` is exported, its runtime closure has no external dependency
- *      and reaches no component implementation directory. Its declaration closure may
+ *      beyond the React framework peer and reaches no component implementation directory. Its declaration closure may
  *      reach Components-owned prop declarations and React types, but no renderer vendor.
  *      The check is explicitly deferred until that export exists.
  *
@@ -292,7 +292,7 @@ if (rendererBoundary.status === 'deferred') {
     );
 } else {
     console.log(
-        `Renderer boundary check passed: runtime has no external or component-implementation edges, ` +
+        `Renderer boundary check passed: runtime has no non-React external or component-implementation edges, ` +
             `and declarations have no renderer-vendor type edges.`,
     );
 }

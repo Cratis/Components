@@ -122,17 +122,28 @@ export const isRendererVendorSpecifier = (specifier) =>
     specifier.startsWith('@primereact/') ||
     specifier.startsWith('@primeuix/');
 
+/** True for the React framework runtime imports required by renderer hooks and scopes. */
+export const isRendererFrameworkRuntimeSpecifier = (specifier) =>
+    specifier === 'react' || specifier === 'react/jsx-runtime';
+
 /**
  * Classifies the renderer export's runtime and declaration closures without reading the file system.
- * Runtime code may not depend on external packages or component implementations. Declarations may
- * refer to Components-owned prop declarations and React types, but never renderer-vendor types.
+ * Runtime code may depend only on the React framework peer, never vendor packages or component
+ * implementations. Declarations may refer to Components-owned prop declarations and React types,
+ * but never renderer-vendor types.
  */
 export function analyzeRendererBoundary(
     runtimeClosure,
     declarationClosure,
     componentImplementationDirectories,
 ) {
-    const runtimeExternalDependencies = [...new Set(runtimeClosure.external)].sort();
+    const runtimeExternalDependencies = [
+        ...new Set(
+            runtimeClosure.external.filter(
+                specifier => !isRendererFrameworkRuntimeSpecifier(specifier),
+            ),
+        ),
+    ].sort();
     const runtimeComponentImplementationFiles = [
         ...new Set(
             runtimeClosure.files.filter((file) =>
