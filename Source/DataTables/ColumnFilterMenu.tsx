@@ -199,6 +199,7 @@ export const ColumnFilterMenu = ({
     const [draftMode, setDraftMode] = useState<FilterMatchMode>(
         constraint?.matchMode ?? defaultModeFor(dataType),
     );
+    const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
         setDraftValue(constraint?.value ?? null);
@@ -239,6 +240,11 @@ export const ColumnFilterMenu = ({
             value: draftMode,
         });
     }
+
+    const hasConstraint =
+        constraint?.value !== null &&
+        constraint?.value !== undefined &&
+        constraint?.value !== '';
 
     const clear = (event?: SyntheticEvent) => {
         setDraftValue(null);
@@ -328,7 +334,7 @@ export const ColumnFilterMenu = ({
           })();
 
     return (
-        <DialogTrigger>
+        <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
             <AriaButton
                 {...asReactAriaButtonProps(pt?.trigger)}
                 aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
@@ -336,12 +342,9 @@ export const ColumnFilterMenu = ({
                     'cratis-filter-trigger',
                     pt?.trigger?.className,
                 )}
-                data-active={
-                    (constraint?.value !== null &&
-                        constraint?.value !== undefined &&
-                        constraint?.value !== '') ||
-                    undefined
-                }
+                data-active={hasConstraint || undefined}
+                data-selected={hasConstraint || undefined}
+                data-open={isOpen || undefined}
                 data-cratis-part='filter-trigger'
             >
                 <span aria-hidden='true'>⌕</span>
@@ -353,12 +356,14 @@ export const ColumnFilterMenu = ({
                     pt?.popover?.className,
                 )}
                 data-cratis-part='filter-popover'
+                data-open={isOpen || undefined}
                 placement='bottom end'
             >
                 <AriaDialog
                     {...pt?.menu}
                     className={classNames('cratis-filter-menu', pt?.menu?.className)}
                     data-cratis-part='filter-menu'
+                    data-open={isOpen || undefined}
                     aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
                 >
                     {showMatchModes && (

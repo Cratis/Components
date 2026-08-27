@@ -1,7 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useRef, useState, type HTMLAttributes } from 'react';
+import {
+    createContext,
+    useContext,
+    useEffect,
+    useRef,
+    useState,
+    type HTMLAttributes,
+} from 'react';
 import type { Event } from './types';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { Properties } from './Properties';
@@ -50,6 +57,9 @@ export interface EventsViewProps {
 const classNames = (...values: Array<string | undefined>) =>
     values.filter(Boolean).join(' ');
 
+export const SelectedEventSequenceNumbersContext =
+    createContext<ReadonlySet<number> | undefined>(undefined);
+
 /** Vertical, alternating timeline visualization of an ordered event list. */
 export const EventsView = ({
     events,
@@ -58,6 +68,9 @@ export const EventsView = ({
     labels = defaultTimeMachineLabels,
 }: EventsViewProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const selectedEventSequenceNumbers = useContext(
+        SelectedEventSequenceNumbersContext,
+    );
     const [canScrollUp, setCanScrollUp] = useState(false);
     const [canScrollDown, setCanScrollDown] = useState(false);
 
@@ -119,6 +132,9 @@ export const EventsView = ({
             >
                 {events.map((event, index) => {
                     const position = index % 2 === 0 ? 'right' : 'left';
+                    const isSelected = selectedEventSequenceNumbers?.has(
+                        event.sequenceNumber,
+                    );
                     return (
                         <article
                             {...pt?.event}
@@ -129,6 +145,7 @@ export const EventsView = ({
                             )}
                             data-cratis-part='event'
                             data-position={position}
+                            data-selected={isSelected || undefined}
                         >
                             <div
                                 {...pt?.separator}
@@ -145,6 +162,7 @@ export const EventsView = ({
                                         pt?.marker?.className,
                                     )}
                                     data-cratis-part='marker'
+                                    data-selected={isSelected || undefined}
                                 >
                                     <div className='events-view-marker-dot' />
                                 </div>

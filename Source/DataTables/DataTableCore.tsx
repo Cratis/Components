@@ -469,10 +469,12 @@ export const DataTableCore = <TData extends object>({
                                             column.props.headerClassName,
                                         )}
                                         data-cratis-part='header-cell'
+                                        data-selected={Boolean(ariaSort) || undefined}
                                     >
                                         <div
                                             className='cratis-datatable-header-cell'
                                             data-cratis-part='header-content'
+                                            data-selected={Boolean(ariaSort) || undefined}
                                         >
                                             {column.props.selectionMode && (
                                                 <span className='cratis-datatable__sr-only'>
@@ -485,6 +487,7 @@ export const DataTableCore = <TData extends object>({
                                                     type='button'
                                                     className='cratis-datatable__sort'
                                                     data-cratis-part='sort'
+                                                    data-pressed={Boolean(ariaSort) || undefined}
                                                     onClick={() =>
                                                         setSort((current) => ({
                                                             field: column.props
@@ -632,6 +635,7 @@ export const DataTableCore = <TData extends object>({
                                                         column.props.className,
                                                 )}
                                                 data-cratis-part='cell'
+                                                data-selected={isSelected || undefined}
                                             >
                                                 {column.props.selectionMode ? (
                                                     <input

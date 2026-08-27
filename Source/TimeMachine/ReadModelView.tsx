@@ -82,6 +82,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                     {versions.map((version, index) => {
                         const depth = index - displayIndex;
                         const isActive = index === displayIndex;
+                        const isSelected = index === selectedIndex;
                         const isVisible = depth >= 0 && depth < 10;
                         const isFlipped = flippedMap[version.id] ?? false;
 
@@ -106,6 +107,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                     '--opacity': 1 - depth * 0.12,
                                 } as React.CSSProperties}
                                 onClick={() => onVersionSelect(index)}
+                                data-selected={isSelected || undefined}
                                 onMouseEnter={() => onHoveringCardChange(true)}
                                 onMouseLeave={() => onHoveringCardChange(false)}
                             >
@@ -125,6 +127,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     onClick={toggleFlip(version.id)}
                                                     aria-label={labels.showRelatedEvents}
                                                     aria-pressed={isFlipped}
+                                                    data-pressed={isFlipped || undefined}
                                                 >
                                                     {isFlipped ? (
                                                         <FaArrowRotateLeft aria-hidden='true' />
@@ -153,6 +156,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     onClick={toggleFlip(version.id)}
                                                     aria-label={labels.showReadModelSnapshot}
                                                     aria-pressed={isFlipped}
+                                                    data-pressed={isFlipped || undefined}
                                                 >
                                                     {isFlipped ? (
                                                         <FaArrowRotateLeft aria-hidden='true' />

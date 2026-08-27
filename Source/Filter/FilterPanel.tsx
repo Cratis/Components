@@ -192,10 +192,14 @@ function OptionList({
                     const optionKey = option.key;
                     const checked = selections.has(optionKey);
                     return (
-                        <li key={option.key}>
-                            <label>
+                        <li
+                            key={option.key}
+                            data-selected={checked || undefined}
+                        >
+                            <label data-selected={checked || undefined}>
                                 <input
                                     type={filter.multi ? 'checkbox' : 'radio'}
+                                    data-selected={checked || undefined}
                                     name={`filter-${filter.key}`}
                                     checked={checked}
                                     onChange={() =>
@@ -316,6 +320,7 @@ export function FilterPanel({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.15 }}
+                    data-open={isOpen || undefined}
                 >
                     <div className='pv-filter-dropdown-content'>
                         {onSearchChange && (
@@ -367,12 +372,21 @@ export function FilterPanel({
                                     <div
                                         key={filter.key}
                                         className={`pv-filter ${isExpanded ? 'expanded' : ''}`}
+                                        data-selected={canClear || undefined}
+                                        data-open={isExpanded || undefined}
                                     >
-                                        <div className='pv-filter-trigger'>
+                                        <div
+                                            className='pv-filter-trigger'
+                                            data-selected={canClear || undefined}
+                                            data-open={isExpanded || undefined}
+                                        >
                                             <button
                                                 type='button'
                                                 className='pv-filter-toggle'
                                                 aria-expanded={isExpanded}
+                                                data-selected={canClear || undefined}
+                                                data-open={isExpanded || undefined}
+                                                data-pressed={isExpanded || undefined}
                                                 onClick={() =>
                                                     onExpandedFilterChange(
                                                         isExpanded ? null : filter.key,
@@ -417,6 +431,7 @@ export function FilterPanel({
                                         </div>
                                         <div
                                             className={`pv-filter-content ${isExpanded ? 'expanded' : ''}`}
+                                            data-open={isExpanded || undefined}
                                         >
                                             {isCustom && editorRender ? (
                                                 editorRender({

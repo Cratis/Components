@@ -5,7 +5,10 @@ import type React from 'react';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Version } from './types';
 import { ReadModelView } from './ReadModelView';
-import { EventsView } from './EventsView';
+import {
+    EventsView,
+    SelectedEventSequenceNumbersContext,
+} from './EventsView';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { FaBoxArchive, FaList } from 'react-icons/fa6';
 import { useLocale } from 'react-aria-components/I18nProvider';
@@ -132,6 +135,9 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
 
     // Get all events from all versions
     const allEvents = versions.flatMap((version) => version.events || []);
+    const selectedEventSequenceNumbers = new Set(
+        (versions[selectedIndex]?.events ?? []).map((event) => event.sequenceNumber),
+    );
 
     return (
         <div className='time-machine' ref={containerRef}>
@@ -143,6 +149,8 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
                     onClick={() => setViewMode(ViewModes.ReadModel)}
                     aria-label={l.readModelView}
                     title={l.readModelView}
+                    data-selected={viewMode === ViewModes.ReadModel || undefined}
+                    data-pressed={viewMode === ViewModes.ReadModel || undefined}
                 >
                     <FaBoxArchive aria-hidden='true' />
                 </button>
@@ -152,6 +160,8 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
                     onClick={() => setViewMode(ViewModes.Events)}
                     aria-label={l.eventsView}
                     title={l.eventsView}
+                    data-selected={viewMode === ViewModes.Events || undefined}
+                    data-pressed={viewMode === ViewModes.Events || undefined}
                 >
                     <FaList aria-hidden='true' />
                 </button>
@@ -168,7 +178,11 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
                     labels={l}
                 />
             ) : (
-                <EventsView events={allEvents} labels={l} />
+                <SelectedEventSequenceNumbersContext.Provider
+                    value={selectedEventSequenceNumbers}
+                >
+                    <EventsView events={allEvents} labels={l} />
+                </SelectedEventSequenceNumbersContext.Provider>
             )}
 
             {/* Timeline - only show in ReadModel view */}
@@ -193,6 +207,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
                             handleVersionSelect(Math.max(0, selectedIndex - 1))
                         }
                         aria-label={l.previousVersion}
+                        data-disabled={selectedIndex === 0 || undefined}
                     >
                         ‹
                     </button>
@@ -206,6 +221,9 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
                             )
                         }
                         aria-label={l.nextVersion}
+                        data-disabled={
+                            selectedIndex === versions.length - 1 || undefined
+                        }
                     >
                         ›
                     </button>
@@ -283,6 +301,8 @@ const Timeline: React.FC<TimelineProps> = ({
                             onClick={() => onSelect(index)}
                             aria-pressed={isSelected}
                             aria-label={`${formatDate(version.timestamp)} ${formatTime(version.timestamp)}`}
+                            data-selected={isSelected || undefined}
+                            data-pressed={isSelected || undefined}
                         >
                             <div className='timeline-tick'></div>
                             <div className='timeline-label'>
