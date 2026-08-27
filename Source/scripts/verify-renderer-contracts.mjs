@@ -13,6 +13,7 @@ const fixturePath = path.join(
     'renderer/for_slot_types/slotTyping.fixture.ts',
 );
 const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
+const packageJson = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
 
 const valueType = value => {
     if (Array.isArray(value)) return 'array';
@@ -118,7 +119,22 @@ for (const invalid of invalidManifests) {
         process.exit(1);
     }
 }
-console.log('Renderer metadata schema accepts open adapter/slot identities and rejects invalid manifests.');
+const builtInMetadataProblems = validate(packageJson.cratis, schema);
+if (builtInMetadataProblems.length > 0) {
+    console.error(
+        `Built-in renderer package metadata failed schema validation:\n- ${builtInMetadataProblems.join('\n- ')}`,
+    );
+    process.exit(1);
+}
+if (
+    packageJson.cratis.slots.length !== 14 ||
+    Object.keys(packageJson.cratis.modes).length !== 14 ||
+    !packageJson.cratis.entry.includes('/renderer/builtin/')
+) {
+    console.error('Built-in renderer metadata must describe exactly fourteen slots at the opt-in subpath.');
+    process.exit(1);
+}
+console.log('Renderer metadata schema accepts the built-in/static fixtures and rejects invalid manifests.');
 
 const tsc = path.resolve(packageDir, '../node_modules/typescript/bin/tsc');
 const typeCheck = spawnSync(
@@ -198,6 +214,17 @@ delete globalThis.document;
 const renderer = await import('@cratis/components/renderer');
 if (renderer.unstable_defaultOverlayEnvironment.getContainer() !== null) {
     throw new Error('Default overlay environment must return null without document.');
+}
+if ('unstable_cratisBuiltIn' in renderer) {
+    throw new Error('The lean renderer subpath must not expose the built-in implementation graph.');
+}
+const builtin = await import('@cratis/components/renderer/builtin');
+if (Object.keys(builtin).join(',') !== 'unstable_cratisBuiltIn') {
+    throw new Error('The built-in subpath must export only unstable_cratisBuiltIn.');
+}
+const library = builtin.unstable_cratisBuiltIn;
+if (!Object.isFrozen(library) || !Object.isFrozen(library.slots) || Object.keys(library.slots).length !== 14) {
+    throw new Error('The built-in manifest and complete fourteen-slot table must be frozen.');
 }
 `;
 const ssrImport = spawnSync(

@@ -114,6 +114,7 @@ describe('root namespace maps', () => {
             './theme',
             // New Components 4 adapter-author contracts and their static metadata schema.
             './renderer',
+            './renderer/builtin',
             './schemas/ui-adapter.schema.json',
             // The historical namespace represented the complete CommandDialog module.
             './CommandStepper',

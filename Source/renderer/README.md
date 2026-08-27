@@ -34,5 +34,8 @@ SSR never looks up a container. `null` defers the overlay rather than falling ba
 
 `ButtonImplementation` composes `TooltipImplementation` directly to avoid slot recursion. Core
 `TablePaginatorImplementation` intentionally composes public `Button` as a distinct nested
-presentation slot. The private `coreSlots.ts` table names only non-facade implementations and remains
-unreachable from the setup-only root, `./Common`, and public `./renderer` closures.
+presentation slot. The private `coreSlots.ts` table names only non-facade implementations and remains unreachable
+from the setup-only root, `./Common`, and public `./renderer` closures. Adapter authors may opt into
+the deliberately heavy `@cratis/components/renderer/builtin` proof subpath, which exports only the
+frozen `unstable_cratisBuiltIn` manifest and is the sole public closure allowed to reach that table
+and all implementation families. Raw Core slots are never exported.

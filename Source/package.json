@@ -17,6 +17,7 @@
         "LICENSE",
         "THIRD_PARTY_NOTICES.md",
         "MIGRATION.md",
+        "CONFORMANCE.md",
         "!dist/**/*.stories.*",
         "!dist/**/given.*",
         "!dist/**/storybook-static/**",
@@ -110,6 +111,10 @@
             "types": "./dist/esm/renderer/index.d.ts",
             "import": "./dist/esm/renderer/index.js"
         },
+        "./renderer/builtin": {
+            "types": "./dist/esm/renderer/builtin/index.d.ts",
+            "import": "./dist/esm/renderer/builtin/index.js"
+        },
         "./schemas/ui-adapter.schema.json": "./dist/esm/schemas/ui-adapter.schema.json",
         "./SchemaEditor": {
             "types": "./dist/esm/SchemaEditor/index.d.ts",
@@ -130,6 +135,76 @@
         "./styles": "./dist/esm/styles.css",
         "./tokens": "./dist/esm/tokens.css",
         "./theme": "./dist/esm/theme.css"
+    },
+    "cratis": {
+        "kind": "ui-adapter",
+        "id": "cratis-built-in",
+        "displayName": "Cratis built-in renderer",
+        "abi": "^1",
+        "level": "full",
+        "profile": "core/v1",
+        "category": "built-in",
+        "entry": "./dist/esm/renderer/builtin/index.js",
+        "export": "unstable_cratisBuiltIn",
+        "slots": [
+            "common.button",
+            "common.iconButton",
+            "common.textInput",
+            "common.textArea",
+            "common.checkbox",
+            "common.radio",
+            "common.switch",
+            "common.progress",
+            "common.surface",
+            "common.tooltip",
+            "dropdown.select",
+            "dialogs.dialog",
+            "display.datePicker",
+            "datatables.paginator"
+        ],
+        "modes": {
+            "common.button": "presentation",
+            "common.iconButton": "presentation",
+            "common.textInput": "presentation",
+            "common.textArea": "presentation",
+            "common.checkbox": "presentation",
+            "common.radio": "presentation",
+            "common.switch": "presentation",
+            "common.progress": "presentation",
+            "common.surface": "presentation",
+            "common.tooltip": "atomic",
+            "dropdown.select": "atomic",
+            "dialogs.dialog": "atomic",
+            "display.datePicker": "atomic",
+            "datatables.paginator": "atomic"
+        },
+        "capabilities": [
+            "slot.render",
+            "parts.passthrough",
+            "focus.trap",
+            "focus.restore",
+            "overlay.portal",
+            "selection.multi",
+            "datetime.i18n",
+            "form.validationMessage",
+            "theme.tokens",
+            "ssr.staticRender",
+            "rtl",
+            "forcedColors",
+            "motion.reduced"
+        ],
+        "ssr": "safe",
+        "a11y": {
+            "axeProfile": "wcag22aa",
+            "evidence": "./CONFORMANCE.md"
+        },
+        "license": {
+            "spdx": "MIT",
+            "requiresKey": false
+        },
+        "upstream": {
+            "react": "^19.0.0"
+        }
     },
     "scripts": {
         "generate-parts": "node ./scripts/generate-parts.mjs",

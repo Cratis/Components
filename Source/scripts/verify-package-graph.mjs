@@ -28,10 +28,10 @@
  *      beyond the React framework peer and reaches no component implementation directory. Its declaration closure may
  *      reach Components-owned prop declarations and React types, but no renderer vendor.
  *      The check is explicitly deferred until that export exists.
- *   5. All fourteen self-hosting facades use local Core declarations. The setup-only root,
- *      `./Common`, and public `./renderer` closures never reach the private all-family
- *      `renderer/coreSlots` ABI-proof table. Root and `./Common` also stay outside the table's
- *      DataTables, Dialogs, Display, and Dropdown family directories.
+ *   5. All fourteen self-hosting facades use local Core declarations. Only the explicit heavy
+ *      `./renderer/builtin` proof subpath may reach the private all-family `renderer/coreSlots`
+ *      table. The setup-only root, `./Common`, and public `./renderer` stay outside it; root and
+ *      `./Common` also stay outside DataTables, Dialogs, Display, and Dropdown families.
  *   6. Every source module in the canonical repository-owned kernel inventory has emitted
  *      runtime and declaration closures with no React, React DOM, or React Aria Components
  *      dependency, and no emitted runtime or declaration reference to a browser DOM global.
@@ -310,7 +310,11 @@ for (const importer of rendererVendorImporters) {
 const componentImplementationDirectories = [
     ...new Set(
         jsSubpaths.flatMap(({ subpath, jsEntry }) => {
-            if (subpath === '.' || subpath === './renderer' || subpath === './types')
+            if (
+                subpath === '.' ||
+                subpath === './types' ||
+                subpath.startsWith('./renderer')
+            )
                 return [];
             const relative = path.relative(esmRoot, jsEntry).split(path.sep).join('/');
             const separator = relative.indexOf('/');
@@ -318,7 +322,7 @@ const componentImplementationDirectories = [
         }),
     ),
 ].sort();
-const coreSlotIsolationSubpaths = new Set(['.', './Common', './renderer']);
+const BUILTIN_RENDERER_SUBPATH = './renderer/builtin';
 const leanCoreSlotSubpaths = new Set(['.', './Common']);
 const coreSlotCrossFamilyDirectories = [
     'DataTables/',
@@ -328,18 +332,29 @@ const coreSlotCrossFamilyDirectories = [
 ];
 const reachesCoreSlots = (closure) =>
     closure.files.filter((file) => /^renderer\/coreSlots\.(?:js|d\.ts)$/u.test(file));
-for (const row of subpathReports.filter(({ subpath }) =>
-    coreSlotIsolationSubpaths.has(subpath),
-)) {
+for (const row of subpathReports) {
     for (const [kind, closure] of [
         ['runtime', row.runtime],
         ['declaration', row.declarations],
     ]) {
         const coreSlotFiles = reachesCoreSlots(closure);
-        if (coreSlotFiles.length > 0) {
+        if (
+            coreSlotFiles.length > 0 &&
+            row.subpath !== BUILTIN_RENDERER_SUBPATH
+        ) {
             violations.push(
-                `${row.subpath}: ${kind} closure reaches private all-family Core slot table: ` +
-                    coreSlotFiles.join(', '),
+                `${row.subpath}: ${kind} closure reaches private all-family Core slot table; ` +
+                    `only ${BUILTIN_RENDERER_SUBPATH} may reach ${coreSlotFiles.join(', ')}.`,
+            );
+        }
+        if (
+            row.subpath === BUILTIN_RENDERER_SUBPATH &&
+            kind === 'runtime' &&
+            coreSlotFiles.length === 0
+        ) {
+            violations.push(
+                `${BUILTIN_RENDERER_SUBPATH}: ${kind} closure no longer reaches the private ` +
+                    'Core slot table required by the opt-in proof manifest.',
             );
         }
     }
