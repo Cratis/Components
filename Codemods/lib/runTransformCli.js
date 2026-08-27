@@ -17,7 +17,7 @@ const EXTENSIONS = new Set([
 ]);
 const SKIP_DIRS = new Set(['node_modules', 'dist', '.git', '.yarn']);
 
-/** Runs one independently-invokable Components codemod CLI. */
+/** Runs one independently invocable Components codemod CLI. */
 export function runTransformCli(argv, { command, description, transform }) {
     const args = [...argv];
     let check = false;
@@ -58,29 +58,37 @@ export function runTransformCli(argv, { command, description, transform }) {
 
     let changedCount = 0;
     let diagnosticCount = 0;
+    let errorCount = 0;
     for (const file of files) {
-        const original = readFileSync(file, 'utf8');
-        const result = transform(file, original, { packageName });
-        for (const diagnostic of result.diagnostics) {
-            diagnosticCount += 1;
-            console.warn(
-                `${diagnostic.file}:${diagnostic.line}:${diagnostic.column}: ${diagnostic.message}`,
-            );
-        }
-        if (result.changed) {
-            changedCount += 1;
-            if (check) console.log(`would rewrite ${file}`);
-            else {
-                writeFileSync(file, result.text, 'utf8');
-                console.log(`rewrote ${file}`);
+        try {
+            const original = readFileSync(file, 'utf8');
+            const result = transform(file, original, { packageName });
+            for (const diagnostic of result.diagnostics) {
+                diagnosticCount += 1;
+                console.warn(
+                    `${diagnostic.file}:${diagnostic.line}:${diagnostic.column}: ${diagnostic.message}`,
+                );
             }
+            if (result.changed) {
+                changedCount += 1;
+                if (check) console.log(`would rewrite ${file}`);
+                else {
+                    writeFileSync(file, result.text, 'utf8');
+                    console.log(`rewrote ${file}`);
+                }
+            }
+        } catch (error) {
+            errorCount += 1;
+            console.error(
+                `${file}: failed to process: ${error instanceof Error ? error.message : String(error)}`,
+            );
         }
     }
 
     console.log(
-        `\n${files.length} file(s) scanned, ${changedCount} ${check ? 'would change' : 'changed'}, ${diagnosticCount} unsupported or ambiguous case(s) reported.`,
+        `\n${files.length} file(s) scanned, ${changedCount} ${check ? 'would change' : 'changed'}, ${diagnosticCount} unsupported or ambiguous case(s) reported, ${errorCount} processing error(s).`,
     );
-    if (diagnosticCount > 0 || (check && changedCount > 0)) return 1;
+    if (diagnosticCount > 0 || errorCount > 0 || (check && changedCount > 0)) return 1;
     return 0;
 }
 
