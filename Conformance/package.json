@@ -49,6 +49,13 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
-        "@cratis/components": "workspace:^"
+        "@cratis/arc": "22.3.0",
+        "@cratis/arc.react": "22.3.0",
+        "@cratis/components": "workspace:^",
+        "@cratis/fundamentals": "^7.10.3",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "reflect-metadata": "0.2.2",
+        "tsyringe": "4.10.0"
     }
 }

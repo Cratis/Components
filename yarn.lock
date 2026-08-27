@@ -302,8 +302,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.conformance@workspace:Conformance"
   dependencies:
+    "@cratis/arc": "npm:22.3.0"
+    "@cratis/arc.react": "npm:22.3.0"
     "@cratis/components": "workspace:^"
+    "@cratis/fundamentals": "npm:^7.10.3"
     axe-core: "npm:^4.13.0"
+    react: "npm:^19.0.0"
+    react-dom: "npm:^19.0.0"
+    reflect-metadata: "npm:0.2.2"
+    tsyringe: "npm:4.10.0"
   peerDependencies:
     "@cratis/components": ">=3.0.0 <4"
     react: ^19.0.0
@@ -347,7 +354,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@cratis/fundamentals@npm:^7.18.0":
+"@cratis/fundamentals@npm:^7.10.3, @cratis/fundamentals@npm:^7.18.0":
   version: 7.18.1
   resolution: "@cratis/fundamentals@npm:7.18.1"
   checksum: 10/8b1fec7e1ef2813019da2eb83152b0e44bfe51f877be4dd31ea5f38f06d007a7d688ba22400cfb0f6945be67c036c44747a5d760527c114ecc9e901069909c7f
@@ -6717,7 +6724,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react-dom@npm:^19.2.8":
+"react-dom@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react-dom@npm:^19.0.0, react-dom@npm:^19.2.8":
   version: 19.2.8
   resolution: "react-dom@npm:19.2.8"
   dependencies:
@@ -6767,7 +6774,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react@npm:^19.2.8":
+"react@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react@npm:^19.0.0, react@npm:^19.2.8":
   version: 19.2.8
   resolution: "react@npm:19.2.8"
   checksum: 10/a3c697798035e295ca9e51591d3a8700824535cb8c070fac1f8abbe69717ceb99108cbc4ba7b31a606806f336b1eba705705f63b9d39ace198fe51e8990ac843
