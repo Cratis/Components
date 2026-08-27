@@ -41,7 +41,11 @@ const sameValues = (left, right) =>
 
 const collectTsx = (directory, files = []) => {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
-        if (['dist', 'node_modules', '.storybook', 'storybook-static'].includes(entry.name))
+        if (
+            ['dist', 'node_modules', '.storybook', 'storybook-static'].includes(
+                entry.name,
+            )
+        )
             continue;
         const absolute = path.join(directory, entry.name);
         if (entry.isDirectory()) collectTsx(absolute, files);
@@ -94,7 +98,8 @@ const unwrapExpression = (expression) => {
         ts.isTypeAssertionExpression(current) ||
         ts.isNonNullExpression(current) ||
         ts.isSatisfiesExpression(current)
-    ) current = current.expression;
+    )
+        current = current.expression;
     return current;
 };
 
@@ -102,7 +107,8 @@ const isUndefinedExpression = (expression) => {
     const current = unwrapExpression(expression);
     return (
         (ts.isIdentifier(current) && current.text === 'undefined') ||
-        (ts.isVoidExpression(current) && current.expression.kind === ts.SyntaxKind.NumericLiteral)
+        (ts.isVoidExpression(current) &&
+            current.expression.kind === ts.SyntaxKind.NumericLiteral)
     );
 };
 
@@ -158,7 +164,8 @@ function stateValueProblem(attribute, sourceFile, relative, checker) {
         ts.isJsxExpression(attribute.initializer) &&
         attribute.initializer.expression &&
         isFalseSafeStateExpression(attribute.initializer.expression, checker)
-    ) return undefined;
+    )
+        return undefined;
     return `${relative}:${line} ${attribute.name.text} can serialize false; use bare true or a condition normalized to undefined.`;
 }
 
@@ -187,14 +194,17 @@ function readProductionEmissions() {
         const relative = normalizePath(file);
         const sourceFile = program.getSourceFile(file);
         if (!sourceFile) {
-            problems.push(`${relative} could not be loaded into the TypeScript verifier program.`);
+            problems.push(
+                `${relative} could not be loaded into the TypeScript verifier program.`,
+            );
             continue;
         }
         const fileOwners = owners.get(relative) ?? [];
 
         const recordPart = (part, node) => {
             if (fileOwners.length === 0) {
-                const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+                const line =
+                    sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
                 problems.push(
                     `${relative}:${line} emits '${part}' but has no owning component in generate-parts.mjs.`,
                 );
@@ -208,13 +218,15 @@ function readProductionEmissions() {
         };
 
         const recordState = (part, state) => {
-            for (const owner of fileOwners) getStateEmissions(stateEmissions, owner, part).add(state);
+            for (const owner of fileOwners)
+                getStateEmissions(stateEmissions, owner, part).add(state);
         };
 
         const dynamicParts = (expression, node) => {
             const key = `${relative}\0${expression}`;
             const allowlist = dynamicProductionMap.get(key);
-            const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+            const line =
+                sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
             if (!allowlist) {
                 problems.push(
                     `${relative}:${line} has unproven dynamic data-cratis-part expression '${expression}'. Add an exact mapping to dynamicPartExpressions in generate-parts.mjs.`,
@@ -228,9 +240,17 @@ function readProductionEmissions() {
         const literalOrDynamicParts = (attribute) => {
             const initializer = attribute.initializer;
             if (initializer && ts.isStringLiteral(initializer)) return [initializer.text];
-            if (initializer && ts.isJsxExpression(initializer) && initializer.expression) {
-                if (ts.isStringLiteral(initializer.expression)) return [initializer.expression.text];
-                return dynamicParts(initializer.expression.getText(sourceFile), attribute);
+            if (
+                initializer &&
+                ts.isJsxExpression(initializer) &&
+                initializer.expression
+            ) {
+                if (ts.isStringLiteral(initializer.expression))
+                    return [initializer.expression.text];
+                return dynamicParts(
+                    initializer.expression.getText(sourceFile),
+                    attribute,
+                );
             }
             return dynamicParts('<missing initializer>', attribute);
         };
@@ -239,7 +259,8 @@ function readProductionEmissions() {
             const attributes = node.attributes.properties;
             const partAttribute = attributes.find(
                 (attribute) =>
-                    ts.isJsxAttribute(attribute) && attribute.name.text === 'data-cratis-part',
+                    ts.isJsxAttribute(attribute) &&
+                    attribute.name.text === 'data-cratis-part',
             );
             const stateAttributes = attributes.filter(
                 (attribute) =>
@@ -250,7 +271,12 @@ function readProductionEmissions() {
             );
 
             for (const attribute of stateAttributes) {
-                const problem = stateValueProblem(attribute, sourceFile, relative, checker);
+                const problem = stateValueProblem(
+                    attribute,
+                    sourceFile,
+                    relative,
+                    checker,
+                );
                 if (problem) problems.push(problem);
             }
 
@@ -272,9 +298,12 @@ function readProductionEmissions() {
                 .map((spread) => splitStateMap.get(`${relative}\0${spread}`))
                 .filter(Boolean);
             if (splitEntries.length === 0) return;
-            const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+            const line =
+                sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
             if (splitEntries.length > 1) {
-                problems.push(`${relative}:${line} matches more than one split part-state allowlist.`);
+                problems.push(
+                    `${relative}:${line} matches more than one split part-state allowlist.`,
+                );
                 return;
             }
             const splitEntry = splitEntries[0];
@@ -356,11 +385,15 @@ function readProductionEmissions() {
 
     for (const [key, entry] of dynamicProductionMap) {
         if (!seenDynamic.has(key))
-            problems.push(`Stale dynamic production mapping for ${entry.file}: '${entry.expression}'.`);
+            problems.push(
+                `Stale dynamic production mapping for ${entry.file}: '${entry.expression}'.`,
+            );
     }
     for (const [key, entry] of splitStateMap) {
         if (!seenSplit.has(key))
-            problems.push(`Stale split part-state allowlist for ${entry.file}: '${entry.spread}'.`);
+            problems.push(
+                `Stale split part-state allowlist for ${entry.file}: '${entry.spread}'.`,
+            );
     }
     return { partEmissions, stateEmissions, problems };
 }
@@ -392,10 +425,13 @@ function validatePartStateDefinition(component, parts, statesByPart) {
     }
     for (const [part, states] of Object.entries(statesByPart)) {
         const duplicate = states.find((state, index) => states.indexOf(state) !== index);
-        if (duplicate) problems.push(`${component}.${part} repeats canonical state '${duplicate}'.`);
+        if (duplicate)
+            problems.push(`${component}.${part} repeats canonical state '${duplicate}'.`);
         for (const state of states) {
             if (!canonicalPartStateNameSet.has(state))
-                problems.push(`${component}.${part} declares unknown canonical state '${state}'.`);
+                problems.push(
+                    `${component}.${part} declares unknown canonical state '${state}'.`,
+                );
         }
     }
     return problems;
@@ -413,13 +449,17 @@ function compareComponentStates(component, manifestStates, emittedStates) {
         }
         for (const state of emitted) {
             if (!declaredStates.includes(state))
-                problems.push(`${component}.${part} emits undeclared canonical state '${state}'.`);
+                problems.push(
+                    `${component}.${part} emits undeclared canonical state '${state}'.`,
+                );
         }
     }
     for (const [part, emitted] of emittedStates) {
         if (part in manifestStates) continue;
         for (const state of emitted)
-            problems.push(`${component}.${part} emits canonical state '${state}' for an unknown part.`);
+            problems.push(
+                `${component}.${part} emits canonical state '${state}' for an unknown part.`,
+            );
     }
     return problems;
 }
@@ -459,33 +499,55 @@ function verifyDefinitions(partEmissions, stateEmissions) {
     for (const [component, definition] of Object.entries(partDefinitions)) {
         const parts = resolvedParts(component);
         const duplicate = parts.find((part, index) => parts.indexOf(part) !== index);
-        if (duplicate) problems.push(`${component} repeats manifest part '${duplicate}'.`);
+        if (duplicate)
+            problems.push(`${component} repeats manifest part '${duplicate}'.`);
         for (const part of parts) allParts.add(part);
 
         for (const source of definition.sources ?? []) {
-            if (!owners.has(source)) problems.push(`${component} references unknown source ${source}.`);
+            if (!owners.has(source))
+                problems.push(`${component} references unknown source ${source}.`);
         }
 
         if (definition.aliasOf) {
             if (component in partStateDefinitions)
-                problems.push(`${component} is an alias and must inherit, not redeclare, part states.`);
+                problems.push(
+                    `${component} is an alias and must inherit, not redeclare, part states.`,
+                );
         } else {
             problems.push(
-                ...validatePartStateDefinition(component, parts, partStateDefinitions[component]),
+                ...validatePartStateDefinition(
+                    component,
+                    parts,
+                    partStateDefinitions[component],
+                ),
             );
         }
 
-        const emittedParts = aggregateEmissions(component, partEmissions, () => new Set());
-        const emittedStates = aggregateEmissions(component, stateEmissions, () => new Map());
+        const emittedParts = aggregateEmissions(
+            component,
+            partEmissions,
+            () => new Set(),
+        );
+        const emittedStates = aggregateEmissions(
+            component,
+            stateEmissions,
+            () => new Map(),
+        );
         problems.push(...compareComponentParts(component, parts, emittedParts));
         problems.push(
-            ...compareComponentStates(component, resolvedPartStates(component), emittedStates),
+            ...compareComponentStates(
+                component,
+                resolvedPartStates(component),
+                emittedStates,
+            ),
         );
     }
 
     for (const component of Object.keys(partStateDefinitions)) {
         if (!(component in partDefinitions))
-            problems.push(`Part-state definition references unknown component '${component}'.`);
+            problems.push(
+                `Part-state definition references unknown component '${component}'.`,
+            );
     }
 
     return { problems, allParts };
@@ -495,14 +557,18 @@ function buildProgram(files) {
     const configPath = path.join(sourceRoot, 'tsconfig.json');
     const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
     if (configFile.error)
-        throw new Error(ts.flattenDiagnosticMessageText(configFile.error.messageText, '\n'));
+        throw new Error(
+            ts.flattenDiagnosticMessageText(configFile.error.messageText, '\n'),
+        );
     const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, sourceRoot);
     return ts.createProgram({ rootNames: files, options: parsed.options });
 }
 
 function verifyPublicPtContracts() {
     const problems = [];
-    const files = collectTsx(sourceRoot).filter((file) => isProductionFile(normalizePath(file)));
+    const files = collectTsx(sourceRoot).filter((file) =>
+        isProductionFile(normalizePath(file)),
+    );
     const program = buildProgram(files);
     const checker = program.getTypeChecker();
     const owners = ownersBySource();
@@ -516,7 +582,10 @@ function verifyPublicPtContracts() {
     const discoveredFiles = new Set();
     let declarationCount = 0;
     for (const sourceFile of program.getSourceFiles()) {
-        if (!sourceFile.fileName.startsWith(sourceRoot) || !sourceFile.fileName.endsWith('.tsx'))
+        if (
+            !sourceFile.fileName.startsWith(sourceRoot) ||
+            !sourceFile.fileName.endsWith('.tsx')
+        )
             continue;
         const relative = normalizePath(sourceFile.fileName);
         if (!isProductionFile(relative)) continue;
@@ -531,18 +600,25 @@ function verifyPublicPtContracts() {
             ) {
                 declarationCount++;
                 discoveredFiles.add(relative);
-                const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+                const line =
+                    sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
                 if (owner) {
                     const expected = sorted(resolvedPtKeys(owner));
-                    const type = checker.getNonNullableType(checker.getTypeAtLocation(node));
-                    const actual = sorted(checker.getPropertiesOfType(type).map((symbol) => symbol.name));
+                    const type = checker.getNonNullableType(
+                        checker.getTypeAtLocation(node),
+                    );
+                    const actual = sorted(
+                        checker.getPropertiesOfType(type).map((symbol) => symbol.name),
+                    );
                     if (!sameValues(actual, expected)) {
                         problems.push(
                             `${relative}:${line} ${owner} pt keys differ: source=[${actual.join(', ')}], manifest=[${expected.join(', ')}].`,
                         );
                     }
                 } else {
-                    problems.push(`${relative}:${line} declares public pt without a manifest owner.`);
+                    problems.push(
+                        `${relative}:${line} declares public pt without a manifest owner.`,
+                    );
                 }
             }
             ts.forEachChild(node, visit);
@@ -573,7 +649,10 @@ function verifyPublicPtContracts() {
 function verifyTestSelectors(allParts) {
     const problems = [];
     const dynamicMap = new Map(
-        dynamicTestSelectors.map((entry) => [`${entry.file}\0${entry.expression}`, entry]),
+        dynamicTestSelectors.map((entry) => [
+            `${entry.file}\0${entry.expression}`,
+            entry,
+        ]),
     );
     const seenDynamic = new Set();
     const selectorPattern = /data-cratis-part\s*=\s*["']([^"']+)["']/gu;
@@ -593,7 +672,8 @@ function verifyTestSelectors(allParts) {
             if (text.includes('${')) {
                 const key = `${relative}\0${text}`;
                 const allowlist = dynamicMap.get(key);
-                const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+                const line =
+                    sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
                 if (allowlist) {
                     seenDynamic.add(key);
                     for (const part of allowlist.parts) {
@@ -611,7 +691,9 @@ function verifyTestSelectors(allParts) {
             }
             for (const match of text.matchAll(selectorPattern)) {
                 if (!allParts.has(match[1])) {
-                    const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+                    const line =
+                        sourceFile.getLineAndCharacterOfPosition(node.getStart()).line +
+                        1;
                     problems.push(
                         `${relative}:${line} selector references unknown part '${match[1]}'.`,
                     );
@@ -623,7 +705,8 @@ function verifyTestSelectors(allParts) {
                 ts.isStringLiteral(node) ||
                 ts.isNoSubstitutionTemplateLiteral(node) ||
                 ts.isRegularExpressionLiteral(node)
-            ) inspectText(node.text, node);
+            )
+                inspectText(node.text, node);
             else if (ts.isTemplateExpression(node))
                 inspectText(node.getText(sourceFile).slice(1, -1), node);
             ts.forEachChild(node, visit);
@@ -633,7 +716,9 @@ function verifyTestSelectors(allParts) {
 
     for (const [key, entry] of dynamicMap) {
         if (!seenDynamic.has(key))
-            problems.push(`Stale dynamic test-selector mapping for ${entry.file}: '${entry.expression}'.`);
+            problems.push(
+                `Stale dynamic test-selector mapping for ${entry.file}: '${entry.expression}'.`,
+            );
     }
     return problems;
 }
@@ -660,7 +745,8 @@ const stateAttributeFromFixture = (source) => {
             ts.isJsxAttribute(node) &&
             typeof node.name.text === 'string' &&
             node.name.text.startsWith('data-')
-        ) result = node;
+        )
+            result = node;
         ts.forEachChild(node, visit);
     };
     visit(sourceFile);
@@ -669,7 +755,11 @@ const stateAttributeFromFixture = (source) => {
 
 function runSelfTests() {
     const failures = [];
-    const missing = compareComponentParts('Widget', ['root'], new Set(['root', 'missing']));
+    const missing = compareComponentParts(
+        'Widget',
+        ['root'],
+        new Set(['root', 'missing']),
+    );
     if (!missing.some((problem) => problem.includes("missing manifest part 'missing'")))
         failures.push('planted missing source part was not detected');
     const orphaned = compareComponentParts(
@@ -682,12 +772,14 @@ function runSelfTests() {
     if (compareComponentParts('Widget', ['root'], new Set(['root'])).length !== 0)
         failures.push('matching part fixture did not pass');
 
-    const unknownState = validatePartStateDefinition(
-        'Widget',
-        ['root'],
-        { root: ['unknown'] },
-    );
-    if (!unknownState.some((problem) => problem.includes("unknown canonical state 'unknown'")))
+    const unknownState = validatePartStateDefinition('Widget', ['root'], {
+        root: ['unknown'],
+    });
+    if (
+        !unknownState.some((problem) =>
+            problem.includes("unknown canonical state 'unknown'"),
+        )
+    )
         failures.push('planted unknown state declaration was not detected');
 
     const orphanedState = compareComponentStates(
@@ -695,7 +787,11 @@ function runSelfTests() {
         { root: ['selected'] },
         new Map([['root', new Set()]]),
     );
-    if (!orphanedState.some((problem) => problem.includes("orphaned canonical state 'selected'")))
+    if (
+        !orphanedState.some((problem) =>
+            problem.includes("orphaned canonical state 'selected'"),
+        )
+    )
         failures.push('planted orphaned state declaration was not detected');
 
     for (const source of [
@@ -748,7 +844,8 @@ function main() {
     const selfTestOnly = process.argv.includes('--self-test-only');
     const selfTestProblems = runSelfTests();
     if (selfTestProblems.length > 0) {
-        for (const problem of selfTestProblems) console.error(`verify-parts-manifest: ${problem}`);
+        for (const problem of selfTestProblems)
+            console.error(`verify-parts-manifest: ${problem}`);
         process.exit(1);
     }
     console.log(
