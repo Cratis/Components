@@ -4,7 +4,7 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { AnchoredOverlay } from './AnchoredOverlay';
 import type { BuildAvatarUrlParams } from './Avatar';
-import { activeMentionQuery, applyMention, matchCandidates, MentionSuggestions, type MentionCandidate } from './Mentions';
+import { activeMentionQuery, applyMention, extractMentions, matchCandidates, MentionSuggestions, type MentionCandidate } from './Mentions';
 import { ReactionPicker, type ReactionPickerLabels } from './ReactionPicker';
 
 /** Overrides for the composer's own labels. Any field left unset falls back to a literal English
@@ -24,11 +24,27 @@ export interface ChatComposerLabels {
 
 export interface ChatComposerProps {
 
-    /** Everyone who can be mentioned from this conversation. Omit to turn mentions off. */
+    /** Everyone who can be mentioned from this conversation. Omit (together with
+     *  {@link resolveMentionCandidates}) to turn mentions off. */
     mentionCandidates?: MentionCandidate[];
 
-    /** Invoked with the trimmed message text when the user sends. */
-    onSend: (text: string) => void;
+    /**
+     * Resolves who can be mentioned as the person types, invoked with what has been typed after
+     * the `@` — for hosts whose candidates come from a lookup rather than a list they already
+     * hold. May answer synchronously or with a promise; a stale answer (one that arrives after
+     * the query has moved on) is dropped. Combines with {@link mentionCandidates} when both are
+     * given.
+     * @param query What has been typed after the `@`.
+     * @returns The candidates matching the query.
+     */
+    resolveMentionCandidates?: (query: string) => MentionCandidate[] | Promise<MentionCandidate[]>;
+
+    /**
+     * Invoked with the trimmed message text when the user sends, together with who that text
+     * actually mentions — reduced from every candidate the draft saw, so a mention that was
+     * picked but edited away again does not count.
+     */
+    onSend: (text: string, mentions: MentionCandidate[]) => void;
 
     /** Whether to take focus when mounted. */
     autoFocus?: boolean;
@@ -55,15 +71,62 @@ export interface ChatComposerHandle {
  * The compose row of a conversation — the text area, the `@` mention list it opens, and the send
  * button. It owns the draft so the surrounding panel stays a renderer of messages.
  */
-export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(({ mentionCandidates, onSend, autoFocus = false, buildAvatarUrl, labels }, handleRef) => {
+export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(({ mentionCandidates, resolveMentionCandidates, onSend, autoFocus = false, buildAvatarUrl, labels }, handleRef) => {
     const [draft, setDraft] = useState({ text: '', caret: 0 });
     const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [resolvedCandidates, setResolvedCandidates] = useState<MentionCandidate[]>([]);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const emojiButtonRef = useRef<HTMLButtonElement>(null);
+    // Every candidate this draft has seen — resolved or picked — so the mentions reported on send
+    // can be found again even when the resolver's latest answer no longer includes them.
+    const seenCandidatesRef = useRef(new Map<string, MentionCandidate>());
 
-    const query = mentionCandidates ? activeMentionQuery(draft.text, draft.caret) : null;
-    const suggestions = query ? matchCandidates(mentionCandidates ?? [], query.text) : [];
+    const mentionsEnabled = !!mentionCandidates || !!resolveMentionCandidates;
+    const query = mentionsEnabled ? activeMentionQuery(draft.text, draft.caret) : null;
+    const queryText = query?.text;
+
+    useEffect(() => {
+        if (!resolveMentionCandidates || queryText === undefined) {
+            setResolvedCandidates(previous => (previous.length === 0 ? previous : []));
+            return;
+        }
+        let cancelled = false;
+        Promise.resolve(resolveMentionCandidates(queryText))
+            .then(candidates => {
+                if (cancelled) return;
+                setResolvedCandidates(candidates);
+                candidates.forEach(candidate => seenCandidatesRef.current.set(candidate.id, candidate));
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setResolvedCandidates([]);
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [resolveMentionCandidates, queryText]);
+
+    const uniqueById = (candidates: MentionCandidate[]): MentionCandidate[] => {
+        const byId = new Map<string, MentionCandidate>();
+        candidates.forEach(candidate => {
+            if (!byId.has(candidate.id)) {
+                byId.set(candidate.id, candidate);
+            }
+        });
+        return [...byId.values()];
+    };
+
+    const candidatePool = uniqueById([...(mentionCandidates ?? []), ...resolvedCandidates]);
+    // A query that ends in whitespace and spells a candidate's full name is a mention already
+    // made — the trailing space applyMention writes is its closing. Without this, Enter right
+    // after picking would re-pick the same name instead of sending the message.
+    const queryIsCompleteMention =
+        query !== null &&
+        /\s$/.test(query.text) &&
+        candidatePool.some(candidate => candidate.name.toLowerCase() === query.text.trim().toLowerCase());
+    const suggestions = query && !queryIsCompleteMention ? matchCandidates(candidatePool, query.text) : [];
     const isSuggesting = suggestions.length > 0;
     const highlighted = Math.min(highlightedIndex, suggestions.length - 1);
 
@@ -96,12 +159,15 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(({
     const send = () => {
         const trimmed = draft.text.trim();
         if (!trimmed) return;
-        onSend(trimmed);
+        const known = uniqueById([...(mentionCandidates ?? []), ...seenCandidatesRef.current.values()]);
+        onSend(trimmed, extractMentions(trimmed, known));
+        seenCandidatesRef.current.clear();
         setDraft({ text: '', caret: 0 });
     };
 
     const choose = (candidate: MentionCandidate) => {
         if (!query) return;
+        seenCandidatesRef.current.set(candidate.id, candidate);
         const applied = applyMention(draft.text, draft.caret, query, candidate.name);
         setDraft(applied);
         setHighlightedIndex(0);

@@ -43,7 +43,8 @@ export interface ChatProps {
 
     messages: ChatMessage[];
 
-    onSend: (text: string) => void;
+    /** Invoked with the trimmed message text when the user sends, together with who it mentions. */
+    onSend: (text: string, mentions: MentionCandidate[]) => void;
 
     onClose: () => void;
 
@@ -57,8 +58,15 @@ export interface ChatProps {
      */
     variant?: ChatVariant;
 
-    /** Everyone who can be mentioned from this conversation. Omit to turn mentions off. */
+    /** Everyone who can be mentioned from this conversation. Omit (together with
+     *  {@link resolveMentionCandidates}) to turn mentions off. */
     mentionCandidates?: MentionCandidate[];
+
+    /**
+     * Resolves who can be mentioned as the person types — see
+     * {@link ChatComposerProps.resolveMentionCandidates}.
+     */
+    resolveMentionCandidates?: (query: string) => MentionCandidate[] | Promise<MentionCandidate[]>;
 
     /** Who the conversation is currently waiting on — someone typing, or an agent working. */
     typingAuthors?: ChatTypingAuthor[];
@@ -162,6 +170,7 @@ export const Chat: React.FC<ChatProps> = ({
     autoFocus = false,
     variant = ChatVariant.Floating,
     mentionCandidates,
+    resolveMentionCandidates,
     typingAuthors = [],
     currentUserId,
     onReact,
@@ -234,6 +243,7 @@ export const Chat: React.FC<ChatProps> = ({
             <ChatComposer
                 ref={composerRef}
                 mentionCandidates={mentionCandidates}
+                resolveMentionCandidates={resolveMentionCandidates}
                 onSend={onSend}
                 autoFocus={autoFocus}
                 buildAvatarUrl={buildAvatarUrl}
