@@ -5,8 +5,13 @@ import { useMemo, type ReactNode } from 'react';
 import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications/Toaster';
+import { unstable_RendererRoot } from '../renderer/RendererContext';
+import type { unstable_UiLibrary } from '../renderer/manifest';
+import type { unstable_CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
 import { CratisComponentsContext } from './CratisComponentsContext';
 import { cratisDefaults } from './CratisComponentsDefaults';
+
+const RendererRoot = unstable_RendererRoot;
 
 export { cratisDefaults } from './CratisComponentsDefaults';
 export { useCratisComponentsConfig } from './CratisComponentsContext';
@@ -169,6 +174,14 @@ export interface CratisComponentsProviderProps {
     value?: CratisComponentsConfig;
     /** Mounts the global toaster with defaults or explicit options. */
     toaster?: boolean | ToasterProps;
+    /** Experimental renderer library or ordered, last-wins library composition. */
+    library?: unstable_UiLibrary | readonly unstable_UiLibrary[];
+    /** Experimental profile-promise behavior. Defaults to strict. */
+    libraryMode?: 'strict' | 'degrade';
+    /** Experimental terminal slot fallback behavior. Defaults to Core. */
+    rendererFallback?: 'core' | 'throw';
+    /** Experimental host environment for overlay portal containers. */
+    overlayEnvironment?: unstable_CratisOverlayEnvironment;
     /** Application content. */
     children: ReactNode;
 }
@@ -247,6 +260,10 @@ const validLocale = (locale: string | undefined) => {
 export const CratisComponentsProvider = ({
     value,
     toaster,
+    library,
+    libraryMode,
+    rendererFallback,
+    overlayEnvironment,
     children,
 }: CratisComponentsProviderProps) => {
     const resolved = useMemo(
@@ -256,11 +273,18 @@ export const CratisComponentsProvider = ({
     );
 
     return (
-        <CratisComponentsContext.Provider value={resolved}>
-            <I18nProvider locale={validLocale(resolved.locale)}>
-                {children}
-                {toaster && <Toaster {...(typeof toaster === 'object' ? toaster : {})} />}
-            </I18nProvider>
-        </CratisComponentsContext.Provider>
+        <RendererRoot
+            library={library}
+            libraryMode={libraryMode}
+            rendererFallback={rendererFallback}
+            overlayEnvironment={overlayEnvironment}
+        >
+            <CratisComponentsContext.Provider value={resolved}>
+                <I18nProvider locale={validLocale(resolved.locale)}>
+                    {children}
+                    {toaster && <Toaster {...(typeof toaster === 'object' ? toaster : {})} />}
+                </I18nProvider>
+            </CratisComponentsContext.Provider>
+        </RendererRoot>
     );
 };

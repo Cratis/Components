@@ -46,3 +46,28 @@ export interface unstable_AdapterDiagnostic {
     /** The single action a consumer should take to remedy the diagnostic. */
     readonly remedy: string;
 }
+
+/**
+ * Typed failure raised when a renderer contract cannot be honored.
+ *
+ * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
+ */
+export class unstable_AdapterError extends Error {
+    /** Stable diagnostic that caused the failure. */
+    readonly diagnostic: unstable_AdapterDiagnostic;
+
+    /** Stable diagnostic code, repeated for convenient error-boundary inspection. */
+    readonly code: unstable_AdapterErrorCode;
+
+    /**
+     * Initializes a renderer contract failure.
+     *
+     * @param diagnostic Actionable renderer diagnostic.
+     */
+    constructor(diagnostic: unstable_AdapterDiagnostic) {
+        super(`[${diagnostic.code}] ${diagnostic.message} Remedy: ${diagnostic.remedy}`);
+        this.name = 'unstable_AdapterError';
+        this.diagnostic = diagnostic;
+        this.code = diagnostic.code;
+    }
+}

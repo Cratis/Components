@@ -2,62 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ComponentType } from 'react';
-import type { ButtonProps } from '../Common/Button';
-import type { CheckboxProps } from '../Common/Checkbox';
-import type { DatePickerInputProps } from '../Common/DatePickerInput';
-import type { IconButtonProps } from '../Common/IconButton';
-import type { RadioProps } from '../Common/Radio';
-import type { SurfaceProps } from '../Common/Surface';
-import type { SwitchProps } from '../Common/Switch';
-import type { TextAreaProps } from '../Common/TextArea';
-import type { TextInputProps } from '../Common/TextInput';
-import type { TooltipProps } from '../Common/Tooltip';
-import type { TablePaginatorProps } from '../DataTables/TablePaginator';
-import type { ProgressBarProps } from '../Display/ProgressBar';
-import type { DialogProps } from '../Dialogs/Dialog';
-import type { DropdownProps } from '../Dropdown/Dropdown';
 
 /**
- * Renderer slots backed by real public component contracts in Components V4.
- *
- * This interface is intentionally open so an adapter can declaration-merge private slots without
- * making vendor types part of the Core package. Element-bounded Common controls and progress are
- * presentation candidates; tooltip, select, dialog, date picker, and paginator remain
- * interaction-heavy. CommandForm fields are Arc-bound composites and never substitute for the
- * standalone primitive contracts.
+ * Open renderer slot table. Core declarations are attached by the renderer barrel at the subpath
+ * boundary so the setup-only package root can name `unstable_UiLibrary` without resolving
+ * every component contract and optional peer. Adapters may declaration-merge private slots here.
  *
  * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
  */
-export interface unstable_CratisSlots {
-    /** Cratis button presentation contract. */
-    'common.button': ButtonProps;
-    /** Cratis icon-button presentation contract. */
-    'common.iconButton': IconButtonProps;
-    /** Native text-input presentation contract. */
-    'common.textInput': TextInputProps;
-    /** Native text-area presentation contract. */
-    'common.textArea': TextAreaProps;
-    /** Native checkbox presentation contract. */
-    'common.checkbox': CheckboxProps;
-    /** Native radio-option presentation contract. */
-    'common.radio': RadioProps;
-    /** Native switch presentation contract. */
-    'common.switch': SwitchProps;
-    /** Progress-bar presentation contract. */
-    'common.progress': ProgressBarProps;
-    /** Semantic surface presentation contract. */
-    'common.surface': SurfaceProps;
-    /** Interaction-heavy tooltip contract. */
-    'common.tooltip': TooltipProps;
-    /** Interaction-heavy select/dropdown contract. */
-    'dropdown.select': DropdownProps<unknown>;
-    /** Interaction-heavy modal dialog contract. */
-    'dialogs.dialog': DialogProps;
-    /** Interaction-heavy date-picker contract. */
-    'display.datePicker': DatePickerInputProps;
-    /** Interaction-heavy, composite-adjacent table paginator contract. */
-    'datatables.paginator': TablePaginatorProps;
-}
+// Core slot members are supplied by the renderer subpath barrel's type augmentation.
+export interface unstable_CratisSlots extends Record<never, never> {}
 
 /**
  * Identifier of a declared renderer slot.

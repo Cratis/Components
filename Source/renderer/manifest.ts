@@ -4,7 +4,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { unstable_CapabilityId } from './capabilities';
 import type { unstable_AdapterDiagnostic } from './errors';
-import type { unstable_SlotMap } from './slots';
+import type { unstable_SlotId, unstable_SlotMap } from './slots';
 
 /**
  * Renderer ABI major implemented by this package.
@@ -30,13 +30,17 @@ export interface unstable_UiLibrary {
     readonly level: 'full' | 'primitive' | 'behavior' | 'portal' | 'theme';
     /** Named contract profile promised by the library. */
     readonly profile: string;
+    /**
+     * Slots promised by the named profile. When omitted, the library promises its own slot keys.
+     */
+    readonly profileSlots?: readonly unstable_SlotId[];
     /** Core-owned capabilities honestly supported by the library. */
     readonly capabilities: readonly unstable_CapabilityId[];
     /** Typed partial slot implementation table. */
     readonly slots: unstable_SlotMap;
-    /** Optional library-level provider. Provider wiring is deferred to a later Slice D commit. */
+    /** Optional library-level provider mounted once around the selected renderer scope. */
     readonly Provider?: ComponentType<{ children: ReactNode }>;
-    /** Optional static diagnostic preflight. Provider consumption is deferred. */
+    /** Optional static diagnostic preflight evaluated by renderer providers and scopes. */
     readonly preflight?: () => readonly unstable_AdapterDiagnostic[];
 }
 
@@ -46,9 +50,8 @@ export interface unstable_UiLibrary {
  *
  * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
  */
-// This is intentionally empty: adapter packages add only their own vendor key through declaration merging.
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface unstable_RendererExtensions {}
+// Adapter packages add only their own vendor key through declaration merging.
+export interface unstable_RendererExtensions extends Record<never, never> {}
 
 /**
  * Deliberate renderer lock-in bag derived only from declaration-merged extension keys. Portable
@@ -83,6 +86,9 @@ export const unstable_defineUiLibrary = <const T extends unstable_UiLibrary>(
     Object.freeze({
         ...library,
         capabilities: Object.freeze([...library.capabilities]),
+        profileSlots: Object.freeze([
+            ...(library.profileSlots ?? Object.keys(library.slots)),
+        ]),
         slots: frozenSlots(library.slots),
     }) as T;
 
@@ -112,6 +118,7 @@ export const unstable_composeUiLibraries = (
     return unstable_defineUiLibrary({
         ...last,
         capabilities,
+        profileSlots: last.profileSlots ?? Object.keys(slots) as unstable_SlotId[],
         slots,
     });
 };
