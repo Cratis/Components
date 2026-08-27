@@ -1,6 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { ProgressBarImplementation } from './ProgressBarImplementation';
+
 /** Props for {@link ProgressBar}. */
 export interface ProgressBarProps {
     /** Completion value, 0–100. Ignored in `indeterminate` mode. */
@@ -17,5 +22,17 @@ export interface ProgressBarProps {
     className?: string;
 }
 
+const coreProgressBarDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: ProgressBarImplementation,
+}) satisfies unstable_SlotDeclaration<'common.progress'>;
+
 /** A horizontal determinate or indeterminate progress indicator. */
-export { ProgressBarImplementation as ProgressBar } from './ProgressBarImplementation';
+export const ProgressBar = (props: ProgressBarProps) => {
+    const declaration = unstable_useSlot(
+        'common.progress',
+        coreProgressBarDeclaration,
+    );
+    return renderSlot(declaration, props);
+};

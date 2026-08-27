@@ -1,9 +1,13 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { HTMLAttributes } from 'react';
+import { forwardRef, type HTMLAttributes } from 'react';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { SurfaceImplementation } from './SurfaceImplementation';
 
 /** Native elements supported by {@link Surface}. */
 export type SurfaceElement = 'article' | 'div' | 'section';
@@ -25,5 +29,17 @@ export interface SurfaceProps extends HTMLAttributes<HTMLElement> {
     pt?: SurfaceParts;
 }
 
+const coreSurfaceDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: SurfaceImplementation,
+}) satisfies unstable_SlotDeclaration<'common.surface'>;
+
 /** A non-interactive semantic surface with a bounded native-element choice. */
-export { SurfaceImplementation as Surface } from './SurfaceImplementation';
+export const Surface = forwardRef<HTMLElement, SurfaceProps>(function Surface(
+    props,
+    ref,
+) {
+    const declaration = unstable_useSlot('common.surface', coreSurfaceDeclaration);
+    return renderSlot(declaration, props, ref);
+});

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import {
+    forwardRef,
     type CSSProperties,
     type HTMLAttributes,
     type InputHTMLAttributes,
@@ -11,6 +12,10 @@ import {
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { CheckboxImplementation } from './CheckboxImplementation';
 
 /** Stable Cratis-owned parts for styling a {@link Checkbox}. */
 export interface CheckboxParts {
@@ -50,5 +55,19 @@ export interface CheckboxProps extends Omit<
     pt?: CheckboxParts;
 }
 
+const coreCheckboxDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: CheckboxImplementation,
+}) satisfies unstable_SlotDeclaration<'common.checkbox'>;
+
 /** A native form checkbox with one interaction owner and stable visual parts. */
-export { CheckboxImplementation as Checkbox } from './CheckboxImplementation';
+export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
+    function Checkbox(props, ref) {
+        const declaration = unstable_useSlot(
+            'common.checkbox',
+            coreCheckboxDeclaration,
+        );
+        return renderSlot(declaration, props, ref);
+    },
+);

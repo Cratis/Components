@@ -189,17 +189,20 @@ export const unstable_createResolvedSlotTable = (
     return Object.freeze(resolved) as unstable_SlotMap;
 };
 
-/** Resolves a slot by lookup and then consults the injected Core fallback table. */
+/** Resolves a slot through external layers, a facade-local Core declaration, then Core context. */
 export const unstable_resolveSlot = <K extends unstable_SlotId>(
     slotId: K,
     slots: unstable_SlotMap,
+    localCoreDeclaration: unstable_SlotDeclaration<K> | undefined,
     coreSlots: unstable_SlotMap,
 ): { declaration?: unstable_SlotDeclaration<K>; usedCoreFallback: boolean } => {
     const declaration = slots[slotId] as unstable_SlotDeclaration<K> | undefined;
     if (declaration) return { declaration, usedCoreFallback: false };
 
     return {
-        declaration: coreSlots[slotId] as unstable_SlotDeclaration<K> | undefined,
+        declaration:
+            localCoreDeclaration ??
+            (coreSlots[slotId] as unstable_SlotDeclaration<K> | undefined),
         usedCoreFallback: true,
     };
 };

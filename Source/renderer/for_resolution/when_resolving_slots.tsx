@@ -6,12 +6,15 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import sinon from 'sinon';
 import { describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
+import { unstable_RendererRoot } from '../RendererContext';
 import {
     unstable_AdapterError,
     unstable_adapterErrorCodes,
     unstable_RendererScope as RendererScope,
     unstable_useSlot,
+    type unstable_SlotDeclaration,
     type unstable_SlotId,
+    type unstable_SlotMap,
 } from '..';
 import {
     buttonSlot,
@@ -22,6 +25,8 @@ import {
     LastTooltip,
     tooltipSlot,
 } from './testLibrary';
+
+const RendererRoot = unstable_RendererRoot;
 
 const ResolutionProbe = () => {
     const button = unstable_useSlot('common.button')?.render;
@@ -43,6 +48,17 @@ const combinedSlots = (button: typeof FirstButton, tooltip: typeof FirstTooltip)
     ...tooltipSlot(tooltip),
 });
 
+const localButtonDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: FirstButton,
+}) satisfies unstable_SlotDeclaration<'common.button'>;
+
+const LocalCoreProbe = () => {
+    const Render = unstable_useSlot('common.button', localButtonDeclaration).render;
+    return <Render />;
+};
+
 describe('when resolving renderer slots', () => {
     it('should compose provider arrays with last-library-wins slots', () => {
         const first = createTestLibrary('first', buttonSlot(FirstButton));
@@ -55,6 +71,31 @@ describe('when resolving renderer slots', () => {
         );
 
         expect(html).to.contain('data-button="last"');
+    });
+
+    it('should resolve external slots before facade-local and context Core declarations', () => {
+        const external = createTestLibrary('external', buttonSlot(LastButton));
+        const coreSlots = buttonSlot(LastButton);
+
+        const html = renderToStaticMarkup(
+            <RendererRoot library={external} coreSlots={coreSlots}>
+                <LocalCoreProbe />
+            </RendererRoot>,
+        );
+
+        expect(html).to.equal('<span>last-button</span>');
+    });
+
+    it('should resolve a facade-local Core declaration before the optional context table', () => {
+        const coreSlots = buttonSlot(LastButton) as unstable_SlotMap;
+
+        const html = renderToStaticMarkup(
+            <RendererRoot coreSlots={coreSlots}>
+                <LocalCoreProbe />
+            </RendererRoot>,
+        );
+
+        expect(html).to.equal('<span>first-button</span>');
     });
 
     it('should use the nearest scope only for its allowed slots', () => {

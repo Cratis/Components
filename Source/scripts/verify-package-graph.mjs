@@ -28,6 +28,9 @@
  *      beyond the React framework peer and reaches no component implementation directory. Its declaration closure may
  *      reach Components-owned prop declarations and React types, but no renderer vendor.
  *      The check is explicitly deferred until that export exists.
+ *   5. The setup-only root, `./Common`, and public `./renderer` closures never reach the
+ *      private all-family `renderer/coreSlots` ABI-proof table. Root and `./Common` also stay
+ *      outside the table's DataTables, Dialogs, Display, and Dropdown family directories.
  *
  * `./Canvas` and `./PivotViewer` are additionally asserted to actually reach
  * `pixi.js` - a subpath that stopped needing Pixi should have its optional peer
@@ -230,6 +233,51 @@ const componentImplementationDirectories = [
         }),
     ),
 ].sort();
+const coreSlotIsolationSubpaths = new Set(['.', './Common', './renderer']);
+const leanCoreSlotSubpaths = new Set(['.', './Common']);
+const coreSlotCrossFamilyDirectories = [
+    'DataTables/',
+    'Dialogs/',
+    'Display/',
+    'Dropdown/',
+];
+const reachesCoreSlots = (closure) =>
+    closure.files.filter((file) => /^renderer\/coreSlots\.(?:js|d\.ts)$/u.test(file));
+for (const row of subpathReports.filter(({ subpath }) =>
+    coreSlotIsolationSubpaths.has(subpath),
+)) {
+    for (const [kind, closure] of [
+        ['runtime', row.runtime],
+        ['declaration', row.declarations],
+    ]) {
+        const coreSlotFiles = reachesCoreSlots(closure);
+        if (coreSlotFiles.length > 0) {
+            violations.push(
+                `${row.subpath}: ${kind} closure reaches private all-family Core slot table: ` +
+                    coreSlotFiles.join(', '),
+            );
+        }
+    }
+    if (leanCoreSlotSubpaths.has(row.subpath)) {
+        for (const [kind, closure] of [
+            ['runtime', row.runtime],
+            ['declaration', row.declarations],
+        ]) {
+            const familyFiles = closure.files.filter((file) =>
+                coreSlotCrossFamilyDirectories.some((directory) =>
+                    file.startsWith(directory),
+                ),
+            );
+            if (familyFiles.length > 0) {
+                violations.push(
+                    `${row.subpath}: ${kind} closure reaches private Core-slot families: ` +
+                        familyFiles.join(', '),
+                );
+            }
+        }
+    }
+}
+
 const rendererSubpath = subpathReports.find((row) => row.subpath === './renderer');
 const rendererBoundary = rendererBoundaryReport(
     rendererSubpath,
@@ -266,6 +314,9 @@ if (reportPath) {
                 directPixiImportersOutsideSpatialSubpaths: directPixiImporters,
                 rendererVendorImporters,
                 rendererBoundary,
+                coreSlotIsolationSubpaths: [...coreSlotIsolationSubpaths],
+                leanCoreSlotSubpaths: [...leanCoreSlotSubpaths],
+                coreSlotCrossFamilyDirectories,
                 violations,
             },
             null,
@@ -293,6 +344,6 @@ if (rendererBoundary.status === 'deferred') {
 } else {
     console.log(
         `Renderer boundary check passed: runtime has no non-React external or component-implementation edges, ` +
-            `and declarations have no renderer-vendor type edges.`,
+            `declarations have no renderer-vendor type edges, and the private Core slot table stays excluded.`,
     );
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import {
+    forwardRef,
     type CSSProperties,
     type HTMLAttributes,
     type InputHTMLAttributes,
@@ -11,6 +12,10 @@ import {
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { RadioImplementation } from './RadioImplementation';
 
 /** Stable Cratis-owned parts for styling a {@link Radio}. */
 export interface RadioParts {
@@ -61,5 +66,17 @@ export interface RadioProps extends Omit<
     pt?: RadioParts;
 }
 
+const coreRadioDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: RadioImplementation,
+}) satisfies unstable_SlotDeclaration<'common.radio'>;
+
 /** One native radio option; grouping and selection ownership remain with the browser and host. */
-export { RadioImplementation as Radio } from './RadioImplementation';
+export const Radio = forwardRef<HTMLInputElement, RadioProps>(function Radio(
+    props,
+    ref,
+) {
+    const declaration = unstable_useSlot('common.radio', coreRadioDeclaration);
+    return renderSlot(declaration, props, ref);
+});

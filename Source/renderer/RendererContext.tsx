@@ -192,19 +192,28 @@ const fallbackDiagnostic = (
 });
 
 /**
- * Resolves one slot through scopes, the application provider, and the Core fallback table.
+ * Resolves one slot through scopes/provider, a facade-local Core declaration, then Core context.
  *
  * @unstable Internal component-routing contract for Slice E. Expect changes until renderer
  * conformance gates promote it.
  */
-export const unstable_useSlot = <K extends unstable_SlotId>(
+export function unstable_useSlot<K extends unstable_SlotId>(
     slotId: K,
-): unstable_SlotDeclaration<K> | undefined => {
+    localCoreDeclaration: unstable_SlotDeclaration<K>,
+): unstable_SlotDeclaration<K>;
+export function unstable_useSlot<K extends unstable_SlotId>(
+    slotId: K,
+): unstable_SlotDeclaration<K> | undefined;
+export function unstable_useSlot<K extends unstable_SlotId>(
+    slotId: K,
+    localCoreDeclaration?: unstable_SlotDeclaration<K>,
+): unstable_SlotDeclaration<K> | undefined {
     const context = useContext(unstable_RendererContext);
     const localReportedDiagnostics = useRef(new Set<string>());
     const result = unstable_resolveSlot(
         slotId,
         context?.slots ?? unstable_emptyCoreRendererSlots,
+        localCoreDeclaration,
         context?.coreSlots ?? unstable_emptyCoreRendererSlots,
     );
 
@@ -226,14 +235,17 @@ export const unstable_useSlot = <K extends unstable_SlotId>(
         }
     }, [context, diagnostic]);
 
-    if (!result.declaration && (context?.rendererFallback ?? 'core') === 'throw') {
+    if (
+        result.usedCoreFallback &&
+        (context?.rendererFallback ?? 'core') === 'throw'
+    ) {
         throw new unstable_AdapterError(
             diagnostic ?? fallbackDiagnostic(context, slotId),
         );
     }
 
     return result.declaration;
-};
+}
 
 /** Returns whether any active renderer layer advertises a Core-owned capability. */
 export const unstable_useCapability = (capability: unstable_CapabilityId): boolean => {

@@ -52,8 +52,8 @@ declare module './slots.js' {
 
 /**
  * Experimental renderer contracts for adapter authors. Every public symbol is intentionally
- * `unstable_`-prefixed and isolated to `@cratis/components/renderer`. Component routing, built-in
- * manifests, and lazy/preload entries remain deferred.
+ * `unstable_`-prefixed and isolated to `@cratis/components/renderer`. E1 presentation routing is
+ * facade-local; atomic routing and lazy/preload entries remain deferred.
  */
 export type { unstable_CapabilityId } from './capabilities';
 export {

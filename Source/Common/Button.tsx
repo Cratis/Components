@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import {
+    forwardRef,
     type ButtonHTMLAttributes,
     type CSSProperties,
     type HTMLAttributes,
@@ -10,6 +11,10 @@ import {
 import type { TooltipPosition } from './Tooltip';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { ButtonImplementation } from './ButtonImplementation';
 
 /** Visual treatment of a {@link Button}. */
 export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'link';
@@ -116,5 +121,17 @@ export interface ButtonProps extends Omit<
     children?: ReactNode;
 }
 
+const coreButtonDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: ButtonImplementation,
+}) satisfies unstable_SlotDeclaration<'common.button'>;
+
 /** A Cratis-owned button with stable parts and renderer-independent styling. */
-export { ButtonImplementation as Button } from './ButtonImplementation';
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+    props,
+    ref,
+) {
+    const declaration = unstable_useSlot('common.button', coreButtonDeclaration);
+    return renderSlot(declaration, props, ref);
+});

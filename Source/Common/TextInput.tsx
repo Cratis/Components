@@ -1,10 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { InputHTMLAttributes } from 'react';
+import { forwardRef, type InputHTMLAttributes } from 'react';
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { TextInputImplementation } from './TextInputImplementation';
 
 /** Native text-like input types supported by {@link TextInput}. */
 export type TextInputType = 'text' | 'email' | 'password' | 'search' | 'tel' | 'url';
@@ -36,5 +40,19 @@ export interface TextInputProps extends Omit<
     pt?: TextInputParts;
 }
 
+const coreTextInputDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: TextInputImplementation,
+}) satisfies unstable_SlotDeclaration<'common.textInput'>;
+
 /** A native text input with semantic value changes and stable Components parts. */
-export { TextInputImplementation as TextInput } from './TextInputImplementation';
+export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
+    function TextInput(props, ref) {
+        const declaration = unstable_useSlot(
+            'common.textInput',
+            coreTextInputDeclaration,
+        );
+        return renderSlot(declaration, props, ref);
+    },
+);

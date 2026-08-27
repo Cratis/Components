@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import {
+    forwardRef,
     type CSSProperties,
     type HTMLAttributes,
     type InputHTMLAttributes,
@@ -11,6 +12,10 @@ import {
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { SwitchImplementation } from './SwitchImplementation';
 
 /** Stable Cratis-owned parts for styling a {@link Switch}. */
 export interface SwitchParts {
@@ -50,5 +55,17 @@ export interface SwitchProps extends Omit<
     pt?: SwitchParts;
 }
 
+const coreSwitchDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: SwitchImplementation,
+}) satisfies unstable_SlotDeclaration<'common.switch'>;
+
 /** A native checkbox with switch semantics, semantic changes, and stable visual parts. */
-export { SwitchImplementation as Switch } from './SwitchImplementation';
+export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
+    props,
+    ref,
+) {
+    const declaration = unstable_useSlot('common.switch', coreSwitchDeclaration);
+    return renderSlot(declaration, props, ref);
+});
