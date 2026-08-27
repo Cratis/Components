@@ -49,10 +49,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import {
-    kernelEmittedPath,
-    kernelSourcePaths,
-} from '../../ESLint/lib/kernelBoundary.js';
+import { kernelEmittedPath, kernelSourcePaths } from '../../ESLint/lib/kernelBoundary.js';
 import {
     analyzeKernelBoundary,
     browserRuntimeReferences,

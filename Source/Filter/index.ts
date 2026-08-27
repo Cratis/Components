@@ -15,11 +15,11 @@ export type { UseFilterStateResult } from './useFilterState';
 // part of the public API.
 export { buildHistogram } from './utils';
 export type {
-  FilterValue,
-  FilterOption,
-  FilterDefinition,
-  HistogramBucket,
-  FilterValues,
-  RangeValues,
-  CustomFilterValues,
+    FilterValue,
+    FilterOption,
+    FilterDefinition,
+    HistogramBucket,
+    FilterValues,
+    RangeValues,
+    CustomFilterValues,
 } from './types';

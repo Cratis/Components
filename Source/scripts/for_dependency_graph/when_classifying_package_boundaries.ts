@@ -169,9 +169,9 @@ describe('when classifying package boundaries', () => {
 
     it('should derive emitted kernel entries from the canonical source inventory', () => {
         expect(kernelSourcePaths).toContain('Source/PivotViewer/engine/store.ts');
-        expect(
-            kernelEmittedPath('Source/PivotViewer/engine/store.ts', '.d.ts'),
-        ).toBe('PivotViewer/engine/store.d.ts');
+        expect(kernelEmittedPath('Source/PivotViewer/engine/store.ts', '.d.ts')).toBe(
+            'PivotViewer/engine/store.d.ts',
+        );
     });
 
     it.each([

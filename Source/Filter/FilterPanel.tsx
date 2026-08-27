@@ -192,10 +192,7 @@ function OptionList({
                     const optionKey = option.key;
                     const checked = selections.has(optionKey);
                     return (
-                        <li
-                            key={option.key}
-                            data-selected={checked || undefined}
-                        >
+                        <li key={option.key} data-selected={checked || undefined}>
                             <label data-selected={checked || undefined}>
                                 <input
                                     type={filter.multi ? 'checkbox' : 'radio'}
