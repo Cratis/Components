@@ -3,9 +3,10 @@
 
 # Experimental renderer contracts
 
-This directory contains only the D1 renderer contracts. Provider/context wiring, resolution,
-`RendererScope`, hooks, preloading, built-in manifests, and component routing are deliberately
-deferred.
+This directory contains the D1 contracts and D2 provider/context/resolution infrastructure.
+Built-in manifests and component routing remain deferred to Slice E. `preloadRenderer` and lazy
+renderer entries are also deferred: `SlotDeclaration` has no load contract yet, so adding preload
+behavior now would invent an ABI that adapter declarations cannot honor.
 
 The initial slot table contains only components with real standalone public contracts:
 

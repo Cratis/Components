@@ -2,17 +2,25 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ComponentType } from 'react';
+import type { CratisComponentsProviderProps } from '@cratis/components';
 import type {
     unstable_BehaviorMode,
     unstable_CratisSlots,
     unstable_SlotId,
     unstable_SlotMap,
+    unstable_UiLibrary,
 } from '@cratis/components/renderer';
 
 declare const Button: ComponentType<unstable_CratisSlots['common.button']>;
 declare const TextInput: ComponentType<unstable_CratisSlots['common.textInput']>;
 declare const Tooltip: ComponentType<unstable_CratisSlots['common.tooltip']>;
+declare const library: unstable_UiLibrary;
 
+const providerSetup: Omit<CratisComponentsProviderProps, 'children'> = {
+    library,
+    libraryMode: 'strict',
+    rendererFallback: 'core',
+};
 const slotId: unstable_SlotId = 'common.button';
 const mode: unstable_BehaviorMode = 'presentation';
 const slots = {
@@ -35,6 +43,7 @@ const wrongProps: unstable_SlotMap = {
     'common.button': { mode: 'presentation', fidelity: 'native', render: Tooltip },
 };
 
+void providerSetup;
 void slotId;
 void slots;
 void unknownSlot;

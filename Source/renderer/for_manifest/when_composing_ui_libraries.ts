@@ -57,6 +57,10 @@ describe('when composing UI libraries', () => {
         result.displayName.should.equal('Last');
         result.level.should.equal('full');
         result.profile.should.equal('complete-controls/v1');
+        result.profileSlots!.should.deep.equal([
+            'common.button',
+            'common.tooltip',
+        ]);
         result.slots['common.button']!.render.should.equal(LastButton);
         result.slots['common.tooltip']!.render.should.equal(Tooltip);
     });
