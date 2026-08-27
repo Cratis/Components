@@ -15,11 +15,14 @@ const eventTargetOf = (event: unknown): Record<string, unknown> => {
 /**
  * Extracts a primitive value from a native form field's change event target.
  *
- * Retained as an internal safety helper for custom or legacy Arc field adapters whose
- * `CommandFormFieldConfig.extractValue` still receives `unknown`. Components-owned fields
- * now extract semantic values at their DOM or React Aria boundaries before invoking Arc,
- * so no production field relies on event-shaped values. The overloads remain available to
- * relative-imported adapters and keep runtime narrowing explicit.
+ * `CommandFormFieldConfig.extractValue` is declared `(event: unknown) => TValue` so every
+ * field type shares one contract regardless of its underlying control. Under strict
+ * TypeScript a field can no longer declare its `extractValue` against a concrete
+ * `React.ChangeEvent<...>` — the narrower parameter type fails contravariant function
+ * assignability against `(event: unknown) => TValue`. This helper keeps field components
+ * strictly typed by doing the one runtime-checked narrowing every field needs, with an
+ * overload per property so callers still get a precise return type.
+ * Internal to the command-field implementation.
  */
 export function fieldValueFromEvent(event: unknown, property: 'checked'): boolean;
 export function fieldValueFromEvent(event: unknown, property: 'value'): string;

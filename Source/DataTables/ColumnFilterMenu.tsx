@@ -255,8 +255,8 @@ export const ColumnFilterMenu = ({
               field,
               value: draftValue,
               matchMode: draftMode,
-              onChange: setDraftValue,
-              onMatchModeChange: setDraftMode,
+              onChange: (value) => setDraftValue(() => value),
+              onMatchModeChange: (matchMode) => setDraftMode(matchMode),
               onApply: apply,
               onClear: clear,
           })
@@ -287,7 +287,7 @@ export const ColumnFilterMenu = ({
                       return (
                           <DatePickerInput
                               value={draftValue instanceof Date ? draftValue : null}
-                              onChange={setDraftValue}
+                              onChange={(value) => setDraftValue(value)}
                               showIcon
                               aria-label={resolvedLabels.valueAriaLabel(field)}
                               className={pt?.input?.className}
@@ -304,7 +304,7 @@ export const ColumnFilterMenu = ({
                               ]}
                               placeholder={placeholder}
                               showClear
-                              onChange={setDraftValue}
+                              onChange={(value) => setDraftValue(value)}
                               aria-label={resolvedLabels.valueAriaLabel(field)}
                               className={pt?.input?.className}
                               style={pt?.input?.style}
@@ -367,7 +367,7 @@ export const ColumnFilterMenu = ({
                             options={modeOptions}
                             optionLabel='label'
                             optionValue='value'
-                            onChange={setDraftMode}
+                            onChange={(value) => setDraftMode(value)}
                             aria-label={resolvedLabels.matchModeAriaLabel}
                             pt={pt?.matchMode}
                         />

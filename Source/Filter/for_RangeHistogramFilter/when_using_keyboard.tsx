@@ -6,7 +6,7 @@
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { expect } from 'chai';
-import { afterEach, beforeEach, describe, it } from 'vitest';
+import { afterEach, beforeEach, describe, it, vi } from 'vitest';
 import { RangeHistogramFilter } from '../RangeHistogramFilter';
 
 const Harness = () => {
@@ -67,5 +67,37 @@ describe('when using the range histogram with a keyboard', () => {
         );
         expect(values).to.deep.equal(['30', '80']);
         expect(minimum.getAttribute('aria-valuenow')).to.equal('30');
+    });
+
+    it('should expose native user metadata at the filter boundary', async () => {
+        const onChange = vi.fn();
+        await act(async () => {
+            root.render(
+                <RangeHistogramFilter
+                    values={[10, 20, 30, 40, 50, 60, 70, 80, 90]}
+                    min={0}
+                    max={100}
+                    buckets={10}
+                    selectedRange={[20, 80]}
+                    onChange={onChange}
+                    minimumAriaLabel='Minimum order value'
+                    maximumAriaLabel='Maximum order value'
+                />,
+            );
+        });
+        const minimum = container.querySelector<HTMLElement>(
+            '[role="slider"][aria-label="Minimum order value"]',
+        );
+        if (!minimum) throw new Error('RangeHistogramFilter did not render its minimum handle.');
+        await act(async () => {
+            minimum.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+            );
+        });
+
+        expect(onChange.mock.calls).to.have.lengthOf(1);
+        expect(onChange.mock.calls[0][0]).to.deep.equal([30, 80]);
+        expect(onChange.mock.calls[0][1]).to.include({ source: 'user' });
+        expect(onChange.mock.calls[0][1].nativeEvent).to.be.instanceOf(KeyboardEvent);
     });
 });

@@ -9,6 +9,7 @@ import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { SchemaEditor } from '../SchemaEditor';
 import type { JsonSchema } from '../../types/JsonSchema';
+import type { ChangeMeta } from '../../types/ChangeMeta';
 
 /**
  * Regression coverage for two confirmed defects in required-property semantics:
@@ -25,6 +26,7 @@ describe('when renaming a required property in a nested object', () => {
     let container: HTMLDivElement;
     let root: Root;
     let capturedSchema: JsonSchema | undefined;
+    let capturedMeta: ChangeMeta | undefined;
 
     const schema: JsonSchema = {
         type: 'object',
@@ -61,6 +63,7 @@ describe('when renaming a required property in a nested object', () => {
         };
 
         capturedSchema = undefined;
+        capturedMeta = undefined;
         container = document.createElement('div');
         document.body.append(container);
         root = createRoot(container);
@@ -69,8 +72,9 @@ describe('when renaming a required property in a nested object', () => {
             root.render(
                 <SchemaEditor
                     schema={schema}
-                    onChange={(updated) => {
+                    onChange={(updated, meta) => {
                         capturedSchema = updated;
+                        capturedMeta = meta;
                     }}
                 />,
             );
@@ -130,5 +134,9 @@ describe('when renaming a required property in a nested object', () => {
 
     it('should leave the root-level sibling property untouched', () => {
         expect(capturedSchema?.properties?.id).to.deep.equal({ type: 'string' });
+    });
+
+    it('should identify the structural edit as a user change without inventing an event', () => {
+        expect(capturedMeta).to.deep.equal({ source: 'user' });
     });
 });

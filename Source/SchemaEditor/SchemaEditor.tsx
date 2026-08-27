@@ -538,11 +538,14 @@ export const SchemaEditor = ({
             return;
         }
 
+        const hasChanges = JSON.stringify(currentSchema) !== JSON.stringify(initialSchema);
         setCurrentSchema(restoredSchema);
-        onChange?.(changedSchema, { source: 'reset' });
+        if (hasChanges) {
+            onChange?.(changedSchema, { source: 'reset' });
+        }
         setIsEditMode(false);
         onCancel?.();
-    }, [initialSchema, onChange, onCancel]);
+    }, [currentSchema, initialSchema, onChange, onCancel]);
 
     const handleEdit = useCallback(() => {
         if (schemaJsonIsInvalid) return;

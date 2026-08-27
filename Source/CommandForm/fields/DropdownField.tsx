@@ -3,7 +3,7 @@
 
 import { Dropdown, type DropdownProps } from '../../Dropdown/Dropdown';
 import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,

@@ -63,7 +63,13 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
                 aria-describedby={accessibility.ariaDescribedBy}
                 type='number'
                 value={props.value}
-                onChange={(event) => props.onChange(Number.isNaN(event.currentTarget.valueAsNumber) ? 0 : event.currentTarget.valueAsNumber)}
+                onChange={(event) =>
+                    props.onChange(
+                        Number.isNaN(event.currentTarget.valueAsNumber)
+                            ? 0
+                            : event.currentTarget.valueAsNumber,
+                    )
+                }
                 placeholder={props.placeholder}
                 min={props.min}
                 max={props.max}

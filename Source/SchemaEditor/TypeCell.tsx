@@ -5,8 +5,8 @@ import { Button } from '../Common/Button';
 import { Dropdown } from '../Dropdown/Dropdown';
 import { Tooltip } from '../Common/Tooltip';
 import * as faIcons from 'react-icons/fa6';
-import type { TypeFormat } from '../types/TypeFormat';
-import type { JsonSchemaProperty } from '../types/JsonSchema';
+import { TypeFormat } from '../types/TypeFormat';
+import { JsonSchemaProperty } from '../types/JsonSchema';
 import type { SchemaEditorLabels } from './SchemaEditor';
 
 export interface TypeCellProps {
@@ -84,7 +84,8 @@ export const TypeCell = ({
             if (typeFormat) {
                 if (isArrayItem) {
                     onUpdateArrayItemType(propertyName, typeFormat.jsonType);
-                } else if (typeFormat.format && typeFormat.format !== '') {
+                } else {
+                    if (typeFormat.format && typeFormat.format !== '') {
                         onUpdateProperty(propertyName, 'type', typeFormat.jsonType, {
                             format: value,
                         });
@@ -93,11 +94,14 @@ export const TypeCell = ({
                             format: undefined,
                         });
                     }
-            } else if (isArrayItem) {
+                }
+            } else {
+                if (isArrayItem) {
                     onUpdateArrayItemType(propertyName, value);
                 } else {
                     onUpdateProperty(propertyName, 'type', value, { format: undefined });
                 }
+            }
         }
     };
 

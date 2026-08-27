@@ -145,8 +145,14 @@ export function RangeHistogramFilter({
     };
   }, [isDragging, dragStart, min, max, onChange]);
 
-  const handleBarClick = (bucket: HistogramBucket, event: React.MouseEvent<HTMLButtonElement>) => {
-    onChange([bucket.start, bucket.end], { source: 'user', nativeEvent: event.nativeEvent });
+  const handleBarClick = (
+    bucket: HistogramBucket,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    onChange([bucket.start, bucket.end], {
+      source: 'user',
+      nativeEvent: event.nativeEvent,
+    });
   };
 
   const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {

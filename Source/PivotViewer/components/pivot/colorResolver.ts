@@ -159,10 +159,10 @@ export function createCssColorResolver(): CssColorResolver {
  * Observes the environment that can change inherited semantic colors.
  * @returns A cleanup callback that disconnects every observer/listener.
  */
-export function observeColorEnvironment(element: Element, listener: () => void) {
+export function observeColorEnvironment(element: Element, onChange: () => void) {
     if (typeof MutationObserver === 'undefined') return () => undefined;
 
-    const observer = new MutationObserver(listener);
+    const observer = new MutationObserver(onChange);
     let ancestor: Element | null = element;
     while (ancestor) {
         observer.observe(ancestor, {
@@ -176,11 +176,11 @@ export function observeColorEnvironment(element: Element, listener: () => void) 
         typeof window !== 'undefined' && typeof window.matchMedia === 'function'
             ? window.matchMedia('(prefers-color-scheme: dark)')
             : undefined;
-    colorScheme?.addEventListener('change', listener);
+    colorScheme?.addEventListener('change', onChange);
 
     return () => {
         observer.disconnect();
-        colorScheme?.removeEventListener('change', listener);
+        colorScheme?.removeEventListener('change', onChange);
     };
 }
 

@@ -107,6 +107,8 @@ describe('when rendering a filterable multiple selection', () => {
                 ?.click();
         });
         expect(onChange.mock.calls).to.have.lengthOf(1);
-        expect(onChange.mock.calls[0][0].value).to.deep.equal([]);
+        expect(onChange.mock.calls[0][0]).to.deep.equal([]);
+        expect(onChange.mock.calls[0][1]).to.include({ source: 'user' });
+        expect(onChange.mock.calls[0][1].nativeEvent).to.be.instanceOf(Event);
     });
 });
