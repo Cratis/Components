@@ -1,16 +1,17 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* Sits over the dark chat panel, so its colors match that panel deliberately rather than the
-   light/dark theme tokens — the same convention ReactionPicker.css and MentionSuggestions.css follow. */
+/* Every color comes from the --cratis-* token seam, so the picker follows whatever theme the host
+   runs — the same convention ReactionPicker.css and MentionSuggestions.css
+   follow. */
 .emoji-picker {
     display: flex;
     flex-direction: column;
     width: 296px;
-    background: #262637;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 12px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
     overflow: hidden;
 }
 
@@ -41,19 +42,19 @@
 
 .emoji-picker__emoji:hover,
 .emoji-picker__emoji:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-hover);
 }
 
 .emoji-picker__emoji--selected {
-    background: rgba(99, 102, 241, 0.35);
+    background: var(--cratis-highlight-bg);
 }
 
 .emoji-picker__tabs {
     display: flex;
     gap: 2px;
     padding: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--cratis-surface-border);
+    background: var(--cratis-surface-ground);
 }
 
 .emoji-picker__tab {
@@ -80,7 +81,7 @@
 }
 
 .emoji-picker__tab--current {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-hover);
     filter: none;
     opacity: 1;
 }

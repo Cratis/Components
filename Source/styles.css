@@ -43,6 +43,9 @@
 @import './Canvas/shapes/ChatBubble/TypingIndicator.css';
 @import './Canvas/shapes/Note/Note.css';
 @import './Canvas/shapes/Region/Region.css';
+@import './Chat/ChatConversation.css';
+@import './Chat/ChatSidebar.css';
+@import './Chat/ChatTopicList.css';
 @import './CommandDialog/CommandStepper.css';
 @import './CommandForm/fields/Fields.css';
 @import './Common/ActionMenubar.css';

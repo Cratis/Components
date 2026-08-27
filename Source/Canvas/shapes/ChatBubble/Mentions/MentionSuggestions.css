@@ -1,8 +1,8 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* Sits above the compose row inside the chat panel, which is a dark surface of its own — the colors
-   here match that panel deliberately rather than following the light/dark theme tokens. */
+/* Sits above the compose row inside the chat panel. Every color comes from the --cratis-* token
+   seam, so the list follows whatever theme the host runs. */
 .mention-suggestions {
     position: absolute;
     bottom: calc(100% + 4px);
@@ -10,10 +10,10 @@
     right: 8px;
     max-height: 180px;
     overflow-y: auto;
-    background: #262637;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     padding: 4px;
     display: flex;
     flex-direction: column;
@@ -30,14 +30,15 @@
     border: none;
     border-radius: 7px;
     background: transparent;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--cratis-text-color);
     font-size: 12px;
     text-align: left;
     cursor: pointer;
 }
 
 .mention-suggestions__item--highlighted {
-    background: rgba(99, 102, 241, 0.35);
+    background: var(--cratis-highlight-bg);
+    color: var(--cratis-highlight-text-color);
 }
 
 .mention-suggestions__name {

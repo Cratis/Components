@@ -26,6 +26,8 @@
   href: list-screen-with-actions.md
 - name: Canvas
   href: Canvas/toc.yml
+- name: Chat
+  href: Chat/toc.yml
 - name: CommandDialog
   href: CommandDialog/toc.yml
 - name: CommandForm

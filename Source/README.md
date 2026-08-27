@@ -169,7 +169,7 @@ import { Dialog } from '@cratis/components/Dialogs';
     }}
 >
     Content
-</Dialog>
+</Dialog>;
 ```
 
 ```css
@@ -202,6 +202,7 @@ The canonical rule: **the package root is setup-only; every component ships from
 | Subpath                                    | Capability profile                |
 | ------------------------------------------ | --------------------------------- |
 | `@cratis/components/Canvas`                | Spatial (optional `pixi.js` peer) |
+| `@cratis/components/Chat`                  | Foundation                        |
 | `@cratis/components/CommandDialog`         | Foundation                        |
 | `@cratis/components/CommandStepper`        | Foundation                        |
 | `@cratis/components/CommandForm`           | Foundation                        |

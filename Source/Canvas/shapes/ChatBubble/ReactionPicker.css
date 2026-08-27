@@ -3,8 +3,8 @@
 
 /* Portaled to <body> by AnchoredOverlay rather than positioned by its parent: the chat panel is a
    scrolling sidebar, and anything positioned inside it is clipped the moment it reaches the edge.
-   Colors match that dark panel deliberately rather than the light/dark theme tokens (see
-   MentionSuggestions.css for the same convention). */
+   Every color comes from the --cratis-* token seam, so the picker follows whatever theme the host
+   runs. */
 .reaction-picker {
     display: flex;
     flex-direction: column;
@@ -16,10 +16,10 @@
     display: flex;
     gap: 2px;
     align-items: center;
-    background: #262637;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 999px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     padding: 4px;
 }
 
@@ -44,11 +44,11 @@
 
 .reaction-picker__item:hover,
 .reaction-picker__item:focus-visible {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-hover);
 }
 
 .reaction-picker__item--selected {
-    background: rgba(99, 102, 241, 0.35);
+    background: var(--cratis-highlight-bg);
 }
 
 /* Deliberately the quiet one on the row: it opens the rest of the emojis rather than being an emoji,
@@ -64,8 +64,8 @@
     padding: 0;
     border: none;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.45);
+    background: var(--cratis-surface-100);
+    color: var(--cratis-text-color-secondary);
     font-size: 15px;
     line-height: 1;
     cursor: pointer;
@@ -74,8 +74,8 @@
 .reaction-picker__more:hover,
 .reaction-picker__more:focus-visible,
 .reaction-picker__more--open {
-    background: rgba(255, 255, 255, 0.16);
-    color: rgba(255, 255, 255, 0.85);
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
 }
 
 /* Who has reacted so far, under the quick row — the same list a badge shows, so opening the picker
@@ -87,10 +87,10 @@
     align-self: stretch;
     max-height: 148px;
     overflow-y: auto;
-    background: #262637;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     padding: 6px 8px;
 }
 
@@ -107,6 +107,6 @@
 
 .reaction-picker__given-name {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--cratis-text-color);
     white-space: nowrap;
 }

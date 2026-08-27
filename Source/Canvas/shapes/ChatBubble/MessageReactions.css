@@ -1,8 +1,8 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-/* Sits inside a chat bubble's dark panel — colors match that panel deliberately, the same convention
-   ReactionPicker.css and MentionSuggestions.css follow. */
+/* Every color comes from the --cratis-* token seam, so the badges follow whatever theme the host
+   runs. */
 .message-reactions {
     position: relative;
     display: flex;
@@ -20,14 +20,14 @@
     align-items: center;
     gap: 2px;
     padding: 2px 6px 2px 4px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--cratis-surface-100);
     cursor: pointer;
 }
 
 .message-reactions__badge:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-hover);
 }
 
 /* A stack of the same emoji from different people overlaps slightly rather than repeating flat. */
@@ -46,17 +46,17 @@
 
 .message-reactions__count {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--cratis-text-color-secondary);
 }
 
 /* Positioned by AnchoredOverlay, which portals it to <body> — so this only describes the bubble
    itself, never where it sits. */
 .message-reactions__tooltip {
     min-width: 120px;
-    background: #262637;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     padding: 6px 8px;
     display: flex;
     flex-direction: column;
@@ -76,6 +76,6 @@
 
 .message-reactions__tooltip-name {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--cratis-text-color);
     white-space: nowrap;
 }

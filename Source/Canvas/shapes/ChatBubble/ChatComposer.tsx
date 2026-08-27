@@ -1,13 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, {
-    forwardRef,
-    useEffect,
-    useImperativeHandle,
-    useRef,
-    useState,
-} from 'react';
+import type React from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { AnchoredOverlay } from './AnchoredOverlay';
 import type { BuildAvatarUrlParams } from './Avatar';
 import { activeMentionQuery } from './Mentions/activeMentionQuery';
@@ -39,8 +34,25 @@ export interface ChatComposerProps {
     /** Everyone who can be mentioned from this conversation. Omit to turn mentions off. */
     mentionCandidates?: MentionCandidate[];
 
-    /** Invoked with the trimmed message text when the user sends. */
-    onSend: (text: string) => void;
+    /**
+     * Resolves who can be mentioned as the person types, invoked with what has been typed after
+     * the `@` — for hosts whose candidates come from a lookup rather than a list they already
+     * hold. May answer synchronously or with a promise; a stale answer (one that arrives after
+     * the query has moved on) is dropped. Combines with {@link mentionCandidates} when both are
+     * given.
+     * @param query What has been typed after the `@`.
+     * @returns The candidates matching the query.
+     */
+    resolveMentionCandidates?: (
+        query: string,
+    ) => MentionCandidate[] | Promise<MentionCandidate[]>;
+
+    /**
+     * Invoked with the trimmed message text when the user sends, together with who that text
+     * actually mentions — reduced from every candidate the draft saw, so a mention that was
+     * picked but edited away again does not count.
+     */
+    onSend: (text: string, mentions: MentionCandidate[]) => void;
 
     /** Whether to take focus when mounted. */
     autoFocus?: boolean;

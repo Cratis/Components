@@ -42,6 +42,10 @@
             "types": "./dist/esm/Canvas/index.d.ts",
             "import": "./dist/esm/Canvas/index.js"
         },
+        "./Chat": {
+            "types": "./dist/esm/Chat/index.d.ts",
+            "import": "./dist/esm/Chat/index.js"
+        },
         "./CommandDialog": {
             "types": "./dist/esm/CommandDialog/index.d.ts",
             "import": "./dist/esm/CommandDialog/index.js"
