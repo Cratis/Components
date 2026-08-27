@@ -25,6 +25,7 @@ export const packageName = '@cratis/components';
  */
 export const namespaceSubpaths = {
     Canvas: 'Canvas',
+    Chat: 'Chat',
     CommandDialog: 'CommandDialog',
     // The former root CommandStepper namespace aliased the entire CommandDialog module.
     // Preserve that module identity; the narrower ./CommandStepper subpath does not.
