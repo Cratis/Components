@@ -21,6 +21,26 @@ The automated families are:
 A requested skip is accepted only when the relevant declaration is `unsupported`/`emulated`, or the
 request names a capability the library does not claim. An unjustified skip is a failure.
 
+## Private plain-DOM falsification fixture
+
+The repository includes a private, test-only plain-DOM renderer under
+`for_plain_dom_renderer/`. It is not a workspace, package, published entry point, or source of
+runtime code. It independently implements the nine stable presentation slots using public ABI and
+component prop contracts only; it does not import the Components-owned Core implementations.
+
+The declared `stable-presentation/v1` profile and its package-shaped static metadata produce 100
+passed checks out of 100, with zero failures and zero skips. The bounded run observes:
+
+- exact semantic native elements and forwarded refs for every ref-capable slot;
+- native submit, form-value, and reset behavior;
+- one `ChangeHandler` callback carrying `source: 'user'` and the originating native `Event`;
+- every documented stable part and canonical state, plus every declared `pt` route; and
+- deterministic SSR/hydration, axe WCAG A/AA, and the runner's bounded environmental hosts.
+
+Within this nine-slot profile, no renderer ABI widening or Core change was required. This finding is
+limited to the public contracts and automated environment exercised here; it does not upgrade the
+general evidence boundary or the limitations below.
+
 ## Explicit limitations
 
 - axe is automated DOM analysis and cannot replace manual keyboard, screen-reader, magnification,
