@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FilterValue, HistogramBucket } from './types';
 import { buildHistogram } from './utils';
 import type { RenderedHistogramBucket } from './utils';
+import type { ChangeHandler } from '../types/ChangeHandler';
 
 /**
  * Props for {@link RangeHistogramFilter}.
@@ -32,8 +33,8 @@ export interface RangeHistogramFilterProps {
     buckets?: number;
     /** The currently selected range, or `null` when no range is selected. */
     selectedRange: [number, number] | null;
-    /** Called when the user drags a handle or clicks a bar to select a new range. Pass `null` to clear. */
-    onChange: (range: [number, number] | null) => void;
+    /** Called with the selected range and optional user-interaction metadata. Pass `null` to clear. */
+    onChange: ChangeHandler<[number, number] | null>;
     /**
      * Optional formatter for endpoint labels and bar tooltips. Defaults to a numeric formatter.
      * Use this to display ms timestamps as dates, currency, etc.
@@ -173,7 +174,7 @@ export function RangeHistogramFilter({
                 newRange = [newStart, newEnd];
             }
 
-            onChange(newRange);
+            onChange(newRange, { source: 'user', nativeEvent: event });
         };
 
         const handleMouseUp = () => {
@@ -190,8 +191,14 @@ export function RangeHistogramFilter({
         };
     }, [isDragging, dragStart, min, max, onChange]);
 
-    const handleBarClick = (bucket: RenderedHistogramBucket) => {
-        onChange([bucket.start, bucket.end]);
+    const handleBarClick = (
+        bucket: RenderedHistogramBucket,
+        event: React.MouseEvent<HTMLButtonElement>,
+    ) => {
+        onChange([bucket.start, bucket.end], {
+            source: 'user',
+            nativeEvent: event.nativeEvent,
+        });
     };
 
     const rangeSpan = max - min;
@@ -219,15 +226,21 @@ export function RangeHistogramFilter({
         event.preventDefault();
         const rounded = Number(next.toFixed(10));
         if (handle === 'left') {
-            onChange([
-                Math.max(min, Math.min(rounded, currentRange[1] - minimumGap)),
-                currentRange[1],
-            ]);
+            onChange(
+                [
+                    Math.max(min, Math.min(rounded, currentRange[1] - minimumGap)),
+                    currentRange[1],
+                ],
+                { source: 'user', nativeEvent: event.nativeEvent },
+            );
         } else {
-            onChange([
-                currentRange[0],
-                Math.min(max, Math.max(rounded, currentRange[0] + minimumGap)),
-            ]);
+            onChange(
+                [
+                    currentRange[0],
+                    Math.min(max, Math.max(rounded, currentRange[0] + minimumGap)),
+                ],
+                { source: 'user', nativeEvent: event.nativeEvent },
+            );
         }
     };
 
@@ -249,7 +262,7 @@ export function RangeHistogramFilter({
                             key={i}
                             className={`pv-histogram-bar ${isInRange ? 'in-range' : ''} ${isPartiallyInRange && !isInRange ? 'partial' : ''}`}
                             style={{ height: `${heightPercent}%` }}
-                            onClick={() => handleBarClick(bucket)}
+                            onClick={(event) => handleBarClick(bucket, event)}
                             title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} ${itemsLabel}`}
                             type='button'
                         />

@@ -7,7 +7,6 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
-import { fieldValueFromEvent } from './fieldValueFromEvent';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 
@@ -27,8 +26,7 @@ const checkboxPartsMatchManifest: ExactPartKeys<CheckboxParts, PartsOf<'Checkbox
 void checkboxPartsMatchManifest;
 
 interface CheckboxFieldComponentProps
-    extends WrappedFieldProps<boolean>,
-        FieldAccessibilityProps {
+    extends WrappedFieldProps<boolean>, FieldAccessibilityProps {
     label?: string;
     className?: string;
     pt?: CheckboxParts;
@@ -46,60 +44,64 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
         });
         return (
             <>
-        <label
-            {...props.pt?.root}
-            className={['cratis-choice-field', props.pt?.root?.className, props.className]
-                .filter(Boolean)
-                .join(' ')}
-            onBlur={props.onBlur}
-            data-cratis-part='root'
-            data-invalid={props.invalid || undefined}
-        >
-            <input
-                {...props.pt?.input}
-                id={accessibility.controlId}
-                aria-label={accessibility.ariaLabel}
-                aria-describedby={accessibility.ariaDescribedBy}
-                type='checkbox'
-                checked={props.value}
-                onChange={props.onChange}
-                aria-invalid={props.invalid || undefined}
-                className={['cratis-choice-field__native', props.pt?.input?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='input'
-            />
-            <span
-                {...props.pt?.box}
-                className={['cratis-checkbox__box', props.pt?.box?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='box'
-                aria-hidden='true'
-            >
-                <span
-                    {...props.pt?.indicator}
+                <label
+                    {...props.pt?.root}
                     className={[
-                        'cratis-checkbox__indicator',
-                        props.pt?.indicator?.className,
+                        'cratis-choice-field',
+                        props.pt?.root?.className,
+                        props.className,
                     ]
                         .filter(Boolean)
                         .join(' ')}
-                    data-cratis-part='indicator'
+                    onBlur={props.onBlur}
+                    data-cratis-part='root'
+                    data-invalid={props.invalid || undefined}
                 >
-                    ✓
-                </span>
-            </span>
-            {props.label && (
-                <span className='cratis-choice-field__label'>{props.label}</span>
-            )}
-        </label>
+                    <input
+                        {...props.pt?.input}
+                        id={accessibility.controlId}
+                        aria-label={accessibility.ariaLabel}
+                        aria-describedby={accessibility.ariaDescribedBy}
+                        type='checkbox'
+                        checked={props.value}
+                        onChange={(event) => props.onChange(event.currentTarget.checked)}
+                        aria-invalid={props.invalid || undefined}
+                        className={[
+                            'cratis-choice-field__native',
+                            props.pt?.input?.className,
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
+                        data-cratis-part='input'
+                    />
+                    <span
+                        {...props.pt?.box}
+                        className={['cratis-checkbox__box', props.pt?.box?.className]
+                            .filter(Boolean)
+                            .join(' ')}
+                        data-cratis-part='box'
+                        aria-hidden='true'
+                    >
+                        <span
+                            {...props.pt?.indicator}
+                            className={[
+                                'cratis-checkbox__indicator',
+                                props.pt?.indicator?.className,
+                            ]
+                                .filter(Boolean)
+                                .join(' ')}
+                            data-cratis-part='indicator'
+                        >
+                            ✓
+                        </span>
+                    </span>
+                    {props.label && (
+                        <span className='cratis-choice-field__label'>{props.label}</span>
+                    )}
+                </label>
                 {accessibility.hiddenError}
             </>
         );
     },
-    {
-        defaultValue: false,
-        extractValue: (event: unknown) => fieldValueFromEvent(event, 'checked'),
-    },
+    { defaultValue: false },
 );

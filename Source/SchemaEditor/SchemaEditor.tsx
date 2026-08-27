@@ -11,6 +11,7 @@ import { Message } from '../Display/Message';
 import * as faIcons from 'react-icons/fa6';
 import { NameCell } from './NameCell';
 import { TypeCell } from './TypeCell';
+import type { ChangeHandler } from '../types/ChangeHandler';
 import type { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { type TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
 import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
@@ -153,8 +154,8 @@ export interface SchemaEditorProps {
      */
     canNotEditReason?: string;
 
-    /** Invoked with the updated schema after any structural change. */
-    onChange?: (schema: JsonSchema) => void;
+    /** Invoked with the updated schema and optional metadata after any structural change. */
+    onChange?: ChangeHandler<JsonSchema>;
 
     /** Invoked when the user activates the Save action. */
     onSave?: () => void;
@@ -326,7 +327,7 @@ export const SchemaEditor = ({
             if (path.length === 0) {
                 const updated = updater(newSchema);
                 setCurrentSchema(updated);
-                onChange?.(updated);
+                onChange?.(updated, { source: 'user' });
                 return;
             }
 
@@ -357,7 +358,7 @@ export const SchemaEditor = ({
             }
 
             setCurrentSchema(newSchema);
-            onChange?.(newSchema);
+            onChange?.(newSchema, { source: 'user' });
         },
         [currentSchema, onChange],
     );
@@ -538,7 +539,7 @@ export const SchemaEditor = ({
         }
 
         setCurrentSchema(restoredSchema);
-        onChange?.(changedSchema);
+        onChange?.(changedSchema, { source: 'reset' });
         setIsEditMode(false);
         onCancel?.();
     }, [initialSchema, onChange, onCancel]);

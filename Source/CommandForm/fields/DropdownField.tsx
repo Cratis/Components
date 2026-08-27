@@ -72,7 +72,7 @@ export const DropdownField = asCommandFormField<DropdownFieldComponentProps>(
                     aria-label={accessibility.ariaLabel}
                     aria-describedby={accessibility.ariaDescribedBy}
                     value={props.value}
-                    onChange={(e) => props.onChange(e.value)}
+                    onChange={(value) => props.onChange(value)}
                     onBlur={props.onBlur}
                     options={props.options}
                     optionValue={props.optionValue}

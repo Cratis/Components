@@ -47,7 +47,7 @@ const ControlledDropdown = ({
             showClear
             disabled={disabled}
             invalid={invalid}
-            onChange={(event) => setValue(event.value)}
+            onChange={setValue}
             style={{ width: '18rem' }}
         />
     );

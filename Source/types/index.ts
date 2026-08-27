@@ -1,6 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+export * from './ChangeHandler';
+export * from './ChangeMeta';
 export * from './JsonSchema';
 export * from './parts';
 export * from './TypeFormat';

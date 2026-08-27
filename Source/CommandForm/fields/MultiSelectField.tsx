@@ -86,7 +86,7 @@ export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProp
                     aria-describedby={accessibility.ariaDescribedBy}
                     multiple
                     value={props.value}
-                    onChange={(e) => props.onChange(e.value ?? [])}
+                    onChange={(value) => props.onChange(value ?? [])}
                     onBlur={props.onBlur}
                     options={props.options}
                     optionValue={props.optionValue}

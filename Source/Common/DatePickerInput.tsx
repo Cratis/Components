@@ -25,6 +25,7 @@ import {
 import { Dialog } from 'react-aria-components/Dialog';
 import { Heading } from 'react-aria-components/Heading';
 import { useCratisComponentsConfig } from './CratisComponentsProvider';
+import type { ChangeHandler } from '../types/ChangeHandler';
 import { asReactAriaButtonProps } from './reactAriaProps';
 import {
     fromDate,
@@ -99,8 +100,8 @@ export interface DatePickerInputPassThrough {
 export interface DatePickerInputProps {
     /** Controlled JavaScript date value. */
     value: Date | null;
-    /** Invoked with the selected JavaScript date or `null`. */
-    onChange: (value: Date | null) => void;
+    /** Invoked with the selected JavaScript date or `null` and optional change-origin metadata. */
+    onChange: ChangeHandler<Date | null>;
     /** Invoked when focus leaves the picker wrapper. */
     onBlur?: FocusEventHandler<HTMLElement>;
     /** Marks the picker invalid. */
@@ -256,7 +257,7 @@ export const DatePickerInput = ({
         >
             <AriaDatePicker
                 value={asDateValue(value, showTime)}
-                onChange={(next) => onChange(asDate(next))}
+                onChange={(next) => onChange(asDate(next), { source: 'user' })}
                 isDisabled={effectiveDisabled}
                 isReadOnly={effectiveReadOnly}
                 isInvalid={effectiveInvalid}
@@ -457,9 +458,12 @@ export const DatePickerInput = ({
                                     data-cratis-part='today'
                                     disabled={isTodayOutOfBounds}
                                     aria-disabled={isTodayOutOfBounds || undefined}
-                                    onClick={() => {
+                                    onClick={(event) => {
                                         if (isTodayOutOfBounds) return;
-                                        onChange(todayDate);
+                                        onChange(todayDate, {
+                                            source: 'user',
+                                            nativeEvent: event.nativeEvent,
+                                        });
                                     }}
                                 >
                                     {resolvedTodayLabel}
@@ -472,7 +476,12 @@ export const DatePickerInput = ({
                                         pt?.clear?.className,
                                     )}
                                     data-cratis-part='clear'
-                                    onClick={() => onChange(null)}
+                                    onClick={(event) =>
+                                        onChange(null, {
+                                            source: 'user',
+                                            nativeEvent: event.nativeEvent,
+                                        })
+                                    }
                                 >
                                     {resolvedClearLabel}
                                 </button>

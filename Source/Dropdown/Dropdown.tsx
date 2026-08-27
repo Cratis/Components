@@ -9,7 +9,6 @@ import type {
     InputHTMLAttributes,
     Key,
     SelectHTMLAttributes,
-    SyntheticEvent,
 } from 'react';
 import {
     Button as AriaButton,
@@ -29,19 +28,12 @@ import {
     Popover as ComboBoxPopover,
 } from 'react-aria-components/ComboBox';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import type { ChangeHandler } from '../types/ChangeHandler';
 import {
     asReactAriaButtonProps,
     asReactAriaListBoxItemProps,
     asReactAriaListBoxProps,
 } from '../Common/reactAriaProps';
-
-/** Change event emitted by {@link Dropdown}. */
-export interface DropdownChangeEvent<T = unknown> {
-    /** Newly selected value, or an array when `multiple` is set. */
-    value: T;
-    /** Underlying event when the native multiple-select path produced the change. */
-    originalEvent?: SyntheticEvent;
-}
 
 type DropdownTriggerAttributes = Omit<
     ButtonHTMLAttributes<HTMLButtonElement>,
@@ -142,8 +134,8 @@ export interface DropdownProps<T = unknown> {
     ariaDescribedBy?: string;
     /** Legacy invalid-state alias. */
     ariaInvalid?: boolean;
-    /** Invoked with the selected value(s). */
-    onChange?: (event: DropdownChangeEvent<T>) => void;
+    /** Invoked with the selected value(s) and optional change-origin metadata. */
+    onChange?: ChangeHandler<T>;
     /** Invoked when focus leaves the Dropdown wrapper. */
     onBlur?: FocusEventHandler<HTMLElement>;
     /** Cratis-owned per-part attributes. */
@@ -293,14 +285,14 @@ export const Dropdown = <T = unknown,>({
 
     const selectOption = (key: Key | null) => {
         const option = resolvedOptions.find((candidate) => candidate.key === String(key));
-        onChange?.({ value: (option?.value ?? null) as T });
+        onChange?.((option?.value ?? null) as T, { source: 'user' });
     };
     const selectOptions = (keys: readonly Key[]) => {
         const selectedKeys = new Set(keys.map(String));
         const values = resolvedOptions
             .filter((option) => selectedKeys.has(option.key))
             .map((option) => option.value);
-        onChange?.({ value: values as T });
+        onChange?.(values as T, { source: 'user' });
     };
     // React Aria's Select trigger context does not forward aria-invalid from its Button child.
     // Keep the Cratis validation contract on the actual focusable control after context props merge.
@@ -388,7 +380,12 @@ export const Dropdown = <T = unknown,>({
                                 )}
                                 data-cratis-part='clear'
                                 aria-label={clearSelectionLabel}
-                                onClick={() => onChange?.({ value: [] as T })}
+                                onClick={(event) =>
+                                    onChange?.([] as T, {
+                                        source: 'user',
+                                        nativeEvent: event.nativeEvent,
+                                    })
+                                }
                             >
                                 <span aria-hidden='true'>×</span>
                             </button>
@@ -475,7 +472,10 @@ export const Dropdown = <T = unknown,>({
                         const values = resolvedOptions
                             .filter((option) => keys.includes(option.key))
                             .map((option) => option.value);
-                        onChange?.({ value: values as T, originalEvent: event });
+                        onChange?.(values as T, {
+                            source: 'user',
+                            nativeEvent: event.nativeEvent,
+                        });
                     }}
                 >
                     {resolvedOptions.map((option) => (
@@ -499,7 +499,12 @@ export const Dropdown = <T = unknown,>({
                         )}
                         data-cratis-part='clear'
                         aria-label={clearSelectionLabel}
-                        onClick={() => onChange?.({ value: [] as T })}
+                        onClick={(event) =>
+                            onChange?.([] as T, {
+                                source: 'user',
+                                nativeEvent: event.nativeEvent,
+                            })
+                        }
                     >
                         <span aria-hidden='true'>×</span>
                     </button>
@@ -567,7 +572,12 @@ export const Dropdown = <T = unknown,>({
                             )}
                             data-cratis-part='clear'
                             aria-label={clearSelectionLabel}
-                            onClick={() => onChange?.({ value: null as T })}
+                            onClick={(event) =>
+                                onChange?.(null as T, {
+                                    source: 'user',
+                                    nativeEvent: event.nativeEvent,
+                                })
+                            }
                         >
                             <span aria-hidden='true'>×</span>
                         </button>
@@ -686,7 +696,12 @@ export const Dropdown = <T = unknown,>({
                         )}
                         data-cratis-part='clear'
                         aria-label={clearSelectionLabel}
-                        onClick={() => onChange?.({ value: null as T })}
+                        onClick={(event) =>
+                            onChange?.(null as T, {
+                                source: 'user',
+                                nativeEvent: event.nativeEvent,
+                            })
+                        }
                     >
                         <span aria-hidden='true'>×</span>
                     </button>

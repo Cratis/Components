@@ -19,6 +19,7 @@ import { DatePickerInput } from '../Common/DatePickerInput';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { asReactAriaButtonProps } from '../Common/reactAriaProps';
 import { Dropdown, type DropdownParts } from '../Dropdown/Dropdown';
+import type { ChangeHandler } from '../types/ChangeHandler';
 import {
     DataTableFilterMatchMode,
     type DataTableFilterConstraint,
@@ -98,8 +99,10 @@ export interface ColumnFilterElementOptions {
     value: unknown;
     /** Current draft match mode. */
     matchMode: FilterMatchMode;
-    /** Updates draft value and optionally match mode. */
-    onChange: (value: unknown, matchMode?: FilterMatchMode) => void;
+    /** Updates the draft value. */
+    onChange: ChangeHandler<unknown>;
+    /** Updates the draft match mode independently of the value. */
+    onMatchModeChange: ChangeHandler<FilterMatchMode>;
     /** Applies the draft filter. */
     onApply: (event: SyntheticEvent) => void;
     /** Clears the field filter. */
@@ -221,10 +224,22 @@ export const ColumnFilterMenu = ({
             labels?.matchModeLabel ??
             columnFilterMessages?.matchModeLabel ??
             defaultColumnFilterMenuLabels.matchModeLabel,
-        clear: labels?.clear ?? columnFilterMessages?.clear ?? defaultColumnFilterMenuLabels.clear,
-        apply: labels?.apply ?? columnFilterMessages?.apply ?? defaultColumnFilterMenuLabels.apply,
-        true: labels?.true ?? columnFilterMessages?.true ?? defaultColumnFilterMenuLabels.true,
-        false: labels?.false ?? columnFilterMessages?.false ?? defaultColumnFilterMenuLabels.false,
+        clear:
+            labels?.clear ??
+            columnFilterMessages?.clear ??
+            defaultColumnFilterMenuLabels.clear,
+        apply:
+            labels?.apply ??
+            columnFilterMessages?.apply ??
+            defaultColumnFilterMenuLabels.apply,
+        true:
+            labels?.true ??
+            columnFilterMessages?.true ??
+            defaultColumnFilterMenuLabels.true,
+        false:
+            labels?.false ??
+            columnFilterMessages?.false ??
+            defaultColumnFilterMenuLabels.false,
     };
     const modeOptions = optionsFor(dataType).map((option) => ({
         ...option,
@@ -252,10 +267,8 @@ export const ColumnFilterMenu = ({
               field,
               value: draftValue,
               matchMode: draftMode,
-              onChange: (value, matchMode) => {
-                  setDraftValue(value);
-                  if (matchMode) setDraftMode(matchMode);
-              },
+              onChange: setDraftValue,
+              onMatchModeChange: setDraftMode,
               onApply: apply,
               onClear: clear,
           })
@@ -303,7 +316,7 @@ export const ColumnFilterMenu = ({
                               ]}
                               placeholder={placeholder}
                               showClear
-                              onChange={(event) => setDraftValue(event.value)}
+                              onChange={setDraftValue}
                               aria-label={resolvedLabels.valueAriaLabel(field)}
                               className={pt?.input?.className}
                               style={pt?.input?.style}
@@ -331,10 +344,7 @@ export const ColumnFilterMenu = ({
             <AriaButton
                 {...asReactAriaButtonProps(pt?.trigger)}
                 aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
-                className={classNames(
-                    'cratis-filter-trigger',
-                    pt?.trigger?.className,
-                )}
+                className={classNames('cratis-filter-trigger', pt?.trigger?.className)}
                 data-active={
                     (constraint?.value !== null &&
                         constraint?.value !== undefined &&
@@ -347,10 +357,7 @@ export const ColumnFilterMenu = ({
             </AriaButton>
             <Popover
                 {...pt?.popover}
-                className={classNames(
-                    'cratis-filter-popover',
-                    pt?.popover?.className,
-                )}
+                className={classNames('cratis-filter-popover', pt?.popover?.className)}
                 data-cratis-part='filter-popover'
                 placement='bottom end'
             >
@@ -366,9 +373,7 @@ export const ColumnFilterMenu = ({
                             options={modeOptions}
                             optionLabel='label'
                             optionValue='value'
-                            onChange={(event) =>
-                                setDraftMode(event.value as FilterMatchMode)
-                            }
+                            onChange={setDraftMode}
                             aria-label={resolvedLabels.matchModeAriaLabel}
                             pt={pt?.matchMode}
                         />

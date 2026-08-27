@@ -157,14 +157,17 @@ export const TypeCell = ({
     }
 
     return (
-        <div className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full' style={{ minHeight: '2.5rem' }}>
+        <div
+            className='cratis:flex cratis:items-center cratis:gap-2 cratis:w-full'
+            style={{ minHeight: '2.5rem' }}
+        >
             <Dropdown<string>
                 aria-label={labels.propertyType}
                 value={currentValue}
                 options={allTypeOptions}
                 optionLabel='label'
                 optionValue='value'
-                onChange={(e) => handleTypeChange(e.value, rowData.name || '')}
+                onChange={(value) => handleTypeChange(value, rowData.name || '')}
                 className='cratis:flex-1'
             />
             {rowData.type === 'array' && rowData.items && (
@@ -184,8 +187,8 @@ export const TypeCell = ({
                         options={allTypeOptions}
                         optionLabel='label'
                         optionValue='value'
-                        onChange={(e) =>
-                            handleTypeChange(e.value, rowData.name || '', true)
+                        onChange={(value) =>
+                            handleTypeChange(value, rowData.name || '', true)
                         }
                         className='cratis:flex-1'
                     />

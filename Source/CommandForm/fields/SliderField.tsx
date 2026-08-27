@@ -7,7 +7,6 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
-import { fieldValueFromEvent } from './fieldValueFromEvent';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 
@@ -25,8 +24,7 @@ const sliderPartsMatchManifest: ExactPartKeys<SliderParts, PartsOf<'SliderField'
 void sliderPartsMatchManifest;
 
 interface SliderFieldComponentProps
-    extends WrappedFieldProps<number>,
-        FieldAccessibilityProps {
+    extends WrappedFieldProps<number>, FieldAccessibilityProps {
     min?: number;
     max?: number;
     step?: number;
@@ -45,51 +43,50 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
             ariaDescribedBy: props.pt?.input?.['aria-describedby'],
         });
         return (
-        <div
-            {...props.pt?.root}
-            className={[
-                'cratis-slider-field',
-                'cratis:w-full',
-                props.pt?.root?.className,
-                props.className,
-            ]
-                .filter(Boolean)
-                .join(' ')}
-            onBlur={props.onBlur}
-            data-cratis-part='root'
-        >
-            <input
-                {...props.pt?.input}
-                id={accessibility.controlId}
-                aria-label={accessibility.ariaLabel}
-                aria-describedby={accessibility.ariaDescribedBy}
-                type='range'
-                value={props.value}
-                onChange={props.onChange}
-                min={props.min ?? 0}
-                max={props.max ?? 100}
-                step={props.step ?? 1}
-                aria-invalid={props.invalid || undefined}
-                className={['cratis-slider-field__input', props.pt?.input?.className]
+            <div
+                {...props.pt?.root}
+                className={[
+                    'cratis-slider-field',
+                    'cratis:w-full',
+                    props.pt?.root?.className,
+                    props.className,
+                ]
                     .filter(Boolean)
                     .join(' ')}
-                data-cratis-part='input'
-            />
-            <span
-                {...props.pt?.value}
-                className={['cratis-slider-field__value', props.pt?.value?.className]
-                    .filter(Boolean)
-                    .join(' ')}
-                data-cratis-part='value'
+                onBlur={props.onBlur}
+                data-cratis-part='root'
             >
-                {props.value}
-            </span>
-            {accessibility.hiddenError}
-        </div>
+                <input
+                    {...props.pt?.input}
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    type='range'
+                    value={props.value}
+                    onChange={(event) =>
+                        props.onChange(event.currentTarget.valueAsNumber)
+                    }
+                    min={props.min ?? 0}
+                    max={props.max ?? 100}
+                    step={props.step ?? 1}
+                    aria-invalid={props.invalid || undefined}
+                    className={['cratis-slider-field__input', props.pt?.input?.className]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='input'
+                />
+                <span
+                    {...props.pt?.value}
+                    className={['cratis-slider-field__value', props.pt?.value?.className]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='value'
+                >
+                    {props.value}
+                </span>
+                {accessibility.hiddenError}
+            </div>
         );
     },
-    {
-        defaultValue: 0,
-        extractValue: (event: unknown) => fieldValueFromEvent(event, 'valueAsNumber'),
-    },
+    { defaultValue: 0 },
 );

@@ -7,7 +7,6 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
-import { fieldValueFromEvent } from './fieldValueFromEvent';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 
@@ -25,8 +24,7 @@ const colorPickerPartsMatchManifest: ExactPartKeys<ColorPickerParts, PartsOf<'Co
 void colorPickerPartsMatchManifest;
 
 interface ColorPickerFieldComponentProps
-    extends WrappedFieldProps<string>,
-        FieldAccessibilityProps {
+    extends WrappedFieldProps<string>, FieldAccessibilityProps {
     inline?: boolean;
     defaultColor?: string;
     className?: string;
@@ -72,7 +70,9 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
                     aria-describedby={accessibility.ariaDescribedBy}
                     type='color'
                     value={`#${value}`}
-                    onChange={props.onChange}
+                    onChange={(event) =>
+                        props.onChange(event.currentTarget.value.replace('#', ''))
+                    }
                     aria-invalid={props.invalid || undefined}
                     className={['cratis-color-field__input', props.pt?.input?.className]
                         .filter(Boolean)
@@ -92,9 +92,5 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
             </div>
         );
     },
-    {
-        defaultValue: '',
-        extractValue: (event: unknown) =>
-            fieldValueFromEvent(event, 'value').replace('#', ''),
-    },
+    { defaultValue: '' },
 );

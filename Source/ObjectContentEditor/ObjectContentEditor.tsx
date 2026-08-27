@@ -5,6 +5,8 @@ import { Tooltip } from '../Common/Tooltip';
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import * as faIcons from 'react-icons/fa6';
 import { ObjectNavigationalBar } from '../ObjectNavigationalBar';
+import type { ChangeHandler } from '../types/ChangeHandler';
+import type { ChangeMeta } from '../types/ChangeMeta';
 import type { Json, JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { getValueAtPath } from './objectHelpers';
 
@@ -37,7 +39,7 @@ export interface ObjectContentEditorProps {
      * Invoked with the updated object after any field edit. Required to
      * actually persist user changes when {@link editMode} is true.
      */
-    onChange?: (object: Json) => void;
+    onChange?: ChangeHandler<Json>;
 
     /**
      * Invoked whenever the validation state of the editor changes (true when
@@ -254,12 +256,12 @@ export const ObjectContentEditor = ({
     };
 
     const updateValue = useCallback(
-        (propertyName: string, newValue: Json) => {
+        (propertyName: string, newValue: Json, meta: ChangeMeta) => {
             if (!onChange) return;
 
             const updatedObject = { ...(object as Record<string, Json>) };
             updatedObject[propertyName] = newValue;
-            onChange(updatedObject);
+            onChange(updatedObject, meta);
         },
         [object, onChange],
     );
@@ -271,8 +273,8 @@ export const ObjectContentEditor = ({
     ) => {
         const error = validationErrors[propertyName];
 
-        const handleChange = (newValue: Json) => {
-            updateValue(propertyName, newValue);
+        const handleChange = (newValue: Json, meta: ChangeMeta) => {
+            updateValue(propertyName, newValue, meta);
             const validationError = validateValue(propertyName, newValue, property);
             setValidationErrors((prev) => {
                 const newErrors = { ...prev };
@@ -292,7 +294,12 @@ export const ObjectContentEditor = ({
                         type='checkbox'
                         aria-label={propertyName}
                         checked={Boolean(value)}
-                        onChange={(event) => handleChange(event.target.checked)}
+                        onChange={(event) =>
+                            handleChange(event.target.checked, {
+                                source: 'user',
+                                nativeEvent: event.nativeEvent,
+                            })
+                        }
                         aria-invalid={Boolean(error) || undefined}
                         className='cratis:size-5 cratis:accent-[var(--cratis-primary-color)]'
                     />
@@ -313,6 +320,10 @@ export const ObjectContentEditor = ({
                                 event.target.value === ''
                                     ? null
                                     : event.target.valueAsNumber,
+                                {
+                                    source: 'user',
+                                    nativeEvent: event.nativeEvent,
+                                },
                             )
                         }
                         aria-invalid={Boolean(error) || undefined}
@@ -330,8 +341,11 @@ export const ObjectContentEditor = ({
                     <DatePickerInput
                         aria-label={propertyName}
                         value={dateValue}
-                        onChange={(date) =>
-                            handleChange(date ? date.toISOString() : null)
+                        onChange={(date, meta) =>
+                            handleChange(
+                                date ? date.toISOString() : null,
+                                meta ?? { source: 'user' },
+                            )
                         }
                         showTime
                         showIcon
@@ -349,8 +363,11 @@ export const ObjectContentEditor = ({
                     <DatePickerInput
                         aria-label={propertyName}
                         value={dateValue}
-                        onChange={(date) =>
-                            handleChange(date ? date.toISOString().split('T')[0] : null)
+                        onChange={(date, meta) =>
+                            handleChange(
+                                date ? date.toISOString().split('T')[0] : null,
+                                meta ?? { source: 'user' },
+                            )
                         }
                         showIcon
                         invalid={!!error}
@@ -396,7 +413,12 @@ export const ObjectContentEditor = ({
                     <textarea
                         aria-label={propertyName}
                         value={String(value ?? '')}
-                        onChange={(event) => handleChange(event.target.value)}
+                        onChange={(event) =>
+                            handleChange(event.target.value, {
+                                source: 'user',
+                                nativeEvent: event.nativeEvent,
+                            })
+                        }
                         rows={3}
                         aria-invalid={Boolean(error) || undefined}
                         className='cratis-field-input cratis-field-textarea cratis:w-full'
@@ -411,7 +433,12 @@ export const ObjectContentEditor = ({
                 <input
                     aria-label={propertyName}
                     value={String(value ?? '')}
-                    onChange={(event) => handleChange(event.target.value)}
+                    onChange={(event) =>
+                        handleChange(event.target.value, {
+                            source: 'user',
+                            nativeEvent: event.nativeEvent,
+                        })
+                    }
                     aria-invalid={Boolean(error) || undefined}
                     className='cratis-field-input cratis:w-full'
                 />

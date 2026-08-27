@@ -12,7 +12,6 @@ import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
-import { fieldValueFromEvent } from './fieldValueFromEvent';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 
@@ -30,8 +29,7 @@ const passwordPartsMatchManifest: ExactPartKeys<PasswordParts, PartsOf<'Password
 void passwordPartsMatchManifest;
 
 interface PasswordFieldComponentProps
-    extends WrappedFieldProps<string>,
-        FieldAccessibilityProps {
+    extends WrappedFieldProps<string>, FieldAccessibilityProps {
     placeholder?: string;
     className?: string;
     pt?: PasswordParts;
@@ -69,11 +67,15 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                 aria-describedby={accessibility.ariaDescribedBy}
                 type={visible ? 'text' : 'password'}
                 value={props.value}
-                onChange={props.onChange}
+                onChange={(event) => props.onChange(event.currentTarget.value)}
                 placeholder={props.placeholder}
                 aria-invalid={props.invalid || undefined}
                 data-invalid={props.invalid || undefined}
-                className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
+                className={[
+                    'cratis-field-input',
+                    'cratis:w-full',
+                    props.pt?.input?.className,
+                ]
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='input'
@@ -102,8 +104,5 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
 /** A masked password field bound to a string property on an Arc command. */
 export const PasswordField = asCommandFormField<PasswordFieldComponentProps>(
     PasswordControl,
-    {
-        defaultValue: '',
-        extractValue: (event: unknown) => fieldValueFromEvent(event, 'value'),
-    },
+    { defaultValue: '' },
 );
