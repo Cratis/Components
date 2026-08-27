@@ -12,11 +12,11 @@ The automated families are:
 
 - package metadata schema constraints, runtime consistency, and capability over-declaration;
 - all fourteen ABI v1 slot declarations, stable parts/states, pt markers, and exact native roots;
-- bounded native form/callback behavior and presentation/atomic ownership;
+- bounded native form/callback behavior and one interactive semantic root per declared ownership selector;
 - internal React-boundary normalization fixtures (props, styles, refs, events, cleanup, StrictMode);
-- DOM-free deterministic server rendering, hydration, manifest isolation, and overlay absence/presence;
-- axe WCAG A/AA scans plus executable RTL, forced-colors, and reduced-motion inputs;
-- packed declaration purity and strict Bundler/NodeNext consumer compilation.
+- DOM-free deterministic server rendering, slot-local output distinction, hydration, and bounded overlay absence/presence;
+- axe WCAG A/AA scans plus a real slot rendered inside bounded RTL, forced-color-adjust, and reduced-transition DOM hosts;
+- a separate packed-package gate covering every emitted declaration, runtime entry loading, and strict Bundler/NodeNext consumer compilation.
 
 A requested skip is accepted only when the relevant declaration is `unsupported`/`emulated`, or the
 request names a capability the library does not claim. An unjustified skip is a failure.
@@ -27,8 +27,14 @@ request names a capability the library does not claim. An unjustified skip is a 
   voice-control, or other assistive-technology review.
 - jsdom does not establish behavior across browser engines, devices, touch/pointer combinations, or
   operating-system accessibility modes.
-- forced-color and reduced-motion fixtures prove code-path execution, not visual contrast or the
-  absence of all motion. Repository Storybook light/dark axe runs remain a separate gate.
+- forced-color-adjust and reduced-transition host fixtures prove that a real slot renders under
+  those bounded DOM inputs, not that a browser activated forced-colors/reduced-motion media modes,
+  visual contrast, or the absence of all motion. Repository Storybook light/dark axe runs remain a
+  separate gate.
+- ownership checks count declared interactive semantic roots. They do not instrument a vendor's
+  internal focus trap, dismissal listener, or scroll lock.
+- slot-local SSR output checks do not establish concurrent-request isolation across processes or
+  application server runtimes.
 - renderer-vendor focus, collection, and overlay behavior outside the fourteen public slots is not
   exercised.
 - adapter package licensing, security, performance, and upstream support policy remain the adapter

@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryDirectory = path.resolve(packageDirectory, '..');
-const temporary = mkdtempSync(path.join(packageDirectory, '.verify-package-'));
+const temporary = mkdtempSync(path.join(os.tmpdir(), 'cratis-conformance-package-'));
 
 const run = (command, arguments_, cwd = packageDirectory) => {
     const result = spawnSync(command, arguments_, { cwd, encoding: 'utf8' });
@@ -49,25 +49,79 @@ try {
     mkdirSync(unpacked);
     run('tar', ['-xzf', archive, '-C', unpacked]);
     const packageJson = JSON.parse(readFileSync(path.join(unpacked, 'package/package.json'), 'utf8'));
-    if (packageJson.version !== '0.1.0' || packageJson.cratisUiAbi !== 1) {
-        throw new Error('Package version and renderer ABI major are not independently pinned.');
+    const sourcePackageJson = JSON.parse(
+        readFileSync(path.join(repositoryDirectory, 'Source/package.json'), 'utf8'),
+    );
+    if (
+        packageJson.version !== '0.1.0' ||
+        packageJson.version === sourcePackageJson.version ||
+        packageJson.cratisIndependentVersion !== true ||
+        packageJson.cratisUiAbi !== 1
+    ) {
+        throw new Error(
+            'Package version and renderer ABI major must be explicitly independent from Components.',
+        );
     }
     if (packageJson.dependencies?.['@cratis/components']) {
         throw new Error('Conformance must not install Components as a runtime dependency.');
     }
 
-    const declarations = readFileSync(path.join(unpacked, 'package/dist/index.d.ts'), 'utf8');
-    for (const forbidden of [/\bany\b/u, /@mui\//u, /primereact/u, /primeuix/u, /react-aria/u]) {
-        if (forbidden.test(declarations)) throw new Error(`Public declarations contain forbidden '${forbidden}'.`);
+    const declarationFiles = [...fileNames].filter((file) => file.endsWith('.d.ts'));
+    for (const declarationFile of declarationFiles) {
+        const declarations = readFileSync(
+            path.join(unpacked, 'package', declarationFile),
+            'utf8',
+        );
+        for (const forbidden of [
+            /\bany\b/u,
+            /@mui\//u,
+            /primereact/u,
+            /primeuix/u,
+            /react-aria/u,
+        ]) {
+            if (forbidden.test(declarations)) {
+                throw new Error(
+                    `Public declaration '${declarationFile}' contains forbidden '${forbidden}'.`,
+                );
+            }
+        }
     }
 
-    const nodeModules = path.join(temporary, 'node_modules/@cratis');
-    mkdirSync(nodeModules, { recursive: true });
+    const packageNodeModules = path.join(temporary, 'node_modules');
+    const cratisNodeModules = path.join(packageNodeModules, '@cratis');
+    const typesNodeModules = path.join(packageNodeModules, '@types');
+    mkdirSync(cratisNodeModules, { recursive: true });
+    mkdirSync(typesNodeModules, { recursive: true });
     symlinkSync(
         path.join(unpacked, 'package'),
-        path.join(nodeModules, 'components.conformance'),
+        path.join(cratisNodeModules, 'components.conformance'),
         'dir',
     );
+    symlinkSync(
+        path.join(repositoryDirectory, 'Source'),
+        path.join(cratisNodeModules, 'components'),
+        'dir',
+    );
+    for (const dependency of ['axe-core', 'react', 'react-dom']) {
+        symlinkSync(
+            path.join(repositoryDirectory, 'node_modules', dependency),
+            path.join(packageNodeModules, dependency),
+            'dir',
+        );
+    }
+    for (const dependency of ['react', 'react-dom']) {
+        symlinkSync(
+            path.join(repositoryDirectory, 'node_modules/@types', dependency),
+            path.join(typesNodeModules, dependency),
+            'dir',
+        );
+    }
+    writeFileSync(
+        path.join(temporary, 'runtime.mjs'),
+        "const api = await import('@cratis/components.conformance');\n" +
+            "if (typeof api.runConformance !== 'function') throw new Error('Packed runtime entry did not export runConformance.');\n",
+    );
+    run(process.execPath, ['runtime.mjs'], temporary);
     writeFileSync(
         path.join(temporary, 'fixture.ts'),
         "import { runConformance, type ConformanceReport } from '@cratis/components.conformance';\nvoid runConformance;\nconst report = undefined as unknown as ConformanceReport;\nvoid report;\n",
@@ -103,8 +157,8 @@ try {
     }
 
     console.log(
-        `Verified ${packageJson.name}@${packageJson.version}: archive contents, ABI metadata, ` +
-        'pure declarations, and strict Bundler/NodeNext consumers.',
+        `Verified ${packageJson.name}@${packageJson.version}: archive contents, independent ABI metadata, ` +
+        `${declarationFiles.length} pure declaration files, packed runtime import, and strict Bundler/NodeNext consumers.`,
     );
 } finally {
     rmSync(temporary, { recursive: true, force: true });

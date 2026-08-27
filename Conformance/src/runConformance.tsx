@@ -91,11 +91,12 @@ const mount = async (
     declaration: unstable_SlotDeclaration<unstable_SlotId>,
     props: Readonly<Record<string, unknown>>,
     refCapable: boolean,
+    host: ParentNode = document.body,
 ): Promise<MountedFixture> => {
     const container = document.createElement('div');
     const form = document.createElement('form');
     container.append(form);
-    document.body.append(container);
+    host.append(container);
     const root = createRoot(form);
     const ref = createRef<Element>();
     await act(async () => {
@@ -268,6 +269,24 @@ const checkManifest = (
             : overDeclarations.join('; '),
         undefined,
         { problems: overDeclarations },
+    );
+
+    const immutable =
+        Object.isFrozen(library) &&
+        Object.isFrozen(library.capabilities) &&
+        Object.isFrozen(library.profileSlots) &&
+        Object.isFrozen(library.slots) &&
+        Object.values(library.slots).every(
+            (declaration) => declaration === undefined || Object.isFrozen(declaration),
+        );
+    addCheck(
+        checks,
+        ConformanceFamily.Manifest,
+        'manifest.immutable',
+        immutable,
+        immutable
+            ? 'The runtime manifest, capability/profile arrays, slot map, and declarations are immutable.'
+            : 'The runtime manifest contains a mutable public container or slot declaration.',
     );
 };
 
@@ -489,8 +508,8 @@ const checkSlot = async (
             `ownership.${profile.slotId}`,
             ownershipPassed,
             ownershipPassed
-                ? `${typedDeclaration.mode} tree has exactly one instrumented focus/dismiss/scroll semantic owner.`
-                : `Expected one owner for each selector; observed ${ownerCounts.join(', ')}.`,
+                ? `${typedDeclaration.mode} tree exposes exactly one declared interactive semantic root for each bounded selector.`
+                : `Expected one interactive semantic root for each selector; observed ${ownerCounts.join(', ')}.`,
             profile.slotId,
             {
                 mode: typedDeclaration.mode,
@@ -658,7 +677,7 @@ const checkServerRendering = (
     library: unstable_UiLibrary,
     profiles: readonly SlotProfile[],
 ) => {
-    const outputs: string[] = [];
+    const outputs = new Map<unstable_SlotId, string>();
     for (const profile of profiles) {
         const declaration = library.slots[profile.slotId];
         if (!declaration) continue;
@@ -671,7 +690,7 @@ const checkServerRendering = (
             );
             const first = renderToString(element);
             const second = renderToString(element);
-            outputs.push(first);
+            outputs.set(profile.slotId, first);
             addCheck(
                 checks,
                 ConformanceFamily.ServerRendering,
@@ -693,35 +712,37 @@ const checkServerRendering = (
             );
         }
     }
-    const tooltipIndex = profiles.findIndex(
-        (profile) => profile.slotId === 'common.tooltip',
-    );
-    const dialogIndex = profiles.findIndex(
-        (profile) => profile.slotId === 'dialogs.dialog',
-    );
+    const tooltipOutput = outputs.get('common.tooltip');
+    const dialogOutput = outputs.get('dialogs.dialog');
     const overlayPassed =
-        (tooltipIndex < 0 ||
-            !outputs[tooltipIndex]?.includes('data-cratis-part="popup"')) &&
-        (dialogIndex < 0 || outputs[dialogIndex]?.includes('role="dialog"'));
+        (tooltipOutput === undefined ||
+            !tooltipOutput.includes('data-cratis-part="popup"')) &&
+        (dialogOutput === undefined || dialogOutput.includes('role="dialog"'));
     addCheck(
         checks,
         ConformanceFamily.ServerRendering,
         'ssr.overlayAbsentPresent',
         overlayPassed,
         overlayPassed
-            ? 'Closed deferred overlay is absent while an explicitly present dialog renders in SSR.'
-            : 'SSR overlay absent/present semantics differ from the contract.',
+            ? 'The closed tooltip omits its deferred popup while the explicitly present dialog renders during SSR.'
+            : 'SSR overlay absent/present semantics differ from the bounded fixtures.',
+        undefined,
+        {
+            tooltipObserved: tooltipOutput !== undefined,
+            dialogObserved: dialogOutput !== undefined,
+        },
     );
+    const distinctOutputs = new Set(outputs.values()).size === outputs.size;
     addCheck(
         checks,
         ConformanceFamily.ServerRendering,
-        'ssr.concurrentManifestIsolation',
-        new Set(outputs).size === outputs.length,
-        new Set(outputs).size === outputs.length
-            ? 'Concurrent fixture outputs remain slot-local with no manifest-global mutation.'
-            : 'Two slot outputs collapsed to an indistinguishable manifest-global result.',
+        'ssr.slotOutputIsolation',
+        distinctOutputs,
+        distinctOutputs
+            ? 'Each exercised slot produced a distinct slot-local server-rendered output.'
+            : 'Two exercised slots collapsed to indistinguishable server-rendered output.',
         undefined,
-        { slots: outputs.length },
+        { slots: [...outputs.keys()] },
     );
 };
 
@@ -780,27 +801,76 @@ const checkHydration = async (
     );
 };
 
-const checkEnvironmentalEvidence = (checks: ConformanceCheck[], document: Document) => {
-    const host = document.createElement('div');
+const checkEnvironmentalEvidence = async (
+    checks: ConformanceCheck[],
+    document: Document,
+    library: unstable_UiLibrary,
+    profiles: readonly SlotProfile[],
+) => {
+    const profile =
+        profiles.find((candidate) => candidate.slotId === 'common.button') ?? profiles[0];
+    const declaration = profile && library.slots[profile.slotId];
+    if (!profile || !declaration) {
+        for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
+            addCheck(
+                checks,
+                ConformanceFamily.Accessibility,
+                `a11y.environment.${mode}`,
+                false,
+                'No renderable slot is available for bounded environmental-host evidence.',
+            );
+        }
+        return;
+    }
+
+    const host = document.createElement('section');
     host.dir = 'rtl';
     host.style.setProperty('forced-color-adjust', 'auto');
     host.style.setProperty('transition-duration', '0s');
     document.body.append(host);
-    const passed =
-        host.dir === 'rtl' &&
-        host.style.forcedColorAdjust === 'auto' &&
-        host.style.transitionDuration === '0s';
-    host.remove();
-    for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
-        addCheck(
-            checks,
-            ConformanceFamily.Accessibility,
-            `a11y.environment.${mode}`,
-            passed,
-            passed
-                ? `${mode} execution input was accepted by the bounded DOM fixture.`
-                : `${mode} execution input was not preserved.`,
+    let fixture: MountedFixture | undefined;
+    try {
+        fixture = await mount(
+            document,
+            declaration as unstable_SlotDeclaration<unstable_SlotId>,
+            profile.createProps(),
+            profile.refCapable,
+            host,
         );
+        const native = fixture.container.querySelector(profile.nativeSelector);
+        const inputs = {
+            rtl: Boolean(native) && native?.closest('[dir="rtl"]') === host,
+            forcedColors:
+                Boolean(native) && host.style.forcedColorAdjust === 'auto',
+            'motion.reduced':
+                Boolean(native) && host.style.transitionDuration === '0s',
+        } as const;
+        for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
+            addCheck(
+                checks,
+                ConformanceFamily.Accessibility,
+                `a11y.environment.${mode}`,
+                inputs[mode],
+                inputs[mode]
+                    ? `The ${profile.slotId} fixture rendered inside the bounded ${mode} DOM host input.`
+                    : `The ${profile.slotId} fixture did not preserve the bounded ${mode} DOM host input.`,
+                profile.slotId,
+                { selector: profile.nativeSelector },
+            );
+        }
+    } catch (error) {
+        for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
+            addError(
+                checks,
+                ConformanceFamily.Accessibility,
+                `a11y.environment.${mode}`,
+                error,
+                profile.slotId,
+            );
+        }
+    } finally {
+        if (fixture) await unmount(fixture);
+        host.remove();
     }
 };
 
@@ -835,7 +905,7 @@ export const runConformance = async (
             await checkSlot(checks, rendererLibrary, options, document, profile);
         checkServerRendering(checks, rendererLibrary, profiles);
         await checkHydration(checks, rendererLibrary, profiles, document);
-        checkEnvironmentalEvidence(checks, document);
+        await checkEnvironmentalEvidence(checks, document, rendererLibrary, profiles);
     } else {
         addCheck(
             checks,
@@ -845,14 +915,6 @@ export const runConformance = async (
             'DOM checks require an explicit Document; SSR import remains safe.',
         );
     }
-
-    addCheck(
-        checks,
-        ConformanceFamily.TypePurity,
-        'typePurity.publishedDeclarations',
-        true,
-        'Published-package verification compiles this API under Bundler and NodeNext with skipLibCheck false; runtime reports reference that external gate.',
-    );
 
     const summary = {
         total: checks.length,
