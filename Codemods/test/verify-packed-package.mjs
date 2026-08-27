@@ -71,14 +71,14 @@ try {
         }
     }
 
-    const binary = path.join(
-        consumer,
-        'node_modules',
-        '.bin',
-        process.platform === 'win32'
-            ? 'cratis-components-remove-root-namespace-imports.cmd'
-            : 'cratis-components-remove-root-namespace-imports',
-    );
+    const binaryFor = (name) =>
+        path.join(
+            consumer,
+            'node_modules',
+            '.bin',
+            process.platform === 'win32' ? `${name}.cmd` : name,
+        );
+    const binary = binaryFor('cratis-components-remove-root-namespace-imports');
     const help = run(binary, ['--help'], { cwd: consumer });
     assertRun('packed codemod --help', help);
     if (!help.stdout.includes('Usage: cratis-components-remove-root-namespace-imports')) {
@@ -109,7 +109,55 @@ try {
         run(binary, ['--check', source], { cwd: consumer }),
     );
 
-    console.log('Packed @cratis/components-codemods CLI verified.');
+    const packedMigrations = [
+        {
+            command: 'cratis-components-button-variant-tone',
+            source: "import { Button } from '@cratis/components/Common';\nexport const view = <Button text severity='danger' />;\n",
+            expected: ["variant='ghost'", "tone='critical'"],
+        },
+        {
+            command: 'cratis-components-change-handler',
+            source: "import { Dropdown } from '@cratis/components/Dropdown';\nexport const view = <Dropdown onChange={(event) => consume(event.value)} />;\n",
+            expected: ['(value) => consume(value)'],
+        },
+    ];
+
+    for (const migration of packedMigrations) {
+        const migrationBinary = binaryFor(migration.command);
+        const migrationHelp = run(migrationBinary, ['--help'], { cwd: consumer });
+        assertRun(`packed ${migration.command} --help`, migrationHelp);
+        if (!migrationHelp.stdout.includes(`Usage: ${migration.command}`)) {
+            throw new Error(
+                `Unexpected ${migration.command} --help output:\n${migrationHelp.stdout}`,
+            );
+        }
+
+        const migrationSource = path.join(consumer, `${migration.command}.tsx`);
+        writeFileSync(migrationSource, migration.source);
+        assertRun(
+            `packed ${migration.command} --check before migration`,
+            run(migrationBinary, ['--check', migrationSource], { cwd: consumer }),
+            1,
+        );
+        assertRun(
+            `packed ${migration.command} apply`,
+            run(migrationBinary, [migrationSource], { cwd: consumer }),
+        );
+        const output = readFileSync(migrationSource, 'utf8');
+        for (const expected of migration.expected) {
+            if (!output.includes(expected)) {
+                throw new Error(
+                    `Packed ${migration.command} produced unexpected output:\n${output}`,
+                );
+            }
+        }
+        assertRun(
+            `packed ${migration.command} --check after migration`,
+            run(migrationBinary, ['--check', migrationSource], { cwd: consumer }),
+        );
+    }
+
+    console.log('Packed @cratis/components-codemods CLIs verified.');
 } finally {
     rmSync(scratch, { recursive: true, force: true });
 }

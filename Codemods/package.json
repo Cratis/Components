@@ -22,6 +22,8 @@
         "url": "https://github.com/Cratis/Components"
     },
     "bin": {
+        "cratis-components-button-variant-tone": "./scripts/button-variant-tone.js",
+        "cratis-components-change-handler": "./scripts/change-handler.js",
         "cratis-components-remove-root-namespace-imports": "./scripts/remove-root-namespace-imports.js"
     },
     "scripts": {
