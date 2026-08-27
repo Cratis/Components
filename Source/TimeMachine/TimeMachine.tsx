@@ -5,10 +5,7 @@ import type React from 'react';
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { Version } from './types';
 import { ReadModelView } from './ReadModelView';
-import {
-    EventsView,
-    SelectedEventSequenceNumbersContext,
-} from './EventsView';
+import { EventsView, SelectedEventSequenceNumbersContext } from './EventsView';
 import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { FaBoxArchive, FaList } from 'react-icons/fa6';
 import { useLocale } from 'react-aria-components/I18nProvider';
@@ -230,9 +227,7 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
                             )
                         }
                         aria-label={l.nextVersion}
-                        data-disabled={
-                            selectedIndex === versions.length - 1 || undefined
-                        }
+                        data-disabled={selectedIndex === versions.length - 1 || undefined}
                     >
                         ›
                     </button>
