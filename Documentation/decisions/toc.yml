@@ -2,3 +2,5 @@
   href: 0001-dom-coupled-contract.md
 - name: Public component classification
   href: 0002-component-classification.md
+- name: Repository-owned kernel boundary
+  href: 0003-kernel-boundary.md
