@@ -16,7 +16,10 @@ import { TablePaginatorImplementation } from '../DataTables/TablePaginatorImplem
 import { ProgressBarImplementation } from '../Display/ProgressBarImplementation';
 import { DialogImplementation } from '../Dialogs/DialogImplementation';
 import { DropdownImplementation } from '../Dropdown/DropdownImplementation';
-import type { unstable_BehaviorMode, unstable_SlotMap } from './slots';
+import type {
+    unstable_BehaviorMode,
+    unstable_SlotMap,
+} from './slots';
 
 const nativeDeclaration = <Props>(
     mode: unstable_BehaviorMode,
@@ -31,7 +34,10 @@ const nativeDeclaration = <Props>(
  */
 export const unstable_coreSlots = Object.freeze({
     'common.button': nativeDeclaration('presentation', ButtonImplementation),
-    'common.iconButton': nativeDeclaration('presentation', IconButtonImplementation),
+    'common.iconButton': nativeDeclaration(
+        'presentation',
+        IconButtonImplementation,
+    ),
     'common.textInput': nativeDeclaration('presentation', TextInputImplementation),
     'common.textArea': nativeDeclaration('presentation', TextAreaImplementation),
     'common.checkbox': nativeDeclaration('presentation', CheckboxImplementation),

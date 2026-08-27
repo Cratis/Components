@@ -223,8 +223,8 @@ for (const sourcePath of kernelSourcePaths) {
 
     if (!existsSync(runtimeEntry) || !existsSync(declarationEntry)) {
         const missing = [
-            existsSync(runtimeEntry) ? undefined : runtimeEntryRelative,
-            existsSync(declarationEntry) ? undefined : declarationEntryRelative,
+            !existsSync(runtimeEntry) ? runtimeEntryRelative : undefined,
+            !existsSync(declarationEntry) ? declarationEntryRelative : undefined,
         ].filter(Boolean);
         violations.push(
             `${sourcePath}: declared kernel module is missing emitted output: ${missing.join(', ')}.`,
