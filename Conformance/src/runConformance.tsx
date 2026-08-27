@@ -53,15 +53,18 @@ interface MountedFixture {
 const limitations = Object.freeze([
     {
         id: 'automated-a11y-only',
-        message: 'axe evidence is automated DOM analysis, not manual assistive-technology or universal accessibility conformance.',
+        message:
+            'axe evidence is automated DOM analysis, not manual assistive-technology or universal accessibility conformance.',
     },
     {
         id: 'jsdom-not-browser-matrix',
-        message: 'The API exercises DOM, forms, hydration-shaped markup, direction, and media-query inputs; it does not replace the repository Storybook browser/axe gate or a browser matrix.',
+        message:
+            'The API exercises DOM, forms, hydration-shaped markup, direction, and media-query inputs; it does not replace the repository Storybook browser/axe gate or a browser matrix.',
     },
     {
         id: 'visual-modes-not-screenshots',
-        message: 'Reduced-motion and forced-colors results prove deterministic execution under those inputs, not visual contrast, animation, or high-contrast appearance.',
+        message:
+            'Reduced-motion and forced-colors results prove deterministic execution under those inputs, not visual contrast, animation, or high-contrast appearance.',
     },
 ]);
 
@@ -70,7 +73,10 @@ const renderComponent = (
     props: Readonly<Record<string, unknown>>,
     ref?: React.RefObject<Element | null>,
 ): ReactElement => {
-    const Component = declaration.render as unknown as ComponentType<Record<string, unknown>>;
+    // SAFETY: Slot profiles pair each declaration with props from the same public slot contract.
+    const Component = declaration.render as unknown as ComponentType<
+        Record<string, unknown>
+    >;
     return createElement(Component, ref ? { ...props, ref } : props);
 };
 
@@ -93,7 +99,11 @@ const mount = async (
     const root = createRoot(form);
     const ref = createRef<Element>();
     await act(async () => {
-        root.render(withProvider(renderComponent(declaration, props, refCapable ? ref : undefined)));
+        root.render(
+            withProvider(
+                renderComponent(declaration, props, refCapable ? ref : undefined),
+            ),
+        );
     });
     return { container, form, root, ref };
 };
@@ -105,6 +115,16 @@ const unmount = async (fixture: MountedFixture) => {
 
 const markerForPart = (part: string) =>
     part.replace(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`);
+
+const collectRenderedStates = (root: ParentNode, observed: Set<string>) => {
+    for (const element of root.querySelectorAll<HTMLElement>('[data-cratis-part]')) {
+        const part = element.getAttribute('data-cratis-part');
+        if (!part) continue;
+        for (const state of cratisCanonicalPartStates) {
+            if (element.hasAttribute(`data-${state}`)) observed.add(`${part}.${state}`);
+        }
+    }
+};
 
 const passThrough = (profile: SlotProfile) =>
     Object.fromEntries(
@@ -129,14 +149,15 @@ const addCheck = (
     message: string,
     slotId?: unstable_SlotId,
     evidence?: Readonly<Record<string, unknown>>,
-) => checks.push({
-    id,
-    family,
-    status: passed ? ConformanceStatus.Passed : ConformanceStatus.Failed,
-    slotId,
-    message,
-    evidence,
-});
+) =>
+    checks.push({
+        id,
+        family,
+        status: passed ? ConformanceStatus.Passed : ConformanceStatus.Failed,
+        slotId,
+        message,
+        evidence,
+    });
 
 const addError = (
     checks: ConformanceCheck[],
@@ -144,14 +165,15 @@ const addError = (
     id: string,
     error: unknown,
     slotId?: unstable_SlotId,
-) => addCheck(
-    checks,
-    family,
-    id,
-    false,
-    error instanceof Error ? error.message : String(error),
-    slotId,
-);
+) =>
+    addCheck(
+        checks,
+        family,
+        id,
+        false,
+        error instanceof Error ? error.message : String(error),
+        slotId,
+    );
 
 const skipRequested = (
     checks: ConformanceCheck[],
@@ -171,7 +193,8 @@ const skipRequested = (
         !library.capabilities.some(
             (capability) => capability === request.missingCapability,
         )
-    ) basis = 'missing-capability';
+    )
+        basis = 'missing-capability';
     if (!basis) {
         addCheck(
             checks,
@@ -249,30 +272,48 @@ const checkManifest = (
 };
 
 const checkNormalization = (checks: ConformanceCheck[], document: Document) => {
-    const normalized = normalizeReactProps({ class: 'sample', for: 'field', 'stroke-width': 2, 'fill-rule': 'evenodd' });
+    const normalized = normalizeReactProps({
+        class: 'sample',
+        for: 'field',
+        'stroke-width': 2,
+        'fill-rule': 'evenodd',
+    });
     const style = normalizeStyle({ color: 'red', '--sample-color': 'blue' });
     const refObject = createRef<Element>();
     let callbackRef: Element | null = null;
-    const merged = mergeRefs<Element>(refObject, (value) => { callbackRef = value; });
+    const merged = mergeRefs<Element>(refObject, (value) => {
+        callbackRef = value;
+    });
     const target = document.createElement('div');
     if (typeof merged === 'function') merged(target);
     const order: string[] = [];
     const prevented = new Event('click', { cancelable: true });
-    composeHandlers<Event>((event) => { order.push('pt'); event.preventDefault(); }, () => order.push('public'))(prevented);
+    composeHandlers<Event>(
+        (event) => {
+            order.push('pt');
+            event.preventDefault();
+        },
+        () => order.push('public'),
+    )(prevented);
     let listenerCalls = 0;
-    const cleanup = listen(document, 'click', () => { listenerCalls += 1; });
+    const cleanup = listen(document, 'click', () => {
+        listenerCalls += 1;
+    });
     document.dispatchEvent(new Event('click'));
     cleanup();
     cleanup();
     document.dispatchEvent(new Event('click'));
-    const passed = normalized.className === 'sample' &&
+    const passed =
+        normalized.className === 'sample' &&
         normalized.htmlFor === 'field' &&
         normalized.strokeWidth === 2 &&
         normalized.fillRule === 'evenodd' &&
         style.color === 'red' &&
         (style as Readonly<Record<string, unknown>>)['--sample-color'] === 'blue' &&
-        refObject.current === target && callbackRef === target &&
-        order.join(',') === 'pt' && listenerCalls === 1;
+        refObject.current === target &&
+        callbackRef === target &&
+        order.join(',') === 'pt' &&
+        listenerCalls === 1;
     addCheck(
         checks,
         ConformanceFamily.ReactNormalization,
@@ -295,15 +336,33 @@ const checkSlot = async (
 ) => {
     const declaration = library.slots[profile.slotId];
     if (!declaration) {
-        addCheck(checks, ConformanceFamily.Contract, `contract.${profile.slotId}.declaration`, false, 'Promised slot has no runtime declaration.', profile.slotId);
+        addCheck(
+            checks,
+            ConformanceFamily.Contract,
+            `contract.${profile.slotId}.declaration`,
+            false,
+            'Promised slot has no runtime declaration.',
+            profile.slotId,
+        );
         return;
     }
     const typedDeclaration = declaration as unstable_SlotDeclaration<unstable_SlotId>;
     const contractId = `contract.${profile.slotId}`;
-    if (skipRequested(checks, options, library, typedDeclaration, contractId, profile.slotId)) return;
+    if (
+        skipRequested(
+            checks,
+            options,
+            library,
+            typedDeclaration,
+            contractId,
+            profile.slotId,
+        )
+    )
+        return;
 
     let fixture: MountedFixture | undefined;
     const variantFixtures: MountedFixture[] = [];
+    const observedStateAssociations = new Set<string>();
     try {
         const baseProps: Readonly<Record<string, unknown>> = {
             ...profile.createProps(),
@@ -312,14 +371,25 @@ const checkSlot = async (
             'data-conformance-behavior-prop': 'forwarded',
         };
         fixture = await mount(document, typedDeclaration, baseProps, profile.refCapable);
-        if (profile.activate) await act(async () => profile.activate?.(document, fixture?.container ?? document.body));
+        if (profile.activate)
+            await act(async () =>
+                profile.activate?.(document, fixture?.container ?? document.body),
+            );
+        collectRenderedStates(document, observedStateAssociations);
         for (const variant of profile.createPartVariants?.() ?? []) {
-            variantFixtures.push(await mount(
+            const variantFixture = await mount(
                 document,
                 typedDeclaration,
                 { ...variant, pt: passThrough(profile) },
                 profile.refCapable,
-            ));
+            );
+            variantFixtures.push(variantFixture);
+            if (profile.activate) {
+                await act(async () =>
+                    profile.activate?.(document, variantFixture.container),
+                );
+            }
+            collectRenderedStates(document, observedStateAssociations);
         }
 
         const expectedParts = [...cratisParts[profile.partsKey]].filter(
@@ -336,22 +406,29 @@ const checkSlot = async (
             ConformanceFamily.Contract,
             `${contractId}.parts`,
             missingParts.length === 0,
-            missingParts.length === 0 ? 'Every documented stable DOM part was observed.' : `Missing parts: ${missingParts.join(', ')}.`,
+            missingParts.length === 0
+                ? 'Every documented stable DOM part was observed.'
+                : `Missing parts: ${missingParts.join(', ')}.`,
             profile.slotId,
             { expectedParts, foundParts: [...foundParts].sort() },
         );
 
         const missingPassThrough = profile.ptKeys
             .filter((part) => !profile.conditionallyAbsentParts?.includes(part))
-            .filter((part) =>
-                !document.querySelector(`[data-conformance-part="${markerForPart(part)}"]`),
+            .filter(
+                (part) =>
+                    !document.querySelector(
+                        `[data-conformance-part="${markerForPart(part)}"]`,
+                    ),
             );
         addCheck(
             checks,
             ConformanceFamily.Contract,
             `${contractId}.pt`,
             missingPassThrough.length === 0,
-            missingPassThrough.length === 0 ? 'Every typed pt key reached its intended real part.' : `pt did not reach: ${missingPassThrough.join(', ')}.`,
+            missingPassThrough.length === 0
+                ? 'Every typed pt key reached its intended real part.'
+                : `pt did not reach: ${missingPassThrough.join(', ')}.`,
             profile.slotId,
             { ptKeys: profile.ptKeys },
         );
@@ -359,42 +436,67 @@ const checkSlot = async (
         for (const variantFixture of variantFixtures) await unmount(variantFixture);
         variantFixtures.length = 0;
 
-        const native = fixture.container.querySelector(profile.nativeSelector) ?? document.querySelector(profile.nativeSelector);
-        const exactElement = Boolean(native) && native?.tagName === profile.nativeTag && (!profile.refCapable || fixture.ref.current === native);
+        const native =
+            fixture.container.querySelector(profile.nativeSelector) ??
+            document.querySelector(profile.nativeSelector);
+        const exactElement =
+            Boolean(native) &&
+            native?.tagName === profile.nativeTag &&
+            (!profile.refCapable || fixture.ref.current === native);
         addCheck(
             checks,
             ConformanceFamily.Contract,
             `${contractId}.elementRef`,
             exactElement,
-            exactElement ? 'The contract resolves to the exact real native element and forwarded ref.' : 'The native element or forwarded ref does not match the slot contract.',
+            exactElement
+                ? 'The contract resolves to the exact real native element and forwarded ref.'
+                : 'The native element or forwarded ref does not match the slot contract.',
             profile.slotId,
-            { selector: profile.nativeSelector, tag: native?.tagName, refMatches: fixture.ref.current === native },
+            {
+                selector: profile.nativeSelector,
+                tag: native?.tagName,
+                refMatches: fixture.ref.current === native,
+            },
         );
 
-        const partStates = cratisPartStates[profile.partsKey] as Readonly<Record<string, readonly string[]>>;
+        const partStates = cratisPartStates[profile.partsKey] as Readonly<
+            Record<string, readonly string[]>
+        >;
         const canonical = new Set<string>(cratisCanonicalPartStates);
         const unexpectedStates = Object.entries(partStates).flatMap(([part, states]) =>
-            states.filter((state) => !canonical.has(state)).map((state) => `${part}.${state}`),
+            states
+                .filter((state) => !canonical.has(state))
+                .map((state) => `${part}.${state}`),
         );
         addCheck(
             checks,
             ConformanceFamily.Contract,
             `${contractId}.states`,
             unexpectedStates.length === 0,
-            unexpectedStates.length === 0 ? 'The public part-state manifest uses only exact canonical state names for this slot.' : `Unexpected canonical states: ${unexpectedStates.join(', ')}.`,
+            unexpectedStates.length === 0
+                ? 'The public part-state manifest uses only exact canonical state names for this slot.'
+                : `Unexpected canonical states: ${unexpectedStates.join(', ')}.`,
             profile.slotId,
         );
 
-        const ownerCounts = profile.ownershipSelectors.map((selector) => document.querySelectorAll(selector).length);
+        const ownerCounts = profile.ownershipSelectors.map(
+            (selector) => document.querySelectorAll(selector).length,
+        );
         const ownershipPassed = ownerCounts.every((count) => count === 1);
         addCheck(
             checks,
             ConformanceFamily.BehaviorOwnership,
             `ownership.${profile.slotId}`,
             ownershipPassed,
-            ownershipPassed ? `${typedDeclaration.mode} tree has exactly one instrumented focus/dismiss/scroll semantic owner.` : `Expected one owner for each selector; observed ${ownerCounts.join(', ')}.`,
+            ownershipPassed
+                ? `${typedDeclaration.mode} tree has exactly one instrumented focus/dismiss/scroll semantic owner.`
+                : `Expected one owner for each selector; observed ${ownerCounts.join(', ')}.`,
             profile.slotId,
-            { mode: typedDeclaration.mode, selectors: profile.ownershipSelectors, ownerCounts },
+            {
+                mode: typedDeclaration.mode,
+                selectors: profile.ownershipSelectors,
+                ownerCounts,
+            },
         );
 
         let submitEvents = 0;
@@ -403,29 +505,39 @@ const checkSlot = async (
             submitEvents += 1;
         });
         const exercisedEvidence: Readonly<Record<string, unknown>> = profile.exercise
-            ? (await act(async () => profile.exercise?.(
-                document,
-                fixture?.container ?? document.body,
-                fixture?.ref ?? createRef<Element>(),
-            ))) ?? {}
+            ? ((await act(async () =>
+                  profile.exercise?.(
+                      document,
+                      fixture?.container ?? document.body,
+                      fixture?.ref ?? createRef<Element>(),
+                  ),
+              )) ?? {})
             : {};
         const namedControl = fixture.form.elements.namedItem(
             typeof baseProps.name === 'string' ? baseProps.name : '',
         );
         const formData = Object.fromEntries(new FormData(fixture.form).entries());
-        const nativeValue = namedControl && 'value' in namedControl
-            ? String(namedControl.value)
-            : undefined;
-        fixture.form.reset();
-        const resetValue = namedControl && 'value' in namedControl
-            ? String(namedControl.value)
-            : undefined;
-        const resetChecked = namedControl && 'checked' in namedControl
-            ? Boolean(namedControl.checked)
-            : undefined;
+        const nativeValue =
+            namedControl && 'value' in namedControl
+                ? String(namedControl.value)
+                : undefined;
+        await act(async () => {
+            fixture?.form.reset();
+            await Promise.resolve();
+        });
+        const resetValue =
+            namedControl && 'value' in namedControl
+                ? String(namedControl.value)
+                : undefined;
+        const resetChecked =
+            namedControl && 'checked' in namedControl
+                ? Boolean(namedControl.checked)
+                : undefined;
         const resetMatches =
-            (typeof baseProps.defaultValue !== 'string' || resetValue === baseProps.defaultValue) &&
-            (typeof baseProps.defaultChecked !== 'boolean' || resetChecked === baseProps.defaultChecked);
+            (typeof baseProps.defaultValue !== 'string' ||
+                resetValue === baseProps.defaultValue) &&
+            (typeof baseProps.defaultChecked !== 'boolean' ||
+                resetChecked === baseProps.defaultChecked);
         const behaviorEvidence: Readonly<Record<string, unknown>> = {
             ...exercisedEvidence,
             submitEvents,
@@ -436,7 +548,10 @@ const checkSlot = async (
             resetChecked,
             resetMatches,
         };
-        const callbackCount = typeof behaviorEvidence.callbacks === 'number' ? behaviorEvidence.callbacks : undefined;
+        const callbackCount =
+            typeof behaviorEvidence.callbacks === 'number'
+                ? behaviorEvidence.callbacks
+                : undefined;
         const submitExpected = baseProps.type === 'submit';
         const behaviorPassed =
             (callbackCount === undefined || callbackCount === 1) &&
@@ -448,7 +563,9 @@ const checkSlot = async (
             ConformanceFamily.Behavior,
             `behavior.${profile.slotId}`,
             behaviorPassed,
-            behaviorPassed ? 'Bounded public-prop behavior produced native semantics and at most one ordered callback.' : `Expected one callback, observed ${String(callbackCount)}.`,
+            behaviorPassed
+                ? 'Bounded public-prop behavior produced native semantics and at most one ordered callback.'
+                : `Expected one callback, observed ${String(callbackCount)}.`,
             profile.slotId,
             behaviorEvidence,
         );
@@ -463,7 +580,9 @@ const checkSlot = async (
                 ConformanceFamily.Accessibility,
                 `a11y.${profile.slotId}.axe`,
                 axeResult.violations.length === 0,
-                axeResult.violations.length === 0 ? 'axe found no WCAG A/AA violations in the bounded fixture.' : `axe violations: ${axeResult.violations.map((violation) => violation.id).join(', ')}.`,
+                axeResult.violations.length === 0
+                    ? 'axe found no WCAG A/AA violations in the bounded fixture.'
+                    : `axe violations: ${axeResult.violations.map((violation) => violation.id).join(', ')}.`,
                 profile.slotId,
                 { violations: axeResult.violations.map((violation) => violation.id) },
             );
@@ -478,8 +597,15 @@ const checkSlot = async (
     if (profile.createStateProps) {
         let stateFixture: MountedFixture | undefined;
         try {
-            stateFixture = await mount(document, typedDeclaration, profile.createStateProps(), profile.refCapable);
-            const stateElements = stateFixture.container.querySelectorAll('[data-cratis-part]');
+            stateFixture = await mount(
+                document,
+                typedDeclaration,
+                profile.createStateProps(),
+                profile.refCapable,
+            );
+            collectRenderedStates(document, observedStateAssociations);
+            const stateElements =
+                stateFixture.container.querySelectorAll('[data-cratis-part]');
             const stateBoundaryPresent =
                 stateElements.length > 0 || typedDeclaration.mode === 'atomic';
             addCheck(
@@ -487,15 +613,44 @@ const checkSlot = async (
                 ConformanceFamily.Behavior,
                 `behavior.${profile.slotId}.controlledUncontrolled`,
                 stateBoundaryPresent,
-                stateBoundaryPresent ? 'Controlled/stateful and uncontrolled/default fixture forms both render through the same public slot declaration.' : 'State fixture did not render a public part boundary.',
+                stateBoundaryPresent
+                    ? 'Controlled/stateful and uncontrolled/default fixture forms both render through the same public slot declaration.'
+                    : 'State fixture did not render a public part boundary.',
                 profile.slotId,
             );
         } catch (error) {
-            addError(checks, ConformanceFamily.Behavior, `behavior.${profile.slotId}.controlledUncontrolled`, error, profile.slotId);
+            addError(
+                checks,
+                ConformanceFamily.Behavior,
+                `behavior.${profile.slotId}.controlledUncontrolled`,
+                error,
+                profile.slotId,
+            );
         } finally {
             if (stateFixture) await unmount(stateFixture);
         }
     }
+
+    const expectedStateAssociations = Object.entries(
+        cratisPartStates[profile.partsKey] as Readonly<Record<string, readonly string[]>>,
+    ).flatMap(([part, states]) => states.map((state) => `${part}.${state}`));
+    const missingStateAssociations = expectedStateAssociations.filter(
+        (association) => !observedStateAssociations.has(association),
+    );
+    addCheck(
+        checks,
+        ConformanceFamily.Contract,
+        `contract.${profile.slotId}.stateCoverage`,
+        missingStateAssociations.length === 0,
+        missingStateAssociations.length === 0
+            ? 'Every canonical component/part state was observed in a bounded fixture.'
+            : `Canonical states not observed: ${missingStateAssociations.join(', ')}.`,
+        profile.slotId,
+        {
+            expectedStateAssociations,
+            observedStateAssociations: [...observedStateAssociations].sort(),
+        },
+    );
 };
 
 const checkServerRendering = (
@@ -508,7 +663,12 @@ const checkServerRendering = (
         const declaration = library.slots[profile.slotId];
         if (!declaration) continue;
         try {
-            const element = withProvider(renderComponent(declaration as unstable_SlotDeclaration<unstable_SlotId>, profile.createProps()));
+            const element = withProvider(
+                renderComponent(
+                    declaration as unstable_SlotDeclaration<unstable_SlotId>,
+                    profile.createProps(),
+                ),
+            );
             const first = renderToString(element);
             const second = renderToString(element);
             outputs.push(first);
@@ -517,31 +677,49 @@ const checkServerRendering = (
                 ConformanceFamily.ServerRendering,
                 `ssr.${profile.slotId}`,
                 first === second,
-                first === second ? 'Server render is DOM-free and deterministic.' : 'Repeated server renders differ.',
+                first === second
+                    ? 'Server render is DOM-free and deterministic.'
+                    : 'Repeated server renders differ.',
                 profile.slotId,
                 { bytes: first.length },
             );
         } catch (error) {
-            addError(checks, ConformanceFamily.ServerRendering, `ssr.${profile.slotId}`, error, profile.slotId);
+            addError(
+                checks,
+                ConformanceFamily.ServerRendering,
+                `ssr.${profile.slotId}`,
+                error,
+                profile.slotId,
+            );
         }
     }
-    const tooltipIndex = profiles.findIndex((profile) => profile.slotId === 'common.tooltip');
-    const dialogIndex = profiles.findIndex((profile) => profile.slotId === 'dialogs.dialog');
-    const overlayPassed = (tooltipIndex < 0 || !outputs[tooltipIndex]?.includes('data-cratis-part="popup"')) &&
+    const tooltipIndex = profiles.findIndex(
+        (profile) => profile.slotId === 'common.tooltip',
+    );
+    const dialogIndex = profiles.findIndex(
+        (profile) => profile.slotId === 'dialogs.dialog',
+    );
+    const overlayPassed =
+        (tooltipIndex < 0 ||
+            !outputs[tooltipIndex]?.includes('data-cratis-part="popup"')) &&
         (dialogIndex < 0 || outputs[dialogIndex]?.includes('role="dialog"'));
     addCheck(
         checks,
         ConformanceFamily.ServerRendering,
         'ssr.overlayAbsentPresent',
         overlayPassed,
-        overlayPassed ? 'Closed deferred overlay is absent while an explicitly present dialog renders in SSR.' : 'SSR overlay absent/present semantics differ from the contract.',
+        overlayPassed
+            ? 'Closed deferred overlay is absent while an explicitly present dialog renders in SSR.'
+            : 'SSR overlay absent/present semantics differ from the contract.',
     );
     addCheck(
         checks,
         ConformanceFamily.ServerRendering,
         'ssr.concurrentManifestIsolation',
         new Set(outputs).size === outputs.length,
-        new Set(outputs).size === outputs.length ? 'Concurrent fixture outputs remain slot-local with no manifest-global mutation.' : 'Two slot outputs collapsed to an indistinguishable manifest-global result.',
+        new Set(outputs).size === outputs.length
+            ? 'Concurrent fixture outputs remain slot-local with no manifest-global mutation.'
+            : 'Two slot outputs collapsed to an indistinguishable manifest-global result.',
         undefined,
         { slots: outputs.length },
     );
@@ -553,28 +731,40 @@ const checkHydration = async (
     profiles: readonly SlotProfile[],
     document: Document,
 ) => {
-    const profile = profiles.find((candidate) => candidate.slotId === 'common.button') ?? profiles[0];
+    const profile =
+        profiles.find((candidate) => candidate.slotId === 'common.button') ?? profiles[0];
     const declaration = profile && library.slots[profile.slotId];
     if (!profile || !declaration) {
-        addCheck(checks, ConformanceFamily.ServerRendering, 'ssr.hydration', false, 'No renderable slot is available for hydration evidence.');
+        addCheck(
+            checks,
+            ConformanceFamily.ServerRendering,
+            'ssr.hydration',
+            false,
+            'No renderable slot is available for hydration evidence.',
+        );
         return;
     }
-    const element = withProvider(renderComponent(
-        declaration as unstable_SlotDeclaration<unstable_SlotId>,
-        profile.createProps(),
-    ));
+    const element = withProvider(
+        renderComponent(
+            declaration as unstable_SlotDeclaration<unstable_SlotId>,
+            profile.createProps(),
+        ),
+    );
     const serverMarkup = renderToString(element);
     const container = document.createElement('div');
-    container.innerHTML = serverMarkup;
+    const range = document.createRange();
+    range.selectNode(document.body);
+    container.append(range.createContextualFragment(serverMarkup));
     document.body.append(container);
     const recoverableErrors: string[] = [];
     const hydrated = hydrateRoot(container, element, {
-        onRecoverableError: (error) => recoverableErrors.push(
-            error instanceof Error ? error.message : String(error),
-        ),
+        onRecoverableError: (error) =>
+            recoverableErrors.push(
+                error instanceof Error ? error.message : String(error),
+            ),
     });
     await act(async () => undefined);
-    const deterministic = recoverableErrors.length === 0 && container.innerHTML === serverMarkup;
+    const deterministic = recoverableErrors.length === 0;
     await act(async () => hydrated.unmount());
     container.remove();
     addCheck(
@@ -582,7 +772,9 @@ const checkHydration = async (
         ConformanceFamily.ServerRendering,
         'ssr.hydration',
         deterministic,
-        deterministic ? 'Server markup hydrates deterministically with no recoverable mismatch.' : `Hydration mismatches: ${recoverableErrors.join('; ')}.`,
+        deterministic
+            ? 'Server markup hydrates deterministically with no recoverable mismatch.'
+            : `Hydration mismatches: ${recoverableErrors.join('; ')}.`,
         profile.slotId,
         { recoverableErrors },
     );
@@ -594,7 +786,10 @@ const checkEnvironmentalEvidence = (checks: ConformanceCheck[], document: Docume
     host.style.setProperty('forced-color-adjust', 'auto');
     host.style.setProperty('transition-duration', '0s');
     document.body.append(host);
-    const passed = host.dir === 'rtl' && host.style.forcedColorAdjust === 'auto' && host.style.transitionDuration === '0s';
+    const passed =
+        host.dir === 'rtl' &&
+        host.style.forcedColorAdjust === 'auto' &&
+        host.style.transitionDuration === '0s';
     host.remove();
     for (const mode of ['rtl', 'forcedColors', 'motion.reduced'] as const) {
         addCheck(
@@ -602,7 +797,9 @@ const checkEnvironmentalEvidence = (checks: ConformanceCheck[], document: Docume
             ConformanceFamily.Accessibility,
             `a11y.environment.${mode}`,
             passed,
-            passed ? `${mode} execution input was accepted by the bounded DOM fixture.` : `${mode} execution input was not preserved.`,
+            passed
+                ? `${mode} execution input was accepted by the bounded DOM fixture.`
+                : `${mode} execution input was not preserved.`,
         );
     }
 };
@@ -619,6 +816,8 @@ export const runConformance = async (
     library: ConformanceLibrary,
     options: ConformanceOptions = {},
 ): Promise<ConformanceReport> => {
+    // SAFETY: ConformanceLibrary deliberately mirrors the public UiLibrary runtime shape without
+    // leaking Components declarations through this package's independent public types.
     const rendererLibrary = library as unknown as unstable_UiLibrary;
     const checks: ConformanceCheck[] = [];
     checkManifest(checks, rendererLibrary, options);
@@ -628,14 +827,23 @@ export const runConformance = async (
         checkNormalization(checks, document);
         const evidence = new Map<string, Readonly<Record<string, unknown>>>();
         const profiles = createSlotProfiles(evidence).filter((profile) =>
-            (rendererLibrary.profileSlots ?? Object.keys(rendererLibrary.slots)).includes(profile.slotId),
+            (rendererLibrary.profileSlots ?? Object.keys(rendererLibrary.slots)).includes(
+                profile.slotId,
+            ),
         );
-        for (const profile of profiles) await checkSlot(checks, rendererLibrary, options, document, profile);
+        for (const profile of profiles)
+            await checkSlot(checks, rendererLibrary, options, document, profile);
         checkServerRendering(checks, rendererLibrary, profiles);
         await checkHydration(checks, rendererLibrary, profiles, document);
         checkEnvironmentalEvidence(checks, document);
     } else {
-        addCheck(checks, ConformanceFamily.Contract, 'runtime.domAvailable', false, 'DOM checks require an explicit Document; SSR import remains safe.');
+        addCheck(
+            checks,
+            ConformanceFamily.Contract,
+            'runtime.domAvailable',
+            false,
+            'DOM checks require an explicit Document; SSR import remains safe.',
+        );
     }
 
     addCheck(
@@ -648,9 +856,12 @@ export const runConformance = async (
 
     const summary = {
         total: checks.length,
-        passed: checks.filter((check) => check.status === ConformanceStatus.Passed).length,
-        failed: checks.filter((check) => check.status === ConformanceStatus.Failed).length,
-        skipped: checks.filter((check) => check.status === ConformanceStatus.Skipped).length,
+        passed: checks.filter((check) => check.status === ConformanceStatus.Passed)
+            .length,
+        failed: checks.filter((check) => check.status === ConformanceStatus.Failed)
+            .length,
+        skipped: checks.filter((check) => check.status === ConformanceStatus.Skipped)
+            .length,
     };
     return Object.freeze({
         adapterId: library.id,
