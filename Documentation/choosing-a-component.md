@@ -17,7 +17,7 @@ The question is whether confirming the form **runs a command**, and whether it's
 | Run a command, but gather input across **named steps**   | [`StepperCommandDialog`](./StepperCommandDialog/index.md) | A wizard over a single command — validate per step, navigate back and forth, execute at the end.      |
 | Embed command fields **in a page**, not a dialog         | [`CommandForm`](./CommandForm/index.md)                   | The same typed fields `CommandDialog` uses, without the dialog chrome.                                |
 | Collect data and return it **without** running a command | [`Dialog`](./Dialogs/index.md)                            | A confirmation or data-entry dialog that hands values back to the caller. No command involved.        |
-| Edit ordinary local React state                          | Native/product controls                                   | CommandForm fields bind generated command properties; they are not a general local-state input suite. |
+| Edit ordinary local React state                          | [`Common` basic controls](./Common/basic-controls.md)      | Native text and choice controls expose semantic values without binding an Arc command.                 |
 
 Rule of thumb: **if confirming the dialog executes a generated command, it's a `CommandDialog`** (or its
 stepper variant). If it just gathers values and returns them, it's a `Dialog`. Never reach for

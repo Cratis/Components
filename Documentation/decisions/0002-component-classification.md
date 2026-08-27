@@ -55,6 +55,7 @@ The inventory follows the setup root and every JavaScript component subpath in `
 | `Chat` | `ChatSidebar` | Arc/high-order composite |
 | `Chat` | `ChatSidebarForObservableQueries` | Arc/high-order composite |
 | `Chat` | `ChatTopicList` | Arc/high-order composite |
+| `Common` | `Checkbox` | visual primitive |
 | `CommandForm` | `CheckboxField` | Arc/high-order composite |
 | `Display` | `Chip` | visual primitive |
 | `CommandForm` | `ChipsField` | Arc/high-order composite |
@@ -80,6 +81,7 @@ The inventory follows the setup root and every JavaScript component subpath in `
 | `Filter` | `FilterEditor` | Arc/high-order composite |
 | `Filter` | `FilterPanel` | Arc/high-order composite |
 | `Common` | `FormElement` | visual primitive |
+| `Common` | `IconButton` | visual primitive |
 | `Common` | `IconDisplay` | visual primitive |
 | `CommandForm` | `InputTextField` | Arc/high-order composite |
 | `Canvas` | `MentionSuggestions` | interaction primitive |
@@ -99,6 +101,7 @@ The inventory follows the setup root and every JavaScript component subpath in `
 | `Display` | `ProgressBar` | visual primitive |
 | `Display` | `ProgressSpinner` | visual primitive |
 | `TimeMachine` | `Properties` | Arc/high-order composite |
+| `Common` | `Radio` | visual primitive |
 | `CommandForm` | `RadioButtonField` | Arc/high-order composite |
 | `CommandForm` | `RadioGroupField` | Arc/high-order composite |
 | `Filter` | `RangeHistogramFilter` | interaction primitive |
@@ -111,9 +114,13 @@ The inventory follows the setup root and every JavaScript component subpath in `
 | `CommandForm` | `SliderField` | Arc/high-order composite |
 | `CommandDialog` | `StepperCommandDialog` | Arc/high-order composite |
 | `CommandDialog` | `StepperPanel` | Arc/high-order composite |
+| `Common` | `Surface` | visual primitive |
+| `Common` | `Switch` | visual primitive |
 | `DataTables` | `TablePaginator` | Arc/high-order composite |
 | `Display` | `Tag` | visual primitive |
+| `Common` | `TextArea` | visual primitive |
 | `CommandForm` | `TextAreaField` | Arc/high-order composite |
+| `Common` | `TextInput` | visual primitive |
 | `TimeMachine` | `TimeMachine` | Arc/high-order composite |
 | `Notifications` | `Toaster` | Arc/high-order composite |
 | `CommandForm` | `ToggleSwitchField` | Arc/high-order composite |
@@ -131,7 +138,7 @@ The inventory follows the setup root and every JavaScript component subpath in `
 | `Common` | `Tooltip` | interaction primitive |
 | `Canvas` | `TypingIndicator` | visual primitive |
 
-The accepted inventory contains 14 visual primitives, 12 interaction primitives, 71 Arc/high-order composites, and no interop-only components.
+The accepted inventory contains 21 visual primitives, 12 interaction primitives, 71 Arc/high-order composites, and no interop-only components.
 
 Exported types and interfaces, helpers and hooks, events and messages, enum and configuration values, registries, and React context values are not components and are excluded. Examples include `CanvasItemRegistryContext`, `DialogInitialFocus`, `ChatMessageAdded`, `NoteTextChanged`, `toast`, `useFilterState`, and the `*Props`, event, label, parts, and model types.
 

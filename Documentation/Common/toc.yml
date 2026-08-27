@@ -2,6 +2,8 @@
   href: index.md
 - name: CratisComponentsProvider
   href: cratis-components-provider.md
+- name: Basic controls
+  href: basic-controls.md
 - name: Icon
   href: icon.md
 - name: Page
