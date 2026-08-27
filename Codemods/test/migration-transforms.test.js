@@ -5,12 +5,24 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import ts from 'typescript';
 import { transformButtonVariantTone } from '../lib/buttonVariantToneTransform.js';
 import { transformChangeHandlers } from '../lib/changeHandlerTransform.js';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const fixture = (family, name, file) =>
     readFileSync(path.join(testDir, family, name, file), 'utf8');
+
+const expectValidTsx = (fileName, source) => {
+    const sourceFile = ts.createSourceFile(
+        fileName,
+        source,
+        ts.ScriptTarget.Latest,
+        true,
+        ts.ScriptKind.TSX,
+    );
+    expect(sourceFile.parseDiagnostics).toEqual([]);
+};
 
 const buttonCases = [
     ['aliases-and-precedence', 0],
@@ -32,6 +44,7 @@ describe('Button variant/tone transform', () => {
             const first = transformButtonVariantTone(`${name}/input.tsx`, input);
             expect(first.text).toBe(expected);
             expect(first.diagnostics).toHaveLength(diagnosticCount);
+            expectValidTsx(`${name}/expected.tsx`, first.text);
 
             const second = transformButtonVariantTone(`${name}/expected.tsx`, first.text);
             expect(second.text).toBe(expected);
@@ -89,6 +102,7 @@ describe('change-handler transform', () => {
             const first = transformChangeHandlers(`${name}/input.tsx`, input);
             expect(first.text).toBe(expected);
             expect(first.diagnostics).toHaveLength(diagnosticCount);
+            expectValidTsx(`${name}/expected.tsx`, first.text);
 
             const second = transformChangeHandlers(`${name}/expected.tsx`, first.text);
             expect(second.text).toBe(expected);
