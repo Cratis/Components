@@ -1,0 +1,103 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Every color comes from the --cratis-* token seam so the list follows whatever theme the host
+   runs. */
+.cratis-chat-topics {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    overflow-y: auto;
+}
+
+.cratis-chat-topics__start {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--cratis-primary-color);
+    color: var(--cratis-primary-color-text);
+    border: none;
+    border-radius: var(--cratis-border-radius);
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.cratis-chat-topics__start:hover {
+    background: var(--cratis-primary-600);
+}
+
+.cratis-chat-topics__empty {
+    margin: 0;
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--cratis-text-color-secondary);
+}
+
+.cratis-chat-topics__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cratis-chat-topics__topic {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.5rem 0.625rem;
+    background: transparent;
+    border: none;
+    border-radius: var(--cratis-border-radius);
+    text-align: left;
+    cursor: pointer;
+    color: var(--cratis-text-color);
+    transition: background 0.12s;
+}
+
+.cratis-chat-topics__topic:hover {
+    background: var(--cratis-surface-hover);
+}
+
+.cratis-chat-topics__details {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.cratis-chat-topics__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cratis-chat-topics__name--pending {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--cratis-text-color-secondary);
+}
+
+.cratis-chat-topics__started-by {
+    font-size: 0.75rem;
+    color: var(--cratis-text-color-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cratis-chat-topics__activity {
+    align-self: flex-start;
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    color: var(--cratis-text-color-secondary);
+}

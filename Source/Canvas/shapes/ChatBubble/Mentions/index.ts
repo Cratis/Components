@@ -6,4 +6,7 @@ export * from './MentionQuery';
 export * from './MentionSuggestions';
 export * from './activeMentionQuery';
 export * from './applyMention';
+export * from './extractMentions';
+export * from './findMentionRanges';
 export * from './matchCandidates';
+export * from './mentionSegments';
