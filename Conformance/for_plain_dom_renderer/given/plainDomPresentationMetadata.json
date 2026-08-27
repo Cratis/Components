@@ -33,7 +33,6 @@
     "capabilities": [
         "slot.render",
         "parts.passthrough",
-        "form.validationMessage",
         "ssr.staticRender",
         "rtl",
         "forcedColors",

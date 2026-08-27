@@ -14,6 +14,8 @@ import {
 } from 'react';
 import type {
     ButtonProps,
+    ButtonSeverity,
+    ButtonTone,
     CheckboxParts,
     CheckboxProps,
     IconButtonProps,
@@ -49,7 +51,6 @@ const profileSlots = Object.freeze([
 const capabilities = Object.freeze([
     'slot.render',
     'parts.passthrough',
-    'form.validationMessage',
     'ssr.staticRender',
     'rtl',
     'forcedColors',
@@ -58,6 +59,24 @@ const capabilities = Object.freeze([
 
 const classNames = (...values: readonly (string | undefined)[]) =>
     values.filter(Boolean).join(' ');
+
+const toneForSeverity: Readonly<Record<ButtonSeverity, ButtonTone>> = {
+    secondary: 'neutral',
+    info: 'accent',
+    help: 'accent',
+    success: 'positive',
+    warn: 'caution',
+    danger: 'critical',
+    contrast: 'neutral',
+};
+
+const severityForTone: Readonly<Record<ButtonTone, ButtonSeverity>> = {
+    neutral: 'secondary',
+    accent: 'info',
+    positive: 'success',
+    caution: 'warn',
+    critical: 'danger',
+};
 
 const assignRef = <T,>(ref: ForwardedRef<T>, value: T | null) => {
     if (typeof ref === 'function') ref(value);
@@ -122,18 +141,77 @@ const useCheckableState = (
 const renderIcon = (icon: ReactNode) =>
     typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
 
+interface PlainButtonContentProps {
+    readonly loading: boolean;
+    readonly icon: ReactNode;
+    readonly label: ReactNode;
+    readonly children: ReactNode;
+    readonly pt: ButtonProps['pt'];
+}
+
+const PlainButtonContent = ({
+    loading,
+    icon,
+    label,
+    children,
+    pt,
+}: PlainButtonContentProps) => {
+    const leading = loading ? (
+        <span
+            {...pt?.spinner}
+            className={classNames('plain-dom-button__spinner', pt?.spinner?.className)}
+            data-cratis-part='spinner'
+            aria-hidden='true'
+        />
+    ) : icon ? (
+        <span
+            {...pt?.icon}
+            className={classNames('plain-dom-button__icon', pt?.icon?.className)}
+            data-cratis-part='icon'
+            aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
+        >
+            {renderIcon(icon)}
+        </span>
+    ) : null;
+    const content =
+        label !== undefined || children !== undefined ? (
+            <span
+                {...pt?.label}
+                className={classNames('plain-dom-button__label', pt?.label?.className)}
+                data-cratis-part='label'
+            >
+                {label}
+                {children}
+            </span>
+        ) : null;
+    return (
+        <>
+            {leading}
+            {content}
+        </>
+    );
+};
+
 const PlainButton = forwardRef<HTMLButtonElement, ButtonProps>(function PlainButton(
     {
         label,
         icon,
         loading = false,
+        tooltip,
+        tooltipOptions: _tooltipOptions,
         pt,
-        variant = 'solid',
+        variant,
         tone,
-        shape = 'default',
+        shape,
+        text,
+        link,
+        outlined,
+        rounded,
+        severity,
         size = 'normal',
         disabled,
         type = 'button',
+        title,
         className,
         style,
         children,
@@ -141,58 +219,37 @@ const PlainButton = forwardRef<HTMLButtonElement, ButtonProps>(function PlainBut
     },
     ref,
 ) {
+    const selectedVariant =
+        variant ?? (link ? 'link' : text ? 'ghost' : outlined ? 'outline' : 'solid');
+    const selectedTone = tone ?? (severity ? toneForSeverity[severity] : undefined);
+    const selectedShape = shape ?? (rounded ? 'pill' : 'default');
+    const legacySeverity = tone ? severityForTone[tone] : severity;
     const effectiveDisabled = Boolean(disabled || loading);
+    const iconOnly = Boolean(icon) && label === undefined && !children;
     return (
         <button
             {...pt?.root}
             {...nativeProps}
             ref={ref}
             type={type}
+            title={title ?? tooltip}
             disabled={effectiveDisabled}
             className={classNames('plain-dom-button', pt?.root?.className, className)}
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
-            data-variant={variant}
-            data-tone={tone}
-            data-shape={shape}
+            data-variant={selectedVariant}
+            data-tone={selectedTone}
+            data-severity={legacySeverity}
+            data-shape={selectedShape}
             data-size={size}
             data-disabled={effectiveDisabled || undefined}
             data-loading={loading || undefined}
+            data-icon-only={iconOnly || undefined}
             aria-busy={loading || undefined}
         >
-            {loading ? (
-                <span
-                    {...pt?.spinner}
-                    className={classNames(
-                        'plain-dom-button__spinner',
-                        pt?.spinner?.className,
-                    )}
-                    data-cratis-part='spinner'
-                    aria-hidden='true'
-                />
-            ) : icon ? (
-                <span
-                    {...pt?.icon}
-                    className={classNames('plain-dom-button__icon', pt?.icon?.className)}
-                    data-cratis-part='icon'
-                    aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
-                >
-                    {renderIcon(icon)}
-                </span>
-            ) : null}
-            {(label !== undefined || children !== undefined) && (
-                <span
-                    {...pt?.label}
-                    className={classNames(
-                        'plain-dom-button__label',
-                        pt?.label?.className,
-                    )}
-                    data-cratis-part='label'
-                >
-                    {label}
-                    {children}
-                </span>
-            )}
+            <PlainButtonContent loading={loading} icon={icon} label={label} pt={pt}>
+                {children}
+            </PlainButtonContent>
         </button>
     );
 });
@@ -317,59 +374,165 @@ interface PlainChoiceProps {
     readonly forwardedRef: ForwardedRef<HTMLInputElement>;
 }
 
+interface ResolvedChoiceState {
+    readonly input: CheckableState;
+    readonly attributes: ReturnType<typeof stateAttributes>;
+    readonly disabled: boolean | undefined;
+    readonly readOnly: boolean | undefined;
+    readonly ariaInvalid: InputHTMLAttributes<HTMLInputElement>['aria-invalid'];
+    readonly checked: boolean | undefined;
+    readonly defaultChecked: boolean | undefined;
+}
+
+const useResolvedChoiceState = (
+    props: ChoiceProps,
+    inputPt: InputHTMLAttributes<HTMLInputElement> | undefined,
+    forwardedRef: ForwardedRef<HTMLInputElement>,
+): ResolvedChoiceState => {
+    const checked = props.checked ?? inputPt?.checked;
+    const defaultChecked = props.defaultChecked ?? inputPt?.defaultChecked;
+    const disabled = props.disabled ?? inputPt?.disabled;
+    const readOnly = props.readOnly ?? inputPt?.readOnly;
+    const ariaInvalid =
+        props['aria-invalid'] ??
+        inputPt?.['aria-invalid'] ??
+        (props.invalid || undefined);
+    const invalid = props.invalid || ariaInvalid === true || ariaInvalid === 'true';
+    const input = useCheckableState(checked, defaultChecked, forwardedRef);
+    return {
+        input,
+        attributes: stateAttributes(disabled, invalid, readOnly, input.selected),
+        disabled,
+        readOnly,
+        ariaInvalid,
+        checked,
+        defaultChecked,
+    };
+};
+
+interface PlainChoiceVisualProps {
+    readonly kind: ChoiceKind;
+    readonly parts: ChoiceParts | undefined;
+    readonly attributes: ReturnType<typeof stateAttributes>;
+    readonly label: ReactNode;
+}
+
+const PlainChoiceVisual = ({
+    kind,
+    parts,
+    attributes,
+    label,
+}: PlainChoiceVisualProps) => {
+    const labelPt = parts?.label;
+    if (kind === 'switch') {
+        const switchParts = parts as SwitchParts | undefined;
+        return (
+            <>
+                <span
+                    {...switchParts?.control}
+                    className={classNames(
+                        'plain-dom-switch__control',
+                        switchParts?.control?.className,
+                    )}
+                    data-cratis-part='control'
+                    aria-hidden='true'
+                    {...attributes}
+                >
+                    <span
+                        {...switchParts?.handle}
+                        className={classNames(
+                            'plain-dom-switch__handle',
+                            switchParts?.handle?.className,
+                        )}
+                        data-cratis-part='handle'
+                        {...attributes}
+                    />
+                </span>
+                {label !== undefined && (
+                    <span
+                        {...labelPt}
+                        className={classNames(
+                            'plain-dom-choice__label',
+                            labelPt?.className,
+                        )}
+                        data-cratis-part='label'
+                        {...attributes}
+                    >
+                        {label}
+                    </span>
+                )}
+            </>
+        );
+    }
+
+    const checkableParts = parts as CheckboxParts | RadioParts | undefined;
+    return (
+        <>
+            <span
+                {...checkableParts?.box}
+                className={classNames(
+                    kind === 'radio' ? 'plain-dom-radio__box' : 'plain-dom-checkbox__box',
+                    checkableParts?.box?.className,
+                )}
+                data-cratis-part='box'
+                aria-hidden='true'
+                {...attributes}
+            >
+                <span
+                    {...checkableParts?.indicator}
+                    className={classNames(
+                        kind === 'radio'
+                            ? 'plain-dom-radio__indicator'
+                            : 'plain-dom-checkbox__indicator',
+                        checkableParts?.indicator?.className,
+                    )}
+                    data-cratis-part='indicator'
+                    {...attributes}
+                >
+                    {kind === 'checkbox' ? '✓' : undefined}
+                </span>
+            </span>
+            {label !== undefined && (
+                <span
+                    {...labelPt}
+                    className={classNames('plain-dom-choice__label', labelPt?.className)}
+                    data-cratis-part='label'
+                    {...attributes}
+                >
+                    {label}
+                </span>
+            )}
+        </>
+    );
+};
+
 const PlainChoice = ({ kind, props, forwardedRef }: PlainChoiceProps) => {
+    const pt = props.pt as ChoiceParts | undefined;
+    const inputPt = pt?.input as InputHTMLAttributes<HTMLInputElement> | undefined;
+    const resolved = useResolvedChoiceState(props, inputPt, forwardedRef);
     const {
         label,
-        readOnly,
-        invalid = false,
+        readOnly: _readOnly,
+        invalid: _invalid,
         onChange,
         className,
         style,
-        pt: choiceParts,
-        checked,
-        defaultChecked,
-        disabled,
+        pt: _choiceParts,
+        checked: _checked,
+        defaultChecked: _defaultChecked,
+        disabled: _disabled,
         onClick,
-        'aria-invalid': ariaInvalid,
+        'aria-invalid': _ariaInvalid,
         ...nativeProps
     } = props;
-    const pt = choiceParts as ChoiceParts | undefined;
-    const inputPt = pt?.input as InputHTMLAttributes<HTMLInputElement> | undefined;
-    const effectiveChecked = checked ?? inputPt?.checked;
-    const effectiveDefaultChecked = defaultChecked ?? inputPt?.defaultChecked;
-    const effectiveDisabled = disabled ?? inputPt?.disabled;
-    const effectiveReadOnly = readOnly ?? inputPt?.readOnly;
-    const effectiveAriaInvalid =
-        ariaInvalid ?? inputPt?.['aria-invalid'] ?? (invalid || undefined);
-    const effectiveInvalid =
-        invalid || effectiveAriaInvalid === true || effectiveAriaInvalid === 'true';
-    const state = useCheckableState(
-        effectiveChecked,
-        effectiveDefaultChecked,
-        forwardedRef,
-    );
-    const attributes = stateAttributes(
-        effectiveDisabled,
-        effectiveInvalid,
-        effectiveReadOnly,
-        state.selected,
-    );
     const rootPt = pt?.root;
-    const labelPt = pt?.label;
-    const boxPt = kind === 'switch' ? undefined : (pt as CheckboxParts | undefined)?.box;
-    const indicatorPt =
-        kind === 'switch' ? undefined : (pt as CheckboxParts | undefined)?.indicator;
-    const controlPt =
-        kind === 'switch' ? (pt as SwitchParts | undefined)?.control : undefined;
-    const handlePt =
-        kind === 'switch' ? (pt as SwitchParts | undefined)?.handle : undefined;
     const radioProps = props as RadioProps;
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         inputPt?.onChange?.(event);
-        if (effectiveReadOnly || (kind === 'radio' && !event.currentTarget.checked))
+        if (resolved.readOnly || (kind === 'radio' && !event.currentTarget.checked))
             return;
-        state.setSelected(event.currentTarget.checked);
+        resolved.input.setSelected(event.currentTarget.checked);
         onChange?.(event.currentTarget.checked, {
             source: 'user',
             nativeEvent: event.nativeEvent,
@@ -382,93 +545,40 @@ const PlainChoice = ({ kind, props, forwardedRef }: PlainChoiceProps) => {
             className={classNames('plain-dom-choice', rootPt?.className, className)}
             style={{ ...rootPt?.style, ...style }}
             data-cratis-part='root'
-            {...attributes}
+            {...resolved.attributes}
         >
             <input
                 {...inputPt}
                 {...nativeProps}
-                ref={state.ref}
+                ref={resolved.input.ref}
                 type={kind === 'radio' ? 'radio' : 'checkbox'}
                 role={kind === 'switch' ? 'switch' : undefined}
                 name={kind === 'radio' ? radioProps.name : nativeProps.name}
                 value={kind === 'radio' ? radioProps.value : nativeProps.value}
-                checked={effectiveChecked}
+                checked={resolved.checked}
                 defaultChecked={
-                    effectiveChecked === undefined ? effectiveDefaultChecked : undefined
+                    resolved.checked === undefined ? resolved.defaultChecked : undefined
                 }
-                disabled={effectiveDisabled}
+                disabled={resolved.disabled}
                 readOnly={undefined}
-                aria-invalid={effectiveAriaInvalid}
-                aria-readonly={effectiveReadOnly || undefined}
+                aria-invalid={resolved.ariaInvalid}
+                aria-readonly={resolved.readOnly || undefined}
                 onClick={(event) => {
                     inputPt?.onClick?.(event);
                     onClick?.(event);
-                    if (effectiveReadOnly) event.preventDefault();
+                    if (resolved.readOnly) event.preventDefault();
                 }}
                 onChange={handleChange}
                 className={classNames('plain-dom-choice__input', inputPt?.className)}
                 data-cratis-part='input'
-                {...attributes}
+                {...resolved.attributes}
             />
-            {kind === 'switch' ? (
-                <span
-                    {...controlPt}
-                    className={classNames(
-                        'plain-dom-switch__control',
-                        controlPt?.className,
-                    )}
-                    data-cratis-part='control'
-                    aria-hidden='true'
-                    {...attributes}
-                >
-                    <span
-                        {...handlePt}
-                        className={classNames(
-                            'plain-dom-switch__handle',
-                            handlePt?.className,
-                        )}
-                        data-cratis-part='handle'
-                        {...attributes}
-                    />
-                </span>
-            ) : (
-                <span
-                    {...boxPt}
-                    className={classNames(
-                        kind === 'radio'
-                            ? 'plain-dom-radio__box'
-                            : 'plain-dom-checkbox__box',
-                        boxPt?.className,
-                    )}
-                    data-cratis-part='box'
-                    aria-hidden='true'
-                    {...attributes}
-                >
-                    <span
-                        {...indicatorPt}
-                        className={classNames(
-                            kind === 'radio'
-                                ? 'plain-dom-radio__indicator'
-                                : 'plain-dom-checkbox__indicator',
-                            indicatorPt?.className,
-                        )}
-                        data-cratis-part='indicator'
-                        {...attributes}
-                    >
-                        {kind === 'checkbox' ? '✓' : undefined}
-                    </span>
-                </span>
-            )}
-            {label !== undefined && (
-                <span
-                    {...labelPt}
-                    className={classNames('plain-dom-choice__label', labelPt?.className)}
-                    data-cratis-part='label'
-                    {...attributes}
-                >
-                    {label}
-                </span>
-            )}
+            <PlainChoiceVisual
+                kind={kind}
+                parts={pt}
+                attributes={resolved.attributes}
+                label={label}
+            />
         </label>
     );
 };

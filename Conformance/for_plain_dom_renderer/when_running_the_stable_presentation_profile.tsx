@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { expect } from 'chai';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeAll, describe, it } from 'vitest';
 import { runConformance, type ConformanceReport } from '../src/index.js';
 import { validateMetadata } from '../src/internal/metadata.js';
@@ -74,6 +76,28 @@ describe('when running the private plain DOM stable presentation profile', () =>
         expect(checks.every((check) => check?.evidence?.refMatches === true)).to.equal(
             true,
         );
+    });
+
+    it('should normalize deprecated Button appearance without leaking props to the DOM', () => {
+        const declaration = plainDomPresentationRenderer.slots['common.button'];
+        if (!declaration) throw new Error('Plain Button declaration is missing.');
+        const markup = renderToStaticMarkup(
+            createElement(declaration.render, {
+                label: 'Legacy action',
+                text: true,
+                rounded: true,
+                severity: 'danger',
+                tooltip: 'Legacy help',
+            }),
+        );
+
+        expect(markup).to.contain('data-variant="ghost"');
+        expect(markup).to.contain('data-tone="critical"');
+        expect(markup).to.contain('data-severity="danger"');
+        expect(markup).to.contain('data-shape="pill"');
+        expect(markup).to.contain('title="Legacy help"');
+        expect(markup).not.to.contain(' text=');
+        expect(markup).not.to.contain(' rounded=');
     });
 
     it('should preserve native form reset and user change metadata', () => {
