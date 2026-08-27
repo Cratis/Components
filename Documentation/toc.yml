@@ -52,6 +52,8 @@
   href: ObjectContentEditor/index.md
 - name: Canvas
   href: Canvas/toc.yml
+- name: Chat
+  href: Chat/toc.yml
 - name: PivotViewer
   href: PivotViewer/toc.yml
 - name: SchemaEditor
