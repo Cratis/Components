@@ -6,12 +6,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import sinon from 'sinon';
 import { describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
-import { unstable_RendererRoot } from '../RendererContext';
+import { unstable_RendererRoot, unstable_useSlot } from '../RendererContext';
 import {
     unstable_AdapterError,
     unstable_adapterErrorCodes,
     unstable_RendererScope as RendererScope,
-    unstable_useSlot,
     type unstable_SlotDeclaration,
     type unstable_SlotId,
     type unstable_SlotMap,

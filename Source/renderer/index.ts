@@ -78,7 +78,6 @@ export {
     unstable_useCapability,
     unstable_useOverlayEnvironment,
     unstable_useRendererId,
-    unstable_useSlot,
 } from './RendererContext';
 export {
     unstable_RendererScope,

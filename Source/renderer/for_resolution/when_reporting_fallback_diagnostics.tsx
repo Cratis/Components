@@ -9,7 +9,8 @@ import { createRoot, type Root } from 'react-dom/client';
 import sinon, { type SinonStub } from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
-import { unstable_adapterErrorCodes, unstable_useSlot } from '..';
+import { unstable_adapterErrorCodes } from '..';
+import { unstable_useSlot } from '../RendererContext';
 import { buttonSlot, createTestLibrary, FirstButton } from './testLibrary';
 
 const DuplicateFallbackProbe = () => {
