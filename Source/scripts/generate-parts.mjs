@@ -344,7 +344,7 @@ export const partStateDefinitions = {
         heading: [],
         next: [],
         grid: [],
-        cell: [],
+        cell: ['selected'],
         'button-bar': [],
         today: ['disabled'],
         clear: [],
@@ -401,7 +401,7 @@ export const partStateDefinitions = {
         cell: ['selected'],
     },
     ColumnFilterMenu: {
-        'filter-trigger': ['selected', 'open'],
+        'filter-trigger': ['selected', 'open', 'pressed'],
         'filter-popover': ['open'],
         'filter-menu': ['open'],
         'filter-actions': [],
@@ -550,6 +550,27 @@ export const splitPartStateAllowlist = [
         spread: 'props',
         part: 'trigger',
         states: ['open'],
+    },
+];
+
+/**
+ * Canonical states supplied by owned React Aria primitives at runtime rather than
+ * authored as literal JSX attributes. Focused behavior specs prove these exact contracts.
+ */
+export const implicitPartStateAllowlist = [
+    {
+        component: 'DatePickerInput',
+        file: 'Common/DatePickerInput.tsx',
+        part: 'cell',
+        states: ['selected'],
+        reason: 'React Aria CalendarCell emits data-selected for the selected date.',
+    },
+    {
+        component: 'ColumnFilterMenu',
+        file: 'DataTables/ColumnFilterMenu.tsx',
+        part: 'filter-trigger',
+        states: ['pressed'],
+        reason: 'React Aria Button emits data-pressed during pointer activation.',
     },
 ];
 

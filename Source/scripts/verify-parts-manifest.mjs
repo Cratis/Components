@@ -10,6 +10,7 @@ import {
     dynamicPartExpressions,
     dynamicTestSelectors,
     generatedPartsSource,
+    implicitPartStateAllowlist,
     partDefinitions,
     partStateDefinitions,
     resolvedPartStates,
@@ -311,6 +312,46 @@ function readProductionEmissions() {
             ts.forEachChild(node, visit);
         };
         visit(sourceFile);
+    }
+
+    const seenImplicitStates = new Set();
+    for (const entry of implicitPartStateAllowlist) {
+        const key = `${entry.component}\0${entry.part}`;
+        if (seenImplicitStates.has(key)) {
+            problems.push(
+                `Duplicate implicit part-state mapping for ${entry.component}.${entry.part}.`,
+            );
+            continue;
+        }
+        seenImplicitStates.add(key);
+        const definition = partDefinitions[entry.component];
+        if (!definition) {
+            problems.push(
+                `Implicit part-state mapping references unknown component '${entry.component}'.`,
+            );
+            continue;
+        }
+        if (!resolvedParts(entry.component).includes(entry.part)) {
+            problems.push(
+                `Implicit part-state mapping references unknown part '${entry.component}.${entry.part}'.`,
+            );
+            continue;
+        }
+        if (!(owners.get(entry.file) ?? []).includes(entry.component)) {
+            problems.push(
+                `Implicit part-state mapping for ${entry.component}.${entry.part} references unowned source ${entry.file}.`,
+            );
+            continue;
+        }
+        for (const state of entry.states) {
+            if (!canonicalPartStateNameSet.has(state)) {
+                problems.push(
+                    `Implicit part-state mapping for ${entry.component}.${entry.part} declares unknown canonical state '${state}'.`,
+                );
+                continue;
+            }
+            getStateEmissions(stateEmissions, entry.component, entry.part).add(state);
+        }
     }
 
     for (const [key, entry] of dynamicProductionMap) {
