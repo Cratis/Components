@@ -70,10 +70,13 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='root'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
             >
                 {props.options.map((option) => {
                     const value = option[props.optionValue] as string | number;
                     const label = String(option[props.optionLabel] ?? value);
+                    const selected = props.value === value;
                     return (
                         <label
                             {...props.pt?.option}
@@ -86,12 +89,15 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                                 .join(' ')}
                             onBlur={props.onBlur}
                             data-cratis-part='option'
+                            data-disabled={props.pt?.input?.disabled || undefined}
+                            data-invalid={props.invalid || undefined}
+                            data-selected={selected || undefined}
                         >
                             <input
                                 {...props.pt?.input}
                                 type='radio'
                                 name={name}
-                                checked={props.value === value}
+                                checked={selected}
                                 onChange={(event) => {
                                     if (event.currentTarget.checked) props.onChange(value);
                                 }}
@@ -103,6 +109,9 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                                     .filter(Boolean)
                                     .join(' ')}
                                 data-cratis-part='input'
+                                data-disabled={props.pt?.input?.disabled || undefined}
+                                data-invalid={props.invalid || undefined}
+                                data-selected={selected || undefined}
                             />
                             <span
                                 {...props.pt?.box}
@@ -110,6 +119,9 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                                     .filter(Boolean)
                                     .join(' ')}
                                 data-cratis-part='box'
+                                data-disabled={props.pt?.input?.disabled || undefined}
+                                data-invalid={props.invalid || undefined}
+                                data-selected={selected || undefined}
                                 aria-hidden='true'
                             >
                                 <span
@@ -121,6 +133,9 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                                         .filter(Boolean)
                                         .join(' ')}
                                     data-cratis-part='indicator'
+                                    data-disabled={props.pt?.input?.disabled || undefined}
+                                    data-invalid={props.invalid || undefined}
+                                    data-selected={selected || undefined}
                                 />
                             </span>
                             <span className='cratis-choice-field__label'>{label}</span>

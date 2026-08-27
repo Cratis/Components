@@ -47,6 +47,9 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
             {...props.pt?.root}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
+            data-invalid={props.invalid || undefined}
+            data-readonly={props.pt?.input?.readOnly || undefined}
             className={[
                 'cratis-number-field',
                 'cratis:w-full',
@@ -75,7 +78,9 @@ export const NumberField = asCommandFormField<NumberFieldComponentProps>(
                 max={props.max}
                 step={props.step}
                 aria-invalid={props.invalid || undefined}
+                data-disabled={props.pt?.input?.disabled || undefined}
                 data-invalid={props.invalid || undefined}
+                data-readonly={props.pt?.input?.readOnly || undefined}
                 data-cratis-part='input'
                 className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
                     .filter(Boolean)

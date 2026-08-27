@@ -211,6 +211,8 @@ export const CommandStepperContent = ({
         onActiveStepChange?.(Math.min(stepCount - 1, currentStep + 1));
     };
 
+    const isStepperBusy = isBusy || isSubmitting;
+
     const stepperList = (
         <ol
             {...pt?.list}
@@ -219,79 +221,109 @@ export const CommandStepperContent = ({
                 .join(' ')}
             data-cratis-part='list'
             data-part='list'
+            data-busy={isStepperBusy || undefined}
+            data-invalid={hasAnyStepErrors || undefined}
         >
-            {panels.map((panel, index) => (
-                <li
-                    {...pt?.step}
-                    key={index}
-                    className={['cratis-command-stepper__step', pt?.step?.className]
-                        .filter(Boolean)
-                        .join(' ')}
-                    data-cratis-part='step'
-                    data-part='step'
-                    data-active={index === currentStep || undefined}
-                    data-visited={visitedSteps.has(index) || undefined}
-                    data-invalid={stepErrors[index] || undefined}
-                >
-                    <button
-                        {...pt?.header}
-                        type='button'
+            {panels.map((panel, index) => {
+                const selected = index === currentStep;
+                const visited = visitedSteps.has(index);
+                const invalid = stepErrors[index] ?? false;
+                const headerDisabled = isStepperBusy || (linear && !selected);
+
+                return (
+                    <li
+                        {...pt?.step}
+                        key={index}
                         className={[
-                            'cratis-command-stepper__header',
-                            pt?.header?.className,
+                            'cratis-command-stepper__step',
+                            pt?.step?.className,
                         ]
                             .filter(Boolean)
                             .join(' ')}
-                        data-cratis-part='header'
-                        data-part='header'
-                        disabled={linear && index !== currentStep}
-                        aria-current={index === currentStep ? 'step' : undefined}
-                        onClick={() => handleStepChange(index)}
+                        data-cratis-part='step'
+                        data-part='step'
+                        data-active={selected || undefined}
+                        data-selected={selected || undefined}
+                        data-visited={visited || undefined}
+                        data-invalid={invalid || undefined}
+                        data-busy={isStepperBusy || undefined}
                     >
-                        <span
-                            {...pt?.number}
+                        <button
+                            {...pt?.header}
+                            type='button'
                             className={[
-                                'cratis-command-stepper__number',
-                                pt?.number?.className,
+                                'cratis-command-stepper__header',
+                                pt?.header?.className,
                             ]
                                 .filter(Boolean)
                                 .join(' ')}
-                            style={pt?.number?.style}
-                            data-cratis-part='number'
-                            data-part='number'
+                            data-cratis-part='header'
+                            data-part='header'
+                            data-busy={isStepperBusy || undefined}
+                            data-disabled={headerDisabled || undefined}
+                            data-invalid={invalid || undefined}
+                            data-selected={selected || undefined}
+                            data-visited={visited || undefined}
+                            disabled={headerDisabled}
+                            aria-current={selected ? 'step' : undefined}
+                            onClick={() => handleStepChange(index)}
                         >
-                            {index + 1}
-                        </span>
-                        <span
-                            {...pt?.title}
-                            className={[
-                                'cratis-command-stepper__title',
-                                pt?.title?.className,
-                            ]
-                                .filter(Boolean)
-                                .join(' ')}
-                            data-cratis-part='title'
-                            data-part='title'
-                        >
-                            {panel.props.header}
-                        </span>
-                    </button>
-                    {index < stepCount - 1 && (
-                        <span
-                            {...pt?.separator}
-                            className={[
-                                'cratis-command-stepper__separator',
-                                pt?.separator?.className,
-                            ]
-                                .filter(Boolean)
-                                .join(' ')}
-                            data-cratis-part='separator'
-                            data-part='separator'
-                            aria-hidden='true'
-                        />
-                    )}
-                </li>
-            ))}
+                            <span
+                                {...pt?.number}
+                                className={[
+                                    'cratis-command-stepper__number',
+                                    pt?.number?.className,
+                                ]
+                                    .filter(Boolean)
+                                    .join(' ')}
+                                style={pt?.number?.style}
+                                data-cratis-part='number'
+                                data-part='number'
+                                data-busy={isStepperBusy || undefined}
+                                data-invalid={invalid || undefined}
+                                data-selected={selected || undefined}
+                                data-visited={visited || undefined}
+                            >
+                                {index + 1}
+                            </span>
+                            <span
+                                {...pt?.title}
+                                className={[
+                                    'cratis-command-stepper__title',
+                                    pt?.title?.className,
+                                ]
+                                    .filter(Boolean)
+                                    .join(' ')}
+                                data-cratis-part='title'
+                                data-part='title'
+                                data-busy={isStepperBusy || undefined}
+                                data-invalid={invalid || undefined}
+                                data-selected={selected || undefined}
+                                data-visited={visited || undefined}
+                            >
+                                {panel.props.header}
+                            </span>
+                        </button>
+                        {index < stepCount - 1 && (
+                            <span
+                                {...pt?.separator}
+                                className={[
+                                    'cratis-command-stepper__separator',
+                                    pt?.separator?.className,
+                                ]
+                                    .filter(Boolean)
+                                    .join(' ')}
+                                data-cratis-part='separator'
+                                data-part='separator'
+                                data-busy={isStepperBusy || undefined}
+                                data-invalid={invalid || undefined}
+                                data-visited={visited || undefined}
+                                aria-hidden='true'
+                            />
+                        )}
+                    </li>
+                );
+            })}
         </ol>
     );
 
@@ -303,6 +335,8 @@ export const CommandStepperContent = ({
                 .join(' ')}
             data-cratis-part='panels'
             data-part='panels'
+            data-busy={isStepperBusy || undefined}
+            data-invalid={hasAnyStepErrors || undefined}
         >
             {panels.map((panel, index) => (
                 <section
@@ -314,6 +348,10 @@ export const CommandStepperContent = ({
                         .join(' ')}
                     data-cratis-part='panel'
                     data-part='panel'
+                    data-busy={isStepperBusy || undefined}
+                    data-invalid={stepErrors[index] || undefined}
+                    data-selected={index === currentStep || undefined}
+                    data-visited={visitedSteps.has(index) || undefined}
                     aria-label={String(panel.props.header ?? `Step ${index + 1}`)}
                 >
                     {processChildren(panel.props.children)}
@@ -337,6 +375,8 @@ export const CommandStepperContent = ({
                 data-part='root'
                 data-value={currentStep}
                 data-orientation={orientation}
+                data-busy={isStepperBusy || undefined}
+                data-invalid={hasAnyStepErrors || undefined}
             >
                 {headerPosition === 'bottom' ? (
                     <>

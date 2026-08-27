@@ -60,6 +60,9 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                 .filter(Boolean)
                 .join(' ')}
             data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
+            data-invalid={props.invalid || undefined}
+            data-readonly={props.pt?.input?.readOnly || undefined}
         >
             <input
                 {...props.pt?.input}
@@ -71,7 +74,9 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                 onChange={(event) => props.onChange(event.currentTarget.value)}
                 placeholder={props.placeholder}
                 aria-invalid={props.invalid || undefined}
+                data-disabled={props.pt?.input?.disabled || undefined}
                 data-invalid={props.invalid || undefined}
+                data-readonly={props.pt?.input?.readOnly || undefined}
                 className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
                     .filter(Boolean)
                     .join(' ')}
@@ -84,6 +89,9 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='toggle'
+                data-disabled={props.pt?.toggle?.disabled || undefined}
+                data-pressed={visible || undefined}
+                aria-pressed={visible}
                 aria-label={
                     visible
                         ? (props.hideLabel ?? 'Hide password')

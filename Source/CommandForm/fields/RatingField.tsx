@@ -66,10 +66,12 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                     .join(' ')}
                 onBlur={props.onBlur}
                 data-cratis-part='root'
+                data-disabled={props.pt?.input?.disabled || undefined}
                 data-invalid={props.invalid || undefined}
             >
                 {Array.from({ length: props.stars ?? 5 }, (_, index) => {
                     const starValue = index + 1;
+                    const selected = starValue === props.value;
                     const label = (
                         props.starAriaLabel ??
                         ((value: number) => `${value} ${value === 1 ? 'star' : 'stars'}`)
@@ -85,12 +87,15 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                                 .filter(Boolean)
                                 .join(' ')}
                             data-cratis-part='option'
+                            data-disabled={props.pt?.input?.disabled || undefined}
+                            data-invalid={props.invalid || undefined}
+                            data-selected={selected || undefined}
                         >
                             <input
                                 {...props.pt?.input}
                                 type='radio'
                                 name={name}
-                                checked={props.value === starValue}
+                                checked={selected}
                                 onChange={(event) => {
                                     if (event.currentTarget.checked) props.onChange(starValue);
                                 }}
@@ -102,6 +107,9 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                                     .filter(Boolean)
                                     .join(' ')}
                                 data-cratis-part='input'
+                                data-disabled={props.pt?.input?.disabled || undefined}
+                                data-invalid={props.invalid || undefined}
+                                data-selected={selected || undefined}
                             />
                             <span
                                 {...props.pt?.star}
@@ -112,6 +120,8 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                                     .filter(Boolean)
                                     .join(' ')}
                                 data-cratis-part='star'
+                                data-disabled={props.pt?.input?.disabled || undefined}
+                                data-invalid={props.invalid || undefined}
                                 data-selected={starValue <= props.value || undefined}
                                 aria-hidden='true'
                             >

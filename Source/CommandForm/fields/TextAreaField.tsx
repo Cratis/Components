@@ -48,7 +48,9 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
             rows={props.rows ?? 5}
             cols={props.cols}
             aria-invalid={props.invalid || undefined}
+            data-disabled={props.pt?.root?.disabled || undefined}
             data-invalid={props.invalid || undefined}
+            data-readonly={props.pt?.root?.readOnly || undefined}
             data-cratis-part='textarea'
             className={[
                 'cratis-field-input',

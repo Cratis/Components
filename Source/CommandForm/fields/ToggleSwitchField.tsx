@@ -52,7 +52,9 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
+            data-selected={props.value || undefined}
         >
             <input
                 {...props.pt?.input}
@@ -68,6 +70,9 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='input'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={props.value || undefined}
             />
             <span
                 {...props.pt?.control}
@@ -75,6 +80,9 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='control'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={props.value || undefined}
                 aria-hidden='true'
             >
                 <span
@@ -83,6 +91,9 @@ export const ToggleSwitchField = asCommandFormField<ToggleSwitchFieldComponentPr
                         .filter(Boolean)
                         .join(' ')}
                     data-cratis-part='handle'
+                    data-disabled={props.pt?.input?.disabled || undefined}
+                    data-invalid={props.invalid || undefined}
+                    data-selected={props.value || undefined}
                 />
             </span>
             {props.label && (

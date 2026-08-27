@@ -46,6 +46,7 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
             ariaLabel: props.pt?.input?.['aria-label'] ?? props.label,
             ariaDescribedBy: props.pt?.input?.['aria-describedby'],
         });
+        const selected = props.value === props.buttonValue;
         return (
             <>
         <label
@@ -55,7 +56,9 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
+            data-selected={selected || undefined}
         >
             <input
                 {...props.pt?.input}
@@ -64,7 +67,7 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                 aria-describedby={accessibility.ariaDescribedBy}
                 type='radio'
                 name={props.name}
-                checked={props.value === props.buttonValue}
+                checked={selected}
                 onChange={(event) => {
                     if (event.currentTarget.checked) props.onChange(props.buttonValue);
                 }}
@@ -73,6 +76,9 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='input'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={selected || undefined}
             />
             <span
                 {...props.pt?.box}
@@ -80,6 +86,9 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='box'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={selected || undefined}
                 aria-hidden='true'
             >
                 <span
@@ -88,6 +97,9 @@ export const RadioButtonField = asCommandFormField<RadioButtonFieldComponentProp
                         .filter(Boolean)
                         .join(' ')}
                     data-cratis-part='indicator'
+                    data-disabled={props.pt?.input?.disabled || undefined}
+                    data-invalid={props.invalid || undefined}
+                    data-selected={selected || undefined}
                 />
             </span>
             {props.label && (

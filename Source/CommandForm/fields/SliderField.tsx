@@ -56,6 +56,8 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
+            data-invalid={props.invalid || undefined}
         >
             <input
                 {...props.pt?.input}
@@ -69,6 +71,8 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
                 max={props.max ?? 100}
                 step={props.step ?? 1}
                 aria-invalid={props.invalid || undefined}
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
                 className={['cratis-slider-field__input', props.pt?.input?.className]
                     .filter(Boolean)
                     .join(' ')}
@@ -80,6 +84,7 @@ export const SliderField = asCommandFormField<SliderFieldComponentProps>(
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='value'
+                data-invalid={props.invalid || undefined}
             >
                 {props.value}
             </span>

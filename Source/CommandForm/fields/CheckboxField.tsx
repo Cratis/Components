@@ -52,7 +52,9 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
                 .join(' ')}
             onBlur={props.onBlur}
             data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
+            data-selected={props.value || undefined}
         >
             <input
                 {...props.pt?.input}
@@ -67,6 +69,9 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='input'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={props.value || undefined}
             />
             <span
                 {...props.pt?.box}
@@ -74,6 +79,9 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='box'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={props.value || undefined}
                 aria-hidden='true'
             >
                 <span
@@ -85,6 +93,9 @@ export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
                         .filter(Boolean)
                         .join(' ')}
                     data-cratis-part='indicator'
+                    data-disabled={props.pt?.input?.disabled || undefined}
+                    data-invalid={props.invalid || undefined}
+                    data-selected={props.value || undefined}
                 >
                     ✓
                 </span>

@@ -82,7 +82,9 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                     commit();
             }}
             data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
             data-invalid={props.invalid || undefined}
+            data-readonly={props.pt?.input?.readOnly || undefined}
         >
             {props.value.map((item, index) => (
                 <span
@@ -92,6 +94,7 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                         .filter(Boolean)
                         .join(' ')}
                     data-cratis-part='item'
+                    data-selected
                 >
                     <span>{item}</span>
                     <button
@@ -104,6 +107,8 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                             .filter(Boolean)
                             .join(' ')}
                         data-cratis-part='remove'
+                        data-disabled={props.pt?.remove?.disabled || undefined}
+                        data-selected
                         aria-label={
                             typeof props.removeAriaLabel === 'function'
                                 ? props.removeAriaLabel(item, index)
@@ -134,6 +139,9 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                 }}
                 placeholder={props.placeholder}
                 aria-invalid={props.invalid || undefined}
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-readonly={props.pt?.input?.readOnly || undefined}
                 className={['cratis-chips-field__input', props.pt?.input?.className]
                     .filter(Boolean)
                     .join(' ')}

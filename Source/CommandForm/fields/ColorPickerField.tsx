@@ -61,6 +61,7 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
                     .join(' ')}
                 onBlur={props.onBlur}
                 data-cratis-part='root'
+                data-disabled={props.pt?.input?.disabled || undefined}
                 data-invalid={props.invalid || undefined}
                 data-inline={props.inline || undefined}
             >
@@ -73,6 +74,8 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
                     value={`#${value}`}
                     onChange={(event) => props.onChange(event.currentTarget.value.replace('#', ''))}
                     aria-invalid={props.invalid || undefined}
+                    data-disabled={props.pt?.input?.disabled || undefined}
+                    data-invalid={props.invalid || undefined}
                     className={['cratis-color-field__input', props.pt?.input?.className]
                         .filter(Boolean)
                         .join(' ')}
@@ -84,6 +87,7 @@ export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProp
                         .filter(Boolean)
                         .join(' ')}
                     data-cratis-part='value'
+                    data-invalid={props.invalid || undefined}
                 >
                     #{value}
                 </output>
