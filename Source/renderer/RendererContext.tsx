@@ -124,10 +124,6 @@ export const unstable_RendererRoot = ({
         }
     }, [diagnostics, libraryMode, reportDiagnostic]);
 
-    if (libraryMode === 'strict' && diagnostics.length > 0) {
-        throw new unstable_AdapterError(diagnostics[0]);
-    }
-
     const layers = useMemo(
         () => Object.freeze([...(parent?.layers ?? []), ...(layer ? [layer] : [])]),
         [layer, parent?.layers],
@@ -171,6 +167,10 @@ export const unstable_RendererRoot = ({
             slots,
         ],
     );
+
+    if (libraryMode === 'strict' && diagnostics.length > 0) {
+        throw new unstable_AdapterError(diagnostics[0]);
+    }
 
     const LibraryProvider = selected.library?.Provider;
     return (

@@ -81,10 +81,6 @@ export const unstable_RendererScope = ({
         }
     }, [diagnostics, parent]);
 
-    if ((parent?.libraryMode ?? 'strict') === 'strict' && diagnostics.length > 0) {
-        throw new unstable_AdapterError(diagnostics[0]);
-    }
-
     const layers = useMemo(
         () => (parent && layer ? Object.freeze([...parent.layers, layer]) : undefined),
         [layer, parent],
@@ -104,6 +100,11 @@ export const unstable_RendererScope = ({
                 : undefined,
         [layers, parent, slots],
     );
+
+    if ((parent?.libraryMode ?? 'strict') === 'strict' && diagnostics.length > 0) {
+        throw new unstable_AdapterError(diagnostics[0]);
+    }
+
     const LibraryProvider = selected.library?.Provider;
 
     if (!value) return children;
