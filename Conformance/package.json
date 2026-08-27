@@ -1,0 +1,54 @@
+{
+    "name": "@cratis/components.conformance",
+    "version": "0.1.0",
+    "description": "Programmatic conformance evidence for Cratis Components renderer adapter authors.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=23.0.0"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CONFORMANCE.md",
+        "LICENSE"
+    ],
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "sideEffects": false,
+    "cratisUiAbi": 1,
+    "scripts": {
+        "clean": "rm -rf dist",
+        "build": "node ../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+        "lint": "node ../node_modules/eslint/bin/eslint.js . --quiet",
+        "test": "node ../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+        "verify-package": "node ./scripts/verify-packed-package.mjs",
+        "ci": "yarn clean && yarn lint && yarn build && yarn test && yarn verify-package"
+    },
+    "dependencies": {
+        "axe-core": "^4.13.0"
+    },
+    "peerDependencies": {
+        "@cratis/components": ">=3.0.0 <4",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@cratis/components": "workspace:^"
+    }
+}

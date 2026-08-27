@@ -33,8 +33,8 @@ for (const workspaceDef of rootPackageJson.workspaces) {
     });
 
     if (packages.length === 0) {
-        console.log(`  No packages found for workspace definition '${workspaceDef}' \n`);
-        return;
+        console.error(`  No packages found for workspace definition '${workspaceDef}' \n`);
+        process.exit(1);
     }
 
     packages.forEach(_ => {

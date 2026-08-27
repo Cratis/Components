@@ -157,7 +157,7 @@ The transition is split by current artifact behavior:
 2. Components 4 changes the default foundation, removes Prime runtime/declaration references from its package, and introduces Components-owned provider and styling contracts.
 3. The migration guide records the current breaking changes and mechanical import path. It does not establish a support window or future maintenance commitment for either major.
 
-Repository specs compare bounded behaviors needed by the current migration; they do not establish universal behavior parity or accessibility conformance.
+Repository specs compare bounded behaviors needed by the current migration; they do not establish universal behavior parity or accessibility conformance. Adapter authors can run the independently versioned development package `@cratis/components.conformance` against a public `UiLibrary` manifest. The built-in proof manifest is an explicit heavy import from `@cratis/components/renderer/builtin`; neither the package root nor the lean `./renderer` contract subpath reaches its implementation graph. A passing report is evidence only for the exercised manifest and environment, and the separate Storybook browser/axe gate remains required.
 
 ## Strict public-type validation
 

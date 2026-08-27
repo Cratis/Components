@@ -3,7 +3,8 @@
     "workspaces": [
         "Source",
         "ESLint",
-        "Codemods"
+        "Codemods",
+        "Conformance"
     ],
     "resolutions": {
         "react-aria": "3.51.0",

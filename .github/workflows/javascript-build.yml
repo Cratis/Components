@@ -23,6 +23,7 @@ on:
             - 'Source/**'
             - 'Codemods/**'
             - 'ESLint/**'
+            - 'Conformance/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -36,6 +37,7 @@ on:
             - 'Source/**'
             - 'Codemods/**'
             - 'ESLint/**'
+            - 'Conformance/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -86,6 +88,10 @@ jobs:
 
             - name: Verify packed ESLint plugin
               working-directory: ESLint
+              run: yarn verify-package
+
+            - name: Verify packed renderer conformance package
+              working-directory: Conformance
               run: yarn verify-package
 
             # Every intentionally public declaration/member reachable from a JS `exports`
