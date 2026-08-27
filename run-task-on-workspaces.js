@@ -2,7 +2,7 @@
 /* eslint-disable header/header */
 
 if (process.argv.length < 3) {
-    console.log('You have to specify what workspace task to run on all')
+    console.log('You have to specify what workspace task to run on all');
     console.log('\nUsage: run-task-on-workspaces [task] [arguments]');
     console.log('\nExamples of tasks: build|test|ci');
     process.exit(1);
@@ -13,35 +13,36 @@ const path = require('path');
 const fs = require('fs');
 const spawn = require('child_process').spawnSync;
 const editJsonFile = require('edit-json-file');
-const rootPackageJson = require('./package.json')
+const rootPackageJson = require('./package.json');
 const glob = require('glob').sync;
 
 const workspaces = {};
 
-const distFolder = `dist${path.sep}`
+const distFolder = `dist${path.sep}`;
 for (const workspaceDef of rootPackageJson.workspaces) {
     console.log(`Getting packages for workspace definition '${workspaceDef}' \n`);
 
-    const pattern = path.join(workspaceDef, '**','package.json');
+    const pattern = path.join(workspaceDef, '**', 'package.json');
 
-    const packages = glob(pattern, { 
+    const packages = glob(pattern, {
         cwd: `${process.cwd()}`,
-        ignore: [
-            `**${path.sep}${distFolder}**`,
-            '**/node_modules/**'
-        ]
+        ignore: [`**${path.sep}${distFolder}**`, '**/node_modules/**'],
     });
 
     if (packages.length === 0) {
-        console.error(`  No packages found for workspace definition '${workspaceDef}' \n`);
+        console.error(
+            `  No packages found for workspace definition '${workspaceDef}' \n`,
+        );
         process.exit(1);
     }
 
-    packages.forEach(_ => {
+    packages.forEach((_) => {
         const package = JSON.parse(fs.readFileSync(_).toString());
         workspaces[package.name] = path.dirname(_);
 
-        console.log(`Including workspace '${package.name}' at '${workspaces[package.name]}'`);
+        console.log(
+            `Including workspace '${package.name}' at '${workspaces[package.name]}'`,
+        );
     });
 }
 
@@ -61,14 +62,18 @@ console.log('');
 const workspaceNames = Object.keys(workspaces);
 
 function updateDependencyVersionsFromLocalWorkspaces(file, packageJson, version) {
-    const dependencyFields = Object.keys(packageJson).filter(_ => _.endsWith('dependencies') || _.endsWith('Dependencies'));
+    const dependencyFields = Object.keys(packageJson).filter(
+        (_) => _.endsWith('dependencies') || _.endsWith('Dependencies'),
+    );
     for (let field of dependencyFields) {
         const dependencies = packageJson[field] ?? {};
         const fileDependencies = file.get(field);
 
         for (let dependencyName of Object.keys(dependencies)) {
             if (workspaceNames.includes(dependencyName)) {
-                console.log(`Updating workspace ${field} '${dependencyName}' to version ${version}`);
+                console.log(
+                    `Updating workspace ${field} '${dependencyName}' to version ${version}`,
+                );
                 fileDependencies[dependencyName] = version;
             }
         }
@@ -88,7 +93,14 @@ for (const workspaceName in workspaces) {
         const file = editJsonFile(packageJsonFile, { stringify_width: 4 });
         const packageJson = file.toObject();
         if (packageJson.private === true) {
-            console.log(`Workspace private '${workspaceName}' at '${workspaceRelativeLocation}'`);
+            console.log(
+                `Workspace private '${workspaceName}' at '${workspaceRelativeLocation}'`,
+            );
+            continue;
+        }
+
+        if (task === 'publish-version' && packageJson.cratisIndependentVersion === true) {
+            console.log(`Skipping independently versioned workspace '${workspaceName}'`);
             continue;
         }
 
@@ -102,25 +114,32 @@ for (const workspaceName in workspaces) {
                 const targetReadMe = path.join(workspaceAbsoluteLocation, 'README.md');
 
                 if (!fs.existsSync(targetReadMe)) {
-                    fs.copyFileSync(path.join(process.cwd(), "README.md"), targetReadMe);
+                    fs.copyFileSync(path.join(process.cwd(), 'README.md'), targetReadMe);
                 }
 
-                console.log(`Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}'`);
-                const result = spawn('npm', ['publish', '--provenance'], { cwd: workspaceAbsoluteLocation });
+                console.log(
+                    `Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}'`,
+                );
+                const result = spawn('npm', ['publish', '--provenance'], {
+                    cwd: workspaceAbsoluteLocation,
+                });
                 console.log(result.stdout.toString());
                 console.log(result.stderr.toString());
                 if (result.status !== 0) {
                     // Don't abort the release: a single workspace failing (e.g. a brand-new
                     // package whose npm trusted publisher isn't configured yet) must not
                     // strand the other packages. Collect and fail at the end instead.
-                    console.log(`Error publishing workspace '${workspaceName}' - continuing with remaining workspaces`);
+                    console.log(
+                        `Error publishing workspace '${workspaceName}' - continuing with remaining workspaces`,
+                    );
                     publishFailures.push(workspaceName);
                 }
             }
         } else {
-
             if (!packageJson.scripts || !packageJson.scripts.hasOwnProperty(task)) {
-                console.log(`Skipping workspace '${workspaceName}' - no script with name '${task}'`);
+                console.log(
+                    `Skipping workspace '${workspaceName}' - no script with name '${task}'`,
+                );
                 continue;
             }
 
@@ -129,7 +148,9 @@ for (const workspaceName in workspaces) {
             const result = spawn('yarn', [task], { cwd: workspaceAbsoluteLocation });
             console.log(result.stdout.toString());
             if (result.status !== 0) {
-                console.log(`Error running task '${task}' on workspace '${workspaceName}'`);
+                console.log(
+                    `Error running task '${task}' on workspace '${workspaceName}'`,
+                );
                 console.log(result.stderr.toString());
                 process.exit(1);
                 return;
@@ -139,6 +160,8 @@ for (const workspaceName in workspaces) {
 }
 
 if (publishFailures.length > 0) {
-    console.log(`\n${publishFailures.length} workspace(s) failed to publish: ${publishFailures.join(', ')}`);
+    console.log(
+        `\n${publishFailures.length} workspace(s) failed to publish: ${publishFailures.join(', ')}`,
+    );
     process.exit(1);
 }

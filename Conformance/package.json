@@ -1,6 +1,7 @@
 {
     "name": "@cratis/components.conformance",
     "version": "0.1.0",
+    "cratisIndependentVersion": true,
     "description": "Programmatic conformance evidence for Cratis Components renderer adapter authors.",
     "author": "Cratis",
     "license": "MIT",
