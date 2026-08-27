@@ -44,7 +44,10 @@ export interface ChatSidebarParts {
     content?: ChatSidebarPartAttributes<HTMLDivElement>;
 }
 
-const chatSidebarPartsMatchManifest: ExactPartKeys<ChatSidebarParts, PartsOf<'ChatSidebar'>> = true;
+const chatSidebarPartsMatchManifest: ExactPartKeys<
+    ChatSidebarParts,
+    PartsOf<'ChatSidebar'>
+> = true;
 void chatSidebarPartsMatchManifest;
 
 /** Overrides for every label the {@link ChatSidebar} and its children render. Any field left
@@ -396,6 +399,8 @@ export const ChatSidebar = <
             )}
             data-cratis-part='backdrop'
             data-modal={modal}
+            data-open={open || undefined}
+            data-selected={openTopicId !== undefined || undefined}
         >
             <Modal
                 {...pt?.root}
@@ -407,6 +412,8 @@ export const ChatSidebar = <
                 style={{ width, ...pt?.root?.style }}
                 data-cratis-part='root'
                 data-position={position}
+                data-open={open || undefined}
+                data-selected={openTopicId !== undefined || undefined}
             >
                 {panel}
             </Modal>

@@ -65,9 +65,24 @@ import { DatePickerInput } from '../DatePickerInput';
             expect(errorSpy.mock.calls).to.deep.equal([]);
         });
 
-        it('should represent the invalid state through accepted input attributes', () => {
+        it('should represent the invalid state on every editable date part', () => {
+            const input = container.querySelector('[data-cratis-part="input"]');
+            const segments = container.querySelectorAll('[data-cratis-part="segment"]');
+            const trigger = container.querySelector('[data-cratis-part="trigger"]');
+
             expect(group.getAttribute('aria-invalid')).to.equal(invalid ? 'true' : null);
             expect(pickerRoot.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(group.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(input?.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(
+                Array.from(segments).every(
+                    (segment) => segment.hasAttribute('data-invalid') === invalid,
+                ),
+            ).to.equal(true);
+            expect(trigger?.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(
+                container.querySelector('[data-cratis-part][data-invalid="false"]'),
+            ).to.equal(null);
         });
     });
 });

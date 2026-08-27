@@ -101,10 +101,26 @@ describe('when configuring standard DatePickerInput props', () => {
         }
     });
 
-    it('should disable the model and trigger', async () => {
+    it('should disable every editable date part without emitting inactive states', async () => {
         const mounted = await mountDatePicker({ disabled: true });
         try {
+            const input = mounted.container.querySelector('[data-cratis-part="input"]');
+            const segments = mounted.container.querySelectorAll(
+                '[data-cratis-part="segment"]',
+            );
+
             expect(mounted.pickerRoot.getAttribute('data-disabled')).to.equal('true');
+            expect(mounted.group.getAttribute('data-disabled')).to.equal('true');
+            expect(input?.getAttribute('data-disabled')).to.equal('true');
+            expect(
+                Array.from(segments).every(
+                    (segment) => segment.getAttribute('data-disabled') === 'true',
+                ),
+            ).to.equal(true);
+            expect(mounted.trigger.getAttribute('data-disabled')).to.equal('true');
+            expect(mounted.trigger.hasAttribute('data-open')).to.equal(false);
+            expect(mounted.pickerRoot.hasAttribute('data-readonly')).to.equal(false);
+            expect(mounted.pickerRoot.hasAttribute('data-invalid')).to.equal(false);
             expect(mounted.trigger.disabled).to.equal(true);
             await act(async () => mounted.trigger.click());
             expect(popup()).to.equal(null);
@@ -113,10 +129,25 @@ describe('when configuring standard DatePickerInput props', () => {
         }
     });
 
-    it('should make the date model read-only', async () => {
+    it('should mark editable date parts read-only without emitting disabled on the model', async () => {
         const mounted = await mountDatePicker({ readOnly: true });
         try {
+            const input = mounted.container.querySelector('[data-cratis-part="input"]');
+            const segments = mounted.container.querySelectorAll(
+                '[data-cratis-part="segment"]',
+            );
+
             expect(mounted.pickerRoot.getAttribute('data-readonly')).to.equal('true');
+            expect(mounted.group.getAttribute('data-readonly')).to.equal('true');
+            expect(input?.getAttribute('data-readonly')).to.equal('true');
+            expect(
+                Array.from(segments).every(
+                    (segment) => segment.getAttribute('data-readonly') === 'true',
+                ),
+            ).to.equal(true);
+            expect(mounted.trigger.getAttribute('data-readonly')).to.equal('true');
+            expect(mounted.pickerRoot.hasAttribute('data-disabled')).to.equal(false);
+            expect(mounted.trigger.getAttribute('data-disabled')).to.equal('true');
             expect(mounted.trigger.disabled).to.equal(true);
             await act(async () => mounted.trigger.click());
             expect(popup()).to.equal(null);
@@ -136,6 +167,24 @@ describe('when configuring standard DatePickerInput props', () => {
         try {
             await act(async () => mounted.trigger.click());
             const buttonBar = document.querySelector('[data-cratis-part="button-bar"]');
+            const popover = document.querySelector('[data-cratis-part="popover"]');
+            const dialog = document.querySelector('[data-cratis-part="dialog"]');
+            const calendar = document.querySelector('[data-cratis-part="calendar"]');
+            const selectedCell = document.querySelector(
+                '[data-cratis-part="cell"][data-selected]',
+            );
+
+            expect(mounted.group.getAttribute('data-open')).to.equal('true');
+            expect(mounted.trigger.getAttribute('data-open')).to.equal('true');
+            expect(popover?.getAttribute('data-open')).to.equal('true');
+            expect(dialog?.getAttribute('data-open')).to.equal('true');
+            expect(calendar?.getAttribute('data-open')).to.equal('true');
+            expect(selectedCell?.textContent).to.equal('22');
+            expect(
+                document.querySelector(
+                    '[data-cratis-part="cell"][data-selected="false"]',
+                ),
+            ).to.equal(null);
             expect(buttonBar?.textContent).to.contain('Translated today');
             expect(buttonBar?.textContent).to.contain('Translated clear');
             expect(document.querySelector('#appointment-calendar-grid')).not.to.equal(

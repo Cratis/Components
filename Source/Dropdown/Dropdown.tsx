@@ -7,6 +7,7 @@ import type {
     FocusEventHandler,
     HTMLAttributes,
     InputHTMLAttributes,
+    JSX,
     Key,
     SelectHTMLAttributes,
 } from 'react';
@@ -205,6 +206,17 @@ const resolveOptions = (
 const classNames = (...values: Array<string | undefined>) =>
     values.filter(Boolean).join(' ');
 
+const renderTriggerWithOpenState = (props: JSX.IntrinsicElements['button']) => (
+    <button
+        {...props}
+        data-open={
+            props['aria-expanded'] === true || props['aria-expanded'] === 'true'
+                ? true
+                : undefined
+        }
+    />
+);
+
 /** A renderer-independent single or multiple select with stable Cratis parts. */
 export const Dropdown = <T = unknown,>({
     value,
@@ -357,6 +369,8 @@ export const Dropdown = <T = unknown,>({
                             )}
                             style={{ ...pt?.input?.style, ...pt?.filter?.style }}
                             data-cratis-part='filter'
+                            data-disabled={disabled || undefined}
+                            data-invalid={effectiveInvalid || undefined}
                         />
                         <ComboBoxButton
                             {...asReactAriaButtonProps(pt?.trigger)}
@@ -365,6 +379,9 @@ export const Dropdown = <T = unknown,>({
                                 pt?.trigger?.className,
                             )}
                             data-cratis-part='trigger'
+                            data-disabled={disabled || undefined}
+                            data-invalid={effectiveInvalid || undefined}
+                            render={renderTriggerWithOpenState}
                             aria-label={showOptionsLabel}
                         >
                             <span aria-hidden='true'>⌄</span>
@@ -379,6 +396,7 @@ export const Dropdown = <T = unknown,>({
                                     pt?.clear?.className,
                                 )}
                                 data-cratis-part='clear'
+                                data-disabled={disabled || undefined}
                                 aria-label={clearSelectionLabel}
                                 onClick={(event) =>
                                     onChange?.([] as T, {
@@ -402,6 +420,7 @@ export const Dropdown = <T = unknown,>({
                                 ...pt?.popover?.style,
                             }}
                             data-cratis-part='popover'
+                            data-open
                         >
                             <ComboBoxListBox
                                 {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
@@ -411,6 +430,7 @@ export const Dropdown = <T = unknown,>({
                                     pt?.listbox?.className,
                                 )}
                                 data-cratis-part='listbox'
+                                data-open
                             >
                                 {(option) => (
                                     <ComboBoxListBoxItem
@@ -425,6 +445,10 @@ export const Dropdown = <T = unknown,>({
                                             pt?.option?.className,
                                         )}
                                         data-cratis-part='option'
+                                        data-disabled={option.disabled || undefined}
+                                        data-selected={
+                                            selectedKeys.includes(option.key) || undefined
+                                        }
                                     >
                                         {option.label}
                                     </ComboBoxListBoxItem>
@@ -464,6 +488,8 @@ export const Dropdown = <T = unknown,>({
                         pt?.multiple?.className,
                     )}
                     data-cratis-part='multiple'
+                    data-disabled={disabled || undefined}
+                    data-invalid={effectiveInvalid || undefined}
                     onChange={(event) => {
                         const keys = Array.from(
                             event.currentTarget.selectedOptions,
@@ -483,6 +509,8 @@ export const Dropdown = <T = unknown,>({
                             key={option.key}
                             value={option.key}
                             disabled={option.disabled}
+                            data-disabled={option.disabled || undefined}
+                            data-selected={selectedKeys.includes(option.key) || undefined}
                         >
                             {option.label}
                         </option>
@@ -498,6 +526,7 @@ export const Dropdown = <T = unknown,>({
                             pt?.clear?.className,
                         )}
                         data-cratis-part='clear'
+                        data-disabled={disabled || undefined}
                         aria-label={clearSelectionLabel}
                         onClick={(event) =>
                             onChange?.([] as T, {
@@ -549,6 +578,8 @@ export const Dropdown = <T = unknown,>({
                         )}
                         style={{ ...pt?.input?.style, ...pt?.filter?.style }}
                         data-cratis-part='filter'
+                        data-disabled={disabled || undefined}
+                        data-invalid={effectiveInvalid || undefined}
                     />
                     <ComboBoxButton
                         {...asReactAriaButtonProps(pt?.trigger)}
@@ -557,6 +588,9 @@ export const Dropdown = <T = unknown,>({
                             pt?.trigger?.className,
                         )}
                         data-cratis-part='trigger'
+                        data-disabled={disabled || undefined}
+                        data-invalid={effectiveInvalid || undefined}
+                        render={renderTriggerWithOpenState}
                         aria-label={showOptionsLabel}
                     >
                         <span aria-hidden='true'>⌄</span>
@@ -571,6 +605,7 @@ export const Dropdown = <T = unknown,>({
                                 pt?.clear?.className,
                             )}
                             data-cratis-part='clear'
+                            data-disabled={disabled || undefined}
                             aria-label={clearSelectionLabel}
                             onClick={(event) =>
                                 onChange?.(null as T, {
@@ -594,6 +629,7 @@ export const Dropdown = <T = unknown,>({
                             ...pt?.popover?.style,
                         }}
                         data-cratis-part='popover'
+                        data-open
                     >
                         <ComboBoxListBox
                             {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
@@ -603,6 +639,7 @@ export const Dropdown = <T = unknown,>({
                                 pt?.listbox?.className,
                             )}
                             data-cratis-part='listbox'
+                            data-open
                         >
                             {(option) => (
                                 <ComboBoxListBoxItem
@@ -617,6 +654,10 @@ export const Dropdown = <T = unknown,>({
                                         pt?.option?.className,
                                     )}
                                     data-cratis-part='option'
+                                    data-disabled={option.disabled || undefined}
+                                    data-selected={
+                                        option.key === selectedKey || undefined
+                                    }
                                 >
                                     {option.label}
                                 </ComboBoxListBoxItem>
@@ -662,6 +703,9 @@ export const Dropdown = <T = unknown,>({
                     )}
                     style={{ ...pt?.input?.style, ...pt?.trigger?.style }}
                     data-cratis-part='trigger'
+                    data-disabled={disabled || undefined}
+                    data-invalid={effectiveInvalid || undefined}
+                    render={renderTriggerWithOpenState}
                 >
                     <SelectValue
                         {...pt?.value}
@@ -695,6 +739,7 @@ export const Dropdown = <T = unknown,>({
                             pt?.clear?.className,
                         )}
                         data-cratis-part='clear'
+                        data-disabled={disabled || undefined}
                         aria-label={clearSelectionLabel}
                         onClick={(event) =>
                             onChange?.(null as T, {
@@ -718,6 +763,7 @@ export const Dropdown = <T = unknown,>({
                         ...pt?.popover?.style,
                     }}
                     data-cratis-part='popover'
+                    data-open
                 >
                     <ListBox
                         {...asReactAriaListBoxProps<ResolvedOption>(pt?.listbox)}
@@ -727,6 +773,7 @@ export const Dropdown = <T = unknown,>({
                             pt?.listbox?.className,
                         )}
                         data-cratis-part='listbox'
+                        data-open
                     >
                         {(option) => (
                             <ListBoxItem
@@ -741,6 +788,8 @@ export const Dropdown = <T = unknown,>({
                                     pt?.option?.className,
                                 )}
                                 data-cratis-part='option'
+                                data-disabled={option.disabled || undefined}
+                                data-selected={option.key === selectedKey || undefined}
                             >
                                 {option.label}
                             </ListBoxItem>

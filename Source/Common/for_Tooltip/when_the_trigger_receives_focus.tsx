@@ -67,4 +67,12 @@ describe('when the tooltip trigger receives focus', () => {
         expect(triggers[0]).to.equal(button);
         expect(button.tabIndex).to.equal(0);
     });
+
+    it('should expose open only on the popup that knows it is mounted', () => {
+        const popup = document.querySelector('[data-cratis-part="popup"]');
+
+        expect(popup?.getAttribute('data-open')).to.equal('true');
+        expect(button.hasAttribute('data-open')).to.equal(false);
+        expect(document.querySelector('[data-open="false"]')).to.equal(null);
+    });
 });

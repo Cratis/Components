@@ -49,7 +49,10 @@ export interface ToasterPassThrough {
     action?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
-const toasterPartsMatchManifest: ExactPartKeys<ToasterPassThrough, PartsOf<'Toaster'>> = true;
+const toasterPartsMatchManifest: ExactPartKeys<
+    ToasterPassThrough,
+    PartsOf<'Toaster'>
+> = true;
 void toasterPartsMatchManifest;
 
 /** Props for the global accessible toast region. */
@@ -152,6 +155,7 @@ const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) =>
             data-cratis-part='toast'
             data-severity={severity}
             data-loading={item.loading || undefined}
+            data-busy={item.loading || undefined}
             role={severity === 'error' ? 'alert' : 'status'}
             onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => setPaused(false)}
@@ -172,6 +176,8 @@ const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) =>
                 {...pt?.content}
                 className={classNames('cratis-toast__content', pt?.content?.className)}
                 data-cratis-part='content'
+                data-loading={item.loading || undefined}
+                data-busy={item.loading || undefined}
             >
                 {content}
             </div>

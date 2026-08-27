@@ -75,6 +75,19 @@ describe('when moving between the topics and a conversation', () => {
         (document.querySelector('.cratis-chat-topics') !== null).should.be.true;
     });
 
+    it('should expose open without selected or synthesized busy state', () => {
+        const backdrop = document.querySelector('[data-cratis-part="backdrop"]')!;
+        const root = document.querySelector('[data-cratis-part="root"]')!;
+
+        backdrop.getAttribute('data-open')!.should.equal('true');
+        root.getAttribute('data-open')!.should.equal('true');
+        backdrop.hasAttribute('data-selected').should.be.false;
+        root.hasAttribute('data-selected').should.be.false;
+        backdrop.hasAttribute('data-busy').should.be.false;
+        root.hasAttribute('data-busy').should.be.false;
+        (document.querySelector('[data-open="false"]') === null).should.be.true;
+    });
+
     describe('and a topic is picked', () => {
         beforeEach(async () => {
             await click(
@@ -101,6 +114,18 @@ describe('when moving between the topics and a conversation', () => {
             String(selections[0]!).should.equal('topic-1');
         });
 
+        it('should expose the selected conversation on the sidebar frame', () => {
+            document
+                .querySelector('[data-cratis-part="backdrop"]')!
+                .getAttribute('data-selected')!
+                .should.equal('true');
+            document
+                .querySelector('[data-cratis-part="root"]')!
+                .getAttribute('data-selected')!
+                .should.equal('true');
+            (document.querySelector('[data-selected="false"]') === null).should.be.true;
+        });
+
         describe('and the person goes back', () => {
             beforeEach(async () => {
                 await click(
@@ -120,6 +145,15 @@ describe('when moving between the topics and a conversation', () => {
             it('should tell the host the selection is gone', () => {
                 selections.should.have.lengthOf(2);
                 (selections[1] === undefined).should.be.true;
+            });
+
+            it('should remove selected from the sidebar frame', () => {
+                document
+                    .querySelector('[data-cratis-part="backdrop"]')!
+                    .hasAttribute('data-selected').should.be.false;
+                document
+                    .querySelector('[data-cratis-part="root"]')!
+                    .hasAttribute('data-selected').should.be.false;
             });
         });
     });

@@ -13,6 +13,9 @@ vi.mock('@cratis/arc.react/dialogs', () => ({
     useDialogContext: () => undefined,
 }));
 
+const markupForPart = (html: string, part: string) =>
+    html.match(new RegExp(`<[^>]+data-cratis-part="${part}"[^>]*>`))?.[0] ?? '';
+
 describe('when rendered with is busy', () => {
     let html: string;
 
@@ -37,5 +40,26 @@ describe('when rendered with is busy', () => {
         const disabledScopes = html.match(/<fieldset[^>]*disabled=""/g) ?? [];
         expect(disabledScopes).to.have.length(2);
     });
-});
 
+    it('should expose open and busy on every modal framing part', () => {
+        ['backdrop', 'positioner', 'root', 'content'].forEach((part) => {
+            expect(markupForPart(html, part)).to.contain('data-open="true"');
+            expect(markupForPart(html, part)).to.contain('data-busy="true"');
+        });
+    });
+
+    it('should expose busy on disabled actions and scopes', () => {
+        ['close', 'confirm', 'cancel'].forEach((part) => {
+            expect(markupForPart(html, part)).to.contain('data-disabled="true"');
+            expect(markupForPart(html, part)).to.contain('data-busy="true"');
+        });
+        const busyScopes = html.match(
+            /<fieldset[^>]*data-cratis-part="busy-scope"[^>]*data-busy="true"/g,
+        );
+        expect(busyScopes).to.have.lengthOf(2);
+    });
+
+    it('should never serialize false state values', () => {
+        expect(html).not.to.match(/data-(?:open|busy|disabled)="false"/);
+    });
+});

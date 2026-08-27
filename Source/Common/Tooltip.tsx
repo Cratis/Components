@@ -60,6 +60,7 @@ export const Tooltip = ({
                 offset={8}
                 className='cratis-tooltip-popup'
                 data-cratis-part='popup'
+                data-open
             >
                 {content}
             </AriaTooltip>

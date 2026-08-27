@@ -237,6 +237,8 @@ export const Dialog = ({
                 primary ? pt?.confirm?.className : pt?.cancel?.className,
             )}
             data-cratis-part={primary ? 'confirm' : 'cancel'}
+            data-disabled={(primary ? !isDialogValid || isBusy : isBusy) || undefined}
+            data-busy={isBusy || undefined}
             ref={primary ? confirmRef : focused ? cancelRef : undefined}
             onClick={() => void handleClose(result)}
             disabled={primary ? !isDialogValid || isBusy : isBusy}
@@ -351,6 +353,8 @@ export const Dialog = ({
                                 pt?.close?.className,
                             )}
                             data-cratis-part='close'
+                            data-disabled={isBusy || undefined}
+                            data-busy={isBusy || undefined}
                             aria-label={resolvedCloseAriaLabel}
                             onClick={() => void handleClose(DialogResult.Cancelled)}
                         >
@@ -366,10 +370,13 @@ export const Dialog = ({
                     )}
                     style={{ ...pt?.content?.style, ...contentStyle }}
                     data-cratis-part='content'
+                    data-open={visible || undefined}
+                    data-busy={isBusy || undefined}
                 >
                     <fieldset
                         className='cratis-dialog__busy-scope'
                         data-cratis-part='busy-scope'
+                        data-busy={isBusy || undefined}
                         disabled={isBusy}
                         inert={isBusy}
                         aria-busy={isBusy || undefined}
@@ -390,6 +397,7 @@ export const Dialog = ({
                         <fieldset
                             className='cratis-dialog__busy-scope cratis-dialog__busy-scope--footer'
                             data-cratis-part='busy-scope'
+                            data-busy={isBusy || undefined}
                             disabled={isBusy}
                             inert={isBusy}
                             aria-busy={isBusy || undefined}
@@ -418,6 +426,8 @@ export const Dialog = ({
                     ...pt?.backdrop?.style,
                 }}
                 data-cratis-part='backdrop'
+                data-open={visible || undefined}
+                data-busy={isBusy || undefined}
             >
                 <div
                     {...pt?.positioner}
@@ -427,6 +437,8 @@ export const Dialog = ({
                     )}
                     style={pt?.positioner?.style}
                     data-cratis-part='positioner'
+                    data-open={visible || undefined}
+                    data-busy={isBusy || undefined}
                 >
                     <section
                         {...pt?.root}
@@ -437,6 +449,8 @@ export const Dialog = ({
                         )}
                         style={dialogStyle}
                         data-cratis-part='root'
+                        data-open={visible || undefined}
+                        data-busy={isBusy || undefined}
                     >
                         {dialogDocument}
                     </section>
@@ -460,6 +474,8 @@ export const Dialog = ({
                 ...pt?.backdrop?.style,
             }}
             data-cratis-part='backdrop'
+            data-open={visible || undefined}
+            data-busy={isBusy || undefined}
         >
             <div
                 {...pt?.positioner}
@@ -469,6 +485,8 @@ export const Dialog = ({
                 )}
                 style={pt?.positioner?.style}
                 data-cratis-part='positioner'
+                data-open={visible || undefined}
+                data-busy={isBusy || undefined}
             >
                 <Modal
                     {...pt?.root}
@@ -479,6 +497,8 @@ export const Dialog = ({
                     )}
                     style={dialogStyle}
                     data-cratis-part='root'
+                    data-open={visible || undefined}
+                    data-busy={isBusy || undefined}
                 >
                     {dialogDocument}
                 </Modal>
