@@ -36,10 +36,11 @@
     "scripts": {
         "clean": "rm -rf dist",
         "build": "node ../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+        "typecheck-specs": "node ../node_modules/typescript/bin/tsc -p tsconfig.json",
         "lint": "node ../node_modules/eslint/bin/eslint.js . --quiet",
         "test": "node ../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
         "verify-package": "node ./scripts/verify-packed-package.mjs",
-        "ci": "yarn clean && yarn lint && yarn build && yarn test && yarn verify-package"
+        "ci": "yarn clean && yarn lint && yarn build && yarn typecheck-specs && yarn test && yarn verify-package"
     },
     "dependencies": {
         "axe-core": "^4.13.0"
