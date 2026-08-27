@@ -152,6 +152,7 @@ import { TimeMachine, DataPage } from '@cratis/components';
 Components:
 
 - `@cratis/components` — package root (re-exports `CratisComponentsProvider` and the namespaced component groups)
+- `@cratis/components/Chat` — `ChatSidebar`, `ChatTopicList`, `ChatConversation`: topic-based chat with host-supplied data, mentions, emoji, and per-message actions
 - `@cratis/components/CommandDialog`
 - `@cratis/components/CommandStepper`
 - `@cratis/components/CommandForm`

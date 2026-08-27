@@ -1,0 +1,82 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Baseline chat sidebar — a panel needs a visible surface even before a theme preset is applied,
+   so this ships a token-based default that a preset or `pt` can still override. Every color comes
+   from the --cratis-* token seam so the sidebar follows whatever theme the host runs. */
+.cratis-chat-sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--cratis-surface-overlay);
+    color: var(--cratis-text-color);
+    border-left: 1px solid var(--cratis-surface-border);
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+    z-index: 1100;
+}
+
+.cratis-chat-sidebar[data-position='left'] {
+    left: 0;
+    right: auto;
+    border-left: none;
+    border-right: 1px solid var(--cratis-surface-border);
+}
+
+.cratis-chat-sidebar__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--cratis-surface-border);
+    flex-shrink: 0;
+}
+
+.cratis-chat-sidebar__title {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cratis-chat-sidebar__title--pending {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--cratis-text-color-secondary);
+}
+
+.cratis-chat-sidebar__back,
+.cratis-chat-sidebar__close {
+    background: transparent;
+    border: none;
+    border-radius: var(--cratis-border-radius);
+    width: 1.75rem;
+    height: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--cratis-text-color-secondary);
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    transition: color 0.12s, background 0.12s;
+}
+
+.cratis-chat-sidebar__back:hover,
+.cratis-chat-sidebar__close:hover {
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
+}
+
+.cratis-chat-sidebar__content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
