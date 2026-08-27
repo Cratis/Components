@@ -413,23 +413,36 @@ const checkSlot = async (
             typeof baseProps.name === 'string' ? baseProps.name : '',
         );
         const formData = Object.fromEntries(new FormData(fixture.form).entries());
+        const nativeValue = namedControl && 'value' in namedControl
+            ? String(namedControl.value)
+            : undefined;
         fixture.form.reset();
         const resetValue = namedControl && 'value' in namedControl
             ? String(namedControl.value)
             : undefined;
+        const resetChecked = namedControl && 'checked' in namedControl
+            ? Boolean(namedControl.checked)
+            : undefined;
+        const resetMatches =
+            (typeof baseProps.defaultValue !== 'string' || resetValue === baseProps.defaultValue) &&
+            (typeof baseProps.defaultChecked !== 'boolean' || resetChecked === baseProps.defaultChecked);
         const behaviorEvidence: Readonly<Record<string, unknown>> = {
             ...exercisedEvidence,
             submitEvents,
             formData,
             name: namedControl && 'name' in namedControl ? namedControl.name : undefined,
+            nativeValue,
             resetValue,
+            resetChecked,
+            resetMatches,
         };
         const callbackCount = typeof behaviorEvidence.callbacks === 'number' ? behaviorEvidence.callbacks : undefined;
         const submitExpected = baseProps.type === 'submit';
         const behaviorPassed =
             (callbackCount === undefined || callbackCount === 1) &&
             (!submitExpected || submitEvents === 1) &&
-            (typeof baseProps.name !== 'string' || namedControl !== null);
+            (typeof baseProps.name !== 'string' || namedControl !== null) &&
+            resetMatches;
         addCheck(
             checks,
             ConformanceFamily.Behavior,
