@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type React from 'react';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { Version } from './types';
 import { ReadModelView } from './ReadModelView';
 import {
@@ -133,10 +133,19 @@ export const TimeMachine: React.FC<TimeMachineProps> = ({
     void hoveredIndex;
     void selectedIndex;
 
-    // Get all events from all versions
-    const allEvents = versions.flatMap((version) => version.events || []);
-    const selectedEventSequenceNumbers = new Set(
-        (versions[selectedIndex]?.events ?? []).map((event) => event.sequenceNumber),
+    // Keep derived event collections stable across unrelated hover/view-mode renders.
+    const allEvents = useMemo(
+        () => versions.flatMap((version) => version.events || []),
+        [versions],
+    );
+    const selectedEventSequenceNumbers = useMemo(
+        () =>
+            new Set(
+                (versions[selectedIndex]?.events ?? []).map(
+                    (event) => event.sequenceNumber,
+                ),
+            ),
+        [selectedIndex, versions],
     );
 
     return (
