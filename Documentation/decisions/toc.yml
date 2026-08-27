@@ -1,0 +1,4 @@
+- name: DOM-coupled public component contract
+  href: 0001-dom-coupled-contract.md
+- name: Public component classification
+  href: 0002-component-classification.md

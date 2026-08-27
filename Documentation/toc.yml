@@ -4,6 +4,8 @@
   href: why-components.md
 - name: UI foundation
   href: ui-foundation.md
+- name: Architecture decisions
+  href: decisions/toc.yml
 - name: Coming from PrimeReact
   href: coming-from-primereact.md
 - name: Getting started
