@@ -770,31 +770,31 @@ export const partStateDefinitions = {
  */
 export const splitPartStateAllowlist = [
     {
-        file: 'Common/DatePickerInput.tsx',
+        file: 'Common/DatePickerInputImplementation.tsx',
         spread: 'groupProps',
         part: 'group',
         states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
     },
     {
-        file: 'Common/DatePickerInput.tsx',
+        file: 'Common/DatePickerInputImplementation.tsx',
         spread: 'inputProps',
         part: 'input',
         states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
     },
     {
-        file: 'Common/DatePickerInput.tsx',
+        file: 'Common/DatePickerInputImplementation.tsx',
         spread: 'segmentProps',
         part: 'segment',
         states: ['disabled', 'invalid', 'readonly'],
     },
     {
-        file: 'Common/DatePickerInput.tsx',
+        file: 'Common/DatePickerInputImplementation.tsx',
         spread: 'triggerProps',
         part: 'trigger',
         states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
     },
     {
-        file: 'Dropdown/Dropdown.tsx',
+        file: 'Dropdown/DropdownImplementation.tsx',
         spread: 'props',
         part: 'trigger',
         states: ['open'],
@@ -808,7 +808,7 @@ export const splitPartStateAllowlist = [
 export const implicitPartStateAllowlist = [
     {
         component: 'DatePickerInput',
-        file: 'Common/DatePickerInput.tsx',
+        file: 'Common/DatePickerInputImplementation.tsx',
         part: 'cell',
         states: ['selected'],
         reason: 'React Aria CalendarCell emits data-selected for the selected date.',
@@ -825,12 +825,12 @@ export const implicitPartStateAllowlist = [
 /** Exact dynamic production expressions that intentionally emit known parts. */
 export const dynamicPartExpressions = [
     {
-        file: 'Dialogs/Dialog.tsx',
+        file: 'Dialogs/DialogImplementation.tsx',
         expression: "primary ? 'confirm' : 'cancel'",
         parts: ['confirm', 'cancel'],
     },
     {
-        file: 'Common/Tooltip.tsx',
+        file: 'Common/TooltipImplementation.tsx',
         expression: "children.props['data-cratis-part'] ?? 'trigger'",
         parts: ['trigger'],
         preservesChildPart: true,
