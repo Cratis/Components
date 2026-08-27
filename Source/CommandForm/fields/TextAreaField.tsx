@@ -15,7 +15,8 @@ export interface TextAreaParts {
 }
 
 interface TextAreaFieldComponentProps
-    extends WrappedFieldProps<string>, FieldAccessibilityProps {
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     placeholder?: string;
     rows?: number;
     cols?: number;
@@ -35,30 +36,30 @@ export const TextAreaField = asCommandFormField<TextAreaFieldComponentProps>(
         });
         return (
             <>
-                <textarea
-                    {...props.pt?.root}
-                    id={accessibility.controlId}
-                    aria-label={accessibility.ariaLabel}
-                    aria-describedby={accessibility.ariaDescribedBy}
-                    value={props.value}
-                    onChange={(event) => props.onChange(event.currentTarget.value)}
-                    onBlur={props.onBlur}
-                    placeholder={props.placeholder}
-                    rows={props.rows ?? 5}
-                    cols={props.cols}
-                    aria-invalid={props.invalid || undefined}
-                    data-invalid={props.invalid || undefined}
-                    data-cratis-part='textarea'
-                    className={[
-                        'cratis-field-input',
-                        'cratis-field-textarea',
-                        'cratis:w-full',
-                        props.pt?.root?.className,
-                        props.className,
-                    ]
-                        .filter(Boolean)
-                        .join(' ')}
-                />
+        <textarea
+            {...props.pt?.root}
+            id={accessibility.controlId}
+            aria-label={accessibility.ariaLabel}
+            aria-describedby={accessibility.ariaDescribedBy}
+            value={props.value}
+            onChange={(event) => props.onChange(event.currentTarget.value)}
+            onBlur={props.onBlur}
+            placeholder={props.placeholder}
+            rows={props.rows ?? 5}
+            cols={props.cols}
+            aria-invalid={props.invalid || undefined}
+            data-invalid={props.invalid || undefined}
+            data-cratis-part='textarea'
+            className={[
+                'cratis-field-input',
+                'cratis-field-textarea',
+                'cratis:w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        />
                 {accessibility.hiddenError}
             </>
         );

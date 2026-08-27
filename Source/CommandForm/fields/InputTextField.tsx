@@ -15,7 +15,8 @@ export interface InputTextParts {
 }
 
 interface InputTextComponentProps
-    extends WrappedFieldProps<string>, FieldAccessibilityProps {
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     type?:
         | 'text'
         | 'email'
@@ -44,28 +45,28 @@ export const InputTextField = asCommandFormField<InputTextComponentProps>(
         });
         return (
             <>
-                <input
-                    {...props.pt?.root}
-                    id={accessibility.controlId}
-                    aria-label={accessibility.ariaLabel}
-                    aria-describedby={accessibility.ariaDescribedBy}
-                    type={props.type ?? 'text'}
-                    value={props.value}
-                    onChange={(event) => props.onChange(event.currentTarget.value)}
-                    onBlur={props.onBlur}
-                    placeholder={props.placeholder}
-                    aria-invalid={props.invalid || undefined}
-                    data-invalid={props.invalid || undefined}
-                    data-cratis-part='input'
-                    className={[
-                        'cratis-field-input',
-                        'cratis:w-full',
-                        props.pt?.root?.className,
-                        props.className,
-                    ]
-                        .filter(Boolean)
-                        .join(' ')}
-                />
+        <input
+            {...props.pt?.root}
+            id={accessibility.controlId}
+            aria-label={accessibility.ariaLabel}
+            aria-describedby={accessibility.ariaDescribedBy}
+            type={props.type ?? 'text'}
+            value={props.value}
+            onChange={(event) => props.onChange(event.currentTarget.value)}
+            onBlur={props.onBlur}
+            placeholder={props.placeholder}
+            aria-invalid={props.invalid || undefined}
+            data-invalid={props.invalid || undefined}
+            data-cratis-part='input'
+            className={[
+                'cratis-field-input',
+                'cratis:w-full',
+                props.pt?.root?.className,
+                props.className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
+        />
                 {accessibility.hiddenError}
             </>
         );

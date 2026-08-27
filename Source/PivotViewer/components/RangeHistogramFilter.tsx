@@ -6,228 +6,216 @@ import type { PivotPrimitive } from '../types';
 import type { ChangeHandler } from '../../types/ChangeHandler';
 
 export interface RangeHistogramFilterProps {
-    values: PivotPrimitive[];
-    min: number;
-    max: number;
-    buckets?: number;
-    selectedRange: [number, number] | null;
-    onChange: ChangeHandler<[number, number] | null>;
+  values: PivotPrimitive[];
+  min: number;
+  max: number;
+  buckets?: number;
+  selectedRange: [number, number] | null;
+  onChange: ChangeHandler<[number, number] | null>;
 }
 
 interface HistogramBucket {
-    start: number;
-    end: number;
-    count: number;
-    maxCount: number;
+  start: number;
+  end: number;
+  count: number;
+  maxCount: number;
 }
 
 export function RangeHistogramFilter({
-    values,
-    min,
-    max,
-    buckets = 20,
-    selectedRange,
-    onChange,
+  values,
+  min,
+  max,
+  buckets = 20,
+  selectedRange,
+  onChange,
 }: RangeHistogramFilterProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [isDragging, setIsDragging] = useState<'left' | 'right' | 'range' | null>(null);
-    const [dragStart, setDragStart] = useState<{
-        x: number;
-        range: [number, number];
-    } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState<'left' | 'right' | 'range' | null>(null);
+  const [dragStart, setDragStart] = useState<{ x: number; range: [number, number] } | null>(null);
 
-    const numericValues = useMemo(() => {
-        return values
-            .map((v) => {
-                if (typeof v === 'number') return v;
-                if (v instanceof Date) return v.getTime();
-                const parsed = Number(v);
-                return Number.isNaN(parsed) ? null : parsed;
-            })
-            .filter((v): v is number => v !== null);
-    }, [values]);
+  const numericValues = useMemo(() => {
+    return values
+      .map((v) => {
+        if (typeof v === 'number') return v;
+        if (v instanceof Date) return v.getTime();
+        const parsed = Number(v);
+        return Number.isNaN(parsed) ? null : parsed;
+      })
+      .filter((v): v is number => v !== null);
+  }, [values]);
 
-    const histogram = useMemo((): HistogramBucket[] => {
-        const range = max - min;
-        if (range <= 0 || numericValues.length === 0) {
-            return [];
+  const histogram = useMemo((): HistogramBucket[] => {
+    const range = max - min;
+    if (range <= 0 || numericValues.length === 0) {
+      return [];
+    }
+
+    const bucketSize = range / buckets;
+    const bucketCounts: number[] = Array(buckets).fill(0);
+
+    numericValues.forEach((value) => {
+      const bucketIndex = Math.min(
+        Math.floor((value - min) / bucketSize),
+        buckets - 1
+      );
+      if (bucketIndex >= 0 && bucketIndex < buckets) {
+        bucketCounts[bucketIndex]++;
+      }
+    });
+
+    const maxCount = Math.max(...bucketCounts, 1);
+
+    return bucketCounts.map((count, i) => ({
+      start: min + i * bucketSize,
+      end: min + (i + 1) * bucketSize,
+      count,
+      maxCount,
+    }));
+  }, [numericValues, min, max, buckets]);
+
+  const currentRange = selectedRange ?? [min, max];
+
+  const getPositionFromValue = useCallback(
+    (value: number) => {
+      const range = max - min;
+      if (range <= 0) return 0;
+      return ((value - min) / range) * 100;
+    },
+    [min, max]
+  );
+
+  const handleMouseDown = (
+    e: React.MouseEvent,
+    handle: 'left' | 'right' | 'range'
+  ) => {
+    e.preventDefault?.();
+    setIsDragging(handle);
+    setDragStart({ x: e.clientX, range: [...currentRange] as [number, number] });
+  };
+
+  useEffect(() => {
+    if (!isDragging || !dragStart || !containerRef.current) return;
+
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const range = max - min;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaPercent = (deltaX / rect.width) * 100;
+      const deltaValue = (deltaPercent / 100) * range;
+
+      let newRange: [number, number] = [...dragStart.range];
+
+      if (isDragging === 'left') {
+        newRange[0] = Math.max(min, Math.min(dragStart.range[0] + deltaValue, newRange[1] - range * 0.01));
+      } else if (isDragging === 'right') {
+        newRange[1] = Math.min(max, Math.max(dragStart.range[1] + deltaValue, newRange[0] + range * 0.01));
+      } else if (isDragging === 'range') {
+        const rangeWidth = dragStart.range[1] - dragStart.range[0];
+        let newStart = dragStart.range[0] + deltaValue;
+        let newEnd = dragStart.range[1] + deltaValue;
+
+        if (newStart < min) {
+          newStart = min;
+          newEnd = min + rangeWidth;
+        }
+        if (newEnd > max) {
+          newEnd = max;
+          newStart = max - rangeWidth;
         }
 
-        const bucketSize = range / buckets;
-        const bucketCounts: number[] = Array(buckets).fill(0);
+        newRange = [newStart, newEnd];
+      }
 
-        numericValues.forEach((value) => {
-            const bucketIndex = Math.min(
-                Math.floor((value - min) / bucketSize),
-                buckets - 1,
-            );
-            if (bucketIndex >= 0 && bucketIndex < buckets) {
-                bucketCounts[bucketIndex]++;
-            }
-        });
-
-        const maxCount = Math.max(...bucketCounts, 1);
-
-        return bucketCounts.map((count, i) => ({
-            start: min + i * bucketSize,
-            end: min + (i + 1) * bucketSize,
-            count,
-            maxCount,
-        }));
-    }, [numericValues, min, max, buckets]);
-
-    const currentRange = selectedRange ?? [min, max];
-
-    const getPositionFromValue = useCallback(
-        (value: number) => {
-            const range = max - min;
-            if (range <= 0) return 0;
-            return ((value - min) / range) * 100;
-        },
-        [min, max],
-    );
-
-    const handleMouseDown = (e: React.MouseEvent, handle: 'left' | 'right' | 'range') => {
-        e.preventDefault?.();
-        setIsDragging(handle);
-        setDragStart({ x: e.clientX, range: [...currentRange] as [number, number] });
+      onChange(newRange, { source: 'user', nativeEvent: e });
     };
 
-    useEffect(() => {
-        if (!isDragging || !dragStart || !containerRef.current) return;
-
-        const container = containerRef.current;
-        const rect = container.getBoundingClientRect();
-        const range = max - min;
-
-        const handleMouseMove = (e: MouseEvent) => {
-            const deltaX = e.clientX - dragStart.x;
-            const deltaPercent = (deltaX / rect.width) * 100;
-            const deltaValue = (deltaPercent / 100) * range;
-
-            let newRange: [number, number] = [...dragStart.range];
-
-            if (isDragging === 'left') {
-                newRange[0] = Math.max(
-                    min,
-                    Math.min(dragStart.range[0] + deltaValue, newRange[1] - range * 0.01),
-                );
-            } else if (isDragging === 'right') {
-                newRange[1] = Math.min(
-                    max,
-                    Math.max(dragStart.range[1] + deltaValue, newRange[0] + range * 0.01),
-                );
-            } else if (isDragging === 'range') {
-                const rangeWidth = dragStart.range[1] - dragStart.range[0];
-                let newStart = dragStart.range[0] + deltaValue;
-                let newEnd = dragStart.range[1] + deltaValue;
-
-                if (newStart < min) {
-                    newStart = min;
-                    newEnd = min + rangeWidth;
-                }
-                if (newEnd > max) {
-                    newEnd = max;
-                    newStart = max - rangeWidth;
-                }
-
-                newRange = [newStart, newEnd];
-            }
-
-            onChange(newRange, { source: 'user', nativeEvent: e });
-        };
-
-        const handleMouseUp = () => {
-            setIsDragging(null);
-            setDragStart(null);
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isDragging, dragStart, min, max, onChange]);
-
-    const handleBarClick = (
-        bucket: HistogramBucket,
-        event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
-        onChange([bucket.start, bucket.end], {
-            source: 'user',
-            nativeEvent: event.nativeEvent,
-        });
+    const handleMouseUp = () => {
+      setIsDragging(null);
+      setDragStart(null);
     };
 
-    const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
-        onChange(null, { source: 'user', nativeEvent: event.nativeEvent });
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
+  }, [isDragging, dragStart, min, max, onChange]);
 
-    const leftPos = getPositionFromValue(currentRange[0]);
-    const rightPos = getPositionFromValue(currentRange[1]);
+  const handleBarClick = (bucket: HistogramBucket, event: React.MouseEvent<HTMLButtonElement>) => {
+    onChange([bucket.start, bucket.end], { source: 'user', nativeEvent: event.nativeEvent });
+  };
 
-    const formatValue = (value: number) => {
-        if (Number.isInteger(value)) return value.toString();
-        return value.toFixed(1);
-    };
+  const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onChange(null, { source: 'user', nativeEvent: event.nativeEvent });
+  };
 
-    return (
-        <div className='pv-range-histogram' ref={containerRef}>
-            <div className='pv-histogram-bars'>
-                {histogram.map((bucket, i) => {
-                    const heightPercent = (bucket.count / bucket.maxCount) * 100;
-                    const isInRange =
-                        bucket.start >= currentRange[0] && bucket.end <= currentRange[1];
-                    const isPartiallyInRange =
-                        bucket.end > currentRange[0] && bucket.start < currentRange[1];
+  const leftPos = getPositionFromValue(currentRange[0]);
+  const rightPos = getPositionFromValue(currentRange[1]);
 
-                    return (
-                        <button
-                            key={i}
-                            className={`pv-histogram-bar ${isInRange ? 'in-range' : ''} ${isPartiallyInRange && !isInRange ? 'partial' : ''}`}
-                            style={{ height: `${heightPercent}%` }}
-                            onClick={(event) => handleBarClick(bucket, event)}
-                            title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} items`}
-                            type='button'
-                        />
-                    );
-                })}
-            </div>
+  const formatValue = (value: number) => {
+    if (Number.isInteger(value)) return value.toString();
+    return value.toFixed(1);
+  };
 
-            <div className='pv-range-slider'>
-                <div className='pv-range-track' />
-                <div
-                    className='pv-range-selection'
-                    style={{
-                        left: `${leftPos}%`,
-                        width: `${rightPos - leftPos}%`,
-                    }}
-                    onMouseDown={(e) => handleMouseDown(e, 'range')}
-                />
-                <div
-                    className='pv-range-handle pv-range-handle-left'
-                    style={{ left: `${leftPos}%` }}
-                    onMouseDown={(e) => handleMouseDown(e, 'left')}
-                />
-                <div
-                    className='pv-range-handle pv-range-handle-right'
-                    style={{ left: `${rightPos}%` }}
-                    onMouseDown={(e) => handleMouseDown(e, 'right')}
-                />
-            </div>
+  return (
+    <div className="pv-range-histogram" ref={containerRef}>
+      <div className="pv-histogram-bars">
+        {histogram.map((bucket, i) => {
+          const heightPercent = (bucket.count / bucket.maxCount) * 100;
+          const isInRange =
+            bucket.start >= currentRange[0] && bucket.end <= currentRange[1];
+          const isPartiallyInRange =
+            bucket.end > currentRange[0] && bucket.start < currentRange[1];
 
-            <div className='pv-range-labels'>
-                <span className='pv-range-value'>{formatValue(currentRange[0])}</span>
-                <span className='pv-range-value'>{formatValue(currentRange[1])}</span>
-            </div>
+          return (
+            <button
+              key={i}
+              className={`pv-histogram-bar ${isInRange ? 'in-range' : ''} ${isPartiallyInRange && !isInRange ? 'partial' : ''}`}
+              style={{ height: `${heightPercent}%` }}
+              onClick={(event) => handleBarClick(bucket, event)}
+              title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} items`}
+              type="button"
+            />
+          );
+        })}
+      </div>
 
-            {selectedRange && (
-                <button type='button' className='pv-range-clear' onClick={handleClear}>
-                    Clear Range
-                </button>
-            )}
-        </div>
-    );
+      <div className="pv-range-slider">
+        <div className="pv-range-track" />
+        <div
+          className="pv-range-selection"
+          style={{
+            left: `${leftPos}%`,
+            width: `${rightPos - leftPos}%`,
+          }}
+          onMouseDown={(e) => handleMouseDown(e, 'range')}
+        />
+        <div
+          className="pv-range-handle pv-range-handle-left"
+          style={{ left: `${leftPos}%` }}
+          onMouseDown={(e) => handleMouseDown(e, 'left')}
+        />
+        <div
+          className="pv-range-handle pv-range-handle-right"
+          style={{ left: `${rightPos}%` }}
+          onMouseDown={(e) => handleMouseDown(e, 'right')}
+        />
+      </div>
+
+      <div className="pv-range-labels">
+        <span className="pv-range-value">{formatValue(currentRange[0])}</span>
+        <span className="pv-range-value">{formatValue(currentRange[1])}</span>
+      </div>
+
+      {selectedRange && (
+        <button type="button" className="pv-range-clear" onClick={handleClear}>
+          Clear Range
+        </button>
+      )}
+    </div>
+  );
 }

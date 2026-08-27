@@ -29,7 +29,8 @@ const passwordPartsMatchManifest: ExactPartKeys<PasswordParts, PartsOf<'Password
 void passwordPartsMatchManifest;
 
 interface PasswordFieldComponentProps
-    extends WrappedFieldProps<string>, FieldAccessibilityProps {
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     placeholder?: string;
     className?: string;
     pt?: PasswordParts;
@@ -71,11 +72,7 @@ const PasswordControl = (props: PasswordFieldComponentProps) => {
                 placeholder={props.placeholder}
                 aria-invalid={props.invalid || undefined}
                 data-invalid={props.invalid || undefined}
-                className={[
-                    'cratis-field-input',
-                    'cratis:w-full',
-                    props.pt?.input?.className,
-                ]
+                className={['cratis-field-input', 'cratis:w-full', props.pt?.input?.className]
                     .filter(Boolean)
                     .join(' ')}
                 data-cratis-part='input'

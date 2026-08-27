@@ -174,7 +174,7 @@ export function RangeHistogramFilter({
                 newRange = [newStart, newEnd];
             }
 
-            onChange(newRange, { source: 'user', nativeEvent: event });
+            onChange(newRange, { source: 'user', nativeEvent: e });
         };
 
         const handleMouseUp = () => {
@@ -191,14 +191,8 @@ export function RangeHistogramFilter({
         };
     }, [isDragging, dragStart, min, max, onChange]);
 
-    const handleBarClick = (
-        bucket: RenderedHistogramBucket,
-        event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
-        onChange([bucket.start, bucket.end], {
-            source: 'user',
-            nativeEvent: event.nativeEvent,
-        });
+    const handleBarClick = (bucket: RenderedHistogramBucket, event: React.MouseEvent<HTMLButtonElement>) => {
+        onChange([bucket.start, bucket.end], { source: 'user', nativeEvent: event.nativeEvent });
     };
 
     const rangeSpan = max - min;
@@ -226,21 +220,15 @@ export function RangeHistogramFilter({
         event.preventDefault();
         const rounded = Number(next.toFixed(10));
         if (handle === 'left') {
-            onChange(
-                [
-                    Math.max(min, Math.min(rounded, currentRange[1] - minimumGap)),
-                    currentRange[1],
-                ],
-                { source: 'user', nativeEvent: event.nativeEvent },
-            );
+            onChange([
+                Math.max(min, Math.min(rounded, currentRange[1] - minimumGap)),
+                currentRange[1],
+            ], { source: 'user', nativeEvent: event.nativeEvent });
         } else {
-            onChange(
-                [
-                    currentRange[0],
-                    Math.min(max, Math.max(rounded, currentRange[0] + minimumGap)),
-                ],
-                { source: 'user', nativeEvent: event.nativeEvent },
-            );
+            onChange([
+                currentRange[0],
+                Math.min(max, Math.max(rounded, currentRange[0] + minimumGap)),
+            ], { source: 'user', nativeEvent: event.nativeEvent });
         }
     };
 
