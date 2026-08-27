@@ -27,6 +27,7 @@
     --cratis-primary-400: #60a5fa;
     --cratis-primary-500: #3b82f6;
     --cratis-primary-600: #2563eb;
+    --cratis-primary-600-text: #ffffff;
     --cratis-action-background: #2563eb;
     --cratis-action-background-hover: #1d4ed8;
     --cratis-action-background-active: #1e40af;
@@ -75,6 +76,7 @@
     color-scheme: dark;
     --cratis-primary-color: #60a5fa;
     --cratis-primary-color-text: #030712;
+    --cratis-primary-600-text: #ffffff;
     --cratis-action-background: #60a5fa;
     --cratis-action-background-hover: #93c5fd;
     --cratis-action-background-active: #bfdbfe;
@@ -165,6 +167,7 @@
     .cratis-theme {
         --cratis-primary-color: Highlight;
         --cratis-primary-color-text: HighlightText;
+        --cratis-primary-600-text: HighlightText;
         --cratis-action-background: Highlight;
         --cratis-action-text: HighlightText;
         --cratis-surface-card: Canvas;

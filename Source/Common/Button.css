@@ -119,7 +119,7 @@
 .cratis-button[data-tone='accent'][data-severity='help'] {
     --cratis-button-tone: var(--cratis-primary-600);
     --cratis-button-fill: var(--cratis-primary-600);
-    --cratis-button-fill-text: var(--cratis-surface-0);
+    --cratis-button-fill-text: var(--cratis-primary-600-text);
 }
 .cratis-button[data-tone='neutral'][data-severity='contrast'] {
     --cratis-button-tone: var(--cratis-text-color);

@@ -12,6 +12,7 @@ The `--cratis-*` variables are the supported theming boundary. The `tokens` entr
 | `--cratis-primary-color`                                | Accent, links, selected controls, and non-text indicators. |
 | `--cratis-primary-color-text`                           | Content on the accent color where used.                    |
 | `--cratis-primary-300` … `--cratis-primary-600`         | Accent scale used by specialized surfaces.                 |
+| `--cratis-primary-600-text`                             | Content on the fixed `--cratis-primary-600` tone.          |
 | `--cratis-green-500`                                    | Success state.                                             |
 | `--cratis-orange-500`                                   | Warning state.                                             |
 | `--cratis-red-500`                                      | Error/destructive indicator.                               |
