@@ -11,7 +11,10 @@
 
 set -euo pipefail
 
-mkdir -p dist/esm
+mkdir -p dist/esm dist/esm/schemas
+
+cp schemas/ui-adapter.schema.json dist/esm/schemas/ui-adapter.schema.json
+echo "Copied ui-adapter.schema.json"
 
 for stylesheet in tokens.css theme.css; do
     cp "$stylesheet" "dist/esm/$stylesheet"

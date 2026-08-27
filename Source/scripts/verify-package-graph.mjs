@@ -162,16 +162,17 @@ for (const { subpath, jsEntry, dtsEntry } of jsSubpaths) {
 
 // Project-wide direct-import scan: pixi.js may only ever be imported by a file that
 // itself lives under Canvas/ or PivotViewer/, regardless of exports-map reachability.
+// Renderer runtime modules are a second strict tier: they may depend only on sibling renderer
+// runtime modules. Public component contracts enter renderer declarations through type-only imports.
 const allEmitted = emittedFiles(esmRoot);
 const directPixiImporters = [];
+const rendererRuntimeBoundaryViolations = [];
 {
     const { moduleSpecifiers } = await import('./lib/dependency-graph.mjs');
     const ts = (await import('typescript')).default;
     const { readFileSync } = await import('node:fs');
     for (const file of allEmitted) {
         const relative = path.relative(esmRoot, file).split(path.sep).join('/');
-        if (relative.startsWith('Canvas/') || relative.startsWith('PivotViewer/'))
-            continue;
         const source = readFileSync(file, 'utf8');
         const sourceFile = ts.createSourceFile(
             file,
@@ -181,8 +182,24 @@ const directPixiImporters = [];
             file.endsWith('.d.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS,
         );
         const specifiers = moduleSpecifiers(sourceFile);
-        if (specifiers.some(isPixiSpecifier)) {
+
+        if (
+            !relative.startsWith('Canvas/') &&
+            !relative.startsWith('PivotViewer/') &&
+            specifiers.some(isPixiSpecifier)
+        ) {
             directPixiImporters.push(relative);
+        }
+
+        if (relative.startsWith('renderer/') && file.endsWith('.js')) {
+            for (const specifier of specifiers) {
+                const target = specifier.startsWith('.')
+                    ? path.resolve(path.dirname(file), specifier)
+                    : undefined;
+                if (!target || !target.startsWith(`${path.join(esmRoot, 'renderer')}${path.sep}`)) {
+                    rendererRuntimeBoundaryViolations.push(`${relative} -> ${specifier}`);
+                }
+            }
         }
     }
 }
@@ -191,6 +208,12 @@ if (directPixiImporters.length > 0) {
     violations.push(
         `'pixi.js' is imported directly by file(s) outside Canvas/ and PivotViewer/: ` +
             directPixiImporters.join(', '),
+    );
+}
+if (rendererRuntimeBoundaryViolations.length > 0) {
+    violations.push(
+        `renderer runtime modules import outside the renderer contract directory: ` +
+            rendererRuntimeBoundaryViolations.join(', '),
     );
 }
 
@@ -219,6 +242,7 @@ if (reportPath) {
                 spatialSubpaths: [...SPATIAL_SUBPATHS],
                 subpaths: subpathReports,
                 directPixiImportersOutsideSpatialSubpaths: directPixiImporters,
+                rendererRuntimeBoundaryViolations,
                 violations,
             },
             null,
@@ -236,5 +260,6 @@ if (violations.length > 0) {
 
 console.log(
     `\nAll ${subpathReports.length} subpath(s) respect the spatial/non-spatial module-graph boundary; ` +
-        `'pixi.js' is reachable only from Canvas/ and PivotViewer/.`,
+        `'pixi.js' is reachable only from Canvas/ and PivotViewer/, and renderer runtime modules ` +
+        `have no component-family or external edges.`,
 );

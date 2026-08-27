@@ -135,6 +135,13 @@
             "resolutionModes": {
                 "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
             }
+        },
+        {
+            "subpath": "./renderer",
+            "resolutionModes": {
+                "bundler": ["arc-react-global-jsx-namespace"],
+                "nodenext": ["arc-family-nodenext-extensionless-specifiers"]
+            }
         }
     ]
 }
