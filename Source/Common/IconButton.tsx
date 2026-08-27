@@ -1,8 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef, type ReactNode } from 'react';
-import { Button, type ButtonParts, type ButtonProps } from './Button';
+import type { ReactNode } from 'react';
+import type { ButtonParts, ButtonProps } from './Button';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 
@@ -29,8 +29,4 @@ export interface IconButtonProps extends Omit<
 }
 
 /** An icon-only specialization of {@link Button} with one native interaction owner. */
-export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-    function IconButton({ shape = 'pill', ...props }, ref) {
-        return <Button {...props} ref={ref} shape={shape} />;
-    },
-);
+export { IconButtonImplementation as IconButton } from './IconButtonImplementation';

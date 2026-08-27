@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { forwardRef, type ForwardedRef, type HTMLAttributes } from 'react';
+import type { HTMLAttributes } from 'react';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 
@@ -25,28 +25,5 @@ export interface SurfaceProps extends HTMLAttributes<HTMLElement> {
     pt?: SurfaceParts;
 }
 
-const assignSurfaceRef = (ref: ForwardedRef<HTMLElement>, element: HTMLElement | null) => {
-    if (typeof ref === 'function') ref(element);
-    else if (ref) ref.current = element;
-};
-
 /** A non-interactive semantic surface with a bounded native-element choice. */
-export const Surface = forwardRef<HTMLElement, SurfaceProps>(function Surface(
-    { as: Element = 'div', pt, className, style, ...nativeProps },
-    ref,
-) {
-    return (
-        <Element
-            {...pt?.root}
-            {...nativeProps}
-            ref={(element) => {
-                assignSurfaceRef(ref, element);
-            }}
-            className={['cratis-surface', pt?.root?.className, className]
-                .filter(Boolean)
-                .join(' ')}
-            style={{ ...pt?.root?.style, ...style }}
-            data-cratis-part='root'
-        />
-    );
-});
+export { SurfaceImplementation as Surface } from './SurfaceImplementation';

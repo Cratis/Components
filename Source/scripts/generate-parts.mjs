@@ -160,7 +160,8 @@ export const partDefinitions = {
     },
     Button: {
         parts: ['root', 'spinner', 'icon', 'label'],
-        sources: ['Common/Button.tsx'],
+        sources: ['Common/ButtonImplementation.tsx'],
+        ptFiles: ['Common/Button.tsx'],
         ptKeys: ['root', 'icon', 'label', 'spinner'],
     },
     ActionMenubar: {
@@ -169,36 +170,43 @@ export const partDefinitions = {
     },
     IconButton: {
         aliasOf: 'Button',
-        sources: ['Common/IconButton.tsx'],
+        sources: ['Common/IconButtonImplementation.tsx'],
+        ptFiles: ['Common/IconButton.tsx'],
     },
     TextInput: {
         parts: ['root'],
-        sources: ['Common/TextInput.tsx'],
+        sources: ['Common/TextInputImplementation.tsx'],
+        ptFiles: ['Common/TextInput.tsx'],
         ptKeys: ['root'],
     },
     TextArea: {
         parts: ['root'],
-        sources: ['Common/TextArea.tsx'],
+        sources: ['Common/TextAreaImplementation.tsx'],
+        ptFiles: ['Common/TextArea.tsx'],
         ptKeys: ['root'],
     },
     Checkbox: {
         parts: ['root', 'input', 'box', 'indicator', 'label'],
-        sources: ['Common/Checkbox.tsx'],
+        sources: ['Common/CheckboxImplementation.tsx'],
+        ptFiles: ['Common/Checkbox.tsx'],
         ptKeys: ['root', 'input', 'box', 'indicator', 'label'],
     },
     Radio: {
         parts: ['root', 'input', 'box', 'indicator', 'label'],
-        sources: ['Common/Radio.tsx'],
+        sources: ['Common/RadioImplementation.tsx'],
+        ptFiles: ['Common/Radio.tsx'],
         ptKeys: ['root', 'input', 'box', 'indicator', 'label'],
     },
     Switch: {
         parts: ['root', 'input', 'control', 'handle', 'label'],
-        sources: ['Common/Switch.tsx'],
+        sources: ['Common/SwitchImplementation.tsx'],
+        ptFiles: ['Common/Switch.tsx'],
         ptKeys: ['root', 'input', 'control', 'handle', 'label'],
     },
     Surface: {
         parts: ['root'],
-        sources: ['Common/Surface.tsx'],
+        sources: ['Common/SurfaceImplementation.tsx'],
+        ptFiles: ['Common/Surface.tsx'],
         ptKeys: ['root'],
     },
     Tooltip: {
@@ -434,7 +442,7 @@ export const partDefinitions = {
     },
     ProgressBar: {
         parts: ['root', 'indicator', 'label'],
-        sources: ['Display/ProgressBar.tsx'],
+        sources: ['Display/ProgressBarImplementation.tsx'],
     },
     Chip: {
         parts: ['root', 'icon', 'label', 'remove'],
