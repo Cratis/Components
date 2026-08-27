@@ -59,3 +59,386 @@ export type CratisPartsManifest = typeof cratisParts;
 
 /** Stable part names exposed by one component in the canonical manifest. */
 export type PartsOf<K extends keyof CratisPartsManifest> = CratisPartsManifest[K][number];
+
+/** Canonical semantic state names supported by the stable-parts contract. */
+export const cratisCanonicalPartStates = ['disabled', 'loading', 'selected', 'open', 'invalid', 'readonly', 'busy', 'focused', 'pressed'] as const;
+
+/** A canonical semantic state name without the data- prefix. */
+export type CratisCanonicalPartState = (typeof cratisCanonicalPartStates)[number];
+
+/**
+ * Canonical states emitted by every stable part. Empty arrays document parts that
+ * intentionally expose no canonical state attributes.
+ */
+export const cratisPartStates = {
+    CheckboxField: {
+        'root': ['disabled', 'selected', 'invalid'],
+        'input': ['disabled', 'selected', 'invalid'],
+        'box': ['disabled', 'selected', 'invalid'],
+        'indicator': ['disabled', 'selected', 'invalid'],
+    },
+    RatingField: {
+        'root': ['disabled', 'invalid'],
+        'option': ['disabled', 'selected', 'invalid'],
+        'input': ['disabled', 'selected', 'invalid'],
+        'star': ['disabled', 'selected', 'invalid'],
+    },
+    RadioButtonField: {
+        'root': ['disabled', 'selected', 'invalid'],
+        'input': ['disabled', 'selected', 'invalid'],
+        'box': ['disabled', 'selected', 'invalid'],
+        'indicator': ['disabled', 'selected', 'invalid'],
+    },
+    RadioGroupField: {
+        'root': ['disabled', 'invalid'],
+        'option': ['disabled', 'selected', 'invalid'],
+        'input': ['disabled', 'selected', 'invalid'],
+        'box': ['disabled', 'selected', 'invalid'],
+        'indicator': ['disabled', 'selected', 'invalid'],
+    },
+    ChipsField: {
+        'root': ['disabled', 'invalid', 'readonly'],
+        'item': ['selected'],
+        'remove': ['disabled', 'selected'],
+        'input': ['disabled', 'invalid', 'readonly'],
+    },
+    ToggleSwitchField: {
+        'root': ['disabled', 'selected', 'invalid'],
+        'input': ['disabled', 'selected', 'invalid'],
+        'control': ['disabled', 'selected', 'invalid'],
+        'handle': ['disabled', 'selected', 'invalid'],
+    },
+    SliderField: {
+        'root': ['disabled', 'invalid'],
+        'input': ['disabled', 'invalid'],
+        'value': ['invalid'],
+    },
+    NumberField: {
+        'root': ['disabled', 'invalid', 'readonly'],
+        'input': ['disabled', 'invalid', 'readonly'],
+    },
+    ColorPickerField: {
+        'root': ['disabled', 'invalid'],
+        'input': ['disabled', 'invalid'],
+        'value': ['invalid'],
+    },
+    PasswordField: {
+        'root': ['disabled', 'invalid', 'readonly'],
+        'input': ['disabled', 'invalid', 'readonly'],
+        'toggle': ['disabled'],
+    },
+    InputTextField: {
+        'input': ['disabled', 'invalid', 'readonly'],
+    },
+    TextAreaField: {
+        'textarea': ['disabled', 'invalid', 'readonly'],
+    },
+    Dropdown: {
+        'root': ['disabled', 'selected', 'open', 'invalid'],
+        'value': ['disabled', 'selected', 'open', 'invalid'],
+        'filter': ['disabled', 'open', 'invalid'],
+        'trigger': ['disabled', 'selected', 'open', 'invalid'],
+        'clear': ['disabled'],
+        'popover': ['open'],
+        'listbox': ['open'],
+        'option': ['disabled', 'selected'],
+        'multiple': ['disabled', 'selected', 'invalid'],
+        'indicator': ['disabled', 'open', 'invalid'],
+    },
+    DropdownField: {
+        'root': ['disabled', 'selected', 'open', 'invalid'],
+        'value': ['disabled', 'selected', 'open', 'invalid'],
+        'filter': ['disabled', 'open', 'invalid'],
+        'trigger': ['disabled', 'selected', 'open', 'invalid'],
+        'clear': ['disabled'],
+        'popover': ['open'],
+        'listbox': ['open'],
+        'option': ['disabled', 'selected'],
+        'multiple': ['disabled', 'selected', 'invalid'],
+        'indicator': ['disabled', 'open', 'invalid'],
+    },
+    MultiSelectField: {
+        'root': ['disabled', 'selected', 'open', 'invalid'],
+        'value': ['disabled', 'selected', 'open', 'invalid'],
+        'filter': ['disabled', 'open', 'invalid'],
+        'trigger': ['disabled', 'selected', 'open', 'invalid'],
+        'clear': ['disabled'],
+        'popover': ['open'],
+        'listbox': ['open'],
+        'option': ['disabled', 'selected'],
+        'multiple': ['disabled', 'selected', 'invalid'],
+        'indicator': ['disabled', 'open', 'invalid'],
+    },
+    DatePickerInput: {
+        'root': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'group': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'input': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'segment': ['disabled', 'invalid', 'readonly'],
+        'placeholder': [],
+        'trigger': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'popover': ['open'],
+        'dialog': ['open'],
+        'calendar': ['open'],
+        'header': [],
+        'previous': [],
+        'heading': [],
+        'next': [],
+        'grid': [],
+        'cell': [],
+        'button-bar': [],
+        'today': ['disabled'],
+        'clear': [],
+    },
+    CalendarField: {
+        'root': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'group': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'input': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'segment': ['disabled', 'invalid', 'readonly'],
+        'placeholder': [],
+        'trigger': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        'popover': ['open'],
+        'dialog': ['open'],
+        'calendar': ['open'],
+        'header': [],
+        'previous': [],
+        'heading': [],
+        'next': [],
+        'grid': [],
+        'cell': [],
+        'button-bar': [],
+        'today': ['disabled'],
+        'clear': [],
+    },
+    Button: {
+        'root': ['disabled', 'loading'],
+        'spinner': [],
+        'icon': [],
+        'label': [],
+    },
+    ActionMenubar: {
+        'root': ['disabled', 'loading'],
+        'spinner': [],
+        'icon': [],
+        'label': [],
+    },
+    Tooltip: {
+        'trigger': [],
+        'popup': ['open'],
+    },
+    Dialog: {
+        'backdrop': ['open', 'busy'],
+        'positioner': ['open', 'busy'],
+        'root': ['open', 'busy'],
+        'header': [],
+        'title': [],
+        'close': ['disabled', 'busy'],
+        'content': ['open', 'busy'],
+        'busy-scope': ['busy'],
+        'footer': [],
+        'confirm': ['disabled', 'busy'],
+        'cancel': ['disabled', 'busy'],
+    },
+    CommandDialog: {
+        'backdrop': ['open', 'busy'],
+        'positioner': ['open', 'busy'],
+        'root': ['open', 'busy'],
+        'header': [],
+        'title': [],
+        'close': ['disabled', 'busy'],
+        'content': ['open', 'busy'],
+        'busy-scope': ['busy'],
+        'footer': [],
+        'confirm': ['disabled', 'busy'],
+        'cancel': ['disabled', 'busy'],
+    },
+    CommandStepper: {
+        'root': ['invalid', 'busy'],
+        'list': ['invalid', 'busy'],
+        'step': ['selected', 'invalid', 'busy'],
+        'header': ['disabled', 'selected', 'invalid', 'busy'],
+        'number': ['selected', 'invalid', 'busy'],
+        'title': ['selected', 'invalid', 'busy'],
+        'separator': ['invalid', 'busy'],
+        'panels': ['invalid', 'busy'],
+        'panel': ['selected', 'invalid', 'busy'],
+    },
+    DataTableCore: {
+        'root': [],
+        'search': [],
+        'search-input': [],
+        'table-container': [],
+        'table': [],
+        'head': [],
+        'header-row': [],
+        'header-cell': ['selected'],
+        'header-content': ['selected'],
+        'sort': ['pressed'],
+        'body': [],
+        'empty-row': [],
+        'empty-cell': [],
+        'row': ['selected'],
+        'cell': ['selected'],
+    },
+    DataTableForObservableQuery: {
+        'root': [],
+        'search': [],
+        'search-input': [],
+        'table-container': [],
+        'table': [],
+        'head': [],
+        'header-row': [],
+        'header-cell': ['selected'],
+        'header-content': ['selected'],
+        'sort': ['pressed'],
+        'body': [],
+        'empty-row': [],
+        'empty-cell': [],
+        'row': ['selected'],
+        'cell': ['selected'],
+    },
+    DataTableForQuery: {
+        'root': [],
+        'search': [],
+        'search-input': [],
+        'table-container': [],
+        'table': [],
+        'head': [],
+        'header-row': [],
+        'header-cell': ['selected'],
+        'header-content': ['selected'],
+        'sort': ['pressed'],
+        'body': [],
+        'empty-row': [],
+        'empty-cell': [],
+        'row': ['selected'],
+        'cell': ['selected'],
+    },
+    ColumnFilterMenu: {
+        'filter-trigger': ['selected', 'open'],
+        'filter-popover': ['open'],
+        'filter-menu': ['open'],
+        'filter-actions': [],
+    },
+    TablePaginator: {
+        'root': [],
+        'range': [],
+        'info': [],
+    },
+    Toaster: {
+        'region': [],
+        'toast': ['loading', 'busy'],
+        'icon': [],
+        'content': ['loading', 'busy'],
+        'title': [],
+        'description': [],
+        'close': [],
+        'action': [],
+    },
+    EventsView: {
+        'timeline': [],
+        'event': ['selected'],
+        'separator': [],
+        'marker': ['selected'],
+        'connector': [],
+        'content': [],
+    },
+    ChatSidebar: {
+        'backdrop': ['selected', 'open'],
+        'root': ['selected', 'open'],
+        'header': [],
+        'back': [],
+        'title': [],
+        'close': [],
+        'content': [],
+    },
+    Toolbar: {
+        'root': [],
+    },
+    ToolbarButton: {
+        'button': ['selected'],
+        'icon': [],
+        'label': [],
+    },
+    ToolbarFolder: {
+        'toolbar-folder': ['open'],
+        'toolbar-folder-trigger': ['open'],
+        'toolbar-folder-panel': ['open'],
+    },
+    ToolbarFanOutItem: {
+        'fanout-root': ['open'],
+        'fanout-trigger': ['open'],
+        'fanout-panel': ['open'],
+    },
+    ToolbarSeparator: {
+        'toolbar-separator': [],
+    },
+    ToolbarSection: {
+        'toolbar-section': [],
+        'toolbar-context': ['selected'],
+    },
+    ToolbarGroup: {
+        'toolbar-group': [],
+        'toolbar-slot': [],
+        'toolbar-slot-incoming': [],
+        'toolbar-slot-outgoing': [],
+    },
+    ToolbarLayout: {
+        'toolbar-layout': [],
+        'toolbar-slot': [],
+        'toolbar-slot-incoming': [],
+        'toolbar-slot-outgoing': [],
+    },
+    Skeleton: {
+        'root': [],
+    },
+    Message: {
+        'root': [],
+        'icon': [],
+        'text': [],
+    },
+    Badge: {
+        'root': [],
+    },
+    ProgressSpinner: {
+        'root': ['loading', 'busy'],
+        'svg': [],
+        'track': [],
+        'range': [],
+    },
+    Avatar: {
+        'root': [],
+        'image': [],
+        'fallback': [],
+    },
+    Tag: {
+        'root': [],
+        'icon': [],
+        'label': [],
+    },
+    ProgressBar: {
+        'root': ['loading', 'busy'],
+        'indicator': [],
+        'label': [],
+    },
+    Chip: {
+        'root': [],
+        'icon': [],
+        'label': [],
+        'remove': [],
+    },
+} as const satisfies {
+    readonly [Component in keyof CratisPartsManifest]: {
+        readonly [Part in PartsOf<Component>]: readonly CratisCanonicalPartState[];
+    };
+};
+
+/** The canonical component/part/state manifest. */
+export type CratisPartStatesManifest = typeof cratisPartStates;
+
+/** Canonical states exposed by one stable component part. */
+export type PartStatesOf<
+    Component extends keyof CratisPartStatesManifest,
+    Part extends keyof CratisPartStatesManifest[Component],
+> = CratisPartStatesManifest[Component][Part] extends readonly (infer State)[]
+    ? State
+    : never;

@@ -236,6 +236,323 @@ export const partDefinitions = {
     },
 };
 
+/** Canonical boolean state attributes supported by the stable-parts contract. */
+export const canonicalPartStateNames = [
+    'disabled',
+    'loading',
+    'selected',
+    'open',
+    'invalid',
+    'readonly',
+    'busy',
+    'focused',
+    'pressed',
+];
+
+/**
+ * Allowed canonical states for every part owned directly by a component definition.
+ * Empty arrays are intentional: static parts remain explicitly state-free.
+ * Aliases inherit the complete state contract of their target.
+ */
+export const partStateDefinitions = {
+    CheckboxField: {
+        root: ['disabled', 'selected', 'invalid'],
+        input: ['disabled', 'selected', 'invalid'],
+        box: ['disabled', 'selected', 'invalid'],
+        indicator: ['disabled', 'selected', 'invalid'],
+    },
+    RatingField: {
+        root: ['disabled', 'invalid'],
+        option: ['disabled', 'selected', 'invalid'],
+        input: ['disabled', 'selected', 'invalid'],
+        star: ['disabled', 'selected', 'invalid'],
+    },
+    RadioButtonField: {
+        root: ['disabled', 'selected', 'invalid'],
+        input: ['disabled', 'selected', 'invalid'],
+        box: ['disabled', 'selected', 'invalid'],
+        indicator: ['disabled', 'selected', 'invalid'],
+    },
+    RadioGroupField: {
+        root: ['disabled', 'invalid'],
+        option: ['disabled', 'selected', 'invalid'],
+        input: ['disabled', 'selected', 'invalid'],
+        box: ['disabled', 'selected', 'invalid'],
+        indicator: ['disabled', 'selected', 'invalid'],
+    },
+    ChipsField: {
+        root: ['disabled', 'invalid', 'readonly'],
+        item: ['selected'],
+        remove: ['disabled', 'selected'],
+        input: ['disabled', 'invalid', 'readonly'],
+    },
+    ToggleSwitchField: {
+        root: ['disabled', 'selected', 'invalid'],
+        input: ['disabled', 'selected', 'invalid'],
+        control: ['disabled', 'selected', 'invalid'],
+        handle: ['disabled', 'selected', 'invalid'],
+    },
+    SliderField: {
+        root: ['disabled', 'invalid'],
+        input: ['disabled', 'invalid'],
+        value: ['invalid'],
+    },
+    NumberField: {
+        root: ['disabled', 'invalid', 'readonly'],
+        input: ['disabled', 'invalid', 'readonly'],
+    },
+    ColorPickerField: {
+        root: ['disabled', 'invalid'],
+        input: ['disabled', 'invalid'],
+        value: ['invalid'],
+    },
+    PasswordField: {
+        root: ['disabled', 'invalid', 'readonly'],
+        input: ['disabled', 'invalid', 'readonly'],
+        toggle: ['disabled'],
+    },
+    InputTextField: {
+        input: ['disabled', 'invalid', 'readonly'],
+    },
+    TextAreaField: {
+        textarea: ['disabled', 'invalid', 'readonly'],
+    },
+    Dropdown: {
+        root: ['disabled', 'selected', 'open', 'invalid'],
+        value: ['disabled', 'selected', 'open', 'invalid'],
+        filter: ['disabled', 'open', 'invalid'],
+        trigger: ['disabled', 'selected', 'open', 'invalid'],
+        clear: ['disabled'],
+        popover: ['open'],
+        listbox: ['open'],
+        option: ['disabled', 'selected'],
+        multiple: ['disabled', 'selected', 'invalid'],
+        indicator: ['disabled', 'open', 'invalid'],
+    },
+    DatePickerInput: {
+        root: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        group: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        input: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        segment: ['disabled', 'invalid', 'readonly'],
+        placeholder: [],
+        trigger: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+        popover: ['open'],
+        dialog: ['open'],
+        calendar: ['open'],
+        header: [],
+        previous: [],
+        heading: [],
+        next: [],
+        grid: [],
+        cell: [],
+        'button-bar': [],
+        today: ['disabled'],
+        clear: [],
+    },
+    Button: {
+        root: ['disabled', 'loading'],
+        spinner: [],
+        icon: [],
+        label: [],
+    },
+    Tooltip: {
+        trigger: [],
+        popup: ['open'],
+    },
+    Dialog: {
+        backdrop: ['open', 'busy'],
+        positioner: ['open', 'busy'],
+        root: ['open', 'busy'],
+        header: [],
+        title: [],
+        close: ['disabled', 'busy'],
+        content: ['open', 'busy'],
+        'busy-scope': ['busy'],
+        footer: [],
+        confirm: ['disabled', 'busy'],
+        cancel: ['disabled', 'busy'],
+    },
+    CommandStepper: {
+        root: ['invalid', 'busy'],
+        list: ['invalid', 'busy'],
+        step: ['selected', 'invalid', 'busy'],
+        header: ['disabled', 'selected', 'invalid', 'busy'],
+        number: ['selected', 'invalid', 'busy'],
+        title: ['selected', 'invalid', 'busy'],
+        separator: ['invalid', 'busy'],
+        panels: ['invalid', 'busy'],
+        panel: ['selected', 'invalid', 'busy'],
+    },
+    DataTableCore: {
+        root: [],
+        search: [],
+        'search-input': [],
+        'table-container': [],
+        table: [],
+        head: [],
+        'header-row': [],
+        'header-cell': ['selected'],
+        'header-content': ['selected'],
+        sort: ['pressed'],
+        body: [],
+        'empty-row': [],
+        'empty-cell': [],
+        row: ['selected'],
+        cell: ['selected'],
+    },
+    ColumnFilterMenu: {
+        'filter-trigger': ['selected', 'open'],
+        'filter-popover': ['open'],
+        'filter-menu': ['open'],
+        'filter-actions': [],
+    },
+    TablePaginator: {
+        root: [],
+        range: [],
+        info: [],
+    },
+    Toaster: {
+        region: [],
+        toast: ['loading', 'busy'],
+        icon: [],
+        content: ['loading', 'busy'],
+        title: [],
+        description: [],
+        close: [],
+        action: [],
+    },
+    EventsView: {
+        timeline: [],
+        event: ['selected'],
+        separator: [],
+        marker: ['selected'],
+        connector: [],
+        content: [],
+    },
+    ChatSidebar: {
+        backdrop: ['selected', 'open'],
+        root: ['selected', 'open'],
+        header: [],
+        back: [],
+        title: [],
+        close: [],
+        content: [],
+    },
+    Toolbar: {
+        root: [],
+    },
+    ToolbarButton: {
+        button: ['selected'],
+        icon: [],
+        label: [],
+    },
+    ToolbarFolder: {
+        'toolbar-folder': ['open'],
+        'toolbar-folder-trigger': ['open'],
+        'toolbar-folder-panel': ['open'],
+    },
+    ToolbarFanOutItem: {
+        'fanout-root': ['open'],
+        'fanout-trigger': ['open'],
+        'fanout-panel': ['open'],
+    },
+    ToolbarSeparator: {
+        'toolbar-separator': [],
+    },
+    ToolbarSection: {
+        'toolbar-section': [],
+        'toolbar-context': ['selected'],
+    },
+    ToolbarGroup: {
+        'toolbar-group': [],
+        'toolbar-slot': [],
+        'toolbar-slot-incoming': [],
+        'toolbar-slot-outgoing': [],
+    },
+    ToolbarLayout: {
+        'toolbar-layout': [],
+        'toolbar-slot': [],
+        'toolbar-slot-incoming': [],
+        'toolbar-slot-outgoing': [],
+    },
+    Skeleton: {
+        root: [],
+    },
+    Message: {
+        root: [],
+        icon: [],
+        text: [],
+    },
+    Badge: {
+        root: [],
+    },
+    ProgressSpinner: {
+        root: ['loading', 'busy'],
+        svg: [],
+        track: [],
+        range: [],
+    },
+    Avatar: {
+        root: [],
+        image: [],
+        fallback: [],
+    },
+    Tag: {
+        root: [],
+        icon: [],
+        label: [],
+    },
+    ProgressBar: {
+        root: ['loading', 'busy'],
+        indicator: [],
+        label: [],
+    },
+    Chip: {
+        root: [],
+        icon: [],
+        label: [],
+        remove: [],
+    },
+};
+
+/**
+ * Render callbacks that receive a documented part marker through spread props while
+ * adding canonical states on the returned native element. The spread expression and
+ * state set are exact so verifier drift fails closed.
+ */
+export const splitPartStateAllowlist = [
+    {
+        file: 'Common/DatePickerInput.tsx',
+        spread: 'groupProps',
+        part: 'group',
+        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+    },
+    {
+        file: 'Common/DatePickerInput.tsx',
+        spread: 'inputProps',
+        part: 'input',
+        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+    },
+    {
+        file: 'Common/DatePickerInput.tsx',
+        spread: 'segmentProps',
+        part: 'segment',
+        states: ['disabled', 'invalid', 'readonly'],
+    },
+    {
+        file: 'Common/DatePickerInput.tsx',
+        spread: 'triggerProps',
+        part: 'trigger',
+        states: ['disabled', 'selected', 'open', 'invalid', 'readonly'],
+    },
+    {
+        file: 'Dropdown/Dropdown.tsx',
+        spread: 'props',
+        part: 'trigger',
+        states: ['open'],
+    },
+];
+
 /** Exact dynamic production expressions that intentionally emit known parts. */
 export const dynamicPartExpressions = [
     {
@@ -295,6 +612,22 @@ export const resolveDefinition = (component, seen = new Set()) => {
 export const resolvedParts = (component) => [...resolveDefinition(component).parts];
 export const resolvedPtKeys = (component) => [...(resolveDefinition(component).ptKeys ?? [])];
 
+export const resolvePartStateDefinition = (component, seen = new Set()) => {
+    const definition = partDefinitions[component];
+    if (!definition) throw new Error(`Unknown parts component '${component}'.`);
+    if (!definition.aliasOf) return partStateDefinitions[component];
+    if (seen.has(component)) throw new Error(`Circular parts-state alias at '${component}'.`);
+    return resolvePartStateDefinition(definition.aliasOf, new Set(seen).add(component));
+};
+
+export const resolvedPartStates = (component) => {
+    const states = resolvePartStateDefinition(component);
+    if (!states) throw new Error(`Missing parts-state definition for '${component}'.`);
+    return Object.fromEntries(
+        resolvedParts(component).map((part) => [part, [...(states[part] ?? [])]]),
+    );
+};
+
 export function generatedPartsSource() {
     const entries = Object.keys(partDefinitions)
         .map((component) => {
@@ -304,8 +637,20 @@ export function generatedPartsSource() {
             return `    ${component}: [${parts}],`;
         })
         .join('\n');
+    const stateNames = canonicalPartStateNames.map((state) => `'${state}'`).join(', ');
+    const stateEntries = Object.keys(partDefinitions)
+        .map((component) => {
+            const parts = Object.entries(resolvedPartStates(component))
+                .map(([part, states]) => {
+                    const values = states.map((state) => `'${state}'`).join(', ');
+                    return `        '${part}': [${values}],`;
+                })
+                .join('\n');
+            return `    ${component}: {\n${parts}\n    },`;
+        })
+        .join('\n');
 
-    return `// Copyright (c) Cratis. All rights reserved.\n// Licensed under the MIT license. See LICENSE file in the project root for full license information.\n\n// @generated by Cratis — do not edit\n\n/** Stable data-cratis-part names exposed by each public component. */\nexport const cratisParts = {\n${entries}\n} as const;\n\n/** The canonical Components part-name manifest. */\nexport type CratisPartsManifest = typeof cratisParts;\n\n/** Stable part names exposed by one component in the canonical manifest. */\nexport type PartsOf<K extends keyof CratisPartsManifest> = CratisPartsManifest[K][number];\n`;
+    return `// Copyright (c) Cratis. All rights reserved.\n// Licensed under the MIT license. See LICENSE file in the project root for full license information.\n\n// @generated by Cratis — do not edit\n\n/** Stable data-cratis-part names exposed by each public component. */\nexport const cratisParts = {\n${entries}\n} as const;\n\n/** The canonical Components part-name manifest. */\nexport type CratisPartsManifest = typeof cratisParts;\n\n/** Stable part names exposed by one component in the canonical manifest. */\nexport type PartsOf<K extends keyof CratisPartsManifest> = CratisPartsManifest[K][number];\n\n/** Canonical semantic state names supported by the stable-parts contract. */\nexport const cratisCanonicalPartStates = [${stateNames}] as const;\n\n/** A canonical semantic state name without the data- prefix. */\nexport type CratisCanonicalPartState = (typeof cratisCanonicalPartStates)[number];\n\n/**\n * Canonical states emitted by every stable part. Empty arrays document parts that\n * intentionally expose no canonical state attributes.\n */\nexport const cratisPartStates = {\n${stateEntries}\n} as const satisfies {\n    readonly [Component in keyof CratisPartsManifest]: {\n        readonly [Part in PartsOf<Component>]: readonly CratisCanonicalPartState[];\n    };\n};\n\n/** The canonical component/part/state manifest. */\nexport type CratisPartStatesManifest = typeof cratisPartStates;\n\n/** Canonical states exposed by one stable component part. */\nexport type PartStatesOf<\n    Component extends keyof CratisPartStatesManifest,\n    Part extends keyof CratisPartStatesManifest[Component],\n> = CratisPartStatesManifest[Component][Part] extends readonly (infer State)[]\n    ? State\n    : never;\n`;
 }
 
 export function generateParts() {
