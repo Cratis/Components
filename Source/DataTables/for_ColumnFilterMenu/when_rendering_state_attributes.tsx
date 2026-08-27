@@ -37,7 +37,13 @@ describe('when rendering ColumnFilterMenu state attributes', () => {
         it('should expose pressed state while the trigger is pressed', async () => {
             await act(async () => {
                 table.trigger.dispatchEvent(
-                    new MouseEvent('mousedown', { bubbles: true, buttons: 1 }),
+                    new PointerEvent('pointerdown', {
+                        bubbles: true,
+                        button: 0,
+                        buttons: 1,
+                        pointerId: 1,
+                        pointerType: 'mouse',
+                    }),
                 );
             });
 
@@ -45,7 +51,13 @@ describe('when rendering ColumnFilterMenu state attributes', () => {
 
             await act(async () => {
                 document.dispatchEvent(
-                    new MouseEvent('mouseup', { bubbles: true, buttons: 0 }),
+                    new PointerEvent('pointerup', {
+                        bubbles: true,
+                        button: 0,
+                        buttons: 0,
+                        pointerId: 1,
+                        pointerType: 'mouse',
+                    }),
                 );
             });
         });
