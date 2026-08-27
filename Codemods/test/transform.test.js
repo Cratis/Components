@@ -210,7 +210,14 @@ describe('root namespace maps', () => {
     it('should keep both migration guides aligned with every namespace and the shipped command', () => {
         const guides = [
             readFileSync(
-                path.join(__dirname, '..', '..', 'Documentation', 'Migration', '3-to-4.md'),
+                path.join(
+                    __dirname,
+                    '..',
+                    '..',
+                    'Documentation',
+                    'Migration',
+                    '3-to-4.md',
+                ),
                 'utf8',
             ),
             readFileSync(
@@ -220,9 +227,20 @@ describe('root namespace maps', () => {
         ];
 
         for (const guide of guides) {
-            expect(guide).toContain(
-                'cratis-components-remove-root-namespace-imports --check <paths...>',
+            const rootCommand =
+                'cratis-components-remove-root-namespace-imports --check <paths...>';
+            const buttonCommand =
+                'cratis-components-button-variant-tone --check <paths...>';
+            const handlerCommand = 'cratis-components-change-handler --check <paths...>';
+            expect(guide).toContain(rootCommand);
+            expect(guide).toContain(buttonCommand);
+            expect(guide).toContain(handlerCommand);
+            expect(guide.indexOf(rootCommand)).toBeLessThan(guide.indexOf(buttonCommand));
+            expect(guide.indexOf(buttonCommand)).toBeLessThan(
+                guide.indexOf(handlerCommand),
             );
+            expect(guide).toContain('Never substitute `latest`');
+            expect(guide).toContain('TODO(cratis-codemod)');
             for (const namespace of Object.keys(codemodNamespaceSubpaths)) {
                 expect(guide).toContain(`| \`${namespace}\``);
             }

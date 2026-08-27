@@ -1,6 +1,6 @@
 # @cratis/components-codemods
 
-Migration codemods in the Components 4 candidate move Components 3 root namespaces to Components 4 explicit subpath imports. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). The companion `@cratis/eslint-plugin-components` package's `no-root-barrel-import` rule enforces this once a consumer has migrated.
+Migration codemods in the Components 4 candidate move Components 3 root namespaces to Components 4 explicit subpath imports, replace deprecated Button appearance props, and update legacy event-wrapper callbacks to semantic value callbacks. Each transform is independently invokable and idempotent. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). The companion `@cratis/eslint-plugin-components` package's `no-root-barrel-import` rule enforces this once a consumer has migrated.
 
 ## `remove-root-namespace-imports`
 
@@ -11,14 +11,14 @@ application's TypeScript version. It rewrites static `import` declarations and n
 
 ### What it rewrites
 
-| Before                                               | After                                                          |
-| ----------------------------------------------------- | ----------------------------------------------------------------- |
-| `import { Canvas } from '@cratis/components';`       | `import * as Canvas from '@cratis/components/Canvas';`         |
-| `import type { Canvas } from '@cratis/components';`  | `import type * as Canvas from '@cratis/components/Canvas';`    |
-| `import { Canvas as C } from '@cratis/components';`  | `import * as C from '@cratis/components/Canvas';`              |
-| `export { Canvas } from '@cratis/components';`       | `export * as Canvas from '@cratis/components/Canvas';`         |
-| `export type { Canvas } from '@cratis/components';`  | `export type * as Canvas from '@cratis/components/Canvas';`    |
-| `export { Canvas as C } from '@cratis/components';`  | `export * as C from '@cratis/components/Canvas';`              |
+| Before                                              | After                                                       |
+| --------------------------------------------------- | ----------------------------------------------------------- |
+| `import { Canvas } from '@cratis/components';`      | `import * as Canvas from '@cratis/components/Canvas';`      |
+| `import type { Canvas } from '@cratis/components';` | `import type * as Canvas from '@cratis/components/Canvas';` |
+| `import { Canvas as C } from '@cratis/components';` | `import * as C from '@cratis/components/Canvas';`           |
+| `export { Canvas } from '@cratis/components';`      | `export * as Canvas from '@cratis/components/Canvas';`      |
+| `export type { Canvas } from '@cratis/components';` | `export type * as Canvas from '@cratis/components/Canvas';` |
+| `export { Canvas as C } from '@cratis/components';` | `export * as C from '@cratis/components/Canvas';`           |
 
 A named `export … from '@cratis/components'` re-export follows exactly the same rules as an
 import, because the transformation is equally unambiguous in both directions: the exported
@@ -83,7 +83,7 @@ Each of these is left completely untouched, and reported as a diagnostic instead
   anywhere in the file.
 - A wildcard re-export of the whole package — `export * from '@cratis/components';` — or a
   namespace re-export of the whole package — `export * as Components from
-  '@cratis/components';`. Both are exactly as ambiguous as a whole-package namespace import:
+'@cratis/components';`. Both are exactly as ambiguous as a whole-package namespace import:
   which subpath each later access needs cannot be determined from the re-export alone. A
   _named_ re-export (`export { Canvas } from '@cratis/components';`) is not in this list —
   see [What it rewrites](#what-it-rewrites).
@@ -126,6 +126,100 @@ After running the codemod, run the project's own build/lint/test gates — the c
 performs the mechanical import/re-export rewrite; it does not attempt to fix any resulting
 unused import, nor does it know whether a namespace member you use (`Canvas.Foo`) still
 exists at that subpath.
+
+## `button-variant-tone`
+
+`cratis-components-button-variant-tone` resolves `Button` JSX bindings imported, including aliases and `Common.Button` namespace access, from `@cratis/components/Common`. It applies the runtime's legacy precedence (`link` → `text` → `outlined` → `solid`) and replaces deprecated props:
+
+| Deprecated prop                       | Semantic prop       |
+| ------------------------------------- | ------------------- |
+| `text`                                | `variant='ghost'`   |
+| `link`                                | `variant='link'`    |
+| `outlined`                            | `variant='outline'` |
+| `rounded`                             | `shape='pill'`      |
+| `severity='secondary'` / `'contrast'` | `tone='neutral'`    |
+| `severity='info'` / `'help'`          | `tone='accent'`     |
+| `severity='success'`                  | `tone='positive'`   |
+| `severity='warn'`                     | `tone='caution'`    |
+| `severity='danger'`                   | `tone='critical'`   |
+
+A literal `severity='contrast'` also receives `variant='solid'` only when no explicit new variant or stronger true legacy variant applies. A literal new `variant`, `tone`, or `shape` wins and its redundant legacy prop is removed.
+
+```tsx
+// Safe rewrite
+<Button outlined rounded severity='warn' />
+// becomes
+<Button variant='outline' shape='pill' tone='caution' />
+```
+
+The transform never guesses through JSX spreads, dynamic legacy values, duplicate props, or an unknown new-prop expression that conflicts with a legacy prop. It leaves the uncertain prop group semantically unchanged, reports it, and adds one syntax-safe `TODO(cratis-codemod)` annotation. Subsequent runs do not duplicate that annotation.
+
+```tsx
+// Refused and reported
+<Button text={appearance.text} severity={appearance.severity} />
+```
+
+## `change-handler`
+
+`cratis-components-change-handler` resolves affected Components-owned JSX identifiers imported with aliases or namespaces from `@cratis/components/Dropdown`, `@cratis/components/CommandForm`, and `@cratis/components/CommandForm/fields`. It rewrites only a structurally-proven single forwarding callback:
+
+```tsx
+// Safe rewrites
+<Dropdown onChange={(event) => setRole(event.value)} />
+<InputTextField onChange={(event) => setName(event.target.value)} />
+<CheckboxField onChange={({ target: { checked } }) => setEnabled(checked)} />
+
+// become
+<Dropdown onChange={(value) => setRole(value)} />
+<InputTextField onChange={(value) => setName(value)} />
+<CheckboxField onChange={(value) => setEnabled(value)} />
+```
+
+The affected CommandForm fields cover legacy `target`/`currentTarget` `value`, `checked`, and `valueAsNumber` payloads, plus `DropdownField`/`MultiSelectField` `event.value`. Already-semantic callbacks and callback references such as `onChange={setValue}` are unchanged.
+
+Multi-statement, multi-use, wrong-payload, destructuring-with-default/rest, and native-event-dependent callbacks are refused, reported, and annotated once:
+
+```tsx
+// Refused and reported: the host still depends on the old event object
+<Dropdown
+    onChange={(event) => {
+        audit(event.originalEvent);
+        setRole(event.value);
+    }}
+/>
+```
+
+## Run the migration sequence
+
+Use the exact installed Components version for all three commands. Run the root-import transform first so the later transforms can resolve explicit Components-owned subpaths, then run Button appearance and change-handler migration. Preview every step before applying it:
+
+```sh
+COMPONENTS_VERSION="$(node -p "require('@cratis/components/package.json').version")"
+
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+  cratis-components-remove-root-namespace-imports --check <paths...>
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+  cratis-components-remove-root-namespace-imports <paths...>
+
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+  cratis-components-button-variant-tone --check <paths...>
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+  cratis-components-button-variant-tone <paths...>
+
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+  cratis-components-change-handler --check <paths...>
+npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+  cratis-components-change-handler <paths...>
+```
+
+Never substitute `latest` or another Components version when the exact codemod package is unavailable. Stop, keep the application on its current package, migrate manually, or wait for the matching publication. Both new CLIs require Node.js 20 or newer, bundle their own TypeScript compiler dependency, scan `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` recursively, support `--package <name>`, and exit nonzero for pending check-mode edits or any refused case. Review every diagnostic and `TODO(cratis-codemod)`, then run the consuming project's formatter, lint, type check, tests, and production build.
+
+Contributor source commands are:
+
+```sh
+node Codemods/scripts/button-variant-tone.js --check Source
+node Codemods/scripts/change-handler.js --check Source
+```
 
 ### Test
 
