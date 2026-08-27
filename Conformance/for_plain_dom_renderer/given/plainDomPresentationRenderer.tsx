@@ -173,10 +173,7 @@ const PlainButton = forwardRef<HTMLButtonElement, ButtonProps>(function PlainBut
             ) : icon ? (
                 <span
                     {...pt?.icon}
-                    className={classNames(
-                        'plain-dom-button__icon',
-                        pt?.icon?.className,
-                    )}
+                    className={classNames('plain-dom-button__icon', pt?.icon?.className)}
                     data-cratis-part='icon'
                     aria-hidden={pt?.icon?.['aria-hidden'] ?? true}
                 >
@@ -359,12 +356,9 @@ const PlainChoice = ({ kind, props, forwardedRef }: PlainChoiceProps) => {
     );
     const rootPt = pt?.root;
     const labelPt = pt?.label;
-    const boxPt =
-        kind === 'switch' ? undefined : (pt as CheckboxParts | undefined)?.box;
+    const boxPt = kind === 'switch' ? undefined : (pt as CheckboxParts | undefined)?.box;
     const indicatorPt =
-        kind === 'switch'
-            ? undefined
-            : (pt as CheckboxParts | undefined)?.indicator;
+        kind === 'switch' ? undefined : (pt as CheckboxParts | undefined)?.indicator;
     const controlPt =
         kind === 'switch' ? (pt as SwitchParts | undefined)?.control : undefined;
     const handlePt =
@@ -468,10 +462,7 @@ const PlainChoice = ({ kind, props, forwardedRef }: PlainChoiceProps) => {
             {label !== undefined && (
                 <span
                     {...labelPt}
-                    className={classNames(
-                        'plain-dom-choice__label',
-                        labelPt?.className,
-                    )}
+                    className={classNames('plain-dom-choice__label', labelPt?.className)}
                     data-cratis-part='label'
                     {...attributes}
                 >
@@ -488,19 +479,17 @@ const PlainCheckbox = forwardRef<HTMLInputElement, CheckboxProps>(
     },
 );
 
-const PlainRadio = forwardRef<HTMLInputElement, RadioProps>(function PlainRadio(
-    props,
-    ref,
-) {
-    return <PlainChoice kind='radio' props={props} forwardedRef={ref} />;
-});
+const PlainRadio = forwardRef<HTMLInputElement, RadioProps>(
+    function PlainRadio(props, ref) {
+        return <PlainChoice kind='radio' props={props} forwardedRef={ref} />;
+    },
+);
 
-const PlainSwitch = forwardRef<HTMLInputElement, SwitchProps>(function PlainSwitch(
-    props,
-    ref,
-) {
-    return <PlainChoice kind='switch' props={props} forwardedRef={ref} />;
-});
+const PlainSwitch = forwardRef<HTMLInputElement, SwitchProps>(
+    function PlainSwitch(props, ref) {
+        return <PlainChoice kind='switch' props={props} forwardedRef={ref} />;
+    },
+);
 
 const PlainProgress = ({
     value = 0,
@@ -532,10 +521,7 @@ const PlainProgress = ({
                 style={determinate ? { width: `${boundedValue}%` } : undefined}
             >
                 {determinate && showValue && (
-                    <span
-                        className='plain-dom-progress__label'
-                        data-cratis-part='label'
-                    >
+                    <span className='plain-dom-progress__label' data-cratis-part='label'>
                         {boundedValue}%
                     </span>
                 )}

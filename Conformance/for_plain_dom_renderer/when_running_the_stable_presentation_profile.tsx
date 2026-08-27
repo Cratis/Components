@@ -57,9 +57,8 @@ describe('when running the private plain DOM stable presentation profile', () =>
             report.checks.find((check) => check.id === 'manifest.schema')?.status,
         ).to.equal('passed');
         expect(
-            report.checks.find(
-                (check) => check.id === 'manifest.runtimeConsistency',
-            )?.status,
+            report.checks.find((check) => check.id === 'manifest.runtimeConsistency')
+                ?.status,
         ).to.equal('passed');
     });
 
@@ -68,9 +67,7 @@ describe('when running the private plain DOM stable presentation profile', () =>
             (slotId) => slotId !== 'common.progress',
         );
         const checks = refCapableSlots.map((slotId) =>
-            report.checks.find(
-                (check) => check.id === `contract.${slotId}.elementRef`,
-            ),
+            report.checks.find((check) => check.id === `contract.${slotId}.elementRef`),
         );
 
         expect(checks.every((check) => check?.status === 'passed')).to.equal(true);
