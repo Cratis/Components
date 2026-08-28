@@ -25,6 +25,9 @@ const contentTypes = {
 };
 
 const resolveRequest = (requestUrl) => {
+    const rawPathname = (requestUrl ?? '/').split(/[?#]/u, 1)[0];
+    const decodedRawPathname = decodeURIComponent(rawPathname).replaceAll('\\', '/');
+    if (decodedRawPathname.split('/').includes('..')) return undefined;
     const pathname = decodeURIComponent(
         new URL(requestUrl ?? '/', 'http://localhost').pathname,
     );
@@ -45,6 +48,12 @@ const resolveRequest = (requestUrl) => {
 
 if (!existsSync(path.join(outputRoot, 'index.html'))) {
     throw new Error('Build the composed Storybook before verifying its manager.');
+}
+if (
+    resolveRequest('/../outside') !== undefined ||
+    resolveRequest('/%2e%2e/outside') !== undefined
+) {
+    throw new Error('The composed Storybook verifier accepted a traversal path.');
 }
 
 const server = createServer((request, response) => {
