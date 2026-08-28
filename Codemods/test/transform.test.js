@@ -109,6 +109,7 @@ describe('root namespace maps', () => {
         const intentionallyUnmapped = new Set([
             '.',
             './package.json',
+            './compat-manifest.json',
             './styles',
             './tokens',
             './theme',

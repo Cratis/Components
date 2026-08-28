@@ -16,11 +16,12 @@ Both import rules cover static `import` and re-`export … from` forms. The root
 
 ## Install
 
-Use the same exact version as the installed Components package:
+Use the independently released Components 4 tooling train bounded to `>=4 <5`. Never use
+`latest`; plugin patches can release independently from Components Core:
 
 ```sh
-COMPONENTS_VERSION="$(node -p "require('@cratis/components/package.json').version")"
-yarn add -D "@cratis/eslint-plugin-components@$COMPONENTS_VERSION" \
+TOOLING_RANGE='^4.0.0' # Shell-safe equivalent of >=4 <5.
+yarn add -D "@cratis/eslint-plugin-components@$TOOLING_RANGE" \
   @cratis/eslint-config eslint
 ```
 

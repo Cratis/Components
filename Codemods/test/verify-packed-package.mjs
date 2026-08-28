@@ -4,12 +4,14 @@
 import { spawnSync } from 'node:child_process';
 import {
     existsSync,
+    mkdirSync,
     mkdtempSync,
     readFileSync,
     readdirSync,
     rmSync,
     writeFileSync,
 } from 'node:fs';
+import { validateBundledManifest } from '../lib/compatibility.js';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -63,6 +65,40 @@ try {
         }
     }
 
+    const generatedManifest = readFileSync(
+        path.resolve(packageDir, '..', 'compat-manifest.json'),
+    );
+    const packedManifest = readFileSync(path.join(installedRoot, 'compat-manifest.json'));
+    if (!packedManifest.equals(generatedManifest)) {
+        throw new Error(
+            'Packed codemod compatibility manifest is not byte-identical to the generated root contract.',
+        );
+    }
+    const packedPackage = JSON.parse(
+        readFileSync(path.join(installedRoot, 'package.json'), 'utf8'),
+    );
+    validateBundledManifest(
+        JSON.parse(packedManifest.toString('utf8')),
+        packedPackage.version,
+    );
+
+    const componentsRoot = path.join(consumer, 'node_modules', '@cratis', 'components');
+    const installSyntheticComponents = (version) => {
+        mkdirSync(componentsRoot, { recursive: true });
+        writeFileSync(
+            path.join(componentsRoot, 'package.json'),
+            `${JSON.stringify(
+                {
+                    name: '@cratis/components',
+                    version,
+                    exports: { './package.json': './package.json' },
+                },
+                null,
+                4,
+            )}\n`,
+        );
+    };
+
     const readme = readFileSync(path.join(installedRoot, 'README.md'), 'utf8');
     for (const match of readme.matchAll(/\]\((\.?\.?\/[^)#?\s]+)(?:#[^)]+)?\)/gu)) {
         const target = path.resolve(installedRoot, decodeURIComponent(match[1]));
@@ -78,13 +114,21 @@ try {
             '.bin',
             process.platform === 'win32' ? `${name}.cmd` : name,
         );
-    const binary = binaryFor('cratis-components-remove-root-namespace-imports');
-    const help = run(binary, ['--help'], { cwd: consumer });
-    assertRun('packed codemod --help', help);
-    if (!help.stdout.includes('Usage: cratis-components-remove-root-namespace-imports')) {
-        throw new Error(`Unexpected --help output:\n${help.stdout}`);
+    const commands = [
+        'cratis-components-remove-root-namespace-imports',
+        'cratis-components-button-variant-tone',
+        'cratis-components-change-handler',
+    ];
+    for (const command of commands) {
+        const help = run(binaryFor(command), ['--help'], { cwd: consumer });
+        assertRun(`packed ${command} --help without Components`, help);
+        if (!help.stdout.includes(`Usage: ${command}`)) {
+            throw new Error(`Unexpected ${command} --help output:\n${help.stdout}`);
+        }
     }
 
+    installSyntheticComponents('3.6.1');
+    const binary = binaryFor('cratis-components-remove-root-namespace-imports');
     const source = path.join(consumer, 'App.ts');
     writeFileSync(
         source,
@@ -109,6 +153,7 @@ try {
         run(binary, ['--check', source], { cwd: consumer }),
     );
 
+    installSyntheticComponents(packedPackage.version);
     const packedMigrations = [
         {
             command: 'cratis-components-button-variant-tone',
@@ -157,7 +202,24 @@ try {
         );
     }
 
-    console.log('Packed @cratis/components-codemods CLIs verified.');
+    installSyntheticComponents('5.0.0');
+    const unsupportedSource = path.join(consumer, 'unsupported-version.ts');
+    const unsupportedInput = "import { Canvas } from '@cratis/components';\n";
+    writeFileSync(unsupportedSource, unsupportedInput);
+    const unsupported = run(binary, [unsupportedSource], { cwd: consumer });
+    assertRun('packed codemod rejects unsupported Components', unsupported, 1);
+    if (!unsupported.stderr.includes('@cratis/components@5.0.0 is unsupported')) {
+        throw new Error(`Unexpected unsupported-version output:\n${unsupported.stderr}`);
+    }
+    if (readFileSync(unsupportedSource, 'utf8') !== unsupportedInput) {
+        throw new Error(
+            'Unsupported Components preflight changed source before failing.',
+        );
+    }
+
+    console.log(
+        'Packed @cratis/components-codemods manifest and CLIs verified with Components 3, 4, and unsupported versions.',
+    );
 } finally {
     rmSync(scratch, { recursive: true, force: true });
 }

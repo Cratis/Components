@@ -290,6 +290,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components-codemods@workspace:Codemods"
   dependencies:
+    semver: "npm:7.8.5"
     typescript: "npm:^6.0.3"
   bin:
     cratis-components-button-variant-tone: ./scripts/button-variant-tone.js
@@ -1838,7 +1839,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@primeuix/motion@npm:^1.0.0":
+"@primeuix/motion@npm:1.0.0, @primeuix/motion@npm:^1.0.0":
   version: 1.0.0
   resolution: "@primeuix/motion@npm:1.0.0"
   dependencies:
@@ -4376,19 +4377,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"edit-json-file@npm:^1.8.1":
-  version: 1.8.1
-  resolution: "edit-json-file@npm:1.8.1"
-  dependencies:
-    find-value: "npm:^1.0.12"
-    iterate-object: "npm:^1.3.4"
-    r-json: "npm:^1.2.10"
-    set-value: "npm:^4.1.0"
-    w-json: "npm:^1.3.10"
-  checksum: 10/1b1db67f488e719429e3a80de6a0d674f936b5dcbd7d354c6ecba3cdb70b06e13efcc556dbb7c43dde02b0ef7bf85850fa947b86334e62251db96826959af098
-  languageName: node
-  linkType: hard
-
 "electron-to-chromium@npm:^1.5.402":
   version: 1.5.415
   resolution: "electron-to-chromium@npm:1.5.415"
@@ -5119,13 +5107,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-value@npm:^1.0.12":
-  version: 1.0.13
-  resolution: "find-value@npm:1.0.13"
-  checksum: 10/afc34a8399c800de215924277302e896ebe32be0742fa53cb369fb7158d658759111bd88dd51ce5cfe2fe4dd64d1a53fd23ba495701b31030090348f6761e55e
-  languageName: node
-  linkType: hard
-
 "flat-cache@npm:^4.0.0":
   version: 4.0.1
   resolution: "flat-cache@npm:4.0.1"
@@ -5781,26 +5762,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-plain-object@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "is-plain-object@npm:2.0.4"
-  dependencies:
-    isobject: "npm:^3.0.1"
-  checksum: 10/2a401140cfd86cabe25214956ae2cfee6fbd8186809555cd0e84574f88de7b17abacb2e477a6a658fa54c6083ecbda1e6ae404c7720244cd198903848fca70ca
-  languageName: node
-  linkType: hard
-
 "is-potential-custom-element-name@npm:^1.0.1":
   version: 1.0.1
   resolution: "is-potential-custom-element-name@npm:1.0.1"
   checksum: 10/ced7bbbb6433a5b684af581872afe0e1767e2d1146b2207ca0068a648fb5cab9d898495d1ac0583524faaf24ca98176a7d9876363097c2d14fee6dd324f3a1ab
-  languageName: node
-  linkType: hard
-
-"is-primitive@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "is-primitive@npm:3.0.1"
-  checksum: 10/c4da6a6e6d487f31d85b9259b67695fffcc75dca6c9612b0a002e3050c734227b9911be09b877539ec6309710229c19f4edd0f9e26ed2a67924ee0916baf0bed
   languageName: node
   linkType: hard
 
@@ -5932,13 +5897,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isobject@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "isobject@npm:3.0.1"
-  checksum: 10/db85c4c970ce30693676487cca0e61da2ca34e8d4967c2e1309143ff910c207133a969f9e4ddb2dc6aba670aabce4e0e307146c310350b298e74a31f7d464703
-  languageName: node
-  linkType: hard
-
 "istanbul-lib-coverage@npm:^3.0.0, istanbul-lib-coverage@npm:^3.2.2":
   version: 3.2.2
   resolution: "istanbul-lib-coverage@npm:3.2.2"
@@ -5964,13 +5922,6 @@ __metadata:
     html-escaper: "npm:^2.0.0"
     istanbul-lib-report: "npm:^3.0.0"
   checksum: 10/6773a1d5c7d47eeec75b317144fe2a3b1da84a44b6282bebdc856e09667865e58c9b025b75b3d87f5bc62939126cbba4c871ee84254537d934ba5da5d4c4ec4e
-  languageName: node
-  linkType: hard
-
-"iterate-object@npm:^1.3.4":
-  version: 1.3.5
-  resolution: "iterate-object@npm:1.3.5"
-  checksum: 10/62d62ab0d55a66b4de2bff3b01148d3744bcd2e8ddaccebe715601e6cfdf478423fab739ae252097c9085da40f4b33aedb4a3c78df1f1fdecd073597b6976f8b
   languageName: node
   linkType: hard
 
@@ -7350,15 +7301,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"r-json@npm:^1.2.10":
-  version: 1.3.1
-  resolution: "r-json@npm:1.3.1"
-  dependencies:
-    w-json: "npm:1.3.10"
-  checksum: 10/dc5b6e6fc636e0f72e0ef5601e346976d63716dcbf2460a1dc5deaa6cfa783619e2ea5763d15a81176c87f2c9d259104399c5896a9f2f6aa5df86f0b6a9bd892
-  languageName: node
-  linkType: hard
-
 "react-aria-components@npm:1.20.0":
   version: 1.20.0
   resolution: "react-aria-components@npm:1.20.0"
@@ -7854,7 +7796,6 @@ __metadata:
     axe-core: "npm:^4.13.0"
     chai: "npm:^6.2.2"
     chai-as-promised: "npm:^8.0.2"
-    edit-json-file: "npm:^1.8.1"
     eslint: "npm:^10.9.1"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-import: "npm:^2.32.0"
@@ -7907,7 +7848,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.8.2":
+"rxjs@npm:7.8.2, rxjs@npm:^7.8.2":
   version: 7.8.2
   resolution: "rxjs@npm:7.8.2"
   dependencies:
@@ -8025,16 +7966,6 @@ __metadata:
     es-errors: "npm:^1.3.0"
     es-object-atoms: "npm:^1.0.0"
   checksum: 10/b87f8187bca595ddc3c0721ece4635015fd9d7cb294e6dd2e394ce5186a71bbfa4dc8a35010958c65e43ad83cde09642660e61a952883c24fd6b45ead15f045c
-  languageName: node
-  linkType: hard
-
-"set-value@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "set-value@npm:4.1.0"
-  dependencies:
-    is-plain-object: "npm:^2.0.4"
-    is-primitive: "npm:^3.0.1"
-  checksum: 10/67eebb0d78be89242478daf8ab5357c59a35add1d7bdccdb56236e6004128a79bdf298c952e286b60b63ed17b24dcdb399734fbdacc9b76e7fd2e3e01546a42e
   languageName: node
   linkType: hard
 
@@ -9043,20 +8974,6 @@ __metadata:
   bin:
     vitest: ./vitest.mjs
   checksum: 10/054f1e25d90d911693b0b93c5b85a7c3105775aa3e39c3279c7d3e7af719e2d94070a898d6d74292445366c1215bb91d07063989ac0965973f0c5ae22ad3b06b
-  languageName: node
-  linkType: hard
-
-"w-json@npm:1.3.10":
-  version: 1.3.10
-  resolution: "w-json@npm:1.3.10"
-  checksum: 10/bf3dfa4e8e2429fcf2b0456ba396245a0be719ff4fb04eec971536c3586cae7489c5ca5801848ecfbc2a454f37829a132f428acf9d457cebe43d5c70348e7a7b
-  languageName: node
-  linkType: hard
-
-"w-json@npm:^1.3.10":
-  version: 1.3.11
-  resolution: "w-json@npm:1.3.11"
-  checksum: 10/527d1934b978c8b0663cd4002732a8af3214297c66754b016b975f6f2f255e476f68d8ad34e58de22869d27eaf61ac981f991e5fb5a3e1d160a3804f73ec9d31
   languageName: node
   linkType: hard
 

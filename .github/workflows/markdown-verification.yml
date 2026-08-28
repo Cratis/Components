@@ -8,6 +8,7 @@ on:
         paths:
             - 'Documentation/**'
             - 'README.md'
+            - 'RELEASE.md'
             - 'Source/*.md'
             - 'Codemods/*.md'
             - 'ESLint/*.md'
@@ -20,6 +21,7 @@ on:
         paths:
             - 'Documentation/**'
             - 'README.md'
+            - 'RELEASE.md'
             - 'Source/*.md'
             - 'Codemods/*.md'
             - 'ESLint/*.md'
@@ -49,6 +51,7 @@ jobs:
               with:
                   globs: |
                       README.md
+                      RELEASE.md
                       Documentation/**/*.md
                       Documentation/**/*.mdx
                       Source/*.md
@@ -83,6 +86,7 @@ jobs:
               with:
                   paths: |
                       README.md
+                      RELEASE.md
                       Source/*.md
                       Codemods/*.md
                       ESLint/*.md

@@ -41,6 +41,11 @@ npm install @cratis/components \
 
 The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.
 
+The generated compatibility contract is published at
+`@cratis/components/compat-manifest.json`. It records the supported Components and tooling
+windows, independent package trains, renderer ABI/profile ranges, and exact lower/current adapter
+evidence. `publicationEnabled: false` means the source is not authorized for publication.
+
 **Yarn PnP note:** the current `@cratis/arc.react@22.5.0` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.5.0`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
 `pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
@@ -255,8 +260,9 @@ The current package manifest does not declare PrimeReact as a required runtime
 or peer. Follow the [Components 3 to 4 migration guide](./MIGRATION.md)
 for dependency removal, provider changes, product token mapping, stable part
 names, DatePicker changes, table behavior, notifications, direct Prime import
-replacements, the exact-version `@cratis/components-codemods` command, and the
-`@cratis/eslint-plugin-components` guard.
+replacements, the bounded Components 4 `@cratis/components-codemods` commands, and the
+independently patched `@cratis/eslint-plugin-components` guard. The codemod validates its bundled
+compatibility manifest and the installed Components support window before scanning source.
 
 The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeReactStyles` renderer exports are removed. Move styling to tokens and stable parts before upgrading.
 

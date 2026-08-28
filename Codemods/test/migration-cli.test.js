@@ -14,6 +14,19 @@ let dir;
 
 beforeEach(() => {
     dir = mkdtempSync(path.join(tmpdir(), 'cratis-components-migration-codemod-'));
+    for (const packageName of ['@cratis/components', '@example/ui']) {
+        const [scope, name] = packageName.split('/');
+        const packageDirectory = path.join(dir, 'node_modules', scope, name);
+        mkdirSync(packageDirectory, { recursive: true });
+        writeFileSync(
+            path.join(packageDirectory, 'package.json'),
+            JSON.stringify({
+                name: packageName,
+                version: '4.0.0',
+                exports: { './package.json': './package.json' },
+            }),
+        );
+    }
 });
 
 afterEach(() => rmSync(dir, { recursive: true, force: true }));
@@ -42,7 +55,7 @@ for (const command of commands) {
         spawnSync(
             process.execPath,
             [path.join(scriptsDir, `${command.name}.js`), ...args],
-            { encoding: 'utf8' },
+            { cwd: dir, encoding: 'utf8' },
         );
 
     describe(`${command.publicName} CLI`, () => {
