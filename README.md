@@ -72,6 +72,10 @@ export const App = () => (
 );
 ```
 
+The package root is setup-only: import the provider and configuration helpers there, then import
+every component from its explicit subpath. The built-in renderer needs no additional package or
+configuration.
+
 The current package manifest defines the exact React, Arc, Fundamentals, and
 optional Pixi peer ranges. Verify those ranges before installing the package.
 
@@ -79,6 +83,9 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 
 - The package manifest, exports, source, and migration guide define the current
   Components major-version surface.
+- Generated compatibility schema v2 is checked in as [`compat-manifest.json`](./compat-manifest.json).
+  It records the seven-package source-candidate scope and support windows; the durable
+  [release policy](./release.md) explains why that metadata does not authorize publication.
 - Workspace manifest versions in a source checkout are development inputs, not release
   identity. Publication is intentionally fail-closed while the Components 4 package set and
   trusted-publisher workflow are completed. Do not infer a release from a branch, tag, or local

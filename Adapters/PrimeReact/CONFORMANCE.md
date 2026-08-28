@@ -4,8 +4,8 @@
 # PrimeReact 11 adapter conformance
 
 The adapter declares `stable-presentation/v1` at renderer ABI major 1. Repository evidence runs
-`@cratis/components.conformance` against all nine declared slots and requires 100 of 100 checks to
-pass with zero failures and zero skips.
+`@cratis/components.conformance` against all nine declared slots and requires every applicable check
+to pass with zero failures and zero skips. The generated report is the authoritative check inventory.
 
 The bounded checks cover:
 
@@ -36,7 +36,7 @@ PrimeReact 11.1.0 currently publishes malformed generic declaration aliases. A c
 non-emitted shim keeps this adapter's own strict build enabled; the packed adapter declaration is
 vendor-free and the package verifier ensures no shim or vendor declaration leaks into it. Its
 strict external fixtures also use the declaration-only React JSX bridge required by the exact Arc
-React 22.4 upstream exception, while Core's stale-exception gate must still reproduce that issue.
+React 22.5 upstream exception, while Core's stale-exception gate must still reproduce that issue.
 Remove each bridge when its allowed upstream release fixes the corresponding declarations.
 
 This is automated jsdom/axe and package evidence, not universal browser, visual, RTL, forced-colors,

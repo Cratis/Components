@@ -6,10 +6,7 @@ import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications/Toaster';
 import { unstable_RendererRoot } from '../renderer/RendererContext';
-import type {
-    CratisRendererSetup,
-    unstable_UiLibrary,
-} from '../renderer/manifest';
+import type { CratisRendererSetup, unstable_UiLibrary } from '../renderer/manifest';
 import type { CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
 import { CratisComponentsContext } from './CratisComponentsContext';
 import { cratisDefaults } from './CratisComponentsDefaults';
@@ -177,11 +174,14 @@ export interface CratisComponentsProviderProps {
     value?: CratisComponentsConfig;
     /** Mounts the global toaster with defaults or explicit options. */
     toaster?: boolean | ToasterProps;
-    /** Renderer library or ordered, last-wins library composition. */
+    /**
+     * Selects one stable presentation library. The broader generic manifest and ordered,
+     * last-wins composition form remain experimental.
+     */
     library?: unstable_UiLibrary | readonly unstable_UiLibrary[];
     /** Experimental profile-promise behavior. Defaults to strict. */
     libraryMode?: 'strict' | 'degrade';
-    /** Experimental terminal slot fallback behavior. Defaults to Core. */
+    /** Terminal slot fallback behavior. Defaults to the built-in Core implementation. */
     rendererFallback?: 'core' | 'throw';
     /** Host environment for overlay portal containers. */
     overlayEnvironment?: CratisOverlayEnvironment;

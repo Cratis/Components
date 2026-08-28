@@ -49,17 +49,17 @@
 - name: Filter
   href: Filter/toc.yml
 - name: Dropdown
-  href: Dropdown/index.md
+  href: Dropdown/toc.yml
 - name: Display
-  href: Display/index.md
+  href: Display/toc.yml
 - name: Notifications
-  href: Notifications/index.md
+  href: Notifications/toc.yml
 - name: Toolbar
   href: Toolbar/toc.yml
 - name: ObjectNavigationalBar
-  href: ObjectNavigationalBar/index.md
+  href: ObjectNavigationalBar/toc.yml
 - name: ObjectContentEditor
-  href: ObjectContentEditor/index.md
+  href: ObjectContentEditor/toc.yml
 - name: PivotViewer
   href: PivotViewer/toc.yml
 - name: SchemaEditor

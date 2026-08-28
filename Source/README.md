@@ -41,10 +41,12 @@ npm install @cratis/components \
 
 The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.
 
-The generated compatibility contract is published at
+The generated compatibility schema v2 contract is published at
 `@cratis/components/compat-manifest.json`. It records the supported Components and tooling
-windows, independent package trains, renderer ABI/profile ranges, and exact lower/current adapter
-evidence. `publicationEnabled: false` means the source is not authorized for publication.
+windows, the seven-package source-candidate scope, independent package trains, renderer ABI/profile
+ranges, and exact lower/current adapter evidence. `publicationEnabled: false` means the source is
+not authorized for publication; the repository
+[`release.md`](https://github.com/Cratis/Components/blob/main/release.md) is the durable policy.
 
 **Yarn PnP note:** the current `@cratis/arc.react@22.5.0` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.5.0`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
@@ -85,10 +87,10 @@ region. The default renderer needs no additional package. Certified renderer pac
 stable, nine-slot `stable-presentation/v1` primitive profile; they never replace the full Components
 catalog. They are independently versioned and selected with the provider's `library` prop:
 
-- `@cratis/components.mui` — MUI 9.x / Emotion 11.x stable presentation slots;
-- `@cratis/components.primereact` — PrimeReact 11.x stable presentation slots, with an
+- `@cratis/components.mui@1.0.0` — MUI 9.x / Emotion 11.x stable presentation slots;
+- `@cratis/components.primereact@1.0.0` — PrimeReact 11.x stable presentation slots, with an
   application-owned outer provider and license key;
-- `@cratis/components.primereact10` — PrimeReact 10.9.9+ stable presentation slots, with its
+- `@cratis/components.primereact10@1.0.0` — PrimeReact 10.9.9+ stable presentation slots, with its
   separate MIT-era provider, global theme, and upstream-major boundary.
 
 Adapter-specific themes, providers, SSR setup, peers, and license boundaries remain documented by

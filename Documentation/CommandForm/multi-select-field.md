@@ -1,6 +1,6 @@
 # MultiSelectField
 
-`MultiSelectField` lets the user pick several values through the Cratis [`Dropdown`](../Dropdown/index.md). It uses native multiple selection by default and an accessible multi-value combobox when filtering is enabled.
+`MultiSelectField` lets the user pick several values through the Cratis [`Dropdown`](../Dropdown/index.md). It uses native multiple selection by default and a labeled multi-value combobox when filtering is enabled.
 
 ## Usage
 

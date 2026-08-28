@@ -1,6 +1,6 @@
 # PasswordField
 
-`PasswordField` provides a Cratis-owned masked text input with an accessible show/hide action.
+`PasswordField` provides a Cratis-owned masked text input with a labeled show/hide action.
 
 ## Usage
 

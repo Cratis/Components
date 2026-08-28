@@ -17,7 +17,8 @@ have not earned the same compatibility promise.
 
 The `stable-presentation/v1` candidate was tested independently by four implementations: the
 private plain-DOM falsification fixture, MUI, PrimeReact 11, and PrimeReact 10. Each implementation
-passed all 100 applicable conformance checks with zero failures and zero skips. The proof covers the
+passed every applicable conformance check with zero failures and zero skips. The generated report,
+rather than a hardcoded count in this decision, inventories the exercised checks. The proof covers the
 exact public props, refs, parts, state, behavior ownership, server rendering, hydration, and bounded
 accessibility assertions recorded by the conformance package. It does not turn the remaining
 experimental renderer system into a stable API.

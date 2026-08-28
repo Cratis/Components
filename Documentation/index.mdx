@@ -59,8 +59,11 @@ export const App = () => (
 );
 ```
 
-The built-in renderer is zero-configuration. Optional renderer packages are selected explicitly;
-the application retains their provider, peer, SSR, styling, and license responsibilities. Read
+The package root is setup-only: import the provider and configuration helpers there, then import
+every component from its explicit subpath, such as `@cratis/components/CommandDialog` or
+`@cratis/components/DataTables`. The built-in renderer is zero-configuration. Optional renderer
+packages are selected explicitly; the application retains their provider, peer, SSR, styling, and
+license responsibilities. Read
 [Renderer adapters and coexistence](/components/renderers/) for the exact nine-slot boundary,
 direct vendor coexistence, custom composition, unsupported claims, and licensing policy.
 

@@ -1,6 +1,6 @@
 # ToggleSwitchField
 
-`ToggleSwitchField` provides a Cratis-owned accessible on/off switch bound to a `boolean` property on a command. It is the switch-styled counterpart of [CheckboxField](./checkbox-field.md).
+`ToggleSwitchField` provides a Cratis-owned labeled on/off switch bound to a `boolean` property on a command. It is the switch-styled counterpart of [CheckboxField](./checkbox-field.md).
 
 ## Usage
 

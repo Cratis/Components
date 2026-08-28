@@ -7,6 +7,7 @@ The `Common` subpath provides native basic controls for ordinary React state and
 
 ```tsx
 import {
+    Button,
     Checkbox,
     IconButton,
     Radio,
@@ -28,6 +29,7 @@ import {
     <Radio name='frequency' value='daily' label='Daily' />
     <Switch name='notifications' value='enabled' label='Enable notifications' />
     <IconButton icon={<span aria-hidden='true'>+</span>} aria-label='Add preference' />
+    <Button label='Save preferences' type='submit' />
 </Surface>
 ```
 
@@ -35,6 +37,7 @@ import {
 
 | Component | Native element and ref | Semantic value | Stable parts | Canonical states |
 | --- | --- | --- | --- | --- |
+| `Button` | `button` / `HTMLButtonElement` | Native click and form action | `root`, `spinner`, `icon`, `label` | `disabled`, `loading`, `variant`, `tone`, `shape`, `size` on `root` |
 | `IconButton` | `button` / `HTMLButtonElement` | Uses `Button` click semantics | `root`, `spinner`, `icon`, `label` | `disabled`, `loading` on `root` |
 | `TextInput` | `input` / `HTMLInputElement` | `string` | `root` | `disabled`, `invalid`, `readonly` |
 | `TextArea` | `textarea` / `HTMLTextAreaElement` | `string` | `root` | `disabled`, `invalid`, `readonly` |

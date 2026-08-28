@@ -1,6 +1,6 @@
 ---
 title: Dropdown
-description: Accessible single, filtered, and multiple selection with a stable Cratis API.
+description: Single, filtered, and multiple selection with documented names, roles, and a stable Cratis API.
 ---
 
 `Dropdown` binds a value to an option collection without exposing its internal interaction library.

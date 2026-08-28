@@ -6,7 +6,7 @@ Use them for status indicators in tables and detail views, counts on icons, remo
 
 ## Tag
 
-A small colored status label. Prefer a `Tag` with a `severity` over hand-colored text — it is theme-aware and meets contrast in light and dark.
+A small colored status label. Prefer a `Tag` with a `severity` over hand-colored text so it follows the active semantic theme. Verify the resulting contrast in every application theme you ship.
 
 ```tsx
 import { Tag } from '@cratis/components/Display';
@@ -100,7 +100,13 @@ import { ProgressBar } from '@cratis/components/Display';
 | `value` | `number` | Completion value, `0`–`100`. Ignored in `indeterminate` mode. |
 | `mode` | `'determinate' \| 'indeterminate'` | `determinate` (default) shows `value`; `indeterminate` shows a looping animation. |
 | `showValue` | `boolean` | Whether to render the percentage label. Defaults to `true` (determinate only). The label is always `value` followed by `%`. |
-| `className` | `string` | Extra CSS class. |
+| `aria-label` | `string` | Accessible name. Defaults to `'Progress'`; override it to describe the operation. |
+| `aria-labelledby` | `string` | Id of an external element that labels the progress indicator. |
+| `className` | `string` | Extra CSS class on the root. |
+
+`ProgressBar` exposes stable `root`, `indicator`, and `label` `data-cratis-part` markers and
+`data-mode` on the root. It does not expose a `pt` prop; use `className`, the stable markers, or
+semantic tokens for product styling.
 
 ## Skeleton
 

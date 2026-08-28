@@ -252,8 +252,7 @@ Commonly used with:
 
 ## Accessibility
 
-- Buttons have proper tooltips
-- Click targets are adequately sized
-- Keyboard navigation supported
-- Screen reader friendly
-- Proper ARIA labels
+- Action buttons expose tooltip text
+- Navigation controls render as buttons
+- Keyboard navigation for documented actions
+- ARIA labels on navigation controls

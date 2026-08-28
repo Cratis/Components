@@ -29,7 +29,7 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
     The package declares React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe` peer ranges. Its Arc range is `>=20.3.1 <23`; keep `@cratis/arc` and `@cratis/arc.react` on the same version used by the application's generated proxies. A strict installer can use this explicit form (replace the example Arc version when needed):
 
     ```bash title="Install explicit peers"
-    ARC_VERSION=22.3.0
+    ARC_VERSION=22.5.0
     npm install @cratis/components \
       "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
       @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
@@ -69,13 +69,13 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
 </Steps>
 
-### Yarn PnP with Arc React 22.3.0
+### Yarn PnP with Arc React 22.5.0
 
-The current `@cratis/arc.react@22.3.0` package imports `rxjs` without declaring it. A strict Yarn PnP consumer must install `rxjs@7.8.2` and temporarily add this package extension until Arc publishes corrected metadata:
+The current `@cratis/arc.react@22.5.0` package imports `rxjs` without declaring it. A strict Yarn PnP consumer must install `rxjs@7.8.2` and temporarily add this package extension until Arc publishes corrected metadata:
 
 ```yaml title=".yarnrc.yml"
 packageExtensions:
-    '@cratis/arc.react@22.3.0':
+    '@cratis/arc.react@22.5.0':
         dependencies:
             rxjs: '7.8.2'
 ```

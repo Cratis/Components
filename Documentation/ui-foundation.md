@@ -168,8 +168,8 @@ Known upstream failures are bounded in `Source/scripts/verify-public-types.excep
 The current exceptions are:
 
 - **`@webgpu/types@0.1.72` through `pixi.js@8.20.1`:** its ambient WebGPU declarations conflict with TypeScript 6's built-in DOM declarations for the `Canvas` subpath (`TS2403`, `TS2687`, `TS2717`, `TS6200`). The setup-only root has no Pixi type exception.
-- **`@cratis/arc.react@22.3.0`:** its published global JSX declarations expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
-- **`@cratis/arc@22.3.0`, `@cratis/arc.react@22.3.0`, and `@cratis/fundamentals@7.18.1`:** their published ESM declarations use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
+- **`@cratis/arc.react@22.5.0`:** its published global JSX declarations expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
+- **`@cratis/arc@22.5.0`, `@cratis/arc.react@22.5.0`, and `@cratis/fundamentals@7.18.1`:** their published ESM declarations use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
 
 ### Why the Canvas Pixi surface remains public
 
@@ -186,6 +186,30 @@ Components 4 does not treat adjacent gaps as part of the current package contrac
 
 Repository issues may track these gaps, but an open issue is not a public roadmap or delivery commitment.
 
+## Post-V4 issue index
+
+The following issues preserve follow-up decisions outside the Components 4 contract. They are
+tracking records, not promises that an unstable API already exists or will ship unchanged:
+
+| Issue | Tracked decision or evidence gap |
+| --- | --- |
+| [#207](https://github.com/Cratis/Components/issues/207) | Owner-authorized Components 4 publication; publication remains disabled until that separate review completes. |
+| [#208](https://github.com/Cratis/Components/issues/208) | Proof and possible promotion of atomic slots and mixed-renderer islands. |
+| [#209](https://github.com/Cratis/Components/issues/209) | Schema-driven public renderer discovery tooling. |
+| [#210](https://github.com/Cratis/Components/issues/210) | Lazy renderer preload semantics for streaming server rendering. |
+| [#211](https://github.com/Cratis/Components/issues/211) | Cross-browser and assistive-technology renderer certification. |
+| [#212](https://github.com/Cratis/Components/issues/212) | CSS theme bridges and vendor portal-interoperability recipes. |
+| [#213](https://github.com/Cratis/Components/issues/213) | Source-map preservation through ESM specifier rewriting. |
+| [#214](https://github.com/Cratis/Components/issues/214) | Evidence for or against a renderer-exclusive slim distribution. |
+| [#215](https://github.com/Cratis/Components/issues/215) | Reviewed dependency-update pull requests. |
+| [#216](https://github.com/Cratis/Components/issues/216) | Packed public-API snapshots and semantic-version surface diffs. |
+| [#217](https://github.com/Cratis/Components/issues/217) | Generated evidence inventories instead of hardcoded check counts. |
+| [#218](https://github.com/Cratis/Components/issues/218) | Renderer bundle and runtime-performance regression budgets. |
+
+Until those issues produce reviewed changes, the stable boundary remains the setup-only root, the
+exact nine-slot `stable-presentation/v1` profile, boolean setup attestations, and
+`CratisOverlayEnvironment`.
+
 ## Release gates
 
 The Components 4 major candidate uses these repository release checks:
@@ -199,4 +223,6 @@ The Components 4 major candidate uses these repository release checks:
 - The migration guide works without repository-specific knowledge.
 - Every packed public JavaScript subpath passes strict TypeScript 6 validation or matches a bounded machine-readable upstream exception with exact installed versions and an unmet removal condition. Components-owned cascades additionally require their matching upstream TS2834/TS2835 root cause in the same compiler run.
 
-The major PR effect packet owns the exact current release evidence and limitations.
+Generated conformance reports, the checked-in compatibility contract, and the repository
+[release policy](https://github.com/Cratis/Components/blob/main/release.md) own the exact current
+evidence and publication limitations.

@@ -43,6 +43,26 @@ import {
 } from '@cratis/components/renderer';
 ```
 
+The stable renderer exports are deliberately bounded:
+
+| Export | Use |
+| --- | --- |
+| `CRATIS_PRESENTATION_PROFILE` | Exact profile id: `stable-presentation/v1`. |
+| `CRATIS_PRESENTATION_ABI_VERSION` | Renderer ABI major required by the profile. |
+| `cratisPresentationSlotIds` / `CratisPresentationSlotId` | Canonical immutable slot order and its identifier type. |
+| `CratisPresentationSlots` | Mapping from each slot id to the exact public Components props/ref contract. |
+| `CratisPresentationSlotDeclaration` / `CratisPresentationSlotMap` | One presentation-owned implementation and the complete nine-slot table. |
+| `CratisPresentationCapabilityId` / `CratisPresentationCapabilities` | Bounded capability vocabulary and required tuple shape. |
+| `CratisPresentationUiLibrary` | Immutable stable manifest shape. |
+| `definePresentationUiLibrary()` | Runtime validation plus a defensive frozen copy for JavaScript and TypeScript callers. |
+| `CratisRendererSetupExtensions` / `CratisRendererSetup` | Declaration-merged, non-secret boolean setup attestations. |
+| `CratisPresentationUiLibraryProviderProps` | `setup` and `children` passed to an adapter provider. |
+| `CratisOverlayEnvironment` | Independent, on-demand portal-container lookup supplied by the host. |
+
+Symbols on `@cratis/components/renderer` whose names start with `unstable_` are not promoted by this
+profile. Do not use the generic manifest, composition, renderer scopes/islands, atomic slots,
+internal hooks, lazy loading, or discovery tooling as a stable dependency.
+
 `CratisPresentationSlotMap` requires all nine exact component contracts. Every declaration must use
 `mode: 'presentation'` and either `fidelity: 'native'` or `fidelity: 'emulated'`. A stable manifest
 must declare `slot.render`, `parts.passthrough`, and `ssr.staticRender`; RTL, forced-colors, and
@@ -51,6 +71,20 @@ same requirements for JavaScript callers, rejects duplicate capabilities, and re
 frozen copy. Use `CratisRendererSetupExtensions` only for non-secret boolean setup
 attestations and `CratisOverlayEnvironment` for an independent host portal-container lookup.
 
+The six stable capability ids have narrow meanings:
+
+| Capability | Requirement | Meaning |
+| --- | --- | --- |
+| `slot.render` | required | Every declared slot supplies a render component for its exact contract. |
+| `parts.passthrough` | required | Documented typed parts and `pt` destinations remain available. |
+| `ssr.staticRender` | required | Every slot produces deterministic static server markup without browser globals. |
+| `rtl` | optional evidence | The adapter has bounded evidence for right-to-left input. |
+| `forcedColors` | optional evidence | The adapter has bounded evidence under forced-color host input. |
+| `motion.reduced` | optional evidence | The adapter has bounded evidence under reduced-motion host input. |
+
+Optional evidence flags remain bounded claims; they are not universal browser or accessibility
+certification.
+
 Removing or changing a v1 slot is a breaking change. Adding a required slot needs a new profile and
 version; `stable-presentation/v1` will not silently grow. The open fourteen-slot manifest,
 composition, atomic behavior, renderer scopes, internal hooks, diagnostics, and built-in full
@@ -58,10 +92,11 @@ manifest remain `unstable_` APIs.
 
 ## Stable parts
 
-Each contract defines its own typed `*Parts` object. A `pt` value sends ordinary React HTML
-attributes to those documented destinations. The rendered elements carry stable
-`data-cratis-part` names so product CSS can target the same semantic destination across the built-in
-renderer and conforming adapters.
+Eight profile controls expose a typed `*Parts` object and `pt` prop that sends ordinary React HTML
+attributes to documented destinations. `ProgressBar` instead exposes its documented `root`,
+`indicator`, and `label` through stable `data-cratis-part` markers and a root `className`; it has no
+`pt` prop. Conforming adapters preserve each slot's exact public customization contract rather than
+inventing a uniform prop that the component does not declare.
 
 ```tsx
 import { Button } from '@cratis/components/Common';
