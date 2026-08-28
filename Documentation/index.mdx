@@ -14,7 +14,8 @@ import TopicHero from '@components/TopicHero.astro';
 >
     Command dialogs, forms, tables, and application surfaces that consume [Arc's](/arc/)
     generated proxies. Components owns its public contracts, semantic parts, and built-in
-    renderer, with optional independently versioned MUI and PrimeReact adapters.
+    renderer, with optional independently versioned MUI, PrimeReact 11, and PrimeReact 10
+    adapters.
 </TopicHero>
 
 ## Start here
@@ -59,7 +60,9 @@ export const App = () => (
 ```
 
 The built-in renderer is zero-configuration. Optional renderer packages are selected explicitly;
-the application retains their provider, peer, SSR, styling, and license responsibilities.
+the application retains their provider, peer, SSR, styling, and license responsibilities. Read
+[Renderer adapters and coexistence](/components/renderers/) for the exact nine-slot boundary,
+direct vendor coexistence, custom composition, unsupported claims, and licensing policy.
 
 ## Recipes
 

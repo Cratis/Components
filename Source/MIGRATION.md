@@ -5,7 +5,7 @@ Components 4 replaces the PrimeReact-backed Components 3 foundation with Compone
 This is a major-version migration. Rendered markup, styling parts, provider configuration, date entry, root imports, and some deprecated props change.
 
 :::note
-An application that has not migrated remains on its exact Components 3 package profile, including the third-party dependencies declared by that version. Components 4 does not currently publish a Prime compatibility package. Review the exact package manifests and third-party terms for the version the application keeps. This guide makes no support-window, security-fix, maintenance, or future-package commitment for either major.
+An application that has not migrated remains on its exact Components 3 package profile, including the third-party dependencies declared by that version. Components 4 does not provide a transparent Prime compatibility package. Its independently versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters cover only the nine stable presentation slots. Review the exact package manifests and third-party terms for every version the application keeps. This guide makes no support-window, security-fix, maintenance, or future-package commitment for either major.
 :::
 
 ## Update dependencies
@@ -25,7 +25,10 @@ Keep a Prime package only when your application still imports it directly. Migra
 
 Applications using Canvas or PivotViewer must install `pixi.js@^8.20.0`, now an optional peer rather than a nested Components dependency. Align any existing direct Pixi dependency to the same compatible resolution so public `PIXI.Container` and pointer-event types come from one package instance. Applications using only non-Pixi subpaths do not need it.
 
-The package declares an Arc peer range of `>=20.3.1 <23`.
+The package declares an Arc peer range of `>=20.3.1 <23`. The adapter package manifests still use
+the temporary `@cratis/components >=3.0.0 <4` repository peer while the V4 source set is assembled;
+do not interpret that placeholder as release compatibility. The final `>=4 <5` peer sweep and
+package versioning happen together after the remaining release blockers close.
 
 ## Import from explicit subpaths
 

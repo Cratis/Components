@@ -31,7 +31,9 @@
         "build": "node ./run-task-on-workspaces.js build",
         "lint": "node ./run-task-on-workspaces.js lint",
         "test": "node ./run-task-on-workspaces.js test",
-        "ci": "node ./run-task-on-workspaces.js ci",
+        "generate-compat-manifest": "node ./scripts/generate-compat-manifest.mjs --write",
+        "verify-compat-manifest": "node ./scripts/generate-compat-manifest.mjs --check",
+        "ci": "yarn verify-compat-manifest && node ./run-task-on-workspaces.js ci",
         "publish-version": "node ./run-task-on-workspaces.js publish-version $*",
         "up": "node ./run-task-on-workspaces.js up"
     },

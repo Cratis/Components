@@ -1,0 +1,163 @@
+{
+    "schemaVersion": 1,
+    "publicationEnabled": false,
+    "rendererAbi": 1,
+    "coreTarget": "4.x",
+    "sourcePackageManifests": [
+        "Source/package.json",
+        "ESLint/package.json",
+        "Codemods/package.json",
+        "Conformance/package.json",
+        "Adapters/Mui/package.json",
+        "Adapters/PrimeReact/package.json",
+        "Adapters/PrimeReact10/package.json"
+    ],
+    "packages": [
+        {
+            "name": "@cratis/components",
+            "manifest": "Source/package.json",
+            "role": "core",
+            "version": "3.0.0",
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/arc": ">=20.3.1 <23",
+                "@cratis/arc.react": ">=20.3.1 <23",
+                "@cratis/fundamentals": "^7.10.3",
+                "pixi.js": "^8.20.0",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0",
+                "reflect-metadata": "0.2.2",
+                "tsyringe": "4.10.0"
+            },
+            "upstream": {
+                "react": "^19.0.0"
+            },
+            "rendererAbi": 1
+        },
+        {
+            "name": "@cratis/eslint-plugin-components",
+            "manifest": "ESLint/package.json",
+            "role": "eslint",
+            "version": "0.0.0",
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "eslint": ">=9"
+            },
+            "upstream": {}
+        },
+        {
+            "name": "@cratis/components-codemods",
+            "manifest": "Codemods/package.json",
+            "role": "codemods",
+            "version": "0.0.0",
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {},
+            "upstream": {}
+        },
+        {
+            "name": "@cratis/components.conformance",
+            "manifest": "Conformance/package.json",
+            "role": "conformance",
+            "version": "0.1.0",
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=3.0.0 <4",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {},
+            "rendererAbi": 1
+        },
+        {
+            "name": "@cratis/components.mui",
+            "manifest": "Adapters/Mui/package.json",
+            "role": "renderer-adapter",
+            "version": "0.1.0",
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=3.0.0 <4",
+                "@emotion/react": ">=11 <12",
+                "@emotion/styled": ">=11 <12",
+                "@mui/material": ">=9 <10",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {
+                "@emotion/react": ">=11 <12",
+                "@emotion/styled": ">=11 <12",
+                "@mui/material": ">=9 <10",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "rendererAbi": 1
+        },
+        {
+            "name": "@cratis/components.primereact",
+            "manifest": "Adapters/PrimeReact/package.json",
+            "role": "renderer-adapter",
+            "version": "0.1.0",
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=3.0.0 <4",
+                "@primereact/core": ">=11 <12",
+                "@primereact/ui": ">=11 <12",
+                "@primeuix/themes": ">=3 <4",
+                "primereact": ">=11 <12",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {
+                "@primereact/core": ">=11 <12",
+                "@primereact/ui": ">=11 <12",
+                "@primeuix/themes": ">=3 <4",
+                "primereact": ">=11 <12",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "rendererAbi": 1
+        },
+        {
+            "name": "@cratis/components.primereact10",
+            "manifest": "Adapters/PrimeReact10/package.json",
+            "role": "renderer-adapter",
+            "version": "0.1.0",
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=3.0.0 <4",
+                "primereact": ">=10.9.9 <11",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {
+                "primereact": ">=10.9.9 <11",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "rendererAbi": 1
+        }
+    ],
+    "privateArtifacts": [
+        {
+            "id": "plain",
+            "path": "Conformance/for_plain_dom_renderer",
+            "purpose": "Private plain-DOM conformance falsification fixture",
+            "private": true,
+            "published": false
+        },
+        {
+            "id": "storybook",
+            "path": "Source/.storybook",
+            "purpose": "Private release-blocker evidence",
+            "private": true,
+            "published": false,
+            "releaseBlocker": true
+        }
+    ]
+}

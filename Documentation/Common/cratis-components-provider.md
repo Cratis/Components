@@ -69,7 +69,8 @@ replaces it wholesale, and forwards it through `RendererScope`.
 A key-gated renderer still receives its key through the application's own outer vendor provider.
 For example, the PrimeReact 11 adapter receives only a boolean assertion that the application
 completed that setup; Components never receives the key itself. See the adapter package README for
-the exact provider and build-environment wiring.
+the exact provider and build-environment wiring, and the [renderer licensing policy](../renderers/licensing.md)
+for the cross-adapter ownership rule.
 
 Every message group follows the same precedence: a named component prop (or a component's own `labels`/`filterLabels` override) wins, then the matching provider message, then the English default shown above. Per-instance overrides keep working exactly as before — the provider only fills gaps a call site left unset.
 
