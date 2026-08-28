@@ -28,23 +28,13 @@ declare module '@cratis/components/renderer' {
 }
 
 declare const Button: ComponentType<CratisPresentationSlots['common.button']>;
-declare const IconButton: ComponentType<
-    CratisPresentationSlots['common.iconButton']
->;
-declare const TextInput: ComponentType<
-    CratisPresentationSlots['common.textInput']
->;
-declare const TextArea: ComponentType<
-    CratisPresentationSlots['common.textArea']
->;
-declare const Checkbox: ComponentType<
-    CratisPresentationSlots['common.checkbox']
->;
+declare const IconButton: ComponentType<CratisPresentationSlots['common.iconButton']>;
+declare const TextInput: ComponentType<CratisPresentationSlots['common.textInput']>;
+declare const TextArea: ComponentType<CratisPresentationSlots['common.textArea']>;
+declare const Checkbox: ComponentType<CratisPresentationSlots['common.checkbox']>;
 declare const Radio: ComponentType<CratisPresentationSlots['common.radio']>;
 declare const Switch: ComponentType<CratisPresentationSlots['common.switch']>;
-declare const Progress: ComponentType<
-    CratisPresentationSlots['common.progress']
->;
+declare const Progress: ComponentType<CratisPresentationSlots['common.progress']>;
 declare const Surface: ComponentType<CratisPresentationSlots['common.surface']>;
 declare const Tooltip: ComponentType<{ readonly tooltip: string }>;
 
@@ -75,11 +65,7 @@ const library: CratisPresentationUiLibrary = definePresentationUiLibrary({
     level: 'primitive',
     profile: CRATIS_PRESENTATION_PROFILE,
     profileSlots: cratisPresentationSlotIds,
-    capabilities: [
-        'slot.render',
-        'parts.passthrough',
-        'ssr.staticRender',
-    ],
+    capabilities: ['slot.render', 'parts.passthrough', 'ssr.staticRender'],
     slots,
 });
 

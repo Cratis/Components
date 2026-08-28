@@ -47,6 +47,11 @@
         {
             "adapter": "primereact11",
             "package": "@primereact/ui",
+            "dependency": "@primeuix/utils"
+        },
+        {
+            "adapter": "primereact11",
+            "package": "@primereact/ui",
             "dependency": "react-dom"
         }
     ],
@@ -74,6 +79,11 @@
             "directory": "Adapters/PrimeReact",
             "manifestExport": "primeReactUiLibrary",
             "rendererId": "cratis-primereact",
+            "versionProbeSpecifiers": {
+                "@primereact/core": "@primereact/core/component",
+                "@primereact/ui": "@primereact/ui/button",
+                "primereact": "primereact/button"
+            },
             "alignedPackages": [
                 "@primereact/core",
                 "@primereact/headless",
@@ -89,6 +99,7 @@
                     "@primereact/ui": "11.0.0",
                     "@primeuix/motion": "1.0.0",
                     "@primeuix/themes": "3.0.0",
+                    "@primeuix/utils": "0.8.0",
                     "primereact": "11.0.0"
                 },
                 "current": {
@@ -98,6 +109,7 @@
                     "@primereact/ui": "11.1.0",
                     "@primeuix/motion": "1.0.0",
                     "@primeuix/themes": "3.0.0",
+                    "@primeuix/utils": "0.8.1",
                     "primereact": "11.1.0"
                 }
             }

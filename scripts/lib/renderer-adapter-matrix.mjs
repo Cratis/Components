@@ -6,7 +6,16 @@ import semver from 'semver';
 
 const boundaryNames = ['minimum', 'current'];
 
-export const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'));
+export const readJson = (filePath) => {
+    try {
+        return JSON.parse(readFileSync(filePath, 'utf8'));
+    } catch (error) {
+        throw new Error(
+            `Could not parse renderer adapter matrix input '${filePath}': ${error instanceof Error ? error.message : String(error)}.`,
+            { cause: error },
+        );
+    }
+};
 
 export const createFixture = (matrix, adapterKey, boundary) => {
     const adapter = matrix.adapters?.[adapterKey];
@@ -139,6 +148,20 @@ export const validateMatrix = (matrix, manifests) => {
     for (const [adapterKey, adapter] of Object.entries(matrix.adapters ?? {})) {
         const manifest = manifests[adapter.workspace];
         if (!manifest) throw new Error(`Manifest for ${adapter.workspace} is required.`);
+        for (const [packageName, specifier] of Object.entries(
+            adapter.versionProbeSpecifiers ?? {},
+        )) {
+            if (!(packageName in (manifest.cratis?.upstream ?? {}))) {
+                throw new Error(
+                    `${adapterKey} version probe names non-upstream package '${packageName}'.`,
+                );
+            }
+            if (typeof specifier !== 'string' || specifier.length === 0) {
+                throw new Error(
+                    `${adapterKey} version probe for ${packageName} is empty.`,
+                );
+            }
+        }
 
         for (const boundary of boundaryNames) {
             assertExactVersions(

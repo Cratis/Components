@@ -33,7 +33,7 @@ import {
     CRATIS_PRESENTATION_PROFILE,
     cratisPresentationSlotIds,
     definePresentationUiLibrary,
-    type CratisPresentationCapabilityId,
+    type CratisPresentationCapabilities,
     type CratisPresentationSlotDeclaration,
     type CratisPresentationSlotId,
 } from '@cratis/components/renderer';
@@ -45,7 +45,7 @@ const capabilities = Object.freeze([
     'rtl',
     'forcedColors',
     'motion.reduced',
-] satisfies readonly CratisPresentationCapabilityId[]);
+] satisfies CratisPresentationCapabilities);
 
 const classNames = (...values: readonly (string | undefined)[]) =>
     values.filter(Boolean).join(' ');

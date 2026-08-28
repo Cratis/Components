@@ -98,7 +98,10 @@ const writeProbe = (consumerDirectory, adapterManifest, fixture) => {
     const upstreamVersions = Object.fromEntries(
         Object.keys(adapterManifest.cratis.upstream).map((name) => [
             name,
-            fixture.peers[name],
+            {
+                version: fixture.peers[name],
+                specifier: fixture.adapter.versionProbeSpecifiers?.[name] ?? name,
+            },
         ]),
     );
     const probe = `
@@ -119,13 +122,13 @@ if (api[manifestExport]?.id !== rendererId) {
     throw new Error(\`\${packageName} renderer id is \${api[manifestExport]?.id}, expected \${rendererId}.\`);
 }
 
-const installedPackageVersion = packageToResolve => {
-    let directory = path.dirname(fileURLToPath(import.meta.resolve(packageToResolve)));
+const installedPackageVersion = (packageName, specifier) => {
+    let directory = path.dirname(fileURLToPath(import.meta.resolve(specifier)));
     while (true) {
         const candidate = path.join(directory, 'package.json');
         try {
             const manifest = JSON.parse(readFileSync(candidate, 'utf8'));
-            if (manifest.name === packageToResolve) return manifest.version;
+            if (manifest.name === packageName) return manifest.version;
         } catch (error) {
             if (error?.code !== 'ENOENT') throw error;
         }
@@ -133,13 +136,13 @@ const installedPackageVersion = packageToResolve => {
         if (parent === directory) break;
         directory = parent;
     }
-    throw new Error(\`Could not locate installed manifest for \${packageToResolve}.\`);
+    throw new Error(\`Could not locate installed manifest for \${packageName}.\`);
 };
 
-for (const [name, expectedVersion] of Object.entries(upstreamVersions)) {
-    const actualVersion = installedPackageVersion(name);
-    if (actualVersion !== expectedVersion) {
-        throw new Error(\`Resolved \${name}@\${actualVersion}, expected boundary version \${expectedVersion}.\`);
+for (const [name, expectation] of Object.entries(upstreamVersions)) {
+    const actualVersion = installedPackageVersion(name, expectation.specifier);
+    if (actualVersion !== expectation.version) {
+        throw new Error(\`Resolved \${name}@\${actualVersion}, expected boundary version \${expectation.version}.\`);
     }
 }
 console.log(\`Verified \${packageName} \${rendererId} with exact boundary upstream versions.\`);

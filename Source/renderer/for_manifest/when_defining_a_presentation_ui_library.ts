@@ -16,11 +16,12 @@ import {
     type CratisPresentationUiLibrary,
 } from '..';
 
-const declaration = <SlotId extends CratisPresentationSlotId>() => ({
-    mode: 'presentation',
-    fidelity: 'native',
-    render: (() => null) as ComponentType<CratisPresentationSlots[SlotId]>,
-}) satisfies CratisPresentationSlotDeclaration<SlotId>;
+const declaration = <SlotId extends CratisPresentationSlotId>() =>
+    ({
+        mode: 'presentation',
+        fidelity: 'native',
+        render: (() => null) as ComponentType<CratisPresentationSlots[SlotId]>,
+    }) satisfies CratisPresentationSlotDeclaration<SlotId>;
 
 const validSlots = (): CratisPresentationSlotMap => ({
     'common.button': declaration<'common.button'>(),
@@ -41,11 +42,7 @@ const validLibrary = (): CratisPresentationUiLibrary => ({
     level: 'primitive',
     profile: CRATIS_PRESENTATION_PROFILE,
     profileSlots: cratisPresentationSlotIds,
-    capabilities: [
-        'slot.render',
-        'parts.passthrough',
-        'ssr.staticRender',
-    ],
+    capabilities: ['slot.render', 'parts.passthrough', 'ssr.staticRender'],
     slots: validSlots(),
 });
 

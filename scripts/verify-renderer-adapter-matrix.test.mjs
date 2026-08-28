@@ -56,3 +56,14 @@ test('a skewed PrimeReact 11 boundary fails before installation', () => {
         /primereact11\/minimum must keep .* aligned/,
     );
 });
+
+test('a version probe outside the declared upstream set fails before installation', () => {
+    const { matrix, manifests } = loadInputs();
+    const invalid = clone(matrix);
+    invalid.adapters.primereact11.versionProbeSpecifiers.rxjs = 'rxjs';
+
+    assert.throws(
+        () => validateMatrix(invalid, manifests),
+        /primereact11 version probe names non-upstream package 'rxjs'/,
+    );
+});

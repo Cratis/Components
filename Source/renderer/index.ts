@@ -84,6 +84,7 @@ export {
     CRATIS_PRESENTATION_PROFILE,
     cratisPresentationSlotIds,
     definePresentationUiLibrary,
+    type CratisPresentationCapabilities,
     type CratisPresentationCapabilityId,
     type CratisPresentationSlotDeclaration,
     type CratisPresentationSlotId,

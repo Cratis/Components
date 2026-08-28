@@ -45,7 +45,7 @@ import {
     definePresentationUiLibrary,
     unstable_AdapterError,
     unstable_adapterErrorCodes,
-    type CratisPresentationCapabilityId,
+    type CratisPresentationCapabilities,
     type CratisPresentationSlotDeclaration,
     type CratisPresentationSlotId,
     type CratisPresentationUiLibrary,
@@ -63,7 +63,7 @@ const capabilities = Object.freeze([
     'slot.render',
     'parts.passthrough',
     'ssr.staticRender',
-] satisfies readonly CratisPresentationCapabilityId[]);
+] satisfies CratisPresentationCapabilities);
 
 const licenseConfiguredAttestation = 'cratis-primereact.license-configured';
 

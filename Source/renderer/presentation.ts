@@ -85,7 +85,8 @@ type CratisPresentationOptionalCapabilityId = Exclude<
     'slot.render' | 'parts.passthrough' | 'ssr.staticRender'
 >;
 
-type CratisPresentationCapabilities = readonly [
+/** Required presentation capabilities followed by optional stable evidence capabilities. */
+export type CratisPresentationCapabilities = readonly [
     'slot.render',
     'parts.passthrough',
     'ssr.staticRender',

@@ -46,7 +46,7 @@ import {
     CRATIS_PRESENTATION_PROFILE,
     cratisPresentationSlotIds,
     definePresentationUiLibrary,
-    type CratisPresentationCapabilityId,
+    type CratisPresentationCapabilities,
     type CratisPresentationSlotDeclaration,
     type CratisPresentationSlotId,
     type CratisPresentationUiLibrary,
@@ -56,7 +56,7 @@ const capabilities = Object.freeze([
     'slot.render',
     'parts.passthrough',
     'ssr.staticRender',
-] satisfies readonly CratisPresentationCapabilityId[]);
+] satisfies CratisPresentationCapabilities);
 
 const MuiAdapterProvider = ({ children }: { readonly children: ReactNode }) => {
     const outerTheme = useTheme();
