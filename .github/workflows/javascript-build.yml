@@ -25,6 +25,7 @@ on:
             - 'ESLint/**'
             - 'Conformance/**'
             - 'Adapters/**'
+            - 'Storybook/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -40,6 +41,7 @@ on:
             - 'ESLint/**'
             - 'Conformance/**'
             - 'Adapters/**'
+            - 'Storybook/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -53,7 +55,7 @@ permissions:
 jobs:
     build:
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 35
 
         steps:
             - name: Checkout code
@@ -104,10 +106,14 @@ jobs:
               working-directory: Source
               run: node scripts/verify-api-docs.mjs
 
-            - name: Build Storybook
+            - name: Verify renderer Storybook type, inventory, specs, and peer isolation
+              working-directory: Storybook
+              run: yarn ci:preflight
+
+            - name: Build composed renderer Storybook
               run: yarn workspace @cratis/components build-storybook
 
-            - name: Verify Storybook stories and autodocs
+            - name: Verify every renderer Storybook index and build attestation
               working-directory: Source
               run: yarn verify-storybook-index
 

@@ -5,7 +5,8 @@
         "ESLint",
         "Codemods",
         "Conformance",
-        "Adapters/*"
+        "Adapters/*",
+        "Storybook"
     ],
     "resolutions": {
         "react-aria": "3.51.0",

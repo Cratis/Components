@@ -56,19 +56,18 @@ if (
     );
 }
 
-const storybookFiles = [
-    path.join(repositoryDirectory, 'Source/.storybook/main.ts'),
-    path.join(repositoryDirectory, 'Source/.storybook/preview.js'),
-];
-const storybookSource = storybookFiles
-    .map((file) => readFileSync(file, 'utf8'))
-    .join('\n');
+const storybookPreviewConfig = readFileSync(
+    path.join(repositoryDirectory, 'Storybook/preview/main.ts'),
+    'utf8',
+);
 if (
-    storybookSource.includes('@cratis/components.primereact10') ||
-    storybookSource.includes('@cratis/components.primereact')
+    !storybookPreviewConfig.includes('CRATIS_STORYBOOK_ADAPTER_ID') ||
+    !storybookPreviewConfig.includes('cratis-renderer-build-attestation') ||
+    storybookPreviewConfig.includes("from '@cratis/components.primereact10'") ||
+    storybookPreviewConfig.includes("from '@cratis/components.primereact'")
 ) {
     throw new Error(
-        'This tranche records renderer isolation only; it must not wire either adapter into the existing Core Storybook.',
+        'The composed Storybook must select one metadata-discovered adapter per separately built preview graph.',
     );
 }
 
@@ -77,5 +76,5 @@ console.log(
         `${package10.version} at ${package10Path}; PrimeReact11 -> ${package11.version} at ${package11Path}.`,
 );
 console.log(
-    'Storybook finding: one preview dependency graph cannot satisfy both incompatible primereact peers. A future renderer-isolation tranche requires separate renderer projects/configurations; the existing Core Storybook remains unchanged.',
+    'Verified Storybook isolation: metadata selects one adapter per child build, and the composed manager references the separately emitted previews.',
 );
