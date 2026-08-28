@@ -66,9 +66,6 @@ const capabilities = Object.freeze([
     'slot.render',
     'parts.passthrough',
     'ssr.staticRender',
-    'rtl',
-    'forcedColors',
-    'motion.reduced',
 ] satisfies readonly unstable_CapabilityId[]);
 
 const MuiAdapterProvider = ({ children }: { readonly children: ReactNode }) => {
@@ -251,8 +248,7 @@ const muiLoadingIndicator = (pt: ButtonProps['pt']) => (
             pt?.spinner?.className,
         )}
         data-cratis-part='spinner'
-        role='progressbar'
-        aria-label='Loading'
+        aria-hidden='true'
     />
 );
 
@@ -709,6 +705,7 @@ const choiceIndicator = (
             parts?.indicator?.className,
         )}
         data-cratis-part='indicator'
+        aria-hidden='true'
         {...attributes}
     >
         {kind === 'checkbox' && selected ? '✓' : undefined}
@@ -870,6 +867,7 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
         value: kind === 'radio' ? radioProps.value : nativeProps.value,
         'aria-invalid': ariaInvalid,
         'aria-readonly': readOnly || undefined,
+        role: kind === 'switch' ? 'switch' : nativeProps.role,
         className: classNames('cratis-mui-choice__input', inputClassName),
         style: inputStyle,
         'data-cratis-part': 'input',

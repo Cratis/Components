@@ -20,6 +20,13 @@ The bounded checks cover:
 - package peers, archive boundaries, runtime loading, declaration hygiene, and strict Bundler and
   NodeNext consumers with `skipLibCheck: false`.
 
-This is automated jsdom/axe and package evidence, not universal browser, visual, or assistive-
-technology certification. MUI's CSS-in-JS output also requires host-specific, request-local Emotion
-cache and style extraction during SSR. No MUI X package is included or exercised.
+The generic overlay absent/present check has no applicable slot in this nine-slot profile; it is
+reported as a bounded pass but supplies no MUI overlay evidence. Portable part names and typed `pt`
+destinations are preserved, while MUI may add wrappers or nest parts differently from the built-in
+renderer; undocumented descendant order and sibling selectors are not portable contracts.
+
+This is automated jsdom/axe and package evidence, not universal browser, visual, RTL, forced-colors,
+reduced-motion, or assistive-technology certification. MUI RTL requires host theme direction and an
+RTL-configured Emotion cache, which this adapter's provider ABI cannot create per request. MUI's
+CSS-in-JS output likewise requires host-specific, request-local Emotion cache and style extraction
+during SSR. No MUI X package is included or exercised.

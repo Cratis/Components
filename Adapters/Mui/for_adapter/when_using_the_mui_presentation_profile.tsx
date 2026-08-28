@@ -127,7 +127,10 @@ describe('when using the MUI stable presentation profile', () => {
             }),
             textInput: renderSlot('common.textInput', { 'aria-label': 'Name' }),
             textArea: renderSlot('common.textArea', { 'aria-label': 'Notes' }),
-            checkbox: renderSlot('common.checkbox', { 'aria-label': 'Selected' }),
+            checkbox: renderSlot('common.checkbox', {
+                label: 'Selected',
+                defaultChecked: true,
+            }),
             radio: renderSlot('common.radio', {
                 name: 'frequency',
                 value: 'daily',
@@ -142,8 +145,10 @@ describe('when using the MUI stable presentation profile', () => {
         expect(markup.textInput).to.contain('MuiInputBase-root');
         expect(markup.textArea).to.contain('MuiInputBase-root');
         expect(markup.checkbox).to.contain('MuiCheckbox-root');
+        expect(markup.checkbox).to.contain('aria-hidden="true"');
         expect(markup.radio).to.contain('MuiRadio-root');
         expect(markup.switchControl).to.contain('MuiSwitch-root');
+        expect(markup.switchControl).to.contain('role="switch"');
         expect(markup.progress).to.contain('MuiLinearProgress-root');
         expect(markup.surface).to.contain('MuiPaper-root');
         expect(markup.surface).to.contain('<article');

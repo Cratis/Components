@@ -70,10 +70,7 @@
         "capabilities": [
             "slot.render",
             "parts.passthrough",
-            "ssr.staticRender",
-            "rtl",
-            "forcedColors",
-            "motion.reduced"
+            "ssr.staticRender"
         ],
         "ssr": "safe",
         "a11y": {

@@ -338,13 +338,14 @@ try {
             );
         }
         const covered = (diagnostic) =>
-            matchesExternalIssue(diagnostic, nodeNextIssue, corePackageJson.name) ||
-            matchesPairedOwnedCascade(
-                diagnostic,
-                nodeNextIssue,
-                diagnostics,
-                corePackageJson.name,
-            );
+            nodeNextIssue.resolutionModes.includes(resolution) &&
+            (matchesExternalIssue(diagnostic, nodeNextIssue, corePackageJson.name) ||
+                matchesPairedOwnedCascade(
+                    diagnostic,
+                    nodeNextIssue,
+                    diagnostics,
+                    corePackageJson.name,
+                ));
         const unexpected = diagnostics.filter((diagnostic) => !covered(diagnostic));
         if (unexpected.length > 0) {
             throw new Error(
