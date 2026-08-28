@@ -1,67 +1,79 @@
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-# `@cratis/components.mui`
+# `@cratis/components.primereact`
 
-Material UI adapter for the nine stable presentation slots in the Cratis Components renderer ABI v1.
-The package is independently versioned and exports one manifest, `muiUiLibrary`.
+PrimeReact 11 adapter for the nine stable presentation slots in the Cratis Components renderer ABI
+v1. The package is independently versioned and exports one manifest, `primeReactUiLibrary`.
+PrimeReact 10 belongs to the separate `@cratis/components.primereact10` package.
 
 ## Install
 
 ```sh
-npm install @cratis/components.mui @cratis/components @mui/material @emotion/react @emotion/styled react react-dom
+npm install @cratis/components.primereact @cratis/components \
+  @primereact/core @primereact/ui primereact @primeuix/themes react react-dom
 ```
 
-Select the adapter on the application Components provider:
+The adapter uses PrimeReact 11 styled components. It covers Button, IconButton, TextInput,
+TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. The five atomic interaction slots are
+not part of this profile.
+
+## Application-owned provider and license
+
+PrimeReact 11 requires a license key. The application owns that key and passes it directly to its
+outer `PrimeReactProvider`; Components never receives, stores, copies, logs, serializes, or proxies
+it. PrimeReact's runtime context deliberately omits the key, so the application also passes one
+non-secret boolean attestation to `CratisComponentsProvider`.
 
 ```tsx
+import { PrimeReactProvider } from '@primereact/core/config';
+import Aura from '@primeuix/themes/aura';
 import { CratisComponentsProvider } from '@cratis/components';
-import { muiUiLibrary } from '@cratis/components.mui';
+import { primeReactUiLibrary } from '@cratis/components.primereact';
+
+const primeUiLicenseKey = import.meta.env.VITE_PRIMEUI_LICENSE_KEY;
 
 export const Application = () => (
-    <CratisComponentsProvider value={{ locale: 'en-US' }} library={muiUiLibrary}>
-        <main>Application content</main>
-    </CratisComponentsProvider>
+    <PrimeReactProvider license={primeUiLicenseKey} theme={{ preset: Aura }}>
+        <CratisComponentsProvider
+            value={{ locale: 'en-US' }}
+            library={primeReactUiLibrary}
+            rendererSetup={{
+                'cratis-primereact.license-configured': Boolean(primeUiLicenseKey),
+            }}>
+            <main>Application content</main>
+        </CratisComponentsProvider>
+    </PrimeReactProvider>
 );
 ```
 
-The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch,
-ProgressBar, and Surface. It deliberately excludes MUI X and does not implement the five atomic
-interaction slots.
+The adapter throws `CRATIS-UI-1005` synchronously when either the outer provider or the attestation
+is absent. Setting the attestation to `true` is an application assertion that the key was actually
+supplied; it is not a substitute for doing so. This prevents Components from creating a second,
+unlicensed provider or silently allowing PrimeUI's invalid-license notice.
 
-## Theme integration
+Obtain a key from [PrimeUI](https://primeui.store/primeui). For Vite, expose the application-owned
+key as `VITE_PRIMEUI_LICENSE_KEY` only in the client build that mounts PrimeReact. In CI or a
+publishing pipeline, map a protected `PRIMEUI_LICENSE_KEY` secret into that build variable without
+echoing it or writing it to package artifacts. The adapter package itself reads no environment
+variable and includes no key.
 
-The manifest provider mounts the MUI `ThemeProvider`. An outer CSS-variable MUI theme is reused.
-An outer non-variable theme is converted to an equivalent CSS-variable theme so its palette and
-other values remain in force. Without an outer provider, MUI's default theme becomes a sane
-CSS-variable-enabled theme. The conversion is memoized and deterministic during server rendering.
+## Styling and SSR
 
-Put application customization outside `CratisComponentsProvider`:
-
-```tsx
-<ThemeProvider theme={applicationTheme}>
-    <CratisComponentsProvider value={{ locale: 'en-US' }} library={muiUiLibrary}>
-        <Application />
-    </CratisComponentsProvider>
-</ThemeProvider>
-```
-
-The renderer provider ABI receives only `children`; it cannot receive an Emotion cache. SSR hosts
-must create an Emotion cache per request, mount Emotion's `CacheProvider` outside the Components
-provider, and extract critical styles from that same request-local cache. Sharing a cache between
-requests can leak styles and ordering. RTL additionally requires the host MUI theme direction and
-an Emotion cache configured with the RTL Stylis plugin. These are application/host integration
-concerns and do not justify a Core ABI change.
+The application chooses the PrimeReact theme on its outer provider. The package's static metadata
+uses `VITE_PRIMEUI_LICENSE_KEY` only as documentation/discovery metadata; no runtime lookup occurs.
+SSR and hydration are deterministic for the nine slots, but the host remains responsible for
+PrimeReact's provider, theme, CSP, and style collection/injection requirements.
 
 ## Peer policy
 
-MUI Core is bounded to `>=9 <10`, Emotion to `>=11 <12`, and React/ReactDOM to React 19. Vendor
-packages are peers; exact current versions are dev dependencies only for repository proof.
+PrimeReact packages are bounded to `>=11 <12`, PrimeUX themes to `>=3 <4`, and React/ReactDOM to
+React 19. Vendor packages are peers and are never bundled. Exact repository proof uses 11.1.0 and
+`@primeuix/themes` 3.0.0.
 
 The current `@cratis/components` peer `>=3.0.0 <4` is a temporary repository placeholder matching
-`@cratis/components.conformance` while the V4 source package is prepared. **It must be changed to
-the honest `>=4 <5` range before this adapter is published.** Publishing with the placeholder would
-misstate compatibility.
+the unreleased V4 source package. **It must become the honest `>=4 <5` range before publication.**
+Publishing with the placeholder would misstate compatibility.
 
-See [CONFORMANCE.md](./CONFORMANCE.md) for the bounded evidence and
-[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licenses.
+See [CONFORMANCE.md](./CONFORMANCE.md) for bounded evidence and
+[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licensing.

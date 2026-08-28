@@ -21,7 +21,9 @@ import {
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryDirectory = path.resolve(packageDirectory, '../..');
-const temporary = mkdtempSync(path.join(os.tmpdir(), 'cratis-mui-package-'));
+const temporary = mkdtempSync(
+    path.join(os.tmpdir(), 'cratis-primereact-package-'),
+);
 
 const run = (command, arguments_, cwd = packageDirectory) => {
     const result = spawnSync(command, arguments_, { cwd, encoding: 'utf8' });
@@ -118,9 +120,10 @@ try {
 
     const expectedPeers = {
         '@cratis/components': '>=3.0.0 <4',
-        '@emotion/react': '>=11 <12',
-        '@emotion/styled': '>=11 <12',
-        '@mui/material': '>=9 <10',
+        '@primereact/core': '>=11 <12',
+        '@primereact/ui': '>=11 <12',
+        '@primeuix/themes': '>=3 <4',
+        primereact: '>=11 <12',
         react: '^19.0.0',
         'react-dom': '^19.0.0',
     };
@@ -144,13 +147,25 @@ try {
         );
     }
     const serializedPackage = JSON.stringify(packageJson);
-    if (serializedPackage.includes('@mui/x-')) {
-        throw new Error('MUI X must remain excluded from every package boundary.');
+    if (serializedPackage.includes('primereact10')) {
+        throw new Error(
+            'PrimeReact 10 must remain in its separate adapter package.',
+        );
+    }
+    const expectedLicense = {
+        spdx: 'LicenseRef-PrimeUI',
+        requiresKey: true,
+        keyEnv: 'VITE_PRIMEUI_LICENSE_KEY',
+        url: 'https://primeui.store/primeui',
+    };
+    if (JSON.stringify(packageJson.cratis?.license) !== JSON.stringify(expectedLicense)) {
+        throw new Error('Packed static metadata does not preserve the key-gated license policy.');
     }
 
     const runtime = readFileSync(path.join(unpackedPackage, 'dist/index.js'), 'utf8');
     for (const requiredImport of [
-        '@mui/material/',
+        '@primereact/core/',
+        '@primereact/ui/',
         '@cratis/components/',
         'react/jsx-runtime',
     ]) {
@@ -161,9 +176,11 @@ try {
         }
     }
     for (const bundledSignature of [
-        'function createThemeNoVars',
-        'function emotionStyled',
-        'MUI: The `styles` argument',
+        'showInvalidLicenseBanner',
+        'function verifyLicense',
+        'Invalid PrimeUI License',
+        'VITE_PRIMEUI_LICENSE_KEY',
+        'primeui.store/primeui',
     ]) {
         if (runtime.includes(bundledSignature)) {
             throw new Error(
@@ -184,10 +201,8 @@ try {
     );
     for (const forbidden of [
         /\bany\b/u,
-        /@mui\//u,
-        /@emotion\//u,
-        /Mui(?:Button|Checkbox|IconButton|InputBase|LinearProgress|Paper|Radio|Switch|Surface|Text)/u,
-        /export\s+(?:type|interface|class|function|default)\b/u,
+        /from\s+['"](?:@primereact|@primeui|@primeuix|primereact)(?:\/|['"])/u,
+        /export\s+(?:type|class|function|default)\b/u,
     ]) {
         if (forbidden.test(declarations)) {
             throw new Error(`Public declarations contain forbidden '${forbidden}'.`);
@@ -196,15 +211,27 @@ try {
     const exportedValues = declarations.match(/export\s+declare\s+const\s+/gu) ?? [];
     if (
         exportedValues.length !== 1 ||
-        !/export declare const muiUiLibrary: unstable_UiLibrary;/u.test(declarations)
+        !/export declare const primeReactUiLibrary: unstable_UiLibrary;/u.test(
+            declarations,
+        )
     ) {
         throw new Error(
             'Public declarations must expose exactly one UiLibrary-typed value.',
         );
     }
+    if (
+        !declarations.includes("'cratis-primereact.license-configured': boolean")
+    ) {
+        throw new Error(
+            'Public declarations must type the non-secret license attestation key.',
+        );
+    }
 
     const nodeModules = path.join(temporary, 'node_modules');
-    link(unpackedPackage, path.join(nodeModules, '@cratis/components.mui'));
+    link(
+        unpackedPackage,
+        path.join(nodeModules, '@cratis/components.primereact'),
+    );
     link(unpackedCorePackage, path.join(nodeModules, '@cratis/components'));
     for (const dependency of ['react', 'react-dom']) {
         link(
@@ -228,28 +255,32 @@ try {
             path.join(nodeModules, dependency),
         );
     }
-    for (const dependency of ['react', 'styled']) {
+    for (const dependency of ['core', 'ui']) {
         link(
-            path.join(repositoryDirectory, 'node_modules/@emotion', dependency),
-            path.join(nodeModules, '@emotion', dependency),
+            path.join(repositoryDirectory, 'node_modules/@primereact', dependency),
+            path.join(nodeModules, '@primereact', dependency),
         );
     }
     link(
-        path.join(repositoryDirectory, 'node_modules/@mui/material'),
-        path.join(nodeModules, '@mui/material'),
+        path.join(repositoryDirectory, 'node_modules/@primeuix/themes'),
+        path.join(nodeModules, '@primeuix/themes'),
+    );
+    link(
+        path.join(repositoryDirectory, 'node_modules/primereact'),
+        path.join(nodeModules, 'primereact'),
     );
 
     writeFileSync(
         path.join(temporary, 'runtime.mjs'),
-        "const api = await import('@cratis/components.mui');\n" +
-            "if (Object.keys(api).join(',') !== 'muiUiLibrary') throw new Error('Packed runtime must export only muiUiLibrary.');\n" +
-            "if (api.muiUiLibrary.id !== 'cratis-mui') throw new Error('Packed manifest did not load with explicit peers.');\n",
+        "const api = await import('@cratis/components.primereact');\n" +
+            "if (Object.keys(api).join(',') !== 'primeReactUiLibrary') throw new Error('Packed runtime must export only primeReactUiLibrary.');\n" +
+            "if (api.primeReactUiLibrary.id !== 'cratis-primereact') throw new Error('Packed manifest did not load with explicit peers.');\n",
     );
     run(process.execPath, ['runtime.mjs'], temporary);
 
     writeFileSync(
         path.join(temporary, 'fixture.ts'),
-        "import { muiUiLibrary } from '@cratis/components.mui';\nvoid muiUiLibrary;\n",
+        "import { primeReactUiLibrary } from '@cratis/components.primereact';\nvoid primeReactUiLibrary;\n",
     );
     writeFileSync(
         path.join(temporary, 'jsx-shim.d.ts'),

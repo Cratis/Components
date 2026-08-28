@@ -50,6 +50,13 @@ import {
     type unstable_UiLibraryProviderProps,
 } from '@cratis/components/renderer';
 
+declare module '@cratis/components/renderer' {
+    interface unstable_RendererSetupExtensions {
+        /** Application attests that its outer PrimeReactProvider received a license key. */
+        'cratis-primereact.license-configured': boolean;
+    }
+}
+
 const profileSlots = Object.freeze([
     'common.button',
     'common.iconButton',
@@ -717,27 +724,34 @@ const PrimeProgressSlot = ({
     const determinate = mode === 'determinate';
     const busy = !determinate || boundedValue < 100;
     return (
-        <PrimeProgressBar.Root
-            as='div'
-            value={boundedValue}
-            mode={mode}
-            aria-label={ariaLabelledBy ? undefined : ariaLabel}
-            aria-labelledby={ariaLabelledBy}
+        <div
             className={classNames('cratis-primereact-progress', className)}
             data-cratis-part='root'
             data-mode={mode}
             data-busy={busy || undefined}
             data-loading={!determinate || undefined}
         >
-            <PrimeProgressBar.Track data-cratis-part='indicator'>
-                <PrimeProgressBar.Indicator />
-            </PrimeProgressBar.Track>
-            {determinate && showValue ? (
-                <PrimeProgressBar.Label data-cratis-part='label'>
-                    {boundedValue}%
-                </PrimeProgressBar.Label>
-            ) : null}
-        </PrimeProgressBar.Root>
+            <PrimeProgressBar.Root
+                as='div'
+                value={boundedValue}
+                mode={mode}
+                pt={{
+                    root: {
+                        'aria-label': ariaLabelledBy ? undefined : ariaLabel,
+                        'aria-labelledby': ariaLabelledBy,
+                    },
+                }}
+            >
+                <PrimeProgressBar.Track data-cratis-part='indicator'>
+                    <PrimeProgressBar.Indicator />
+                </PrimeProgressBar.Track>
+                {determinate && showValue ? (
+                    <PrimeProgressBar.Label data-cratis-part='label'>
+                        {boundedValue}%
+                    </PrimeProgressBar.Label>
+                ) : null}
+            </PrimeProgressBar.Root>
+        </div>
     );
 };
 

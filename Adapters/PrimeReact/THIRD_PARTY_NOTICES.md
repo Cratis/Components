@@ -3,33 +3,27 @@
 
 # Third-party notices
 
-This adapter interoperates with peer-installed software. It does not bundle the following packages.
+This MIT-licensed adapter interoperates with peer-installed PrimeUI software. It does not bundle or
+redistribute the vendor packages listed below.
 
-## MUI Core
+## PrimeReact 11 and PrimeUX themes
 
-MUI Core (`@mui/material` and its Core support packages) is Copyright (c) 2014 Call-Em-All and
-Copyright (c) 2016-2026 MUI and licensed under the MIT License.
+The proof matrix uses these peer packages:
 
-MUI X is explicitly excluded from this adapter.
+- `@primereact/core` 11.1.0
+- `@primereact/ui` 11.1.0
+- `primereact` 11.1.0
+- `@primeuix/themes` 3.0.0
 
-## Emotion
+Their package metadata states `SEE LICENSE IN LICENSE.md`. The supplied license describes PrimeUI
+as commercial software, requires a valid application-owned key, and provides separate Community
+and Commercial terms. Consult the terms shipped with the exact installed versions and the official
+pages:
 
-Emotion (`@emotion/react` and `@emotion/styled`) is Copyright (c) Emotion team and other
-contributors and licensed under the MIT License.
+- Community terms: <https://primeui.dev/licenses/community>
+- Commercial terms: <https://primeui.dev/licenses/commercial>
+- Key purchase/account page: <https://primeui.store/primeui>
 
-## MIT License text
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-associated documentation files (the "Software"), to deal in the Software without restriction,
-including without limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial
-portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
-OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+PrimeReact 10 is not part of this adapter. The application is responsible for license eligibility,
+key configuration, renewals, and determining whether its distribution model needs additional
+permission. This notice records package facts for transparency and is not legal advice.

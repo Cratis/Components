@@ -20,11 +20,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Third-party MIT notices
------------------------
-MUI Core (@mui/material and Core support packages): Copyright (c) 2014
-Call-Em-All and Copyright (c) 2016-2026 MUI. Licensed under the MIT License
-above. MUI X is not included.
-
-Emotion (@emotion/react and @emotion/styled): Copyright (c) Emotion team and
-other contributors. Licensed under the MIT License above.
+PrimeReact and PrimeUX are peer-installed commercial software and are not
+covered by this MIT license. See THIRD_PARTY_NOTICES.md.

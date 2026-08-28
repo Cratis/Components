@@ -4,8 +4,16 @@
 import { expect } from 'chai';
 import { createElement, type ComponentType, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PrimeReactProvider } from '@primereact/core/config';
+import {
+    PrimeReactContext,
+    defaultConfigProps,
+} from '@primereact/core/config';
+import { LocaleProvider } from '@primereact/core/locale';
+import { PassThroughProvider } from '@primereact/core/passthrough';
+import { ThemeProvider as PrimeThemeProvider } from '@primereact/core/theme';
 import Aura from '@primeuix/themes/aura';
+import { CratisComponentsProvider } from '@cratis/components';
+import { Button } from '@cratis/components/Common';
 import { runConformance, type ConformanceReport } from '@cratis/components.conformance';
 import {
     unstable_AdapterError,
@@ -27,8 +35,20 @@ const stablePresentationSlots = [
     'common.surface',
 ] as const;
 
+// SAFETY: PrimeReact's public context type includes the provider input shape, while its runtime
+// value deliberately omits the license and adds mutable setters. These nine presentation fixtures
+// need only the documented configuration values; using public contexts avoids invoking the real
+// license manager with a fake credential.
+const primeReactFixtureConfig = Object.freeze({ ...defaultConfigProps });
+
 const PrimeApplicationProvider = ({ children }: { readonly children: ReactNode }) => (
-    <PrimeReactProvider theme={{ preset: Aura }}>{children}</PrimeReactProvider>
+    <PrimeReactContext.Provider value={primeReactFixtureConfig}>
+        <LocaleProvider lang='en'>
+            <PassThroughProvider mergeSections mergeProps>
+                <PrimeThemeProvider preset={Aura}>{children}</PrimeThemeProvider>
+            </PassThroughProvider>
+        </LocaleProvider>
+    </PrimeReactContext.Provider>
 );
 
 const renderSlot = (
@@ -221,6 +241,24 @@ describe('when using the PrimeReact stable presentation profile', () => {
             </PrimeApplicationProvider>,
         );
         expect(configured).to.contain('data-configured');
+    });
+
+    it('should pass the non-secret setup attestation through the Components provider', () => {
+        const markup = renderToStaticMarkup(
+            <PrimeApplicationProvider>
+                <CratisComponentsProvider
+                    library={primeReactUiLibrary}
+                    rendererSetup={{
+                        'cratis-primereact.license-configured': true,
+                    }}
+                >
+                    <Button label='Configured action' />
+                </CratisComponentsProvider>
+            </PrimeApplicationProvider>,
+        );
+
+        expect(markup).to.contain('p-button');
+        expect(markup).to.contain('Configured action');
     });
 
     it('should declare only bounded peer-hosted PrimeReact 11 vendors', () => {
