@@ -17,7 +17,8 @@ The bounded checks cover:
 - current and deprecated Button appearance mapping and canonical data attributes;
 - real PrimeReact 11 styled DOM identities for all nine slots;
 - explicit switch semantics and hidden visual indicators;
-- deterministic SSR and mismatch-free hydration under an application-owned outer provider; and
+- deterministic SSR for all nine slots and mismatch-free representative Button hydration under an
+  application-owned outer provider; and
 - package peers, archive boundaries, runtime loading, declaration hygiene, and strict Bundler and
   NodeNext consumers with bounded upstream exceptions.
 

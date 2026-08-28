@@ -41,7 +41,8 @@ export const Application = () => (
             library={primeReactUiLibrary}
             rendererSetup={{
                 'cratis-primereact.license-configured': Boolean(primeUiLicenseKey),
-            }}>
+            }}
+        >
             <main>Application content</main>
         </CratisComponentsProvider>
     </PrimeReactProvider>
@@ -50,21 +51,23 @@ export const Application = () => (
 
 The adapter throws `CRATIS-UI-1005` synchronously when either the outer provider or the attestation
 is absent. Setting the attestation to `true` is an application assertion that the key was actually
-supplied; it is not a substitute for doing so. This prevents Components from creating a second,
-unlicensed provider or silently allowing PrimeUI's invalid-license notice.
+supplied; it is not a substitute for doing so. This prevents Components from creating a second
+provider and fails before adapter content when setup was not attested. The adapter does not validate
+the key and cannot guarantee that PrimeUI will accept it or omit its own license notice.
 
 Obtain a key from [PrimeUI](https://primeui.store/primeui). For Vite, expose the application-owned
 key as `VITE_PRIMEUI_LICENSE_KEY` only in the client build that mounts PrimeReact. In CI or a
 publishing pipeline, map a protected `PRIMEUI_LICENSE_KEY` secret into that build variable without
-echoing it or writing it to package artifacts. The adapter package itself reads no environment
-variable and includes no key.
+echoing it or writing it to package artifacts. The adapter package itself reads no license
+environment variable and includes no key.
 
 ## Styling and SSR
 
 The application chooses the PrimeReact theme on its outer provider. The package's static metadata
 uses `VITE_PRIMEUI_LICENSE_KEY` only as documentation/discovery metadata; no runtime lookup occurs.
-SSR and hydration are deterministic for the nine slots, but the host remains responsible for
-PrimeReact's provider, theme, CSP, and style collection/injection requirements.
+All nine slots produce deterministic SSR output, and the representative Button fixture hydrates
+without a mismatch. The host remains responsible for PrimeReact's provider, theme, CSP, and style
+collection/injection requirements.
 
 ## Peer policy
 
