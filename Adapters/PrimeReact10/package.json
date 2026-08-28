@@ -1,0 +1,120 @@
+{
+    "name": "@cratis/components.primereact10",
+    "version": "0.1.0",
+    "cratisIndependentVersion": true,
+    "description": "PrimeReact 10 presentation adapter for Cratis Components renderer ABI v1.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=23.0.0"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CONFORMANCE.md",
+        "THIRD_PARTY_NOTICES.md",
+        "LICENSE"
+    ],
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "sideEffects": false,
+    "cratisUiAbi": 1,
+    "cratis": {
+        "kind": "ui-adapter",
+        "id": "cratis-primereact10",
+        "displayName": "Cratis PrimeReact 10 renderer",
+        "abi": "^1",
+        "level": "primitive",
+        "profile": "stable-presentation/v1",
+        "category": "primereact10",
+        "entry": "./dist/index.js",
+        "export": "primeReact10UiLibrary",
+        "slots": [
+            "common.button",
+            "common.iconButton",
+            "common.textInput",
+            "common.textArea",
+            "common.checkbox",
+            "common.radio",
+            "common.switch",
+            "common.progress",
+            "common.surface"
+        ],
+        "modes": {
+            "common.button": "presentation",
+            "common.iconButton": "presentation",
+            "common.textInput": "presentation",
+            "common.textArea": "presentation",
+            "common.checkbox": "presentation",
+            "common.radio": "presentation",
+            "common.switch": "presentation",
+            "common.progress": "presentation",
+            "common.surface": "presentation"
+        },
+        "capabilities": [
+            "slot.render",
+            "parts.passthrough",
+            "ssr.staticRender"
+        ],
+        "ssr": "safe",
+        "a11y": {
+            "axeProfile": "wcag22aa",
+            "evidence": "./CONFORMANCE.md"
+        },
+        "license": {
+            "spdx": "MIT",
+            "requiresKey": false
+        },
+        "upstream": {
+            "primereact": ">=10 <11",
+            "react": "^19.0.0",
+            "react-dom": "^19.0.0"
+        }
+    },
+    "scripts": {
+        "clean": "rm -rf dist",
+        "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+        "typecheck-specs": "yarn workspace @cratis/components prepare && yarn workspace @cratis/components.conformance build && node ../../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "lint": "node ../../node_modules/eslint/bin/eslint.js . --quiet",
+        "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+        "verify-upstream-shim": "node ./scripts/verify-upstream-shim.mjs",
+        "verify-isolation": "node ./scripts/verify-workspace-isolation.mjs",
+        "verify-package": "node ./scripts/verify-packed-package.mjs",
+        "ci": "yarn clean && yarn lint && yarn build && yarn verify-upstream-shim && yarn typecheck-specs && yarn test && yarn verify-isolation && yarn verify-package"
+    },
+    "peerDependencies": {
+        "@cratis/components": ">=3.0.0 <4",
+        "primereact": ">=10 <11",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@cratis/arc": "22.4.0",
+        "@cratis/arc.react": "22.4.0",
+        "@cratis/components": "workspace:^",
+        "@cratis/components.conformance": "workspace:^",
+        "@cratis/fundamentals": "^7.10.3",
+        "@types/react": "19.2.18",
+        "primereact": "10.9.8",
+        "react": "19.2.8",
+        "react-dom": "19.2.8",
+        "reflect-metadata": "0.2.2",
+        "tsyringe": "4.10.0"
+    }
+}

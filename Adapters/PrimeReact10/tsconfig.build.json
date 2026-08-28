@@ -1,0 +1,20 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "composite": false,
+        "declaration": true,
+        "declarationMap": true,
+        "outDir": "dist",
+        "rootDir": "src",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "baseUrl": ".",
+        "paths": {
+            "primereact/api": ["src/primereact10-api-shim.d.ts"]
+        },
+        "skipLibCheck": false,
+        "types": []
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["**/for_*/**", "dist", "node_modules"]
+}
