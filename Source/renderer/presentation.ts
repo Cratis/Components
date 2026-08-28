@@ -41,14 +41,23 @@ export type CratisPresentationSlotId = (typeof cratisPresentationSlotIds)[number
 
 /** Exact public component prop and ref contracts covered by the stable presentation profile. */
 export interface CratisPresentationSlots {
+    /** Cratis button presentation contract, including native button refs and form behavior. */
     readonly 'common.button': ButtonProps;
+    /** Accessible icon-only button contract with native button ownership. */
     readonly 'common.iconButton': IconButtonProps;
+    /** Native text-input contract with semantic value-first change events. */
     readonly 'common.textInput': TextInputProps;
+    /** Native multiline text-input contract with semantic value-first change events. */
     readonly 'common.textArea': TextAreaProps;
+    /** Native checkbox contract with checked state, form participation, and input refs. */
     readonly 'common.checkbox': CheckboxProps;
+    /** Native radio-option contract with selection state, form participation, and input refs. */
     readonly 'common.radio': RadioProps;
+    /** Boolean switch contract preserving switch semantics and input ownership. */
     readonly 'common.switch': SwitchProps;
+    /** Determinate or indeterminate progress presentation contract. */
     readonly 'common.progress': ProgressBarProps;
+    /** Non-interactive semantic surface and native-element presentation contract. */
     readonly 'common.surface': SurfaceProps;
 }
 
