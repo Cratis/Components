@@ -1,0 +1,29 @@
+{
+    "name": "@cratis/components.storybook",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Private composed Storybook workspace for Cratis Components renderer previews.",
+    "type": "module",
+    "scripts": {
+        "clean": "rm -rf ../Source/storybook-static",
+        "dev": "node scripts/dev-storybooks.mjs",
+        "lint": "node ../node_modules/eslint/bin/eslint.js . --quiet",
+        "typecheck": "node ../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "test": "node ../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+        "verify-inventory": "node scripts/verify-adapter-inventory.mjs",
+        "verify-isolation": "node scripts/verify-peer-major-isolation.mjs",
+        "build": "node scripts/build-storybooks.mjs",
+        "verify-indexes": "node scripts/verify-storybook-indexes.mjs",
+        "verify-manager": "node scripts/verify-composed-manager.mjs",
+        "test-storybook": "yarn verify-manager && node scripts/run-story-matrix.mjs",
+        "test-storybook:light": "node scripts/run-story-matrix.mjs baseline-light",
+        "test-storybook:dark": "node scripts/run-story-matrix.mjs baseline-dark",
+        "ci:preflight": "yarn verify-inventory && yarn typecheck && yarn test && yarn verify-isolation",
+        "ci": "yarn ci:preflight && yarn build && yarn verify-indexes && yarn test-storybook"
+    },
+    "devDependencies": {
+        "@types/react": "^19.2.18",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    }
+}

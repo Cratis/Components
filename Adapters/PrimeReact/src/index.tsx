@@ -555,7 +555,7 @@ const PrimeChoice = ({
         name: kind === 'radio' ? radio.name : nativeProps.name,
         value: kind === 'radio' ? radio.value : nativeProps.value,
         'aria-invalid': ariaInvalid,
-        'aria-readonly': readOnly || undefined,
+        'aria-readonly': kind === 'switch' ? readOnly || undefined : undefined,
         role: kind === 'switch' ? 'switch' : nativeProps.role,
         className: classNames('cratis-primereact-choice__input', inputClassName),
         style: inputStyle,
@@ -733,12 +733,19 @@ const PrimeProgressSlot = ({
         >
             <PrimeProgressBar.Root
                 as='div'
-                value={boundedValue}
+                value={determinate ? boundedValue : undefined}
                 mode={mode}
                 pt={{
                     root: {
                         'aria-label': ariaLabelledBy ? undefined : ariaLabel,
                         'aria-labelledby': ariaLabelledBy,
+                        ...(determinate
+                            ? {}
+                            : {
+                                  'aria-valuemin': undefined,
+                                  'aria-valuenow': undefined,
+                                  'aria-valuemax': undefined,
+                              }),
                     },
                 }}
             >

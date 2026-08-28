@@ -397,6 +397,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@cratis/components.storybook@workspace:Storybook":
+  version: 0.0.0-use.local
+  resolution: "@cratis/components.storybook@workspace:Storybook"
+  dependencies:
+    "@types/react": "npm:^19.2.18"
+    react: "npm:^19.0.0"
+    react-dom: "npm:^19.0.0"
+  languageName: unknown
+  linkType: soft
+
 "@cratis/components@workspace:Source, @cratis/components@workspace:^":
   version: 0.0.0-use.local
   resolution: "@cratis/components@workspace:Source"

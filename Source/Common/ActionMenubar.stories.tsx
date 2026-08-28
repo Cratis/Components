@@ -34,7 +34,7 @@ export const DisabledAction: Story = {
     play: async ({ canvasElement, args }) => {
         const save = within(canvasElement).getByRole('button', { name: 'Save' });
         await expect(save).toBeDisabled();
-        await userEvent.click(save);
+        save.click();
         await expect(args.model[1].command).not.toHaveBeenCalled();
     },
     args: {

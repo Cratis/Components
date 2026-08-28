@@ -241,6 +241,7 @@ typings/
 *.d.ts
 !*.scss.d.ts
 !Adapters/**/src/upstream-*-shim.d.ts
+!Storybook/**/*.d.ts
 
 # Visual Studio 6 build log
 *.plg

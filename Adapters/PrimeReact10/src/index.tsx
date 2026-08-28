@@ -509,6 +509,7 @@ const stateAttributes = (
 
 interface PrimeBooleanChangeEvent {
     readonly checked?: boolean;
+    readonly value?: boolean;
     readonly originalEvent?: SyntheticEvent;
 }
 
@@ -578,7 +579,7 @@ const PrimeChoice = ({
         value: kind === 'radio' ? radio.value : nativeProps.value,
         defaultChecked: kind === 'radio' ? defaultChecked : undefined,
         'aria-invalid': ariaInvalid,
-        'aria-readonly': readOnly || undefined,
+        'aria-readonly': kind === 'switch' ? readOnly || undefined : undefined,
         role: kind === 'switch' ? 'switch' : nativeProps.role,
         className: classNames('cratis-primereact10-choice__input', inputClassName),
         style: inputStyle,
@@ -597,7 +598,7 @@ const PrimeChoice = ({
             // input change event; its public legacy type erases the specific ChangeEvent subtype.
             partOnChange?.(originalEvent as ChangeEvent<HTMLInputElement>);
         }
-        const nextChecked = Boolean(event.checked);
+        const nextChecked = Boolean(kind === 'switch' ? event.value : event.checked);
         if (readOnly || (kind === 'radio' && !nextChecked)) return;
         state.synchronize(nextChecked);
         onChange?.(nextChecked, {
