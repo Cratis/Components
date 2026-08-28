@@ -265,7 +265,9 @@
     },
     "devDependencies": {
         "@cratis/arc.vite": "22.5.0",
-        "pixi.js": "^8.20.1"
+        "pixi.js": "^8.20.1",
+        "react": "19.2.8",
+        "react-dom": "19.2.8"
     },
     "peerDependencies": {
         "@cratis/arc": ">=20.3.1 <23",

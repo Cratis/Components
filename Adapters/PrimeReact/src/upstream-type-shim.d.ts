@@ -6,11 +6,12 @@ import type { ElementType, ReactElement } from 'react';
 
 /**
  * @internal Compile-only bridge for exact upstream declaration defects in PrimeReact 11.1.0 and
- * Arc React 22.4.0. The adapter's packed declaration never exposes these aliases.
+ * Arc React 22.5.0. The adapter's packed declaration never exposes these aliases.
  */
 declare global {
     type I_1 = ComponentInstance;
-    type P = unknown;
+    // Upstream uses P only inside keyof GlobalComponentProps; the property map preserves that key set.
+    type P = Record<PropertyKey, unknown>;
     type T_1 = ElementType;
 
     namespace JSX {
