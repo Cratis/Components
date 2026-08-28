@@ -3,7 +3,7 @@ title: CratisComponentsProvider
 description: Configure locale, Components-owned labels, and the app-wide toast region.
 ---
 
-`CratisComponentsProvider` is the application root for renderer-independent Components configuration. It does not provide a theme runtime or third-party renderer context; styling is owned by CSS.
+`CratisComponentsProvider` is the application root for Components-owned locale/messages and the experimental renderer boundary. Its `value` remains renderer-independent and it does not configure an application's direct third-party component usage; a selected adapter may mount its own provider boundary. Styling remains owned by CSS or by the explicitly selected adapter.
 
 ## Basic setup
 
@@ -49,7 +49,29 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 
 Unknown Components 3 renderer options are intentionally a type error. Remove `license`, `theme`, `defaults`, global `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings rather than compiling a provider whose visual configuration does nothing. Configure any remaining direct Prime provider independently.
 
-Every group follows the same precedence: a named component prop (or a component's own `labels`/`filterLabels` override) wins, then the matching provider message, then the English default shown above. Per-instance overrides keep working exactly as before — the provider only fills gaps a call site left unset.
+## Experimental renderer selection
+
+The renderer contract remains `unstable_` while concrete adapters falsify it. The provider exposes:
+
+| Prop                 | Purpose                                                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `library`            | One renderer manifest or an ordered last-wins composition. Omit it for the built-in default.        |
+| `libraryMode`        | `strict` rejects invalid profile promises; `degrade` reports them after mount.                       |
+| `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects fallback.                                   |
+| `overlayEnvironment` | Stable, post-commit portal-container lookup for overlay-owning implementations.                      |
+| `rendererSetup`      | Adapter-declared, non-secret boolean setup attestations. Never put credentials, keys, or caches here. |
+
+Adapter packages declaration-merge their own `rendererSetup` keys, so importing an adapter gives
+typed setup without adding vendor fields to Core. The provider copies and freezes boolean entries,
+discards non-boolean runtime values, inherits the map through nested providers unless a nested map
+replaces it wholesale, and forwards it through `RendererScope`.
+
+A key-gated renderer still receives its key through the application's own outer vendor provider.
+For example, the PrimeReact 11 adapter receives only a boolean assertion that the application
+completed that setup; Components never receives the key itself. See the adapter package README for
+the exact provider and build-environment wiring.
+
+Every message group follows the same precedence: a named component prop (or a component's own `labels`/`filterLabels` override) wins, then the matching provider message, then the English default shown above. Per-instance overrides keep working exactly as before — the provider only fills gaps a call site left unset.
 
 ## Localize owned labels
 
