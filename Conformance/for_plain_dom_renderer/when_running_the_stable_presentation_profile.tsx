@@ -55,6 +55,12 @@ describe('when running the private plain DOM stable presentation profile', () =>
 
     it('should use schema valid static metadata consistent with the runtime manifest', () => {
         expect(validateMetadata(plainDomPresentationMetadata)).to.deep.equal([]);
+        expect(plainDomPresentationMetadata.entry).to.equal(
+            './for_plain_dom_renderer/given/plainDomPresentationRenderer.tsx',
+        );
+        expect(plainDomPresentationMetadata.export).to.equal(
+            'plainDomPresentationRenderer',
+        );
         expect(
             report.checks.find((check) => check.id === 'manifest.schema')?.status,
         ).to.equal('passed');

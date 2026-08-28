@@ -28,8 +28,9 @@ The repository includes a private, test-only plain-DOM renderer under
 runtime code. It independently implements the nine stable presentation slots using public ABI and
 component prop contracts only; it does not import the Components-owned Core implementations.
 
-The declared `stable-presentation/v1` profile and its package-shaped static metadata produce 100
-passed checks out of 100, with zero failures and zero skips. The bounded run observes:
+The declared `stable-presentation/v1` profile and its schema-valid static metadata point to the
+actual private source fixture and exported manifest, producing 100 passed checks out of 100 with
+zero failures and zero skips. The bounded run observes:
 
 - exact semantic native elements and forwarded refs for every ref-capable slot;
 - native submit, form-value, and reset behavior;
