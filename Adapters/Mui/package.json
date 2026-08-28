@@ -70,7 +70,6 @@
         "capabilities": [
             "slot.render",
             "parts.passthrough",
-            "theme.tokens",
             "ssr.staticRender",
             "rtl",
             "forcedColors",
@@ -111,12 +110,18 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
+        "@cratis/arc": "22.4.0",
+        "@cratis/arc.react": "22.4.0",
         "@cratis/components": "workspace:^",
         "@cratis/components.conformance": "workspace:^",
+        "@cratis/fundamentals": "^7.10.3",
         "@emotion/react": "11.14.0",
         "@emotion/styled": "11.14.1",
         "@mui/material": "9.4.0",
+        "@types/react": "^19.2.18",
         "react": "^19.0.0",
-        "react-dom": "^19.0.0"
+        "react-dom": "^19.0.0",
+        "reflect-metadata": "0.2.2",
+        "tsyringe": "4.10.0"
     }
 }

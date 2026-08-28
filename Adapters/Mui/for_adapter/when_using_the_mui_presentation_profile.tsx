@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { expect } from 'chai';
-import { createElement, type ComponentType, type ReactNode } from 'react';
+import { createElement, type ComponentType } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ThemeProvider, createTheme, useTheme, type Theme } from '@mui/material/styles';
 import { runConformance, type ConformanceReport } from '@cratis/components.conformance';

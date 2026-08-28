@@ -11,6 +11,7 @@ import {
     type ChangeEvent,
     type ForwardedRef,
     type InputHTMLAttributes,
+    type ReactElement,
     type ReactNode,
     type TextareaHTMLAttributes,
 } from 'react';
@@ -64,7 +65,6 @@ const profileSlots = Object.freeze([
 const capabilities = Object.freeze([
     'slot.render',
     'parts.passthrough',
-    'theme.tokens',
     'ssr.staticRender',
     'rtl',
     'forcedColors',
@@ -129,6 +129,8 @@ const muiVariant = (variant: 'solid' | 'outline' | 'ghost' | 'link') => {
         case 'ghost':
         case 'link':
             return 'text';
+        default:
+            throw new Error(`Unsupported Button variant '${String(variant)}'.`);
     }
 };
 
@@ -161,24 +163,41 @@ interface ResolvedButtonAppearance {
     readonly severity: ButtonSeverity | undefined;
 }
 
+interface ButtonAppearanceOptions {
+    readonly variant: ButtonProps['variant'];
+    readonly tone: ButtonProps['tone'];
+    readonly shape: ButtonProps['shape'];
+    readonly text: ButtonProps['text'];
+    readonly link: ButtonProps['link'];
+    readonly outlined: ButtonProps['outlined'];
+    readonly rounded: ButtonProps['rounded'];
+    readonly severity: ButtonProps['severity'];
+}
+
+const resolveButtonVariant = ({
+    variant,
+    link,
+    text,
+    outlined,
+}: ButtonAppearanceOptions): ResolvedButtonAppearance['variant'] => {
+    if (variant) return variant;
+    if (link) return 'link';
+    if (text) return 'ghost';
+    if (outlined) return 'outline';
+    return 'solid';
+};
+
 const resolveButtonAppearance = (
-    variant: ButtonProps['variant'],
-    tone: ButtonProps['tone'],
-    shape: ButtonProps['shape'],
-    text: ButtonProps['text'],
-    link: ButtonProps['link'],
-    outlined: ButtonProps['outlined'],
-    rounded: ButtonProps['rounded'],
-    severity: ButtonProps['severity'],
+    options: ButtonAppearanceOptions,
 ): ResolvedButtonAppearance => {
+    const { tone, shape, text, link, outlined, rounded, severity } = options;
     if (text !== undefined) warnForDeprecatedProp('text');
     if (link !== undefined) warnForDeprecatedProp('link');
     if (outlined !== undefined) warnForDeprecatedProp('outlined');
     if (rounded !== undefined) warnForDeprecatedProp('rounded');
     if (severity !== undefined) warnForDeprecatedProp('severity');
     return {
-        variant:
-            variant ?? (link ? 'link' : text ? 'ghost' : outlined ? 'outline' : 'solid'),
+        variant: resolveButtonVariant(options),
         tone: tone ?? (severity ? toneForSeverity[severity] : undefined),
         shape: shape ?? (rounded ? 'pill' : 'default'),
         severity: tone ? severityForTone[tone] : severity,
@@ -217,6 +236,43 @@ const MuiButtonContent = ({ icon, label, children, pt }: MuiButtonContentProps) 
     </>
 );
 
+const muiButtonStyles = (appearance: ResolvedButtonAppearance) => ({
+    borderRadius: appearance.shape === 'pill' ? 9999 : undefined,
+    textTransform: appearance.variant === 'link' ? 'none' : undefined,
+    padding: appearance.variant === 'link' ? 0 : undefined,
+    minWidth: appearance.variant === 'link' ? 0 : undefined,
+});
+
+const muiLoadingIndicator = (pt: ButtonProps['pt']) => (
+    <span
+        {...pt?.spinner}
+        className={classNames(
+            'cratis-mui-button__spinner',
+            pt?.spinner?.className,
+        )}
+        data-cratis-part='spinner'
+        role='progressbar'
+        aria-label='Loading'
+    />
+);
+
+const withMuiTooltip = (
+    element: ReactElement,
+    tooltip: string | undefined,
+    options: ButtonProps['tooltipOptions'],
+) => {
+    if (!tooltip) return element;
+    return (
+        <MuiTooltip
+            title={tooltip}
+            placement={options?.position}
+            classes={{ tooltip: options?.className ?? '' }}
+        >
+            {element}
+        </MuiTooltip>
+    );
+};
+
 const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiButtonSlot(
     {
         label,
@@ -246,7 +302,7 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
     },
     ref,
 ) {
-    const appearance = resolveButtonAppearance(
+    const appearance = resolveButtonAppearance({
         variant,
         tone,
         shape,
@@ -255,7 +311,7 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
         outlined,
         rounded,
         severity,
-    );
+    });
     const effectiveDisabled = Boolean(disabled || loading);
     const iconOnly = Boolean(icon) && label === undefined && !children;
     const button = (
@@ -274,24 +330,8 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
             color={muiColorForTone(appearance.tone)}
             size={muiSize(size)}
             loading={loading}
-            loadingIndicator={
-                <span
-                    {...pt?.spinner}
-                    className={classNames(
-                        'cratis-mui-button__spinner',
-                        pt?.spinner?.className,
-                    )}
-                    data-cratis-part='spinner'
-                    role='progressbar'
-                    aria-label='Loading'
-                />
-            }
-            sx={{
-                borderRadius: appearance.shape === 'pill' ? 9999 : undefined,
-                textTransform: appearance.variant === 'link' ? 'none' : undefined,
-                padding: appearance.variant === 'link' ? 0 : undefined,
-                minWidth: appearance.variant === 'link' ? 0 : undefined,
-            }}
+            loadingIndicator={muiLoadingIndicator(pt)}
+            sx={muiButtonStyles(appearance)}
             aria-busy={loading || undefined}
             data-cratis-part='root'
             data-variant={appearance.variant}
@@ -308,17 +348,7 @@ const MuiButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(function MuiBut
             </MuiButtonContent>
         </MuiButton>
     );
-    return tooltip ? (
-        <MuiTooltip
-            title={tooltip}
-            placement={tooltipOptions?.position}
-            classes={{ tooltip: tooltipOptions?.className ?? '' }}
-        >
-            {button}
-        </MuiTooltip>
-    ) : (
-        button
-    );
+    return withMuiTooltip(button, tooltip, tooltipOptions);
 });
 
 const MuiIconButtonSlot = forwardRef<HTMLButtonElement, IconButtonProps>(
@@ -350,7 +380,7 @@ const MuiIconButtonSlot = forwardRef<HTMLButtonElement, IconButtonProps>(
         },
         ref,
     ) {
-        const appearance = resolveButtonAppearance(
+        const appearance = resolveButtonAppearance({
             variant,
             tone,
             shape,
@@ -359,7 +389,7 @@ const MuiIconButtonSlot = forwardRef<HTMLButtonElement, IconButtonProps>(
             outlined,
             rounded,
             severity,
-        );
+        });
         const effectiveDisabled = Boolean(disabled || loading);
         const button = (
             <MuiIconButton
@@ -380,18 +410,7 @@ const MuiIconButtonSlot = forwardRef<HTMLButtonElement, IconButtonProps>(
                 color={muiColorForTone(appearance.tone)}
                 size={muiSize(size)}
                 loading={loading}
-                loadingIndicator={
-                    <span
-                        {...pt?.spinner}
-                        className={classNames(
-                            'cratis-mui-button__spinner',
-                            pt?.spinner?.className,
-                        )}
-                        data-cratis-part='spinner'
-                        role='progressbar'
-                        aria-label='Loading'
-                    />
-                }
+                loadingIndicator={muiLoadingIndicator(pt)}
                 sx={{ borderRadius: appearance.shape === 'pill' ? '50%' : 1 }}
                 aria-label={ariaLabel}
                 aria-busy={loading || undefined}
@@ -420,17 +439,7 @@ const MuiIconButtonSlot = forwardRef<HTMLButtonElement, IconButtonProps>(
                 )}
             </MuiIconButton>
         );
-        return tooltip ? (
-            <MuiTooltip
-                title={tooltip}
-                placement={tooltipOptions?.position}
-                classes={{ tooltip: tooltipOptions?.className ?? '' }}
-            >
-                {button}
-            </MuiTooltip>
-        ) : (
-            button
-        );
+        return withMuiTooltip(button, tooltip, tooltipOptions);
     },
 );
 
@@ -558,8 +567,9 @@ const useNativeCheckedState = (
     checked: boolean | undefined,
     defaultChecked: boolean | undefined,
     forwardedRef: ForwardedRef<HTMLInputElement>,
-    observeRadioGroup = false,
+    options: { readonly observeRadioGroup?: boolean } = {},
 ) => {
+    const observeRadioGroup = options.observeRadioGroup ?? false;
     const inputRef = useRef<HTMLInputElement>(null);
     const [uncontrolledChecked, setUncontrolledChecked] = useState(
         Boolean(defaultChecked),
@@ -626,26 +636,205 @@ interface MuiChoiceProps {
     readonly forwardedRef: ForwardedRef<HTMLInputElement>;
 }
 
-const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
-    const pt = props.pt as ChoiceParts | undefined;
-    const inputPt = pt?.input as InputHTMLAttributes<HTMLInputElement> | undefined;
-    const checked = props.checked ?? inputPt?.checked;
-    const defaultChecked = props.defaultChecked ?? inputPt?.defaultChecked;
-    const disabled = props.disabled ?? inputPt?.disabled;
-    const readOnly = props.readOnly ?? inputPt?.readOnly;
+type ChoiceStateAttributes = ReturnType<typeof stateAttributes>;
+
+interface ResolvedMuiChoice {
+    readonly parts: ChoiceParts | undefined;
+    readonly inputPart: InputHTMLAttributes<HTMLInputElement> | undefined;
+    readonly checked: boolean | undefined;
+    readonly defaultChecked: boolean | undefined;
+    readonly disabled: boolean | undefined;
+    readonly readOnly: boolean | undefined;
+    readonly ariaInvalid: InputHTMLAttributes<HTMLInputElement>['aria-invalid'];
+    readonly state: ReturnType<typeof useNativeCheckedState>;
+    readonly attributes: ChoiceStateAttributes;
+}
+
+const useResolvedMuiChoice = (
+    kind: ChoiceKind,
+    props: ChoiceProps,
+    forwardedRef: ForwardedRef<HTMLInputElement>,
+): ResolvedMuiChoice => {
+    const parts = props.pt as ChoiceParts | undefined;
+    const inputPart = parts?.input as
+        | InputHTMLAttributes<HTMLInputElement>
+        | undefined;
+    const checked = props.checked ?? inputPart?.checked;
+    const defaultChecked = props.defaultChecked ?? inputPart?.defaultChecked;
+    const disabled = props.disabled ?? inputPart?.disabled;
+    const readOnly = props.readOnly ?? inputPart?.readOnly;
     const ariaInvalid =
         props['aria-invalid'] ??
-        inputPt?.['aria-invalid'] ??
+        inputPart?.['aria-invalid'] ??
         (props.invalid || undefined);
     const invalid =
         Boolean(props.invalid) || ariaInvalid === true || ariaInvalid === 'true';
-    const state = useNativeCheckedState(
+    const state = useNativeCheckedState(checked, defaultChecked, forwardedRef, {
+        observeRadioGroup: kind === 'radio',
+    });
+    return {
+        parts,
+        inputPart,
         checked,
         defaultChecked,
-        forwardedRef,
-        kind === 'radio',
-    );
-    const attributes = stateAttributes(disabled, invalid, readOnly, state.selected);
+        disabled,
+        readOnly,
+        ariaInvalid,
+        state,
+        attributes: stateAttributes(disabled, invalid, readOnly, state.selected),
+    };
+};
+
+interface MuiChoiceControlProps {
+    readonly kind: ChoiceKind;
+    readonly checked: boolean | undefined;
+    readonly defaultChecked: boolean | undefined;
+    readonly disabled: boolean | undefined;
+    readonly onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    readonly input: NativeInputSlotProps;
+    readonly parts: ChoiceParts | undefined;
+    readonly attributes: ChoiceStateAttributes;
+}
+
+const choiceIndicator = (
+    kind: 'checkbox' | 'radio',
+    parts: CheckboxParts | RadioParts | undefined,
+    attributes: ChoiceStateAttributes,
+    selected: boolean,
+) => (
+    <span
+        {...parts?.indicator}
+        className={classNames(
+            `cratis-mui-${kind}__indicator`,
+            parts?.indicator?.className,
+        )}
+        data-cratis-part='indicator'
+        {...attributes}
+    >
+        {kind === 'checkbox' && selected ? '✓' : undefined}
+    </span>
+);
+
+const MuiChoiceControl = ({
+    kind,
+    checked,
+    defaultChecked,
+    disabled,
+    onChange,
+    input,
+    parts,
+    attributes,
+}: MuiChoiceControlProps) => {
+    const uncontrolledDefault = checked === undefined ? defaultChecked : undefined;
+    switch (kind) {
+        case 'switch': {
+            const switchParts = parts as SwitchParts | undefined;
+            const root = {
+                ...switchParts?.control,
+                className: classNames(
+                    'cratis-mui-switch__control',
+                    switchParts?.control?.className,
+                ),
+                'data-cratis-part': 'control',
+                ...attributes,
+            };
+            const thumb = {
+                ...switchParts?.handle,
+                className: classNames(
+                    'cratis-mui-switch__handle',
+                    switchParts?.handle?.className,
+                ),
+                'data-cratis-part': 'handle',
+                ...attributes,
+            };
+            return (
+                <MuiSwitch
+                    checked={checked}
+                    defaultChecked={uncontrolledDefault}
+                    disabled={disabled}
+                    onChange={onChange}
+                    slotProps={{ root, input, thumb }}
+                />
+            );
+        }
+        case 'radio': {
+            const radioParts = parts as RadioParts | undefined;
+            const root = {
+                ...radioParts?.box,
+                className: classNames(
+                    'cratis-mui-radio__box',
+                    radioParts?.box?.className,
+                ),
+                'data-cratis-part': 'box',
+                ...attributes,
+            };
+            return (
+                <MuiRadio
+                    checked={checked}
+                    defaultChecked={uncontrolledDefault}
+                    disabled={disabled}
+                    onChange={onChange}
+                    icon={choiceIndicator('radio', radioParts, attributes, false)}
+                    checkedIcon={choiceIndicator(
+                        'radio',
+                        radioParts,
+                        attributes,
+                        true,
+                    )}
+                    slotProps={{ root, input }}
+                />
+            );
+        }
+        case 'checkbox': {
+            const checkboxParts = parts as CheckboxParts | undefined;
+            const root = {
+                ...checkboxParts?.box,
+                className: classNames(
+                    'cratis-mui-checkbox__box',
+                    checkboxParts?.box?.className,
+                ),
+                'data-cratis-part': 'box',
+                ...attributes,
+            };
+            return (
+                <MuiCheckbox
+                    checked={checked}
+                    defaultChecked={uncontrolledDefault}
+                    disabled={disabled}
+                    onChange={onChange}
+                    icon={choiceIndicator(
+                        'checkbox',
+                        checkboxParts,
+                        attributes,
+                        false,
+                    )}
+                    checkedIcon={choiceIndicator(
+                        'checkbox',
+                        checkboxParts,
+                        attributes,
+                        true,
+                    )}
+                    slotProps={{ root, input }}
+                />
+            );
+        }
+        default:
+            throw new Error(`Unsupported choice kind '${String(kind)}'.`);
+    }
+};
+
+const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
+    const {
+        parts,
+        inputPart,
+        checked,
+        defaultChecked,
+        disabled,
+        readOnly,
+        ariaInvalid,
+        state,
+        attributes,
+    } = useResolvedMuiChoice(kind, props, forwardedRef);
     const {
         label,
         readOnly: _readOnly,
@@ -662,19 +851,19 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
         ...nativeProps
     } = props;
     const {
-        onClick: ptOnClick,
-        onChange: ptOnChange,
+        onClick: partOnClick,
+        onChange: partOnChange,
         className: inputClassName,
         style: inputStyle,
-        readOnly: _ptReadOnly,
-        checked: _ptChecked,
-        defaultChecked: _ptDefaultChecked,
-        disabled: _ptDisabled,
-        ...inputPtRest
-    } = inputPt ?? {};
+        readOnly: _partReadOnly,
+        checked: _partChecked,
+        defaultChecked: _partDefaultChecked,
+        disabled: _partDisabled,
+        ...inputPartRest
+    } = inputPart ?? {};
     const radioProps = props as RadioProps;
-    const inputSlotProps: NativeInputSlotProps = {
-        ...inputPtRest,
+    const input: NativeInputSlotProps = {
+        ...inputPartRest,
         ...nativeProps,
         ref: state.ref,
         name: kind === 'radio' ? radioProps.name : nativeProps.name,
@@ -685,15 +874,14 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
         style: inputStyle,
         'data-cratis-part': 'input',
         ...attributes,
+        onClick: (event) => {
+            partOnClick?.(event);
+            onClick?.(event);
+            if (readOnly) event.preventDefault();
+        },
     };
-    const handleClick = (event: React.MouseEvent<HTMLInputElement>) => {
-        ptOnClick?.(event);
-        onClick?.(event);
-        if (readOnly) event.preventDefault();
-    };
-    inputSlotProps.onClick = handleClick;
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        ptOnChange?.(event);
+        partOnChange?.(event);
         if (readOnly || (kind === 'radio' && !event.currentTarget.checked)) return;
         state.synchronize(event.currentTarget.checked);
         onChange?.(event.currentTarget.checked, {
@@ -701,129 +889,29 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
             nativeEvent: event.nativeEvent,
         });
     };
-    const switchParts = pt as SwitchParts | undefined;
-    const radioParts = pt as RadioParts | undefined;
-    const checkboxParts = pt as CheckboxParts | undefined;
-    const switchControlProps = {
-        ...switchParts?.control,
-        className: classNames(
-            'cratis-mui-switch__control',
-            switchParts?.control?.className,
-        ),
-        'data-cratis-part': 'control',
-        ...attributes,
-    };
-    const switchHandleProps = {
-        ...switchParts?.handle,
-        className: classNames(
-            'cratis-mui-switch__handle',
-            switchParts?.handle?.className,
-        ),
-        'data-cratis-part': 'handle',
-        ...attributes,
-    };
-    const radioBoxProps = {
-        ...radioParts?.box,
-        className: classNames('cratis-mui-radio__box', radioParts?.box?.className),
-        'data-cratis-part': 'box',
-        ...attributes,
-    };
-    const checkboxBoxProps = {
-        ...checkboxParts?.box,
-        className: classNames('cratis-mui-checkbox__box', checkboxParts?.box?.className),
-        'data-cratis-part': 'box',
-        ...attributes,
-    };
-    const labelPart = pt?.label;
-    const root = (
+    const labelPart = parts?.label;
+    return (
         <label
-            {...pt?.root}
-            className={classNames('cratis-mui-choice', pt?.root?.className, className)}
-            style={{ ...pt?.root?.style, ...style }}
+            {...parts?.root}
+            className={classNames(
+                'cratis-mui-choice',
+                parts?.root?.className,
+                className,
+            )}
+            style={{ ...parts?.root?.style, ...style }}
             data-cratis-part='root'
             {...attributes}
         >
-            {kind === 'switch' ? (
-                <MuiSwitch
-                    checked={checked}
-                    defaultChecked={checked === undefined ? defaultChecked : undefined}
-                    disabled={disabled}
-                    onChange={handleChange}
-                    slotProps={{
-                        root: switchControlProps,
-                        input: inputSlotProps,
-                        thumb: switchHandleProps,
-                    }}
-                />
-            ) : kind === 'radio' ? (
-                <MuiRadio
-                    checked={checked}
-                    defaultChecked={checked === undefined ? defaultChecked : undefined}
-                    disabled={disabled}
-                    onChange={handleChange}
-                    icon={
-                        <span
-                            {...(pt as RadioParts | undefined)?.indicator}
-                            className={classNames(
-                                'cratis-mui-radio__indicator',
-                                (pt as RadioParts | undefined)?.indicator?.className,
-                            )}
-                            data-cratis-part='indicator'
-                            {...attributes}
-                        />
-                    }
-                    checkedIcon={
-                        <span
-                            {...(pt as RadioParts | undefined)?.indicator}
-                            className={classNames(
-                                'cratis-mui-radio__indicator',
-                                (pt as RadioParts | undefined)?.indicator?.className,
-                            )}
-                            data-cratis-part='indicator'
-                            {...attributes}
-                        />
-                    }
-                    slotProps={{
-                        root: radioBoxProps,
-                        input: inputSlotProps,
-                    }}
-                />
-            ) : (
-                <MuiCheckbox
-                    checked={checked}
-                    defaultChecked={checked === undefined ? defaultChecked : undefined}
-                    disabled={disabled}
-                    onChange={handleChange}
-                    icon={
-                        <span
-                            {...(pt as CheckboxParts | undefined)?.indicator}
-                            className={classNames(
-                                'cratis-mui-checkbox__indicator',
-                                (pt as CheckboxParts | undefined)?.indicator?.className,
-                            )}
-                            data-cratis-part='indicator'
-                            {...attributes}
-                        />
-                    }
-                    checkedIcon={
-                        <span
-                            {...(pt as CheckboxParts | undefined)?.indicator}
-                            className={classNames(
-                                'cratis-mui-checkbox__indicator',
-                                (pt as CheckboxParts | undefined)?.indicator?.className,
-                            )}
-                            data-cratis-part='indicator'
-                            {...attributes}
-                        >
-                            ✓
-                        </span>
-                    }
-                    slotProps={{
-                        root: checkboxBoxProps,
-                        input: inputSlotProps,
-                    }}
-                />
-            )}
+            <MuiChoiceControl
+                kind={kind}
+                checked={checked}
+                defaultChecked={defaultChecked}
+                disabled={disabled}
+                onChange={handleChange}
+                input={input}
+                parts={parts}
+                attributes={attributes}
+            />
             {label !== undefined && (
                 <span
                     {...labelPart}
@@ -839,7 +927,6 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
             )}
         </label>
     );
-    return root;
 };
 
 const MuiCheckboxSlot = forwardRef<HTMLInputElement, CheckboxProps>(

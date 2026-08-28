@@ -322,13 +322,19 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.mui@workspace:Adapters/Mui"
   dependencies:
+    "@cratis/arc": "npm:22.4.0"
+    "@cratis/arc.react": "npm:22.4.0"
     "@cratis/components": "workspace:^"
     "@cratis/components.conformance": "workspace:^"
+    "@cratis/fundamentals": "npm:^7.10.3"
     "@emotion/react": "npm:11.14.0"
     "@emotion/styled": "npm:11.14.1"
     "@mui/material": "npm:9.4.0"
+    "@types/react": "npm:^19.2.18"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
+    reflect-metadata: "npm:0.2.2"
+    tsyringe: "npm:4.10.0"
   peerDependencies:
     "@cratis/components": ">=3.0.0 <4"
     "@emotion/react": ">=11 <12"
