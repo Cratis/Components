@@ -12,6 +12,9 @@ export const archiveBindingProperties = Object.freeze({
     commit: 'urn:cratis:components:release-evidence:commit',
 });
 
+const maximumCompressedArchiveBytes = 32 * 1024 * 1024;
+const maximumDecompressedArchiveBytes = 32 * 1024 * 1024;
+
 export function validateCommit(commit) {
     if (typeof commit !== 'string' || !/^[0-9a-f]{40}$/iu.test(commit)) {
         throw new Error('Commit must be exactly 40 hexadecimal characters.');
@@ -189,7 +192,27 @@ function validateArchivePath(entryPath) {
 }
 
 export function readPackedPackageJson(archivePath) {
-    const archive = gunzipSync(fs.readFileSync(archivePath));
+    const compressedArchive = fs.readFileSync(archivePath);
+    if (compressedArchive.length > maximumCompressedArchiveBytes) {
+        throw new Error('Packed archive exceeds the compressed size limit.');
+    }
+    let archive;
+    try {
+        archive = gunzipSync(compressedArchive, {
+            maxOutputLength: maximumDecompressedArchiveBytes,
+        });
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            (error.code === 'ERR_BUFFER_TOO_LARGE' ||
+                error.message.includes('larger than'))
+        ) {
+            throw new Error('Packed archive exceeds the decompressed size limit.', {
+                cause: error,
+            });
+        }
+        throw error;
+    }
     let offset = 0;
     let longName;
     let pax = {};
@@ -199,6 +222,9 @@ export function readPackedPackageJson(archivePath) {
     while (offset + 512 <= archive.length) {
         const header = archive.subarray(offset, offset + 512);
         if (header.every((byte) => byte === 0)) {
+            if (archive.subarray(offset).some((byte) => byte !== 0)) {
+                throw new Error('Tar archive contains non-zero data after its end marker.');
+            }
             endMarkerFound = true;
             break;
         }
@@ -314,6 +340,11 @@ const validateDependencyReferences = (sbom) => {
         ) {
             throw new Error(
                 `SBOM dependency '${dependency.ref}' contains an invalid dependsOn reference.`,
+            );
+        }
+        if (new Set(dependsOn).size !== dependsOn.length) {
+            throw new Error(
+                `SBOM dependency '${dependency.ref}' contains a duplicate dependsOn reference.`,
             );
         }
     }

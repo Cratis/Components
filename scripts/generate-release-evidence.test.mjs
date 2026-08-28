@@ -2,12 +2,22 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+    mkdtempSync,
+    mkdirSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
 import {
+    buildPublishableShape,
+    prepareOutputDirectory,
+    requireCleanWorkingTree,
     resolveEvidenceCommit,
     validateCleanWorkingTreeStatus,
 } from './generate-release-evidence.mjs';
@@ -38,16 +48,20 @@ const createTarHeader = (entryName, contents) => {
     return header;
 };
 
+const createTarEntry = (entryName, value) => {
+    const contents = Buffer.from(
+        typeof value === 'string' ? value : JSON.stringify(value),
+    );
+    const blocks = [createTarHeader(entryName, contents), contents];
+    const padding = (512 - (contents.length % 512)) % 512;
+    if (padding > 0) blocks.push(Buffer.alloc(padding));
+    return blocks;
+};
+
 const createArchive = (filePath, entries) => {
-    const blocks = [];
-    for (const [entryName, value] of entries) {
-        const contents = Buffer.from(
-            typeof value === 'string' ? value : JSON.stringify(value),
-        );
-        blocks.push(createTarHeader(entryName, contents), contents);
-        const padding = (512 - (contents.length % 512)) % 512;
-        if (padding > 0) blocks.push(Buffer.alloc(padding));
-    }
+    const blocks = entries.flatMap(([entryName, value]) =>
+        createTarEntry(entryName, value),
+    );
     blocks.push(Buffer.alloc(1024));
     writeFileSync(filePath, gzipSync(Buffer.concat(blocks), { mtime: 0 }));
 };
@@ -104,8 +118,52 @@ test('release evidence rejects tracked working-tree drift', () => {
     assert.doesNotThrow(() => validateCleanWorkingTreeStatus(''));
     assert.throws(
         () => validateCleanWorkingTreeStatus(' M package.json'),
-        /requires a clean tracked working tree/,
+        /requires a clean working tree/,
     );
+});
+
+test('release evidence rejects untracked build inputs before binding to a commit', () => {
+    withTemporaryDirectory((directory) => {
+        const initialization = spawnSync('git', ['init', '--quiet'], { cwd: directory });
+        assert.equal(initialization.status, 0);
+        mkdirSync(path.join(directory, 'Source'));
+        writeFileSync(
+            path.join(directory, 'Source', 'untracked.ts'),
+            'export const value = 42;\n',
+        );
+
+        assert.throws(
+            () => requireCleanWorkingTree(directory, { includeUntracked: true }),
+            /requires a clean working tree/,
+        );
+    });
+});
+
+test('publishable builds clean generated output before compiling', () => {
+    const commands = [];
+    buildPublishableShape(
+        [{ name: '@cratis/example-adapter', role: 'renderer-adapter' }],
+        (command, arguments_) => commands.push([command, arguments_]),
+    );
+
+    assert.deepEqual(commands, [
+        ['yarn', ['workspace', '@cratis/example-adapter', 'run', 'clean']],
+        ['yarn', ['workspace', '@cratis/example-adapter', 'run', 'build']],
+    ]);
+});
+
+test('release evidence rejects a symlink as its output directory', () => {
+    withTemporaryDirectory((directory) => {
+        const target = path.join(directory, 'target');
+        const output = path.join(directory, 'output');
+        mkdirSync(target);
+        symlinkSync(target, output, 'dir');
+
+        assert.throws(
+            () => prepareOutputDirectory(output),
+            /must not be a symbolic link/,
+        );
+    });
 });
 
 test('archive hash mismatch fails', () => {
@@ -173,6 +231,65 @@ test('path and filename traversal is rejected', () => {
         ]);
         assert.throws(() => readPackedPackageJson(archivePath), /Unsafe archive path/);
     });
+});
+
+test('archive parsing rejects decompressed data above its bounded evidence limit', () => {
+    withTemporaryDirectory((directory) => {
+        const archivePath = path.join(directory, 'oversized.tgz');
+        writeFileSync(
+            archivePath,
+            gzipSync(Buffer.alloc(32 * 1024 * 1024 + 1), { mtime: 0 }),
+        );
+
+        assert.throws(
+            () => readPackedPackageJson(archivePath),
+            /decompressed size limit/,
+        );
+    });
+});
+
+test('archive parsing rejects hidden entries after the tar end marker', () => {
+    withTemporaryDirectory((directory) => {
+        const archivePath = path.join(directory, 'trailing-entry.tgz');
+        const blocks = [
+            ...createTarEntry('package/package.json', {
+                name: '@cratis/example',
+                version: '1.2.3',
+            }),
+            Buffer.alloc(512),
+            ...createTarEntry('package/hidden.js', 'hidden'),
+            Buffer.alloc(1024),
+        ];
+        writeFileSync(archivePath, gzipSync(Buffer.concat(blocks), { mtime: 0 }));
+
+        assert.throws(
+            () => readPackedPackageJson(archivePath),
+            /non-zero data after its end marker/,
+        );
+    });
+});
+
+test('SBOM dependencies reject duplicate dependsOn references', () => {
+    const sbom = createBoundSbom();
+    sbom.components.push({
+        type: 'library',
+        name: 'dependency',
+        version: '1.0.0',
+        'bom-ref': 'dependency@1.0.0',
+    });
+    sbom.dependencies[0].dependsOn = ['dependency@1.0.0', 'dependency@1.0.0'];
+
+    assert.throws(
+        () =>
+            validateSbom(sbom, {
+                name: compatibilityEntry.name,
+                version: compatibilityEntry.version,
+                sha512: 'a'.repeat(128),
+                tarball: 'cratis-example-1.2.3.tgz',
+                commit: 'b'.repeat(40),
+            }),
+        /duplicate dependsOn reference/,
+    );
 });
 
 test('release package order comes only from gaScope', () => {

@@ -57,7 +57,7 @@ const mutableLibrary = (): Record<string, unknown> => {
 };
 
 describe('when defining a stable presentation UI library', () => {
-    it('should freeze the complete manifest through the shared manifest machinery', () => {
+    it('should freeze a defensive copy of the complete stable manifest', () => {
         const input = validLibrary();
         const result = definePresentationUiLibrary(input);
 
@@ -97,6 +97,36 @@ describe('when defining a stable presentation UI library', () => {
         expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
             'exactly the nine stable presentation slots',
+        );
+    });
+
+    it('should reject an invalid stable renderer identity at runtime', () => {
+        const candidate = mutableLibrary();
+        candidate.id = '../unstable';
+
+        expect(() => defineRuntime(candidate)).to.throw(
+            TypeError,
+            'id must be a valid package-local renderer identity',
+        );
+    });
+
+    it('should reject an invalid stable display name at runtime', () => {
+        const candidate = mutableLibrary();
+        candidate.displayName = '';
+
+        expect(() => defineRuntime(candidate)).to.throw(
+            TypeError,
+            'displayName must contain between 1 and 128 characters',
+        );
+    });
+
+    it('should reject a non-component stable provider at runtime', () => {
+        const candidate = mutableLibrary();
+        candidate.Provider = {};
+
+        expect(() => defineRuntime(candidate)).to.throw(
+            TypeError,
+            'Provider must be a React component when supplied',
         );
     });
 
@@ -162,7 +192,7 @@ describe('when defining a stable presentation UI library', () => {
 
         expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
-            'capabilities must include slot.render, parts.passthrough, and ssr.staticRender',
+            'capabilities must begin with slot.render, parts.passthrough, and ssr.staticRender',
         );
     });
 
@@ -179,5 +209,28 @@ describe('when defining a stable presentation UI library', () => {
             TypeError,
             'capabilities must not contain duplicates',
         );
+    });
+
+    it('should reject required capabilities outside their stable tuple positions', () => {
+        const candidate = mutableLibrary();
+        candidate.capabilities = [
+            'parts.passthrough',
+            'slot.render',
+            'ssr.staticRender',
+        ];
+
+        expect(() => defineRuntime(candidate)).to.throw(
+            TypeError,
+            'capabilities must begin with slot.render, parts.passthrough, and ssr.staticRender',
+        );
+    });
+
+    it('should not preserve unstable manifest fields on the stable result', () => {
+        const candidate = mutableLibrary();
+        candidate.preflight = () => [];
+
+        const result = defineRuntime(candidate);
+
+        expect('preflight' in result).to.equal(false);
     });
 });

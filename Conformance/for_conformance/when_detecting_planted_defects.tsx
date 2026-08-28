@@ -148,6 +148,23 @@ describe('when detecting planted adapter defects', () => {
         expect(await failureIds(library)).to.deep.equal(['manifest.noOverDeclaration']);
     });
 
+    it('should report a static mode outside the declared runtime profile', async () => {
+        const library = oneSlot('common.surface', declaration('common.surface'));
+        const metadata = metadataFor(library);
+
+        expect(
+            await failureIds(library, {
+                metadata: {
+                    ...metadata,
+                    modes: {
+                        ...metadata.modes,
+                        'dialogs.dialog': 'atomic',
+                    },
+                },
+            }),
+        ).to.deep.equal(['manifest.runtimeConsistency']);
+    });
+
     it('should reject an undeclared skip', async () => {
         const library = oneSlot('common.button', declaration('common.button'));
 

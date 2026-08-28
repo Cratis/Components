@@ -78,6 +78,12 @@ const providerProps: Omit<CratisComponentsProviderProps, 'children'> = {
     },
 };
 
+const libraryWithUnstablePreflight = definePresentationUiLibrary({
+    ...library,
+    // @ts-expect-error Stable presentation manifests cannot expose unstable preflight behavior.
+    preflight: () => [],
+});
+
 const setup: CratisRendererSetup = {
     'sample.stable-setup': true,
     'sample.compatibility-setup': true,
@@ -132,6 +138,7 @@ void atomicMode;
 void atomicSlot;
 void compatibilitySetup;
 void extraSlot;
+void libraryWithUnstablePreflight;
 void missingSlot;
 void providerProps;
 void unsupportedFidelity;

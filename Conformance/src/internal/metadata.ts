@@ -209,6 +209,12 @@ export const compareMetadata = (
     )
         problems.push('capabilities differ from runtime manifest');
     if (isRecord(metadata.modes)) {
+        const modeSlots = Object.keys(metadata.modes).sort((left, right) =>
+            left.localeCompare(right),
+        );
+        if (JSON.stringify(modeSlots) !== JSON.stringify(runtimeSlots)) {
+            problems.push('mode slots differ from runtime profileSlots');
+        }
         for (const slotId of runtimeSlots) {
             if (metadata.modes[slotId] !== library.slots[slotId as unstable_SlotId]?.mode)
                 problems.push(`mode differs for '${slotId}'`);
