@@ -25,6 +25,11 @@ export function preflightCompatibility({
         installedPackagePath,
         `installed ${packageName} package manifest`,
     );
+    if (installedPackage.name !== packageName) {
+        throw new Error(
+            `Resolved ${packageName} package manifest declares unexpected name '${installedPackage.name ?? '<missing>'}'.`,
+        );
+    }
     if (semver.valid(installedPackage.version) !== installedPackage.version) {
         throw new Error(
             `Installed ${packageName} has invalid version '${installedPackage.version ?? '<missing>'}'.`,
@@ -44,6 +49,18 @@ export function preflightCompatibility({
         throw new Error(
             `Installed ${packageName}@${installedPackage.version} is unsupported by this codemod. ` +
                 `Allowed migration Components ranges: ${ranges}.`,
+        );
+    }
+    const windowCodemodRange =
+        typeof supportedWindow.tooling === 'string'
+            ? supportedWindow.tooling
+            : supportedWindow.tooling?.codemods;
+    if (
+        !semver.validRange(windowCodemodRange) ||
+        !semver.satisfies(codemodPackage.version, windowCodemodRange)
+    ) {
+        throw new Error(
+            `Codemod ${codemodPackage.version} is incompatible with the ${supportedWindow.migrationRole} support window tooling range '${windowCodemodRange ?? '<missing>'}'.`,
         );
     }
 
@@ -94,11 +111,17 @@ export function validateBundledManifest(manifest, codemodVersion) {
     const windows = Object.values(manifest.supportWindows ?? {});
     if (
         windows.length === 0 ||
-        windows.some(
-            (window) =>
+        windows.some((window) => {
+            const toolingRange =
+                typeof window.tooling === 'string'
+                    ? window.tooling
+                    : window.tooling?.codemods;
+            return (
                 !semver.validRange(window.components) ||
-                !['source', 'target'].includes(window.migrationRole),
-        )
+                !semver.validRange(toolingRange) ||
+                !['source', 'target'].includes(window.migrationRole)
+            );
+        })
     ) {
         throw new Error(
             'Bundled compatibility manifest has invalid migration support windows.',

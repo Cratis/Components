@@ -71,4 +71,13 @@ describe('compatibility preflight', () => {
             'stale codemod package metadata',
         );
     });
+
+    it('rejects an invalid support-window tooling range', () => {
+        const invalid = structuredClone(compatibilityManifest);
+        invalid.supportWindows.components3.tooling = 'not-a-range';
+
+        expect(() => validateBundledManifest(invalid, '4.0.0')).toThrow(
+            'invalid migration support windows',
+        );
+    });
 });
