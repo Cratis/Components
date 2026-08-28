@@ -28,8 +28,9 @@ high-order composites and must never be registered as substitutes for these slot
 
 Renderer packages may declaration-merge non-secret boolean keys into
 `unstable_RendererSetupExtensions`. Applications pass those attestations through
-`CratisComponentsProvider.rendererSetup`; the root freezes them, nested providers inherit them, and
-renderer scopes forward them to a library Provider. Credentials, license strings, caches, provider
+`CratisComponentsProvider.rendererSetup`; the root freezes them, nested providers inherit them
+unless an explicit nested setup replaces the map wholesale, and renderer scopes forward them to a
+library Provider. Credentials, license strings, caches, provider
 instances, and other values must never cross this boundary. The attestation says only that the host
 completed its own setup and lets a renderer fail closed when its upstream context cannot expose
 whether setup occurred.

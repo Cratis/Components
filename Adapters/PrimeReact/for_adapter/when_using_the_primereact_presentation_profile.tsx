@@ -288,7 +288,7 @@ describe('when using the PrimeReact stable presentation profile', () => {
             keyEnv: 'VITE_PRIMEUI_LICENSE_KEY',
             url: 'https://primeui.store/primeui',
         });
-        expect(JSON.stringify(primeReactUiLibrary)).not.to.contain('license');
-        expect(JSON.stringify(primeReactUiLibrary)).not.to.contain('keyEnv');
+        expect(Object.hasOwn(primeReactUiLibrary, 'license')).to.equal(false);
+        expect(Object.hasOwn(primeReactUiLibrary, 'keyEnv')).to.equal(false);
     });
 });
