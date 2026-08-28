@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ComponentType } from 'react';
+import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import {
     CRATIS_PRESENTATION_ABI_VERSION,
     CRATIS_PRESENTATION_PROFILE,
@@ -39,7 +41,11 @@ const validLibrary = (): CratisPresentationUiLibrary => ({
     level: 'primitive',
     profile: CRATIS_PRESENTATION_PROFILE,
     profileSlots: cratisPresentationSlotIds,
-    capabilities: ['slot.render', 'parts.passthrough'],
+    capabilities: [
+        'slot.render',
+        'parts.passthrough',
+        'ssr.staticRender',
+    ],
     slots: validSlots(),
 });
 
@@ -47,43 +53,51 @@ const defineRuntime = definePresentationUiLibrary as (
     library: unknown,
 ) => CratisPresentationUiLibrary;
 
+const mutableLibrary = (): Record<string, unknown> => {
+    // SAFETY: runtime validation specs deliberately bypass the compile-time contract to exercise
+    // malformed JavaScript inputs without weakening the production helper's public type.
+    return validLibrary() as unknown as Record<string, unknown>;
+};
+
 describe('when defining a stable presentation UI library', () => {
     it('should freeze the complete manifest through the shared manifest machinery', () => {
         const input = validLibrary();
         const result = definePresentationUiLibrary(input);
 
-        result.should.not.equal(input);
-        result.profile.should.equal(CRATIS_PRESENTATION_PROFILE);
-        result.profileSlots.should.deep.equal(cratisPresentationSlotIds);
-        Object.isFrozen(result).should.equal(true);
-        Object.isFrozen(result.capabilities).should.equal(true);
-        Object.isFrozen(result.profileSlots).should.equal(true);
-        Object.isFrozen(result.slots).should.equal(true);
-        cratisPresentationSlotIds.every((slotId) =>
-            Object.isFrozen(result.slots[slotId]),
-        ).should.equal(true);
+        expect(result).not.to.equal(input);
+        expect(result.profile).to.equal(CRATIS_PRESENTATION_PROFILE);
+        expect(result.profileSlots).to.deep.equal(cratisPresentationSlotIds);
+        expect(Object.isFrozen(result)).to.equal(true);
+        expect(Object.isFrozen(result.capabilities)).to.equal(true);
+        expect(Object.isFrozen(result.profileSlots)).to.equal(true);
+        expect(Object.isFrozen(result.slots)).to.equal(true);
+        expect(
+            cratisPresentationSlotIds.every((slotId) =>
+                Object.isFrozen(result.slots[slotId]),
+            ),
+        ).to.equal(true);
     });
 
     it('should reject a missing stable slot at runtime', () => {
-        const candidate = validLibrary() as unknown as Record<string, unknown>;
+        const candidate = mutableLibrary();
         const slots = { ...validSlots() } as Record<string, unknown>;
         Reflect.deleteProperty(slots, 'common.surface');
         candidate.slots = slots;
 
-        (() => defineRuntime(candidate)).should.throw(
+        expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
             'exactly the nine stable presentation slots',
         );
     });
 
     it('should reject an extra slot at runtime', () => {
-        const candidate = validLibrary() as unknown as Record<string, unknown>;
+        const candidate = mutableLibrary();
         candidate.slots = {
             ...validSlots(),
             'common.tooltip': declaration<'common.button'>(),
         };
 
-        (() => defineRuntime(candidate)).should.throw(
+        expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
             'exactly the nine stable presentation slots',
         );
@@ -95,7 +109,7 @@ describe('when defining a stable presentation UI library', () => {
             profile: 'future-presentation/v2',
         };
 
-        (() => defineRuntime(candidate)).should.throw(
+        expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
             `profile must be '${CRATIS_PRESENTATION_PROFILE}'`,
         );
@@ -107,14 +121,14 @@ describe('when defining a stable presentation UI library', () => {
             profileSlots: cratisPresentationSlotIds.slice(0, -1),
         };
 
-        (() => defineRuntime(candidate)).should.throw(
+        expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
             'profileSlots must be the canonical nine-slot profile',
         );
     });
 
     it('should reject atomic mode at runtime', () => {
-        const candidate = validLibrary() as unknown as Record<string, unknown>;
+        const candidate = mutableLibrary();
         candidate.slots = {
             ...validSlots(),
             'common.button': {
@@ -123,14 +137,14 @@ describe('when defining a stable presentation UI library', () => {
             },
         };
 
-        (() => defineRuntime(candidate)).should.throw(
+        expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
             "slot 'common.button' must use presentation mode",
         );
     });
 
     it('should reject unsupported fidelity at runtime', () => {
-        const candidate = validLibrary() as unknown as Record<string, unknown>;
+        const candidate = mutableLibrary();
         candidate.slots = {
             ...validSlots(),
             'common.button': {
@@ -139,9 +153,34 @@ describe('when defining a stable presentation UI library', () => {
             },
         };
 
-        (() => defineRuntime(candidate)).should.throw(
+        expect(() => defineRuntime(candidate)).to.throw(
             TypeError,
             "slot 'common.button' must use native or emulated fidelity",
+        );
+    });
+
+    it('should reject a missing required presentation capability at runtime', () => {
+        const candidate = mutableLibrary();
+        candidate.capabilities = ['slot.render', 'parts.passthrough'];
+
+        expect(() => defineRuntime(candidate)).to.throw(
+            TypeError,
+            'capabilities must include slot.render, parts.passthrough, and ssr.staticRender',
+        );
+    });
+
+    it('should reject duplicate capabilities at runtime', () => {
+        const candidate = mutableLibrary();
+        candidate.capabilities = [
+            'slot.render',
+            'parts.passthrough',
+            'ssr.staticRender',
+            'slot.render',
+        ];
+
+        expect(() => defineRuntime(candidate)).to.throw(
+            TypeError,
+            'capabilities must not contain duplicates',
         );
     });
 });

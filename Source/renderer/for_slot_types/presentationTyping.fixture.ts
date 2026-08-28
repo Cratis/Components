@@ -75,7 +75,11 @@ const library: CratisPresentationUiLibrary = definePresentationUiLibrary({
     level: 'primitive',
     profile: CRATIS_PRESENTATION_PROFILE,
     profileSlots: cratisPresentationSlotIds,
-    capabilities: ['slot.render', 'parts.passthrough'],
+    capabilities: [
+        'slot.render',
+        'parts.passthrough',
+        'ssr.staticRender',
+    ],
     slots,
 });
 

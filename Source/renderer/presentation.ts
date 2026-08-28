@@ -80,6 +80,18 @@ export type CratisPresentationCapabilityId =
     | 'forcedColors'
     | 'motion.reduced';
 
+type CratisPresentationOptionalCapabilityId = Exclude<
+    CratisPresentationCapabilityId,
+    'slot.render' | 'parts.passthrough' | 'ssr.staticRender'
+>;
+
+type CratisPresentationCapabilities = readonly [
+    'slot.render',
+    'parts.passthrough',
+    'ssr.staticRender',
+    ...CratisPresentationOptionalCapabilityId[],
+];
+
 /** Immutable manifest for one implementation of the stable presentation profile. */
 export interface CratisPresentationUiLibrary {
     /** Stable, package-local renderer identity used for diagnostics and telemetry. */
@@ -94,18 +106,22 @@ export interface CratisPresentationUiLibrary {
     readonly profile: typeof CRATIS_PRESENTATION_PROFILE;
     /** Canonical immutable list of all nine stable slots. */
     readonly profileSlots: typeof cratisPresentationSlotIds;
-    /** Stable capabilities honestly supported by this implementation. */
-    readonly capabilities: readonly CratisPresentationCapabilityId[];
+    /** Required presentation capabilities followed by any optional stable capabilities. */
+    readonly capabilities: CratisPresentationCapabilities;
     /** Complete nine-slot presentation implementation. */
     readonly slots: CratisPresentationSlotMap;
     /** Optional provider mounted once around the selected renderer scope. */
     readonly Provider?: ComponentType<CratisPresentationUiLibraryProviderProps>;
 }
 
-const stableCapabilityIds = new Set<CratisPresentationCapabilityId>([
+const requiredCapabilityIds = [
     'slot.render',
     'parts.passthrough',
     'ssr.staticRender',
+] as const;
+
+const stableCapabilityIds = new Set<CratisPresentationCapabilityId>([
+    ...requiredCapabilityIds,
     'rtl',
     'forcedColors',
     'motion.reduced',
@@ -163,6 +179,8 @@ export const definePresentationUiLibrary = <
     }
 
     for (const slotId of cratisPresentationSlotIds) {
+        // SAFETY: the canonical slot list indexes the complete stable map; the wider record view
+        // exists only so runtime JavaScript callers can be checked before their value is frozen.
         const declaration = library.slots[slotId] as unknown as
             Record<string, unknown> | undefined;
         if (!declaration) {
@@ -195,8 +213,23 @@ export const definePresentationUiLibrary = <
             'capabilities must stay within the stable presentation subset',
         );
     }
+    if (
+        requiredCapabilityIds.some(
+            (capability) => !library.capabilities.includes(capability),
+        )
+    ) {
+        invalidPresentationLibrary(
+            'capabilities must include slot.render, parts.passthrough, and ssr.staticRender',
+        );
+    }
+    if (new Set(library.capabilities).size !== library.capabilities.length) {
+        invalidPresentationLibrary('capabilities must not contain duplicates');
+    }
 
-    return unstable_defineUiLibrary(
-        library as unknown as unstable_UiLibrary,
-    ) as unknown as Library;
+    // SAFETY: every stable field and all nine declarations were validated above, so the manifest
+    // satisfies the broader internal library shape without admitting an atomic or unknown slot.
+    const unstableLibrary = library as unknown as unstable_UiLibrary;
+    const frozenLibrary = unstable_defineUiLibrary(unstableLibrary);
+    // SAFETY: the shared freezer copies values without changing the validated stable shape.
+    return frozenLibrary as unknown as Library;
 };

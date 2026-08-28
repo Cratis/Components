@@ -40,9 +40,10 @@ Renderer ABI major 1 promotes one immutable profile through
 The stable API is identified by `CRATIS_PRESENTATION_PROFILE`,
 `CRATIS_PRESENTATION_ABI_VERSION`, and `cratisPresentationSlotIds`. Its
 `CratisPresentationUiLibrary` declaration requires all nine slots, `presentation` behavior
-ownership, and `native` or `emulated` fidelity. `definePresentationUiLibrary()` validates the same
-boundary for JavaScript callers before defensively copying and freezing the manifest through the
-shared manifest machinery.
+ownership, `native` or `emulated` fidelity, and the `slot.render`, `parts.passthrough`, and
+`ssr.staticRender` capabilities. `definePresentationUiLibrary()` validates the same boundary for
+JavaScript callers, rejects duplicate capabilities, and defensively copies/freezes the manifest
+through the shared manifest machinery.
 
 The profile also stabilizes the non-secret boolean setup contract used by certified providers:
 `CratisRendererSetupExtensions`, `CratisRendererSetup`, and

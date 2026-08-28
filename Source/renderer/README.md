@@ -38,8 +38,9 @@ whether setup occurred.
 
 The nine E1 presentation candidates are the immutable stable façade exposed through
 `CratisPresentationUiLibrary` and `definePresentationUiLibrary`. Its runtime helper requires all
-nine slots, presentation mode, supported fidelity, the exact profile and ABI, and then freezes the
-manifest through the existing machinery. E2 routes tooltip, dropdown, dialog, date picker, and
+nine slots, presentation mode, supported fidelity, the exact profile and ABI, and the stable render,
+parts, and static-SSR capabilities; it rejects duplicate capabilities and then freezes the manifest
+through the existing machinery. E2 routes tooltip, dropdown, dialog, date picker, and
 table paginator as atomic slots whose external adapters replace Core interaction ownership entirely.
 Their Core implementations self-host React Aria portals through the local overlay environment only
 around the overlay-owning subtree; merely reading the hook, rendering a closed control, or rendering

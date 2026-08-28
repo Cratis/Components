@@ -44,9 +44,11 @@ import {
 ```
 
 `CratisPresentationSlotMap` requires all nine exact component contracts. Every declaration must use
-`mode: 'presentation'` and either `fidelity: 'native'` or `fidelity: 'emulated'`.
-`definePresentationUiLibrary()` checks the same requirements for JavaScript callers and returns a
-defensive frozen copy. Use `CratisRendererSetupExtensions` only for non-secret boolean setup
+`mode: 'presentation'` and either `fidelity: 'native'` or `fidelity: 'emulated'`. A stable manifest
+must declare `slot.render`, `parts.passthrough`, and `ssr.staticRender`; RTL, forced-colors, and
+reduced-motion capabilities remain optional evidence. `definePresentationUiLibrary()` checks the
+same requirements for JavaScript callers, rejects duplicate capabilities, and returns a defensive
+frozen copy. Use `CratisRendererSetupExtensions` only for non-secret boolean setup
 attestations and `CratisOverlayEnvironment` for an independent host portal-container lookup.
 
 Removing or changing a v1 slot is a breaking change. Adding a required slot needs a new profile and
