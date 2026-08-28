@@ -100,6 +100,13 @@ describe('when defining a stable presentation UI library', () => {
         );
     });
 
+    it('should reject a non-object manifest at runtime', () => {
+        expect(() => defineRuntime(null)).to.throw(
+            TypeError,
+            'manifest must be an object',
+        );
+    });
+
     it('should reject an invalid stable renderer identity at runtime', () => {
         const candidate = mutableLibrary();
         candidate.id = '../unstable';
@@ -113,6 +120,16 @@ describe('when defining a stable presentation UI library', () => {
     it('should reject an invalid stable display name at runtime', () => {
         const candidate = mutableLibrary();
         candidate.displayName = '';
+
+        expect(() => defineRuntime(candidate)).to.throw(
+            TypeError,
+            'displayName must contain between 1 and 128 characters',
+        );
+    });
+
+    it('should reject a whitespace-only stable display name at runtime', () => {
+        const candidate = mutableLibrary();
+        candidate.displayName = '   ';
 
         expect(() => defineRuntime(candidate)).to.throw(
             TypeError,

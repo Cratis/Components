@@ -151,6 +151,9 @@ const hasCanonicalProfileSlots = (profileSlots: readonly unknown[]): boolean =>
 export const definePresentationUiLibrary = (
     library: CratisPresentationUiLibrary,
 ): CratisPresentationUiLibrary => {
+    if (library === null || typeof library !== 'object') {
+        invalidPresentationLibrary('manifest must be an object');
+    }
     if (
         typeof library.id !== 'string' ||
         library.id.length > 128 ||
@@ -160,7 +163,7 @@ export const definePresentationUiLibrary = (
     }
     if (
         typeof library.displayName !== 'string' ||
-        library.displayName.length === 0 ||
+        library.displayName.trim().length === 0 ||
         library.displayName.length > 128
     ) {
         invalidPresentationLibrary('displayName must contain between 1 and 128 characters');
