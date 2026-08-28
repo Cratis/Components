@@ -103,6 +103,8 @@ export function verifyReleaseSafety(rootDirectory = repositoryDirectory) {
         );
     }
 
+    verifyEvidenceWorkflow(rootDirectory);
+
     const compatibilityManifest = readJson(
         path.join(rootDirectory, 'compat-manifest.json'),
     );
@@ -122,6 +124,60 @@ export function verifyReleaseSafety(rootDirectory = repositoryDirectory) {
         )
     ) {
         throw new Error('The dormant auto-approval workflow must not exist.');
+    }
+}
+
+function verifyEvidenceWorkflow(rootDirectory) {
+    const workflow = fs.readFileSync(
+        path.join(rootDirectory, '.github/workflows/javascript-build.yml'),
+        'utf8',
+    );
+    const job = workflow.match(
+        /^    release-evidence:\s*\n([\s\S]*?)(?=^    [a-zA-Z0-9_-]+:\s*\n|(?![\s\S]))/mu,
+    )?.[1];
+    if (!job) throw new Error('javascript-build.yml must define a release-evidence job.');
+    if (!/^        permissions:\s*\n            contents: read\s*$/mu.test(job)) {
+        throw new Error(
+            'The release-evidence job must have explicit read-only contents permission.',
+        );
+    }
+    if (
+        /^\s*[a-z-]+:\s*write\s*$/imu.test(job) ||
+        /^\s*(?:id-token|deployments):/imu.test(job) ||
+        /^\s*environment:/imu.test(job) ||
+        /^\s*secrets:/imu.test(job) ||
+        /\$\{\{\s*secrets\./iu.test(job)
+    ) {
+        throw new Error(
+            'The release-evidence job must not request write permissions, identity/deployment permissions, an environment, or secrets.',
+        );
+    }
+    if (/\bnpm\s+publish\b|\byarn\s+(?:npm\s+)?publish\b/iu.test(job)) {
+        throw new Error('The release-evidence job must not publish packages.');
+    }
+    if (!/yarn generate-release-evidence\s+--output/iu.test(job)) {
+        throw new Error(
+            'The release-evidence job must run the source-candidate evidence generator.',
+        );
+    }
+    if (
+        !/uses:\s*actions\/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02\s*# v4/iu.test(
+            job,
+        )
+    ) {
+        throw new Error(
+            'The release-evidence job must use the reviewed SHA-pinned upload-artifact action.',
+        );
+    }
+    if (!/^\s*if-no-files-found:\s*error\s*$/imu.test(job)) {
+        throw new Error(
+            'The release-evidence artifact upload must fail when files are missing.',
+        );
+    }
+    if (!/^\s*retention-days:\s*30\s*$/imu.test(job)) {
+        throw new Error(
+            'The release-evidence artifact must have explicit 30-day retention.',
+        );
     }
 }
 
