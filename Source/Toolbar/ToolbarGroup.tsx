@@ -125,8 +125,8 @@ const SlotTransition = ({
             {/* Exiting content — fades out, then React unmounts it after SLOT_TRANSITION_MS */}
             {exiting.length > 0 && (
                 <div
-                    {...pt?.outgoing}
                     key={exitRevision}
+                    {...pt?.outgoing}
                     className={`toolbar-slot-outgoing cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.outgoing?.className ?? ''}`}
                     data-cratis-part='toolbar-slot-outgoing'
                     aria-hidden='true'

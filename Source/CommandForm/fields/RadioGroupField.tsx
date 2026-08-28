@@ -79,8 +79,8 @@ export const RadioGroupField = asCommandFormField<RadioGroupFieldComponentProps>
                     const selected = props.value === value;
                     return (
                         <label
-                            {...props.pt?.option}
                             key={String(value)}
+                            {...props.pt?.option}
                             className={[
                                 'cratis-choice-field',
                                 props.pt?.option?.className,

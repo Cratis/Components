@@ -449,8 +449,8 @@ export const DataTableCore = <TData extends object>({
                                         : undefined;
                                 return (
                                     <th
-                                        {...pt?.headerCell}
                                         key={index}
+                                        {...pt?.headerCell}
                                         scope='col'
                                         aria-label={
                                             column.props.selectionMode
@@ -588,8 +588,8 @@ export const DataTableCore = <TData extends object>({
                                     Boolean(onRowClick) || selectionMode === 'single';
                                 return (
                                     <tr
-                                        {...pt?.row}
                                         key={rowKey}
+                                        {...pt?.row}
                                         tabIndex={isInteractive ? 0 : pt?.row?.tabIndex}
                                         aria-selected={
                                             selectionMode === 'single'
@@ -621,8 +621,8 @@ export const DataTableCore = <TData extends object>({
                                     >
                                         {columns.map((column, columnIndex) => (
                                             <td
-                                                {...pt?.cell}
                                                 key={columnIndex}
+                                                {...pt?.cell}
                                                 style={{
                                                     ...pt?.cell?.style,
                                                     ...column.props.style,

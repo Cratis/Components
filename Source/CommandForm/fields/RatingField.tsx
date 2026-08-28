@@ -78,8 +78,8 @@ export const RatingField = asCommandFormField<RatingFieldComponentProps>(
                     )(starValue);
                     return (
                         <label
-                            {...props.pt?.option}
                             key={starValue}
+                            {...props.pt?.option}
                             className={[
                                 'cratis-rating-field__option',
                                 props.pt?.option?.className,

@@ -232,8 +232,8 @@ export const CommandStepperContent = ({
 
                 return (
                     <li
-                        {...pt?.step}
                         key={index}
+                        {...pt?.step}
                         className={['cratis-command-stepper__step', pt?.step?.className]
                             .filter(Boolean)
                             .join(' ')}
@@ -337,8 +337,8 @@ export const CommandStepperContent = ({
         >
             {panels.map((panel, index) => (
                 <section
-                    {...pt?.panel}
                     key={index}
+                    {...pt?.panel}
                     hidden={index !== currentStep}
                     className={['cratis-command-stepper__panel', pt?.panel?.className]
                         .filter(Boolean)

@@ -137,8 +137,8 @@ export const EventsView = ({
                     );
                     return (
                         <article
-                            {...pt?.event}
                             key={`${event.type}-${event.occurred.toISOString()}-${index}`}
+                            {...pt?.event}
                             className={classNames(
                                 'events-view-timeline-event',
                                 pt?.event?.className,

@@ -88,8 +88,8 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
         >
             {props.value.map((item, index) => (
                 <span
-                    {...props.pt?.item}
                     key={`${item}-${index}`}
+                    {...props.pt?.item}
                     className={['cratis-chips-field__item', props.pt?.item?.className]
                         .filter(Boolean)
                         .join(' ')}

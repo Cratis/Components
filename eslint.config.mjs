@@ -1,8 +1,5 @@
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { FlatCompat } from '@eslint/eslintrc';
-import js from '@eslint/js';
 import eslint from '@eslint/js';
+import eslintReact from '@eslint-react/eslint-plugin';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import header from '@tony.ganchev/eslint-plugin-header';
@@ -12,19 +9,11 @@ import tseslint from 'typescript-eslint';
 import componentsPlugin from './ESLint/index.js';
 import { kernelSourcePaths } from './ESLint/lib/kernelBoundary.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all,
-});
-
 const getRules = configArray => {
     let rules = {};
 
     const addRulesFromObject = config => {
-        if (config.hasOwnProperty('rules')) {
+        if (Object.hasOwn(config, 'rules')) {
             rules = {
                 ...rules,
                 ...config.rules,
@@ -43,14 +32,15 @@ const getRules = configArray => {
     return rules;
 };
 
+const reactConfig = eslintReact.configs['recommended-typescript'];
+
 const rules = {
     ...getRules(eslint.configs.recommended),
     ...getRules(tseslint.configs.recommended),
+    ...getRules(reactConfig),
     ...{
         'no-irregular-whitespace': 0,
         semi: [2, 'always'],
-        'react/display-name': 0,
-        'react/react-in-jsx-scope': 0,
         'no-prototype-builtins': 0,
 
         '@typescript-eslint/no-unused-vars': [
@@ -87,9 +77,6 @@ const rules = {
     },
 };
 
-const reactCompat = compat.extends('plugin:react/recommended');
-const reactPlugin = reactCompat[0].plugins.react;
-
 const defaultConfig = [
     {
         ignores: [
@@ -111,7 +98,7 @@ const defaultConfig = [
 
         plugins: {
             '@typescript-eslint': typescriptEslint,
-            react: reactPlugin,
+            ...reactConfig.plugins,
             '@tony.ganchev': header,
             'no-null': noNull
         },
@@ -126,10 +113,35 @@ const defaultConfig = [
             sourceType: 'module',
         },
 
-        settings: {
-            react: {
-                version: 'detect',
-            },
+        settings: reactConfig.settings,
+    },
+    {
+        // Storybook render callbacks are React render functions, but their required lowercase
+        // `render` property name cannot satisfy component-name inference in hook/compiler rules.
+        files: ['**/*.stories.tsx'],
+        rules: {
+            '@eslint-react/rules-of-hooks': 'off',
+            '@eslint-react/no-nested-component-definitions': 'off',
+            '@eslint-react/static-components': 'off',
+        },
+    },
+    {
+        // The public `unstable_` prefix intentionally precedes the component/hook name. Runtime
+        // aliases use normal React names, and renderer specs verify hook order across rerenders.
+        files: [
+            'Source/renderer/RendererContext.tsx',
+            'Source/renderer/RendererScope.tsx',
+        ],
+        rules: {
+            '@eslint-react/rules-of-hooks': 'off',
+        },
+    },
+    {
+        // Selection synchronization deliberately flushes before focus/layout reads; its specs cover
+        // the ordering guarantee and replacing it with deferred rendering changes behavior.
+        files: ['Source/PivotViewer/hooks/useSelectedItem.ts'],
+        rules: {
+            '@eslint-react/dom-no-flush-sync': 'off',
         },
     },
     {

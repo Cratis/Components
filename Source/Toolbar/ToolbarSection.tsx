@@ -203,8 +203,8 @@ export const ToolbarSection = ({
 
                 return (
                     <div
-                        {...pt?.context}
                         key={name}
+                        {...pt?.context}
                         ref={(element) => { contextRefs.current[name] = element; }}
                         className={`toolbar-context cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${
                             isActive ? 'toolbar-context--active' : 'toolbar-context--inactive'
