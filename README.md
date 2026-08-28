@@ -10,7 +10,6 @@ stable parts, and state attributes. React Aria is an internal implementation
 dependency for selected interaction primitives.
 
 [![NPM](https://img.shields.io/npm/v/@cratis/components?label=@cratis/components&logo=npm)](https://www.npmjs.com/package/@cratis/components)
-[![Publish](https://github.com/Cratis/Components/actions/workflows/publish.yml/badge.svg)](https://github.com/Cratis/Components/actions/workflows/publish.yml)
 [![Documentation site](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml/badge.svg)](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml)
 [Documentation](https://cratis.io/components/)
 
@@ -131,10 +130,12 @@ Release notes and announcements are published on the [Cratis blog](https://blog.
 The repository ships `@cratis/components-codemods` and
 `@cratis/eslint-plugin-components` for moving Components 3 root namespace imports to
 explicit subpaths and preventing regressions afterward. The [migration guide](./Source/MIGRATION.md)
-owns the exact-version codemod command and stop cases; the [ESLint plugin
-README](./ESLint/README.md) owns installation and flat-config composition. Use the same
-exact published version as `@cratis/components` for both migration packages. Coordinated
-publication is currently disabled; never substitute a different or `latest` tooling version.
+owns the bounded Components 4 codemod commands and stop cases; the [ESLint plugin
+README](./ESLint/README.md) owns installation and flat-config composition. Components 3 has no
+3.x codemod train. Use tooling in `>=4 <5` (for example the shell-safe `^4.0.0` range), never
+`latest`. Codemod and ESLint patches release independently from Core; codemod preflight enforces
+the bundled compatibility manifest and installed Components support window. Publication remains
+fail closed under the repository [release policy](./RELEASE.md).
 
 ## Contributing
 

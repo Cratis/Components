@@ -28,12 +28,15 @@ on:
             - 'Storybook/**'
             - 'scripts/**'
             - 'compat-manifest.json'
+            - 'RELEASE.md'
+            - 'run-task-on-workspaces.js'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
             - '.yarnrc.yml'
             - '.yarn/releases/yarn-4.5.3.cjs'
             - '.github/workflows/javascript-build.yml'
+            - '.github/workflows/publish.yml'
     pull_request:
         branches:
             - '**'
@@ -46,12 +49,15 @@ on:
             - 'Storybook/**'
             - 'scripts/**'
             - 'compat-manifest.json'
+            - 'RELEASE.md'
+            - 'run-task-on-workspaces.js'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
             - '.yarnrc.yml'
             - '.yarn/releases/yarn-4.5.3.cjs'
             - '.github/workflows/javascript-build.yml'
+            - '.github/workflows/publish.yml'
 
 permissions:
     contents: read

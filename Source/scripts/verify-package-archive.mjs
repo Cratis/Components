@@ -2,7 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { gzipSync } from 'node:zlib';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import semver from 'semver';
 import { readTarEntries } from './lib/packed-artifact.mjs';
 import {
     assertExpectedCascadeLayerOrder,
@@ -38,6 +41,7 @@ const requiredEntries = [
     'package/dist/esm/renderer/builtin/index.js',
     'package/dist/esm/renderer/builtin/index.d.ts',
     'package/CONFORMANCE.md',
+    'package/compat-manifest.json',
     'package/dist/esm/PatrickHand-OFL.txt',
     'package/dist/esm/PatrickHand-latin.woff2',
     'package/dist/esm/PatrickHand-latin-ext.woff2',
@@ -50,6 +54,56 @@ if (missing.length > 0) {
     );
     process.exit(1);
 }
+
+const repositoryManifestPath = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    '..',
+    'compat-manifest.json',
+);
+const packedCompatibilityBytes = packedEntries.get('package/compat-manifest.json');
+const repositoryCompatibilityBytes = readFileSync(repositoryManifestPath);
+if (!packedCompatibilityBytes.equals(repositoryCompatibilityBytes)) {
+    console.error(
+        'Packed compatibility manifest is not byte-identical to the generated root contract.',
+    );
+    process.exit(1);
+}
+let compatibilityManifest;
+try {
+    compatibilityManifest = JSON.parse(packedCompatibilityBytes.toString('utf8'));
+} catch (error) {
+    console.error(
+        `Packed compatibility manifest is invalid JSON: ${error instanceof Error ? error.message : String(error)}.`,
+    );
+    process.exit(1);
+}
+let packedPackage;
+try {
+    packedPackage = JSON.parse(readPackedText('package/package.json'));
+} catch (error) {
+    console.error(
+        `Packed package.json is invalid: ${error instanceof Error ? error.message : String(error)}.`,
+    );
+    process.exit(1);
+}
+const coreEntry = compatibilityManifest.packages?.find(
+    ({ name }) => name === '@cratis/components',
+);
+if (
+    compatibilityManifest.schemaVersion !== 2 ||
+    compatibilityManifest.releaseStatus !== 'source-candidate' ||
+    compatibilityManifest.publicationEnabled !== false ||
+    compatibilityManifest.gaScope?.publicPackages?.length !== 7 ||
+    coreEntry?.version !== packedPackage.version ||
+    !semver.satisfies(packedPackage.version, coreEntry?.releaseMajorRange ?? '')
+) {
+    console.error(
+        'Packed compatibility manifest contains invalid or stale Core release metadata.',
+    );
+    process.exit(1);
+}
+
 const expectedFonts = new Set(
     requiredEntries.filter((entry) => /\.(?:otf|ttf|woff2?)$/iu.test(entry)),
 );

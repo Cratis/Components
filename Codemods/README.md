@@ -95,23 +95,25 @@ narrow subpath consumers are left exactly as they are.
 
 The packaged CLI requires Node.js 20 or newer and brings its own TypeScript parser; it does
 not depend on the consumer application's TypeScript version. It scans JavaScript, JSX,
-TypeScript, and TSX sources, including `.mjs`, `.cjs`, `.mts`, and `.cts` variants. Use the
-same exact published version as the installed Components package. Automated coordinated
-publication is currently disabled while source provenance is reviewed. Contributors can run
-the repository source directly. If the exact codemod version is unavailable, do not substitute `latest`
-or another Components version: keep the application on its current package, apply the
-mapping table manually, or wait for a corrected publication.
+TypeScript, and TSX sources, including `.mjs`, `.cjs`, `.mts`, and `.cts` variants. Components
+3 has no 3.x codemod package. Use the independently released Components 4 tooling train bounded
+to `>=4 <5`; never use `latest`.
+
+Before any scan or write, the CLI validates its bundled compatibility manifest, checks its own
+version against the declared codemod range, resolves the configured Components package from the
+invocation directory, and verifies that package is in the supported 3.x migration-source or 4.x
+migration-target window. Missing Components, unsupported versions, stale package metadata, and an
+invalid manifest fail closed. `--help` remains available without Components installed.
 
 ```sh
-# Read the exact installed Components version (stable or prerelease):
-COMPONENTS_VERSION="$(node -p "require('@cratis/components/package.json').version")"
+TOOLING_RANGE='^4.0.0' # Shell-safe equivalent of >=4 <5.
 
 # Preview what would change, without writing anything:
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
 
 # Apply the rewrite:
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports path/to/app/src
 
 # Contributors to this repository can run the workspace source directly:
@@ -191,28 +193,28 @@ Multi-statement, multi-use, wrong-payload, destructuring-with-default/rest, and 
 
 ## Run the migration sequence
 
-Use the exact installed Components version for all three commands. Run the root-import transform first so the later transforms can resolve explicit Components-owned subpaths, then run Button appearance and change-handler migration. Preview every step before applying it:
+Use the bounded Components 4 tooling train for all three commands. Run the root-import transform first so the later transforms can resolve explicit Components-owned subpaths, then run Button appearance and change-handler migration. Preview every step before applying it:
 
 ```sh
-COMPONENTS_VERSION="$(node -p "require('@cratis/components/package.json').version")"
+TOOLING_RANGE='^4.0.0'
 
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check <paths...>
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports <paths...>
 
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-button-variant-tone --check <paths...>
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-button-variant-tone <paths...>
 
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-change-handler --check <paths...>
-npx --package "@cratis/components-codemods@$COMPONENTS_VERSION" \
+npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-change-handler <paths...>
 ```
 
-Never substitute `latest` or another Components version when the exact codemod package is unavailable. Stop, keep the application on its current package, migrate manually, or wait for the matching publication. Both new CLIs require Node.js 20 or newer, bundle their own TypeScript compiler dependency, scan `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` recursively, support `--package <name>`, and exit nonzero for pending check-mode edits or any refused case. Review every diagnostic and `TODO(cratis-codemod)`, then run the consuming project's formatter, lint, type check, tests, and production build.
+Never substitute `latest`; keep tooling within `>=4 <5`. Tooling patches release independently from Core, and the bundled manifest preflight enforces the compatible migration windows. Both new CLIs require Node.js 20 or newer, bundle their own TypeScript compiler dependency, scan `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` recursively, support `--package <name>`, and exit nonzero for pending check-mode edits or any refused case. Review every diagnostic and `TODO(cratis-codemod)`, then run the consuming project's formatter, lint, type check, tests, and production build.
 
 Contributor source commands are:
 

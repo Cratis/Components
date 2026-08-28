@@ -4,6 +4,7 @@
 import { readFileSync, writeFileSync, statSync, readdirSync } from 'node:fs';
 import { join, extname } from 'node:path';
 import { packageName as defaultPackageName } from './namespaceMap.js';
+import { preflightCompatibility } from './compatibility.js';
 
 const EXTENSIONS = new Set([
     '.js',
@@ -45,6 +46,15 @@ export function runTransformCli(argv, { command, description, transform }) {
 
     if (paths.length === 0) {
         printUsage(command, description);
+        return 1;
+    }
+
+    try {
+        preflightCompatibility({ packageName });
+    } catch (error) {
+        console.error(
+            `Compatibility preflight failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
         return 1;
     }
 

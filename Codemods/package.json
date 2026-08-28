@@ -1,6 +1,7 @@
 {
     "name": "@cratis/components-codemods",
     "version": "4.0.0",
+    "cratisIndependentVersion": true,
     "description": "Codemods for migrating @cratis/components consumers from Components 3 root namespaces to Components 4 subpath imports.",
     "author": "Cratis",
     "license": "MIT",
@@ -15,7 +16,8 @@
         "lib",
         "scripts",
         "README.md",
-        "LICENSE"
+        "LICENSE",
+        "compat-manifest.json"
     ],
     "repository": {
         "type": "git",
@@ -32,6 +34,7 @@
         "ci": "yarn g:test"
     },
     "dependencies": {
+        "semver": "7.8.5",
         "typescript": "^6.0.3"
     }
 }

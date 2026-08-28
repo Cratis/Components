@@ -15,6 +15,16 @@ let dir;
 
 beforeEach(() => {
     dir = mkdtempSync(path.join(tmpdir(), 'cratis-components-codemod-'));
+    const componentsDirectory = path.join(dir, 'node_modules', '@cratis', 'components');
+    mkdirSync(componentsDirectory, { recursive: true });
+    writeFileSync(
+        path.join(componentsDirectory, 'package.json'),
+        JSON.stringify({
+            name: '@cratis/components',
+            version: '4.0.0',
+            exports: { './package.json': './package.json' },
+        }),
+    );
 });
 
 afterEach(() => {
@@ -22,7 +32,10 @@ afterEach(() => {
 });
 
 const run = (args) =>
-    spawnSync(process.execPath, [binPath, ...args], { encoding: 'utf8' });
+    spawnSync(process.execPath, [binPath, ...args], {
+        cwd: dir,
+        encoding: 'utf8',
+    });
 
 describe('remove-root-namespace-imports CLI', () => {
     it('prints usage and exits non-zero with no arguments', () => {

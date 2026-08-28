@@ -34,6 +34,7 @@
         "THIRD_PARTY_NOTICES.md",
         "MIGRATION.md",
         "CONFORMANCE.md",
+        "compat-manifest.json",
         "!dist/**/*.stories.*",
         "!dist/**/given.*",
         "!dist/**/storybook-static/**",
@@ -51,6 +52,7 @@
     ],
     "exports": {
         "./package.json": "./package.json",
+        "./compat-manifest.json": "./compat-manifest.json",
         ".": {
             "types": "./dist/esm/index.d.ts",
             "import": "./dist/esm/index.js"
