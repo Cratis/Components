@@ -12,6 +12,7 @@ on:
             - 'Codemods/*.md'
             - 'ESLint/*.md'
             - 'Conformance/*.md'
+            - 'Adapters/**/*.md'
     pull_request:
         branches:
             - '**'
@@ -22,6 +23,7 @@ on:
             - 'Codemods/*.md'
             - 'ESLint/*.md'
             - 'Conformance/*.md'
+            - 'Adapters/**/*.md'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -51,6 +53,7 @@ jobs:
                       Codemods/*.md
                       ESLint/*.md
                       Conformance/*.md
+                      Adapters/**/*.md
 
     link-verification:
         runs-on: ubuntu-latest
@@ -67,7 +70,9 @@ jobs:
                   node-version: 23.x
 
             - name: Check repository-local Markdown and MDX links
-              run: node Documentation/verify-local-links.mjs Documentation
+              run: |
+                  node Documentation/verify-local-links.mjs Documentation
+                  node Documentation/verify-local-links.mjs Adapters
 
             - name: Check external links in consumer documentation
               uses: JustinBeckwith/linkinator-action@7b6b0bc671f6264e1a8daa4488a5bd91ce61dcd4 # v2.4.2
@@ -78,6 +83,7 @@ jobs:
                       Codemods/*.md
                       ESLint/*.md
                       Conformance/*.md
+                      Adapters/**/*.md
                       Documentation/**/*.md
                       Documentation/**/*.mdx
                   markdown: true

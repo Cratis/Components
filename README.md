@@ -36,6 +36,12 @@ from Arc packages. Arc owns those application contracts; Components owns the
 React markup, public component types, styling tokens, stable parts, and component
 behavior in this repository.
 
+Components carries the same design intent as the rest of Cratis: building on a CQRS or
+event-sourced backend should feel like ordinary React. Typed commands, queries, and read models
+remove friction and boilerplate from the UI layer. The ecosystem is designed for productivity,
+quality, reliability, and AI-assisted development, with free [AI skills](https://github.com/Cratis/AI)
+for building with the stack.
+
 Applications may use Arc without Components. Components does not by itself
 establish design-system completeness, accessibility conformance, browser
 coverage, or compatibility with every Arc/React/package-version combination.
@@ -73,8 +79,9 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 - The package manifest, exports, source, and migration guide define the current
   Components major-version surface.
 - Workspace manifest versions in a source checkout are development inputs, not release
-  identity. Automated publication from this repository is currently disabled while source
-  provenance is reviewed. Do not infer a release from a branch, tag, or local package version.
+  identity. Publication is intentionally fail-closed while the Components 4 package set and
+  trusted-publisher workflow are completed. Do not infer a release from a branch, tag, or local
+  package version.
 - Package existence, examples, Storybook output, and passing checks do not
   establish maturity, accessibility conformance, browser coverage, support,
   security, or production suitability.
@@ -92,20 +99,30 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 
 ## The Cratis ecosystem
 
-Components consumes generated contracts from [Arc](https://github.com/Cratis/Arc) and is commonly
-used with read models backed by [Chronicle](https://github.com/Cratis/Chronicle).
+This project is part of [Cratis](https://www.cratis.io) — free, MIT-licensed tools for building
+CQRS and event-sourced applications.
 
-- [Chronicle](https://github.com/Cratis/Chronicle) — event-sourcing database and runtime, with .NET
-  and additional language clients.
-- [Arc](https://github.com/Cratis/Arc) — CQRS framework for ASP.NET Core, including validation,
-  authorization, and TypeScript proxy generation; Arc does not require event sourcing.
-- [CLI](https://github.com/Cratis/cli) and Workbench — inspect and diagnose Chronicle stores.
-- [Samples](https://github.com/Cratis/Samples) — runnable examples spanning the stack.
-- [Fundamentals](https://github.com/Cratis/Fundamentals) and
-  [Specifications](https://github.com/Cratis/Specifications) — shared primitives and specification
-  infrastructure.
+- **[Chronicle](https://github.com/Cratis/Chronicle)** — event-sourcing database and runtime with an
+  Orleans-based kernel, pluggable storage, and language-agnostic gRPC contracts.
+  [Documentation](https://www.cratis.io/chronicle/)
+- **Chronicle clients** — first-class [.NET SDK](https://github.com/Cratis/Chronicle), plus
+  [TypeScript](https://github.com/Cratis/Chronicle.TypeScript),
+  [Kotlin/Java](https://github.com/Cratis/Chronicle.Kotlin), and
+  [Elixir](https://github.com/Cratis/Chronicle.Elixir). AI agents connect through the
+  [Chronicle MCP server](https://github.com/Cratis/Chronicle.Mcp).
+- **[Arc](https://github.com/Cratis/Arc)** — CQRS framework for ASP.NET Core with commands, queries,
+  validation, authorization, and TypeScript proxy generation. Arc does not require event sourcing.
+  [Documentation](https://www.cratis.io/arc/)
+- **Components** — this repository. [Documentation](https://www.cratis.io/components/)
+- **[CLI](https://github.com/Cratis/cli) and Workbench** — inspect and diagnose Chronicle from the
+  terminal or browser. [Documentation](https://www.cratis.io/cli/)
+- **Supporting projects** — [Fundamentals](https://github.com/Cratis/Fundamentals),
+  [Specifications](https://github.com/Cratis/Specifications),
+  [Synopsis](https://github.com/Cratis/Synopsis), [Lens](https://github.com/Cratis/Lens), and
+  [Narrator](https://github.com/Cratis/Narrator).
+- **[Samples](https://github.com/Cratis/Samples)** — runnable event-sourcing and CQRS examples.
 
-See [cratis.io](https://www.cratis.io) for the complete ecosystem and documentation.
+Release notes and announcements are published on the [Cratis blog](https://blog.cratis.io).
 
 ## Migration tooling
 
@@ -135,6 +152,9 @@ type, specification, export, package-archive, accessibility-diagnostic, and
 Storybook gates.
 
 ## Community and repository
+
+Cratis is an open community, and we are glad to help users, teams evaluating the stack, and
+contributors.
 
 | Path                      | Destination                                                                              |
 | ------------------------- | ---------------------------------------------------------------------------------------- |

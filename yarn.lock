@@ -345,6 +345,29 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@cratis/components.primereact10@workspace:Adapters/PrimeReact10":
+  version: 0.0.0-use.local
+  resolution: "@cratis/components.primereact10@workspace:Adapters/PrimeReact10"
+  dependencies:
+    "@cratis/arc": "npm:22.4.0"
+    "@cratis/arc.react": "npm:22.4.0"
+    "@cratis/components": "workspace:^"
+    "@cratis/components.conformance": "workspace:^"
+    "@cratis/fundamentals": "npm:^7.10.3"
+    "@types/react": "npm:19.2.18"
+    primereact: "npm:10.9.9"
+    react: "npm:19.2.8"
+    react-dom: "npm:19.2.8"
+    reflect-metadata: "npm:0.2.2"
+    tsyringe: "npm:4.10.0"
+  peerDependencies:
+    "@cratis/components": ">=3.0.0 <4"
+    primereact: ">=10.9.9 <11"
+    react: ^19.0.0
+    react-dom: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
 "@cratis/components.primereact@workspace:Adapters/PrimeReact":
   version: 0.0.0-use.local
   resolution: "@cratis/components.primereact@workspace:Adapters/PrimeReact"
@@ -3004,7 +3027,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-transition-group@npm:^4.4.12":
+"@types/react-transition-group@npm:^4.4.1, @types/react-transition-group@npm:^4.4.12":
   version: 4.4.12
   resolution: "@types/react-transition-group@npm:4.4.12"
   peerDependencies:
@@ -3013,7 +3036,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^19.2.18":
+"@types/react@npm:19.2.18, @types/react@npm:^19.2.18":
   version: 19.2.18
   resolution: "@types/react@npm:19.2.18"
   dependencies:
@@ -7253,6 +7276,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"primereact@npm:10.9.9":
+  version: 10.9.9
+  resolution: "primereact@npm:10.9.9"
+  dependencies:
+    "@types/react-transition-group": "npm:^4.4.1"
+    react-transition-group: "npm:^4.4.1"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/203b81d941eda9d68e91ecc82107c851ca47c5605a5ee5dca9db2a1fcf4107daf9bcac312a2f87f9fa26df7337c693a6f2a346132c9ed0549ade1b434b9435c0
+  languageName: node
+  linkType: hard
+
 "primereact@npm:11.1.0":
   version: 11.1.0
   resolution: "primereact@npm:11.1.0"
@@ -7372,7 +7412,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react-dom@npm:^19.0.0, react-dom@npm:^19.2.8":
+"react-dom@npm:19.2.8, react-dom@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react-dom@npm:^19.0.0, react-dom@npm:^19.2.8":
   version: 19.2.8
   resolution: "react-dom@npm:19.2.8"
   dependencies:
@@ -7429,7 +7469,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-transition-group@npm:^4.4.5":
+"react-transition-group@npm:^4.4.1, react-transition-group@npm:^4.4.5":
   version: 4.4.5
   resolution: "react-transition-group@npm:4.4.5"
   dependencies:
@@ -7444,7 +7484,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react@npm:^19.0.0, react@npm:^19.2.8":
+"react@npm:19.2.8, react@npm:^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0, react@npm:^19.0.0, react@npm:^19.2.8":
   version: 19.2.8
   resolution: "react@npm:19.2.8"
   checksum: 10/a3c697798035e295ca9e51591d3a8700824535cb8c070fac1f8abbe69717ceb99108cbc4ba7b31a606806f336b1eba705705f63b9d39ace198fe51e8990ac843

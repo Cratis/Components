@@ -24,6 +24,7 @@ on:
             - 'Codemods/**'
             - 'ESLint/**'
             - 'Conformance/**'
+            - 'Adapters/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -38,6 +39,7 @@ on:
             - 'Codemods/**'
             - 'ESLint/**'
             - 'Conformance/**'
+            - 'Adapters/**'
             - 'package.json'
             - 'rollup.config.mjs'
             - 'yarn.lock'
@@ -55,15 +57,15 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@v4
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               id: yarn-cache
               with:
                   path: |
@@ -136,15 +138,15 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@v4
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               id: yarn-cache
               with:
                   path: |
@@ -180,15 +182,15 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@v4
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               id: yarn-cache
               with:
                   path: |
@@ -212,7 +214,7 @@ jobs:
 
             - name: Upload verify-public-types report
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: verify-public-types-report
                   path: ${{ runner.temp }}/verify-public-types-report.json
@@ -230,15 +232,15 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@v4
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               id: yarn-cache
               with:
                   path: |
@@ -262,7 +264,7 @@ jobs:
 
             - name: Upload verify-package-graph report
               if: always()
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: verify-package-graph-report
                   path: ${{ runner.temp }}/verify-package-graph-report.json
@@ -278,15 +280,15 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@v4
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               id: yarn-cache
               with:
                   path: |
@@ -318,15 +320,15 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@v4
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               id: yarn-cache
               with:
                   path: |
@@ -359,15 +361,15 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@v4
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
               id: yarn-cache
               with:
                   path: |
@@ -399,10 +401,10 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
@@ -471,10 +473,10 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Setup node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 23.x
                   registry-url: 'https://registry.npmjs.org'
@@ -509,7 +511,8 @@ jobs:
                   npm install --ignore-scripts --no-audit --no-fund \
                     /tmp/cratis-components.tgz \
                     @cratis/arc@22.3.0 @cratis/arc.react@22.3.0 \
-                    @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
+                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
                   node verify.mjs "${{ matrix.pixi }}"
 
@@ -523,7 +526,8 @@ jobs:
                   pnpm add --ignore-scripts --strict-peer-dependencies \
                     /tmp/cratis-components.tgz \
                     @cratis/arc@22.3.0 @cratis/arc.react@22.3.0 \
-                    @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
+                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
                   pnpm exec node verify.mjs "${{ matrix.pixi }}"
 
@@ -546,6 +550,107 @@ jobs:
                   yarn add \
                     /tmp/cratis-components.tgz \
                     @cratis/arc@22.3.0 @cratis/arc.react@22.3.0 \
-                    @cratis/fundamentals@7.18.1 react@19.2.8 react-dom@19.2.8 \
+                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2 "${PIXI[@]}"
                   yarn node verify.mjs "${{ matrix.pixi }}"
+
+    verify-primereact10-package-managers:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        strategy:
+            fail-fast: false
+            matrix:
+                manager: [npm, pnpm, yarn-pnp]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Yarn install
+              run: yarn install --immutable
+
+            - name: Build and pack Core and PrimeReact 10 adapter
+              run: |
+                  yarn workspace @cratis/components prepare
+                  yarn workspace @cratis/components.conformance build
+                  yarn workspace @cratis/components.primereact10 ci
+                  yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
+                  yarn workspace @cratis/components.primereact10 pack \
+                    --out /tmp/cratis-components-primereact10.tgz
+
+            - name: Create renderer consumer fixture
+              run: |
+                  mkdir /tmp/primereact10-consumer
+                  cat > /tmp/primereact10-consumer/package.json <<'JSON'
+                  {"private":true,"type":"module"}
+                  JSON
+                  cat > /tmp/primereact10-consumer/verify.mjs <<'JS'
+                  const api = await import('@cratis/components.primereact10');
+                  if (Object.keys(api).join(',') !== 'primeReact10UiLibrary') {
+                      throw new Error('PrimeReact 10 adapter exposes an unexpected public value.');
+                  }
+                  if (api.primeReact10UiLibrary.id !== 'cratis-primereact10') {
+                      throw new Error('PrimeReact 10 adapter loaded the wrong renderer manifest.');
+                  }
+                  JS
+
+            - name: Verify npm renderer consumer
+              if: matrix.manager == 'npm'
+              working-directory: /tmp/primereact10-consumer
+              run: |
+                  npm install --ignore-scripts --no-audit --no-fund \
+                    /tmp/cratis-components.tgz \
+                    /tmp/cratis-components-primereact10.tgz \
+                    primereact@10.9.9 \
+                    @cratis/arc@22.4.0 @cratis/arc.react@22.4.0 \
+                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    react@19.2.8 react-dom@19.2.8 \
+                    reflect-metadata@0.2.2 tsyringe@4.10.0
+                  node verify.mjs
+
+            - name: Verify pnpm renderer consumer
+              if: matrix.manager == 'pnpm'
+              working-directory: /tmp/primereact10-consumer
+              run: |
+                  corepack prepare pnpm@10.17.1 --activate
+                  pnpm add --ignore-scripts --strict-peer-dependencies \
+                    /tmp/cratis-components.tgz \
+                    /tmp/cratis-components-primereact10.tgz \
+                    primereact@10.9.9 \
+                    @cratis/arc@22.4.0 @cratis/arc.react@22.4.0 \
+                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    react@19.2.8 react-dom@19.2.8 \
+                    reflect-metadata@0.2.2 tsyringe@4.10.0
+                  pnpm exec node verify.mjs
+
+            - name: Verify Yarn PnP renderer consumer
+              if: matrix.manager == 'yarn-pnp'
+              working-directory: /tmp/primereact10-consumer
+              run: |
+                  corepack prepare yarn@4.5.3 --activate
+                  cat > .yarnrc.yml <<'YAML'
+                  nodeLinker: pnp
+                  packageExtensions:
+                    "@cratis/arc.react@*":
+                      dependencies:
+                        rxjs: "*"
+                  YAML
+                  yarn add \
+                    /tmp/cratis-components.tgz \
+                    /tmp/cratis-components-primereact10.tgz \
+                    primereact@10.9.9 \
+                    @cratis/arc@22.4.0 @cratis/arc.react@22.4.0 \
+                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    react@19.2.8 react-dom@19.2.8 \
+                    reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2
+                  yarn node verify.mjs
