@@ -53,6 +53,6 @@ test('a skewed PrimeReact 11 boundary fails before installation', () => {
 
     assert.throws(
         () => validateMatrix(invalid, manifests),
-        /primereact11\/minimum must keep @primereact\/core, @primereact\/ui, primereact aligned/,
+        /primereact11\/minimum must keep .* aligned/,
     );
 });

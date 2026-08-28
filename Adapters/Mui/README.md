@@ -57,7 +57,7 @@ concerns and do not justify a Core ABI change.
 ## Peer policy
 
 MUI Core is bounded to `>=9 <10`, `@emotion/react` to `>=11.5 <12`,
-`@emotion/styled` to `>=11.3 <12`, and React/ReactDOM to React 19. Vendor packages are peers.
+`@emotion/styled` to `>=11.11 <12`, and React/ReactDOM to React 19. Vendor packages are peers.
 The repository's packed-consumer matrix proves both these effective lower boundaries and the
 current-highest compatible boundary; exact current versions remain dev dependencies only.
 

@@ -13,6 +13,7 @@ on:
             - 'ESLint/*.md'
             - 'Conformance/*.md'
             - 'Adapters/**/*.md'
+            - 'scripts/*.md'
     pull_request:
         branches:
             - '**'
@@ -24,6 +25,7 @@ on:
             - 'ESLint/*.md'
             - 'Conformance/*.md'
             - 'Adapters/**/*.md'
+            - 'scripts/*.md'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -54,6 +56,7 @@ jobs:
                       ESLint/*.md
                       Conformance/*.md
                       Adapters/**/*.md
+                      scripts/*.md
 
     link-verification:
         runs-on: ubuntu-latest
@@ -73,6 +76,7 @@ jobs:
               run: |
                   node Documentation/verify-local-links.mjs Documentation
                   node Documentation/verify-local-links.mjs Adapters
+                  node Documentation/verify-local-links.mjs scripts
 
             - name: Check external links in consumer documentation
               uses: JustinBeckwith/linkinator-action@7b6b0bc671f6264e1a8daa4488a5bd91ce61dcd4 # v2.4.2
@@ -84,6 +88,7 @@ jobs:
                       ESLint/*.md
                       Conformance/*.md
                       Adapters/**/*.md
+                      scripts/*.md
                       Documentation/**/*.md
                       Documentation/**/*.mdx
                   markdown: true

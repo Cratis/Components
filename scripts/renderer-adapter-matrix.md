@@ -33,11 +33,14 @@ pnpm uses `--strict-peer-dependencies`, and Yarn uses Plug'n'Play rather than `n
 
 ## Narrow Yarn PnP corrections
 
-The matrix records only two confirmed upstream manifest omissions:
+The matrix records only confirmed upstream manifest omissions:
 
-- `@cratis/arc.react@22.5.0` imports `rxjs` without declaring it; and
-- each exact tested `@primereact/ui` 11 package uses the aligned `@primereact/core` package without
-  declaring that direct dependency.
+- `@cratis/arc.react@22.5.0` imports `rxjs` without declaring it;
+- each tested `@primereact/headless` 11 package needs React for its Core/headless dependencies;
+- each tested `@primereact/styles` 11 package needs `@primeuix/motion` for its types;
+- each tested `@primereact/ui` 11 package uses the aligned `@primereact/core` package without
+  declaring that direct dependency; and
+- each tested `@primereact/ui` 11 package needs ReactDOM for the aligned `primereact` package.
 
 The verifier derives exact `packageExtensions` selectors and dependency versions from the selected
 fixture. These extensions add missing dependency edges only. They do not widen or replace any peer

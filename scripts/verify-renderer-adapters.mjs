@@ -217,9 +217,9 @@ const verifyFixture = (adapterKey, boundary, manager) => {
     try {
         const coreArchive = path.join(temporary, 'components-core.tgz');
         const adapterArchive = path.join(temporary, 'components-adapter.tgz');
-        run('yarn', ['workspace', '@cratis/components', 'prepare']);
-        run('yarn', ['workspace', fixture.adapter.workspace, 'clean']);
-        run('yarn', ['workspace', fixture.adapter.workspace, 'build']);
+        run('yarn', ['prepare'], path.join(repositoryDirectory, 'Source'));
+        run('yarn', ['clean'], path.join(repositoryDirectory, fixture.adapter.directory));
+        run('yarn', ['build'], path.join(repositoryDirectory, fixture.adapter.directory));
         run('yarn', ['workspace', '@cratis/components', 'pack', '--out', coreArchive]);
         run('yarn', [
             'workspace',
@@ -227,6 +227,10 @@ const verifyFixture = (adapterKey, boundary, manager) => {
             'pack',
             '--out',
             adapterArchive,
+        ]);
+        run(process.execPath, [
+            path.join(repositoryDirectory, 'Source/scripts/verify-package-archive.mjs'),
+            coreArchive,
         ]);
 
         const packedCore = unpackManifest(
