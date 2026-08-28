@@ -8,7 +8,7 @@ import {
     unstable_useCapability,
     unstable_useOverlayEnvironment,
     unstable_useRendererId,
-    type unstable_RendererSetup,
+    type CratisRendererSetup,
 } from '..';
 import { buttonSlot, createTestLibrary, FirstButton } from './testLibrary';
 
@@ -110,7 +110,7 @@ describe('when using renderer provider setup', () => {
         const unsafeSetup = {
             'sample.license-configured': true,
             'sample.credential': 'example.invalid/not-a-credential',
-        } as unknown as unstable_RendererSetup;
+        } as unknown as CratisRendererSetup;
 
         renderToStaticMarkup(
             <CratisComponentsProvider library={library} rendererSetup={unsafeSetup}>

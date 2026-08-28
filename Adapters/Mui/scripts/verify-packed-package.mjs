@@ -135,7 +135,7 @@ try {
         );
     }
     if (
-        packageJson.version !== '0.1.0' ||
+        packageJson.version !== '1.0.0' ||
         packageJson.cratisIndependentVersion !== true ||
         packageJson.cratisUiAbi !== 1
     ) {
@@ -196,10 +196,10 @@ try {
     const exportedValues = declarations.match(/export\s+declare\s+const\s+/gu) ?? [];
     if (
         exportedValues.length !== 1 ||
-        !/export declare const muiUiLibrary: unstable_UiLibrary;/u.test(declarations)
+        !/export declare const muiUiLibrary: CratisPresentationUiLibrary;/u.test(declarations)
     ) {
         throw new Error(
-            'Public declarations must expose exactly one UiLibrary-typed value.',
+            'Public declarations must expose exactly one stable presentation UiLibrary value.',
         );
     }
 

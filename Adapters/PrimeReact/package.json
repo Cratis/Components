@@ -1,6 +1,6 @@
 {
     "name": "@cratis/components.primereact",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "cratisIndependentVersion": true,
     "description": "PrimeReact 11 presentation adapter for Cratis Components renderer ABI v1.",
     "author": "Cratis",

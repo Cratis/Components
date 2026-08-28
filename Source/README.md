@@ -75,9 +75,10 @@ export const App = () => (
 );
 ```
 
-The provider owns locale, Components-specific labels, the experimental renderer boundary, and the
-optional toast region. The default renderer needs no additional package. Optional renderer packages
-are independently versioned and selected with the provider's `library` prop:
+The provider owns locale, Components-specific labels, optional renderer selection, and the toast
+region. The default renderer needs no additional package. Certified renderer packages implement the
+stable, nine-slot `stable-presentation/v1` primitive profile; they never replace the full Components
+catalog. They are independently versioned and selected with the provider's `library` prop:
 
 - `@cratis/components.mui` — MUI 9.x / Emotion 11.x stable presentation slots;
 - `@cratis/components.primereact` — PrimeReact 11.x stable presentation slots, with an

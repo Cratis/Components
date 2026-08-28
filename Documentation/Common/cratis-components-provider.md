@@ -3,7 +3,7 @@ title: CratisComponentsProvider
 description: Configure locale, Components-owned labels, and the app-wide toast region.
 ---
 
-`CratisComponentsProvider` is the application root for Components-owned locale/messages and the experimental renderer boundary. Its `value` remains renderer-independent and it does not configure an application's direct third-party component usage; a selected adapter may mount its own provider boundary. Styling remains owned by CSS or by the explicitly selected adapter.
+`CratisComponentsProvider` is the application root for Components-owned locale/messages and optional renderer selection. Its `value` remains renderer-independent and it does not configure an application's direct third-party component usage; a selected adapter may mount its own provider boundary. Styling remains owned by CSS or by the explicitly selected adapter.
 
 ## Basic setup
 
@@ -49,22 +49,29 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 
 Unknown Components 3 renderer options are intentionally a type error. Remove `license`, `theme`, `defaults`, global `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings rather than compiling a provider whose visual configuration does nothing. Configure any remaining direct Prime provider independently.
 
-## Experimental renderer selection
+## Renderer selection
 
-The renderer contract remains `unstable_` while concrete adapters falsify it. The provider exposes:
+The certified MUI, PrimeReact 11, and PrimeReact 10 manifests implement the stable nine-slot
+`stable-presentation/v1` profile. That stable profile adapts only Button, IconButton, TextInput,
+TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. It never means full-catalog
+replacement. The broader fourteen-slot renderer system, composition, scopes, atomic slots, and
+fallback diagnostics remain experimental.
+
+The provider exposes:
 
 | Prop                 | Purpose                                                                                               |
 | -------------------- | ----------------------------------------------------------------------------------------------------- |
 | `library`            | One renderer manifest or an ordered last-wins composition. Omit it for the built-in default.          |
 | `libraryMode`        | `strict` rejects invalid profile promises; `degrade` reports them after mount.                        |
 | `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects fallback.                                    |
-| `overlayEnvironment` | Stable, post-commit portal-container lookup for overlay-owning implementations.                       |
-| `rendererSetup`      | Adapter-declared, non-secret boolean setup attestations. Never put credentials, keys, or caches here. |
+| `overlayEnvironment` | Stable, post-commit portal-container lookup through `CratisOverlayEnvironment`.                       |
+| `rendererSetup`      | Stable adapter-declared boolean attestations. Never put credentials, keys, or caches here.            |
 
-Adapter packages declaration-merge their own `rendererSetup` keys, so importing an adapter gives
-typed setup without adding vendor fields to Core. The provider copies and freezes boolean entries,
-discards non-boolean runtime values, inherits the map through nested providers unless a nested map
-replaces it wholesale, and forwards it through `RendererScope`.
+Adapter packages declaration-merge their own keys into `CratisRendererSetupExtensions`, so
+importing an adapter gives typed setup without adding vendor fields to Core. The provider copies and
+freezes boolean entries, discards non-boolean runtime values, inherits the map through nested
+providers unless a nested map replaces it wholesale, and forwards it to the selected library
+provider.
 
 A key-gated renderer still receives its key through the application's own outer vendor provider.
 For example, the PrimeReact 11 adapter receives only a boolean assertion that the application

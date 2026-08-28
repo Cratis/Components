@@ -61,7 +61,7 @@
             "name": "@cratis/components.conformance",
             "manifest": "Conformance/package.json",
             "role": "conformance",
-            "version": "0.1.0",
+            "version": "1.0.0",
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -76,7 +76,7 @@
             "name": "@cratis/components.mui",
             "manifest": "Adapters/Mui/package.json",
             "role": "renderer-adapter",
-            "version": "0.1.0",
+            "version": "1.0.0",
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -100,7 +100,7 @@
             "name": "@cratis/components.primereact",
             "manifest": "Adapters/PrimeReact/package.json",
             "role": "renderer-adapter",
-            "version": "0.1.0",
+            "version": "1.0.0",
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -126,7 +126,7 @@
             "name": "@cratis/components.primereact10",
             "manifest": "Adapters/PrimeReact10/package.json",
             "role": "renderer-adapter",
-            "version": "0.1.0",
+            "version": "1.0.0",
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {

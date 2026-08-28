@@ -60,7 +60,7 @@ try {
         readFileSync(path.join(repositoryDirectory, 'Source/package.json'), 'utf8'),
     );
     if (
-        packageJson.version !== '0.1.0' ||
+        packageJson.version !== '1.0.0' ||
         packageJson.version === sourcePackageJson.version ||
         packageJson.cratisIndependentVersion !== true ||
         packageJson.cratisUiAbi !== 1

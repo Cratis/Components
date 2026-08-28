@@ -29,24 +29,14 @@ import type {
 } from '@cratis/components/Common';
 import type { ProgressBarProps } from '@cratis/components/Display';
 import {
-    unstable_CRATIS_UI_ABI_VERSION,
-    unstable_defineUiLibrary,
-    type unstable_CapabilityId,
-    type unstable_SlotDeclaration,
-    type unstable_SlotId,
+    CRATIS_PRESENTATION_ABI_VERSION,
+    CRATIS_PRESENTATION_PROFILE,
+    cratisPresentationSlotIds,
+    definePresentationUiLibrary,
+    type CratisPresentationCapabilityId,
+    type CratisPresentationSlotDeclaration,
+    type CratisPresentationSlotId,
 } from '@cratis/components/renderer';
-
-const profileSlots = Object.freeze([
-    'common.button',
-    'common.iconButton',
-    'common.textInput',
-    'common.textArea',
-    'common.checkbox',
-    'common.radio',
-    'common.switch',
-    'common.progress',
-    'common.surface',
-] satisfies readonly unstable_SlotId[]);
 
 const capabilities = Object.freeze([
     'slot.render',
@@ -55,7 +45,7 @@ const capabilities = Object.freeze([
     'rtl',
     'forcedColors',
     'motion.reduced',
-] satisfies readonly unstable_CapabilityId[]);
+] satisfies readonly CratisPresentationCapabilityId[]);
 
 const classNames = (...values: readonly (string | undefined)[]) =>
     values.filter(Boolean).join(' ');
@@ -656,14 +646,14 @@ const PlainSurface = forwardRef<HTMLElement, SurfaceProps>(function PlainSurface
     );
 });
 
-const declaration = <SlotId extends unstable_SlotId>(
-    render: unstable_SlotDeclaration<SlotId>['render'],
+const declaration = <SlotId extends CratisPresentationSlotId>(
+    render: CratisPresentationSlotDeclaration<SlotId>['render'],
 ) =>
     Object.freeze({
         mode: 'presentation',
         fidelity: 'native',
         render,
-    }) satisfies unstable_SlotDeclaration<SlotId>;
+    }) satisfies CratisPresentationSlotDeclaration<SlotId>;
 
 const slots = Object.freeze({
     'common.button': declaration<'common.button'>(PlainButton),
@@ -678,13 +668,13 @@ const slots = Object.freeze({
 });
 
 /** Private, test-only renderer proving the nine stable presentation slots are independently implementable. */
-export const plainDomPresentationRenderer = unstable_defineUiLibrary({
+export const plainDomPresentationRenderer = definePresentationUiLibrary({
     id: 'plain-dom-falsification-fixture',
     displayName: 'Plain DOM falsification fixture',
-    abi: unstable_CRATIS_UI_ABI_VERSION,
+    abi: CRATIS_PRESENTATION_ABI_VERSION,
     level: 'primitive',
-    profile: 'stable-presentation/v1',
-    profileSlots,
+    profile: CRATIS_PRESENTATION_PROFILE,
+    profileSlots: cratisPresentationSlotIds,
     capabilities,
     slots,
 });

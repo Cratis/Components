@@ -25,10 +25,10 @@ const expectedVersions = new Map([
     ['@cratis/components', '4.0.0'],
     ['@cratis/eslint-plugin-components', '4.0.0'],
     ['@cratis/components-codemods', '4.0.0'],
-    ['@cratis/components.conformance', '0.1.0'],
-    ['@cratis/components.mui', '0.1.0'],
-    ['@cratis/components.primereact', '0.1.0'],
-    ['@cratis/components.primereact10', '0.1.0'],
+    ['@cratis/components.conformance', '1.0.0'],
+    ['@cratis/components.mui', '1.0.0'],
+    ['@cratis/components.primereact', '1.0.0'],
+    ['@cratis/components.primereact10', '1.0.0'],
 ]);
 const rendererAbi = 1;
 const coreTarget = '4.x';

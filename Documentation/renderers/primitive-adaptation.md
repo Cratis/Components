@@ -8,7 +8,8 @@ description: Reference for the nine stable presentation slots, portable parts an
 
 The `stable-presentation/v1` profile is deliberately small. It lets an adapter render common
 controls with vendor-native primitives while Components retains its public props, semantic values,
-refs, parts, and composition contracts.
+refs, parts, and composition contracts. Stable means this exact nine-slot adaptation boundary; it
+never means that an adapter replaces the full Components catalog.
 
 ## The nine slots
 
@@ -27,6 +28,31 @@ refs, parts, and composition contracts.
 This profile does not include tooltip, dropdown, dialog, date picker, or table paginator. Those are
 atomic interaction slots with a separate behavior boundary. It also does not include a composite
 such as DataPage or CommandDialog.
+
+## Stable adapter API
+
+Adapter packages import the bounded contract from `@cratis/components/renderer`:
+
+```ts
+import {
+    CRATIS_PRESENTATION_ABI_VERSION,
+    CRATIS_PRESENTATION_PROFILE,
+    cratisPresentationSlotIds,
+    definePresentationUiLibrary,
+    type CratisPresentationUiLibrary,
+} from '@cratis/components/renderer';
+```
+
+`CratisPresentationSlotMap` requires all nine exact component contracts. Every declaration must use
+`mode: 'presentation'` and either `fidelity: 'native'` or `fidelity: 'emulated'`.
+`definePresentationUiLibrary()` checks the same requirements for JavaScript callers and returns a
+defensive frozen copy. Use `CratisRendererSetupExtensions` only for non-secret boolean setup
+attestations and `CratisOverlayEnvironment` for an independent host portal-container lookup.
+
+Removing or changing a v1 slot is a breaking change. Adding a required slot needs a new profile and
+version; `stable-presentation/v1` will not silently grow. The open fourteen-slot manifest,
+composition, atomic behavior, renderer scopes, internal hooks, diagnostics, and built-in full
+manifest remain `unstable_` APIs.
 
 ## Stable parts
 

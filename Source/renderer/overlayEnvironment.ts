@@ -5,12 +5,18 @@
  * Host environment used by overlay implementations to obtain their portal container.
  * `null` means no container is currently available; callers must defer rather than retarget.
  *
- * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
  */
-export interface unstable_CratisOverlayEnvironment {
+export interface CratisOverlayEnvironment {
     /** Resolves the current overlay container without requiring browser globals during import. */
     getContainer(): HTMLElement | null;
 }
+
+/**
+ * Compatibility alias for {@link CratisOverlayEnvironment}.
+ *
+ * @deprecated Use {@link CratisOverlayEnvironment}.
+ */
+export type unstable_CratisOverlayEnvironment = CratisOverlayEnvironment;
 
 /**
  * Default browser overlay environment. The module is SSR-safe: `document` is inspected only when

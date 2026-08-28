@@ -9,30 +9,50 @@ import type { unstable_SlotId, unstable_SlotMap } from './slots';
 /**
  * Open declaration-merging surface for renderer-specific, non-secret setup attestations.
  * Adapter packages add boolean keys only; credentials never belong in this interface.
- *
- * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
  */
 // Adapter packages add only non-secret boolean attestations through declaration merging.
 // biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires an interface.
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface unstable_RendererSetupExtensions extends Record<never, never> {}
+export interface CratisRendererSetupExtensions extends Record<never, never> {}
 
 /**
- * Non-secret application setup attestations supplied to a renderer provider.
+ * Compatibility declaration-merging surface for renderer setup attestations.
  *
- * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
+ * @deprecated Merge new adapter keys into {@link CratisRendererSetupExtensions}.
  */
-export type unstable_RendererSetup = Readonly<{
-    [Key in keyof unstable_RendererSetupExtensions]?: boolean;
+// biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires an interface.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface unstable_RendererSetupExtensions extends CratisRendererSetupExtensions {}
+
+/** Non-secret application setup attestations supplied to a renderer provider. */
+export type CratisRendererSetup = Readonly<{
+    [
+        Key in
+            keyof CratisRendererSetupExtensions | keyof unstable_RendererSetupExtensions
+    ]?: boolean;
 }>;
 
-/** Props supplied to a renderer library provider. */
-export interface unstable_UiLibraryProviderProps {
+/**
+ * Compatibility alias for {@link CratisRendererSetup}.
+ *
+ * @deprecated Use {@link CratisRendererSetup}.
+ */
+export type unstable_RendererSetup = CratisRendererSetup;
+
+/** Props supplied to a stable presentation renderer library provider. */
+export interface CratisPresentationUiLibraryProviderProps {
     /** Non-secret application setup attestations. Never credentials or license tokens. */
-    readonly setup: unstable_RendererSetup;
+    readonly setup: CratisRendererSetup;
     /** Application content. */
     readonly children: ReactNode;
 }
+
+/**
+ * Compatibility alias for {@link CratisPresentationUiLibraryProviderProps}.
+ *
+ * @deprecated Use {@link CratisPresentationUiLibraryProviderProps}.
+ */
+export type unstable_UiLibraryProviderProps = CratisPresentationUiLibraryProviderProps;
 
 /**
  * Renderer ABI major implemented by this package.
@@ -67,31 +87,10 @@ export interface unstable_UiLibrary {
     /** Typed partial slot implementation table. */
     readonly slots: unstable_SlotMap;
     /** Optional library-level provider mounted once around the selected renderer scope. */
-    readonly Provider?: ComponentType<unstable_UiLibraryProviderProps>;
+    readonly Provider?: ComponentType<CratisPresentationUiLibraryProviderProps>;
     /** Optional static diagnostic preflight evaluated by renderer providers and scopes. */
     readonly preflight?: () => readonly unstable_AdapterDiagnostic[];
 }
-
-/**
- * Open declaration-merging surface for deliberate renderer-specific props. Core ships no keys, so
- * its declarations contain no vendor types.
- *
- * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
- */
-// Adapter packages add only their own vendor key through declaration merging.
-// biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires an interface.
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface unstable_RendererExtensions extends Record<never, never> {}
-
-/**
- * Deliberate renderer lock-in bag derived only from declaration-merged extension keys. Portable
- * customization continues to use each component's `pt` contract.
- *
- * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
- */
-export type unstable_RendererProps = {
-    [R in keyof unstable_RendererExtensions]?: Partial<unstable_RendererExtensions[R]>;
-};
 
 const frozenSlots = (slots: unstable_SlotMap): unstable_SlotMap => {
     const copy: Record<string, object> = {};
