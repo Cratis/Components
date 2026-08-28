@@ -223,6 +223,5 @@ The Components 4 major candidate uses these repository release checks:
 - The migration guide works without repository-specific knowledge.
 - Every packed public JavaScript subpath passes strict TypeScript 6 validation or matches a bounded machine-readable upstream exception with exact installed versions and an unmet removal condition. Components-owned cascades additionally require their matching upstream TS2834/TS2835 root cause in the same compiler run.
 
-Generated conformance reports, the checked-in compatibility contract, and the repository
-[release policy](https://github.com/Cratis/Components/blob/main/release.md) own the exact current
-evidence and publication limitations.
+Generated conformance reports, the checked-in compatibility contract, and `release.md` at the
+repository root own the exact current evidence and publication limitations.

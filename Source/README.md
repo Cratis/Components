@@ -45,8 +45,7 @@ The generated compatibility schema v2 contract is published at
 `@cratis/components/compat-manifest.json`. It records the supported Components and tooling
 windows, the seven-package source-candidate scope, independent package trains, renderer ABI/profile
 ranges, and exact lower/current adapter evidence. `publicationEnabled: false` means the source is
-not authorized for publication; the repository
-[`release.md`](https://github.com/Cratis/Components/blob/main/release.md) is the durable policy.
+not authorized for publication; `release.md` at the repository root is the durable policy.
 
 **Yarn PnP note:** the current `@cratis/arc.react@22.5.0` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.5.0`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
