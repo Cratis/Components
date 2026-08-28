@@ -1,0 +1,122 @@
+{
+    "name": "@cratis/components.mui",
+    "version": "0.1.0",
+    "cratisIndependentVersion": true,
+    "description": "Material UI presentation adapter for Cratis Components renderer ABI v1.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=23.0.0"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CONFORMANCE.md",
+        "THIRD_PARTY_NOTICES.md",
+        "LICENSE"
+    ],
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "sideEffects": false,
+    "cratisUiAbi": 1,
+    "cratis": {
+        "kind": "ui-adapter",
+        "id": "cratis-mui",
+        "displayName": "Cratis Material UI renderer",
+        "abi": "^1",
+        "level": "primitive",
+        "profile": "stable-presentation/v1",
+        "category": "material-ui",
+        "entry": "./dist/index.js",
+        "export": "muiUiLibrary",
+        "slots": [
+            "common.button",
+            "common.iconButton",
+            "common.textInput",
+            "common.textArea",
+            "common.checkbox",
+            "common.radio",
+            "common.switch",
+            "common.progress",
+            "common.surface"
+        ],
+        "modes": {
+            "common.button": "presentation",
+            "common.iconButton": "presentation",
+            "common.textInput": "presentation",
+            "common.textArea": "presentation",
+            "common.checkbox": "presentation",
+            "common.radio": "presentation",
+            "common.switch": "presentation",
+            "common.progress": "presentation",
+            "common.surface": "presentation"
+        },
+        "capabilities": [
+            "slot.render",
+            "parts.passthrough",
+            "theme.tokens",
+            "ssr.staticRender",
+            "rtl",
+            "forcedColors",
+            "motion.reduced"
+        ],
+        "ssr": "safe",
+        "a11y": {
+            "axeProfile": "wcag22aa",
+            "evidence": "./CONFORMANCE.md"
+        },
+        "license": {
+            "spdx": "MIT",
+            "requiresKey": false
+        },
+        "upstream": {
+            "@mui/material": ">=9 <10",
+            "@emotion/react": ">=11 <12",
+            "@emotion/styled": ">=11 <12",
+            "react": "^19.0.0",
+            "react-dom": "^19.0.0"
+        }
+    },
+    "scripts": {
+        "clean": "rm -rf dist",
+        "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+        "typecheck-specs": "yarn workspace @cratis/components prepare && yarn workspace @cratis/components.conformance build && node ../../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "lint": "node ../../node_modules/eslint/bin/eslint.js . --quiet",
+        "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+        "verify-package": "node ./scripts/verify-packed-package.mjs",
+        "ci": "yarn clean && yarn lint && yarn build && yarn typecheck-specs && yarn test && yarn verify-package"
+    },
+    "peerDependencies": {
+        "@cratis/components": ">=3.0.0 <4",
+        "@emotion/react": ">=11 <12",
+        "@emotion/styled": ">=11 <12",
+        "@mui/material": ">=9 <10",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@cratis/components": "workspace:^",
+        "@cratis/components.conformance": "workspace:^",
+        "@emotion/react": "11.14.0",
+        "@emotion/styled": "11.14.1",
+        "@mui/material": "9.4.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    }
+}

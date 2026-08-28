@@ -4,7 +4,8 @@
         "Source",
         "ESLint",
         "Codemods",
-        "Conformance"
+        "Conformance",
+        "Adapters/*"
     ],
     "resolutions": {
         "react-aria": "3.51.0",
