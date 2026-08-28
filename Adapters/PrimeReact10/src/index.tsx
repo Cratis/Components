@@ -14,21 +14,26 @@ import {
     type ReactNode,
     type SyntheticEvent,
 } from 'react';
-import { PrimeReactContext, PrimeReactProvider } from 'primereact/api';
-import { Button as PrimeButton } from 'primereact/button';
-import { Card as PrimeCard } from 'primereact/card';
+// PrimeReact 10's ESM files use directory imports that native Node rejects. Explicit legacy
+// CommonJS entries preserve one peer-hosted runtime across Node SSR and application bundlers.
+import { PrimeReactContext, PrimeReactProvider } from 'primereact/api/api.cjs.js';
+import {
+    Button as PrimeButton,
+    type ButtonPassThroughOptions,
+} from 'primereact/button/button.cjs.js';
+import { Card as PrimeCard } from 'primereact/card/card.cjs.js';
 import {
     Checkbox as PrimeCheckbox,
     type CheckboxPassThroughOptions,
-} from 'primereact/checkbox';
-import { InputSwitch as PrimeInputSwitch } from 'primereact/inputswitch';
-import { InputText as PrimeInputText } from 'primereact/inputtext';
-import { InputTextarea as PrimeInputTextarea } from 'primereact/inputtextarea';
-import { ProgressBar as PrimeProgressBar } from 'primereact/progressbar';
+} from 'primereact/checkbox/checkbox.cjs.js';
+import { InputSwitch as PrimeInputSwitch } from 'primereact/inputswitch/inputswitch.cjs.js';
+import { InputText as PrimeInputText } from 'primereact/inputtext/inputtext.cjs.js';
+import { InputTextarea as PrimeInputTextarea } from 'primereact/inputtextarea/inputtextarea.cjs.js';
+import { ProgressBar as PrimeProgressBar } from 'primereact/progressbar/progressbar.cjs.js';
 import {
     RadioButton as PrimeRadioButton,
     type RadioButtonPassThroughOptions,
-} from 'primereact/radiobutton';
+} from 'primereact/radiobutton/radiobutton.cjs.js';
 import type {
     ButtonProps,
     ButtonSeverity,
@@ -73,9 +78,7 @@ const capabilities = Object.freeze([
     'ssr.staticRender',
 ] satisfies readonly unstable_CapabilityId[]);
 
-const PrimeReact10AdapterProvider = ({
-    children,
-}: unstable_UiLibraryProviderProps) => {
+const PrimeReact10AdapterProvider = ({ children }: unstable_UiLibraryProviderProps) => {
     const applicationConfiguration = useContext(PrimeReactContext);
     if (applicationConfiguration !== undefined) return children;
     return <PrimeReactProvider>{children}</PrimeReactProvider>;
@@ -214,7 +217,7 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
         const iconOnly = Boolean(icon) && label === undefined && !children;
         const nativeButtonRef = useCallback(
             (value: unknown) => {
-                // SAFETY: PrimeReact 10.9.8's Button runtime forwards its ref to the native
+                // SAFETY: PrimeReact 10.9.9's Button runtime forwards its ref to the native
                 // button although its legacy declaration still describes a class component.
                 // Only that verified native node crosses the Cratis ref boundary.
                 const button =
@@ -226,6 +229,19 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
             },
             [ref],
         );
+        // SAFETY: PrimeReact accepts either span or SVG attributes for its loading icon. The
+        // portable spinner part contains only attributes valid on both verified destinations.
+        const buttonPassThrough = {
+            loadingIcon: {
+                ...pt?.spinner,
+                className: classNames(
+                    'cratis-primereact10-button__spinner',
+                    pt?.spinner?.className,
+                ),
+                'data-cratis-part': 'spinner',
+                'aria-hidden': true,
+            },
+        } as unknown as ButtonPassThroughOptions;
         return (
             <PrimeButton
                 {...pt?.root}
@@ -234,6 +250,7 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                 type={type}
                 title={title ?? tooltip}
                 disabled={effectiveDisabled}
+                loading={loading}
                 text={appearance.variant === 'ghost'}
                 link={appearance.variant === 'link'}
                 outlined={appearance.variant === 'outline'}
@@ -256,18 +273,9 @@ const PrimeButtonSlot = forwardRef<HTMLButtonElement, ButtonProps>(
                 data-disabled={effectiveDisabled || undefined}
                 data-loading={loading || undefined}
                 data-icon-only={iconOnly || undefined}
+                pt={buttonPassThrough}
             >
-                {loading ? (
-                    <span
-                        {...pt?.spinner}
-                        className={classNames(
-                            'cratis-primereact10-button__spinner',
-                            pt?.spinner?.className,
-                        )}
-                        data-cratis-part='spinner'
-                        aria-hidden='true'
-                    />
-                ) : icon ? (
+                {!loading && icon ? (
                     <span
                         {...pt?.icon}
                         className={classNames(
@@ -335,9 +343,7 @@ const PrimeTextInputSlot = forwardRef<HTMLInputElement, TextInputProps>(
         const effectiveAriaInvalid =
             ariaInvalid ?? rootPart['aria-invalid'] ?? (invalid || undefined);
         const effectiveInvalid =
-            invalid ||
-            effectiveAriaInvalid === true ||
-            effectiveAriaInvalid === 'true';
+            invalid || effectiveAriaInvalid === true || effectiveAriaInvalid === 'true';
         return (
             <PrimeInputText
                 {...rootPart}
@@ -399,9 +405,7 @@ const PrimeTextAreaSlot = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         const effectiveAriaInvalid =
             ariaInvalid ?? pt?.root?.['aria-invalid'] ?? (invalid || undefined);
         const effectiveInvalid =
-            invalid ||
-            effectiveAriaInvalid === true ||
-            effectiveAriaInvalid === 'true';
+            invalid || effectiveAriaInvalid === true || effectiveAriaInvalid === 'true';
         return (
             <PrimeInputTextarea
                 {...pt?.root}
@@ -604,6 +608,44 @@ const PrimeChoice = ({
     const checkboxParts = parts as CheckboxParts | undefined;
     const radioParts = parts as RadioParts | undefined;
     const switchParts = parts as SwitchParts | undefined;
+    // SAFETY: PrimeReact 10 renders the verified checkbox box and indicator destinations as
+    // native div/SVG elements. Portable part values contain only shared DOM attributes.
+    const checkboxPassThrough = {
+        input,
+        box: {
+            ...checkboxParts?.box,
+            'data-cratis-part': 'box',
+            ...attributes,
+        },
+    } as unknown as CheckboxPassThroughOptions;
+    const checkboxIndicator = (
+        <span
+            {...checkboxParts?.indicator}
+            className={classNames('p-checkbox-icon', checkboxParts?.indicator?.className)}
+            data-cratis-part='indicator'
+            aria-hidden='true'
+            hidden={!state.selected}
+            {...attributes}
+        >
+            ✓
+        </span>
+    );
+    // SAFETY: PrimeReact 10 renders the verified radio box and indicator destinations as native
+    // div elements. Portable part values contain only attributes valid on those destinations.
+    const radioPassThrough = {
+        input,
+        box: {
+            ...radioParts?.box,
+            'data-cratis-part': 'box',
+            ...attributes,
+        },
+        icon: {
+            ...radioParts?.indicator,
+            'data-cratis-part': 'indicator',
+            'aria-hidden': true,
+            ...attributes,
+        },
+    } as unknown as RadioButtonPassThroughOptions;
     return (
         <label
             {...parts?.root}
@@ -619,47 +661,22 @@ const PrimeChoice = ({
             {kind === 'checkbox' ? (
                 <>
                     <PrimeCheckbox
-                    checked={state.selected}
-                    disabled={disabled}
-                    readOnly={readOnly}
-                    required={nativeProps.required}
-                    invalid={invalid}
-                    name={nativeProps.name}
-                    value={nativeProps.value}
-                    inputId={inputId}
-                    inputRef={state.ref}
-                    aria-label={nativeProps['aria-label']}
-                    aria-labelledby={nativeProps['aria-labelledby']}
-                    onChange={changed}
-                    pt={
-                        {
-                            input,
-                            box: {
-                                ...checkboxParts?.box,
-                                'data-cratis-part': 'box',
-                                ...attributes,
-                            },
-                            icon: {
-                                ...checkboxParts?.indicator,
-                                'data-cratis-part': 'indicator',
-                                'aria-hidden': true,
-                                ...attributes,
-                            },
-                        } as unknown as CheckboxPassThroughOptions
-                    }
+                        checked={state.selected}
+                        disabled={disabled}
+                        readOnly={readOnly}
+                        required={nativeProps.required}
+                        invalid={invalid}
+                        name={nativeProps.name}
+                        value={nativeProps.value}
+                        inputId={inputId}
+                        inputRef={state.ref}
+                        aria-label={nativeProps['aria-label']}
+                        aria-labelledby={nativeProps['aria-labelledby']}
+                        onChange={changed}
+                        icon={checkboxIndicator}
+                        pt={checkboxPassThrough}
                     />
-                    <span
-                        {...checkboxParts?.indicator}
-                        className={classNames(
-                            'p-checkbox-icon',
-                            checkboxParts?.indicator?.className,
-                        )}
-                        data-cratis-part='indicator'
-                        aria-hidden='true'
-                        {...attributes}
-                    >
-                        ✓
-                    </span>
+                    {state.selected ? null : checkboxIndicator}
                 </>
             ) : kind === 'radio' ? (
                 <PrimeRadioButton
@@ -675,22 +692,7 @@ const PrimeChoice = ({
                     aria-label={nativeProps['aria-label']}
                     aria-labelledby={nativeProps['aria-labelledby']}
                     onChange={changed}
-                    pt={
-                        {
-                            input,
-                            box: {
-                                ...radioParts?.box,
-                                'data-cratis-part': 'box',
-                                ...attributes,
-                            },
-                            icon: {
-                                ...radioParts?.indicator,
-                                'data-cratis-part': 'indicator',
-                                'aria-hidden': true,
-                                ...attributes,
-                            },
-                        } as unknown as RadioButtonPassThroughOptions
-                    }
+                    pt={radioPassThrough}
                 />
             ) : (
                 <PrimeInputSwitch
@@ -774,7 +776,7 @@ const PrimeProgressSlot = ({
     const busy = !determinate || boundedValue < 100;
     return (
         <PrimeProgressBar
-            value={boundedValue}
+            value={determinate ? boundedValue : null}
             mode={mode}
             showValue={showValue}
             className={classNames('cratis-primereact10-progress', className)}
@@ -785,6 +787,13 @@ const PrimeProgressSlot = ({
             data-busy={busy || undefined}
             data-loading={!determinate || undefined}
             pt={{
+                root: determinate
+                    ? undefined
+                    : {
+                          'aria-valuemin': undefined,
+                          'aria-valuenow': undefined,
+                          'aria-valuemax': undefined,
+                      },
                 value: { 'data-cratis-part': 'indicator' },
                 label: {
                     'data-cratis-part': 'label',
@@ -795,33 +804,31 @@ const PrimeProgressSlot = ({
     );
 };
 
-const PrimeSurfaceSlot = forwardRef<HTMLElement, SurfaceProps>(
-    function PrimeSurfaceSlot(
-        { as: Element = 'div', pt, className, style, children, ...nativeProps },
-        ref,
-    ) {
-        const surfaceRef = useCallback(
-            (element: HTMLElement | null) => assignRef(ref, element),
-            [ref],
-        );
-        return (
-            <Element
-                {...pt?.root}
-                {...nativeProps}
-                ref={surfaceRef}
-                className={classNames(
-                    'cratis-primereact10-surface',
-                    pt?.root?.className,
-                    className,
-                )}
-                style={{ ...pt?.root?.style, ...style }}
-                data-cratis-part='root'
-            >
-                <PrimeCard>{children}</PrimeCard>
-            </Element>
-        );
-    },
-);
+const PrimeSurfaceSlot = forwardRef<HTMLElement, SurfaceProps>(function PrimeSurfaceSlot(
+    { as: Element = 'div', pt, className, style, children, ...nativeProps },
+    ref,
+) {
+    const surfaceRef = useCallback(
+        (element: HTMLElement | null) => assignRef(ref, element),
+        [ref],
+    );
+    return (
+        <Element
+            {...pt?.root}
+            {...nativeProps}
+            ref={surfaceRef}
+            className={classNames(
+                'cratis-primereact10-surface',
+                pt?.root?.className,
+                className,
+            )}
+            style={{ ...pt?.root?.style, ...style }}
+            data-cratis-part='root'
+        >
+            <PrimeCard>{children}</PrimeCard>
+        </Element>
+    );
+});
 
 const declaration = <SlotId extends unstable_SlotId>(
     render: unstable_SlotDeclaration<SlotId>['render'],

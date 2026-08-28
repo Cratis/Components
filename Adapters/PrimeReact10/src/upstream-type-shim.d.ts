@@ -4,7 +4,7 @@
 import type { ReactElement } from 'react';
 
 /**
- * @internal Compile-only bridge for PrimeReact 10.9.8 declarations that still name global JSX
+ * @internal Compile-only bridge for PrimeReact 10.9.9 declarations that still name global JSX
  * under React 19 and for the exact Arc React 22.4.0 declaration. It is never emitted or packed.
  */
 declare global {

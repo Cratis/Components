@@ -3,15 +3,12 @@
 
 import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryDirectory = path.resolve(packageDirectory, '../..');
-const temporary = mkdtempSync(
-    path.join(packageDirectory, '.verify-primereact10-shim-'),
-);
+const temporary = mkdtempSync(path.join(packageDirectory, '.verify-primereact10-shim-'));
 
 try {
     const primeReactPackage = JSON.parse(
@@ -21,14 +18,29 @@ try {
         ),
     );
     if (
-        primeReactPackage.version !== '10.9.8' ||
+        primeReactPackage.version !== '10.9.9' ||
         primeReactPackage.license !== 'MIT' ||
         !primeReactPackage.peerDependencies?.react?.includes('^19.0.0') ||
         !primeReactPackage.peerDependencies?.['react-dom']?.includes('^19.0.0')
     ) {
         throw new Error(
-            'The compile-only API shim is reviewed only for MIT PrimeReact 10.9.8 with React 19 peers.',
+            'The compile-only API shim is reviewed only for MIT PrimeReact 10.9.9 with React 19 peers.',
         );
+    }
+
+    const apiShim = readFileSync(
+        path.join(packageDirectory, 'src/upstream-primereact-api-shim.d.ts'),
+        'utf8',
+    );
+    for (const requiredDeclaration of [
+        "declare module 'primereact/api'",
+        "declare module 'primereact/api/api.cjs.js'",
+    ]) {
+        if (!apiShim.includes(requiredDeclaration)) {
+            throw new Error(
+                `The compile-only PrimeReact API shim is missing '${requiredDeclaration}'.`,
+            );
+        }
     }
 
     const fixture = path.join(temporary, 'fixture.ts');
@@ -93,8 +105,8 @@ try {
         unexpected.length > 0
     ) {
         throw new Error(
-            'PrimeReact 10.9.8 API declaration defect changed; remove or re-review ' +
-                `src/primereact10-api-shim.d.ts and src/upstream-type-shim.d.ts. ` +
+            'PrimeReact 10.9.9 API declaration defect changed; remove or re-review ' +
+                `src/upstream-primereact-api-shim.d.ts and src/upstream-type-shim.d.ts. ` +
                 `Missing: ${missing.join(', ') || 'none'}. JSX count: ${jsxDiagnostics.length}. ` +
                 `Unexpected: ${unexpected.join(' | ') || 'none'}.`,
         );
@@ -105,14 +117,17 @@ try {
         'utf8',
     );
     if (
-        emittedDeclaration.includes('primereact10-api-shim') ||
+        emittedDeclaration.includes('upstream-primereact-api-shim') ||
+        emittedDeclaration.includes('upstream-type-shim') ||
         emittedDeclaration.includes('primereact/api')
     ) {
-        throw new Error('The compile-only PrimeReact 10 API shim leaked into declarations.');
+        throw new Error(
+            'The compile-only PrimeReact 10 API shim leaked into declarations.',
+        );
     }
 
     console.log(
-        'Verified the exact PrimeReact 10.9.8/React 19 TS2430 and global-JSX defects, their removal trigger, and non-emission of the compile-only shims.',
+        'Verified the exact PrimeReact 10.9.9/React 19 TS2430 and global-JSX defects, their removal trigger, and non-emission of the compile-only shims.',
     );
 } finally {
     rmSync(temporary, { recursive: true, force: true });

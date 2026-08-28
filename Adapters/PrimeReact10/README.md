@@ -1,47 +1,57 @@
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-# `@cratis/components.primereact`
+# `@cratis/components.primereact10`
 
-PrimeReact 11 adapter for the nine stable presentation slots in the Cratis Components renderer ABI
-v1. The package is independently versioned and exports one manifest, `primeReactUiLibrary`.
-PrimeReact 10 is out of scope here and remains a required, separate
-`@cratis/components.primereact10` implementation before V4 completion.
+PrimeReact 10 adapter for the nine stable presentation slots in the Cratis Components renderer ABI
+v1. The package is independently versioned and exports one manifest,
+`primeReact10UiLibrary`.
+
+PrimeReact 11 uses a different package architecture and license boundary. It is supported separately
+by `@cratis/components.primereact`; the two adapters must use isolated upstream dependency graphs.
 
 ## Install
 
 ```sh
-npm install @cratis/components.primereact @cratis/components \
-  @primereact/core @primereact/ui primereact @primeuix/themes react react-dom
+npm install @cratis/components.primereact10 @cratis/components \
+  primereact@^10.9.9 react@^19 react-dom@^19
 ```
 
-The adapter uses PrimeReact 11 styled components. It covers Button, IconButton, TextInput,
-TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. The five atomic interaction slots are
-not part of this profile.
+The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch, ProgressBar,
+and Surface. The five atomic interaction slots are not part of this profile and continue through the
+Components built-in fallback.
 
-## Application-owned provider and license
+PrimeReact 10 is MIT licensed and requires no PrimeUI key or Components renderer setup attestation.
+Version 10.9.9 is the minimum supported upstream because it fixes the prototype-pollution advisory
+that affects PrimeReact releases through 10.9.8.
 
-PrimeReact 11 requires a license key. The application owns that key and passes it directly to its
-outer `PrimeReactProvider`; Components never receives, stores, copies, logs, serializes, or proxies
-it. PrimeReact's runtime context deliberately omits the key, so the application also passes one
-non-secret boolean attestation to `CratisComponentsProvider`.
+## Theme and global configuration
+
+PrimeReact 10 styled components require one application-selected theme stylesheet. Import it once in
+the application entry point before application overrides:
+
+```ts
+import 'primereact/resources/themes/lara-light-cyan/theme.css';
+```
+
+The distributed theme is precompiled CSS and does not require Sass. Sass is needed only when an
+application chooses to compile a custom PrimeReact 10 theme. PrimeIcons is optional; install and
+import `primeicons/primeicons.css` only if the application uses PrimeIcons directly.
+
+An outer `PrimeReactProvider` is optional. The adapter creates a default provider only when the
+application has not supplied one. An application can own global PrimeReact 10 options such as ripple,
+locale, CSP nonce, style container, pass-through defaults, or z-index configuration:
 
 ```tsx
-import { PrimeReactProvider } from '@primereact/core/config';
-import Aura from '@primeuix/themes/aura';
+import { PrimeReactProvider } from 'primereact/api';
 import { CratisComponentsProvider } from '@cratis/components';
-import { primeReactUiLibrary } from '@cratis/components.primereact';
-
-const primeUiLicenseKey = import.meta.env.VITE_PRIMEUI_LICENSE_KEY;
+import { primeReact10UiLibrary } from '@cratis/components.primereact10';
 
 export const Application = () => (
-    <PrimeReactProvider license={primeUiLicenseKey} theme={{ preset: Aura }}>
+    <PrimeReactProvider value={{ ripple: true }}>
         <CratisComponentsProvider
             value={{ locale: 'en-US' }}
-            library={primeReactUiLibrary}
-            rendererSetup={{
-                'cratis-primereact.license-configured': Boolean(primeUiLicenseKey),
-            }}
+            library={primeReact10UiLibrary}
         >
             <main>Application content</main>
         </CratisComponentsProvider>
@@ -49,31 +59,20 @@ export const Application = () => (
 );
 ```
 
-The adapter throws `CRATIS-UI-1005` synchronously when either the outer provider or the attestation
-is absent. Setting the attestation to `true` is an application assertion that the key was actually
-supplied; it is not a substitute for doing so. This prevents Components from creating a second
-provider and fails before adapter content when setup was not attested. The adapter does not validate
-the key and cannot guarantee that PrimeUI will accept it or omit its own license notice.
+The application owns theme imports and any outer provider configuration. Components does not
+configure an application's direct PrimeReact usage.
 
-Obtain a key from [PrimeUI](https://primeui.store/primeui). For Vite, expose the application-owned
-key as `VITE_PRIMEUI_LICENSE_KEY` only in the client build that mounts PrimeReact. In CI or a
-publishing pipeline, map a protected `PRIMEUI_LICENSE_KEY` secret into that build variable without
-echoing it or writing it to package artifacts. The adapter package itself reads no license
-environment variable and includes no key.
+## SSR and package boundaries
 
-## Styling and SSR
+All nine slots are required to produce deterministic static markup, and the representative Button
+fixture must hydrate without a mismatch. PrimeReact 10 predates modern package export maps, so the
+adapter's packed runtime gate verifies the exact legacy module interop used by the published build.
+Hosts remain responsible for loading global theme CSS in the framework-prescribed location and for
+CSP or style-container configuration.
 
-The application chooses the PrimeReact theme on its outer provider. The package's static metadata
-uses `VITE_PRIMEUI_LICENSE_KEY` only as documentation/discovery metadata; no runtime lookup occurs.
-All nine slots produce deterministic SSR output, and the representative Button fixture hydrates
-without a mismatch. The host remains responsible for PrimeReact's provider, theme, CSP, and style
-collection/injection requirements.
-
-## Peer policy
-
-PrimeReact packages are bounded to `>=11 <12`, PrimeUX themes to `>=3 <4`, and React/ReactDOM to
-React 19. Vendor packages are peers and are never bundled. Exact repository proof uses 11.1.0 and
-`@primeuix/themes` 3.0.0.
+PrimeReact is a bounded peer and is never bundled. The exact repository proof uses PrimeReact
+10.9.9 and React 19. PrimeReact 10 and 11 cannot satisfy one another's peer range and must not share
+one Storybook preview or application dependency resolution.
 
 The current `@cratis/components` peer `>=3.0.0 <4` is a temporary repository placeholder matching
 the unreleased V4 source package. **It must become the honest `>=4 <5` range before publication.**

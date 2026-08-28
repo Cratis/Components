@@ -7,6 +7,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const markdownExtensions = new Set(['.md', '.mdx']);
+const ignoredDirectoryNames = new Set(['.yarn', 'coverage', 'dist', 'node_modules', 'storybook-static']);
 const selfTestMode = process.argv[2] === '--self-test';
 const documentationRoot = path.resolve(selfTestMode
     ? path.dirname(fileURLToPath(import.meta.url))
@@ -114,6 +115,7 @@ function findMarkdownFiles(root) {
         for (const entry of entries) {
             const entryPath = path.join(directory, entry.name);
             if (entry.isDirectory()) {
+                if (ignoredDirectoryNames.has(entry.name)) continue;
                 visit(entryPath);
             } else if (entry.isFile() && markdownExtensions.has(path.extname(entry.name).toLowerCase())) {
                 files.push(entryPath);
@@ -341,7 +343,13 @@ function checkDestination(sourceFile, content, destination) {
     }
 
     if (/^https?:\/\//i.test(target)) {
-        const url = new URL(target);
+        let url;
+        try {
+            url = new URL(target);
+        } catch {
+            failures.push(`${displayPath(sourceFile)}:${lineNumber} has invalid external URL \"${target}\"`);
+            return;
+        }
         if (isLocalhost(url.hostname)) {
             counts.localhost += 1;
         } else {
@@ -389,7 +397,7 @@ function checkLocalDestination(sourceFile, target, lineNumber) {
         : path.resolve(path.dirname(sourceFile), targetPath);
     const relativeToDocumentation = path.relative(documentationRoot, unresolvedPath);
     if (relativeToDocumentation === '..' || relativeToDocumentation.startsWith(`..${path.sep}`) || path.isAbsolute(relativeToDocumentation)) {
-        failures.push(`${displayPath(sourceFile)}:${lineNumber} escapes Documentation with "${target}"`);
+        failures.push(`${displayPath(sourceFile)}:${lineNumber} escapes the scan root with "${target}"`);
         return;
     }
 

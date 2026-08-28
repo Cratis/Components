@@ -21,9 +21,7 @@ import {
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryDirectory = path.resolve(packageDirectory, '../..');
-const temporary = mkdtempSync(
-    path.join(os.tmpdir(), 'cratis-primereact10-package-'),
-);
+const temporary = mkdtempSync(path.join(os.tmpdir(), 'cratis-primereact10-package-'));
 
 const run = (command, arguments_, cwd = packageDirectory) => {
     const result = spawnSync(command, arguments_, { cwd, encoding: 'utf8' });
@@ -120,7 +118,7 @@ try {
 
     const expectedPeers = {
         '@cratis/components': '>=3.0.0 <4',
-        primereact: '>=10 <11',
+        primereact: '>=10.9.9 <11',
         react: '^19.0.0',
         'react-dom': '^19.0.0',
     };
@@ -154,7 +152,38 @@ try {
         'VITE_PRIMEUI_LICENSE_KEY',
     ]) {
         if (serializedPackage.includes(forbidden)) {
-            throw new Error(`Packed metadata contains PrimeReact 11 marker '${forbidden}'.`);
+            throw new Error(
+                `Packed metadata contains PrimeReact 11 marker '${forbidden}'.`,
+            );
+        }
+    }
+    const publishedDocumentation = [
+        'README.md',
+        'CONFORMANCE.md',
+        'THIRD_PARTY_NOTICES.md',
+        'LICENSE',
+    ]
+        .map((file) => readFileSync(path.join(unpackedPackage, file), 'utf8'))
+        .join('\n');
+    for (const forbidden of [
+        '# PrimeReact 11 adapter',
+        'PrimeReact 11 adapter for',
+        'PrimeReact 10 is not part of this adapter',
+        'PrimeReact 10 is not included or exercised',
+        '@primereact/core',
+        '@primereact/ui',
+        '@primeuix/',
+        'LicenseRef-PrimeUI',
+        'license-configured',
+        'VITE_PRIMEUI_LICENSE_KEY',
+        'primeReactUiLibrary',
+        '# `@cratis/components.primereact`',
+        'npm install @cratis/components.primereact @cratis/components',
+    ]) {
+        if (publishedDocumentation.includes(forbidden)) {
+            throw new Error(
+                `Packed documentation contains PrimeReact 11 marker '${forbidden}'.`,
+            );
         }
     }
     const expectedLicense = { spdx: 'MIT', requiresKey: false };
@@ -164,9 +193,15 @@ try {
 
     const runtime = readFileSync(path.join(unpackedPackage, 'dist/index.js'), 'utf8');
     for (const requiredImport of [
-        'primereact/api',
-        'primereact/button',
-        'primereact/checkbox',
+        'primereact/api/api.cjs.js',
+        'primereact/button/button.cjs.js',
+        'primereact/card/card.cjs.js',
+        'primereact/checkbox/checkbox.cjs.js',
+        'primereact/inputswitch/inputswitch.cjs.js',
+        'primereact/inputtext/inputtext.cjs.js',
+        'primereact/inputtextarea/inputtextarea.cjs.js',
+        'primereact/progressbar/progressbar.cjs.js',
+        'primereact/radiobutton/radiobutton.cjs.js',
         '@cratis/components/',
         'react/jsx-runtime',
     ]) {
@@ -230,7 +265,7 @@ try {
     }
 
     const nodeModules = path.join(temporary, 'node_modules');
-    link(unpackedPackage, path.join(nodeModules, '@cratis/components.primereact'));
+    link(unpackedPackage, path.join(nodeModules, '@cratis/components.primereact10'));
     link(unpackedCorePackage, path.join(nodeModules, '@cratis/components'));
     for (const dependency of ['react', 'react-dom']) {
         link(

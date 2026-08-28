@@ -18,8 +18,22 @@ const adapter10 = readJson(path.join(primeReact10Directory, 'package.json'));
 const adapter11 = readJson(path.join(primeReact11Directory, 'package.json'));
 const resolvePrimeReactPackage = (workspaceDirectory) => {
     const require = createRequire(path.join(workspaceDirectory, 'package.json'));
-    const entry = realpathSync(require.resolve('primereact'));
-    return path.join(path.dirname(entry), 'package.json');
+    const entry = realpathSync(require.resolve('primereact/button'));
+    let directory = path.dirname(entry);
+
+    while (directory !== path.dirname(directory)) {
+        const candidate = path.join(directory, 'package.json');
+        try {
+            if (readJson(candidate).name === 'primereact') {
+                return realpathSync(candidate);
+            }
+        } catch (error) {
+            if (error?.code !== 'ENOENT') throw error;
+        }
+        directory = path.dirname(directory);
+    }
+
+    throw new Error(`Could not locate primereact/package.json from '${entry}'.`);
 };
 const package10Path = resolvePrimeReactPackage(primeReact10Directory);
 const package11Path = resolvePrimeReactPackage(primeReact11Directory);
@@ -27,18 +41,18 @@ const package10 = readJson(package10Path);
 const package11 = readJson(package11Path);
 
 if (
-    adapter10.peerDependencies?.primereact !== '>=10 <11' ||
+    adapter10.peerDependencies?.primereact !== '>=10.9.9 <11' ||
     adapter11.peerDependencies?.primereact !== '>=11 <12'
 ) {
     throw new Error('Adapter peer ranges no longer prove incompatible upstream majors.');
 }
 if (
-    package10.version !== '10.9.8' ||
+    package10.version !== '10.9.9' ||
     package11.version !== '11.1.0' ||
     package10Path === package11Path
 ) {
     throw new Error(
-        'The two adapter workspaces must resolve distinct exact PrimeReact 10.9.8 and 11.1.0 installations.',
+        'The two adapter workspaces must resolve distinct exact PrimeReact 10.9.9 and 11.1.0 installations.',
     );
 }
 

@@ -3,27 +3,26 @@
 
 # Third-party notices
 
-This MIT-licensed adapter interoperates with peer-installed PrimeUI software. It does not bundle or
-redistribute the vendor packages listed below.
+This MIT-licensed adapter interoperates with peer-installed PrimeReact software. It does not bundle
+or redistribute PrimeReact or its transitive dependencies.
 
-## PrimeReact 11 and PrimeUX themes
+## PrimeReact 10
 
-The proof matrix uses these peer packages:
+The proof matrix uses `primereact` 10.9.9. Its package metadata and supplied `LICENSE.md` identify
+PrimeReact 10 as MIT-licensed software:
 
-- `@primereact/core` 11.1.0
-- `@primereact/ui` 11.1.0
-- `primereact` 11.1.0
-- `@primeuix/themes` 3.0.0
+- package: <https://www.npmjs.com/package/primereact/v/10.9.9>
+- source tag: <https://github.com/primefaces/primereact/tree/10.9.9>
+- license: <https://github.com/primefaces/primereact/blob/10.9.9/LICENSE.md>
 
-Their package metadata states `SEE LICENSE IN LICENSE.md`. The supplied license describes PrimeUI
-as commercial software, requires a valid application-owned key, and provides separate Community
-and Commercial terms. Consult the terms shipped with the exact installed versions and the official
-pages:
+PrimeReact installs `react-transition-group` and its React type package as its own transitive
+dependencies. They are not dependencies or bundled contents of this adapter. Applications should
+review the notices and licenses shipped with their complete installed dependency graph.
 
-- Community terms: <https://primeui.dev/licenses/community>
-- Commercial terms: <https://primeui.dev/licenses/commercial>
-- Key purchase/account page: <https://primeui.store/primeui>
+PrimeIcons is not required by this adapter and is not bundled. An application that independently
+uses PrimeIcons must install it and comply with the license supplied by that package.
 
-PrimeReact 10 is not part of this adapter. The application is responsible for license eligibility,
-key configuration, renewals, and determining whether its distribution model needs additional
-permission. This notice records package facts for transparency and is not legal advice.
+PrimeReact 11 and PrimeUX themes are not part of this adapter. They have a separate package and
+license boundary under `@cratis/components.primereact`.
+
+This notice records package facts for transparency and is not legal advice.

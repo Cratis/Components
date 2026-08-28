@@ -355,14 +355,14 @@ __metadata:
     "@cratis/components.conformance": "workspace:^"
     "@cratis/fundamentals": "npm:^7.10.3"
     "@types/react": "npm:19.2.18"
-    primereact: "npm:10.9.8"
+    primereact: "npm:10.9.9"
     react: "npm:19.2.8"
     react-dom: "npm:19.2.8"
     reflect-metadata: "npm:0.2.2"
     tsyringe: "npm:4.10.0"
   peerDependencies:
     "@cratis/components": ">=3.0.0 <4"
-    primereact: ">=10 <11"
+    primereact: ">=10.9.9 <11"
     react: ^19.0.0
     react-dom: ^19.0.0
   languageName: unknown
@@ -7276,9 +7276,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"primereact@npm:10.9.8":
-  version: 10.9.8
-  resolution: "primereact@npm:10.9.8"
+"primereact@npm:10.9.9":
+  version: 10.9.9
+  resolution: "primereact@npm:10.9.9"
   dependencies:
     "@types/react-transition-group": "npm:^4.4.1"
     react-transition-group: "npm:^4.4.1"
@@ -7289,7 +7289,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10/33e1ed3b69829b02f40fb3547063f2432f1b7a23d39d418bdf83b5ba57084c0e8521d77646818982e00e57c9e47db51036fe166915f8b08501de729f2c4ab3dc
+  checksum: 10/203b81d941eda9d68e91ecc82107c851ca47c5605a5ee5dca9db2a1fcf4107daf9bcac312a2f87f9fa26df7337c693a6f2a346132c9ed0549ade1b434b9435c0
   languageName: node
   linkType: hard
 

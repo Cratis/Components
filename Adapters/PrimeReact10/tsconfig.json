@@ -7,7 +7,30 @@
         "moduleResolution": "bundler",
         "baseUrl": ".",
         "paths": {
-            "primereact/api": ["src/primereact10-api-shim.d.ts"]
+            "primereact/api": ["src/upstream-primereact-api-shim.d.ts"],
+            "primereact/api/api.cjs.js": ["src/upstream-primereact-api-shim.d.ts"],
+            "primereact/button/button.cjs.js": [
+                "node_modules/primereact/button/button.d.ts"
+            ],
+            "primereact/card/card.cjs.js": ["node_modules/primereact/card/card.d.ts"],
+            "primereact/checkbox/checkbox.cjs.js": [
+                "node_modules/primereact/checkbox/checkbox.d.ts"
+            ],
+            "primereact/inputswitch/inputswitch.cjs.js": [
+                "node_modules/primereact/inputswitch/inputswitch.d.ts"
+            ],
+            "primereact/inputtext/inputtext.cjs.js": [
+                "node_modules/primereact/inputtext/inputtext.d.ts"
+            ],
+            "primereact/inputtextarea/inputtextarea.cjs.js": [
+                "node_modules/primereact/inputtextarea/inputtextarea.d.ts"
+            ],
+            "primereact/progressbar/progressbar.cjs.js": [
+                "node_modules/primereact/progressbar/progressbar.d.ts"
+            ],
+            "primereact/radiobutton/radiobutton.cjs.js": [
+                "node_modules/primereact/radiobutton/radiobutton.d.ts"
+            ]
         },
         "skipLibCheck": false,
         "types": ["vitest/globals"]

@@ -2,14 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { expect } from 'chai';
-import {
-    createElement,
-    useContext,
-    type ComponentType,
-    type ReactNode,
-} from 'react';
+import { createElement, useContext, type ComponentType, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { PrimeReactContext, PrimeReactProvider } from 'primereact/api';
+import { PrimeReactContext, PrimeReactProvider } from 'primereact/api/api.cjs.js';
 import { CratisComponentsProvider } from '@cratis/components';
 import { Button } from '@cratis/components/Common';
 import { runConformance, type ConformanceReport } from '@cratis/components.conformance';
@@ -84,9 +79,7 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
             failed: 0,
             skipped: 0,
         });
-        expect(primeReact10UiLibrary.profileSlots).to.deep.equal(
-            stablePresentationSlots,
-        );
+        expect(primeReact10UiLibrary.profileSlots).to.deep.equal(stablePresentationSlots);
     });
 
     it('should keep static metadata schema and runtime declarations consistent', () => {
@@ -172,6 +165,34 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
         expect(markup.surface).to.contain('<article');
     });
 
+    it('should render one selected checkbox indicator and truthful progress and loading states', () => {
+        const unchecked = renderSlot('common.checkbox', {
+            label: 'Unchecked',
+        });
+        const checked = renderSlot('common.checkbox', {
+            label: 'Checked',
+            checked: true,
+        });
+        const indeterminate = renderSlot('common.progress', {
+            mode: 'indeterminate',
+            value: 42,
+        });
+        const loading = renderSlot('common.button', {
+            label: 'Saving',
+            loading: true,
+        });
+
+        expect(unchecked.match(/data-cratis-part="indicator"/gu)).to.have.length(1);
+        expect(unchecked).to.contain('hidden=""');
+        expect(checked.match(/data-cratis-part="indicator"/gu)).to.have.length(1);
+        expect(checked).not.to.contain('hidden=""');
+        expect(indeterminate).not.to.contain('aria-valuemin');
+        expect(indeterminate).not.to.contain('aria-valuenow');
+        expect(indeterminate).not.to.contain('aria-valuemax');
+        expect(loading).to.contain('p-button-loading-icon');
+        expect(loading).to.contain('data-cratis-part="spinner"');
+    });
+
     it('should preserve deprecated Button mapping and canonical data attributes', () => {
         const markup = renderSlot('common.button', {
             label: 'Legacy action',
@@ -217,16 +238,27 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
         expect(markup).to.contain('Configured action');
     });
 
+    it('should produce deterministic SSR and mismatch-free hydration evidence', () => {
+        for (const slotId of stablePresentationSlots) {
+            expect(
+                report.checks.find((check) => check.id === `ssr.${slotId}`)?.status,
+            ).to.equal('passed');
+        }
+        expect(
+            report.checks.find((check) => check.id === 'ssr.hydration')?.status,
+        ).to.equal('passed');
+    });
+
     it('should declare only bounded peer-hosted PrimeReact 10 vendors', () => {
         expect(packageJson).not.to.have.property('dependencies');
         expect(packageJson.peerDependencies).to.deep.equal({
             '@cratis/components': '>=3.0.0 <4',
-            primereact: '>=10 <11',
+            primereact: '>=10.9.9 <11',
             react: '^19.0.0',
             'react-dom': '^19.0.0',
         });
         expect(packageJson.devDependencies).to.include({
-            primereact: '10.9.8',
+            primereact: '10.9.9',
             react: '19.2.8',
             'react-dom': '19.2.8',
         });
