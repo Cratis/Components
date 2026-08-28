@@ -4,10 +4,7 @@
 import { expect } from 'chai';
 import { createElement, type ComponentType, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import {
-    PrimeReactContext,
-    defaultConfigProps,
-} from '@primereact/core/config';
+import { PrimeReactContext, defaultConfigProps } from '@primereact/core/config';
 import { LocaleProvider } from '@primereact/core/locale';
 import { PassThroughProvider } from '@primereact/core/passthrough';
 import { ThemeProvider as PrimeThemeProvider } from '@primereact/core/theme';

@@ -53,12 +53,12 @@ Unknown Components 3 renderer options are intentionally a type error. Remove `li
 
 The renderer contract remains `unstable_` while concrete adapters falsify it. The provider exposes:
 
-| Prop                 | Purpose                                                                                              |
-| -------------------- | ---------------------------------------------------------------------------------------------------- |
-| `library`            | One renderer manifest or an ordered last-wins composition. Omit it for the built-in default.        |
-| `libraryMode`        | `strict` rejects invalid profile promises; `degrade` reports them after mount.                       |
-| `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects fallback.                                   |
-| `overlayEnvironment` | Stable, post-commit portal-container lookup for overlay-owning implementations.                      |
+| Prop                 | Purpose                                                                                               |
+| -------------------- | ----------------------------------------------------------------------------------------------------- |
+| `library`            | One renderer manifest or an ordered last-wins composition. Omit it for the built-in default.          |
+| `libraryMode`        | `strict` rejects invalid profile promises; `degrade` reports them after mount.                        |
+| `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects fallback.                                    |
+| `overlayEnvironment` | Stable, post-commit portal-container lookup for overlay-owning implementations.                       |
 | `rendererSetup`      | Adapter-declared, non-secret boolean setup attestations. Never put credentials, keys, or caches here. |
 
 Adapter packages declaration-merge their own `rendererSetup` keys, so importing an adapter gives

@@ -21,9 +21,7 @@ import {
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryDirectory = path.resolve(packageDirectory, '../..');
-const temporary = mkdtempSync(
-    path.join(os.tmpdir(), 'cratis-primereact-package-'),
-);
+const temporary = mkdtempSync(path.join(os.tmpdir(), 'cratis-primereact-package-'));
 
 const run = (command, arguments_, cwd = packageDirectory) => {
     const result = spawnSync(command, arguments_, { cwd, encoding: 'utf8' });
@@ -148,9 +146,7 @@ try {
     }
     const serializedPackage = JSON.stringify(packageJson);
     if (serializedPackage.includes('primereact10')) {
-        throw new Error(
-            'PrimeReact 10 must remain in its separate adapter package.',
-        );
+        throw new Error('PrimeReact 10 must remain in its separate adapter package.');
     }
     const expectedLicense = {
         spdx: 'LicenseRef-PrimeUI',
@@ -159,7 +155,9 @@ try {
         url: 'https://primeui.store/primeui',
     };
     if (JSON.stringify(packageJson.cratis?.license) !== JSON.stringify(expectedLicense)) {
-        throw new Error('Packed static metadata does not preserve the key-gated license policy.');
+        throw new Error(
+            'Packed static metadata does not preserve the key-gated license policy.',
+        );
     }
 
     const runtime = readFileSync(path.join(unpackedPackage, 'dist/index.js'), 'utf8');
@@ -219,19 +217,14 @@ try {
             'Public declarations must expose exactly one UiLibrary-typed value.',
         );
     }
-    if (
-        !declarations.includes("'cratis-primereact.license-configured': boolean")
-    ) {
+    if (!declarations.includes("'cratis-primereact.license-configured': boolean")) {
         throw new Error(
             'Public declarations must type the non-secret license attestation key.',
         );
     }
 
     const nodeModules = path.join(temporary, 'node_modules');
-    link(
-        unpackedPackage,
-        path.join(nodeModules, '@cratis/components.primereact'),
-    );
+    link(unpackedPackage, path.join(nodeModules, '@cratis/components.primereact'));
     link(unpackedCorePackage, path.join(nodeModules, '@cratis/components'));
     for (const dependency of ['react', 'react-dom']) {
         link(
