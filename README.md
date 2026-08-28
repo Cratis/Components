@@ -21,13 +21,13 @@ dependency for selected interaction primitives.
 
 ## What Components owns
 
-| Area | Current package role |
-| --- | --- |
-| Command input | Typed fields, embedded forms, dialogs, and multi-step command flows |
-| Data display | Query-backed tables, local-array tables, list pages, filters, and detail surfaces |
-| Application surfaces | Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars |
-| Structured editors | JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views |
-| Styling boundary | Cratis tokens, component styles, an optional baseline theme, and stable parts |
+| Area                 | Current package role                                                              |
+| -------------------- | --------------------------------------------------------------------------------- |
+| Command input        | Typed fields, embedded forms, dialogs, and multi-step command flows               |
+| Data display         | Query-backed tables, local-array tables, list pages, filters, and detail surfaces |
+| Application surfaces | Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars  |
+| Structured editors   | JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views     |
+| Styling boundary     | Cratis tokens, component styles, an optional baseline theme, and stable parts     |
 
 ## Relationship to Arc
 
@@ -136,12 +136,12 @@ Storybook gates.
 
 ## Community and repository
 
-| Path | Destination |
-| --- | --- |
-| Questions and discussion | [Cratis Discord](https://discord.gg/kt4AMpV8WV) |
-| Bugs and feature requests | [GitHub Issues](https://github.com/Cratis/Components/issues) |
-| Releases | [GitHub Releases](https://github.com/Cratis/Components/releases) |
-| Contributing | [Cratis contribution guide](https://github.com/Cratis/.github/blob/main/contributing.md) |
-| Security reports | [Private security reporting](mailto:oss@cratis.io?subject=Security%3A) |
-| Source license | [`LICENSE`](./LICENSE) |
-| Package notices | [`Source/THIRD_PARTY_NOTICES.md`](./Source/THIRD_PARTY_NOTICES.md) |
+| Path                      | Destination                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| Questions and discussion  | [Cratis Discord](https://discord.gg/kt4AMpV8WV)                                          |
+| Bugs and feature requests | [GitHub Issues](https://github.com/Cratis/Components/issues)                             |
+| Releases                  | [GitHub Releases](https://github.com/Cratis/Components/releases)                         |
+| Contributing              | [Cratis contribution guide](https://github.com/Cratis/.github/blob/main/contributing.md) |
+| Security reports          | [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)                   |
+| Source license            | [`LICENSE`](./LICENSE)                                                                   |
+| Package notices           | [`Source/THIRD_PARTY_NOTICES.md`](./Source/THIRD_PARTY_NOTICES.md)                       |
