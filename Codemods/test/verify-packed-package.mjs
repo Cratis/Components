@@ -9,6 +9,7 @@ import {
     readFileSync,
     readdirSync,
     rmSync,
+    statSync,
     writeFileSync,
 } from 'node:fs';
 import { validateBundledManifest } from '../lib/compatibility.js';
@@ -59,6 +60,18 @@ try {
         'components-codemods',
     );
     const publishedEntries = readdirSync(installedRoot).sort();
+    for (const required of [
+        'LICENSE',
+        'README.md',
+        'compat-manifest.json',
+        'lib',
+        'package.json',
+        'scripts',
+    ]) {
+        if (!publishedEntries.includes(required)) {
+            throw new Error(`Packed codemod is missing '${required}'.`);
+        }
+    }
     for (const forbidden of ['test', 'vitest.config.js']) {
         if (publishedEntries.includes(forbidden)) {
             throw new Error(`Packed codemod leaked '${forbidden}'.`);
@@ -81,6 +94,18 @@ try {
         JSON.parse(packedManifest.toString('utf8')),
         packedPackage.version,
     );
+    for (const dependency of ['semver', 'typescript']) {
+        if (!packedPackage.dependencies?.[dependency]) {
+            throw new Error(`Packed codemod does not declare '${dependency}'.`);
+        }
+        if (
+            !existsSync(
+                path.join(consumer, 'node_modules', dependency, 'package.json'),
+            )
+        ) {
+            throw new Error(`Packed codemod dependency '${dependency}' was not installed.`);
+        }
+    }
 
     const componentsRoot = path.join(consumer, 'node_modules', '@cratis', 'components');
     const installSyntheticComponents = (version) => {
@@ -120,10 +145,25 @@ try {
         'cratis-components-change-handler',
     ];
     for (const command of commands) {
-        const help = run(binaryFor(command), ['--help'], { cwd: consumer });
+        const commandBinary = binaryFor(command);
+        if (process.platform !== 'win32' && (statSync(commandBinary).mode & 0o111) === 0) {
+            throw new Error(`Packed ${command} binary is not executable.`);
+        }
+        const help = run(commandBinary, ['--help'], { cwd: consumer });
         assertRun(`packed ${command} --help without Components`, help);
         if (!help.stdout.includes(`Usage: ${command}`)) {
             throw new Error(`Unexpected ${command} --help output:\n${help.stdout}`);
+        }
+
+        const nonexistentInput = path.join(consumer, `${command}-must-not-scan.ts`);
+        const absent = run(commandBinary, [nonexistentInput], { cwd: consumer });
+        assertRun(`packed ${command} rejects absent Components before scanning`, absent, 1);
+        if (
+            !absent.stderr.includes('Compatibility preflight failed') ||
+            !absent.stderr.includes('Could not resolve installed @cratis/components') ||
+            absent.stderr.includes('no such file or directory')
+        ) {
+            throw new Error(`Unexpected absent-Components preflight output:\n${absent.stderr}`);
         }
     }
 
@@ -203,18 +243,22 @@ try {
     }
 
     installSyntheticComponents('5.0.0');
-    const unsupportedSource = path.join(consumer, 'unsupported-version.ts');
     const unsupportedInput = "import { Canvas } from '@cratis/components';\n";
-    writeFileSync(unsupportedSource, unsupportedInput);
-    const unsupported = run(binary, [unsupportedSource], { cwd: consumer });
-    assertRun('packed codemod rejects unsupported Components', unsupported, 1);
-    if (!unsupported.stderr.includes('@cratis/components@5.0.0 is unsupported')) {
-        throw new Error(`Unexpected unsupported-version output:\n${unsupported.stderr}`);
-    }
-    if (readFileSync(unsupportedSource, 'utf8') !== unsupportedInput) {
-        throw new Error(
-            'Unsupported Components preflight changed source before failing.',
-        );
+    for (const command of commands) {
+        const unsupportedSource = path.join(consumer, `${command}-unsupported.tsx`);
+        writeFileSync(unsupportedSource, unsupportedInput);
+        const unsupported = run(binaryFor(command), [unsupportedSource], {
+            cwd: consumer,
+        });
+        assertRun(`packed ${command} rejects unsupported Components`, unsupported, 1);
+        if (!unsupported.stderr.includes('@cratis/components@5.0.0 is unsupported')) {
+            throw new Error(`Unexpected unsupported-version output:\n${unsupported.stderr}`);
+        }
+        if (readFileSync(unsupportedSource, 'utf8') !== unsupportedInput) {
+            throw new Error(
+                `Unsupported Components preflight changed source for ${command}.`,
+            );
+        }
     }
 
     console.log(

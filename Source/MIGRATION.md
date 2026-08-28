@@ -5,20 +5,40 @@ Components 4 replaces the PrimeReact-backed Components 3 foundation with Compone
 This is a major-version migration. Rendered markup, styling parts, provider configuration, date entry, root imports, and some deprecated props change.
 
 :::note
-An application that has not migrated remains on its exact Components 3 package profile, including the third-party dependencies declared by that version. Components `>=3 <4` is in maintenance/security-critical support while Components `>=4 <5` is the current candidate and migration target. Owners must decide and approve the Components 3 EOL date no later than 12 months after Components 4 GA. Components 4 does not provide a transparent Prime compatibility package. Its independently versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters cover only the nine stable presentation slots.
+An application that has not migrated remains on its Components 3 package profile, including the third-party dependencies declared by that version. Components `>=3 <4` is in maintenance/security-critical support while Components `>=4 <5` is the current candidate and migration target. Owners must decide and approve the Components 3 EOL date no later than 12 months after Components 4 GA. Components 4 does not provide a transparent Prime compatibility package. Its independently versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters are optional and cover only the nine `common.*` presentation slots.
 :::
+
+The adapters do not replace complete Components widgets. Core continues to own Dialog, Dropdown, DatePicker, paginator, table, focus, overlay, selection, and keyboard behavior; an adapter only presents button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface slots. Installing an adapter neither restores PrimeReact public APIs nor transfers key handling to the adapter.
+
+## Recommended order, stop points, and rollback
+
+1. Preserve the current source, package manifest, and lockfile as the rollback point, then run the existing Components 3 gates.
+2. With installed Core still in the Components 3 **source** window (`>=3 <4`), preview and apply the root-namespace transform. Its subpath output works on Components 3 and 4. Re-run the Components 3 gates and checkpoint that import-only change.
+3. Upgrade Core to the bounded Components 4 **target** window (`^4.0.0`), configure the provider and styles, then preview and apply the Button transform followed by the change-handler transform.
+4. Stop after every nonzero result. Resolve every diagnostic and `TODO(cratis-codemod)`, run the gates, and checkpoint before continuing. Remove a direct Prime island only after its replacement and licensing boundary are verified.
+
+The bounded Components 4 codemod package accepts the supported source or target window at preflight, but the order above avoids introducing Components 4-only props before Core is upgraded. A failed compatibility preflight scans and writes nothing. A transform refusal may annotate or migrate other independently safe syntax, so inspect the diff; restore the preceding checkpoint before retrying if an all-or-nothing rollback is required.
 
 ## Update dependencies
 
-Remove the Prime packages that were installed only for Components:
+Use the commands for the application's package manager. Remove only Prime packages that were installed for Components and are no longer owned by a retained direct Prime island.
 
 ```bash
-npm uninstall \
-  primereact primeicons \
-  @primereact/core @primereact/headless @primereact/hooks \
-  @primereact/styles @primereact/types \
+# npm
+npm uninstall primereact primeicons @primereact/core @primereact/headless \
+  @primereact/hooks @primereact/styles @primereact/types @primeuix/themes
+npm install '@cratis/components@^4.0.0'
+
+# pnpm
+pnpm remove primereact primeicons @primereact/core @primereact/headless \
+  @primereact/hooks @primereact/styles @primereact/types @primeuix/themes
+pnpm add '@cratis/components@^4.0.0'
+
+# Yarn
+yarn remove primereact primeicons @primereact/core \
+  @primereact/headless @primereact/hooks @primereact/styles @primereact/types \
   @primeuix/themes
-npm install @cratis/components
+yarn add '@cratis/components@^4.0.0'
 ```
 
 Keep a Prime package only when your application still imports it directly. Migrate those imports separately; Components no longer supplies or requires them.
@@ -55,7 +75,7 @@ import { Canvas, CanvasItem } from '@cratis/components/Canvas';
 </Canvas>;
 ```
 
-This is an intentional Components 4 breaking change. The package root now exposes setup APIs only; component namespaces no longer exist there. Every namespace maps mechanically: replace `import { X } from '@cratis/components'` with either an equivalent namespace import from the documented subpath, or named imports from that subpath.
+This is an intentional Components 4 breaking change. The package root now exposes setup APIs only; component namespaces no longer exist there. Every retained namespace maps mechanically: replace `import { X } from '@cratis/components'` with either an equivalent namespace import from the documented subpath, or named imports from that subpath. The removed renderer-only `Compatibility` namespace is the deliberate manual exception.
 
 | Removed Components 3 root namespace | Components 4 subpath                                      | Namespace-preserving migration                                                      | Named migration                                                                    |
 | ----------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -65,6 +85,7 @@ This is an intentional Components 4 breaking change. The package root now expose
 | `CommandStepper` †                  | `@cratis/components/CommandDialog` (namespace-preserving) | `import * as CommandStepper from '@cratis/components/CommandDialog'`                | `import { CommandStepper } from '@cratis/components/CommandStepper'`               |
 | `CommandForm`                       | `@cratis/components/CommandForm`                          | `import * as CommandForm from '@cratis/components/CommandForm'`                     | `import { AutoCommandForm, InputTextField } from '@cratis/components/CommandForm'` |
 | `Common`                            | `@cratis/components/Common`                               | `import * as Common from '@cratis/components/Common'`                               | `import { Button } from '@cratis/components/Common'`                               |
+| `Compatibility` ††                  | No Components 4 subpath                                   | Manual migration required; the codemod refuses and exits nonzero                     | Replace Prime compatibility contracts with typed Cratis parts, then remove it      |
 | `DataPage`                          | `@cratis/components/DataPage`                             | `import * as DataPage from '@cratis/components/DataPage'`                           | `import { DataPage, Column } from '@cratis/components/DataPage'`                   |
 | `DataTables`                        | `@cratis/components/DataTables`                           | `import * as DataTables from '@cratis/components/DataTables'`                       | `import { DataTableForQuery, Column } from '@cratis/components/DataTables'`        |
 | `Dialogs`                           | `@cratis/components/Dialogs`                              | `import * as Dialogs from '@cratis/components/Dialogs'`                             | `import { Dialog } from '@cratis/components/Dialogs'`                              |
@@ -80,7 +101,11 @@ This is an intentional Components 4 breaking change. The package root now expose
 | `Toolbar`                           | `@cratis/components/Toolbar`                              | `import * as Toolbar from '@cratis/components/Toolbar'`                             | `import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar'`              |
 | `Types`                             | `@cratis/components/types`                                | `import * as Types from '@cratis/components/types'`                                 | `import { JsonSchema, Json } from '@cratis/components/types'`                      |
 
-† The removed root `CommandStepper` namespace aliased the _entire_ `CommandDialog` module. The codemod therefore maps that namespace to `@cratis/components/CommandDialog`, preserving all existing namespace members. New code that needs only the standalone component should use the narrower named import from `@cratis/components/CommandStepper`.
+† The removed root `CommandStepper` namespace aliased the _entire_ `CommandDialog` module. The codemod therefore maps that namespace to `@cratis/components/CommandDialog`, preserving the correct module identity for members retained in Components 4. It does not restore removed accidental exports such as `CommandStepperContent`. New code that needs only the standalone component should use the narrower named import from `@cratis/components/CommandStepper`.
+
+†† Components 3.6 also exported the `Compatibility` namespace and its pass-through helpers directly from the root. Components 4 has no destination for `Compatibility`, `assertPrimeReact11PassThroughCompatibility`, `components3PrimeReact11PassThroughContract`, `PrimeReact11PassThroughComponent`, `primeReact11PassThroughSentinelAttribute`, or `primeReact11PassThroughSentinelPreset`. The codemod recognizes these known removals, leaves their statement unchanged, and exits nonzero with typed-parts guidance.
+
+The Components 3.6 `Chat` namespace maps to `@cratis/components/Chat`; its public models, sidebar, conversation, observable-query wrapper, mentions, and emoji contracts remain on that subpath.
 
 `@cratis/components/CommandForm/fields` is the same module as `@cratis/components/CommandForm` — either subpath resolves identically, so the `CommandForm` row's migration applies to both. Provider/configuration/message setup stays on the package root; only Common components such as `Button` move to `@cratis/components/Common`.
 
@@ -89,12 +114,23 @@ Run the migration codemod in preview mode first, then apply it:
 ```bash
 TOOLING_RANGE='^4.0.0'
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-remove-root-namespace-imports --check <paths...>
+  cratis-components-remove-root-namespace-imports --check path/to/app/src
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-remove-root-namespace-imports <paths...>
+  cratis-components-remove-root-namespace-imports path/to/app/src
 ```
 
 Components 3 has no matching 3.x codemod train. Use the bounded Components 4 tooling range (`>=4 <5`; `^4.0.0` above is the shell-safe equivalent). Never substitute `latest`. Tooling patches release independently from Core. Before scanning or writing, every codemod validates its bundled compatibility manifest, its own version, and the installed Components package from the invocation directory. It fails closed when Components is absent, outside the supported 3.x source or 4.x target window, or the manifest is invalid.
+
+The examples use npm's `npx`. pnpm and Yarn 2+ can launch the same bounded package without adding it:
+
+```bash
+pnpm dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+  cratis-components-remove-root-namespace-imports --check path/to/app/src
+yarn dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+  cratis-components-remove-root-namespace-imports --check path/to/app/src
+```
+
+Quote real paths containing spaces. Do not type angle-bracket placeholders in a shell: `<...>` means input redirection.
 
 The codemod scans JavaScript/JSX and TypeScript/TSX (including `.mjs`, `.cjs`, `.mts`, and `.cts`), preserves aliases and type-only imports, splits mixed setup/namespace imports, and rewrites a named `export { X } from '@cratis/components'` re-export the same way as the matching import. It reports unsupported cases without guessing: default or whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, wildcard or whole-package re-exports (`export * from '@cratis/components'` / `export * as X from '@cratis/components'`), side-effect imports, and unknown symbols. Review its diagnostics, then run the consuming project's lint, build, and tests.
 
@@ -112,14 +148,14 @@ Use the bounded Components 4 tooling train and preview each transform before app
 TOOLING_RANGE='^4.0.0'
 
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-button-variant-tone --check <paths...>
+  cratis-components-button-variant-tone --check path/to/app/src
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-button-variant-tone <paths...>
+  cratis-components-button-variant-tone path/to/app/src
 
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-change-handler --check <paths...>
+  cratis-components-change-handler --check path/to/app/src
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-change-handler <paths...>
+  cratis-components-change-handler path/to/app/src
 ```
 
 Keep the tooling range within `>=4 <5`; never use `latest`. The codemod preflight enforces the bundled source/target support windows.

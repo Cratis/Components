@@ -1,4 +1,8 @@
-import { namespaceSubpaths, approvedRootSymbols } from './rootNamespaceMap.js';
+import {
+    namespaceSubpaths,
+    approvedRootSymbols,
+    removedRootSymbols,
+} from './rootNamespaceMap.js';
 
 const DEFAULTS = { packageName: '@cratis/components', allow: [] };
 
@@ -35,6 +39,10 @@ export const noRootBarrelImport = {
                 "Import '{{name}}' from '{{packageName}}/{{subpath}}' as a namespace instead of the package root barrel: import * as {{name}} from '{{packageName}}/{{subpath}}'.",
             useNamespaceSubpathExport:
                 "Re-export '{{name}}' from '{{packageName}}/{{subpath}}' instead of the package root barrel: export * as {{name}} from '{{packageName}}/{{subpath}}'. This is not autofixed — verify downstream default-export expectations.",
+            removedCompatibilitySymbol:
+                "'{{name}}' was a Components 3 PrimeReact compatibility export and has no Components 4 subpath. Migrate renderer slots to typed Cratis parts and remove this import manually.",
+            removedCompatibilitySymbolExport:
+                "'{{name}}' was a Components 3 PrimeReact compatibility export and has no Components 4 subpath. Migrate renderer slots to typed Cratis parts and remove this re-export manually.",
             unknownSymbol:
                 "'{{name}}' is not a recognized '{{packageName}}' root export (neither an approved setup symbol nor a known namespace). Import it from its specific subpath instead of the package root.",
             unknownSymbolExport:
@@ -152,6 +160,15 @@ function checkImport(context, node, packageName) {
             namespaced.push({ specifier, subpath: namespaceSubpaths[importedName] });
             continue;
         }
+        if (removedRootSymbols.has(importedName)) {
+            hasUnknown = true;
+            context.report({
+                node: specifier,
+                messageId: 'removedCompatibilitySymbol',
+                data: { name: importedName },
+            });
+            continue;
+        }
 
         hasUnknown = true;
         context.report({
@@ -210,6 +227,14 @@ function checkNamedExport(context, node, packageName) {
                     packageName,
                     subpath: namespaceSubpaths[exportedName],
                 },
+            });
+            continue;
+        }
+        if (removedRootSymbols.has(exportedName)) {
+            context.report({
+                node: specifier,
+                messageId: 'removedCompatibilitySymbolExport',
+                data: { name: exportedName },
             });
             continue;
         }

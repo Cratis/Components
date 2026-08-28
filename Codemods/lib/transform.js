@@ -6,6 +6,7 @@ import {
     packageName as defaultPackageName,
     namespaceSubpaths,
     approvedRootSymbols,
+    removedRootSymbols,
 } from './namespaceMap.js';
 
 /**
@@ -45,6 +46,8 @@ import {
  * - A named import or named re-export of a symbol that is neither an approved setup
  *   symbol nor a known namespace — the whole statement is left untouched so a
  *   partial, silently incomplete migration is never produced.
+ * - A known removed Components 3 renderer-compatibility export — it has no Components 4
+ *   subpath, so the statement is left untouched with typed-parts guidance.
  * - A dynamic `import('...')` or CommonJS `require('...')` call anywhere in the file.
  * - A wildcard re-export of the whole package (`export * from '@cratis/components'`)
  *   or a namespace re-export of the whole package (`export * as X from
@@ -140,6 +143,14 @@ export function transformSource(fileName, text, options = {}) {
                 });
                 continue;
             }
+            if (removedRootSymbols.has(importedName)) {
+                hasUnknown = true;
+                report(
+                    element,
+                    `'${importedName}' was a Components 3 PrimeReact compatibility export and has no Components 4 subpath. Leaving this import untouched — migrate renderer slots to typed Cratis parts and remove the compatibility export manually.`,
+                );
+                continue;
+            }
 
             hasUnknown = true;
             report(
@@ -202,6 +213,14 @@ export function transformSource(fileName, text, options = {}) {
                     subpath: namespaceSubpaths[exportedName],
                     typeOnly: declTypeOnly || element.isTypeOnly,
                 });
+                continue;
+            }
+            if (removedRootSymbols.has(exportedName)) {
+                hasUnknown = true;
+                report(
+                    element,
+                    `'${exportedName}' was a Components 3 PrimeReact compatibility export and has no Components 4 subpath. Leaving this re-export untouched — migrate renderer slots to typed Cratis parts and remove the compatibility export manually.`,
+                );
                 continue;
             }
 

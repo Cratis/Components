@@ -83,6 +83,23 @@ describe('Button variant/tone transform', () => {
         );
     });
 
+    it('preserves JavaScript truthiness for empty-string legacy booleans', () => {
+        const input = [
+            "import { Button } from '@cratis/components/Common';",
+            "const a=<Button link='' text outlined/>;",
+            "const b=<Button text={''} outlined/>;",
+            'const c=<Button rounded={``}/>;',
+            '',
+        ].join('\n');
+        const result = transformButtonVariantTone('Buttons.tsx', input);
+
+        expect(result.diagnostics).toEqual([]);
+        expect(result.text).toContain("const a=<Button variant='ghost'  />;");
+        expect(result.text).toContain("const b=<Button variant='outline' />;");
+        expect(result.text).toContain('const c=<Button />;');
+        expectValidTsx('Buttons.tsx', result.text);
+    });
+
     it('supports a package override without touching the default package', () => {
         const input =
             "import { Button as B } from '@example/ui/Common';\nimport { Button } from '@cratis/components/Common';\nconst x=<><B text/><Button text/></>;\n";

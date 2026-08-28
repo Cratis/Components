@@ -15,7 +15,7 @@
  */
 
 /**
- * Every namespace name removed from the Components 3 root, mapped to the Components 4
+ * Every retained namespace removed from the Components 3 root, mapped to the Components 4
  * subpath it belongs to: importing `Canvas` from the root should instead be
  * `import * as Canvas from '@cratis/components/Canvas'`. `Types` is the one case where the
  * namespace name and its subpath differ in casing (`./types`, lowercase).
@@ -44,6 +44,16 @@ export const namespaceSubpaths = {
     Toolbar: 'Toolbar',
     Types: 'types',
 };
+
+/** Components 3 renderer-compatibility exports removed without a Components 4 subpath. */
+export const removedRootSymbols = new Set([
+    'Compatibility',
+    'assertPrimeReact11PassThroughCompatibility',
+    'components3PrimeReact11PassThroughContract',
+    'primeReact11PassThroughSentinelAttribute',
+    'primeReact11PassThroughSentinelPreset',
+    'PrimeReact11PassThroughComponent',
+]);
 
 /**
  * The primary setup surface `Source/index.ts` re-exports directly from the root so a

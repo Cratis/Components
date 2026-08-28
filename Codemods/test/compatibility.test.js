@@ -80,4 +80,22 @@ describe('compatibility preflight', () => {
             'invalid migration support windows',
         );
     });
+
+    it('rejects a manifest that expands the Components 3 source window', () => {
+        const invalid = structuredClone(compatibilityManifest);
+        invalid.supportWindows.components3.components = '>=2 <4';
+
+        expect(() => validateBundledManifest(invalid, '4.0.0')).toThrow(
+            'invalid migration support windows',
+        );
+    });
+
+    it('rejects a manifest without the Components 4 target window', () => {
+        const invalid = structuredClone(compatibilityManifest);
+        delete invalid.supportWindows.components4;
+
+        expect(() => validateBundledManifest(invalid, '4.0.0')).toThrow(
+            'invalid migration support windows',
+        );
+    });
 });

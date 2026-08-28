@@ -109,8 +109,20 @@ export function validateBundledManifest(manifest, codemodVersion) {
     }
 
     const windows = Object.values(manifest.supportWindows ?? {});
+    const sourceWindows = windows.filter(
+        ({ migrationRole }) => migrationRole === 'source',
+    );
+    const targetWindows = windows.filter(
+        ({ migrationRole }) => migrationRole === 'target',
+    );
     if (
-        windows.length === 0 ||
+        windows.length !== 2 ||
+        sourceWindows.length !== 1 ||
+        targetWindows.length !== 1 ||
+        sourceWindows[0].components !== '>=3 <4' ||
+        sourceWindows[0].migrationTarget !== '>=4 <5' ||
+        targetWindows[0].components !== '>=4 <5' ||
+        manifest.toolingCompatibility?.componentsCore !== '>=4 <5' ||
         windows.some((window) => {
             const toolingRange =
                 typeof window.tooling === 'string'
@@ -118,8 +130,7 @@ export function validateBundledManifest(manifest, codemodVersion) {
                     : window.tooling?.codemods;
             return (
                 !semver.validRange(window.components) ||
-                !semver.validRange(toolingRange) ||
-                !['source', 'target'].includes(window.migrationRole)
+                !semver.validRange(toolingRange)
             );
         })
     ) {

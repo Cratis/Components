@@ -7,10 +7,12 @@ import { noRootBarrelImport } from '../lib/noRootBarrelImport.js';
 import {
     approvedRootSymbols as eslintApprovedRootSymbols,
     namespaceSubpaths as eslintNamespaceSubpaths,
+    removedRootSymbols as eslintRemovedRootSymbols,
 } from '../lib/rootNamespaceMap.js';
 import {
     approvedRootSymbols as codemodApprovedRootSymbols,
     namespaceSubpaths as codemodNamespaceSubpaths,
+    removedRootSymbols as codemodRemovedRootSymbols,
 } from '../../Codemods/lib/namespaceMap.js';
 import { onbeforeexecuteMustReturn } from '../lib/onbeforeexecuteMustReturn.js';
 import { noHooksInViewModel } from '../lib/noHooksInViewModel.js';
@@ -56,6 +58,12 @@ describe('root namespace map parity', () => {
     it('keeps the ESLint and codemod setup allowlists identical', () => {
         expect([...eslintApprovedRootSymbols].sort()).toEqual(
             [...codemodApprovedRootSymbols].sort(),
+        );
+    });
+
+    it('keeps the ESLint and codemod removed-root sets identical', () => {
+        expect([...eslintRemovedRootSymbols].sort()).toEqual(
+            [...codemodRemovedRootSymbols].sort(),
         );
     });
 });
@@ -279,6 +287,45 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
             output: null,
         },
         {
+            // Components 3 exposed this renderer namespace, but Components 4 has no replacement subpath.
+            code: "import { Compatibility as PrimeCompatibility } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'removedCompatibilitySymbol',
+                    data: { name: 'Compatibility' },
+                },
+            ],
+            output: null,
+        },
+        {
+            code: "import type { PrimeReact11PassThroughComponent } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'removedCompatibilitySymbol',
+                    data: { name: 'PrimeReact11PassThroughComponent' },
+                },
+            ],
+            output: null,
+        },
+        {
+            code: "import { Chat, Compatibility } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'useNamespaceSubpath',
+                    data: {
+                        name: 'Chat',
+                        packageName: '@cratis/components',
+                        subpath: 'Chat',
+                    },
+                },
+                {
+                    messageId: 'removedCompatibilitySymbol',
+                    data: { name: 'Compatibility' },
+                },
+            ],
+            output: null,
+        },
+        {
             // A namespace import of the whole package cannot be safely rewritten.
             code: "import * as Components from '@cratis/components';",
             errors: [
@@ -355,6 +402,16 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
                 {
                     messageId: 'unknownSymbolExport',
                     data: { name: 'Button', packageName: '@cratis/components' },
+                },
+            ],
+            output: null,
+        },
+        {
+            code: "export { primeReact11PassThroughSentinelPreset } from '@cratis/components';",
+            errors: [
+                {
+                    messageId: 'removedCompatibilitySymbolExport',
+                    data: { name: 'primeReact11PassThroughSentinelPreset' },
                 },
             ],
             output: null,

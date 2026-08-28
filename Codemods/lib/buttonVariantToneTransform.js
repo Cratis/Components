@@ -303,7 +303,8 @@ function isImportedButtonTag(tag, namedButtons, commonNamespaces) {
 
 function staticBoolean(attribute) {
     if (!attribute.initializer) return true;
-    if (ts.isStringLiteral(attribute.initializer)) return true;
+    if (ts.isStringLiteral(attribute.initializer))
+        return attribute.initializer.text.length > 0;
     if (!ts.isJsxExpression(attribute.initializer) || !attribute.initializer.expression)
         return undefined;
     const expression = unwrap(attribute.initializer.expression);
@@ -314,7 +315,7 @@ function staticBoolean(attribute) {
     )
         return false;
     if (ts.isStringLiteral(expression) || ts.isNoSubstitutionTemplateLiteral(expression))
-        return true;
+        return expression.text.length > 0;
     if (ts.isNumericLiteral(expression)) return Number(expression.text) !== 0;
     return undefined;
 }

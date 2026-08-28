@@ -10,10 +10,12 @@ import { transformSource } from '../lib/transform.js';
 import {
     approvedRootSymbols as codemodApprovedRootSymbols,
     namespaceSubpaths as codemodNamespaceSubpaths,
+    removedRootSymbols as codemodRemovedRootSymbols,
 } from '../lib/namespaceMap.js';
 import {
     approvedRootSymbols as eslintApprovedRootSymbols,
     namespaceSubpaths as eslintNamespaceSubpaths,
+    removedRootSymbols as eslintRemovedRootSymbols,
 } from '../../ESLint/lib/rootNamespaceMap.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -77,6 +79,59 @@ describe('root namespace maps', () => {
     it('should keep the codemod and ESLint setup allowlists identical', () => {
         expect([...codemodApprovedRootSymbols].sort()).toEqual(
             [...eslintApprovedRootSymbols].sort(),
+        );
+    });
+
+    it('should keep the codemod and ESLint removed-root sets identical', () => {
+        expect([...codemodRemovedRootSymbols].sort()).toEqual(
+            [...eslintRemovedRootSymbols].sort(),
+        );
+    });
+
+    it('should account for every Components 3.6 root namespace', () => {
+        const components36Namespaces = [
+            'Canvas',
+            'Chat',
+            'CommandDialog',
+            'CommandStepper',
+            'CommandForm',
+            'Common',
+            'Compatibility',
+            'DataPage',
+            'DataTables',
+            'Dialogs',
+            'Display',
+            'Dropdown',
+            'Filter',
+            'Notifications',
+            'ObjectContentEditor',
+            'ObjectNavigationalBar',
+            'PivotViewer',
+            'SchemaEditor',
+            'TimeMachine',
+            'Toolbar',
+            'Types',
+        ];
+        const accounted = [
+            ...Object.keys(codemodNamespaceSubpaths),
+            ...components36Namespaces.filter((name) =>
+                codemodRemovedRootSymbols.has(name),
+            ),
+        ];
+
+        expect(accounted.sort()).toEqual(components36Namespaces.sort());
+    });
+
+    it('should account for every removed Components 3.6 direct compatibility export', () => {
+        expect([...codemodRemovedRootSymbols].sort()).toEqual(
+            [
+                'Compatibility',
+                'PrimeReact11PassThroughComponent',
+                'assertPrimeReact11PassThroughCompatibility',
+                'components3PrimeReact11PassThroughContract',
+                'primeReact11PassThroughSentinelAttribute',
+                'primeReact11PassThroughSentinelPreset',
+            ].sort(),
         );
     });
 
@@ -233,10 +288,11 @@ describe('root namespace maps', () => {
 
         for (const guide of guides) {
             const rootCommand =
-                'cratis-components-remove-root-namespace-imports --check <paths...>';
+                'cratis-components-remove-root-namespace-imports --check path/to/app/src';
             const buttonCommand =
-                'cratis-components-button-variant-tone --check <paths...>';
-            const handlerCommand = 'cratis-components-change-handler --check <paths...>';
+                'cratis-components-button-variant-tone --check path/to/app/src';
+            const handlerCommand =
+                'cratis-components-change-handler --check path/to/app/src';
             expect(guide).toContain(rootCommand);
             expect(guide).toContain(buttonCommand);
             expect(guide).toContain(handlerCommand);
@@ -246,6 +302,11 @@ describe('root namespace maps', () => {
             );
             expect(guide).toContain('Never substitute `latest`');
             expect(guide).toContain('TODO(cratis-codemod)');
+            expect(guide).not.toContain('<paths...>');
+            expect(guide).toContain('| `Compatibility`');
+            expect(guide.indexOf('Components 3 **source** window')).toBeLessThan(
+                guide.indexOf('Components 4 **target**'),
+            );
             for (const namespace of Object.keys(codemodNamespaceSubpaths)) {
                 expect(guide).toContain(`| \`${namespace}\``);
             }
@@ -447,5 +508,23 @@ describe('transformSource — targeted behavior', () => {
         expect(result.changed).toBe(false);
         expect(result.diagnostics).toHaveLength(1);
         expect(result.diagnostics[0].message).toContain('wildcard');
+    });
+
+    it.each([
+        "import { Compatibility as PrimeCompatibility } from '@cratis/components';\n",
+        "import type { PrimeReact11PassThroughComponent } from '@cratis/components';\n",
+        "import { Canvas, Compatibility } from '@cratis/components';\n",
+        "export { assertPrimeReact11PassThroughCompatibility } from '@cratis/components';\n",
+        "export { Chat, primeReact11PassThroughSentinelPreset } from '@cratis/components';\n",
+    ])('refuses a known removed Components 3 compatibility root export', (input) => {
+        const result = transformSource('file.ts', input);
+
+        expect(result.text).toBe(input);
+        expect(result.changed).toBe(false);
+        expect(result.diagnostics).toHaveLength(1);
+        expect(result.diagnostics[0].message).toContain(
+            'has no Components 4 subpath',
+        );
+        expect(result.diagnostics[0].message).toContain('typed Cratis parts');
     });
 });
