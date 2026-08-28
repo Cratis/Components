@@ -4,7 +4,7 @@
 # @cratis/components.conformance
 
 Development-only evidence runner for authors of `@cratis/components` renderer adapters. The package
-is independently versioned (`0.1.0`) and records renderer ABI major `1`; it is not a runtime
+is independently versioned (`1.0.0`) and records renderer ABI major `1`; it is not a runtime
 dependency of Components or an adapter discovery mechanism.
 
 ```ts
@@ -27,10 +27,12 @@ if (!report.passed) {
 ```
 
 The runner uses only public `@cratis/components/renderer` contracts, React, and public component
-props/manifests. It covers the fourteen ABI v1 slots with static/runtime metadata consistency,
-stable parts and canonical states, pt routing, exact native elements/refs, bounded form and callback
-behavior, behavior ownership, SSR/hydration, axe, RTL/forced-color/reduced-motion inputs, and report
-skip discipline. See [CONFORMANCE.md](./CONFORMANCE.md) for the precise evidence boundary.
+props/manifests. The stable `stable-presentation/v1` contract covers exactly nine primitive slots;
+the broader fourteen-slot inventory remains experimental. Checks cover static/runtime metadata
+consistency, stable parts and canonical states, pt routing, exact native elements/refs, bounded form
+and callback behavior, behavior ownership, SSR/hydration, axe,
+RTL/forced-color/reduced-motion inputs, and report skip discipline. See
+[CONFORMANCE.md](./CONFORMANCE.md) for the precise evidence boundary.
 
 ## Commands
 

@@ -1,10 +1,11 @@
 <!-- Copyright (c) Cratis. All rights reserved. -->
 <!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
 
-# Experimental renderer contracts
+# Renderer contracts
 
-This directory contains the D1 contracts, D2 provider/context/resolution infrastructure, and E1/E2
-presentation plus atomic self-hosting. `preloadRenderer` and lazy renderer entries remain deferred:
+This directory contains the stable nine-slot `stable-presentation/v1` façade alongside the broader
+experimental D1 contracts, D2 provider/context/resolution infrastructure, and E1/E2 presentation
+plus atomic self-hosting. `preloadRenderer` and lazy renderer entries remain deferred:
 `SlotDeclaration` has no load contract yet, so adding preload behavior now would invent an ABI that
 adapter declarations cannot honor.
 
@@ -27,7 +28,7 @@ The basic controls are standalone Common primitives. Arc-bound `CommandForm` fie
 high-order composites and must never be registered as substitutes for these slots.
 
 Renderer packages may declaration-merge non-secret boolean keys into
-`unstable_RendererSetupExtensions`. Applications pass those attestations through
+`CratisRendererSetupExtensions`. Applications pass those attestations through
 `CratisComponentsProvider.rendererSetup`; the root freezes them, nested providers inherit them
 unless an explicit nested setup replaces the map wholesale, and renderer scopes forward them to a
 library Provider. Credentials, license strings, caches, provider
@@ -35,7 +36,10 @@ instances, and other values must never cross this boundary. The attestation says
 completed its own setup and lets a renderer fail closed when its upstream context cannot expose
 whether setup occurred.
 
-E1 routes the nine presentation candidates. E2 routes tooltip, dropdown, dialog, date picker, and
+The nine E1 presentation candidates are the immutable stable façade exposed through
+`CratisPresentationUiLibrary` and `definePresentationUiLibrary`. Its runtime helper requires all
+nine slots, presentation mode, supported fidelity, the exact profile and ABI, and then freezes the
+manifest through the existing machinery. E2 routes tooltip, dropdown, dialog, date picker, and
 table paginator as atomic slots whose external adapters replace Core interaction ownership entirely.
 Their Core implementations self-host React Aria portals through the local overlay environment only
 around the overlay-owning subtree; merely reading the hook, rendering a closed control, or rendering

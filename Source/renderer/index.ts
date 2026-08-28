@@ -51,9 +51,9 @@ declare module './slots.js' {
 }
 
 /**
- * Experimental renderer contracts for adapter authors. Every public symbol is intentionally
- * `unstable_`-prefixed and isolated to `@cratis/components/renderer`. E1 presentation and E2
- * atomic routing are facade-local; lazy/preload entries remain deferred.
+ * Renderer contracts for adapter authors. The bounded nine-slot presentation profile is stable;
+ * every broader renderer-system symbol remains `unstable_`-prefixed. E1 presentation and E2 atomic
+ * routing are facade-local; lazy/preload entries remain deferred.
  */
 export type { unstable_CapabilityId } from './capabilities';
 export {
@@ -66,8 +66,9 @@ export {
     unstable_CRATIS_UI_ABI_VERSION,
     unstable_composeUiLibraries,
     unstable_defineUiLibrary,
-    type unstable_RendererExtensions,
-    type unstable_RendererProps,
+    type CratisPresentationUiLibraryProviderProps,
+    type CratisRendererSetup,
+    type CratisRendererSetupExtensions,
     type unstable_RendererSetup,
     type unstable_RendererSetupExtensions,
     type unstable_UiLibrary,
@@ -75,8 +76,21 @@ export {
 } from './manifest';
 export {
     unstable_defaultOverlayEnvironment,
+    type CratisOverlayEnvironment,
     type unstable_CratisOverlayEnvironment,
 } from './overlayEnvironment';
+export {
+    CRATIS_PRESENTATION_ABI_VERSION,
+    CRATIS_PRESENTATION_PROFILE,
+    cratisPresentationSlotIds,
+    definePresentationUiLibrary,
+    type CratisPresentationCapabilityId,
+    type CratisPresentationSlotDeclaration,
+    type CratisPresentationSlotId,
+    type CratisPresentationSlotMap,
+    type CratisPresentationSlots,
+    type CratisPresentationUiLibrary,
+} from './presentation';
 export {
     unstable_useCapability,
     unstable_useOverlayEnvironment,

@@ -4,3 +4,5 @@
   href: 0002-component-classification.md
 - name: Repository-owned kernel boundary
   href: 0003-kernel-boundary.md
+- name: Stable presentation renderer profile
+  href: 0004-stable-presentation-renderer-profile.md

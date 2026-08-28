@@ -6,8 +6,11 @@ import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications/Toaster';
 import { unstable_RendererRoot } from '../renderer/RendererContext';
-import type { unstable_RendererSetup, unstable_UiLibrary } from '../renderer/manifest';
-import type { unstable_CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
+import type {
+    CratisRendererSetup,
+    unstable_UiLibrary,
+} from '../renderer/manifest';
+import type { CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
 import { CratisComponentsContext } from './CratisComponentsContext';
 import { cratisDefaults } from './CratisComponentsDefaults';
 
@@ -174,19 +177,19 @@ export interface CratisComponentsProviderProps {
     value?: CratisComponentsConfig;
     /** Mounts the global toaster with defaults or explicit options. */
     toaster?: boolean | ToasterProps;
-    /** Experimental renderer library or ordered, last-wins library composition. */
+    /** Renderer library or ordered, last-wins library composition. */
     library?: unstable_UiLibrary | readonly unstable_UiLibrary[];
     /** Experimental profile-promise behavior. Defaults to strict. */
     libraryMode?: 'strict' | 'degrade';
     /** Experimental terminal slot fallback behavior. Defaults to Core. */
     rendererFallback?: 'core' | 'throw';
-    /** Experimental host environment for overlay portal containers. */
-    overlayEnvironment?: unstable_CratisOverlayEnvironment;
+    /** Host environment for overlay portal containers. */
+    overlayEnvironment?: CratisOverlayEnvironment;
     /**
      * Non-secret renderer setup attestations. Values are booleans so credentials and license
      * tokens never cross the Components provider boundary.
      */
-    rendererSetup?: unstable_RendererSetup;
+    rendererSetup?: CratisRendererSetup;
     /** Application content. */
     children: ReactNode;
 }

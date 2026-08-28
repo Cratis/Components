@@ -8,10 +8,10 @@ import { fileURLToPath } from 'node:url';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const schemaPath = path.join(packageDir, 'schemas/ui-adapter.schema.json');
-const fixturePath = path.join(
-    packageDir,
+const fixturePaths = [
     'renderer/for_slot_types/slotTyping.fixture.ts',
-);
+    'renderer/for_slot_types/presentationTyping.fixture.ts',
+].map(relativePath => path.join(packageDir, relativePath));
 const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
 const packageJson = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
 
@@ -156,7 +156,7 @@ const typeCheck = spawnSync(
         'react-jsx',
         '--lib',
         'ESNext,DOM,DOM.Iterable',
-        fixturePath,
+        ...fixturePaths,
     ],
     { cwd: packageDir, encoding: 'utf8', timeout: 120_000 },
 );
@@ -164,7 +164,7 @@ if (typeCheck.status !== 0) {
     console.error(`Renderer slot typing fixture failed:\n${typeCheck.stdout}${typeCheck.stderr}`);
     process.exit(1);
 }
-console.log('Renderer slot typing fixture compiles under strict TypeScript.');
+console.log('Renderer slot typing fixtures compile under strict TypeScript.');
 
 const atomicFacadeFiles = [
     'Common/Tooltip.tsx',

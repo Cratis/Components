@@ -4,9 +4,10 @@
 # `@cratis/components.primereact`
 
 PrimeReact 11 adapter for the nine stable presentation slots in the Cratis Components renderer ABI
-v1. The package is independently versioned and exports one manifest, `primeReactUiLibrary`.
-PrimeReact 10 is out of scope here and remains a required, separate
-`@cratis/components.primereact10` implementation before V4 completion.
+v1. The package is independently versioned at 1.0.0 and exports one stable
+`CratisPresentationUiLibrary` manifest, `primeReactUiLibrary`. This certifies nine-slot primitive
+adaptation, never full-catalog replacement. PrimeReact 10 is supported separately by
+`@cratis/components.primereact10`.
 
 ## Install
 

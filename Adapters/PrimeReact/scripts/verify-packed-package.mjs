@@ -136,7 +136,7 @@ try {
         );
     }
     if (
-        packageJson.version !== '0.1.0' ||
+        packageJson.version !== '1.0.0' ||
         packageJson.cratisIndependentVersion !== true ||
         packageJson.cratisUiAbi !== 1
     ) {
@@ -209,15 +209,18 @@ try {
     const exportedValues = declarations.match(/export\s+declare\s+const\s+/gu) ?? [];
     if (
         exportedValues.length !== 1 ||
-        !/export declare const primeReactUiLibrary: unstable_UiLibrary;/u.test(
+        !/export declare const primeReactUiLibrary: CratisPresentationUiLibrary;/u.test(
             declarations,
         )
     ) {
         throw new Error(
-            'Public declarations must expose exactly one UiLibrary-typed value.',
+            'Public declarations must expose exactly one stable presentation UiLibrary value.',
         );
     }
-    if (!declarations.includes("'cratis-primereact.license-configured': boolean")) {
+    if (
+        !declarations.includes('interface CratisRendererSetupExtensions') ||
+        !declarations.includes("'cratis-primereact.license-configured': boolean")
+    ) {
         throw new Error(
             'Public declarations must type the non-secret license attestation key.',
         );

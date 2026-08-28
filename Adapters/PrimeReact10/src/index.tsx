@@ -51,34 +51,26 @@ import type {
 } from '@cratis/components/Common';
 import type { ProgressBarProps } from '@cratis/components/Display';
 import {
-    unstable_CRATIS_UI_ABI_VERSION,
-    unstable_defineUiLibrary,
-    type unstable_CapabilityId,
-    type unstable_SlotDeclaration,
-    type unstable_SlotId,
-    type unstable_UiLibrary,
-    type unstable_UiLibraryProviderProps,
+    CRATIS_PRESENTATION_ABI_VERSION,
+    CRATIS_PRESENTATION_PROFILE,
+    cratisPresentationSlotIds,
+    definePresentationUiLibrary,
+    type CratisPresentationCapabilityId,
+    type CratisPresentationSlotDeclaration,
+    type CratisPresentationSlotId,
+    type CratisPresentationUiLibrary,
+    type CratisPresentationUiLibraryProviderProps,
 } from '@cratis/components/renderer';
-
-const profileSlots = Object.freeze([
-    'common.button',
-    'common.iconButton',
-    'common.textInput',
-    'common.textArea',
-    'common.checkbox',
-    'common.radio',
-    'common.switch',
-    'common.progress',
-    'common.surface',
-] satisfies readonly unstable_SlotId[]);
 
 const capabilities = Object.freeze([
     'slot.render',
     'parts.passthrough',
     'ssr.staticRender',
-] satisfies readonly unstable_CapabilityId[]);
+] satisfies readonly CratisPresentationCapabilityId[]);
 
-const PrimeReact10AdapterProvider = ({ children }: unstable_UiLibraryProviderProps) => {
+const PrimeReact10AdapterProvider = ({
+    children,
+}: CratisPresentationUiLibraryProviderProps) => {
     const applicationConfiguration = useContext(PrimeReactContext);
     if (applicationConfiguration !== undefined) return children;
     return <PrimeReactProvider>{children}</PrimeReactProvider>;
@@ -831,14 +823,14 @@ const PrimeSurfaceSlot = forwardRef<HTMLElement, SurfaceProps>(function PrimeSur
     );
 });
 
-const declaration = <SlotId extends unstable_SlotId>(
-    render: unstable_SlotDeclaration<SlotId>['render'],
+const declaration = <SlotId extends CratisPresentationSlotId>(
+    render: CratisPresentationSlotDeclaration<SlotId>['render'],
 ) =>
     Object.freeze({
         mode: 'presentation',
         fidelity: 'native',
         render,
-    }) satisfies unstable_SlotDeclaration<SlotId>;
+    }) satisfies CratisPresentationSlotDeclaration<SlotId>;
 
 const slots = Object.freeze({
     'common.button': declaration<'common.button'>(PrimeButtonSlot),
@@ -853,14 +845,15 @@ const slots = Object.freeze({
 });
 
 /** PrimeReact 10 implementation of the stable Cratis presentation profile. */
-export const primeReact10UiLibrary: unstable_UiLibrary = unstable_defineUiLibrary({
-    id: 'cratis-primereact10',
-    displayName: 'Cratis PrimeReact 10 renderer',
-    abi: unstable_CRATIS_UI_ABI_VERSION,
-    level: 'primitive',
-    profile: 'stable-presentation/v1',
-    profileSlots,
-    capabilities,
-    slots,
-    Provider: PrimeReact10AdapterProvider,
-});
+export const primeReact10UiLibrary: CratisPresentationUiLibrary =
+    definePresentationUiLibrary({
+        id: 'cratis-primereact10',
+        displayName: 'Cratis PrimeReact 10 renderer',
+        abi: CRATIS_PRESENTATION_ABI_VERSION,
+        level: 'primitive',
+        profile: CRATIS_PRESENTATION_PROFILE,
+        profileSlots: cratisPresentationSlotIds,
+        capabilities,
+        slots,
+        Provider: PrimeReact10AdapterProvider,
+    });

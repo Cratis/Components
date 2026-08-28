@@ -4,7 +4,9 @@
 # `@cratis/components.mui`
 
 Material UI adapter for the nine stable presentation slots in the Cratis Components renderer ABI v1.
-The package is independently versioned and exports one manifest, `muiUiLibrary`.
+The package is independently versioned at 1.0.0 and exports one stable
+`CratisPresentationUiLibrary` manifest, `muiUiLibrary`. This certifies nine-slot primitive
+adaptation, never full-catalog replacement.
 
 ## Install
 

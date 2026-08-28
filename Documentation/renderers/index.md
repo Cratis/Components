@@ -26,9 +26,11 @@ An optional adapter changes only the renderer slots that it declares:
 | `@cratis/components.primereact`   | PrimeReact 11 and PrimeUX themes 3 | Nine stable presentation slots |
 | `@cratis/components.primereact10` | PrimeReact `>=10.9.9 <11`          | Nine stable presentation slots |
 
-All three adapters implement renderer ABI major 1. They do not replace DataPage, DataTables,
-CommandDialog, CommandForm, Toolbar, Canvas, or another Components-owned composition. The
-[primitive adaptation reference](primitive-adaptation.md) lists the exact nine-slot profile.
+All three adapters publish stable `CratisPresentationUiLibrary` manifests for renderer ABI major
+1. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another
+Components-owned composition. The [primitive adaptation reference](primitive-adaptation.md) lists
+the exact nine-slot profile. Stable profile selection means nine-slot primitive adaptation, never
+full-catalog replacement.
 
 ```mermaid
 graph TD
@@ -58,9 +60,9 @@ claim.
 ## Providers and setup values
 
 A renderer library may mount its own provider around the selected Components scope. Application
-resources that the renderer ABI cannot safely transport stay outside that scope. In particular,
-`rendererSetup` accepts only adapter-declared boolean attestations. Never place a credential,
-license key, cache, provider instance, or mutable configuration object in it.
+resources that the renderer ABI cannot safely transport stay outside that scope. The stable
+`CratisRendererSetup` shape accepts only adapter-declared boolean attestations. Never place a
+credential, license key, cache, provider instance, or mutable configuration object in it.
 
 PrimeReact 11 demonstrates the boundary: the application passes its key directly to its own outer
 PrimeReact provider, then gives Components only a non-secret boolean assertion that setup occurred.
