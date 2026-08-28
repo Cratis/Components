@@ -10,7 +10,7 @@ stable parts, and state attributes. React Aria is an internal implementation
 dependency for selected interaction primitives.
 
 [![NPM](https://img.shields.io/npm/v/@cratis/components?label=@cratis/components&logo=npm)](https://www.npmjs.com/package/@cratis/components)
-[![Documentation](https://github.com/Cratis/Documentation/actions/workflows/pages.yml/badge.svg)](https://github.com/Cratis/Documentation/actions/workflows/pages.yml)
+[Documentation](https://cratis.io/components/)
 
 ## Start here
 
