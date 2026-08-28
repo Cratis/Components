@@ -23,6 +23,7 @@ const createFixture = () => {
         'run-task-on-workspaces.js',
         'compat-manifest.json',
         '.github/workflows/publish.yml',
+        '.github/workflows/javascript-build.yml',
     ]) {
         writeFileSync(
             path.join(fixture, relativePath),
@@ -75,6 +76,33 @@ test('the guard detects an automatic publish trigger', () => {
         );
         writeFileSync(workflowPath, workflow);
         assert.throws(() => verifyReleaseSafety(fixture), /automatic trigger/);
+    });
+});
+
+test('the guard detects release-evidence write permissions', () => {
+    withFixture((fixture) => {
+        const workflowPath = path.join(fixture, '.github/workflows/javascript-build.yml');
+        const workflow = readFileSync(workflowPath, 'utf8').replace(
+            '            contents: read\n',
+            '            contents: read\n            id-token: write\n',
+        );
+        writeFileSync(workflowPath, workflow);
+        assert.throws(
+            () => verifyReleaseSafety(fixture),
+            /must not request write permissions/,
+        );
+    });
+});
+
+test('the guard detects missing release-evidence retention', () => {
+    withFixture((fixture) => {
+        const workflowPath = path.join(fixture, '.github/workflows/javascript-build.yml');
+        const workflow = readFileSync(workflowPath, 'utf8').replace(
+            '                  retention-days: 30\n',
+            '',
+        );
+        writeFileSync(workflowPath, workflow);
+        assert.throws(() => verifyReleaseSafety(fixture), /explicit 30-day retention/);
     });
 });
 

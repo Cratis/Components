@@ -150,6 +150,23 @@ npx markdownlint-cli2 README.md Source/README.md
 npx linkinator README.md Source/README.md --markdown --recurse
 ```
 
+Release-policy contributors can verify the deterministic contract, fail-closed workflow guards,
+and source-candidate evidence generator without publishing anything:
+
+```bash
+yarn verify-compat-manifest
+yarn verify-release-safety
+yarn test-release-policy
+yarn test-release-evidence
+yarn test-renderer-adapter-matrix
+yarn generate-release-evidence --output /absolute/path/to/empty/evidence-directory
+```
+
+The caller-provided evidence directory is temporary/untracked output. The hosted workflow retains
+its source-candidate artifact for 30 days; that upload is not npm provenance and grants no
+publication authority. Trusted-publisher provenance remains a separate future owner-authorized
+publish-job requirement.
+
 Source changes follow the repository's framework rules and the applicable build,
 type, specification, export, package-archive, accessibility-diagnostic, and
 Storybook gates. Renderer adapter contributors must also run the

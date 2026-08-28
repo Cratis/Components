@@ -28,6 +28,7 @@ on:
             - 'Storybook/**'
             - 'scripts/**'
             - 'compat-manifest.json'
+            - 'README.md'
             - 'RELEASE.md'
             - 'run-task-on-workspaces.js'
             - 'package.json'
@@ -49,6 +50,7 @@ on:
             - 'Storybook/**'
             - 'scripts/**'
             - 'compat-manifest.json'
+            - 'README.md'
             - 'RELEASE.md'
             - 'run-task-on-workspaces.js'
             - 'package.json'
@@ -133,6 +135,56 @@ jobs:
             - name: Test every Storybook story
               working-directory: Source
               run: yarn test-storybook
+
+    # Builds and retains source-candidate archives and SBOM evidence only. This job has
+    # no publication authority and its artifact is not npm trusted-publisher provenance.
+    release-evidence:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+
+            - name: Yarn install
+              run: yarn install --immutable
+
+            - name: Test release-evidence generator
+              run: yarn test-release-evidence
+
+            - name: Generate source-candidate release evidence
+              run: >-
+                  yarn generate-release-evidence
+                  --output "${{ runner.temp }}/components-v4-release-evidence"
+
+            - name: Upload source-candidate release evidence
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              with:
+                  name: components-v4-source-candidate-${{ github.sha }}
+                  path: |
+                      ${{ runner.temp }}/components-v4-release-evidence/*.tgz
+                      ${{ runner.temp }}/components-v4-release-evidence/SHA256SUMS
+                      ${{ runner.temp }}/components-v4-release-evidence/SHA512SUMS
+                      ${{ runner.temp }}/components-v4-release-evidence/*.cdx.json
+                      ${{ runner.temp }}/components-v4-release-evidence/release-evidence.json
+                  if-no-files-found: error
+                  retention-days: 30
 
     # Builds the artifact that actually ships to npm (the `prepare` script: tsc -b +
     # rollup + copy-css) and loads every subpath of the `exports` map from it.

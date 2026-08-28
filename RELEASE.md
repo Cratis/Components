@@ -37,14 +37,33 @@ manifest before publication is enabled.
 
 ## Build immutable candidates
 
+The `release-evidence` job in `.github/workflows/javascript-build.yml` is a read-only,
+source-candidate evidence job. It builds each publishable workspace shape once, packs the exact
+seven `gaScope.publicPackages` archives once, records SHA-256 and SHA-512 checksums, binds a
+reproducible CycloneDX 1.6 SBOM to each archive and commit, and retains the resulting hosted
+artifact for 30 days. It cannot publish and is not npm trusted-publisher provenance. Contributors
+can reproduce the same evidence in an empty caller-owned directory:
+
+```bash
+yarn test-release-evidence
+yarn generate-release-evidence --output /absolute/path/to/empty/evidence-directory
+```
+
+The output directory is never a repository artifact and must not be committed. The evidence index
+retains `publicationEnabled: false`; generation refuses publication-enabled metadata.
+
+A future owner-authorized publication job must separately provide trusted-publisher provenance and
+consume reviewed immutable archives without rebuilding them. That job does not exist in this
+source-candidate tranche.
+
 1. Check out the exact reviewed commit and install with the immutable lockfile.
 2. Run all release gates for the seven-package scope and private Plain/Storybook evidence.
 3. Pack each public package exactly once. Never rebuild between candidate verification and
    publication.
-4. Retain every immutable tarball and record its SHA-512 digest.
-5. Generate and retain an SBOM for every tarball.
-6. Retain verifiable build provenance that binds commit, workflow, package, version, tarball digest,
-   and SBOM.
+4. Retain every immutable tarball and record its SHA-256 and SHA-512 digests.
+5. Generate and retain an archive-bound SBOM for every tarball.
+6. In the future authorized publish job, retain trusted-publisher provenance that binds commit,
+   workflow, package, version, tarball digest, and SBOM.
 7. Stage candidates under a reviewed non-default npm dist-tag. A candidate must never replace the
    default installation tag implicitly.
 
