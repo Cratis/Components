@@ -1,6 +1,8 @@
 # Cratis Components
 
-Components is a React component library aligned with Arc application patterns.
+React components for CQRS and event-sourced applications built with
+[Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms,
+query-backed data tables, and higher-order application surfaces.
 
 This is the owning source repository for `@cratis/components`. The current
 package uses Cratis-owned React markup, public TypeScript types, design tokens,
@@ -8,7 +10,7 @@ stable parts, and state attributes. React Aria is an internal implementation
 dependency for selected interaction primitives.
 
 [![NPM](https://img.shields.io/npm/v/@cratis/components?label=@cratis/components&logo=npm)](https://www.npmjs.com/package/@cratis/components)
-[![Documentation](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml/badge.svg)](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml)
+[![Documentation](https://github.com/Cratis/Documentation/actions/workflows/pages.yml/badge.svg)](https://github.com/Cratis/Documentation/actions/workflows/pages.yml)
 
 ## Start here
 
@@ -87,6 +89,23 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 - [Product-owned documentation source](https://github.com/Cratis/Components/tree/main/Documentation)
 - [Package README](./Source/README.md)
 - [Components 3 to 4 migration guide](./Source/MIGRATION.md)
+
+## The Cratis ecosystem
+
+Components consumes generated contracts from [Arc](https://github.com/Cratis/Arc) and is commonly
+used with read models backed by [Chronicle](https://github.com/Cratis/Chronicle).
+
+- [Chronicle](https://github.com/Cratis/Chronicle) — event-sourcing database and runtime, with .NET
+  and additional language clients.
+- [Arc](https://github.com/Cratis/Arc) — CQRS framework for ASP.NET Core, including validation,
+  authorization, and TypeScript proxy generation; Arc does not require event sourcing.
+- [CLI](https://github.com/Cratis/cli) and Workbench — inspect and diagnose Chronicle stores.
+- [Samples](https://github.com/Cratis/Samples) — runnable examples spanning the stack.
+- [Fundamentals](https://github.com/Cratis/Fundamentals) and
+  [Specifications](https://github.com/Cratis/Specifications) — shared primitives and specification
+  infrastructure.
+
+See [cratis.io](https://www.cratis.io) for the complete ecosystem and documentation.
 
 ## Migration tooling
 

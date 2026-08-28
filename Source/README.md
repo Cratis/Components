@@ -1,6 +1,8 @@
 # @cratis/components
 
-Components is a React component library aligned with Arc application patterns.
+React components for CQRS and event-sourced applications built with
+[Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms,
+query-backed data tables, and higher-order application surfaces.
 
 The package provides React components for Arc commands, queries, dialogs,
 forms, and application surfaces. Components owns its public markup, TypeScript
@@ -29,7 +31,7 @@ The current package manifest declares these peer dependencies:
 Strict installers can declare them explicitly; keep both Arc packages on the same application version:
 
 ```bash
-ARC_VERSION=22.3.0
+ARC_VERSION=22.4.0
 npm install @cratis/components \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
@@ -72,7 +74,18 @@ export const App = () => (
 );
 ```
 
-The provider owns locale, Components-specific labels, and the optional toast region. Styling is CSS-owned.
+The provider owns locale, Components-specific labels, the experimental renderer boundary, and the
+optional toast region. The default renderer needs no additional package. Optional renderer packages
+are independently versioned and selected with the provider's `library` prop:
+
+- `@cratis/components.mui` — MUI 9.x / Emotion 11.x stable presentation slots;
+- `@cratis/components.primereact` — PrimeReact 11.x stable presentation slots, with an
+  application-owned outer provider and license key;
+- `@cratis/components.primereact10` — required separately for PrimeReact 10 and not yet part of this
+  source checkpoint.
+
+Adapter-specific themes, providers, SSR setup, peers, and license boundaries remain documented by
+the adapter package. Styling for the built-in renderer is CSS-owned.
 
 ```tsx
 <CratisComponentsProvider

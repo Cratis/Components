@@ -1,8 +1,24 @@
 {
     "name": "@cratis/components",
     "version": "3.0.0",
-    "description": "",
+    "description": "React components for CQRS and event-sourced apps — command dialogs, typed forms, and query-backed data tables for Cratis Arc",
+    "keywords": [
+        "react",
+        "react-components",
+        "component-library",
+        "cqrs",
+        "event-sourcing",
+        "cratis",
+        "arc",
+        "chronicle",
+        "commands",
+        "queries",
+        "data-table",
+        "forms",
+        "typescript"
+    ],
     "author": "Cratis",
+    "homepage": "https://www.cratis.io/components/",
     "license": "MIT",
     "repository": {
         "type": "git",

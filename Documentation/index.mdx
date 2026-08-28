@@ -1,130 +1,117 @@
 ---
 title: Components
-description: React components aligned with Arc application patterns.
+description: The React component library for CQRS and event-sourced applications with Cratis — command dialogs, typed forms, and query-backed data tables that consume Arc's generated proxies.
 ---
 
-import { Card, CardGrid, Steps } from '@astrojs/starlight/components';
+import { CardGrid } from '@astrojs/starlight/components';
 import SimpleCard from '@components/SimpleCard.astro';
 import TopicHero from '@components/TopicHero.astro';
 
 <TopicHero
     icon='laptop'
     eyebrow='Components'
-    title='React components aligned with Arc application patterns'
+    title='React components wired to your proxies'
 >
-    Components is a React component library aligned with Arc application patterns. The
-    current package owns its public React markup, TypeScript contracts, semantic tokens,
-    stable parts, and component behavior.
+    Command dialogs, forms, tables, and application surfaces that consume
+    [Arc's](/arc/) generated proxies. Components owns its public contracts,
+    semantic parts, and built-in renderer, with optional independently versioned
+    MUI and PrimeReact adapters.
 </TopicHero>
 
 ## Start here
 
 <CardGrid>
-    <SimpleCard title='Install Components' icon='rocket' link='#minimal-setup'>
-        Install the package, import its structural styles, and mount the provider.
+    <SimpleCard title='Getting started' icon='rocket' link='/components/getting-started/'>
+        Install the package, mount the provider, and render your first proxy-driven screen.
     </SimpleCard>
-    <SimpleCard
-        title='Choose a component area'
-        icon='list-format'
-        link='#component-areas'
-    >
+    <SimpleCard title='Why Components' icon='approve-check' link='/components/why-components/'>
+        Understand what Components adds to Arc-generated command and query contracts.
+    </SimpleCard>
+    <SimpleCard title='Choose a component area' icon='list-format' link='#component-areas'>
         Start from the screen job rather than a raw component inventory.
     </SimpleCard>
-    <SimpleCard title='Keep Arc separate' icon='puzzle' link='#relationship-to-arc'>
-        Distinguish Arc-generated contracts from the React compositions that consume them.
+    <SimpleCard title='Styling' icon='seti:folder' link='/components/styling/'>
+        Use the built-in token/theme boundary or an explicitly selected renderer adapter.
     </SimpleCard>
 </CardGrid>
 
 ## Minimal setup
 
-<Steps>
-1. Install the package.
+```tsx
+import '@cratis/components/tokens';
+import '@cratis/components/styles';
+import '@cratis/components/theme'; // optional built-in baseline
+import { CratisComponentsProvider } from '@cratis/components';
 
-    ```bash
-    npm install @cratis/components
-    ```
+export const App = () => (
+    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+        <YourApp />
+    </CratisComponentsProvider>
+);
+```
 
-1. Import semantic tokens and component structure. The baseline theme is
-   optional.
+The built-in renderer is zero-configuration. Optional renderer packages are selected explicitly;
+the application retains their provider, peer, SSR, styling, and license responsibilities.
 
-    ```tsx
-    import '@cratis/components/tokens';
-    import '@cratis/components/styles';
-    import '@cratis/components/theme'; // optional baseline appearance
-    ```
+## Recipes
 
-1. Mount the provider.
-
-    ```tsx
-    import { CratisComponentsProvider } from '@cratis/components';
-
-    export const App = () => (
-        <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
-            <YourApp />
-        </CratisComponentsProvider>
-    );
-    ```
-
-</Steps>
-
-The current package manifest defines the exact React, Arc, Fundamentals, and
-optional Pixi peer ranges. Verify those ranges for the package version selected.
-
-## Relationship to Arc
-
-Components consumes generated command and query contracts and React contexts
-from Arc packages. Applications may use Arc without Components.
-
-Components does not by itself establish design-system completeness,
-accessibility conformance, browser coverage, or compatibility with every
-Arc/React/package-version combination.
+<CardGrid>
+    <SimpleCard title='Build a form' icon='open-book' link='/components/building-a-form/'>
+        Collect input and execute a command with `CommandDialog` and `CommandForm` fields.
+    </SimpleCard>
+    <SimpleCard title='Display data' icon='seti:db' link='/components/displaying-data/'>
+        Render a query or observable query with `DataPage` and the data-table wrappers.
+    </SimpleCard>
+    <SimpleCard title='Multi-step form' icon='list-format' link='/components/multi-step-form/'>
+        Gather information across named stages with `StepperCommandDialog`.
+    </SimpleCard>
+    <SimpleCard title='A list screen with actions' icon='puzzle' link='/components/list-screen-with-actions/'>
+        Build a full screen with rows, dialogs, toolbar actions, and selection details.
+    </SimpleCard>
+</CardGrid>
 
 ## Component areas
 
 <CardGrid>
-    <Card title='Command input' icon='approve-check'>
+    <SimpleCard title='Command input' icon='approve-check' link='/components/commanddialog/'>
         Typed fields, forms, dialogs, and multi-step command flows.
-    </Card>
-    <Card title='Data display' icon='seti:db'>
+    </SimpleCard>
+    <SimpleCard title='Data display' icon='seti:db' link='/components/datapage/'>
         Query-backed and local-array tables, list pages, filters, and detail surfaces.
-    </Card>
-    <Card title='Application surfaces' icon='laptop'>
+    </SimpleCard>
+    <SimpleCard title='Application surfaces' icon='laptop' link='/components/dialogs/'>
         Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars.
-    </Card>
-    <Card title='Structured editors' icon='pencil'>
+    </SimpleCard>
+    <SimpleCard title='Structured editors' icon='pencil' link='/components/schemaeditor/'>
         JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views.
-    </Card>
-    <Card title='Styling boundary' icon='seti:config'>
-        Semantic tokens, component styles, an optional baseline theme, and stable parts.
-    </Card>
+    </SimpleCard>
 </CardGrid>
 
+## Relationship to Arc and Chronicle
+
+Components consumes generated command/query contracts and React contexts from [Arc](/arc/).
+Applications may use Arc without Components, and Arc does not require event sourcing. Applications
+that use [Chronicle](/chronicle/) commonly render its projected read models through these surfaces.
+
 :::caution[Evaluate the exact application profile]
-Package existence, examples, Storybook output, and passing checks do not
-establish maturity, accessibility conformance, browser coverage, support,
-security, or production suitability. Direct third-party UI dependencies retained
-by an application keep their own package, provider, styling, and license
-boundaries.
+Package existence, examples, Storybook output, and passing checks do not establish universal
+maturity, accessibility, browser coverage, support, security, or production suitability. Optional
+renderer packages retain their own provider, dependency, styling, SSR, and license boundaries.
 :::
 
 ## Continue
 
 <CardGrid>
-    <SimpleCard
-        title='Components source and README'
-        icon='seti:folder'
-        link='https://github.com/Cratis/Components'
-    >
-        Package setup, migration guidance, contribution paths, and current limits.
+    <SimpleCard title='Components source' icon='seti:folder' link='https://github.com/Cratis/Components'>
+        Package setup, migration guidance, contribution paths, and current limitations.
     </SimpleCard>
-    <SimpleCard
-        title='Components on npm'
-        icon='open-book'
-        link='https://www.npmjs.com/package/@cratis/components'
-    >
+    <SimpleCard title='Components on npm' icon='open-book' link='https://www.npmjs.com/package/@cratis/components'>
         Published package metadata and versions.
     </SimpleCard>
     <SimpleCard title='Arc' icon='puzzle' link='/arc/'>
-        The CQRS framework whose application patterns Components aligns with.
+        The CQRS framework whose generated application contracts Components consumes.
+    </SimpleCard>
+    <SimpleCard title='Chronicle' icon='seti:db' link='/chronicle/'>
+        The event-sourcing database and runtime behind projected read models.
     </SimpleCard>
 </CardGrid>
