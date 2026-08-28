@@ -172,7 +172,7 @@ describe('when using the MUI stable presentation profile', () => {
     it('should provide CSS variables only when no outer MUI theme exists', () => {
         let defaultSeen: Theme | undefined;
         const defaultMarkup = renderToStaticMarkup(
-            <Provider>
+            <Provider setup={{}}>
                 <ThemeProbe observe={(theme) => (defaultSeen = theme)} />
             </Provider>,
         );
@@ -183,7 +183,7 @@ describe('when using the MUI stable presentation profile', () => {
         let nestedSeen: Theme | undefined;
         renderToStaticMarkup(
             <ThemeProvider theme={outerTheme}>
-                <Provider>
+                <Provider setup={{}}>
                     <ThemeProbe observe={(theme) => (nestedSeen = theme)} />
                 </Provider>
             </ThemeProvider>,
