@@ -46,7 +46,8 @@ Put application customization outside `CratisComponentsProvider`:
 </ThemeProvider>
 ```
 
-The renderer provider ABI receives only `children`; it cannot receive an Emotion cache. SSR hosts
+The renderer provider ABI receives only `children` and non-secret boolean setup attestations; it
+cannot receive an Emotion cache. SSR hosts
 must create an Emotion cache per request, mount Emotion's `CacheProvider` outside the Components
 provider, and extract critical styles from that same request-local cache. Sharing a cache between
 requests can leak styles and ordering. RTL additionally requires the host MUI theme direction and

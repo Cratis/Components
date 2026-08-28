@@ -69,6 +69,8 @@ export const unstable_RendererContext = createContext<
     unstable_RendererContextValue | undefined
 >(undefined);
 
+const emptyRendererSetup = Object.freeze({}) as unstable_RendererSetup;
+
 const nestedLibraryDiagnostic = (
     library: unstable_UiLibrary,
 ): unstable_AdapterDiagnostic => ({
@@ -91,8 +93,11 @@ export const unstable_RendererRoot = ({
     const parent = useContext(unstable_RendererContext);
     const selected = useMemo(() => unstable_resolveLibraryInput(library), [library]);
     const setup = useMemo(
-        () => Object.freeze({ ...(rendererSetup ?? {}) }),
-        [rendererSetup],
+        () =>
+            rendererSetup
+                ? Object.freeze({ ...rendererSetup })
+                : (parent?.rendererSetup ?? emptyRendererSetup),
+        [parent?.rendererSetup, rendererSetup],
     );
     const layer = useMemo(
         () =>

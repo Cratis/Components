@@ -88,6 +88,38 @@ describe('when using renderer provider setup', () => {
         Object.isFrozen(observedSetup).should.equal(true);
     });
 
+    it('should inherit frozen setup attestations through a nested provider', () => {
+        const observed: Readonly<Record<string, boolean>>[] = [];
+        const LibraryProvider = ({
+            children,
+            setup,
+        }: {
+            children: React.ReactNode;
+            setup: Readonly<Record<string, boolean>>;
+        }) => {
+            observed.push(setup);
+            return <>{children}</>;
+        };
+        const library = createTestLibrary('configured', buttonSlot(FirstButton), {
+            Provider: LibraryProvider,
+        });
+
+        renderToStaticMarkup(
+            <CratisComponentsProvider
+                library={library}
+                rendererSetup={{ 'sample.license-configured': true }}
+            >
+                <CratisComponentsProvider library={library}>
+                    <span />
+                </CratisComponentsProvider>
+            </CratisComponentsProvider>,
+        );
+
+        observed.should.have.lengthOf(2);
+        observed[0].should.deep.equal({ 'sample.license-configured': true });
+        observed[1].should.equal(observed[0]);
+    });
+
     it('should not invoke the overlay environment during render without document', () => {
         let invocations = 0;
         const overlayEnvironment = {

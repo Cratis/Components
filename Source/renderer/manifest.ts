@@ -7,12 +7,24 @@ import type { unstable_AdapterDiagnostic } from './errors';
 import type { unstable_SlotId, unstable_SlotMap } from './slots';
 
 /**
- * Non-secret application setup attestations supplied to a renderer provider.
- * Values are booleans by design so credentials cannot cross the Components boundary.
+ * Open declaration-merging surface for renderer-specific, non-secret setup attestations.
+ * Adapter packages add boolean keys only; credentials never belong in this interface.
  *
  * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
  */
-export type unstable_RendererSetup = Readonly<Record<string, boolean>>;
+// Adapter packages add only non-secret boolean attestations through declaration merging.
+// biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires an interface.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface unstable_RendererSetupExtensions extends Record<never, never> {}
+
+/**
+ * Non-secret application setup attestations supplied to a renderer provider.
+ *
+ * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
+ */
+export type unstable_RendererSetup = Readonly<{
+    [Key in keyof unstable_RendererSetupExtensions]?: boolean;
+}>;
 
 /** Props supplied to a renderer library provider. */
 export interface unstable_UiLibraryProviderProps {

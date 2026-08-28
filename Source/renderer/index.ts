@@ -69,6 +69,7 @@ export {
     type unstable_RendererExtensions,
     type unstable_RendererProps,
     type unstable_RendererSetup,
+    type unstable_RendererSetupExtensions,
     type unstable_UiLibrary,
     type unstable_UiLibraryProviderProps,
 } from './manifest';
