@@ -1,6 +1,6 @@
 ---
 title: Use the baseline theme
-description: Apply the license-free Cratis baseline appearance globally or to one subtree.
+description: Apply the optional Cratis baseline appearance globally or to one subtree.
 ---
 
 Import the baseline after tokens and structural styles:
@@ -13,7 +13,7 @@ import '@cratis/components/theme';
 
 `tokens` supplies conservative light defaults on `:root`. The `theme` import adds document foreground/background, system dark-mode values, explicit scheme classes, forced-colors tuning, and `.cratis-theme` subtree defaults. No provider option or wrapper class is required for the normal whole-application setup.
 
-The baseline intentionally remains visually familiar to Components 2/3 consumers: Lara-adjacent blue actions, neutral surfaces, 6px radii, comparable control density, and similar overlay depth. It is implemented entirely with Cratis markup and tokens. Exact pixel identity is not promised where stronger focus, control-boundary, disabled-state, or status contrast improves accessibility.
+The baseline intentionally remains visually familiar to Components 2/3 consumers: Lara-adjacent blue actions, neutral surfaces, 6px radii, comparable control density, and similar overlay depth. It is implemented entirely with Cratis markup and tokens. Exact pixel identity is not promised where focus, control-boundary, disabled-state, or status treatments differ. Verify the final theme against the application's own contrast and accessibility requirements.
 
 ## Dark mode
 

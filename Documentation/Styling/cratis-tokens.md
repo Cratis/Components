@@ -16,12 +16,12 @@ The `--cratis-*` variables are the supported theming boundary. The `tokens` entr
 | `--cratis-green-500`                                    | Success state.                                             |
 | `--cratis-orange-500`                                   | Warning state.                                             |
 | `--cratis-red-500`                                      | Error/destructive indicator.                               |
-| `--cratis-action-background` / `-hover` / `-active`     | Accessible primary-action state fills.                     |
+| `--cratis-action-background` / `-hover` / `-active`     | Primary-action state fills.                                |
 | `--cratis-action-text`                                  | Text/icons on the primary action.                          |
-| `--cratis-info-background` / `--cratis-info-text`       | Accessible info badge/tag pair.                            |
-| `--cratis-success-background` / `--cratis-success-text` | Accessible success pair.                                   |
-| `--cratis-warning-background` / `--cratis-warning-text` | Accessible warning pair.                                   |
-| `--cratis-danger-background` / `--cratis-danger-text`   | Accessible danger pair.                                    |
+| `--cratis-info-background` / `--cratis-info-text`       | Info badge/tag background and text pair.                   |
+| `--cratis-success-background` / `--cratis-success-text` | Success background and text pair.                          |
+| `--cratis-warning-background` / `--cratis-warning-text` | Warning background and text pair.                          |
+| `--cratis-danger-background` / `--cratis-danger-text`   | Danger background and text pair.                           |
 
 ## Surfaces
 
@@ -103,5 +103,9 @@ These tokens coordinate Components only. Configure direct Prime or product overl
 ```
 
 The token layer has renderer-independent baseline values and does not read legacy `--surface-*`, `--text-color`, `--primary-color`, or `--p-*` names. Import `@cratis/components/tokens` first, then assign product values to `--cratis-*` directly. This keeps product theming independent of any renderer token vocabulary.
+
+Test contrast for every overridden foreground/background pair in each appearance mode the
+application supports. Token names and baseline values do not establish accessibility conformance
+for an application theme.
 
 Use [Stable component parts](pass-through.md) when token changes are not enough for a product-specific component treatment.

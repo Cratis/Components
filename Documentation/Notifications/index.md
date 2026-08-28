@@ -1,6 +1,6 @@
 ---
 title: Notifications
-description: App-wide accessible notifications through the Cratis-owned toast queue.
+description: App-wide notifications with documented region and dismissal labels through the Cratis-owned toast queue.
 ---
 
 Mount one toaster, then dispatch notifications from React components or ordinary modules.

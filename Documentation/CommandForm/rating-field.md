@@ -1,6 +1,6 @@
 # RatingField
 
-`RatingField` provides a Cratis-owned accessible star-rating radio group bound to a `number` property.
+`RatingField` provides a Cratis-owned star-rating radio group with labeled options bound to a `number` property.
 
 ## Usage
 

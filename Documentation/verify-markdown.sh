@@ -32,11 +32,17 @@ fi
 
 npx markdownlint-cli2 \
     "README.md" \
+    "release.md" \
     "Documentation/**/*.md" \
     "Documentation/**/*.mdx" \
     "Source/*.md" \
     "Codemods/*.md" \
-    "ESLint/*.md"
+    "ESLint/*.md" \
+    "Conformance/*.md" \
+    "Adapters/**/*.md" \
+    "scripts/*.md" \
+    "Storybook/*.md" \
+    "!**/node_modules/**"
 LINT_EXIT_CODE=$?
 
 echo ""
@@ -58,8 +64,10 @@ if ! command -v node >/dev/null 2>&1; then
     exit 1
 fi
 
-node "$SCRIPT_DIR/verify-local-links.mjs" "$SCRIPT_DIR"
-LINK_EXIT_CODE=$?
+LINK_EXIT_CODE=0
+for SCAN_ROOT in "$SCRIPT_DIR" "$ROOT_DIR/Adapters" "$ROOT_DIR/scripts"; do
+    node "$SCRIPT_DIR/verify-local-links.mjs" "$SCAN_ROOT" || LINK_EXIT_CODE=$?
+done
 
 echo ""
 if [ $LINK_EXIT_CODE -eq 0 ]; then

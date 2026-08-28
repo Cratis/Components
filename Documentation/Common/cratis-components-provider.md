@@ -8,7 +8,7 @@ description: Configure locale, Components-owned labels, and the app-wide toast r
 ## Basic setup
 
 ```tsx
-import { CratisComponentsProvider } from '@cratis/components/Common';
+import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
     <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
@@ -54,18 +54,22 @@ Unknown Components 3 renderer options are intentionally a type error. Remove `li
 The certified MUI, PrimeReact 11, and PrimeReact 10 manifests implement the stable nine-slot
 `stable-presentation/v1` profile. That stable profile adapts only Button, IconButton, TextInput,
 TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. It never means full-catalog
-replacement. The broader fourteen-slot renderer system, composition, scopes, atomic slots, and
-fallback diagnostics remain experimental.
+replacement.
+
+Pass one stable presentation manifest to `library`. The broader fourteen-slot renderer system,
+ordered manifest composition, scopes/islands, atomic slots, lazy loading, and public adapter
+discovery remain experimental even though some `unstable_` contracts are available to repository
+and adapter authors.
 
 The provider exposes:
 
-| Prop                 | Purpose                                                                                               |
-| -------------------- | ----------------------------------------------------------------------------------------------------- |
-| `library`            | One renderer manifest or an ordered last-wins composition. Omit it for the built-in default.          |
-| `libraryMode`        | `strict` rejects invalid profile promises; `degrade` reports them after mount.                        |
-| `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects fallback.                                    |
-| `overlayEnvironment` | Stable, post-commit portal-container lookup through `CratisOverlayEnvironment`.                       |
-| `rendererSetup`      | Stable adapter-declared boolean attestations. Never put credentials, keys, or caches here.            |
+| Prop                 | Purpose                                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `library`            | One stable presentation manifest. Ordered arrays are experimental last-wins composition. Omit for built-in.   |
+| `libraryMode`        | Experimental profile-promise behavior: `strict` rejects invalid promises; `degrade` reports after mount.      |
+| `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects an undeclared slot instead of expanding adapter scope. |
+| `overlayEnvironment` | Stable, post-commit portal-container lookup through `CratisOverlayEnvironment`.                                |
+| `rendererSetup`      | Stable adapter-declared boolean attestations. Never put credentials, keys, or caches here.                     |
 
 Adapter packages declaration-merge their own keys into `CratisRendererSetupExtensions`, so
 importing an adapter gives typed setup without adding vendor fields to Core. The provider copies and
@@ -225,6 +229,41 @@ Pass `toaster` to mount the app-wide notification region:
 ```
 
 You may instead mount `<Toaster />` yourself when its placement belongs elsewhere in the application tree.
+
+## Choose an overlay container
+
+The stable `overlayEnvironment` contract lets an application choose where Components-owned portals
+mount without consulting browser globals during import or server rendering:
+
+```tsx
+import {
+    CratisComponentsProvider,
+    type CratisComponentsProviderProps,
+} from '@cratis/components';
+
+const overlayEnvironment: NonNullable<
+    CratisComponentsProviderProps['overlayEnvironment']
+> = {
+    getContainer: () =>
+        typeof document === 'undefined'
+            ? null
+            : document.getElementById('application-overlays'),
+};
+
+export const App = () => (
+    <CratisComponentsProvider
+        value={{ locale: 'en-US' }}
+        overlayEnvironment={overlayEnvironment}
+    >
+        <Application />
+        <div id='application-overlays' />
+    </CratisComponentsProvider>
+);
+```
+
+Returning `null` defers the overlay; Components does not silently retarget it to `document.body`.
+Direct vendor overlays keep their own portal and z-index configuration. Verify layer order and focus
+behavior in the real application shell when both systems can open together.
 
 ## Styling
 

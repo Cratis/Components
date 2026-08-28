@@ -12,7 +12,7 @@ Everything about _data_ stays with your application:
 
 ## Key Features
 
-- Sidebar (an accessible overlay panel, built on Components' own React Aria-based primitives) opening to the right of the view, with a topics list and per-topic conversations
+- Sidebar (an overlay panel with documented focus and dismissal behavior, built on Components' own React Aria-based primitives) opening to the right of the view, with a topics list and per-topic conversations
 - Host-side topic auto-naming contract with a pending placeholder until the name arrives
 - `@`-mentions from a list you hold or a provider callback you resolve, rendered distinctly in message bodies
 - Emoji picker in the composer, with a quick row of recently used emoji

@@ -10,7 +10,7 @@ An adapter can provide private preview-only provider/theme setup at `<workspace>
 
 ## Isolation
 
-Each inventory entry is built by a separate Storybook process into `Source/storybook-static/renderers/<adapter-id>`. The manager references those outputs through Storybook Composition. This process boundary is mandatory for PrimeReact 10.9.9 and 11.1.0 because they are incompatible versions of the same package.
+Each inventory entry is built by a separate Storybook process into `Source/storybook-static/renderers/<adapter-id>`. The manager references those outputs through Storybook Composition. This process boundary is mandatory for PrimeReact 10 and 11 because they are incompatible majors of the same package. Each child attestation records the exact upstream version selected by the checked-in adapter matrix.
 
 Every child records an ignored `cratis-renderer-attestation.json` beside its generated index. The build fails unless it resolves the adapter workspace's exact PrimeReact development version and no other PrimeReact version. Non-Prime previews fail if they reach PrimeReact at all.
 
@@ -29,4 +29,4 @@ yarn workspace @cratis/components.storybook test-storybook
 yarn workspace @cratis/components.storybook dev
 ```
 
-`test-storybook` runs 4 isolated previews × 261 stable stories × 2 appearance modes: **2,088 story/appearance/axe cases**. There is no story sampling or tag exclusion. The composed renderer control preserves a stable story id when available, but switching previews remounts the iframe and loses component-local state.
+`test-storybook` runs every discovered stable story in each isolated preview and both maintained appearance modes. There is no story sampling or tag exclusion; generated preview indexes are the authoritative inventory. The composed renderer control preserves a stable story id when available, but switching previews remounts the iframe and loses component-local state.
