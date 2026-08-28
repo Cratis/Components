@@ -11,7 +11,7 @@ if (process.argv.length < 3) {
 const task = process.argv[2];
 if (task === 'publish-version') {
     console.error(
-        "The obsolete 'publish-version' workspace task is disabled. Releases require the reviewed, immutable-tarball process in RELEASE.md.",
+        "The obsolete 'publish-version' workspace task is disabled. Releases require the reviewed, immutable-tarball process in release.md.",
     );
     process.exit(1);
 }

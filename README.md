@@ -135,7 +135,7 @@ README](./ESLint/README.md) owns installation and flat-config composition. Compo
 3.x codemod train. Use tooling in `>=4 <5` (for example the shell-safe `^4.0.0` range), never
 `latest`. Codemod and ESLint patches release independently from Core; codemod preflight enforces
 the bundled compatibility manifest and installed Components support window. Publication remains
-fail closed under the repository [release policy](./RELEASE.md).
+fail closed under the repository [release policy](./release.md).
 
 ## Contributing
 
