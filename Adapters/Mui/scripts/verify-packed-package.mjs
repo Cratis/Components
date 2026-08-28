@@ -39,7 +39,11 @@ const link = (source, target) => {
 };
 
 const parsePackJson = (output) => {
-    for (let index = output.lastIndexOf('['); index >= 0; index = output.lastIndexOf('[', index - 1)) {
+    for (
+        let index = output.lastIndexOf('[');
+        index >= 0;
+        index = output.lastIndexOf('[', index - 1)
+    ) {
         try {
             const parsed = JSON.parse(output.slice(index));
             if (Array.isArray(parsed) && parsed[0]?.filename) return parsed;

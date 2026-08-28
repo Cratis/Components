@@ -243,10 +243,7 @@ const muiButtonStyles = (appearance: ResolvedButtonAppearance) => ({
 const muiLoadingIndicator = (pt: ButtonProps['pt']) => (
     <span
         {...pt?.spinner}
-        className={classNames(
-            'cratis-mui-button__spinner',
-            pt?.spinner?.className,
-        )}
+        className={classNames('cratis-mui-button__spinner', pt?.spinner?.className)}
         data-cratis-part='spinner'
         aria-hidden='true'
     />
@@ -652,9 +649,7 @@ const useResolvedMuiChoice = (
     forwardedRef: ForwardedRef<HTMLInputElement>,
 ): ResolvedMuiChoice => {
     const parts = props.pt as ChoiceParts | undefined;
-    const inputPart = parts?.input as
-        | InputHTMLAttributes<HTMLInputElement>
-        | undefined;
+    const inputPart = parts?.input as InputHTMLAttributes<HTMLInputElement> | undefined;
     const checked = props.checked ?? inputPart?.checked;
     const defaultChecked = props.defaultChecked ?? inputPart?.defaultChecked;
     const disabled = props.disabled ?? inputPart?.disabled;
@@ -772,12 +767,7 @@ const MuiChoiceControl = ({
                     disabled={disabled}
                     onChange={onChange}
                     icon={choiceIndicator('radio', radioParts, attributes, false)}
-                    checkedIcon={choiceIndicator(
-                        'radio',
-                        radioParts,
-                        attributes,
-                        true,
-                    )}
+                    checkedIcon={choiceIndicator('radio', radioParts, attributes, true)}
                     slotProps={{ root, input }}
                 />
             );
@@ -799,12 +789,7 @@ const MuiChoiceControl = ({
                     defaultChecked={uncontrolledDefault}
                     disabled={disabled}
                     onChange={onChange}
-                    icon={choiceIndicator(
-                        'checkbox',
-                        checkboxParts,
-                        attributes,
-                        false,
-                    )}
+                    icon={choiceIndicator('checkbox', checkboxParts, attributes, false)}
                     checkedIcon={choiceIndicator(
                         'checkbox',
                         checkboxParts,
@@ -891,11 +876,7 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
     return (
         <label
             {...parts?.root}
-            className={classNames(
-                'cratis-mui-choice',
-                parts?.root?.className,
-                className,
-            )}
+            className={classNames('cratis-mui-choice', parts?.root?.className, className)}
             style={{ ...parts?.root?.style, ...style }}
             data-cratis-part='root'
             {...attributes}
