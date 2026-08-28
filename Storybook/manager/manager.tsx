@@ -2,14 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React from 'react';
-import {
-    addons,
-    types,
-    useStorybookApi,
-    useStorybookState,
-} from 'storybook/manager-api';
+import { addons, types, useStorybookApi, useStorybookState } from 'storybook/manager-api';
 import { themes } from 'storybook/theming';
-import { resolveRendererSelection } from './renderer-navigation';
+import {
+    canonicalRendererStoryId,
+    resolveRendererSelection,
+} from './renderer-navigation';
 
 const addonId = 'cratis/renderer-switcher';
 const toolId = `${addonId}/tool`;
@@ -19,6 +17,7 @@ const RendererSwitcher = () => {
     const state = useStorybookState();
     const refs = state.refs;
     const selectedRef = state.refId as string | undefined;
+    const selectedStoryId = canonicalRendererStoryId(state.storyId, selectedRef);
     const rendererRefs = Object.values(refs).sort((left, right) =>
         (left.title ?? left.id).localeCompare(right.title ?? right.id),
     );
@@ -26,17 +25,22 @@ const RendererSwitcher = () => {
     return (
         <label
             title='Changing renderer remounts the preview iframe and does not preserve local story state.'
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, paddingInline: 8 }}
+            style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                paddingInline: 8,
+            }}
         >
             <span style={{ fontSize: 12, fontWeight: 600 }}>Renderer</span>
             <select
                 aria-label='Renderer'
                 value={selectedRef ?? ''}
                 disabled={rendererRefs.length === 0}
-                onChange={event => {
+                onChange={(event) => {
                     const refId = event.currentTarget.value;
                     const selection = resolveRendererSelection(
-                        state.storyId,
+                        selectedStoryId,
                         state.viewMode ?? 'story',
                         refId,
                         refs[refId],
@@ -50,7 +54,7 @@ const RendererSwitcher = () => {
                 style={{ minWidth: 190, height: 28, borderRadius: 4 }}
             >
                 {!selectedRef && <option value=''>Choose renderer</option>}
-                {rendererRefs.map(ref => (
+                {rendererRefs.map((ref) => (
                     <option key={ref.id} value={ref.id}>
                         {ref.title ?? ref.id}
                     </option>
@@ -67,11 +71,13 @@ let currentTheme = urlParams.get('docsSiteTheme') ?? 'dark';
 const applyManagerConfig = () => {
     addons.setConfig({
         theme: currentTheme === 'light' ? themes.light : themes.dark,
-        navSize: 300,
-        bottomPanelHeight: 300,
-        panelPosition: 'bottom',
-        showToolbar: true,
-        showTabs: true,
+        layout: {
+            navSize: 300,
+            bottomPanelHeight: 300,
+            panelPosition: 'bottom',
+            showToolbar: true,
+            showTabs: true,
+        },
     });
 };
 
@@ -91,7 +97,7 @@ addons.getChannel().on('STORY_RENDERED', () => {
     }
 });
 
-window.addEventListener('message', event => {
+window.addEventListener('message', (event) => {
     if (event.source !== window.parent || event.origin !== window.location.origin) return;
     if (event.data?.type !== 'STORYBOOK_THEME_CHANGE') return;
     const newTheme = event.data.theme;

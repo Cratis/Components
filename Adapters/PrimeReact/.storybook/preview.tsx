@@ -7,6 +7,7 @@ import { PassThroughProvider } from '@primereact/core/passthrough';
 import { ThemeProvider as PrimeThemeProvider } from '@primereact/core/theme';
 import Aura from '@primeuix/themes/aura';
 import type { ReactNode } from 'react';
+import './preview.css';
 
 export interface RendererEnvironmentProps {
     readonly appearance: string;

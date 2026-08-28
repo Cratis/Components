@@ -10,10 +10,28 @@ export interface RendererEnvironmentProps {
 }
 
 /** Storybook-only Material UI theme boundary for this isolated renderer preview. */
-export const RendererEnvironment = ({ appearance, children }: RendererEnvironmentProps) => {
+export const RendererEnvironment = ({
+    appearance,
+    children,
+}: RendererEnvironmentProps) => {
     const dark = appearance !== 'baseline-light';
     const theme = useMemo(
-        () => createTheme({ cssVariables: true, palette: { mode: dark ? 'dark' : 'light' } }),
+        () =>
+            createTheme({
+                cssVariables: true,
+                palette: {
+                    mode: dark ? 'dark' : 'light',
+                    primary: { main: dark ? '#90caf9' : '#005ea8' },
+                    warning: {
+                        main: dark ? '#ffb74d' : '#8a3b00',
+                        contrastText: dark ? '#111827' : '#ffffff',
+                    },
+                    error: {
+                        main: dark ? '#ef9a9a' : '#c62828',
+                        contrastText: dark ? '#111827' : '#ffffff',
+                    },
+                },
+            }),
         [dark],
     );
     return <ThemeProvider theme={theme}>{children}</ThemeProvider>;

@@ -127,7 +127,7 @@ const rendererBuildAttestation = (): Plugin => ({
 });
 
 const config: StorybookConfig = {
-    stories: [`${posixPath(sourceRoot)}/!(dist|node_modules|storybook-static)/**/*.stories.@(ts|tsx)`],
+    stories: ['../!(dist|node_modules|storybook-static)/**/*.stories.@(ts|tsx)'],
     addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-vitest'],
     framework: { name: '@storybook/react-vite', options: {} },
     core: { builder: '@storybook/builder-vite' },

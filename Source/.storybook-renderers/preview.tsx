@@ -4,8 +4,8 @@
 import { addons } from 'storybook/preview-api';
 import React from 'react';
 import { RendererPreviewProvider } from 'virtual:cratis-renderer-preview';
-import '../../Source/.storybook/foundation.css';
-import '../../Source/.storybook/preview.css';
+import '../.storybook/foundation.css';
+import '../.storybook/preview.css';
 
 const darkSelector = 'cratis-dark';
 const lightSelector = 'cratis-light';
@@ -29,7 +29,7 @@ const appearanceModes = {
 } as const;
 
 type Appearance = keyof typeof appearanceModes;
-const allBodyClasses: string[] = Object.values(appearanceModes).flatMap(mode =>
+const allBodyClasses: string[] = Object.values(appearanceModes).flatMap((mode) =>
     mode.bodyClass ? [mode.bodyClass] : [],
 );
 let docsSiteAppearance: Appearance | undefined;
@@ -42,10 +42,12 @@ const applyAppearance = (appearance: Appearance) => {
     if (mode.bodyClass) document.body.classList.add(mode.bodyClass);
 };
 
-addons.getChannel().on('STORYBOOK_THEME_CHANGE', ({ theme }: { readonly theme: string }) => {
-    docsSiteAppearance = theme === 'light' ? 'baseline-light' : 'baseline-dark';
-    applyAppearance(docsSiteAppearance);
-});
+addons
+    .getChannel()
+    .on('STORYBOOK_THEME_CHANGE', ({ theme }: { readonly theme: string }) => {
+        docsSiteAppearance = theme === 'light' ? 'baseline-light' : 'baseline-dark';
+        applyAppearance(docsSiteAppearance);
+    });
 
 export const tags = ['autodocs'];
 
@@ -66,8 +68,12 @@ export const globalTypes = {
 };
 
 export const decorators = [
-    (Story: React.ComponentType, context: { readonly globals: { readonly appearance?: Appearance } }) => {
-        const appearance = docsSiteAppearance ?? context.globals.appearance ?? 'baseline-dark';
+    (
+        Story: React.ComponentType,
+        context: { readonly globals: { readonly appearance?: Appearance } },
+    ) => {
+        const appearance =
+            docsSiteAppearance ?? context.globals.appearance ?? 'baseline-dark';
         applyAppearance(appearance);
         return (
             <RendererPreviewProvider appearance={appearance}>
