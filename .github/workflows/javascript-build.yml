@@ -565,12 +565,15 @@ jobs:
                     reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2 "${PIXI[@]}"
                   yarn node verify.mjs "${{ matrix.pixi }}"
 
-    verify-primereact10-package-managers:
+    verify-renderer-adapters:
+        name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }})
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        timeout-minutes: 25
         strategy:
             fail-fast: false
             matrix:
+                adapter: [mui, primereact11, primereact10]
+                boundary: [minimum, current]
                 manager: [npm, pnpm, yarn-pnp]
 
         steps:
@@ -589,78 +592,12 @@ jobs:
             - name: Yarn install
               run: yarn install --immutable
 
-            - name: Build and pack Core and PrimeReact 10 adapter
-              run: |
-                  yarn workspace @cratis/components prepare
-                  yarn workspace @cratis/components.conformance build
-                  yarn workspace @cratis/components.primereact10 ci
-                  yarn workspace @cratis/components pack --out /tmp/cratis-components.tgz
-                  yarn workspace @cratis/components.primereact10 pack \
-                    --out /tmp/cratis-components-primereact10.tgz
+            - name: Test renderer adapter matrix validation
+              run: yarn test-renderer-adapter-matrix
 
-            - name: Create renderer consumer fixture
-              run: |
-                  mkdir /tmp/primereact10-consumer
-                  cat > /tmp/primereact10-consumer/package.json <<'JSON'
-                  {"private":true,"type":"module"}
-                  JSON
-                  cat > /tmp/primereact10-consumer/verify.mjs <<'JS'
-                  const api = await import('@cratis/components.primereact10');
-                  if (Object.keys(api).join(',') !== 'primeReact10UiLibrary') {
-                      throw new Error('PrimeReact 10 adapter exposes an unexpected public value.');
-                  }
-                  if (api.primeReact10UiLibrary.id !== 'cratis-primereact10') {
-                      throw new Error('PrimeReact 10 adapter loaded the wrong renderer manifest.');
-                  }
-                  JS
-
-            - name: Verify npm renderer consumer
-              if: matrix.manager == 'npm'
-              working-directory: /tmp/primereact10-consumer
-              run: |
-                  npm install --ignore-scripts --no-audit --no-fund \
-                    /tmp/cratis-components.tgz \
-                    /tmp/cratis-components-primereact10.tgz \
-                    primereact@10.9.9 \
-                    @cratis/arc@22.4.0 @cratis/arc.react@22.4.0 \
-                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
-                    react@19.2.8 react-dom@19.2.8 \
-                    reflect-metadata@0.2.2 tsyringe@4.10.0
-                  node verify.mjs
-
-            - name: Verify pnpm renderer consumer
-              if: matrix.manager == 'pnpm'
-              working-directory: /tmp/primereact10-consumer
-              run: |
-                  corepack prepare pnpm@10.17.1 --activate
-                  pnpm add --ignore-scripts --strict-peer-dependencies \
-                    /tmp/cratis-components.tgz \
-                    /tmp/cratis-components-primereact10.tgz \
-                    primereact@10.9.9 \
-                    @cratis/arc@22.4.0 @cratis/arc.react@22.4.0 \
-                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
-                    react@19.2.8 react-dom@19.2.8 \
-                    reflect-metadata@0.2.2 tsyringe@4.10.0
-                  pnpm exec node verify.mjs
-
-            - name: Verify Yarn PnP renderer consumer
-              if: matrix.manager == 'yarn-pnp'
-              working-directory: /tmp/primereact10-consumer
-              run: |
-                  corepack prepare yarn@4.5.3 --activate
-                  cat > .yarnrc.yml <<'YAML'
-                  nodeLinker: pnp
-                  packageExtensions:
-                    "@cratis/arc.react@*":
-                      dependencies:
-                        rxjs: "*"
-                  YAML
-                  yarn add \
-                    /tmp/cratis-components.tgz \
-                    /tmp/cratis-components-primereact10.tgz \
-                    primereact@10.9.9 \
-                    @cratis/arc@22.4.0 @cratis/arc.react@22.4.0 \
-                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
-                    react@19.2.8 react-dom@19.2.8 \
-                    reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2
-                  yarn node verify.mjs
+            - name: Verify packed ${{ matrix.adapter }} ${{ matrix.boundary }} boundary with ${{ matrix.manager }}
+              run: >-
+                  yarn verify-renderer-adapters
+                  --adapter ${{ matrix.adapter }}
+                  --boundary ${{ matrix.boundary }}
+                  --manager ${{ matrix.manager }}

@@ -34,6 +34,8 @@
         "test": "node ./run-task-on-workspaces.js test",
         "generate-compat-manifest": "node ./scripts/generate-compat-manifest.mjs --write",
         "verify-compat-manifest": "node ./scripts/generate-compat-manifest.mjs --check",
+        "test-renderer-adapter-matrix": "node --test ./scripts/verify-renderer-adapter-matrix.test.mjs",
+        "verify-renderer-adapters": "node ./scripts/verify-renderer-adapters.mjs",
         "ci": "yarn verify-compat-manifest && node ./run-task-on-workspaces.js ci",
         "publish-version": "node ./run-task-on-workspaces.js publish-version $*",
         "up": "node ./run-task-on-workspaces.js up"
@@ -95,6 +97,7 @@
         "reflect-metadata": "0.2.2",
         "rollup": "^4.63.1",
         "rollup-plugin-peer-deps-external": "^2.2.4",
+        "semver": "7.8.5",
         "sinon": "^22.1.0",
         "sinon-chai": "^4.0.1",
         "storybook": "^10.5.10",

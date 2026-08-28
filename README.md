@@ -151,7 +151,8 @@ npx linkinator README.md Source/README.md --markdown --recurse
 
 Source changes follow the repository's framework rules and the applicable build,
 type, specification, export, package-archive, accessibility-diagnostic, and
-Storybook gates.
+Storybook gates. Renderer adapter contributors must also run the
+[packed lower/current package-manager matrix](./scripts/renderer-adapter-matrix.md).
 
 ## Community and repository
 
