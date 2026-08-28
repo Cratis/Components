@@ -10,6 +10,7 @@ contracts, stable parts, and design tokens. React Aria supplies selected
 interaction primitives internally; consumers do not import or style React Aria.
 
 - [Canonical Components documentation](https://cratis.io/components/)
+- [Renderer adapters and coexistence](https://cratis.io/components/renderers/)
 - [Migration guide](./MIGRATION.md)
 - [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)
 
@@ -85,7 +86,9 @@ are independently versioned and selected with the provider's `library` prop:
   separate MIT-era provider, global theme, and upstream-major boundary.
 
 Adapter-specific themes, providers, SSR setup, peers, and license boundaries remain documented by
-the adapter package. Styling for the built-in renderer is CSS-owned.
+the adapter package. Styling for the built-in renderer is CSS-owned. The canonical renderer guide
+bounds primitive adaptation, direct vendor coexistence, custom composition, unsupported claims, and
+license/key ownership.
 
 ```tsx
 <CratisComponentsProvider

@@ -1,0 +1,10 @@
+- name: Renderer adapters and coexistence
+  href: index.md
+- name: Primitive adaptation profile
+  href: primitive-adaptation.md
+- name: Build a custom vendor-native composition
+  href: custom-composition.md
+- name: Unsupported renderer claims
+  href: unsupported.md
+- name: Renderer licensing policy
+  href: licensing.md
