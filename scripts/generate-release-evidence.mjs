@@ -94,21 +94,30 @@ export const resolveEvidenceCommit = (requestedCommit) => {
     return headCommit;
 };
 
-/** Rejects tracked or staged bytes that are not represented by the evidence commit. */
+/** Rejects working-tree bytes that are not represented by the evidence commit. */
 export const validateCleanWorkingTreeStatus = (status) => {
     if (typeof status !== 'string' || status.trim().length > 0) {
         throw new Error(
-            'Release evidence requires a clean tracked working tree at the checked-out commit.',
+            'Release evidence requires a clean working tree at the checked-out commit.',
         );
     }
 };
 
-const requireCleanWorkingTree = () =>
+/** Verifies the repository state used to build release evidence. */
+export const requireCleanWorkingTree = (
+    cwd = repositoryDirectory,
+    { includeUntracked = true } = {},
+) =>
     validateCleanWorkingTreeStatus(
-        run('git', ['status', '--porcelain', '--untracked-files=no'], {
-            capture: true,
-            timeout: 30_000,
-        }),
+        run(
+            'git',
+            [
+                'status',
+                '--porcelain',
+                includeUntracked ? '--untracked-files=all' : '--untracked-files=no',
+            ],
+            { capture: true, timeout: 30_000, cwd },
+        ),
     );
 
 const readJsonFile = (filePath, description) => {
@@ -184,11 +193,15 @@ const discoverWorkspaces = () => {
     return workspaces;
 };
 
-const prepareOutputDirectory = (outputArgument) => {
+export const prepareOutputDirectory = (outputArgument) => {
     const outputDirectory = path.resolve(outputArgument);
     let created = false;
     if (fs.existsSync(outputDirectory)) {
-        if (!fs.statSync(outputDirectory).isDirectory())
+        const output = fs.lstatSync(outputDirectory);
+        if (output.isSymbolicLink()) {
+            throw new Error('Evidence output directory must not be a symbolic link.');
+        }
+        if (!output.isDirectory())
             throw new Error('Evidence output must be a directory.');
         if (fs.readdirSync(outputDirectory).length > 0)
             throw new Error('Evidence output directory must be empty.');
@@ -219,14 +232,16 @@ const cleanFailureState = (outputDirectory, outputCreated) => {
     }
 };
 
-const buildPublishableShape = (releasePackages) => {
+export const buildPublishableShape = (releasePackages, execute = run) => {
     for (const packageEntry of releasePackages) {
-        let task;
-        if (packageEntry.role === 'core') task = 'prepare';
-        else if (['conformance', 'renderer-adapter'].includes(packageEntry.role)) {
-            task = 'build';
+        if (packageEntry.role === 'core') {
+            execute(yarnCommand, ['workspace', packageEntry.name, 'run', 'prepare']);
+        } else if (
+            ['conformance', 'renderer-adapter'].includes(packageEntry.role)
+        ) {
+            execute(yarnCommand, ['workspace', packageEntry.name, 'run', 'clean']);
+            execute(yarnCommand, ['workspace', packageEntry.name, 'run', 'build']);
         }
-        if (task) run(yarnCommand, ['workspace', packageEntry.name, 'run', task]);
     }
 };
 
@@ -341,7 +356,7 @@ export function generateReleaseEvidence({ output, commit: requestedCommit } = {}
             `${JSON.stringify(index, null, 2)}\n`,
         );
         validateReleaseEvidenceIndex(index, outputDirectory);
-        requireCleanWorkingTree();
+        requireCleanWorkingTree(repositoryDirectory, { includeUntracked: false });
         return index;
     } catch (error) {
         cleanFailureState(outputDirectory, outputCreated);

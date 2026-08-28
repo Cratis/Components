@@ -11,11 +11,7 @@ import type { SwitchProps } from '../Common/Switch';
 import type { TextAreaProps } from '../Common/TextArea';
 import type { TextInputProps } from '../Common/TextInput';
 import type { ProgressBarProps } from '../Display/ProgressBar';
-import {
-    unstable_defineUiLibrary,
-    type CratisPresentationUiLibraryProviderProps,
-    type unstable_UiLibrary,
-} from './manifest';
+import type { CratisPresentationUiLibraryProviderProps } from './manifest';
 
 /** Stable renderer profile implemented by certified presentation adapters. */
 export const CRATIS_PRESENTATION_PROFILE = 'stable-presentation/v1' as const;
@@ -152,11 +148,26 @@ const hasCanonicalProfileSlots = (profileSlots: readonly unknown[]): boolean =>
  * @param library Stable presentation library declaration.
  * @returns A defensive, deeply frozen manifest copy.
  */
-export const definePresentationUiLibrary = <
-    const Library extends CratisPresentationUiLibrary,
->(
-    library: Library,
-): Library => {
+export const definePresentationUiLibrary = (
+    library: CratisPresentationUiLibrary,
+): CratisPresentationUiLibrary => {
+    if (
+        typeof library.id !== 'string' ||
+        library.id.length > 128 ||
+        !/^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$/u.test(library.id)
+    ) {
+        invalidPresentationLibrary('id must be a valid package-local renderer identity');
+    }
+    if (
+        typeof library.displayName !== 'string' ||
+        library.displayName.length === 0 ||
+        library.displayName.length > 128
+    ) {
+        invalidPresentationLibrary('displayName must contain between 1 and 128 characters');
+    }
+    if (library.Provider !== undefined && typeof library.Provider !== 'function') {
+        invalidPresentationLibrary('Provider must be a React component when supplied');
+    }
     if (library.profile !== CRATIS_PRESENTATION_PROFILE) {
         invalidPresentationLibrary(`profile must be '${CRATIS_PRESENTATION_PROFILE}'`);
     }
@@ -225,21 +236,41 @@ export const definePresentationUiLibrary = <
     }
     if (
         requiredCapabilityIds.some(
-            (capability) => !library.capabilities.includes(capability),
+            (capability, index) => library.capabilities[index] !== capability,
         )
     ) {
         invalidPresentationLibrary(
-            'capabilities must include slot.render, parts.passthrough, and ssr.staticRender',
+            'capabilities must begin with slot.render, parts.passthrough, and ssr.staticRender',
         );
     }
     if (new Set(library.capabilities).size !== library.capabilities.length) {
         invalidPresentationLibrary('capabilities must not contain duplicates');
     }
 
-    // SAFETY: every stable field and all nine declarations were validated above, so the manifest
-    // satisfies the broader internal library shape without admitting an atomic or unknown slot.
-    const unstableLibrary = library as unknown as unstable_UiLibrary;
-    const frozenLibrary = unstable_defineUiLibrary(unstableLibrary);
-    // SAFETY: the shared freezer copies values without changing the validated stable shape.
-    return frozenLibrary as unknown as Library;
+    const slots = Object.freeze(
+        Object.fromEntries(
+            cratisPresentationSlotIds.map((slotId) => [
+                slotId,
+                Object.freeze({
+                    mode: library.slots[slotId].mode,
+                    fidelity: library.slots[slotId].fidelity,
+                    render: library.slots[slotId].render,
+                }),
+            ]),
+        ),
+    ) as CratisPresentationSlotMap;
+
+    return Object.freeze({
+        id: library.id,
+        displayName: library.displayName,
+        abi: library.abi,
+        level: library.level,
+        profile: library.profile,
+        profileSlots: cratisPresentationSlotIds,
+        capabilities: Object.freeze([
+            ...library.capabilities,
+        ]) as CratisPresentationCapabilities,
+        slots,
+        Provider: library.Provider,
+    });
 };
