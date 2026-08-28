@@ -69,6 +69,8 @@ This project is part of [Cratis](https://www.cratis.io) — free, MIT-licensed t
 - **Supporting** — [Fundamentals](https://github.com/Cratis/Fundamentals), [Specifications](https://github.com/Cratis/Specifications), [Synopsis](https://github.com/Cratis/Synopsis), [Lens](https://github.com/Cratis/Lens), [Narrator](https://github.com/Cratis/Narrator)
 - **[Samples](https://github.com/Cratis/Samples)** — runnable event sourcing and CQRS samples for the whole stack
 
+Blog: [blog.cratis.io](https://blog.cratis.io)
+
 ## Support
 
 Cratis is an open community, and we are glad to help users, teams evaluating the stack, and contributors.
