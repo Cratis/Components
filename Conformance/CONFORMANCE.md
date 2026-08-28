@@ -19,7 +19,9 @@ The automated families are:
 - a separate packed-package gate covering every emitted declaration, runtime entry loading, and strict Bundler/NodeNext consumer compilation.
 
 A requested skip is accepted only when the relevant declaration is `unsupported`/`emulated`, or the
-request names a capability the library does not claim. An unjustified skip is a failure.
+request names a capability the library does not claim. An unjustified skip is a failure. Adapters
+whose upstream provider remains application-owned may supply an outer `wrapper` fixture; the runner
+uses it for the exercised environment but never configures or transports credentials.
 
 ## Private plain-DOM falsification fixture
 

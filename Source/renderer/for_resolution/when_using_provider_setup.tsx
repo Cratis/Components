@@ -4,9 +4,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 import {
+    unstable_RendererScope as RendererScope,
     unstable_useCapability,
     unstable_useOverlayEnvironment,
     unstable_useRendererId,
+    type unstable_RendererSetup,
 } from '..';
 import { buttonSlot, createTestLibrary, FirstButton } from './testLibrary';
 
@@ -57,6 +59,134 @@ describe('when using renderer provider setup', () => {
 
         providerRenders.should.equal(1);
         (html.match(/data-library-provider/g) ?? []).should.have.lengthOf(1);
+    });
+
+    it('should pass only frozen non-secret boolean setup attestations to a library provider', () => {
+        let observedSetup: Readonly<Record<string, boolean>> | undefined;
+        const LibraryProvider = ({
+            children,
+            setup,
+        }: {
+            children: React.ReactNode;
+            setup: Readonly<Record<string, boolean>>;
+        }) => {
+            observedSetup = setup;
+            return <>{children}</>;
+        };
+        const library = createTestLibrary('configured', buttonSlot(FirstButton), {
+            Provider: LibraryProvider,
+        });
+
+        renderToStaticMarkup(
+            <CratisComponentsProvider
+                library={library}
+                rendererSetup={{ 'sample.license-configured': true }}
+            >
+                <span />
+            </CratisComponentsProvider>,
+        );
+
+        observedSetup!.should.deep.equal({ 'sample.license-configured': true });
+        Object.isFrozen(observedSetup).should.equal(true);
+    });
+
+    it('should discard non-boolean runtime setup values before a library provider sees them', () => {
+        let observedSetup: Readonly<Record<string, boolean>> | undefined;
+        const LibraryProvider = ({
+            children,
+            setup,
+        }: {
+            children: React.ReactNode;
+            setup: Readonly<Record<string, boolean>>;
+        }) => {
+            observedSetup = setup;
+            return <>{children}</>;
+        };
+        const library = createTestLibrary('configured', buttonSlot(FirstButton), {
+            Provider: LibraryProvider,
+        });
+        // SAFETY: Deliberately models an untyped JavaScript caller attempting to cross the
+        // boolean-only boundary with credential-shaped data.
+        const unsafeSetup = {
+            'sample.license-configured': true,
+            'sample.credential': 'example.invalid/not-a-credential',
+        } as unknown as unstable_RendererSetup;
+
+        renderToStaticMarkup(
+            <CratisComponentsProvider library={library} rendererSetup={unsafeSetup}>
+                <span />
+            </CratisComponentsProvider>,
+        );
+
+        observedSetup!.should.deep.equal({
+            'sample.license-configured': true,
+        });
+    });
+
+    it('should inherit frozen setup attestations through a nested provider', () => {
+        const observed: Readonly<Record<string, boolean>>[] = [];
+        const LibraryProvider = ({
+            children,
+            setup,
+        }: {
+            children: React.ReactNode;
+            setup: Readonly<Record<string, boolean>>;
+        }) => {
+            observed.push(setup);
+            return <>{children}</>;
+        };
+        const library = createTestLibrary('configured', buttonSlot(FirstButton), {
+            Provider: LibraryProvider,
+        });
+
+        renderToStaticMarkup(
+            <CratisComponentsProvider
+                library={library}
+                rendererSetup={{ 'sample.license-configured': true }}
+            >
+                <CratisComponentsProvider library={library}>
+                    <span />
+                </CratisComponentsProvider>
+            </CratisComponentsProvider>,
+        );
+
+        observed.should.have.lengthOf(2);
+        observed[0].should.deep.equal({ 'sample.license-configured': true });
+        observed[1].should.equal(observed[0]);
+    });
+
+    it('should forward root setup attestations to a scoped library provider', () => {
+        let observedSetup: Readonly<Record<string, boolean>> | undefined;
+        const ScopedProvider = ({
+            children,
+            setup,
+        }: {
+            children: React.ReactNode;
+            setup: Readonly<Record<string, boolean>>;
+        }) => {
+            observedSetup = setup;
+            return <>{children}</>;
+        };
+        const rootLibrary = createTestLibrary('root', buttonSlot(FirstButton));
+        const scopedLibrary = createTestLibrary('scoped', buttonSlot(FirstButton), {
+            Provider: ScopedProvider,
+        });
+
+        renderToStaticMarkup(
+            <CratisComponentsProvider
+                library={rootLibrary}
+                rendererSetup={{ 'sample.license-configured': true }}
+            >
+                <RendererScope use={scopedLibrary} only={['common.button']}>
+                    <span />
+                </RendererScope>
+            </CratisComponentsProvider>,
+        );
+
+        observedSetup!.should.deep.equal({
+            'sample.license-configured': true,
+        });
+        Object.isFrozen(observedSetup).should.equal(true);
     });
 
     it('should not invoke the overlay environment during render without document', () => {

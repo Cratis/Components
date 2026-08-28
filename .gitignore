@@ -240,6 +240,7 @@ node_modules/
 typings/
 *.d.ts
 !*.scss.d.ts
+!Adapters/**/src/upstream-*-shim.d.ts
 
 # Visual Studio 6 build log
 *.plg

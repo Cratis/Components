@@ -6,7 +6,7 @@ import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
 import { Toaster, type ToasterProps } from '../Notifications/Toaster';
 import { unstable_RendererRoot } from '../renderer/RendererContext';
-import type { unstable_UiLibrary } from '../renderer/manifest';
+import type { unstable_RendererSetup, unstable_UiLibrary } from '../renderer/manifest';
 import type { unstable_CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
 import { CratisComponentsContext } from './CratisComponentsContext';
 import { cratisDefaults } from './CratisComponentsDefaults';
@@ -182,6 +182,11 @@ export interface CratisComponentsProviderProps {
     rendererFallback?: 'core' | 'throw';
     /** Experimental host environment for overlay portal containers. */
     overlayEnvironment?: unstable_CratisOverlayEnvironment;
+    /**
+     * Non-secret renderer setup attestations. Values are booleans so credentials and license
+     * tokens never cross the Components provider boundary.
+     */
+    rendererSetup?: unstable_RendererSetup;
     /** Application content. */
     children: ReactNode;
 }
@@ -264,6 +269,7 @@ export const CratisComponentsProvider = ({
     libraryMode,
     rendererFallback,
     overlayEnvironment,
+    rendererSetup,
     children,
 }: CratisComponentsProviderProps) => {
     const resolved = useMemo(
@@ -278,6 +284,7 @@ export const CratisComponentsProvider = ({
             libraryMode={libraryMode}
             rendererFallback={rendererFallback}
             overlayEnvironment={overlayEnvironment}
+            rendererSetup={rendererSetup}
         >
             <CratisComponentsContext.Provider value={resolved}>
                 <I18nProvider locale={validLocale(resolved.locale)}>

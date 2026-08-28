@@ -7,6 +7,34 @@ import type { unstable_AdapterDiagnostic } from './errors';
 import type { unstable_SlotId, unstable_SlotMap } from './slots';
 
 /**
+ * Open declaration-merging surface for renderer-specific, non-secret setup attestations.
+ * Adapter packages add boolean keys only; credentials never belong in this interface.
+ *
+ * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
+ */
+// Adapter packages add only non-secret boolean attestations through declaration merging.
+// biome-ignore lint/style/useConsistentTypeDefinitions: declaration merging requires an interface.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface unstable_RendererSetupExtensions extends Record<never, never> {}
+
+/**
+ * Non-secret application setup attestations supplied to a renderer provider.
+ *
+ * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
+ */
+export type unstable_RendererSetup = Readonly<{
+    [Key in keyof unstable_RendererSetupExtensions]?: boolean;
+}>;
+
+/** Props supplied to a renderer library provider. */
+export interface unstable_UiLibraryProviderProps {
+    /** Non-secret application setup attestations. Never credentials or license tokens. */
+    readonly setup: unstable_RendererSetup;
+    /** Application content. */
+    readonly children: ReactNode;
+}
+
+/**
  * Renderer ABI major implemented by this package.
  *
  * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
@@ -39,7 +67,7 @@ export interface unstable_UiLibrary {
     /** Typed partial slot implementation table. */
     readonly slots: unstable_SlotMap;
     /** Optional library-level provider mounted once around the selected renderer scope. */
-    readonly Provider?: ComponentType<{ children: ReactNode }>;
+    readonly Provider?: ComponentType<unstable_UiLibraryProviderProps>;
     /** Optional static diagnostic preflight evaluated by renderer providers and scopes. */
     readonly preflight?: () => readonly unstable_AdapterDiagnostic[];
 }

@@ -111,7 +111,11 @@ export const unstable_RendererScope = ({
 
     return (
         <unstable_RendererContext.Provider value={value}>
-            {LibraryProvider ? <LibraryProvider>{children}</LibraryProvider> : children}
+            {LibraryProvider ? (
+                <LibraryProvider setup={value.rendererSetup}>{children}</LibraryProvider>
+            ) : (
+                children
+            )}
         </unstable_RendererContext.Provider>
     );
 };

@@ -80,17 +80,20 @@ const renderComponent = (
     return createElement(Component, ref ? { ...props, ref } : props);
 };
 
-const withProvider = (child: ReactElement) =>
-    createElement(CratisComponentsProvider, {
+const withProvider = (child: ReactElement, Wrapper: ConformanceOptions['wrapper']) => {
+    const components = createElement(CratisComponentsProvider, {
         value: { locale: 'en-US' },
         children: child,
     });
+    return Wrapper ? createElement(Wrapper, { children: components }) : components;
+};
 
 const mount = async (
     document: Document,
     declaration: unstable_SlotDeclaration<unstable_SlotId>,
     props: Readonly<Record<string, unknown>>,
     refCapable: boolean,
+    wrapper: ConformanceOptions['wrapper'],
     host: ParentNode = document.body,
 ): Promise<MountedFixture> => {
     const container = document.createElement('div');
@@ -103,6 +106,7 @@ const mount = async (
         root.render(
             withProvider(
                 renderComponent(declaration, props, refCapable ? ref : undefined),
+                wrapper,
             ),
         );
     });
@@ -389,7 +393,13 @@ const checkSlot = async (
             pt: passThrough(profile),
             'data-conformance-behavior-prop': 'forwarded',
         };
-        fixture = await mount(document, typedDeclaration, baseProps, profile.refCapable);
+        fixture = await mount(
+            document,
+            typedDeclaration,
+            baseProps,
+            profile.refCapable,
+            options.wrapper,
+        );
         if (profile.activate)
             await act(async () =>
                 profile.activate?.(document, fixture?.container ?? document.body),
@@ -401,6 +411,7 @@ const checkSlot = async (
                 typedDeclaration,
                 { ...variant, pt: passThrough(profile) },
                 profile.refCapable,
+                options.wrapper,
             );
             variantFixtures.push(variantFixture);
             if (profile.activate) {
@@ -621,6 +632,7 @@ const checkSlot = async (
                 typedDeclaration,
                 profile.createStateProps(),
                 profile.refCapable,
+                options.wrapper,
             );
             collectRenderedStates(document, observedStateAssociations);
             const stateElements =
@@ -676,6 +688,7 @@ const checkServerRendering = (
     checks: ConformanceCheck[],
     library: unstable_UiLibrary,
     profiles: readonly SlotProfile[],
+    wrapper: ConformanceOptions['wrapper'],
 ) => {
     const outputs = new Map<unstable_SlotId, string>();
     for (const profile of profiles) {
@@ -687,6 +700,7 @@ const checkServerRendering = (
                     declaration as unstable_SlotDeclaration<unstable_SlotId>,
                     profile.createProps(),
                 ),
+                wrapper,
             );
             const first = renderToString(element);
             const second = renderToString(element);
@@ -751,6 +765,7 @@ const checkHydration = async (
     library: unstable_UiLibrary,
     profiles: readonly SlotProfile[],
     document: Document,
+    wrapper: ConformanceOptions['wrapper'],
 ) => {
     const profile =
         profiles.find((candidate) => candidate.slotId === 'common.button') ?? profiles[0];
@@ -770,6 +785,7 @@ const checkHydration = async (
             declaration as unstable_SlotDeclaration<unstable_SlotId>,
             profile.createProps(),
         ),
+        wrapper,
     );
     const serverMarkup = renderToString(element);
     const container = document.createElement('div');
@@ -806,6 +822,7 @@ const checkEnvironmentalEvidence = async (
     document: Document,
     library: unstable_UiLibrary,
     profiles: readonly SlotProfile[],
+    wrapper: ConformanceOptions['wrapper'],
 ) => {
     const profile =
         profiles.find((candidate) => candidate.slotId === 'common.button') ?? profiles[0];
@@ -835,6 +852,7 @@ const checkEnvironmentalEvidence = async (
             declaration as unstable_SlotDeclaration<unstable_SlotId>,
             profile.createProps(),
             profile.refCapable,
+            wrapper,
             host,
         );
         const native = fixture.container.querySelector(profile.nativeSelector);
@@ -901,9 +919,21 @@ export const runConformance = async (
         );
         for (const profile of profiles)
             await checkSlot(checks, rendererLibrary, options, document, profile);
-        checkServerRendering(checks, rendererLibrary, profiles);
-        await checkHydration(checks, rendererLibrary, profiles, document);
-        await checkEnvironmentalEvidence(checks, document, rendererLibrary, profiles);
+        checkServerRendering(checks, rendererLibrary, profiles, options.wrapper);
+        await checkHydration(
+            checks,
+            rendererLibrary,
+            profiles,
+            document,
+            options.wrapper,
+        );
+        await checkEnvironmentalEvidence(
+            checks,
+            document,
+            rendererLibrary,
+            profiles,
+            options.wrapper,
+        );
     } else {
         addCheck(
             checks,
