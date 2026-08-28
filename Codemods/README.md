@@ -28,7 +28,7 @@ rewrite it without guessing. Only a **wildcard** re-export of the whole package 
 unsupported, for the same reason a whole-package namespace import stays unsupported: see
 [What it refuses to guess](#what-it-refuses-to-guess).
 
-The historical `CommandStepper` root namespace is a special case: it aliased the complete `CommandDialog` module. The codemod therefore maps it to `@cratis/components/CommandDialog`, preserving every namespace member. New code that only needs the standalone component should use `import { CommandStepper } from '@cratis/components/CommandStepper'` (or the equivalent re-export).
+The historical `CommandStepper` root namespace is a special case: it aliased the complete `CommandDialog` module. The codemod therefore maps it to `@cratis/components/CommandDialog`, preserving the module identity for members retained in Components 4. It cannot restore a removed module export such as the accidental `CommandStepperContent` surface. New code that only needs the standalone component should use `import { CommandStepper } from '@cratis/components/CommandStepper'` (or the equivalent re-export).
 
 Multiple namespaces in one import or re-export become one subpath statement per namespace:
 
@@ -57,11 +57,7 @@ Running the codemod again on its own output is a no-op — it only ever matches 
 named re-export whose module specifier is exactly `@cratis/components` (or the `--package`
 override), so an already-migrated subpath import or re-export is never revisited.
 
-The complete namespace → subpath map and the approved-root-symbol allowlist live in
-[`lib/namespaceMap.js`](./lib/namespaceMap.js), mirrored from `Source/index.ts`. Contributors
-must update it and the
-`ESLint/lib/rootNamespaceMap.js` mirror
-together when a namespace subpath is added, renamed, or removed.
+The complete namespace → subpath map, known removed Components 3 compatibility exports, and approved-root-symbol allowlist live in [`lib/namespaceMap.js`](./lib/namespaceMap.js), mirrored by `ESLint/lib/rootNamespaceMap.js`. Contributors must update both packages together when a namespace subpath, removed boundary, or setup symbol changes. The packages still ship independently; parity specs prevent their migration contracts from drifting.
 
 ### What it refuses to guess
 
@@ -77,6 +73,10 @@ Each of these is left completely untouched, and reported as a diagnostic instead
 - A named import of a symbol that is neither an approved setup symbol nor a known namespace
   (for example a member like `Button` that only exists _inside_ a namespace, not at the
   root). The whole import statement is left untouched rather than partially migrated.
+- The Components 3.6 `Compatibility` namespace and its direct pass-through exports. They
+  are recognized known removals, not unknown symbols: Components 4 has no compatibility
+  subpath, so the transform leaves the statement untouched and directs the consumer to
+  typed Cratis parts.
 - A TypeScript import assignment — `import Components = require('@cratis/components');`.
   This is the whole package namespace, so later member access is as ambiguous as `import * as`.
 - A dynamic `import('@cratis/components')` or a CommonJS `require('@cratis/components')`,
@@ -119,6 +119,17 @@ npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
 # Contributors to this repository can run the workspace source directly:
 node Codemods/scripts/remove-root-namespace-imports.js --check Source
 ```
+
+The same bounded package works in pnpm and Yarn 2+ projects:
+
+```sh
+pnpm dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+  cratis-components-remove-root-namespace-imports --check path/to/app/src
+yarn dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+  cratis-components-remove-root-namespace-imports --check path/to/app/src
+```
+
+Quote any path containing spaces. Angle-bracket placeholders are intentionally not used in executable examples because `<...>` is shell input-redirection syntax.
 
 Exit code is non-zero whenever an unsupported case was found (with `--check` or without —
 those always need a human), and, in `--check` mode only, whenever a supported rewrite has
@@ -193,25 +204,32 @@ Multi-statement, multi-use, wrong-payload, destructuring-with-default/rest, and 
 
 ## Run the migration sequence
 
-Use the bounded Components 4 tooling train for all three commands. Run the root-import transform first so the later transforms can resolve explicit Components-owned subpaths, then run Button appearance and change-handler migration. Preview every step before applying it:
+Use the bounded Components 4 tooling train for all three commands. The recommended source/target order is:
+
+1. With Components 3 (`>=3 <4`) installed, preview and apply the root-import transform. Its subpaths exist in both majors.
+2. Run the Components 3 gates and checkpoint the import-only change.
+3. Upgrade Core to Components 4 (`^4.0.0`).
+4. Preview and apply Button appearance, then change-handler migration; these produce Components 4 source.
+
+Preflight also accepts the Components 4 target window so the root transform can be recovered after an upgrade. It accepts no other Core major. Preview every step before applying it:
 
 ```sh
 TOOLING_RANGE='^4.0.0'
 
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-remove-root-namespace-imports --check <paths...>
+  cratis-components-remove-root-namespace-imports --check path/to/app/src
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-remove-root-namespace-imports <paths...>
+  cratis-components-remove-root-namespace-imports path/to/app/src
 
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-button-variant-tone --check <paths...>
+  cratis-components-button-variant-tone --check path/to/app/src
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-button-variant-tone <paths...>
+  cratis-components-button-variant-tone path/to/app/src
 
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-change-handler --check <paths...>
+  cratis-components-change-handler --check path/to/app/src
 npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
-  cratis-components-change-handler <paths...>
+  cratis-components-change-handler path/to/app/src
 ```
 
 Never substitute `latest`; keep tooling within `>=4 <5`. Tooling patches release independently from Core, and the bundled manifest preflight enforces the compatible migration windows. Both new CLIs require Node.js 20 or newer, bundle their own TypeScript compiler dependency, scan `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` recursively, support `--package <name>`, and exit nonzero for pending check-mode edits or any refused case. Review every diagnostic and `TODO(cratis-codemod)`, then run the consuming project's formatter, lint, type check, tests, and production build.

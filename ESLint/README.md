@@ -21,7 +21,13 @@ Use the independently released Components 4 tooling train bounded to `>=4 <5`. N
 
 ```sh
 TOOLING_RANGE='^4.0.0' # Shell-safe equivalent of >=4 <5.
-yarn add -D "@cratis/eslint-plugin-components@$TOOLING_RANGE" \
+
+# Choose the application package manager:
+npm install --save-dev "@cratis/eslint-plugin-components@$TOOLING_RANGE" \
+  @cratis/eslint-config eslint
+pnpm add --save-dev "@cratis/eslint-plugin-components@$TOOLING_RANGE" \
+  @cratis/eslint-config eslint
+yarn add --dev "@cratis/eslint-plugin-components@$TOOLING_RANGE" \
   @cratis/eslint-config eslint
 ```
 
@@ -128,6 +134,9 @@ The rule never guesses. Each of these is flagged with guidance but **not** autof
 - A named import of a symbol that is neither an approved setup symbol nor a known namespace
   (for example a member that only exists _inside_ a namespace, not at the root) — the whole
   statement is left unfixed rather than partially migrated.
+- The Components 3.6 `Compatibility` namespace and direct pass-through exports — reported
+  as known removals with typed-parts guidance and never autofixed because Components 4 has
+  no compatibility subpath.
 - Any `export … from '@cratis/components'` re-export form — flagged with the same subpath
   guidance, but re-exports are never autofixed.
 

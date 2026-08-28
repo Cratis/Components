@@ -21,6 +21,8 @@ Use native HTML for simple application-owned controls that do not need Component
 
 Components does not provide one-for-one replacements for every Prime widget. Keep an application-owned or direct Prime surface during migration when it requires tabs, sidebars, timelines, knobs, select-button groups, general popovers, grouped/expandable tables, or controlled lazy/server table sorting. Components `Toolbar` is a canvas/tool-palette control, not a replacement for every page action bar.
 
+The optional MUI, PrimeReact 11, and PrimeReact 10 adapters cover only nine `common.*` presentation slots: button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface. They do not replace Dialog, Dropdown, DatePicker, paginator, table, or another complete widget. Core retains focus, overlay, selection, and keyboard behavior; installing an adapter does not delegate key handling or recreate a Prime public API.
+
 ## Map common Dialog props
 
 | Prime Dialog             | Components Dialog                                     |

@@ -18,7 +18,7 @@
 export const packageName = '@cratis/components';
 
 /**
- * Every namespace name removed from the Components 3 root, mapped to the Components 4
+ * Every retained namespace removed from the Components 3 root, mapped to the Components 4
  * subpath it becomes: `import { Canvas } from '@cratis/components'` migrates to
  * `import * as Canvas from '@cratis/components/Canvas'`. `Types` is the one case where
  * the namespace name and its subpath differ in casing (`./types`, lowercase).
@@ -47,6 +47,21 @@ export const namespaceSubpaths = {
     Toolbar: 'Toolbar',
     Types: 'types',
 };
+
+/**
+ * Components 3 root exports that have no Components 4 root or subpath equivalent.
+ * These are known migration boundaries rather than unknown symbols: transforms must
+ * refuse them with actionable renderer-removal guidance instead of suggesting that the
+ * namespace map is incomplete.
+ */
+export const removedRootSymbols = new Set([
+    'Compatibility',
+    'assertPrimeReact11PassThroughCompatibility',
+    'components3PrimeReact11PassThroughContract',
+    'primeReact11PassThroughSentinelAttribute',
+    'primeReact11PassThroughSentinelPreset',
+    'PrimeReact11PassThroughComponent',
+]);
 
 /**
  * The primary setup surface Source/index.ts re-exports directly from the root so a
