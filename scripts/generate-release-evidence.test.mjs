@@ -8,6 +8,10 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { gzipSync } from 'node:zlib';
 import {
+    resolveEvidenceCommit,
+    validateCleanWorkingTreeStatus,
+} from './generate-release-evidence.mjs';
+import {
     archiveBindingProperties,
     assertFileHashes,
     readPackedPackageJson,
@@ -87,6 +91,21 @@ const createBoundSbom = () => ({
     },
     components: [],
     dependencies: [{ ref: '@cratis/example@1.2.3', dependsOn: [] }],
+});
+
+test('evidence commit must match the checked-out HEAD', () => {
+    assert.throws(
+        () => resolveEvidenceCommit('0'.repeat(40)),
+        /does not match checked-out HEAD/,
+    );
+});
+
+test('release evidence rejects tracked working-tree drift', () => {
+    assert.doesNotThrow(() => validateCleanWorkingTreeStatus(''));
+    assert.throws(
+        () => validateCleanWorkingTreeStatus(' M package.json'),
+        /requires a clean tracked working tree/,
+    );
 });
 
 test('archive hash mismatch fails', () => {

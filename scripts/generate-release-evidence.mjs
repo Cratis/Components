@@ -80,6 +80,38 @@ const run = (command, arguments_, options = {}) => {
 
 const yarnCommand = process.platform === 'win32' ? 'yarn.cmd' : 'yarn';
 
+/** Resolves and verifies that evidence is bound to the exact checked-out commit. */
+export const resolveEvidenceCommit = (requestedCommit) => {
+    const headCommit = validateCommit(
+        run('git', ['rev-parse', 'HEAD'], { capture: true, timeout: 30_000 }),
+    );
+    const evidenceCommit = validateCommit(requestedCommit ?? headCommit);
+    if (evidenceCommit !== headCommit) {
+        throw new Error(
+            `Evidence commit ${evidenceCommit} does not match checked-out HEAD ${headCommit}.`,
+        );
+    }
+    return headCommit;
+};
+
+/** Rejects tracked or staged bytes that are not represented by the evidence commit. */
+export const validateCleanWorkingTreeStatus = (status) => {
+    if (typeof status !== 'string' || status.trim().length > 0) {
+        throw new Error(
+            'Release evidence requires a clean tracked working tree at the checked-out commit.',
+        );
+    }
+};
+
+const requireCleanWorkingTree = () =>
+    validateCleanWorkingTreeStatus(
+        run(
+            'git',
+            ['status', '--porcelain', '--untracked-files=no'],
+            { capture: true, timeout: 30_000 },
+        ),
+    );
+
 const readJsonFile = (filePath, description) => {
     try {
         return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -241,13 +273,11 @@ export function generateReleaseEvidence({ output, commit: requestedCommit } = {}
         const compatibilityManifest = loadCompatibilityMetadata();
         const releasePackages = selectReleasePackages(compatibilityManifest);
         const workspaces = discoverWorkspaces();
+        const commit = resolveEvidenceCommit(requestedCommit);
+        requireCleanWorkingTree();
         const preparedOutput = prepareOutputDirectory(output);
         outputDirectory = preparedOutput.outputDirectory;
         outputCreated = preparedOutput.created;
-        const commit = validateCommit(
-            requestedCommit ??
-                run('git', ['rev-parse', 'HEAD'], { capture: true, timeout: 30_000 }),
-        );
 
         for (const packageEntry of releasePackages) {
             const workspace = workspaces.get(packageEntry.name);
@@ -312,6 +342,7 @@ export function generateReleaseEvidence({ output, commit: requestedCommit } = {}
             `${JSON.stringify(index, null, 2)}\n`,
         );
         validateReleaseEvidenceIndex(index, outputDirectory);
+        requireCleanWorkingTree();
         return index;
     } catch (error) {
         cleanFailureState(outputDirectory, outputCreated);
