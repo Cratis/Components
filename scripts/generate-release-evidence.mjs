@@ -105,11 +105,10 @@ export const validateCleanWorkingTreeStatus = (status) => {
 
 const requireCleanWorkingTree = () =>
     validateCleanWorkingTreeStatus(
-        run(
-            'git',
-            ['status', '--porcelain', '--untracked-files=no'],
-            { capture: true, timeout: 30_000 },
-        ),
+        run('git', ['status', '--porcelain', '--untracked-files=no'], {
+            capture: true,
+            timeout: 30_000,
+        }),
     );
 
 const readJsonFile = (filePath, description) => {
