@@ -59,10 +59,8 @@ concerns and do not justify a Core ABI change.
 MUI Core is bounded to `>=9 <10`, Emotion to `>=11 <12`, and React/ReactDOM to React 19. Vendor
 packages are peers; exact current versions are dev dependencies only for repository proof.
 
-The current `@cratis/components` peer `>=3.0.0 <4` is a temporary repository placeholder matching
-`@cratis/components.conformance` while the V4 source package is prepared. **It must be changed to
-the honest `>=4 <5` range before this adapter is published.** Publishing with the placeholder would
-misstate compatibility.
+The adapter requires `@cratis/components >=4 <5`. This range is intentionally bounded to the
+Components major whose renderer ABI and stable presentation profile it implements.
 
 See [CONFORMANCE.md](./CONFORMANCE.md) for the bounded evidence and
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licenses.

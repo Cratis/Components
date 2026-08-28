@@ -117,7 +117,7 @@ try {
     );
 
     const expectedPeers = {
-        '@cratis/components': '>=3.0.0 <4',
+        '@cratis/components': '>=4 <5',
         primereact: '>=10.9.9 <11',
         react: '^19.0.0',
         'react-dom': '^19.0.0',

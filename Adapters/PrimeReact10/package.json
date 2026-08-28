@@ -99,7 +99,7 @@
         "ci": "yarn clean && yarn lint && yarn build && yarn verify-upstream-shim && yarn typecheck-specs && yarn test && yarn verify-isolation && yarn verify-package"
     },
     "peerDependencies": {
-        "@cratis/components": ">=3.0.0 <4",
+        "@cratis/components": ">=4 <5",
         "primereact": ">=10.9.9 <11",
         "react": "^19.0.0",
         "react-dom": "^19.0.0"

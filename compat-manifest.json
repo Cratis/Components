@@ -17,7 +17,7 @@
             "name": "@cratis/components",
             "manifest": "Source/package.json",
             "role": "core",
-            "version": "3.0.0",
+            "version": "4.0.0",
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -39,7 +39,7 @@
             "name": "@cratis/eslint-plugin-components",
             "manifest": "ESLint/package.json",
             "role": "eslint",
-            "version": "0.0.0",
+            "version": "4.0.0",
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -51,7 +51,7 @@
             "name": "@cratis/components-codemods",
             "manifest": "Codemods/package.json",
             "role": "codemods",
-            "version": "0.0.0",
+            "version": "4.0.0",
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {},
@@ -65,7 +65,7 @@
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
-                "@cratis/components": ">=3.0.0 <4",
+                "@cratis/components": ">=4 <5",
                 "react": "^19.0.0",
                 "react-dom": "^19.0.0"
             },
@@ -80,7 +80,7 @@
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
-                "@cratis/components": ">=3.0.0 <4",
+                "@cratis/components": ">=4 <5",
                 "@emotion/react": ">=11 <12",
                 "@emotion/styled": ">=11 <12",
                 "@mui/material": ">=9 <10",
@@ -104,7 +104,7 @@
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
-                "@cratis/components": ">=3.0.0 <4",
+                "@cratis/components": ">=4 <5",
                 "@primereact/core": ">=11 <12",
                 "@primereact/ui": ">=11 <12",
                 "@primeuix/themes": ">=3 <4",
@@ -130,7 +130,7 @@
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
-                "@cratis/components": ">=3.0.0 <4",
+                "@cratis/components": ">=4 <5",
                 "primereact": ">=10.9.9 <11",
                 "react": "^19.0.0",
                 "react-dom": "^19.0.0"
@@ -153,11 +153,11 @@
         },
         {
             "id": "storybook",
-            "path": "Source/.storybook",
-            "purpose": "Private release-blocker evidence",
+            "path": "Storybook",
+            "purpose": "Private composed renderer evidence",
             "private": true,
             "published": false,
-            "releaseBlocker": true
+            "releaseBlocker": false
         }
     ]
 }

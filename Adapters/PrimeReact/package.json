@@ -102,7 +102,7 @@
         "ci": "yarn clean && yarn lint && yarn build && yarn typecheck-specs && yarn test && yarn verify-package"
     },
     "peerDependencies": {
-        "@cratis/components": ">=3.0.0 <4",
+        "@cratis/components": ">=4 <5",
         "@primereact/core": ">=11 <12",
         "@primereact/ui": ">=11 <12",
         "@primeuix/themes": ">=3 <4",

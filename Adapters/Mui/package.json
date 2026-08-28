@@ -99,7 +99,7 @@
         "ci": "yarn clean && yarn lint && yarn build && yarn typecheck-specs && yarn test && yarn verify-package"
     },
     "peerDependencies": {
-        "@cratis/components": ">=3.0.0 <4",
+        "@cratis/components": ">=4 <5",
         "@emotion/react": ">=11 <12",
         "@emotion/styled": ">=11 <12",
         "@mui/material": ">=9 <10",

@@ -75,9 +75,8 @@ PrimeReact packages are bounded to `>=11 <12`, PrimeUX themes to `>=3 <4`, and R
 React 19. Vendor packages are peers and are never bundled. Exact repository proof uses 11.1.0 and
 `@primeuix/themes` 3.0.0.
 
-The current `@cratis/components` peer `>=3.0.0 <4` is a temporary repository placeholder matching
-the unreleased V4 source package. **It must become the honest `>=4 <5` range before publication.**
-Publishing with the placeholder would misstate compatibility.
+The adapter requires `@cratis/components >=4 <5`. This range is intentionally bounded to the
+Components major whose renderer ABI and stable presentation profile it implements.
 
 See [CONFORMANCE.md](./CONFORMANCE.md) for bounded evidence and
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licensing.

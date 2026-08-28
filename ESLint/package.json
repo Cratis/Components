@@ -1,6 +1,6 @@
 {
     "name": "@cratis/eslint-plugin-components",
-    "version": "0.0.0",
+    "version": "4.0.0",
     "description": "Cratis Components ESLint rules: import from subpaths not the root barrel, use the Cratis dialog wrappers instead of primereact/dialog, require onBeforeExecute callbacks to return their values, keep React hooks out of view models, protect the repository-owned React-free kernel, and identify CommandForm fields by a tamper-resistant marker rather than a raw displayName string. Compose on top of @cratis/eslint-config.",
     "author": "Cratis",
     "license": "MIT",

@@ -1,6 +1,6 @@
 {
     "name": "@cratis/components",
-    "version": "3.0.0",
+    "version": "4.0.0",
     "description": "React components for CQRS and event-sourced apps — command dialogs, typed forms, and query-backed data tables for Cratis Arc",
     "keywords": [
         "react",

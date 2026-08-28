@@ -117,7 +117,7 @@ try {
     );
 
     const expectedPeers = {
-        '@cratis/components': '>=3.0.0 <4',
+        '@cratis/components': '>=4 <5',
         '@emotion/react': '>=11 <12',
         '@emotion/styled': '>=11 <12',
         '@mui/material': '>=9 <10',

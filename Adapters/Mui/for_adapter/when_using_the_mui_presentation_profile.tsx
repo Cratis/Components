@@ -211,7 +211,7 @@ describe('when using the MUI stable presentation profile', () => {
             '@emotion/styled': '>=11 <12',
             react: '^19.0.0',
             'react-dom': '^19.0.0',
-            '@cratis/components': '>=3.0.0 <4',
+            '@cratis/components': '>=4 <5',
         });
         const serialized = JSON.stringify(packageJson);
         expect(serialized).not.to.contain('@mui/x-');

@@ -21,6 +21,15 @@ const expectedPackages = new Map([
     ['@cratis/components.primereact10', 'renderer-adapter'],
 ]);
 const packageOrder = [...expectedPackages.keys()];
+const expectedVersions = new Map([
+    ['@cratis/components', '4.0.0'],
+    ['@cratis/eslint-plugin-components', '4.0.0'],
+    ['@cratis/components-codemods', '4.0.0'],
+    ['@cratis/components.conformance', '0.1.0'],
+    ['@cratis/components.mui', '0.1.0'],
+    ['@cratis/components.primereact', '0.1.0'],
+    ['@cratis/components.primereact10', '0.1.0'],
+]);
 const rendererAbi = 1;
 const coreTarget = '4.x';
 
@@ -31,7 +40,9 @@ if (!['--check', '--write'].includes(mode)) {
 
 const rootPackage = readJson(path.join(repositoryDirectory, 'package.json'));
 const workspaceManifestPaths = discoverWorkspaceManifestPaths(rootPackage.workspaces);
-const packages = workspaceManifestPaths.map((manifestPath) => packageEntry(manifestPath));
+const packages = workspaceManifestPaths
+    .map((manifestPath) => packageEntry(manifestPath))
+    .filter((entry) => entry !== undefined);
 validatePackageSet(packages);
 
 packages.sort(
@@ -55,11 +66,11 @@ const manifest = {
         },
         {
             id: 'storybook',
-            path: 'Source/.storybook',
-            purpose: 'Private release-blocker evidence',
+            path: 'Storybook',
+            purpose: 'Private composed renderer evidence',
             private: true,
             published: false,
-            releaseBlocker: true,
+            releaseBlocker: false,
         },
     ],
 };
@@ -116,8 +127,9 @@ function discoverWorkspaceManifestPaths(workspaces) {
 function packageEntry(manifestPath) {
     const packageJson = readJson(path.join(repositoryDirectory, manifestPath));
     if (!expectedPackages.has(packageJson.name)) {
+        if (packageJson.private === true) return undefined;
         fail(
-            `Workspace ${manifestPath} declares unexpected package '${packageJson.name ?? '<unnamed>'}'.`,
+            `Workspace ${manifestPath} declares unexpected public package '${packageJson.name ?? '<unnamed>'}'.`,
         );
     }
 
@@ -169,6 +181,11 @@ function validateManifest(manifest) {
                 `${entry.name} must remain an explicitly public-intent package manifest.`,
             );
         }
+        if (entry.version !== expectedVersions.get(entry.name)) {
+            fail(
+                `${entry.name} must declare release version ${expectedVersions.get(entry.name)}; found ${entry.version}.`,
+            );
+        }
         if (
             entry.rendererAbi !== undefined &&
             entry.rendererAbi !== manifest.rendererAbi
@@ -186,12 +203,13 @@ function validateManifest(manifest) {
         }
     }
 
-    const adapters = manifest.packages.filter(
-        (entry) => entry.role === 'renderer-adapter',
+    const coreBoundPackages = manifest.packages.filter(
+        (entry) =>
+            entry.role === 'renderer-adapter' || entry.role === 'conformance',
     );
-    for (const adapter of adapters) {
-        if (adapter.version !== '0.1.0') {
-            fail(`${adapter.name} must remain at adapter version 0.1.0 in this tranche.`);
+    for (const entry of coreBoundPackages) {
+        if (entry.peerDependencies['@cratis/components'] !== '>=4 <5') {
+            fail(`${entry.name} must declare the final @cratis/components >=4 <5 peer range.`);
         }
     }
 
@@ -234,7 +252,13 @@ function sortObject(value) {
 }
 
 function readJson(filePath) {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    try {
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (error) {
+        fail(
+            `Could not parse ${path.relative(repositoryDirectory, filePath)}: ${error instanceof Error ? error.message : String(error)}.`,
+        );
+    }
 }
 
 function fail(message) {
