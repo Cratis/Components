@@ -17,6 +17,8 @@ Cratis Components is a React component library aligned with the patterns of [Arc
 
 The library builds on PrimeReact and ships with flexible styling: use the Cratis baseline theme, PrimeReact's styled mode, your own palette, or go fully unstyled with a `pt` preset.
 
+Components carries the same design intent as the rest of Cratis: building on an event-sourced backend should feel like ordinary React, with typed commands, queries, and read models designed to take friction and boilerplate out of the UI layer. It is part of one deliberately simple ecosystem, built with productivity, quality, and reliability in mind — AI-friendly by design, with free [AI skills](https://github.com/Cratis/AI) for building with the stack.
+
 `@cratis/components` itself is MIT licensed. Version 3.x builds on PrimeReact 11, which carries its own license terms — see the [licensing section in the package README](./Source/README.md#licensing) for details.
 
 ## Install
