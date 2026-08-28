@@ -7,6 +7,22 @@ import type { unstable_AdapterDiagnostic } from './errors';
 import type { unstable_SlotId, unstable_SlotMap } from './slots';
 
 /**
+ * Non-secret application setup attestations supplied to a renderer provider.
+ * Values are booleans by design so credentials cannot cross the Components boundary.
+ *
+ * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
+ */
+export type unstable_RendererSetup = Readonly<Record<string, boolean>>;
+
+/** Props supplied to a renderer library provider. */
+export interface unstable_UiLibraryProviderProps {
+    /** Non-secret application setup attestations. Never credentials or license tokens. */
+    readonly setup: unstable_RendererSetup;
+    /** Application content. */
+    readonly children: ReactNode;
+}
+
+/**
  * Renderer ABI major implemented by this package.
  *
  * @unstable Adapter-author contract. Expect changes until renderer conformance gates promote it.
@@ -39,7 +55,7 @@ export interface unstable_UiLibrary {
     /** Typed partial slot implementation table. */
     readonly slots: unstable_SlotMap;
     /** Optional library-level provider mounted once around the selected renderer scope. */
-    readonly Provider?: ComponentType<{ children: ReactNode }>;
+    readonly Provider?: ComponentType<unstable_UiLibraryProviderProps>;
     /** Optional static diagnostic preflight evaluated by renderer providers and scopes. */
     readonly preflight?: () => readonly unstable_AdapterDiagnostic[];
 }

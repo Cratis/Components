@@ -68,7 +68,9 @@ export {
     unstable_defineUiLibrary,
     type unstable_RendererExtensions,
     type unstable_RendererProps,
+    type unstable_RendererSetup,
     type unstable_UiLibrary,
+    type unstable_UiLibraryProviderProps,
 } from './manifest';
 export {
     unstable_defaultOverlayEnvironment,

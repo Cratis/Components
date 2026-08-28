@@ -16,7 +16,7 @@ import {
     unstable_adapterErrorCodes,
     type unstable_AdapterDiagnostic,
 } from './errors';
-import type { unstable_UiLibrary } from './manifest';
+import type { unstable_RendererSetup, unstable_UiLibrary } from './manifest';
 import {
     unstable_defaultOverlayEnvironment,
     type unstable_CratisOverlayEnvironment,
@@ -46,6 +46,7 @@ export interface unstable_RendererContextValue {
     readonly libraryMode: 'strict' | 'degrade';
     readonly rendererFallback: 'core' | 'throw';
     readonly overlayEnvironment: unstable_CratisOverlayEnvironment;
+    readonly rendererSetup: unstable_RendererSetup;
     readonly coreSlots: unstable_SlotMap;
     readonly providerLibraryReferences: readonly unstable_UiLibrary[];
     readonly reportDiagnostic: (diagnostic: unstable_AdapterDiagnostic) => void;
@@ -57,6 +58,8 @@ export interface unstable_RendererRootProps {
     readonly libraryMode?: 'strict' | 'degrade';
     readonly rendererFallback?: 'core' | 'throw';
     readonly overlayEnvironment?: unstable_CratisOverlayEnvironment;
+    /** Non-secret application setup attestations supplied to the selected library provider. */
+    readonly rendererSetup?: unstable_RendererSetup;
     readonly coreSlots?: unstable_SlotMap;
     readonly children: ReactNode;
 }
@@ -81,11 +84,16 @@ export const unstable_RendererRoot = ({
     libraryMode = 'strict',
     rendererFallback = 'core',
     overlayEnvironment,
+    rendererSetup,
     coreSlots,
     children,
 }: unstable_RendererRootProps) => {
     const parent = useContext(unstable_RendererContext);
     const selected = useMemo(() => unstable_resolveLibraryInput(library), [library]);
+    const setup = useMemo(
+        () => Object.freeze({ ...(rendererSetup ?? {}) }),
+        [rendererSetup],
+    );
     const layer = useMemo(
         () =>
             selected.library ? unstable_createRendererLayer(selected.library) : undefined,
@@ -147,6 +155,7 @@ export const unstable_RendererRoot = ({
                     overlayEnvironment ??
                     parent?.overlayEnvironment ??
                     unstable_defaultOverlayEnvironment,
+                rendererSetup: setup,
                 coreSlots: resolvedCoreSlots,
                 providerLibraryReferences:
                     selected.references.length > 0
@@ -164,6 +173,7 @@ export const unstable_RendererRoot = ({
             reportDiagnostic,
             resolvedCoreSlots,
             selected.references,
+            setup,
             slots,
         ],
     );
@@ -175,7 +185,11 @@ export const unstable_RendererRoot = ({
     const LibraryProvider = selected.library?.Provider;
     return (
         <unstable_RendererContext.Provider value={value}>
-            {LibraryProvider ? <LibraryProvider>{children}</LibraryProvider> : children}
+            {LibraryProvider ? (
+                <LibraryProvider setup={setup}>{children}</LibraryProvider>
+            ) : (
+                children
+            )}
         </unstable_RendererContext.Provider>
     );
 };
@@ -235,10 +249,7 @@ export function unstable_useSlot<K extends unstable_SlotId>(
         }
     }, [context, diagnostic]);
 
-    if (
-        result.usedCoreFallback &&
-        (context?.rendererFallback ?? 'core') === 'throw'
-    ) {
+    if (result.usedCoreFallback && (context?.rendererFallback ?? 'core') === 'throw') {
         throw new unstable_AdapterError(
             diagnostic ?? fallbackDiagnostic(context, slotId),
         );

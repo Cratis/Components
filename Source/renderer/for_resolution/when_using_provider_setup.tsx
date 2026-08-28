@@ -59,6 +59,35 @@ describe('when using renderer provider setup', () => {
         (html.match(/data-library-provider/g) ?? []).should.have.lengthOf(1);
     });
 
+    it('should pass only frozen non-secret boolean setup attestations to a library provider', () => {
+        let observedSetup: Readonly<Record<string, boolean>> | undefined;
+        const LibraryProvider = ({
+            children,
+            setup,
+        }: {
+            children: React.ReactNode;
+            setup: Readonly<Record<string, boolean>>;
+        }) => {
+            observedSetup = setup;
+            return <>{children}</>;
+        };
+        const library = createTestLibrary('configured', buttonSlot(FirstButton), {
+            Provider: LibraryProvider,
+        });
+
+        renderToStaticMarkup(
+            <CratisComponentsProvider
+                library={library}
+                rendererSetup={{ 'sample.license-configured': true }}
+            >
+                <span />
+            </CratisComponentsProvider>,
+        );
+
+        observedSetup!.should.deep.equal({ 'sample.license-configured': true });
+        Object.isFrozen(observedSetup).should.equal(true);
+    });
+
     it('should not invoke the overlay environment during render without document', () => {
         let invocations = 0;
         const overlayEnvironment = {
