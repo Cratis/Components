@@ -1,6 +1,6 @@
 # Cratis Components
 
-A collection of React components for building modern applications with Cratis.
+React components for CQRS and event-sourced applications built with [Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms, and query-backed data tables. The components consume Arc's generated TypeScript proxies, so commands, queries, and read models flow fully typed from your ASP.NET Core backend into the UI, including event-sourced applications backed by [Cratis Chronicle](https://github.com/Cratis/Chronicle).
 
 ## Requirements
 
@@ -809,3 +809,13 @@ If using TypeScript 4.7+, try updating your `tsconfig.json`:
 ### Import Errors
 
 Ensure you're using the correct import paths. The package uses case-sensitive paths that match the actual component names.
+
+## Part of the Cratis ecosystem
+
+Cratis Components is part of [Cratis](https://www.cratis.io) — tools for building event-sourced and CQRS applications:
+
+- [Arc](https://github.com/Cratis/Arc) — the CQRS application framework for ASP.NET Core whose generated proxies these components consume
+- [Chronicle](https://github.com/Cratis/Chronicle) — the event-sourcing database and runtime at the center of the stack
+- [Fundamentals](https://github.com/Cratis/Fundamentals) — the shared .NET and TypeScript building blocks beneath the stack
+
+Read the docs at [cratis.io](https://www.cratis.io/components/) or join the community on [Discord](https://discord.gg/kt4AMpV8WV).

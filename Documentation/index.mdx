@@ -1,6 +1,6 @@
 ---
 title: Components
-description: The React component library for Cratis — command dialogs, forms, and data tables that consume Arc's generated proxies.
+description: The React component library for CQRS and event-sourced applications with Cratis — command dialogs, typed forms, and query-backed data tables that consume Arc's generated proxies.
 ---
 
 import { CardGrid } from '@astrojs/starlight/components';
@@ -56,6 +56,20 @@ Command dialogs, forms, and data tables that consume [Arc's](/arc/) generated pr
   </SimpleCard>
   <SimpleCard title="Dialogs" icon="open-book" link="/components/dialogs/">
     Data-collection dialogs that return values without executing a command.
+  </SimpleCard>
+</CardGrid>
+
+## Related
+
+<CardGrid>
+  <SimpleCard title="Arc" icon="puzzle" link="/arc/">
+    The CQRS application framework for ASP.NET Core that generates the proxies these components consume.
+  </SimpleCard>
+  <SimpleCard title="Chronicle" icon="seti:db" link="/chronicle/">
+    The event-sourcing database and runtime behind the read models your screens render.
+  </SimpleCard>
+  <SimpleCard title="CLI" icon="laptop" link="/cli/">
+    Inspect and diagnose Chronicle — events, observers, projections, and read models — from the terminal.
   </SimpleCard>
 </CardGrid>
 
