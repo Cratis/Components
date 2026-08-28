@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from 'storybook/test';
 import { Button } from '../Common/Button';
 import { Toaster } from './Toaster';
 import { toast } from './toast';
@@ -114,4 +115,36 @@ export const Playground: Story = {
             </Button>
         </div>
     ),
+    play: async ({ canvasElement }) => {
+        toast.dismiss();
+        const canvas = within(canvasElement);
+        const body = within(document.body);
+        const showAndDismiss = async (
+            buttonName: string,
+            title: string,
+            severity: string,
+        ) => {
+            await userEvent.click(canvas.getByRole('button', { name: buttonName }));
+            const titleElement = await body.findByText(title);
+            const toastElement = titleElement.closest('[data-cratis-part="toast"]');
+            if (!toastElement) throw new Error(`Toast '${title}' did not render.`);
+            await expect(toastElement).toHaveAttribute('data-severity', severity);
+            await userEvent.click(
+                within(toastElement as HTMLElement).getByRole('button', {
+                    name: 'Dismiss',
+                }),
+            );
+        };
+
+        await showAndDismiss('Success', 'Saved', 'success');
+        await showAndDismiss('Info', 'Heads up', 'info');
+        await showAndDismiss('Warn', 'Careful', 'warn');
+        await showAndDismiss('Error', 'Failed', 'error');
+        await showAndDismiss(
+            'Command validation failure',
+            'Could not register author',
+            'error',
+        );
+        await showAndDismiss('Command success', 'Author registered', 'success');
+    },
 };

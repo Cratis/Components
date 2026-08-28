@@ -29,4 +29,4 @@ yarn workspace @cratis/components.storybook test-storybook
 yarn workspace @cratis/components.storybook dev
 ```
 
-`test-storybook` runs 4 isolated previews × 261 stable stories × 2 appearance modes: **2,088 story/appearance/axe cases**. There is no story sampling or tag exclusion. The composed renderer control preserves a stable story id when available, but switching previews remounts the iframe and loses component-local state.
+`test-storybook` runs 4 isolated previews × 277 stable stories × 2 appearance modes: **2,216 story/appearance/axe cases**. There is no story sampling or tag exclusion. The composed renderer control preserves a stable story id when available, but switching previews remounts the iframe and loses component-local state.

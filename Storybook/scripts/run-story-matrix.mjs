@@ -73,9 +73,9 @@ for (const adapter of inventory.adapters) {
     }
 }
 
-const matrixCount = inventory.adapters.length * 261 * appearances.length;
+const matrixCount = inventory.adapters.length * 277 * appearances.length;
 console.log(
-    `\nCompleted ${inventory.adapters.length} isolated previews × 261 stories × ${appearances.length} appearance mode(s) = ${matrixCount} story/appearance/axe cases.`,
+    `\nCompleted ${inventory.adapters.length} isolated previews × 277 stories × ${appearances.length} appearance mode(s) = ${matrixCount} story/appearance/axe cases.`,
 );
 console.log('Story exclusions: none. No sampling or tag exclusion was applied.');
 console.log(

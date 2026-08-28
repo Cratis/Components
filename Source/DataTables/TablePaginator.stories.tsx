@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { TablePaginator } from './TablePaginator';
 
 const meta = {
@@ -28,6 +28,19 @@ export const Interactive: Story = {
     render: (args) => {
         const [page, setPage] = useState(args.page);
         return <TablePaginator {...args} page={page} onPageChange={setPage} />;
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: 'Next page' }));
+        await expect(canvas.getByText('3 / 5')).toBeVisible();
+
+        await userEvent.click(canvas.getByRole('button', { name: 'Last page' }));
+        await expect(canvas.getByText('5 / 5')).toBeVisible();
+        await expect(canvas.getByRole('button', { name: 'Last page' })).toBeDisabled();
+
+        await userEvent.click(canvas.getByRole('button', { name: 'First page' }));
+        await expect(canvas.getByText('1 / 5')).toBeVisible();
+        await expect(canvas.getByRole('button', { name: 'First page' })).toBeDisabled();
     },
 };
 
