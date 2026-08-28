@@ -36,7 +36,7 @@
     "scripts": {
         "clean": "rm -rf dist",
         "build": "node ../node_modules/typescript/bin/tsc -p tsconfig.build.json",
-        "typecheck-specs": "node ../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "typecheck-specs": "yarn workspace @cratis/components prepare && node ../node_modules/typescript/bin/tsc -p tsconfig.json",
         "lint": "node ../node_modules/eslint/bin/eslint.js . --quiet",
         "test": "node ../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
         "verify-package": "node ./scripts/verify-packed-package.mjs",
