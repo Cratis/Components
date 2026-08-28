@@ -96,5 +96,5 @@ jobs:
                   statusCodes: '{"429":"warn"}'
                   # Stable Cratis repository anchors repeatedly trigger GitHub's unauthenticated
                   # 429 limit; current-tree links are verified locally above, so skip only exact
-                  # organization guidance and immutable historical evidence anchors here.
-                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/, ^https:\/\/github\.com\/Cratis\/Components\/blob\/[0-9a-f]{40}\/Documentation\/, ^https:\/\/github\.com\/Cratis\/\.github\/blob\/main\/contributing\.md$'
+                  # current/immutable documentation paths and organization guidance here.
+                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/, ^https:\/\/github\.com\/Cratis\/Components\/blob\/[0-9a-f]{40}\/Documentation\/, ^https:\/\/github\.com\/Cratis\/Components\/tree\/main\/Documentation\/, ^https:\/\/github\.com\/Cratis\/\.github\/blob\/main\/contributing\.md$'

@@ -10,7 +10,7 @@ contracts, stable parts, and design tokens. React Aria supplies selected
 interaction primitives internally; consumers do not import or style React Aria.
 
 - [Canonical Components documentation](https://cratis.io/components/)
-- [Renderer adapters and coexistence](https://cratis.io/components/renderers/)
+- [Renderer adapters and coexistence](https://github.com/Cratis/Components/tree/main/Documentation/renderers)
 - [Migration guide](./MIGRATION.md)
 - [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)
 
