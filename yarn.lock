@@ -337,8 +337,8 @@ __metadata:
     tsyringe: "npm:4.10.0"
   peerDependencies:
     "@cratis/components": ">=4 <5"
-    "@emotion/react": ">=11 <12"
-    "@emotion/styled": ">=11 <12"
+    "@emotion/react": ">=11.5 <12"
+    "@emotion/styled": ">=11.3 <12"
     "@mui/material": ">=9 <10"
     react: ^19.0.0
     react-dom: ^19.0.0
@@ -7875,6 +7875,7 @@ __metadata:
     reflect-metadata: "npm:0.2.2"
     rollup: "npm:^4.63.1"
     rollup-plugin-peer-deps-external: "npm:^2.2.4"
+    semver: "npm:7.8.5"
     sinon: "npm:^22.1.0"
     sinon-chai: "npm:^4.0.1"
     storybook: "npm:^10.5.10"
@@ -7965,21 +7966,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"semver@npm:7.8.5, semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.7.3":
+  version: 7.8.5
+  resolution: "semver@npm:7.8.5"
+  bin:
+    semver: bin/semver.js
+  checksum: 10/9b01d2ff11e6e4a4539b7ca3c5f280c8704cb397a28504469f2ed4f00ad2194748d756647362a9712fff30984d15772ab7f083108c2fb508e2096ae9e708f22c
+  languageName: node
+  linkType: hard
+
 "semver@npm:^6.3.1":
   version: 6.3.1
   resolution: "semver@npm:6.3.1"
   bin:
     semver: bin/semver.js
   checksum: 10/1ef3a85bd02a760c6ef76a45b8c1ce18226de40831e02a00bad78485390b98b6ccaa31046245fc63bba4a47a6a592b6c7eedc65cc47126e60489f9cc1ce3ed7e
-  languageName: node
-  linkType: hard
-
-"semver@npm:^7.3.5, semver@npm:^7.5.3, semver@npm:^7.7.3":
-  version: 7.8.5
-  resolution: "semver@npm:7.8.5"
-  bin:
-    semver: bin/semver.js
-  checksum: 10/9b01d2ff11e6e4a4539b7ca3c5f280c8704cb397a28504469f2ed4f00ad2194748d756647362a9712fff30984d15772ab7f083108c2fb508e2096ae9e708f22c
   languageName: node
   linkType: hard
 

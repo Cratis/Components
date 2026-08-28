@@ -207,8 +207,8 @@ describe('when using the MUI stable presentation profile', () => {
         expect(packageJson).not.to.have.property('dependencies');
         expect(packageJson.peerDependencies).to.include({
             '@mui/material': '>=9 <10',
-            '@emotion/react': '>=11 <12',
-            '@emotion/styled': '>=11 <12',
+            '@emotion/react': '>=11.5 <12',
+            '@emotion/styled': '>=11.3 <12',
             react: '^19.0.0',
             'react-dom': '^19.0.0',
             '@cratis/components': '>=4 <5',

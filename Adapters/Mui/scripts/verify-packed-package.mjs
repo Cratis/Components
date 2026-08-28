@@ -118,8 +118,8 @@ try {
 
     const expectedPeers = {
         '@cratis/components': '>=4 <5',
-        '@emotion/react': '>=11 <12',
-        '@emotion/styled': '>=11 <12',
+        '@emotion/react': '>=11.5 <12',
+        '@emotion/styled': '>=11.3 <12',
         '@mui/material': '>=9 <10',
         react: '^19.0.0',
         'react-dom': '^19.0.0',

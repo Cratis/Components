@@ -56,8 +56,10 @@ concerns and do not justify a Core ABI change.
 
 ## Peer policy
 
-MUI Core is bounded to `>=9 <10`, Emotion to `>=11 <12`, and React/ReactDOM to React 19. Vendor
-packages are peers; exact current versions are dev dependencies only for repository proof.
+MUI Core is bounded to `>=9 <10`, `@emotion/react` to `>=11.5 <12`,
+`@emotion/styled` to `>=11.3 <12`, and React/ReactDOM to React 19. Vendor packages are peers.
+The repository's packed-consumer matrix proves both these effective lower boundaries and the
+current-highest compatible boundary; exact current versions remain dev dependencies only.
 
 The adapter requires `@cratis/components >=4 <5`. This range is intentionally bounded to the
 Components major whose renderer ABI and stable presentation profile it implements.
