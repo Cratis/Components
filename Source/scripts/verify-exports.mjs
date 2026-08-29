@@ -253,6 +253,10 @@ for (const subpath of subpaths) {
         const results = {};
         for (const mode of modes) {
             const target = targetFor(value, mode);
+            if (!target) {
+                results[mode] = 'N/A';
+                continue;
+            }
             const abs = path.resolve(packageDir, target);
             const present = existsSync(abs);
             if (!present) failures++;
