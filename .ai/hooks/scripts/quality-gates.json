@@ -11,12 +11,19 @@
     "gates": [
         {
             "id": "components-ci",
-            "description": "install + yarn ci — recreate ignored Yarn state, then clean, lint, build, specs, and story typechecking",
+            "description": "immutable install + public workspace CI + private Storybook preflight",
             "changed": [
                 "Source/**",
                 "Codemods/**",
                 "ESLint/**",
+                "Conformance/**",
+                "Adapters/**",
+                "Storybook/**",
+                "scripts/**",
+                ".ai/hooks/**",
                 "package.json",
+                "yarn.lock",
+                "run-task-on-workspaces.js",
                 "rollup.config.mjs",
                 "tsconfig.json",
                 "eslint.config.mjs",
@@ -36,7 +43,12 @@
                     "package.json",
                     "Source/package.json",
                     "Codemods/package.json",
-                    "ESLint/package.json"
+                    "ESLint/package.json",
+                    "Conformance/package.json",
+                    "Adapters/Mui/package.json",
+                    "Adapters/PrimeReact/package.json",
+                    "Adapters/PrimeReact10/package.json",
+                    "Storybook/package.json"
                 ]
             },
             "workingDirectory": ".",
