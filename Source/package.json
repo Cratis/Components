@@ -133,7 +133,10 @@
             "types": "./dist/esm/renderer/builtin/index.d.ts",
             "import": "./dist/esm/renderer/builtin/index.js"
         },
-        "./schemas/ui-adapter.schema.json": "./dist/esm/schemas/ui-adapter.schema.json",
+        "./schemas/ui-adapter.schema.json": {
+            "types": "./dist/esm/schemas/ui-adapter.schema.d.ts",
+            "import": "./dist/esm/schemas/ui-adapter.schema.json"
+        },
         "./SchemaEditor": {
             "types": "./dist/esm/SchemaEditor/index.d.ts",
             "import": "./dist/esm/SchemaEditor/index.js"

@@ -29,7 +29,9 @@ interface JsonSchemaRule {
     readonly oneOf?: readonly JsonSchemaRule[];
 }
 
-const schema: JsonSchemaRule = adapterSchema;
+// SAFETY: the schema is a checked-in Core package artifact validated by renderer-contract and
+// archive gates; the public JSON declaration stays unknown so consumers must choose their decoder.
+const schema = adapterSchema as JsonSchemaRule;
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);

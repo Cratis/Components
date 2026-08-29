@@ -306,8 +306,16 @@ export function entryPointsFromExports(pkg, sourceDir) {
     const entries = [];
     for (const [subpath, value] of Object.entries(pkg.exports ?? {})) {
         if (subpath === './package.json') continue;
-        const typesTarget = value && typeof value === 'object' ? value.types : undefined;
-        if (typeof typesTarget !== 'string' || !typesTarget.endsWith('.d.ts')) continue;
+        const conditionalExport = value && typeof value === 'object' ? value : undefined;
+        const typesTarget = conditionalExport?.types;
+        const importTarget = conditionalExport?.import;
+        if (
+            typeof typesTarget !== 'string' ||
+            !typesTarget.endsWith('.d.ts') ||
+            typeof importTarget !== 'string' ||
+            !importTarget.endsWith('.js')
+        )
+            continue;
 
         const relative = typesTarget
             .replace(/^\.\//, '')

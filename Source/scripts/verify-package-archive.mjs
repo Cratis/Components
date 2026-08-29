@@ -36,6 +36,7 @@ const requiredEntries = [
     'package/THIRD_PARTY_NOTICES.md',
     'package/dist/esm/styles.css',
     'package/dist/esm/schemas/ui-adapter.schema.json',
+    'package/dist/esm/schemas/ui-adapter.schema.d.ts',
     'package/dist/esm/renderer/index.js',
     'package/dist/esm/renderer/index.d.ts',
     'package/dist/esm/renderer/builtin/index.js',
