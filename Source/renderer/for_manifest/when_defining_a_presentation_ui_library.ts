@@ -230,11 +230,7 @@ describe('when defining a stable presentation UI library', () => {
 
     it('should reject required capabilities outside their stable tuple positions', () => {
         const candidate = mutableLibrary();
-        candidate.capabilities = [
-            'parts.passthrough',
-            'slot.render',
-            'ssr.staticRender',
-        ];
+        candidate.capabilities = ['parts.passthrough', 'slot.render', 'ssr.staticRender'];
 
         expect(() => defineRuntime(candidate)).to.throw(
             TypeError,

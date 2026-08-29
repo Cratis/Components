@@ -166,7 +166,9 @@ export const definePresentationUiLibrary = (
         library.displayName.trim().length === 0 ||
         library.displayName.length > 128
     ) {
-        invalidPresentationLibrary('displayName must contain between 1 and 128 characters');
+        invalidPresentationLibrary(
+            'displayName must contain between 1 and 128 characters',
+        );
     }
     if (library.Provider !== undefined && typeof library.Provider !== 'function') {
         invalidPresentationLibrary('Provider must be a React component when supplied');
