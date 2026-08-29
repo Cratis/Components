@@ -53,7 +53,7 @@ const resolveReference = (reference: string): JsonSchemaRule => {
     let current: unknown = schema;
     for (const encodedSegment of reference.slice(2).split('/')) {
         const segment = encodedSegment.replaceAll('~1', '/').replaceAll('~0', '~');
-        if (!isRecord(current) || !(segment in current)) {
+        if (!isRecord(current) || !Object.hasOwn(current, segment)) {
             throw new Error(`Unresolved schema reference '${reference}'.`);
         }
         current = current[segment];
@@ -126,7 +126,8 @@ const validateAgainstSchema = (
             add(`must contain no more than ${rule.maxProperties} properties`);
         }
         for (const required of rule.required ?? []) {
-            if (!(required in candidate)) add(`missing required property '${required}'`);
+            if (!Object.hasOwn(candidate, required))
+                add(`missing required property '${required}'`);
         }
         for (const key of keys) {
             if (rule.propertyNames) {
@@ -138,7 +139,10 @@ const validateAgainstSchema = (
                     ),
                 );
             }
-            const propertyRule = rule.properties?.[key];
+            const propertyRule =
+                rule.properties && Object.hasOwn(rule.properties, key)
+                    ? rule.properties[key]
+                    : undefined;
             if (propertyRule) {
                 problems.push(
                     ...validateAgainstSchema(

@@ -19,6 +19,7 @@ import {
 import { unstable_cratisBuiltIn } from '@cratis/components/renderer/builtin';
 import { describe, it } from 'vitest';
 import { runConformance } from '../src/index.js';
+import { validateMetadata } from '../src/internal/metadata.js';
 
 const declaration = (slotId: unstable_SlotId) =>
     unstable_cratisBuiltIn.slots[slotId] as unstable_SlotDeclaration<unstable_SlotId>;
@@ -146,6 +147,30 @@ describe('when detecting planted adapter defects', () => {
         ]);
 
         expect(await failureIds(library)).to.deep.equal(['manifest.noOverDeclaration']);
+    });
+
+    it('should reject metadata keys inherited by the schema properties object', () => {
+        const library = oneSlot('common.surface', declaration('common.surface'));
+
+        expect(
+            validateMetadata({
+                ...metadataFor(library),
+                constructor: 'unexpected',
+            }),
+        ).to.deep.equal(["$: unknown property 'constructor'"]);
+    });
+
+    it('should not satisfy required metadata through the candidate prototype', () => {
+        const library = oneSlot('common.surface', declaration('common.surface'));
+        const { kind: _kind, ...withoutKind } = metadataFor(library);
+        const inheritedKind = Object.setPrototypeOf(
+            { ...withoutKind },
+            { kind: 'ui-adapter' },
+        );
+
+        expect(validateMetadata(inheritedKind)).to.include(
+            "$: missing required property 'kind'",
+        );
     });
 
     it('should report a static mode outside the declared runtime profile', async () => {
