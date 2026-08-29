@@ -140,6 +140,7 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
             checkbox: renderSlot('common.checkbox', {
                 label: 'Selected',
                 defaultChecked: true,
+                readOnly: true,
             }),
             radio: renderSlot('common.radio', {
                 name: 'frequency',
@@ -148,6 +149,7 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
             }),
             switchControl: renderSlot('common.switch', {
                 'aria-label': 'Enabled',
+                readOnly: true,
             }),
             progress: renderSlot('common.progress', { value: 42 }),
             surface: renderSlot('common.surface', { as: 'article' }),
@@ -157,9 +159,12 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
         expect(markup.textInput).to.contain('p-inputtext');
         expect(markup.textArea).to.contain('p-inputtextarea');
         expect(markup.checkbox).to.contain('p-checkbox');
+        expect(markup.checkbox).to.contain('aria-readonly="true"');
         expect(markup.radio).to.contain('p-radiobutton');
+        expect(markup.radio).not.to.contain('aria-readonly');
         expect(markup.switchControl).to.contain('p-inputswitch');
         expect(markup.switchControl).to.contain('role="switch"');
+        expect(markup.switchControl).to.contain('aria-readonly="true"');
         expect(markup.progress).to.contain('p-progressbar');
         expect(markup.surface).to.contain('p-card');
         expect(markup.surface).to.contain('<article');

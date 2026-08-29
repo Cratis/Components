@@ -19,22 +19,29 @@ type Story = StoryObj<typeof meta>;
 export const Determinate: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        const bar = canvas.getByRole('progressbar');
+        const bar = canvas.getByRole('progressbar', { name: 'Progress' });
         await expect(bar).toHaveAttribute('aria-valuenow', '65');
     },
 };
 
-export const NoValueLabel: Story = { args: { showValue: false } };
+export const NoValueLabel: Story = {
+    args: { showValue: false },
+    play: async ({ canvasElement }) => {
+        within(canvasElement).getByRole('progressbar', { name: 'Progress' });
+        await expect(
+            canvasElement.querySelector('[data-cratis-part="label"]'),
+        ).not.toBeInTheDocument();
+    },
+};
 
 /** Values outside 0–100 are clamped rather than overflowing the track. */
 export const ClampedOutOfRange: Story = {
     args: { value: 140 },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('progressbar')).toHaveAttribute(
-            'aria-valuenow',
-            '100',
-        );
+        await expect(
+            canvas.getByRole('progressbar', { name: 'Progress' }),
+        ).toHaveAttribute('aria-valuenow', '100');
     },
 };
 
@@ -43,8 +50,8 @@ export const Indeterminate: Story = {
     args: { mode: 'indeterminate' },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        await expect(canvas.getByRole('progressbar')).not.toHaveAttribute(
-            'aria-valuenow',
-        );
+        await expect(
+            canvas.getByRole('progressbar', { name: 'Progress' }),
+        ).not.toHaveAttribute('aria-valuenow');
     },
 };

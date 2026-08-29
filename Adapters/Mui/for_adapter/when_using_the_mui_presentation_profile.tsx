@@ -130,13 +130,17 @@ describe('when using the MUI stable presentation profile', () => {
             checkbox: renderSlot('common.checkbox', {
                 label: 'Selected',
                 defaultChecked: true,
+                readOnly: true,
             }),
             radio: renderSlot('common.radio', {
                 name: 'frequency',
                 value: 'daily',
                 'aria-label': 'Daily',
             }),
-            switchControl: renderSlot('common.switch', { 'aria-label': 'Enabled' }),
+            switchControl: renderSlot('common.switch', {
+                'aria-label': 'Enabled',
+                readOnly: true,
+            }),
             progress: renderSlot('common.progress', { value: 42 }),
             surface: renderSlot('common.surface', { as: 'article' }),
         };
@@ -146,9 +150,12 @@ describe('when using the MUI stable presentation profile', () => {
         expect(markup.textArea).to.contain('MuiInputBase-root');
         expect(markup.checkbox).to.contain('MuiCheckbox-root');
         expect(markup.checkbox).to.contain('aria-hidden="true"');
+        expect(markup.checkbox).to.contain('aria-readonly="true"');
         expect(markup.radio).to.contain('MuiRadio-root');
+        expect(markup.radio).not.to.contain('aria-readonly');
         expect(markup.switchControl).to.contain('MuiSwitch-root');
         expect(markup.switchControl).to.contain('role="switch"');
+        expect(markup.switchControl).to.contain('aria-readonly="true"');
         expect(markup.progress).to.contain('MuiLinearProgress-root');
         expect(markup.surface).to.contain('MuiPaper-root');
         expect(markup.surface).to.contain('<article');

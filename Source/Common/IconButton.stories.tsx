@@ -28,5 +28,20 @@ export const Default: Story = {
     },
 };
 
-export const Loading: Story = { args: { loading: true } };
+export const Loading: Story = {
+    args: { loading: true },
+    play: async ({ canvasElement }) => {
+        await expect(
+            within(canvasElement).getByRole('button', { name: 'Add item' }),
+        ).toBeDisabled();
+    },
+};
+export const Disabled: Story = {
+    args: { disabled: true },
+    play: async ({ canvasElement }) => {
+        await expect(
+            within(canvasElement).getByRole('button', { name: 'Add item' }),
+        ).toBeDisabled();
+    },
+};
 export const Critical: Story = { args: { tone: 'critical' } };

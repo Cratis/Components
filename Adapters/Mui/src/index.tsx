@@ -841,7 +841,7 @@ const MuiChoice = ({ kind, props, forwardedRef }: MuiChoiceProps) => {
         name: kind === 'radio' ? radioProps.name : nativeProps.name,
         value: kind === 'radio' ? radioProps.value : nativeProps.value,
         'aria-invalid': ariaInvalid,
-        'aria-readonly': kind === 'switch' ? readOnly || undefined : undefined,
+        'aria-readonly': kind === 'radio' ? undefined : readOnly || undefined,
         role: kind === 'switch' ? 'switch' : nativeProps.role,
         className: classNames('cratis-mui-choice__input', inputClassName),
         style: inputStyle,

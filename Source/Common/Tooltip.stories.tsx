@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from 'storybook/test';
 import { Tooltip } from './Tooltip';
 
 const meta = {
@@ -43,6 +44,18 @@ export const Positions: Story = {
             ))}
         </div>
     ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const body = within(document.body);
+        for (const position of ['top', 'right', 'bottom', 'left'] as const) {
+            const trigger = canvas.getByRole('button', { name: position });
+            trigger.focus();
+            await expect(trigger).toHaveFocus();
+            const popup = await body.findByText(`Position: ${position}`);
+            await expect(popup).toHaveAttribute('role', 'tooltip');
+            await expect(popup).toHaveAttribute('data-cratis-part', 'popup');
+        }
+    },
 };
 
 /** With no content the child renders on its own — no tooltip attached. */

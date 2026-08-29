@@ -35,7 +35,14 @@ export const IconOnly: Story = {
         tone: 'critical',
     },
 };
-export const Loading: Story = { args: { label: 'Saving', loading: true } };
+export const Loading: Story = {
+    args: { label: 'Saving', loading: true },
+    play: async ({ canvasElement }) => {
+        await expect(
+            within(canvasElement).getByRole('button', { name: 'Saving' }),
+        ).toBeDisabled();
+    },
+};
 export const Ghost: Story = { args: { label: 'Cancel', variant: 'ghost' } };
 export const Link: Story = { args: { label: 'Learn more', variant: 'link' } };
 export const Outline: Story = {

@@ -571,7 +571,7 @@ const PrimeChoice = ({
         value: kind === 'radio' ? radio.value : nativeProps.value,
         defaultChecked: kind === 'radio' ? defaultChecked : undefined,
         'aria-invalid': ariaInvalid,
-        'aria-readonly': kind === 'switch' ? readOnly || undefined : undefined,
+        'aria-readonly': kind === 'radio' ? undefined : readOnly || undefined,
         role: kind === 'switch' ? 'switch' : nativeProps.role,
         className: classNames('cratis-primereact10-choice__input', inputClassName),
         style: inputStyle,
