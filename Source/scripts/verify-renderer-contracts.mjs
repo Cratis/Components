@@ -8,12 +8,24 @@ import { fileURLToPath } from 'node:url';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const schemaPath = path.join(packageDir, 'schemas/ui-adapter.schema.json');
+const readJson = (filePath, description) => {
+    try {
+        return JSON.parse(readFileSync(filePath, 'utf8'));
+    } catch (error) {
+        throw new Error(`Unable to read ${description} from '${filePath}'.`, {
+            cause: error,
+        });
+    }
+};
 const fixturePaths = [
     'renderer/for_slot_types/slotTyping.fixture.ts',
     'renderer/for_slot_types/presentationTyping.fixture.ts',
 ].map(relativePath => path.join(packageDir, relativePath));
-const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
-const packageJson = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
+const schema = readJson(schemaPath, 'renderer adapter schema');
+const packageJson = readJson(
+    path.join(packageDir, 'package.json'),
+    'Components package manifest',
+);
 
 const valueType = value => {
     if (Array.isArray(value)) return 'array';
@@ -26,10 +38,15 @@ const sameJson = (left, right) => JSON.stringify(left) === JSON.stringify(right)
 
 const resolveReference = reference => {
     if (!reference.startsWith('#/')) throw new Error(`Unsupported schema reference '${reference}'.`);
-    return reference
-        .slice(2)
-        .split('/')
-        .reduce((current, segment) => current[segment.replaceAll('~1', '/').replaceAll('~0', '~')], schema);
+    let current = schema;
+    for (const encodedSegment of reference.slice(2).split('/')) {
+        const segment = encodedSegment.replaceAll('~1', '/').replaceAll('~0', '~');
+        if (!current || typeof current !== 'object' || !Object.hasOwn(current, segment)) {
+            throw new Error(`Unresolved schema reference '${reference}'.`);
+        }
+        current = current[segment];
+    }
+    return current;
 };
 
 const validate = (candidate, rule, location = '$') => {
@@ -41,7 +58,7 @@ const validate = (candidate, rule, location = '$') => {
         add(`expected ${rule.type}, got ${valueType(candidate)}`);
         return problems;
     }
-    if ('const' in rule && !sameJson(candidate, rule.const)) add(`expected ${JSON.stringify(rule.const)}`);
+    if (Object.hasOwn(rule, 'const') && !sameJson(candidate, rule.const)) add(`expected ${JSON.stringify(rule.const)}`);
     if (rule.enum && !rule.enum.some(value => sameJson(value, candidate))) add('value is outside the declared enum');
     if (typeof candidate === 'string') {
         if (rule.minLength !== undefined && candidate.length < rule.minLength) add(`must have at least ${rule.minLength} characters`);
@@ -59,12 +76,15 @@ const validate = (candidate, rule, location = '$') => {
         if (rule.minProperties !== undefined && keys.length < rule.minProperties) add(`must contain at least ${rule.minProperties} properties`);
         if (rule.maxProperties !== undefined && keys.length > rule.maxProperties) add(`must contain no more than ${rule.maxProperties} properties`);
         for (const required of rule.required ?? []) {
-            if (!(required in candidate)) add(`missing required property '${required}'`);
+            if (!Object.hasOwn(candidate, required)) add(`missing required property '${required}'`);
         }
         for (const key of keys) {
             if (rule.propertyNames) problems.push(...validate(key, rule.propertyNames, `${location}.${key} (property name)`));
-            if (rule.properties?.[key]) {
-                problems.push(...validate(candidate[key], rule.properties[key], `${location}.${key}`));
+            const propertyRule = rule.properties && Object.hasOwn(rule.properties, key)
+                ? rule.properties[key]
+                : undefined;
+            if (propertyRule) {
+                problems.push(...validate(candidate[key], propertyRule, `${location}.${key}`));
             } else if (rule.additionalProperties === false) {
                 add(`unknown property '${key}'`);
             } else if (rule.additionalProperties && typeof rule.additionalProperties === 'object') {
@@ -106,9 +126,15 @@ if (validProblems.length > 0) {
     process.exit(1);
 }
 
+const inheritedKindManifest = Object.setPrototypeOf(
+    Object.fromEntries(Object.entries(validManifest).filter(([key]) => key !== 'kind')),
+    { kind: 'ui-adapter' },
+);
 const invalidManifests = [
     { ...validManifest, level: 'unknown' },
     { ...validManifest, unexpected: true },
+    { ...validManifest, constructor: 'unexpected' },
+    inheritedKindManifest,
     { ...validManifest, upstream: { '@future/ui': '*' } },
     { ...validManifest, modes: { 'common.button': 'hybrid' } },
     { ...validManifest, license: { spdx: 'Proprietary', requiresKey: true } },
