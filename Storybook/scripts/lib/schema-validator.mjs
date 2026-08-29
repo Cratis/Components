@@ -16,7 +16,7 @@ export const validateAgainstSchema = (candidate, schema) => {
         let current = schema;
         for (const encodedSegment of reference.slice(2).split('/')) {
             const segment = encodedSegment.replaceAll('~1', '/').replaceAll('~0', '~');
-            if (!isRecord(current) || !(segment in current)) {
+            if (!isRecord(current) || !Object.hasOwn(current, segment)) {
                 throw new Error(`Unresolved schema reference '${reference}'.`);
             }
             current = current[segment];
@@ -33,7 +33,7 @@ export const validateAgainstSchema = (candidate, schema) => {
             add(`expected ${rule.type}, got ${valueType(value)}`);
             return problems;
         }
-        if ('const' in rule && !sameJson(value, rule.const)) add(`expected ${JSON.stringify(rule.const)}`);
+        if (Object.hasOwn(rule, 'const') && !sameJson(value, rule.const)) add(`expected ${JSON.stringify(rule.const)}`);
         if (rule.enum && !rule.enum.some(candidateValue => sameJson(candidateValue, value))) add('value is outside the declared enum');
         if (typeof value === 'string') {
             if (rule.minLength !== undefined && value.length < rule.minLength) add(`must have at least ${rule.minLength} characters`);
@@ -50,10 +50,14 @@ export const validateAgainstSchema = (candidate, schema) => {
             const keys = Object.keys(value);
             if (rule.minProperties !== undefined && keys.length < rule.minProperties) add(`must contain at least ${rule.minProperties} properties`);
             if (rule.maxProperties !== undefined && keys.length > rule.maxProperties) add(`must contain no more than ${rule.maxProperties} properties`);
-            for (const required of rule.required ?? []) if (!(required in value)) add(`missing required property '${required}'`);
+            for (const required of rule.required ?? []) {
+                if (!Object.hasOwn(value, required)) add(`missing required property '${required}'`);
+            }
             for (const key of keys) {
                 if (rule.propertyNames) problems.push(...validate(key, rule.propertyNames, `${location}.${key} (property name)`));
-                const propertyRule = rule.properties?.[key];
+                const propertyRule = rule.properties && Object.hasOwn(rule.properties, key)
+                    ? rule.properties[key]
+                    : undefined;
                 if (propertyRule) problems.push(...validate(value[key], propertyRule, `${location}.${key}`));
                 else if (rule.additionalProperties === false) add(`unknown property '${key}'`);
                 else if (isRecord(rule.additionalProperties)) problems.push(...validate(value[key], rule.additionalProperties, `${location}.${key}`));

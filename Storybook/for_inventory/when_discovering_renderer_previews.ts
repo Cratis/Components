@@ -32,6 +32,27 @@ describe('when discovering renderer previews', () => {
         expect(validateAgainstSchema(invalid, adapterSchema)).not.to.be.empty;
     });
 
+    it('should reject metadata keys inherited by the schema properties object', () => {
+        expect(
+            validateAgainstSchema(
+                { ...sourcePackage.cratis, constructor: 'unexpected' },
+                adapterSchema,
+            ),
+        ).to.deep.equal(["$: unknown property 'constructor'"]);
+    });
+
+    it('should not satisfy required metadata through the candidate prototype', () => {
+        const { kind: _kind, ...withoutKind } = sourcePackage.cratis;
+        const inheritedKind = Object.setPrototypeOf(
+            { ...withoutKind },
+            { kind: 'ui-adapter' },
+        );
+
+        expect(validateAgainstSchema(inheritedKind, adapterSchema)).to.include(
+            "$: missing required property 'kind'",
+        );
+    });
+
     it('should exclude a private adapter workspace without a Core inventory edit', () => {
         const root = mkdtempSync(path.join(os.tmpdir(), 'cratis-storybook-inventory-'));
         try {
