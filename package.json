@@ -28,9 +28,9 @@
     "version": "0.0.0",
     "packageManager": "yarn@4.5.3",
     "devDependencies": {
-        "@cratis/arc": "22.5.0",
-        "@cratis/arc.react": "22.5.0",
-        "@cratis/arc.vite": "22.5.0",
+        "@cratis/arc": "22.6.0",
+        "@cratis/arc.react": "22.6.0",
+        "@cratis/arc.vite": "22.6.0",
         "@eslint/eslintrc": "^3.3.6",
         "@eslint/js": "^10.0.1",
         "@rollup/plugin-node-resolve": "^16.0.3",
