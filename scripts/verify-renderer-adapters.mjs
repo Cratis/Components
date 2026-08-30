@@ -225,11 +225,7 @@ const prepareCore = () => {
         'Display/index.d.ts',
         'renderer/index.d.ts',
     ]) {
-        if (
-            !existsSync(
-                path.join(repositoryDirectory, 'Source/dist/esm', declaration),
-            )
-        ) {
+        if (!existsSync(path.join(repositoryDirectory, 'Source/dist/esm', declaration))) {
             throw new Error(
                 `Core preparation did not emit required declaration '${declaration}'.`,
             );
@@ -237,52 +233,85 @@ const prepareCore = () => {
     }
 };
 
-const verifyFixture = (adapterKey, boundary, manager) => {
-    const manifests = sourceManifests();
-    validateMatrix(matrix, manifests);
-    const fixture = createFixture(matrix, adapterKey, boundary);
-    const temporary = mkdtempSync(path.join(tmpdir(), 'cratis-renderer-adapter-'));
-
+const prepareArtifacts = (adapterKeys) => {
+    const directory = mkdtempSync(
+        path.join(tmpdir(), 'cratis-renderer-adapter-artifacts-'),
+    );
     try {
-        const coreArchive = path.join(temporary, 'components-core.tgz');
-        const adapterArchive = path.join(temporary, 'components-adapter.tgz');
-        run('yarn', ['clean'], path.join(repositoryDirectory, fixture.adapter.directory));
-        run('yarn', ['build'], path.join(repositoryDirectory, fixture.adapter.directory));
+        const manifests = sourceManifests();
+        validateMatrix(matrix, manifests);
+        prepareCore();
+
+        const coreArchive = path.join(directory, 'components-core.tgz');
         run('yarn', ['workspace', '@cratis/components', 'pack', '--out', coreArchive]);
-        run('yarn', [
-            'workspace',
-            fixture.adapter.workspace,
-            'pack',
-            '--out',
-            adapterArchive,
-        ]);
         run(process.execPath, [
             path.join(repositoryDirectory, 'Source/scripts/verify-package-archive.mjs'),
             coreArchive,
         ]);
-
         const packedCore = unpackManifest(
             coreArchive,
-            path.join(temporary, 'unpacked-core'),
+            path.join(directory, 'unpacked-core'),
         );
-        const packedAdapter = unpackManifest(
-            adapterArchive,
-            path.join(temporary, 'unpacked-adapter'),
-        );
-        validateMatrix(matrix, {
-            ...manifests,
-            [packedCore.name]: packedCore,
-            [packedAdapter.name]: packedAdapter,
-        });
 
+        const adapters = {};
+        for (const adapterKey of adapterKeys) {
+            const fixture = createFixture(matrix, adapterKey, 'minimum');
+            const adapterDirectory = path.join(
+                repositoryDirectory,
+                fixture.adapter.directory,
+            );
+            const archive = path.join(directory, `${adapterKey}.tgz`);
+            run('yarn', ['clean'], adapterDirectory);
+            run('yarn', ['build'], adapterDirectory);
+            run('yarn', [
+                'workspace',
+                fixture.adapter.workspace,
+                'pack',
+                '--out',
+                archive,
+            ]);
+            const manifest = unpackManifest(
+                archive,
+                path.join(directory, `unpacked-${adapterKey}`),
+            );
+            validateMatrix(matrix, {
+                ...manifests,
+                [packedCore.name]: packedCore,
+                [manifest.name]: manifest,
+            });
+            adapters[adapterKey] = { archive, manifest };
+        }
+
+        return {
+            directory,
+            core: { archive: coreArchive, manifest: packedCore },
+            adapters,
+        };
+    } catch (error) {
+        rmSync(directory, { recursive: true, force: true });
+        throw error;
+    }
+};
+
+const verifyFixture = (adapterKey, boundary, manager, artifacts) => {
+    const fixture = createFixture(matrix, adapterKey, boundary);
+    const temporary = mkdtempSync(path.join(tmpdir(), 'cratis-renderer-adapter-'));
+    const adapterArtifact = artifacts.adapters[adapterKey];
+
+    try {
         const consumerDirectory = path.join(temporary, 'consumer');
         mkdirSync(consumerDirectory);
         writeFileSync(
             path.join(consumerDirectory, 'package.json'),
             '{"private":true,"type":"module"}\n',
         );
-        writeProbe(consumerDirectory, packedAdapter, fixture);
-        install(manager, consumerDirectory, [coreArchive, adapterArchive], fixture);
+        writeProbe(consumerDirectory, adapterArtifact.manifest, fixture);
+        install(
+            manager,
+            consumerDirectory,
+            [artifacts.core.archive, adapterArtifact.archive],
+            fixture,
+        );
         run(
             manager === 'yarn-pnp' ? 'yarn' : 'node',
             manager === 'yarn-pnp' ? ['node', 'verify.mjs'] : ['verify.mjs'],
@@ -316,15 +345,17 @@ for (const manager of selectedManagers) {
         throw new Error(`Unknown package manager '${manager}'.`);
 }
 
-// Every profile must consume the same packed Core bytes. Build Core once before the matrix
-// instead of repeatedly deleting/recreating its declaration tree between adjacent profiles.
-// Besides matching release pack-once semantics, this removes a filesystem race where an adapter
-// compiler could observe Rollup's JavaScript output before the declaration tree was visible.
-prepareCore();
-
-for (const adapterKey of adapterKeys) {
-    for (const boundary of selectedBoundaries) {
-        for (const manager of selectedManagers)
-            verifyFixture(adapterKey, boundary, manager);
+// Build and pack each selected package exactly once. Every profile consumes the same immutable
+// archives, matching release semantics and isolating verification from mutable workspace output.
+const artifacts = prepareArtifacts(adapterKeys);
+try {
+    for (const adapterKey of adapterKeys) {
+        for (const boundary of selectedBoundaries) {
+            for (const manager of selectedManagers) {
+                verifyFixture(adapterKey, boundary, manager, artifacts);
+            }
+        }
     }
+} finally {
+    rmSync(artifacts.directory, { recursive: true, force: true });
 }
