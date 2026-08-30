@@ -195,7 +195,13 @@ export const DataTableForQuery = <
                 overflow: 'hidden',
             }}
         >
-            <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+            {/* The scroll container must be `DataTableCore`'s own bounded container rather than
+                this wrapper. `.cratis-datatable__container` sets `overflow-x: auto`, and CSS
+                computes the matching `overflow-y: visible` to `auto`, so that element is always
+                the nearest scrolling ancestor for the `position: sticky` header cells. Scrolling
+                out here would leave the header sticking to a container that never scrolls, so the
+                header would not freeze. */}
+            <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 <DataTableCore<TDataType>
                     data={rows}
                     dataKey={props.dataKey}
@@ -207,6 +213,8 @@ export const DataTableForQuery = <
                     globalSearchPlaceholder={props.globalSearchPlaceholder}
                     globalSearchAriaLabel={props.globalSearchAriaLabel}
                     defaultFilters={props.defaultFilters}
+                    scrollable
+                    scrollHeight='100%'
                     className={props.className}
                     style={{ minWidth: '100%' }}
                     pt={props.pt}

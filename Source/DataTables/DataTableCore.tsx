@@ -375,7 +375,12 @@ export const DataTableCore = <TData extends object>({
     return (
         <div
             {...pt?.root}
-            className={classNames('cratis-datatable', pt?.root?.className, className)}
+            className={classNames(
+                'cratis-datatable',
+                scrollable ? 'cratis-datatable--scrollable' : undefined,
+                pt?.root?.className,
+                className,
+            )}
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
         >

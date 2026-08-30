@@ -17,6 +17,23 @@
     width: 100%;
     color: var(--cratis-text-color);
 }
+
+/* The bounded scroll container is sized with a percentage `max-height`, which CSS resolves
+   to `none` whenever the containing block has no definite height (CSS 2.1 10.7). The root
+   is `height: auto` by default, so a scrollable table would grow past its parent and get
+   clipped instead of scrolling. Giving the scrollable root a definite height re-establishes
+   the chain, and the flex child absorbs the remaining space. */
+.cratis-datatable--scrollable {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.cratis-datatable--scrollable .cratis-datatable__container {
+    flex: 1 1 auto;
+    min-height: 0;
+}
 .cratis-datatable-header-cell {
     display: flex;
     min-width: 0;
