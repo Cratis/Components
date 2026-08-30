@@ -53,8 +53,12 @@ Verify those properties for the exact application and component profile shipped.
 Install the package:
 
 ```bash
-npm install @cratis/components
+npm install @cratis/components@^4
 ```
+
+> **Publication status:** This example targets the owner-authorized 4.0.0 npm release. When reading
+> it from repository source before that release, verify availability with
+> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace.
 
 Import the semantic tokens and component structure. The baseline theme is
 optional:

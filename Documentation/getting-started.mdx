@@ -20,9 +20,16 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
 1. **Install Components.**
 
-    ```bash title="Install Components"
-    npm install @cratis/components
+    ```bash title="Install Components 4"
+    npm install @cratis/components@^4
     ```
+
+    <Aside type='caution' title='Source candidate versus published release'>
+        This guide describes Components 4. Before the owner-authorized 4.0.0 release
+        exists on npm, a repository checkout is a source candidate, not an installable
+        release. Verify availability with `npm view @cratis/components@4.0.0 version`;
+        repository contributors use the workspace.
+    </Aside>
 
     React Aria, the internationalized date implementation, and React Icons are internal dependencies. The current package manifest does not declare a separate UI kit or theme runtime, and consumers do not configure an icon-package peer.
 
@@ -30,7 +37,7 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
     ```bash title="Install explicit peers"
     ARC_VERSION=22.6.2
-    npm install @cratis/components \
+    npm install @cratis/components@^4 \
       "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
       @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
       reflect-metadata@0.2.2 tsyringe@4.10.0

@@ -10,12 +10,20 @@ versioned separately. It exports one stable `CratisPresentationUiLibrary` manife
 adaptation, never full-catalog replacement. PrimeReact 10 is supported separately by
 `@cratis/components.primereact10`.
 
+> **Publication status:** The install example targets the owner-authorized 4.0.0 npm release. When
+> reading this README from repository source before that release, verify availability with
+> `npm view @cratis/components.primereact@4.0.0 version`; source contributors use the workspace in
+> this checkout.
+
 ## Install
 
 ```sh
-npm install @cratis/components.primereact @cratis/components \
-  @primereact/core @primereact/ui primereact @primeuix/themes react react-dom
+npm install @cratis/components.primereact@^4 @cratis/components@^4 \
+  @primereact/core@^11 @primereact/ui@^11 primereact@^11 \
+  @primeuix/themes@^3 react@^19 react-dom@^19
 ```
+
+Node-based build, test, and server-rendering environments require Node.js 23 or newer.
 
 The adapter uses PrimeReact 11 styled components. It covers Button, IconButton, TextInput,
 TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. The five atomic interaction slots are

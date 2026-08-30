@@ -27,6 +27,7 @@ Everything about _data_ stays with your application:
 | `ChatSidebar`                     | The whole thing in an overlay panel: topics list ⇄ conversation, back navigation, naming contract |
 | `ChatTopicList`                   | Just the topics — pick one, start a new one                                                       |
 | `ChatConversation`                | Just one conversation — messages plus composer                                                    |
+| `ChatMessageBody`                 | Plain message text with known `@`-mentions marked for styling                                     |
 | `ChatSidebarForObservableQueries` | Optional: `ChatSidebar` bound to two Cratis Arc observable queries                                |
 
 ## Basic Usage
@@ -124,6 +125,32 @@ A message deliberately carries only `authorId`. The `authorOf` callback resolves
     )}
 />
 ```
+
+## Rendering a message body directly
+
+`ChatConversation` uses `ChatMessageBody` internally. Import it directly when an application-owned message list, notification, or transcript needs the same mention rendering without the rest of the conversation UI.
+
+```tsx
+import { ChatMessageBody, ChatAuthorKind } from '@cratis/components/Chat';
+
+<ChatMessageBody
+    body='Ask @Review Bot about this change.'
+    mentions={[
+        {
+            id: 'review-bot',
+            name: 'Review Bot',
+            kind: ChatAuthorKind.Agent,
+        },
+    ]}
+/>;
+```
+
+| Prop       | Type            | Description                                                                                  |
+| ---------- | --------------- | -------------------------------------------------------------------------------------------- |
+| `body`     | `string`        | Plain message text. Mention names remain ordinary `@Name` text in the stored body.           |
+| `mentions` | `ChatMention[]` | Known mentions to mark within the text. Omit it when the body contains no resolved mentions. |
+
+The component renders text, not HTML or Markdown. Each resolved mention gets the `cratis-chat-message__mention` class and a `data-kind` attribute so people and agents can be styled differently. Text that does not match a supplied mention remains unchanged.
 
 ## Styling
 

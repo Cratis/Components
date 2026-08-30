@@ -26,11 +26,7 @@ An optional adapter changes only the renderer slots that it declares:
 | `@cratis/components.primereact`   | PrimeReact 11 and PrimeUX themes 3 | Nine stable presentation slots |
 | `@cratis/components.primereact10` | PrimeReact `>=10.9.9 <11`          | Nine stable presentation slots |
 
-All three adapters publish stable `CratisPresentationUiLibrary` manifests for renderer ABI major
-1. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another
-Components-owned composition. The [primitive adaptation reference](primitive-adaptation.md) lists
-the exact nine-slot profile. Stable profile selection means nine-slot primitive adaptation, never
-full-catalog replacement.
+All three adapters publish stable `CratisPresentationUiLibrary` manifests for renderer ABI version 1. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another Components-owned composition. The [primitive adaptation reference](primitive-adaptation.md) lists the exact nine-slot profile. Stable profile selection means nine-slot primitive adaptation, never full-catalog replacement.
 
 ```mermaid
 graph TD
@@ -99,6 +95,20 @@ one is selected, owns the complete interaction instead of wrapping the built-in 
 This rule is structural, not a universal accessibility certification. Verify keyboard order, initial
 focus, focus restoration, escape handling, background inertness, and screen-reader output in the
 application's supported browsers and assistive technologies.
+
+## Adapter package metadata schema
+
+Adapter authors can validate the static `cratis` object in their package manifest against the public JSON Schema exported by Components:
+
+```ts
+import uiAdapterSchema from '@cratis/components/schemas/ui-adapter.schema.json' with { type: 'json' };
+```
+
+The export path is `@cratis/components/schemas/ui-adapter.schema.json`; its canonical `$id` is `https://cratis.io/schemas/ui-adapter.schema.json`, and it uses JSON Schema draft 2020-12. It validates the metadata object itself, not the entire `package.json`.
+
+An adapter package places that object under the `cratis` key. The schema requires the adapter identity and display name, renderer ABI range, adaptation level and profile, category, package entry/export names, slot and mode declarations, capabilities, SSR behavior, accessibility claims, license information, and upstream dependency metadata. Unknown properties are rejected so misspelled or unsupported claims do not silently pass.
+
+Use the schema for editor/build-time manifest validation, then run `@cratis/components.conformance` against the loaded adapter library for runtime contract checks. Schema validity proves only that the static declaration has the supported shape; it does not prove rendering fidelity, behavior, accessibility, SSR safety, or license compatibility. Changes to this exported schema follow the `@cratis/components` package's semantic versioning.
 
 ## Continue
 

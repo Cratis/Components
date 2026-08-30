@@ -85,6 +85,47 @@ import { Avatar } from '@cratis/components/Display';
 
 The fallback order is `image` → `icon` → `label`, so passing both an `icon` and a `label` shows the icon.
 
+## Message
+
+An inline status message with a severity tone and optional leading icon.
+
+```tsx
+import { Message } from '@cratis/components/Display';
+
+<Message severity='success'>Saved successfully.</Message>
+<Message severity='error' text='The request failed.' />
+<Message severity='info' icon={false}>No icon is shown.</Message>
+```
+
+| Prop        | Type                                                                    | Description                                                                                         |
+| ----------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `severity`  | `'info' \| 'success' \| 'warn' \| 'error' \| 'secondary' \| 'contrast'` | Visual and semantic tone. Defaults to `'info'`.                                                     |
+| `text`      | `ReactNode`                                                             | Message content when `children` is not provided.                                                    |
+| `children`  | `ReactNode`                                                             | Message content; takes precedence over `text`.                                                      |
+| `icon`      | `ReactNode \| false`                                                    | Custom leading icon. Pass `false` to hide the icon; otherwise a severity symbol is used by default. |
+| `className` | `string`                                                                | Extra CSS class on the root.                                                                        |
+
+Error messages use `role='alert'`; every other severity uses `role='status'`. The decorative icon is hidden from assistive technology. Stable `root`, `icon`, and `text` `data-cratis-part` markers are available for styling and tests.
+
+## ProgressSpinner
+
+An indeterminate loading spinner for work whose completion percentage is unknown.
+
+```tsx
+import { ProgressSpinner } from '@cratis/components/Display';
+
+<ProgressSpinner aria-label='Loading authors' />
+<ProgressSpinner style={{ width: '2rem', height: '2rem' }} />
+```
+
+| Prop         | Type            | Description                                                                             |
+| ------------ | --------------- | --------------------------------------------------------------------------------------- |
+| `style`      | `CSSProperties` | Root styles; use width and height to size the spinner.                                  |
+| `className`  | `string`        | Extra CSS class on the root.                                                            |
+| `aria-label` | `string`        | Loading status announced to assistive technology. Defaults to `'Loading'`; localize it. |
+
+`ProgressSpinner` renders a `role='status'` root. It exposes stable `root`, `svg`, `track`, and `range` `data-cratis-part` markers plus `data-busy='true'` and `data-loading='true'` on the root.
+
 ## ProgressBar
 
 A horizontal progress indicator, determinate or indeterminate.

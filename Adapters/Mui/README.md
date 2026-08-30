@@ -8,11 +8,19 @@ The package shares the Components repository release version while the renderer 
 versioned separately. It exports one stable `CratisPresentationUiLibrary` manifest, `muiUiLibrary`. This certifies nine-slot primitive
 adaptation, never full-catalog replacement.
 
+> **Publication status:** The install example targets the owner-authorized 4.0.0 npm release. When
+> reading this README from repository source before that release, verify availability with
+> `npm view @cratis/components.mui@4.0.0 version`; source contributors use the workspace in this
+> checkout.
+
 ## Install
 
 ```sh
-npm install @cratis/components.mui @cratis/components @mui/material @emotion/react @emotion/styled react react-dom
+npm install @cratis/components.mui@^4 @cratis/components@^4 \
+  @mui/material@^9 @emotion/react@^11 @emotion/styled@^11 react@^19 react-dom@^19
 ```
+
+Node-based build, test, and server-rendering environments require Node.js 23 or newer.
 
 Select the adapter on the application Components provider:
 

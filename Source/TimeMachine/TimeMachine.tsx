@@ -20,13 +20,13 @@ export interface TimeMachineProps {
     /** Ordered list of historical entity versions (snapshots) to scrub through. */
     versions: Version[];
     /**
-     * Zero-based index of the currently selected version.
-     * Controlled externally — the parent owns this value and updates it via {@link onVersionChange}.
+     * Initial zero-based selected version. Changes after mount do not replace the component's
+     * internal selection; observe user changes through {@link onVersionChange}.
      */
     currentVersionIndex?: number;
     /**
-     * Invoked when the user selects a different version (via timeline, scroll gesture, or arrow keys).
-     * Called immediately after the internal state changes, before rendering the new version.
+     * Invoked when the user selects a different version through the timeline, wheel gesture, or
+     * previous/next buttons. Called immediately after the internal state changes.
      */
     onVersionChange?: (index: number) => void;
     /** Scroll sensitivity - higher values require more scrolling to change versions */

@@ -14,6 +14,11 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 
 Both import rules cover static `import` and re-`export … from` forms. The root-barrel rule also reports TypeScript `import = require(...)`, dynamic `import(...)`, and CommonJS `require(...)` of the package root; ambiguous forms are never autofixed.
 
+> **Publication status:** The install examples target the owner-authorized 4.0.0 npm release. When
+> reading this README from repository source before that release, verify availability with
+> `npm view @cratis/eslint-plugin-components@4.0.0 version`; source contributors use the workspace
+> commands in this checkout instead.
+
 ## Install
 
 Use the independently released Components 4 tooling train bounded to `>=4 <5`. Never use

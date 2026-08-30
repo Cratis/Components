@@ -9,7 +9,7 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
 
 <Steps>
 
-1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with the Cratis-owned `Column` marker — `field` matches a property on the read model, typed against the generated `Author`:
+1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with the Cratis-owned `Column` marker. Its `field` string must match a property on the generated `Author` read model:
 
     ```tsx title="Authors.tsx"
     import { Page } from '@cratis/components/Common';
@@ -41,9 +41,9 @@ Notice everything that's _absent_. There's no `fetch`, no `useEffect`, no loadin
     values directly. Same proxy, different consumption.
 </Aside>
 
-## Type safety reaches the column
+## Keep field names aligned
 
-`field="name"` is a string, but it isn't a guess — it lines up with the `name` property on the generated `Author` read model. If you'd rather not hand-type field names at all, the [Displaying data](/components/displaying-data/) guide shows the typed `Columns` helpers. Either way, the table can't drift from the backend: change the read model in C#, rebuild, and the mismatch shows up.
+The generated query and its row values are typed, but `Column.field` is currently a plain string and the compiler does not validate it against the read model. Keep field names aligned with the generated row type and update them when the backend property changes. For custom cells, use `Column<Author>` with a typed `body` callback so row-property access is compiler-checked. A misspelled raw `field` value is a runtime display/configuration error rather than a TypeScript error.
 
 ## What you built
 

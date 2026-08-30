@@ -17,8 +17,13 @@ interaction primitives internally; consumers do not import or style React Aria.
 ## Install
 
 ```bash
-npm install @cratis/components
+npm install @cratis/components@^4
 ```
+
+> **Publication status:** This install example targets the owner-authorized 4.0.0 npm release. When
+> reading this README from repository source before that release, verify availability with
+> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace
+> instead.
 
 The current package manifest declares these peer dependencies:
 
@@ -33,7 +38,7 @@ Strict installers can declare them explicitly; keep both Arc packages on the sam
 
 ```bash
 ARC_VERSION=22.6.2
-npm install @cratis/components \
+npm install @cratis/components@^4 \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
   reflect-metadata@0.2.2 tsyringe@4.10.0
@@ -46,6 +51,12 @@ The generated compatibility schema v2 contract is published at
 windows, the seven-package source-candidate scope, independent package trains, renderer ABI/profile
 ranges, and exact lower/current adapter evidence. `publicationEnabled: false` means the source is
 not authorized for publication; `release.md` at the repository root is the durable policy.
+
+Renderer-adapter authors can import the public draft 2020-12 metadata schema from
+`@cratis/components/schemas/ui-adapter.schema.json`. It validates the static `package.json#cratis`
+object; runtime behavior still requires `@cratis/components.conformance`. See the
+[renderer-adapter documentation](https://cratis.io/components/renderers/#adapter-package-metadata-schema)
+for the boundary and limitations.
 
 **Yarn PnP note:** the current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.6.2`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
@@ -226,7 +237,7 @@ The canonical rule: **the package root is setup-only; every component ships from
 | Subpath                                    | Capability profile                |
 | ------------------------------------------ | --------------------------------- |
 | `@cratis/components/Canvas`                | Spatial (optional `pixi.js` peer) |
-| `@cratis/components/Chat`                  | Foundation                        |
+| `@cratis/components/Chat`                  | Advanced React                    |
 | `@cratis/components/CommandDialog`         | Foundation                        |
 | `@cratis/components/CommandStepper`        | Foundation                        |
 | `@cratis/components/CommandForm`           | Foundation                        |
