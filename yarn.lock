@@ -251,38 +251,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc.react@npm:22.6.0":
-  version: 22.6.0
-  resolution: "@cratis/arc.react@npm:22.6.0"
+"@cratis/arc.react@npm:22.6.2":
+  version: 22.6.2
+  resolution: "@cratis/arc.react@npm:22.6.2"
   dependencies:
-    "@cratis/arc": "npm:22.6.0"
+    "@cratis/arc": "npm:22.6.2"
     "@cratis/fundamentals": "npm:^7.18.0"
     tsyringe: "npm:^4.10.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/e6567c159b888424916be32d7351c814a9d024d8e5c5e5b3d3033eee64b633b78b0c0d63dcd3a0208cd2d9cc03976e3fd52c1b27dd40cc867c3d7971877f864f
+  checksum: 10/207c816e185e2456c33a71e79f4f408b03e62213ff9a7f7a66b977574393c9b16596e278a272aff460c40e298264ed8942fbaa883306bd2c00b0659f77aaae23
   languageName: node
   linkType: hard
 
-"@cratis/arc.vite@npm:22.6.0":
-  version: 22.6.0
-  resolution: "@cratis/arc.vite@npm:22.6.0"
+"@cratis/arc.vite@npm:22.6.2":
+  version: 22.6.2
+  resolution: "@cratis/arc.vite@npm:22.6.2"
   dependencies:
-    "@cratis/arc": "npm:22.6.0"
+    "@cratis/arc": "npm:22.6.2"
     "@swc/core": "npm:^1.15.43"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/cdc67b0f6f7ef8871f3e31495d379d6f3cd00203a05c0f59509d13c95326fb0f23c557bb6c85ebf998900a45aa21576bd2c1e5d3127336f021658880721bee7d
+  checksum: 10/ef7b1e9da0c2e85d0709f8cac43dacd5a37701f569d9061a96d7878c8ff42346327cc49daf716a8f42c87ce60b8f3434e1de8a8a5479dff86d3eab8085b9c845
   languageName: node
   linkType: hard
 
-"@cratis/arc@npm:22.6.0":
-  version: 22.6.0
-  resolution: "@cratis/arc@npm:22.6.0"
+"@cratis/arc@npm:22.6.2":
+  version: 22.6.2
+  resolution: "@cratis/arc@npm:22.6.2"
   dependencies:
     "@cratis/fundamentals": "npm:^7.18.0"
     rxjs: "npm:^7.8.2"
-  checksum: 10/3fc7dff1012b51b53381f25b51b48cdc86ae855fd56461b0ed554b3d161ecff174dff862ee7cb574df73ada7c9cac89ec3b0e5390cd265732c3da7eb09c19e51
+  checksum: 10/5e917e7b7f2880473afbdb1832f848901221cf9b2ee3965893e7c8cbb0a3e80c2206a6144bbd790b1c9877738162e04c034293b3c531a53eaec493bf2a4d746c
   languageName: node
   linkType: hard
 
@@ -303,8 +303,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.conformance@workspace:Conformance"
   dependencies:
-    "@cratis/arc": "npm:22.6.0"
-    "@cratis/arc.react": "npm:22.6.0"
+    "@cratis/arc": "npm:22.6.2"
+    "@cratis/arc.react": "npm:22.6.2"
     "@cratis/components": "workspace:^"
     "@cratis/fundamentals": "npm:^7.10.3"
     axe-core: "npm:^4.13.0"
@@ -323,8 +323,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.mui@workspace:Adapters/Mui"
   dependencies:
-    "@cratis/arc": "npm:22.6.0"
-    "@cratis/arc.react": "npm:22.6.0"
+    "@cratis/arc": "npm:22.6.2"
+    "@cratis/arc.react": "npm:22.6.2"
     "@cratis/components": "workspace:^"
     "@cratis/components.conformance": "workspace:^"
     "@cratis/fundamentals": "npm:^7.10.3"
@@ -350,8 +350,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.primereact10@workspace:Adapters/PrimeReact10"
   dependencies:
-    "@cratis/arc": "npm:22.6.0"
-    "@cratis/arc.react": "npm:22.6.0"
+    "@cratis/arc": "npm:22.6.2"
+    "@cratis/arc.react": "npm:22.6.2"
     "@cratis/components": "workspace:^"
     "@cratis/components.conformance": "workspace:^"
     "@cratis/fundamentals": "npm:^7.10.3"
@@ -373,8 +373,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.primereact@workspace:Adapters/PrimeReact"
   dependencies:
-    "@cratis/arc": "npm:22.6.0"
-    "@cratis/arc.react": "npm:22.6.0"
+    "@cratis/arc": "npm:22.6.2"
+    "@cratis/arc.react": "npm:22.6.2"
     "@cratis/components": "workspace:^"
     "@cratis/components.conformance": "workspace:^"
     "@cratis/fundamentals": "npm:^7.10.3"
@@ -412,7 +412,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components@workspace:Source"
   dependencies:
-    "@cratis/arc.vite": "npm:22.6.0"
+    "@cratis/arc.vite": "npm:22.6.2"
     "@internationalized/date": "npm:3.12.3"
     allotment: "npm:1.20.5"
     framer-motion: "npm:13.1.1"
@@ -6888,9 +6888,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
-    "@cratis/arc": "npm:22.6.0"
-    "@cratis/arc.react": "npm:22.6.0"
-    "@cratis/arc.vite": "npm:22.6.0"
+    "@cratis/arc": "npm:22.6.2"
+    "@cratis/arc.react": "npm:22.6.2"
+    "@cratis/arc.vite": "npm:22.6.2"
     "@cyclonedx/yarn-plugin-cyclonedx": "npm:3.4.0"
     "@eslint-react/eslint-plugin": "npm:5.18.6"
     "@eslint/js": "npm:^10.0.1"

@@ -168,8 +168,8 @@ Known upstream failures are bounded in `Source/scripts/verify-public-types.excep
 The current exceptions are:
 
 - **`@webgpu/types@0.1.72` through `pixi.js@8.20.1`:** its ambient WebGPU declarations conflict with TypeScript 6's built-in DOM declarations for the `Canvas` subpath (`TS2403`, `TS2687`, `TS2717`, `TS6200`). The setup-only root has no Pixi type exception.
-- **`@cratis/arc.react@22.6.0`:** its published global JSX declarations expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
-- **`@cratis/arc@22.6.0`, `@cratis/arc.react@22.6.0`, and `@cratis/fundamentals@7.18.1`:** their published ESM declarations use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
+- **`@cratis/arc.react@22.6.2`:** its published global JSX declarations expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
+- **`@cratis/arc@22.6.2`, `@cratis/arc.react@22.6.2`, and `@cratis/fundamentals@7.18.1`:** their published ESM declarations use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
 
 ### Why the Canvas Pixi surface remains public
 

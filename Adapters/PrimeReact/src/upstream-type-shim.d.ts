@@ -6,7 +6,7 @@ import type { ElementType, ReactElement } from 'react';
 
 /**
  * @internal Compile-only bridge for exact upstream declaration defects in PrimeReact 11.1.0 and
- * Arc React 22.6.0. The adapter's packed declaration never exposes these aliases.
+ * Arc React 22.6.2. The adapter's packed declaration never exposes these aliases.
  */
 declare global {
     type I_1 = ComponentInstance;

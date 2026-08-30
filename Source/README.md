@@ -32,7 +32,7 @@ The current package manifest declares these peer dependencies:
 Strict installers can declare them explicitly; keep both Arc packages on the same application version:
 
 ```bash
-ARC_VERSION=22.6.0
+ARC_VERSION=22.6.2
 npm install @cratis/components \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
@@ -47,7 +47,7 @@ windows, the seven-package source-candidate scope, independent package trains, r
 ranges, and exact lower/current adapter evidence. `publicationEnabled: false` means the source is
 not authorized for publication; `release.md` at the repository root is the durable policy.
 
-**Yarn PnP note:** the current `@cratis/arc.react@22.6.0` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.6.0`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
+**Yarn PnP note:** the current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.6.2`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
 `pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
 

@@ -19,7 +19,7 @@
             "id": "arc-react-global-jsx-namespace",
             "summary": "@cratis/arc.react ships a global.d.ts that declares `namespace JSX` referencing test-only ambient types (vitest/globals, chai, sinon-chai) as part of its published package instead of scoping that augmentation to its own test build. A strict external consumer that does not also install those test packages cannot resolve the bare `JSX` identifiers arc.react's dialog/command declaration files reference.",
             "reason": "external - @cratis/arc.react's own shipped .d.ts, not a Components declaration; Components has no `namespace JSX` augmentation of its own.",
-            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.6.0" }],
+            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.6.2" }],
             "resolutionModes": ["bundler"],
             "diagnosticCodes": ["TS2503"],
             "filePrefixes": ["@cratis/arc.react/"],
@@ -30,8 +30,8 @@
             "summary": "@cratis/arc, @cratis/arc.react, and @cratis/fundamentals publish ESM declaration files with extensionless relative specifiers (e.g. `export * from './ICommandScope'`). Node16/NodeNext module resolution requires an explicit extension on relative ECMAScript imports, so these upstream barrels fail under --moduleResolution nodenext; downstream symbols that transit through the broken barrel then read as missing (TS2305/TS2694 cascades).",
             "reason": "external - the extensionless specifiers live in @cratis/arc, @cratis/arc.react, and @cratis/fundamentals's own published dist, not in Components' declarations. Cratis/Components' own declaration rewrite (this PR) already eliminated Components' extensionless specifiers.",
             "upstreamPackages": [
-                { "name": "@cratis/arc", "version": "22.6.0" },
-                { "name": "@cratis/arc.react", "version": "22.6.0" },
+                { "name": "@cratis/arc", "version": "22.6.2" },
+                { "name": "@cratis/arc.react", "version": "22.6.2" },
                 { "name": "@cratis/fundamentals", "version": "7.18.1" }
             ],
             "resolutionModes": ["nodenext"],
