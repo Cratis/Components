@@ -252,6 +252,9 @@ export const ApplicationRoot = ({ children }: { children: React.ReactNode }) => 
                     previousMonth: 'Forrige måned',
                     nextMonth: 'Neste måned',
                 },
+                toolbar: {
+                    label: 'Verktøy',
+                },
             },
         }}
         toaster

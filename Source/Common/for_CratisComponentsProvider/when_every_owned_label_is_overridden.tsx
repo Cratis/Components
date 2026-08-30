@@ -17,6 +17,7 @@ import { StepperPanel } from '../../CommandDialog/StepperPanel';
 import { Toaster, toast } from '../../Notifications';
 import { Column } from '../../DataTables/Column';
 import { DataTableCore } from '../../DataTables/DataTableCore';
+import { Toolbar } from '../../Toolbar/Toolbar';
 
 /**
  * Sentinel-provider gate for every owned label audited in this pass: renders every fixed
@@ -64,6 +65,9 @@ describe('when every owned label is overridden through the provider', () => {
         datePicker: {
             label: 'SENTINEL-date-label',
         },
+        toolbar: {
+            label: 'SENTINEL-toolbar',
+        },
     };
 
     const englishDefaults = [
@@ -86,12 +90,17 @@ describe('when every owned label is overridden through the provider', () => {
         'True',
         'False',
         'Date',
+        'Tools',
     ];
 
     beforeEach(async () => {
+        // SAFETY: React's jsdom act-environment flag is runtime-only and absent from the
+        // TypeScript global declaration used by this spec.
         (
             globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
         ).IS_REACT_ACT_ENVIRONMENT = true;
+        // SAFETY: jsdom does not implement ResizeObserver, while the rendered DataTable uses it;
+        // this test-local structural shim supplies only the methods that component calls.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
             observe() {
                 return undefined;
@@ -137,6 +146,9 @@ describe('when every owned label is overridden through the provider', () => {
                         <Column selectionMode='single' />
                     </DataTableCore>
                     <DatePickerInput value={null} onChange={() => undefined} />
+                    <Toolbar>
+                        <span>Tool</span>
+                    </Toolbar>
                 </CratisComponentsProvider>,
             );
         });
@@ -227,6 +239,11 @@ describe('when every owned label is overridden through the provider', () => {
     it('should localize the orphaned DatePicker accessible-name fallback', () => {
         const group = container.querySelector('[data-cratis-part="group"]');
         expect(group?.getAttribute('aria-label')).to.equal('SENTINEL-date-label');
+    });
+
+    it('should localize the Toolbar accessible-name fallback', () => {
+        const toolbar = container.querySelector('[role="toolbar"]');
+        expect(toolbar?.getAttribute('aria-label')).to.equal('SENTINEL-toolbar');
     });
 
     it('should never leave an audited surface showing its English default', () => {

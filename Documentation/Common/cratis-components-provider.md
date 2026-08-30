@@ -143,6 +143,9 @@ English, spelled out explicitly (this is also what every group defaults to with 
                 filterTriggerAriaLabel: (field) => `Filter by ${field}`,
                 valueAriaLabel: (field) => `Filter value for ${field}`,
             },
+            toolbar: {
+                label: 'Tools',
+            },
         },
     }}
 >
@@ -205,6 +208,9 @@ The same shape in Norwegian Bokmål:
                 false: 'Usann',
                 filterTriggerAriaLabel: (field) => `Filtrer på ${field}`,
                 valueAriaLabel: (field) => `Filterverdi for ${field}`,
+            },
+            toolbar: {
+                label: 'Verktøy',
             },
         },
     }}

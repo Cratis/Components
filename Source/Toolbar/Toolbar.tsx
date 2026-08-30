@@ -3,6 +3,7 @@
 
 import { type HTMLAttributes, type ReactNode } from 'react';
 import { ToolbarDragContext } from './ToolbarDragContext';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 
@@ -23,7 +24,7 @@ export interface ToolbarProps {
     orientation?: 'vertical' | 'horizontal';
     /** Extra class name for the toolbar root. */
     className?: string;
-    /** Accessible toolbar name. Defaults to `'Tools'`; localize for the product. */
+    /** Accessible toolbar name. Overrides the provider's `messages.toolbar.label` fallback. */
     'aria-label'?: string;
     /** Identifies an external element that names the toolbar. Takes precedence over `aria-label`. */
     'aria-labelledby'?: string;
@@ -53,30 +54,37 @@ export const Toolbar = ({
     draggable = false,
     onItemDragStart,
     className,
-    'aria-label': ariaLabel = 'Tools',
+    'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
     pt,
-}: ToolbarProps) => (
-    <ToolbarDragContext.Provider value={{ draggable, onItemDragStart }}>
-        <div
-            {...pt?.root}
-            role='toolbar'
-            aria-orientation={orientation}
-            aria-label={ariaLabelledBy ? undefined : ariaLabel}
-            aria-labelledby={ariaLabelledBy}
-            className={[
-                'toolbar cratis:inline-flex',
-                orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col',
-                'cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl',
-                pt?.root?.className,
-                className,
-            ]
-                .filter(Boolean)
-                .join(' ')}
-            data-cratis-part='root'
-            data-orientation={orientation}
-        >
-            {children}
-        </div>
-    </ToolbarDragContext.Provider>
-);
+}: ToolbarProps) => {
+    const { messages } = useCratisComponentsConfig();
+    const resolvedAriaLabel = ariaLabel ?? messages?.toolbar?.label ?? 'Tools';
+
+    return (
+        <ToolbarDragContext.Provider value={{ draggable, onItemDragStart }}>
+            <div
+                {...pt?.root}
+                role='toolbar'
+                aria-orientation={orientation}
+                aria-label={ariaLabelledBy ? undefined : resolvedAriaLabel}
+                aria-labelledby={ariaLabelledBy}
+                className={[
+                    'toolbar cratis:inline-flex',
+                    orientation === 'horizontal'
+                        ? 'cratis:flex-row'
+                        : 'cratis:flex-col',
+                    'cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl',
+                    pt?.root?.className,
+                    className,
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='root'
+                data-orientation={orientation}
+            >
+                {children}
+            </div>
+        </ToolbarDragContext.Provider>
+    );
+};

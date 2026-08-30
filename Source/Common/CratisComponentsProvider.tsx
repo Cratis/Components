@@ -123,6 +123,12 @@ export interface CratisColumnFilterMessages {
     false?: string;
 }
 
+/** Localizable labels owned by the Cratis {@link Toolbar} composition. */
+export interface CratisToolbarMessages {
+    /** Accessible toolbar name used when neither `aria-label` nor `aria-labelledby` is supplied. */
+    label?: string;
+}
+
 /** Components-owned message groups. */
 export interface CratisComponentsMessages {
     /** Paginator labels. */
@@ -141,6 +147,8 @@ export interface CratisComponentsMessages {
     dataTable?: CratisDataTableMessages;
     /** Column-filter popup labels and match-mode copy. */
     columnFilter?: CratisColumnFilterMessages;
+    /** Toolbar accessible-name fallback. */
+    toolbar?: CratisToolbarMessages;
 }
 
 interface LegacyLocaleMessages {

@@ -54,5 +54,8 @@ export const cratisDefaults: CratisComponentsConfig = {
             true: 'True',
             false: 'False',
         },
+        toolbar: {
+            label: 'Tools',
+        },
     },
 };
