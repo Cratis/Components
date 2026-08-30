@@ -1,7 +1,7 @@
 {
     "schemaVersion": 2,
-    "releaseStatus": "source-candidate",
-    "publicationEnabled": false,
+    "releaseStatus": "publication-authorized",
+    "publicationEnabled": true,
     "gaScope": {
         "publicPackages": [
             "@cratis/components",
@@ -47,7 +47,7 @@
         },
         "components4": {
             "components": ">=4 <5",
-            "status": "current-candidate",
+            "status": "current",
             "migrationRole": "target",
             "rendererAbi": 1,
             "coreProfile": "core/v1",

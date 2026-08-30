@@ -223,7 +223,9 @@ export function readPackedPackageJson(archivePath) {
         const header = archive.subarray(offset, offset + 512);
         if (header.every((byte) => byte === 0)) {
             if (archive.subarray(offset).some((byte) => byte !== 0)) {
-                throw new Error('Tar archive contains non-zero data after its end marker.');
+                throw new Error(
+                    'Tar archive contains non-zero data after its end marker.',
+                );
             }
             endMarkerFound = true;
             break;
@@ -451,9 +453,9 @@ export function bindSbomToArchive(sbom, binding) {
 }
 
 export function validateReleaseEvidenceIndex(index, outputDirectory) {
-    if (index?.schemaVersion !== 1 || index.publicationEnabled !== false) {
+    if (index?.schemaVersion !== 1 || typeof index.publicationEnabled !== 'boolean') {
         throw new Error(
-            'Release evidence index must be schema 1 and publication-disabled.',
+            'Release evidence index must be schema 1 and declare publicationEnabled.',
         );
     }
     validateCommit(index.commit);

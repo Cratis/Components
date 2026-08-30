@@ -136,8 +136,8 @@ jobs:
               working-directory: Source
               run: yarn test-storybook
 
-    # Builds and retains source-candidate archives and SBOM evidence only. This job has
-    # no publication authority and its artifact is not npm trusted-publisher provenance.
+    # Builds and retains exact archives and SBOM evidence. This job is read-only; publication
+    # authority remains isolated to the Publish workflow's OIDC-enabled npm job.
     release-evidence:
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -168,15 +168,15 @@ jobs:
             - name: Test release-evidence generator
               run: yarn test-release-evidence
 
-            - name: Generate source-candidate release evidence
+            - name: Generate release evidence
               run: >-
                   yarn generate-release-evidence
                   --output "${{ runner.temp }}/components-v4-release-evidence"
 
-            - name: Upload source-candidate release evidence
+            - name: Upload release evidence
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
-                  name: components-v4-source-candidate-${{ github.sha }}
+                  name: components-v4-release-evidence-${{ github.sha }}
                   path: |
                       ${{ runner.temp }}/components-v4-release-evidence/*.tgz
                       ${{ runner.temp }}/components-v4-release-evidence/SHA256SUMS

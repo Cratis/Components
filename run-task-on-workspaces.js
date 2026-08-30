@@ -9,12 +9,6 @@ if (process.argv.length < 3) {
 }
 
 const task = process.argv[2];
-if (task === 'publish-version') {
-    console.error(
-        "The obsolete 'publish-version' workspace task is disabled. Releases require the reviewed, immutable-tarball process in release.md.",
-    );
-    process.exit(1);
-}
 
 const path = require('path');
 const fs = require('fs');
@@ -61,6 +55,39 @@ for (const workspaceDef of rootPackageJson.workspaces) {
 
 console.log('');
 const args = process.argv.slice(3);
+const isPublishing = task === 'publish-version';
+if (
+    isPublishing &&
+    (args.length !== 1 ||
+        !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u.test(args[0]))
+) {
+    console.error('publish-version requires one exact semantic version.');
+    process.exit(1);
+}
+const releaseVersion = isPublishing ? args[0] : undefined;
+const workspaceNames = new Set(Object.keys(workspaces));
+
+const saveJson = (file, value) =>
+    fs.writeFileSync(file, `${JSON.stringify(value, null, 4)}\n`, 'utf8');
+
+const preparePackageForRelease = (packageJson, version) => {
+    const releasePackage = structuredClone(packageJson);
+    releasePackage.version = version;
+    for (const field of [
+        'dependencies',
+        'devDependencies',
+        'peerDependencies',
+        'optionalDependencies',
+    ]) {
+        for (const dependencyName of Object.keys(releasePackage[field] ?? {})) {
+            if (workspaceNames.has(dependencyName)) {
+                releasePackage[field][dependencyName] = version;
+            }
+        }
+    }
+    return releasePackage;
+};
+
 console.log(`Performing '${task}' on workspaces`);
 if (args.length > 0) console.log(`  Using args : ${args}`);
 console.log('');
@@ -78,6 +105,27 @@ for (const workspaceName in workspaces) {
         );
         continue;
     }
+    if (isPublishing) {
+        const releasePackage = preparePackageForRelease(packageJson, releaseVersion);
+        saveJson(packageJsonFile, releasePackage);
+        console.log(
+            `Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}' as ${releaseVersion}`,
+        );
+        const result = spawn('npm', ['publish', '--provenance', '--access', 'public'], {
+            cwd: workspaceAbsoluteLocation,
+            encoding: 'utf8',
+        });
+        console.log(result.stdout ?? '');
+        console.log(result.stderr ?? '');
+        if (result.status !== 0) {
+            console.error(
+                `Error publishing workspace '${workspaceName}'. Publication stopped.`,
+            );
+            process.exit(1);
+        }
+        continue;
+    }
+
     if (!packageJson.scripts || !Object.hasOwn(packageJson.scripts, task)) {
         console.log(
             `Skipping workspace '${workspaceName}' - no script with name '${task}'`,

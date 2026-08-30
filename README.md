@@ -88,12 +88,11 @@ optional Pixi peer ranges. Verify those ranges before installing the package.
 - The package manifest, exports, source, and migration guide define the current
   Components major-version surface.
 - Generated compatibility schema v2 is checked in as [`compat-manifest.json`](./compat-manifest.json).
-  It records the seven-package source-candidate scope and support windows; the durable
-  [release policy](./release.md) explains why that metadata does not authorize publication.
-- Workspace manifest versions in a source checkout are development inputs, not release
-  identity. Publication is intentionally fail-closed while the Components 4 package set and
-  trusted-publisher workflow are completed. Do not infer a release from a branch, tag, or local
-  package version.
+  It records the authorized seven-package scope, shared version, support windows, and renderer
+  evidence boundaries.
+- Workspace manifest versions in a source checkout are development inputs. Registry versions and
+  the GitHub release created by the label-driven [release policy](./release.md) establish release
+  identity.
 - Package existence, examples, Storybook output, and passing checks do not
   establish maturity, accessibility conformance, browser coverage, support,
   security, or production suitability.
@@ -151,7 +150,7 @@ applications do not install Conformance unless they are implementing an adapter.
 
 Migrator, ESLint, adapters, Conformance, and Core share the repository release version. Use the
 bounded `>=4 <5` tooling range instead of `latest`; compatibility preflight validates the installed
-Components migration window. Publication remains fail closed under the repository
+Components migration window. All seven packages follow the repository's label-driven
 [release policy](./release.md).
 
 ## Contributing
@@ -167,22 +166,20 @@ npx markdownlint-cli2 README.md Source/README.md
 npx linkinator README.md Source/README.md --markdown --recurse
 ```
 
-Release-policy contributors can verify the deterministic contract, fail-closed workflow guards,
-and source-candidate evidence generator without publishing anything:
+Release contributors can verify the deterministic contract and evidence generator without
+publishing anything:
 
 ```bash
 yarn verify-compat-manifest
-yarn verify-release-safety
 yarn test-release-policy
 yarn test-release-evidence
 yarn test-renderer-adapter-matrix
 yarn generate-release-evidence --output /absolute/path/to/empty/evidence-directory
 ```
 
-The caller-provided evidence directory is temporary/untracked output. The hosted workflow retains
-its source-candidate artifact for 30 days; that upload is not npm provenance and grants no
-publication authority. Trusted-publisher provenance remains a separate future owner-authorized
-publish-job requirement.
+The caller-provided evidence directory is temporary/untracked output. The hosted build retains the
+archives and SBOMs for 30 days; npm provenance is produced separately by the OIDC-enabled Publish
+workflow.
 
 Source changes follow the repository's framework rules and the applicable build,
 type, specification, export, package-archive, accessibility-diagnostic, and
