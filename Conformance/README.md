@@ -19,8 +19,8 @@ const report = await runConformance(myLibrary, {
 if (!report.passed) {
     throw new Error(
         report.checks
-            .filter(check => check.status === 'failed')
-            .map(check => `${check.id}: ${check.message}`)
+            .filter((check) => check.status === 'failed')
+            .map((check) => `${check.id}: ${check.message}`)
             .join('\n'),
     );
 }

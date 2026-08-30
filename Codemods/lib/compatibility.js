@@ -129,8 +129,7 @@ export function validateBundledManifest(manifest, codemodVersion) {
                     ? window.tooling
                     : window.tooling?.codemods;
             return (
-                !semver.validRange(window.components) ||
-                !semver.validRange(toolingRange)
+                !semver.validRange(window.components) || !semver.validRange(toolingRange)
             );
         })
     ) {

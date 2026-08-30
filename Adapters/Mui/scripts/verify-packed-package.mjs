@@ -204,7 +204,9 @@ try {
     const exportedValues = declarations.match(/export\s+declare\s+const\s+/gu) ?? [];
     if (
         exportedValues.length !== 1 ||
-        !/export declare const muiUiLibrary: CratisPresentationUiLibrary;/u.test(declarations)
+        !/export declare const muiUiLibrary: CratisPresentationUiLibrary;/u.test(
+            declarations,
+        )
     ) {
         throw new Error(
             'Public declarations must expose exactly one stable presentation UiLibrary value.',
