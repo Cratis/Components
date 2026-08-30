@@ -140,8 +140,9 @@ explicit subpaths and preventing regressions afterward. The [migration guide](./
 owns the bounded Components 4 codemod commands and stop cases; the [ESLint plugin
 README](./ESLint/README.md) owns installation and flat-config composition. Components 3 has no
 3.x codemod train. Use tooling in `>=4 <5` (for example the shell-safe `^4.0.0` range), never
-`latest`. Codemod and ESLint patches release independently from Core; codemod preflight enforces
-the bundled compatibility manifest and installed Components support window. Publication remains
+`latest`. Codemods, ESLint, adapters, Conformance, and Core share the repository release version;
+the bounded tooling range avoids exact-patch coupling while codemod preflight enforces the bundled
+compatibility manifest and installed Components support window. Publication remains
 fail closed under the repository [release policy](./release.md).
 
 ## Contributing

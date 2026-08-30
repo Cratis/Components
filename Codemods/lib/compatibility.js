@@ -100,7 +100,7 @@ export function validateBundledManifest(manifest, codemodVersion) {
     );
     if (
         packageEntry?.version !== codemodVersion ||
-        packageEntry?.independentRelease !== true ||
+        packageEntry?.independentRelease !== false ||
         !semver.satisfies(codemodVersion, packageEntry?.releaseMajorRange ?? '')
     ) {
         throw new Error(

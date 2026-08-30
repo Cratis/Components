@@ -60,13 +60,12 @@ try {
         readFileSync(path.join(repositoryDirectory, 'Source/package.json'), 'utf8'),
     );
     if (
-        packageJson.version !== '1.0.0' ||
-        packageJson.version === sourcePackageJson.version ||
-        packageJson.cratisIndependentVersion !== true ||
+        packageJson.version !== sourcePackageJson.version ||
+        Object.hasOwn(packageJson, 'cratisIndependentVersion') ||
         packageJson.cratisUiAbi !== 1
     ) {
         throw new Error(
-            'Package version and renderer ABI major must be explicitly independent from Components.',
+            'Conformance must share the repository release version while keeping renderer ABI major 1 explicit.',
         );
     }
     if (packageJson.dependencies?.['@cratis/components']) {

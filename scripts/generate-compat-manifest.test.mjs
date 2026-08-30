@@ -33,15 +33,48 @@ test('generated compatibility copies are deterministic and byte-identical', () =
     }
 });
 
-test('package versions are range-validated instead of snapshot-pinned', () => {
+test('all public package versions move together within the repository release', () => {
     const manifest = createManifest();
-    const core = manifest.packages.find(({ name }) => name === '@cratis/components');
-    core.version = '4.99.0';
+    for (const packageEntry of manifest.packages) {
+        packageEntry.version = '4.99.0';
+    }
     assert.doesNotThrow(() =>
         validateCompatibilityManifest(manifest, { rootDirectory: repositoryDirectory }),
     );
 
-    core.version = '5.0.0';
+    const adapter = manifest.packages.find(
+        ({ name }) => name === '@cratis/components.mui',
+    );
+    adapter.version = '4.98.0';
+    assert.throws(
+        () =>
+            validateCompatibilityManifest(manifest, {
+                rootDirectory: repositoryDirectory,
+            }),
+        /must match the repository release version/,
+    );
+});
+
+test('a public package cannot opt out of repository-wide versioning', () => {
+    const manifest = createManifest();
+    const adapter = manifest.packages.find(
+        ({ name }) => name === '@cratis/components.mui',
+    );
+    adapter.independentRelease = true;
+    assert.throws(
+        () =>
+            validateCompatibilityManifest(manifest, {
+                rootDirectory: repositoryDirectory,
+            }),
+        /must participate in repository-wide versioning/,
+    );
+});
+
+test('the shared repository release stays inside the Components major range', () => {
+    const manifest = createManifest();
+    for (const packageEntry of manifest.packages) {
+        packageEntry.version = '5.0.0';
+    }
     assert.throws(
         () =>
             validateCompatibilityManifest(manifest, {

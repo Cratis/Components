@@ -232,7 +232,7 @@ npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-change-handler path/to/app/src
 ```
 
-Never substitute `latest`; keep tooling within `>=4 <5`. Tooling patches release independently from Core, and the bundled manifest preflight enforces the compatible migration windows. Both new CLIs require Node.js 20 or newer, bundle their own TypeScript compiler dependency, scan `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` recursively, support `--package <name>`, and exit nonzero for pending check-mode edits or any refused case. Review every diagnostic and `TODO(cratis-codemod)`, then run the consuming project's formatter, lint, type check, tests, and production build.
+Never substitute `latest`; keep tooling within `>=4 <5`. Tooling packages share the repository release version with Core, and the bounded range plus bundled manifest preflight enforce the compatible migration windows without exact-patch coupling. Both new CLIs require Node.js 20 or newer, bundle their own TypeScript compiler dependency, scan `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` recursively, support `--package <name>`, and exit nonzero for pending check-mode edits or any refused case. Review every diagnostic and `TODO(cratis-codemod)`, then run the consuming project's formatter, lint, type check, tests, and production build.
 
 Contributor source commands are:
 

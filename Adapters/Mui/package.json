@@ -1,7 +1,6 @@
 {
     "name": "@cratis/components.mui",
-    "version": "1.0.0",
-    "cratisIndependentVersion": true,
+    "version": "4.0.0",
     "description": "Material UI presentation adapter for Cratis Components renderer ABI v1.",
     "author": "Cratis",
     "license": "MIT",

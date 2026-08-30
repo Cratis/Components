@@ -5,7 +5,7 @@
  * Public structural view accepted by the conformance runner.
  *
  * `unstable_UiLibrary` satisfies this shape without leaking Components component or renderer-vendor
- * declarations through the conformance package's independently versioned public types.
+ * declarations through the conformance package's separately packaged public types.
  */
 export interface ConformanceLibrary {
     readonly id: string;

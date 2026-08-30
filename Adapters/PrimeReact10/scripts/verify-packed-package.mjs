@@ -21,6 +21,14 @@ import {
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryDirectory = path.resolve(packageDirectory, '../..');
+let repositoryVersion;
+try {
+    repositoryVersion = JSON.parse(
+        readFileSync(path.join(repositoryDirectory, 'Source/package.json'), 'utf8'),
+    ).version;
+} catch (error) {
+    throw new Error('Could not read the repository release version.', { cause: error });
+}
 const temporary = mkdtempSync(path.join(os.tmpdir(), 'cratis-primereact10-package-'));
 
 const run = (command, arguments_, cwd = packageDirectory) => {
@@ -133,12 +141,12 @@ try {
         );
     }
     if (
-        packageJson.version !== '1.0.0' ||
-        packageJson.cratisIndependentVersion !== true ||
+        packageJson.version !== repositoryVersion ||
+        Object.hasOwn(packageJson, 'cratisIndependentVersion') ||
         packageJson.cratisUiAbi !== 1
     ) {
         throw new Error(
-            'Adapter versioning and renderer ABI metadata must be independent.',
+            'The adapter must share the repository release version while keeping renderer ABI major 1 explicit.',
         );
     }
     const serializedPackage = JSON.stringify(packageJson);

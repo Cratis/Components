@@ -21,10 +21,10 @@ const packagePolicies = new Map([
     ['@cratis/components', { role: 'core', range: '>=4 <5' }],
     ['@cratis/eslint-plugin-components', { role: 'eslint', range: '>=4 <5' }],
     ['@cratis/components-codemods', { role: 'codemods', range: '>=4 <5' }],
-    ['@cratis/components.conformance', { role: 'conformance', range: '>=1 <2' }],
-    ['@cratis/components.mui', { role: 'renderer-adapter', range: '>=1 <2' }],
-    ['@cratis/components.primereact', { role: 'renderer-adapter', range: '>=1 <2' }],
-    ['@cratis/components.primereact10', { role: 'renderer-adapter', range: '>=1 <2' }],
+    ['@cratis/components.conformance', { role: 'conformance', range: '>=4 <5' }],
+    ['@cratis/components.mui', { role: 'renderer-adapter', range: '>=4 <5' }],
+    ['@cratis/components.primereact', { role: 'renderer-adapter', range: '>=4 <5' }],
+    ['@cratis/components.primereact10', { role: 'renderer-adapter', range: '>=4 <5' }],
 ]);
 const packageOrder = [...packagePolicies.keys()];
 const privateEvidence = [
@@ -127,10 +127,10 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
                     codemods: '>=4 <5',
                 },
                 adapters: {
-                    '@cratis/components.conformance': '>=1 <2',
-                    '@cratis/components.mui': '>=1 <2',
-                    '@cratis/components.primereact': '>=1 <2',
-                    '@cratis/components.primereact10': '>=1 <2',
+                    '@cratis/components.conformance': '>=4 <5',
+                    '@cratis/components.mui': '>=4 <5',
+                    '@cratis/components.primereact': '>=4 <5',
+                    '@cratis/components.primereact10': '>=4 <5',
                 },
             },
         },
@@ -165,6 +165,11 @@ export function validateCompatibilityManifest(
         fail(`Expected ${packageOrder.length} public package entries.`);
     }
 
+    const repositoryVersion = (manifest.packages ?? []).find(
+        ({ name }) => name === '@cratis/components',
+    )?.version;
+    if (!repositoryVersion) fail('Core package version is missing.');
+
     for (const entry of manifest.packages ?? []) {
         const policy = packagePolicies.get(entry.name);
         if (!policy) fail(`Unexpected public package '${entry.name}'.`);
@@ -182,10 +187,14 @@ export function validateCompatibilityManifest(
         if (entry.private || entry.packageAccess !== 'public') {
             fail(`${entry.name} must remain explicitly public-intent.`);
         }
-        const expectedIndependent = entry.name !== '@cratis/components';
-        if (entry.independentRelease !== expectedIndependent) {
+        if (entry.version !== repositoryVersion) {
             fail(
-                `${entry.name} must ${expectedIndependent ? '' : 'not '}declare cratisIndependentVersion: true.`,
+                `${entry.name}@${entry.version} must match the repository release version ${repositoryVersion}.`,
+            );
+        }
+        if (entry.independentRelease !== false) {
+            fail(
+                `${entry.name} must participate in repository-wide versioning and must not declare cratisIndependentVersion.`,
             );
         }
         for (const [upstreamName, upstreamRange] of Object.entries(

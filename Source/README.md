@@ -84,12 +84,13 @@ export const App = () => (
 The provider owns locale, Components-specific labels, optional renderer selection, and the toast
 region. The default renderer needs no additional package. Certified renderer packages implement the
 stable, nine-slot `stable-presentation/v1` primitive profile; they never replace the full Components
-catalog. They are independently versioned and selected with the provider's `library` prop:
+catalog. They share the Components repository release version and are selected with the provider's
+`library` prop:
 
-- `@cratis/components.mui@1.0.0` — MUI 9.x / Emotion 11.x stable presentation slots;
-- `@cratis/components.primereact@1.0.0` — PrimeReact 11.x stable presentation slots, with an
+- `@cratis/components.mui@4.0.0` — MUI 9.x / Emotion 11.x stable presentation slots;
+- `@cratis/components.primereact@4.0.0` — PrimeReact 11.x stable presentation slots, with an
   application-owned outer provider and license key;
-- `@cratis/components.primereact10@1.0.0` — PrimeReact 10.9.9+ stable presentation slots, with its
+- `@cratis/components.primereact10@4.0.0` — PrimeReact 10.9.9+ stable presentation slots, with its
   separate MIT-era provider, global theme, and upstream-major boundary.
 
 Adapter-specific themes, providers, SSR setup, peers, and license boundaries remain documented by

@@ -57,10 +57,10 @@
                 "codemods": ">=4 <5"
             },
             "adapters": {
-                "@cratis/components.conformance": ">=1 <2",
-                "@cratis/components.mui": ">=1 <2",
-                "@cratis/components.primereact": ">=1 <2",
-                "@cratis/components.primereact10": ">=1 <2"
+                "@cratis/components.conformance": ">=4 <5",
+                "@cratis/components.mui": ">=4 <5",
+                "@cratis/components.primereact": ">=4 <5",
+                "@cratis/components.primereact10": ">=4 <5"
             }
         }
     },
@@ -94,7 +94,7 @@
             "role": "eslint",
             "version": "4.0.0",
             "releaseMajorRange": ">=4 <5",
-            "independentRelease": true,
+            "independentRelease": false,
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -107,7 +107,7 @@
             "role": "codemods",
             "version": "4.0.0",
             "releaseMajorRange": ">=4 <5",
-            "independentRelease": true,
+            "independentRelease": false,
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {},
@@ -116,9 +116,9 @@
         {
             "name": "@cratis/components.conformance",
             "role": "conformance",
-            "version": "1.0.0",
-            "releaseMajorRange": ">=1 <2",
-            "independentRelease": true,
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -132,9 +132,9 @@
         {
             "name": "@cratis/components.mui",
             "role": "renderer-adapter",
-            "version": "1.0.0",
-            "releaseMajorRange": ">=1 <2",
-            "independentRelease": true,
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -188,9 +188,9 @@
         {
             "name": "@cratis/components.primereact",
             "role": "renderer-adapter",
-            "version": "1.0.0",
-            "releaseMajorRange": ">=1 <2",
-            "independentRelease": true,
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {
@@ -256,9 +256,9 @@
         {
             "name": "@cratis/components.primereact10",
             "role": "renderer-adapter",
-            "version": "1.0.0",
-            "releaseMajorRange": ">=1 <2",
-            "independentRelease": true,
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
             "private": false,
             "packageAccess": "public",
             "peerDependencies": {

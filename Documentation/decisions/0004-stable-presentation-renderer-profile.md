@@ -67,9 +67,9 @@ props or ref contract, changing presentation behavior ownership, or weakening it
 is a breaking change.
 
 Adding a slot is not a compatible expansion of `stable-presentation/v1`. Additions require a new
-named profile and version so existing adapters never acquire an unimplemented requirement. The
-conformance package and the three certified adapters are independently versioned at `1.0.0`; they
-retain the honest `@cratis/components >=4 <5` peer range.
+named profile and version so existing adapters never acquire an unimplemented requirement. The conformance package and the three certified adapters share the Components repository release
+version. Renderer ABI major `1` remains separate from npm versioning, and every adapter retains the
+honest `@cratis/components >=4 <5` peer range.
 
 ## Intentionally unstable
 

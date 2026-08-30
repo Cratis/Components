@@ -4,8 +4,8 @@
 # @cratis/components.conformance
 
 Development-only evidence runner for authors of `@cratis/components` renderer adapters. The package
-is independently versioned (`1.0.0`) and records renderer ABI major `1`; it is not a runtime
-dependency of Components or an adapter discovery mechanism.
+shares the Components repository release version and records renderer ABI major `1` separately; it
+is not a runtime dependency of Components or an adapter discovery mechanism.
 
 ```ts
 import { runConformance } from '@cratis/components.conformance';

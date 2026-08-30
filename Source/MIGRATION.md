@@ -5,7 +5,7 @@ Components 4 replaces the PrimeReact-backed Components 3 foundation with Compone
 This is a major-version migration. Rendered markup, styling parts, provider configuration, date entry, root imports, and some deprecated props change.
 
 :::note
-An application that has not migrated remains on its Components 3 package profile, including the third-party dependencies declared by that version. Components `>=3 <4` is in maintenance/security-critical support while Components `>=4 <5` is the current candidate and migration target. Owners must decide and approve the Components 3 EOL date no later than 12 months after Components 4 GA. Components 4 does not provide a transparent Prime compatibility package. Its independently versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters are optional and cover only the nine `common.*` presentation slots.
+An application that has not migrated remains on its Components 3 package profile, including the third-party dependencies declared by that version. Components `>=3 <4` is in maintenance/security-critical support while Components `>=4 <5` is the current candidate and migration target. Owners must decide and approve the Components 3 EOL date no later than 12 months after Components 4 GA. Components 4 does not provide a transparent Prime compatibility package. Its repository-versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters are optional and cover only the nine `common.*` presentation slots.
 :::
 
 The adapters do not replace complete Components widgets. Core continues to own Dialog, Dropdown, DatePicker, paginator, table, focus, overlay, selection, and keyboard behavior; an adapter only presents button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface slots. Installing an adapter neither restores PrimeReact public APIs nor transfers key handling to the adapter.
@@ -119,7 +119,7 @@ npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports path/to/app/src
 ```
 
-Components 3 has no matching 3.x codemod train. Use the bounded Components 4 tooling range (`>=4 <5`; `^4.0.0` above is the shell-safe equivalent). Never substitute `latest`. Tooling patches release independently from Core. Before scanning or writing, every codemod validates its bundled compatibility manifest, its own version, and the installed Components package from the invocation directory. It fails closed when Components is absent, outside the supported 3.x source or 4.x target window, or the manifest is invalid.
+Components 3 has no matching 3.x codemod train. Use the bounded Components 4 tooling range (`>=4 <5`; `^4.0.0` above is the shell-safe equivalent). Never substitute `latest`. Tooling packages share the repository release version with Core. The bounded range avoids unnecessary exact-patch coupling when invoking an already published 4.x tool. Before scanning or writing, every codemod validates its bundled compatibility manifest, its own version, and the installed Components package from the invocation directory. It fails closed when Components is absent, outside the supported 3.x source or 4.x target window, or the manifest is invalid.
 
 The examples use npm's `npx`. pnpm and Yarn 2+ can launch the same bounded package without adding it:
 
@@ -201,7 +201,7 @@ Dynamic Button props, JSX spreads, unknown new/legacy conflicts, duplicate props
 
 Review every diagnostic and `TODO(cratis-codemod)` before removing the compatibility props. Then run the application's formatter, lint, type check, tests, and production build. Both codemods are idempotent, include their own TypeScript compiler, support `--package`, require Node.js 20 or newer, and recursively scan `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, and `.cts` files.
 
-Install the bounded Components 4 ESLint train after migration and compose its recommended config after `@cratis/eslint-config`; `no-root-barrel-import` prevents component namespaces from returning. ESLint patches release independently from Core:
+Install the bounded Components 4 ESLint train after migration and compose its recommended config after `@cratis/eslint-config`; `no-root-barrel-import` prevents component namespaces from returning. The ESLint plugin shares the repository release version with Core:
 
 ```bash
 TOOLING_RANGE='^4.0.0'

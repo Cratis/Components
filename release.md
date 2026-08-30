@@ -18,14 +18,14 @@ A Components 4 general-availability release covers exactly seven public packages
 7. `@cratis/components.primereact10`
 
 The Plain DOM conformance fixture and composed Storybook are private evidence. They are never
-published. Package versions belong to independent release trains as declared by each package
-manifest and the generated compatibility contract; a source manifest version is not registry
-release identity.
+published. All seven public packages share the repository release version and are represented by
+one GitHub release. Renderer ABI/profile versions remain separate protocol contracts; a source
+manifest version is not registry release identity until publication completes.
 
 ## Compatibility contract
 
 [`compat-manifest.json`](./compat-manifest.json) is generated compatibility schema version 2. It
-records the source-candidate status, the seven-package GA scope, independent release trains,
+records the source-candidate status, the seven-package GA scope, shared repository release version,
 Components 3 and 4 support windows, renderer ABI/profile ranges, and exact adapter evidence
 boundaries. Run `yarn verify-compat-manifest` rather than editing any generated copy by hand.
 
@@ -104,8 +104,8 @@ Publish and verify tooling, conformance, and adapters before Core. Promotion ord
 After each candidate upload, verify registry metadata, package visibility, version, dist-tag,
 tarball SHA-512, unpacked file inventory, bundled compatibility manifest, SBOM, and provenance.
 Only after all seven immutable candidates pass registry verification may owners promote their
-reviewed tags. Promotion must preserve independent package versions and the compatibility ranges;
-it must not rewrite or repack artifacts.
+reviewed tags. Promotion must preserve the shared repository release version and compatibility
+ranges; it must not rewrite or repack artifacts.
 
 Create repository tags and a GitHub release only after final registry verification succeeds for all
 seven packages. Release notes identify every package version and immutable digest. Do not create a
