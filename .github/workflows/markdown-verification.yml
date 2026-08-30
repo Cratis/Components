@@ -10,7 +10,7 @@ on:
             - 'README.md'
             - 'release.md'
             - 'Source/*.md'
-            - 'Codemods/*.md'
+            - 'Migrator/*.md'
             - 'ESLint/*.md'
             - 'Conformance/*.md'
             - 'Adapters/**/*.md'
@@ -24,7 +24,7 @@ on:
             - 'README.md'
             - 'release.md'
             - 'Source/*.md'
-            - 'Codemods/*.md'
+            - 'Migrator/*.md'
             - 'ESLint/*.md'
             - 'Conformance/*.md'
             - 'Adapters/**/*.md'
@@ -57,7 +57,7 @@ jobs:
                       Documentation/**/*.md
                       Documentation/**/*.mdx
                       Source/*.md
-                      Codemods/*.md
+                      Migrator/*.md
                       ESLint/*.md
                       Conformance/*.md
                       Adapters/**/*.md
@@ -91,7 +91,7 @@ jobs:
                       README.md
                       release.md
                       Source/*.md
-                      Codemods/*.md
+                      Migrator/*.md
                       ESLint/*.md
                       Conformance/*.md
                       Adapters/**/*.md

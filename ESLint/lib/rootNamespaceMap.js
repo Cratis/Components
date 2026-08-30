@@ -8,7 +8,7 @@
  *
  * Mirrors `Source/index.ts` and the `exports` map in `Source/package.json`. When a
  * namespace subpath is added, renamed, or removed there, update `namespaceSubpaths` here
- * (and the matching copy in `Codemods/lib/namespaceMap.js`) in the same change. Neither
+ * (and the matching copy in `Migrator/lib/namespaceMap.js`) in the same change. Neither
  * file imports the other: this plugin and the codemods package ship and publish
  * independently, so the map is intentionally duplicated rather than shared across a
  * workspace boundary.

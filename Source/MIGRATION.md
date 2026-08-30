@@ -17,7 +17,7 @@ The adapters do not replace complete Components widgets. Core continues to own D
 3. Upgrade Core to the bounded Components 4 **target** window (`^4.0.0`), configure the provider and styles, then preview and apply the Button transform followed by the change-handler transform.
 4. Stop after every nonzero result. Resolve every diagnostic and `TODO(cratis-codemod)`, run the gates, and checkpoint before continuing. Remove a direct Prime island only after its replacement and licensing boundary are verified.
 
-The bounded Components 4 codemod package accepts the supported source or target window at preflight, but the order above avoids introducing Components 4-only props before Core is upgraded. A failed compatibility preflight scans and writes nothing. A transform refusal may annotate or migrate other independently safe syntax, so inspect the diff; restore the preceding checkpoint before retrying if an all-or-nothing rollback is required.
+The bounded Components 4 Migrator package accepts the supported source or target window at preflight, but the order above avoids introducing Components 4-only props before Core is upgraded. A failed compatibility preflight scans and writes nothing. A transform refusal may annotate or migrate other independently safe syntax, so inspect the diff; restore the preceding checkpoint before retrying if an all-or-nothing rollback is required.
 
 ## Update dependencies
 
@@ -113,20 +113,20 @@ Run the migration codemod in preview mode first, then apply it:
 
 ```bash
 TOOLING_RANGE='^4.0.0'
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports path/to/app/src
 ```
 
-Components 3 has no matching 3.x codemod train. Use the bounded Components 4 tooling range (`>=4 <5`; `^4.0.0` above is the shell-safe equivalent). Never substitute `latest`. Tooling packages share the repository release version with Core. The bounded range avoids unnecessary exact-patch coupling when invoking an already published 4.x tool. Before scanning or writing, every codemod validates its bundled compatibility manifest, its own version, and the installed Components package from the invocation directory. It fails closed when Components is absent, outside the supported 3.x source or 4.x target window, or the manifest is invalid.
+Components 3 has no matching 3.x Migrator release. Use the bounded Components 4 tooling range (`>=4 <5`; `^4.0.0` above is the shell-safe equivalent). Never substitute `latest`. Tooling packages share the repository release version with Core. The bounded range avoids unnecessary exact-patch coupling when invoking an already published 4.x tool. Before scanning or writing, the Migrator validates its bundled compatibility manifest, its own version, and the installed Components package from the invocation directory. It fails closed when Components is absent, outside the supported 3.x source or 4.x target window, or the manifest is invalid.
 
 The examples use npm's `npx`. pnpm and Yarn 2+ can launch the same bounded package without adding it:
 
 ```bash
-pnpm dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+pnpm dlx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
-yarn dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+yarn dlx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
 ```
 
@@ -147,18 +147,18 @@ Use the bounded Components 4 tooling train and preview each transform before app
 ```bash
 TOOLING_RANGE='^4.0.0'
 
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-button-variant-tone --check path/to/app/src
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-button-variant-tone path/to/app/src
 
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-change-handler --check path/to/app/src
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-change-handler path/to/app/src
 ```
 
-Keep the tooling range within `>=4 <5`; never use `latest`. The codemod preflight enforces the bundled source/target support windows.
+Keep the tooling range within `>=4 <5`; never use `latest`. The Migrator preflight enforces the bundled source/target support windows.
 
 The Button transform preserves the legacy `link` → `text` → `outlined` → `solid` precedence and maps literal props to `variant`, `tone`, and `shape`. Existing literal new props win:
 

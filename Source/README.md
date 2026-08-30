@@ -262,9 +262,12 @@ The current package manifest does not declare PrimeReact as a required runtime
 or peer. Follow the [Components 3 to 4 migration guide](./MIGRATION.md)
 for dependency removal, provider changes, product token mapping, stable part
 names, DatePicker changes, table behavior, notifications, direct Prime import
-replacements, the bounded Components 4 `@cratis/components-codemods` commands, and the
-independently patched `@cratis/eslint-plugin-components` guard. The codemod validates its bundled
-compatibility manifest and the installed Components support window before scanning source.
+replacements, the bounded Components 4 `@cratis/components.migrator` commands, and the
+`@cratis/eslint-plugin-components` guard. The optional Migrator is a development CLI used only while
+upgrading application source; its syntax-aware transforms validate the bundled compatibility
+manifest and installed Components support window before scanning. `@cratis/components.conformance`
+is a separate development test harness for renderer adapter authors and is not an application
+runtime dependency.
 
 The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeReactStyles` renderer exports are removed. Move styling to tokens and stable parts before upgrading.
 

@@ -62,13 +62,13 @@ describe('compatibility preflight', () => {
         );
     });
 
-    it('rejects stale bundled codemod metadata', () => {
+    it('rejects stale bundled migrator metadata', () => {
         const stale = structuredClone(compatibilityManifest);
         stale.packages.find(
-            ({ name }) => name === '@cratis/components-codemods',
+            ({ name }) => name === '@cratis/components.migrator',
         ).version = '4.0.1';
         expect(() => validateBundledManifest(stale, '4.0.0')).toThrow(
-            'stale codemod package metadata',
+            'stale migrator package metadata',
         );
     });
 

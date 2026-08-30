@@ -1,6 +1,6 @@
-# @cratis/components-codemods
+# @cratis/components.migrator
 
-Migration codemods in the Components 4 candidate move Components 3 root namespaces to Components 4 explicit subpath imports, replace deprecated Button appearance props, and update legacy event-wrapper callbacks to semantic value callbacks. Each transform is independently invokable and idempotent. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). The companion `@cratis/eslint-plugin-components` package's `no-root-barrel-import` rule enforces this once a consumer has migrated.
+The Components 4 Migrator updates a Components 3 codebase to the Components 4 public contracts. It moves root namespaces to explicit subpath imports, replaces deprecated Button appearance props, and changes legacy event-wrapper callbacks to semantic value callbacks. The CLI uses syntax-aware codemods internally, but each command is named for the migration it performs, can be run independently, and is idempotent. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). The companion `@cratis/eslint-plugin-components` package's `no-root-barrel-import` rule enforces this once a consumer has migrated.
 
 ## `remove-root-namespace-imports`
 
@@ -57,7 +57,7 @@ Running the codemod again on its own output is a no-op — it only ever matches 
 named re-export whose module specifier is exactly `@cratis/components` (or the `--package`
 override), so an already-migrated subpath import or re-export is never revisited.
 
-The complete namespace → subpath map, known removed Components 3 compatibility exports, and approved-root-symbol allowlist live in [`lib/namespaceMap.js`](./lib/namespaceMap.js), mirrored by `ESLint/lib/rootNamespaceMap.js`. Contributors must update both packages together when a namespace subpath, removed boundary, or setup symbol changes. The packages still ship independently; parity specs prevent their migration contracts from drifting.
+The complete namespace → subpath map, known removed Components 3 compatibility exports, and approved-root-symbol allowlist live in [`lib/namespaceMap.js`](./lib/namespaceMap.js), mirrored by `ESLint/lib/rootNamespaceMap.js`. Contributors must update both packages together when a namespace subpath, removed boundary, or setup symbol changes. The packages share the repository release version; parity specs prevent their migration contracts from drifting.
 
 ### What it refuses to guess
 
@@ -96,11 +96,11 @@ narrow subpath consumers are left exactly as they are.
 The packaged CLI requires Node.js 20 or newer and brings its own TypeScript parser; it does
 not depend on the consumer application's TypeScript version. It scans JavaScript, JSX,
 TypeScript, and TSX sources, including `.mjs`, `.cjs`, `.mts`, and `.cts` variants. Components
-3 has no 3.x codemod package. Use the independently released Components 4 tooling train bounded
-to `>=4 <5`; never use `latest`.
+3 has no 3.x Migrator package. Use the Components 4 Migrator bounded to `>=4 <5`; never use
+`latest`.
 
 Before any scan or write, the CLI validates its bundled compatibility manifest, checks its own
-version against the declared codemod range, resolves the configured Components package from the
+version against the declared Migrator range, resolves the configured Components package from the
 invocation directory, and verifies that package is in the supported 3.x migration-source or 4.x
 migration-target window. Missing Components, unsupported versions, stale package metadata, and an
 invalid manifest fail closed. `--help` remains available without Components installed.
@@ -109,23 +109,23 @@ invalid manifest fail closed. `--help` remains available without Components inst
 TOOLING_RANGE='^4.0.0' # Shell-safe equivalent of >=4 <5.
 
 # Preview what would change, without writing anything:
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
 
 # Apply the rewrite:
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports path/to/app/src
 
 # Contributors to this repository can run the workspace source directly:
-node Codemods/scripts/remove-root-namespace-imports.js --check Source
+node Migrator/scripts/remove-root-namespace-imports.js --check Source
 ```
 
 The same bounded package works in pnpm and Yarn 2+ projects:
 
 ```sh
-pnpm dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+pnpm dlx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
-yarn dlx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+yarn dlx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
 ```
 
@@ -216,19 +216,19 @@ Preflight also accepts the Components 4 target window so the root transform can 
 ```sh
 TOOLING_RANGE='^4.0.0'
 
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports --check path/to/app/src
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-remove-root-namespace-imports path/to/app/src
 
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-button-variant-tone --check path/to/app/src
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-button-variant-tone path/to/app/src
 
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-change-handler --check path/to/app/src
-npx --package "@cratis/components-codemods@$TOOLING_RANGE" \
+npx --package "@cratis/components.migrator@$TOOLING_RANGE" \
   cratis-components-change-handler path/to/app/src
 ```
 
@@ -237,17 +237,17 @@ Never substitute `latest`; keep tooling within `>=4 <5`. Tooling packages share 
 Contributor source commands are:
 
 ```sh
-node Codemods/scripts/button-variant-tone.js --check Source
-node Codemods/scripts/change-handler.js --check Source
+node Migrator/scripts/button-variant-tone.js --check Source
+node Migrator/scripts/change-handler.js --check Source
 ```
 
 ### Test
 
 ```sh
-cd Codemods && yarn test
+cd Migrator && yarn test
 ```
 
 Repository fixtures for every supported and unsupported case live under
-`Codemods/test/fixtures`,
+`Migrator/test/fixtures`,
 each as an `input.ts`/`expected.ts` pair (`input.ts` and `expected.ts` are identical for an
 unsupported case, since nothing should change).

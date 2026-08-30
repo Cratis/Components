@@ -13,7 +13,7 @@ import {
     approvedRootSymbols as codemodApprovedRootSymbols,
     namespaceSubpaths as codemodNamespaceSubpaths,
     removedRootSymbols as codemodRemovedRootSymbols,
-} from '../../Codemods/lib/namespaceMap.js';
+} from '../../Migrator/lib/namespaceMap.js';
 import { onbeforeexecuteMustReturn } from '../lib/onbeforeexecuteMustReturn.js';
 import { noHooksInViewModel } from '../lib/noHooksInViewModel.js';
 import { noRawCommandFormMarker } from '../lib/noRawCommandFormMarker.js';

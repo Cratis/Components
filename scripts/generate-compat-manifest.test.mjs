@@ -24,7 +24,7 @@ test('generated compatibility copies are deterministic and byte-identical', () =
     for (const relativePath of [
         'compat-manifest.json',
         'Source/compat-manifest.json',
-        'Codemods/compat-manifest.json',
+        'Migrator/compat-manifest.json',
     ]) {
         assert.equal(
             readFileSync(path.join(repositoryDirectory, relativePath), 'utf8'),

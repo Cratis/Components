@@ -1,7 +1,7 @@
 {
-    "name": "@cratis/components-codemods",
+    "name": "@cratis/components.migrator",
     "version": "4.0.0",
-    "description": "Codemods for migrating @cratis/components consumers from Components 3 root namespaces to Components 4 subpath imports.",
+    "description": "Migration tooling for updating @cratis/components consumers from Components 3 to Components 4.",
     "author": "Cratis",
     "license": "MIT",
     "type": "module",

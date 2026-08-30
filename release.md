@@ -11,7 +11,7 @@ A Components 4 general-availability release covers exactly seven public packages
 
 1. `@cratis/components`
 2. `@cratis/eslint-plugin-components`
-3. `@cratis/components-codemods`
+3. `@cratis/components.migrator`
 4. `@cratis/components.conformance`
 5. `@cratis/components.mui`
 6. `@cratis/components.primereact`
@@ -94,7 +94,7 @@ version after a partial failure.
 Publish and verify tooling, conformance, and adapters before Core. Promotion order is:
 
 1. `@cratis/eslint-plugin-components`
-2. `@cratis/components-codemods`
+2. `@cratis/components.migrator`
 3. `@cratis/components.conformance`
 4. `@cratis/components.mui`
 5. `@cratis/components.primereact`

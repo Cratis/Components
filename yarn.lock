@@ -286,19 +286,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/components-codemods@workspace:Codemods":
-  version: 0.0.0-use.local
-  resolution: "@cratis/components-codemods@workspace:Codemods"
-  dependencies:
-    semver: "npm:7.8.5"
-    typescript: "npm:^6.0.3"
-  bin:
-    cratis-components-button-variant-tone: ./scripts/button-variant-tone.js
-    cratis-components-change-handler: ./scripts/change-handler.js
-    cratis-components-remove-root-namespace-imports: ./scripts/remove-root-namespace-imports.js
-  languageName: unknown
-  linkType: soft
-
 "@cratis/components.conformance@workspace:Conformance, @cratis/components.conformance@workspace:^":
   version: 0.0.0-use.local
   resolution: "@cratis/components.conformance@workspace:Conformance"
@@ -316,6 +303,19 @@ __metadata:
     "@cratis/components": ">=4 <5"
     react: ^19.0.0
     react-dom: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
+"@cratis/components.migrator@workspace:Migrator":
+  version: 0.0.0-use.local
+  resolution: "@cratis/components.migrator@workspace:Migrator"
+  dependencies:
+    semver: "npm:7.8.5"
+    typescript: "npm:^6.0.3"
+  bin:
+    cratis-components-button-variant-tone: ./scripts/button-variant-tone.js
+    cratis-components-change-handler: ./scripts/change-handler.js
+    cratis-components-remove-root-namespace-imports: ./scripts/remove-root-namespace-imports.js
   languageName: unknown
   linkType: soft
 

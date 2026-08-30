@@ -18,7 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const scratch = mkdtempSync(path.join(tmpdir(), 'cratis-components-codemods-pack-'));
+const scratch = mkdtempSync(path.join(tmpdir(), 'cratis-components-migrator-pack-'));
 const archive = path.join(scratch, 'codemods.tgz');
 const consumer = path.join(scratch, 'consumer');
 
@@ -57,7 +57,7 @@ try {
         consumer,
         'node_modules',
         '@cratis',
-        'components-codemods',
+        'components.migrator',
     );
     const publishedEntries = readdirSync(installedRoot).sort();
     for (const required of [
@@ -262,7 +262,7 @@ try {
     }
 
     console.log(
-        'Packed @cratis/components-codemods manifest and CLIs verified with Components 3, 4, and unsupported versions.',
+        'Packed @cratis/components.migrator manifest and CLIs verified with Components 3, 4, and unsupported versions.',
     );
 } finally {
     rmSync(scratch, { recursive: true, force: true });

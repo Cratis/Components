@@ -132,18 +132,23 @@ CQRS and event-sourced applications.
 
 Release notes and announcements are published on the [Cratis blog](https://blog.cratis.io).
 
-## Migration tooling
+## Migration and adapter tooling
 
-The repository ships `@cratis/components-codemods` and
-`@cratis/eslint-plugin-components` for moving Components 3 root namespace imports to
-explicit subpaths and preventing regressions afterward. The [migration guide](./Source/MIGRATION.md)
-owns the bounded Components 4 codemod commands and stop cases; the [ESLint plugin
-README](./ESLint/README.md) owns installation and flat-config composition. Components 3 has no
-3.x codemod train. Use tooling in `>=4 <5` (for example the shell-safe `^4.0.0` range), never
-`latest`. Codemods, ESLint, adapters, Conformance, and Core share the repository release version;
-the bounded tooling range avoids exact-patch coupling while codemod preflight enforces the bundled
-compatibility manifest and installed Components support window. Publication remains
-fail closed under the repository [release policy](./release.md).
+`@cratis/components.migrator` is an optional development CLI for upgrading application source from
+Components 3 to 4. It uses syntax-aware codemods internally to update root imports, Button
+appearance props, and value-first callbacks; it is not a runtime dependency and is only needed while
+migrating. The [migration guide](./Source/MIGRATION.md) owns its commands and manual-review stop
+cases.
+
+`@cratis/eslint-plugin-components` prevents migrated source from drifting back to removed APIs.
+`@cratis/components.conformance` is different: it is a development test harness for authors of
+renderer adapters, proving slot behavior, parts, state, SSR, and accessibility. Ordinary
+applications do not install Conformance unless they are implementing an adapter.
+
+Migrator, ESLint, adapters, Conformance, and Core share the repository release version. Use the
+bounded `>=4 <5` tooling range instead of `latest`; compatibility preflight validates the installed
+Components migration window. Publication remains fail closed under the repository
+[release policy](./release.md).
 
 ## Contributing
 

@@ -6,7 +6,7 @@
         "publicPackages": [
             "@cratis/components",
             "@cratis/eslint-plugin-components",
-            "@cratis/components-codemods",
+            "@cratis/components.migrator",
             "@cratis/components.conformance",
             "@cratis/components.mui",
             "@cratis/components.primereact",
@@ -32,7 +32,7 @@
     "toolingCompatibility": {
         "componentsCore": ">=4 <5",
         "eslint": ">=4 <5",
-        "codemods": ">=4 <5"
+        "migrator": ">=4 <5"
     },
     "supportWindows": {
         "components3": {
@@ -54,7 +54,7 @@
             "adapterProfile": "stable-presentation/v1",
             "tooling": {
                 "eslint": ">=4 <5",
-                "codemods": ">=4 <5"
+                "migrator": ">=4 <5"
             },
             "adapters": {
                 "@cratis/components.conformance": ">=4 <5",
@@ -103,8 +103,8 @@
             "upstream": {}
         },
         {
-            "name": "@cratis/components-codemods",
-            "role": "codemods",
+            "name": "@cratis/components.migrator",
+            "role": "migrator",
             "version": "4.0.0",
             "releaseMajorRange": ">=4 <5",
             "independentRelease": false,

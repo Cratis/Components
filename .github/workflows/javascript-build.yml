@@ -21,7 +21,7 @@ on:
             - 'main'
         paths:
             - 'Source/**'
-            - 'Codemods/**'
+            - 'Migrator/**'
             - 'ESLint/**'
             - 'Conformance/**'
             - 'Adapters/**'
@@ -43,7 +43,7 @@ on:
             - '**'
         paths:
             - 'Source/**'
-            - 'Codemods/**'
+            - 'Migrator/**'
             - 'ESLint/**'
             - 'Conformance/**'
             - 'Adapters/**'
@@ -97,7 +97,7 @@ jobs:
                   yarn ci
 
             - name: Verify root-import codemod
-              working-directory: Codemods
+              working-directory: Migrator
               run: |
                   yarn test
                   yarn verify-package

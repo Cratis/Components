@@ -15,12 +15,12 @@ const repositoryDirectory = path.resolve(
 const outputPaths = [
     'compat-manifest.json',
     'Source/compat-manifest.json',
-    'Codemods/compat-manifest.json',
+    'Migrator/compat-manifest.json',
 ];
 const packagePolicies = new Map([
     ['@cratis/components', { role: 'core', range: '>=4 <5' }],
     ['@cratis/eslint-plugin-components', { role: 'eslint', range: '>=4 <5' }],
-    ['@cratis/components-codemods', { role: 'codemods', range: '>=4 <5' }],
+    ['@cratis/components.migrator', { role: 'migrator', range: '>=4 <5' }],
     ['@cratis/components.conformance', { role: 'conformance', range: '>=4 <5' }],
     ['@cratis/components.mui', { role: 'renderer-adapter', range: '>=4 <5' }],
     ['@cratis/components.primereact', { role: 'renderer-adapter', range: '>=4 <5' }],
@@ -101,7 +101,7 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
         toolingCompatibility: {
             componentsCore: '>=4 <5',
             eslint: '>=4 <5',
-            codemods: '>=4 <5',
+            migrator: '>=4 <5',
         },
         supportWindows: {
             components3: {
@@ -124,7 +124,7 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
                 adapterProfile: 'stable-presentation/v1',
                 tooling: {
                     eslint: '>=4 <5',
-                    codemods: '>=4 <5',
+                    migrator: '>=4 <5',
                 },
                 adapters: {
                     '@cratis/components.conformance': '>=4 <5',
@@ -212,7 +212,7 @@ export function validateCompatibilityManifest(
     if (
         tooling.componentsCore !== '>=4 <5' ||
         tooling.eslint !== '>=4 <5' ||
-        tooling.codemods !== '>=4 <5'
+        tooling.migrator !== '>=4 <5'
     ) {
         fail('Core 4 tooling compatibility must remain bounded to >=4 <5.');
     }
@@ -235,7 +235,7 @@ export function validateCompatibilityManifest(
         components4?.coreProfile !== 'core/v1' ||
         components4?.adapterProfile !== 'stable-presentation/v1' ||
         components4?.tooling?.eslint !== '>=4 <5' ||
-        components4?.tooling?.codemods !== '>=4 <5'
+        components4?.tooling?.migrator !== '>=4 <5'
     ) {
         fail('The Components 4 candidate compatibility window is incomplete.');
     }

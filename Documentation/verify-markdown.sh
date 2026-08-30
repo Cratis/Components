@@ -36,7 +36,7 @@ npx markdownlint-cli2 \
     "Documentation/**/*.md" \
     "Documentation/**/*.mdx" \
     "Source/*.md" \
-    "Codemods/*.md" \
+    "Migrator/*.md" \
     "ESLint/*.md" \
     "Conformance/*.md" \
     "Adapters/**/*.md" \

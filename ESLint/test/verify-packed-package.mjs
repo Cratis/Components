@@ -168,7 +168,9 @@ try {
         kernelResults[0].messages.length !== 1 ||
         kernelResults[0].messages[0].ruleId !== '@cratis/components/no-react-in-kernel'
     ) {
-        throw new Error(`Unexpected packed kernel ESLint output:\n${kernelViolation.stdout}`);
+        throw new Error(
+            `Unexpected packed kernel ESLint output:\n${kernelViolation.stdout}`,
+        );
     }
 
     console.log('Packed @cratis/eslint-plugin-components verified.');

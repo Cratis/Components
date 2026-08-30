@@ -9,7 +9,7 @@ import semver from 'semver';
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const bundledManifestPath = path.join(packageDirectory, 'compat-manifest.json');
-const codemodPackagePath = path.join(packageDirectory, 'package.json');
+const migratorPackagePath = path.join(packageDirectory, 'package.json');
 
 /** Validates the bundled release contract and the installed Components migration boundary. */
 export function preflightCompatibility({
@@ -17,8 +17,8 @@ export function preflightCompatibility({
     packageName = '@cratis/components',
 } = {}) {
     const manifest = readJson(bundledManifestPath, 'bundled compatibility manifest');
-    const codemodPackage = readJson(codemodPackagePath, 'codemod package manifest');
-    validateBundledManifest(manifest, codemodPackage.version);
+    const migratorPackage = readJson(migratorPackagePath, 'migrator package manifest');
+    validateBundledManifest(manifest, migratorPackage.version);
 
     const installedPackagePath = resolvePackageManifest(packageName, cwd);
     const installedPackage = readJson(
@@ -51,29 +51,29 @@ export function preflightCompatibility({
                 `Allowed migration Components ranges: ${ranges}.`,
         );
     }
-    const windowCodemodRange =
+    const windowMigratorRange =
         typeof supportedWindow.tooling === 'string'
             ? supportedWindow.tooling
-            : supportedWindow.tooling?.codemods;
+            : supportedWindow.tooling?.migrator;
     if (
-        !semver.validRange(windowCodemodRange) ||
-        !semver.satisfies(codemodPackage.version, windowCodemodRange)
+        !semver.validRange(windowMigratorRange) ||
+        !semver.satisfies(migratorPackage.version, windowMigratorRange)
     ) {
         throw new Error(
-            `Codemod ${codemodPackage.version} is incompatible with the ${supportedWindow.migrationRole} support window tooling range '${windowCodemodRange ?? '<missing>'}'.`,
+            `Migrator ${migratorPackage.version} is incompatible with the ${supportedWindow.migrationRole} support window tooling range '${windowMigratorRange ?? '<missing>'}'.`,
         );
     }
 
     return {
         manifest,
-        codemodVersion: codemodPackage.version,
+        migratorVersion: migratorPackage.version,
         componentsVersion: installedPackage.version,
         migrationRole: supportedWindow.migrationRole,
     };
 }
 
-/** Validates data that must remain true for a packed codemod to run safely. */
-export function validateBundledManifest(manifest, codemodVersion) {
+/** Validates data that must remain true for the packed migrator to run safely. */
+export function validateBundledManifest(manifest, migratorVersion) {
     if (!manifest || manifest.schemaVersion !== 2) {
         throw new Error('Bundled compatibility manifest has an unsupported schema.');
     }
@@ -82,29 +82,29 @@ export function validateBundledManifest(manifest, codemodVersion) {
     ) {
         throw new Error('Bundled compatibility manifest has an invalid releaseStatus.');
     }
-    const codemodRange = manifest.toolingCompatibility?.codemods;
-    if (!semver.validRange(codemodRange)) {
-        throw new Error('Bundled compatibility manifest has an invalid codemod range.');
+    const migratorRange = manifest.toolingCompatibility?.migrator;
+    if (!semver.validRange(migratorRange)) {
+        throw new Error('Bundled compatibility manifest has an invalid migrator range.');
     }
-    if (semver.valid(codemodVersion) !== codemodVersion) {
-        throw new Error(`Codemod package has invalid version '${codemodVersion}'.`);
+    if (semver.valid(migratorVersion) !== migratorVersion) {
+        throw new Error(`Migrator package has invalid version '${migratorVersion}'.`);
     }
-    if (!semver.satisfies(codemodVersion, codemodRange)) {
+    if (!semver.satisfies(migratorVersion, migratorRange)) {
         throw new Error(
-            `Codemod package version ${codemodVersion} is outside bundled range '${codemodRange}'.`,
+            `Migrator package version ${migratorVersion} is outside bundled range '${migratorRange}'.`,
         );
     }
 
     const packageEntry = manifest.packages?.find(
-        ({ name }) => name === '@cratis/components-codemods',
+        ({ name }) => name === '@cratis/components.migrator',
     );
     if (
-        packageEntry?.version !== codemodVersion ||
+        packageEntry?.version !== migratorVersion ||
         packageEntry?.independentRelease !== false ||
-        !semver.satisfies(codemodVersion, packageEntry?.releaseMajorRange ?? '')
+        !semver.satisfies(migratorVersion, packageEntry?.releaseMajorRange ?? '')
     ) {
         throw new Error(
-            'Bundled compatibility manifest has stale codemod package metadata.',
+            'Bundled compatibility manifest has stale migrator package metadata.',
         );
     }
 
@@ -127,7 +127,7 @@ export function validateBundledManifest(manifest, codemodVersion) {
             const toolingRange =
                 typeof window.tooling === 'string'
                     ? window.tooling
-                    : window.tooling?.codemods;
+                    : window.tooling?.migrator;
             return (
                 !semver.validRange(window.components) || !semver.validRange(toolingRange)
             );

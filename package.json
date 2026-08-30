@@ -3,7 +3,7 @@
     "workspaces": [
         "Source",
         "ESLint",
-        "Codemods",
+        "Migrator",
         "Conformance",
         "Adapters/*",
         "Storybook"

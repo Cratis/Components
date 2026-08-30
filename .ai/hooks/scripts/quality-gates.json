@@ -14,7 +14,7 @@
             "description": "immutable install + public workspace CI + private Storybook preflight",
             "changed": [
                 "Source/**",
-                "Codemods/**",
+                "Migrator/**",
                 "ESLint/**",
                 "Conformance/**",
                 "Adapters/**",
@@ -42,7 +42,7 @@
                     ".ai/hooks/scripts/run-components-ci.sh",
                     "package.json",
                     "Source/package.json",
-                    "Codemods/package.json",
+                    "Migrator/package.json",
                     "ESLint/package.json",
                     "Conformance/package.json",
                     "Adapters/Mui/package.json",
@@ -61,7 +61,7 @@
                 "README.md",
                 "Documentation/**",
                 "Source/*.md",
-                "Codemods/*.md",
+                "Migrator/*.md",
                 "ESLint/*.md",
                 ".markdownlint.json"
             ],

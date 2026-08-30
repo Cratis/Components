@@ -144,7 +144,7 @@ A companion, standalone codemod applies the equivalent rewrite across a whole pr
 pass, and additionally autofixes a named `export { Canvas } from '@cratis/components'`
 re-export the same way it autofixes the matching import — this rule flags every re-export
 form with guidance but never autofixes any of them; see
-[`@cratis/components-codemods`](https://www.npmjs.com/package/@cratis/components-codemods).
+[`@cratis/components.migrator`](https://www.npmjs.com/package/@cratis/components.migrator).
 
 ### `onbeforeexecute-must-return`
 
