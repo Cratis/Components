@@ -15,9 +15,26 @@ if (pixiTopology !== 'absent' && pixiTopology !== 'present') {
     process.exit(1);
 }
 
-const commandDialog = await import('@cratis/components/CommandDialog');
-const dataPage = await import('@cratis/components/DataPage');
-const notifications = await import('@cratis/components/Notifications');
+const importWithTimeout = async (specifier, timeout = 60_000) => {
+    let timer;
+    try {
+        return await Promise.race([
+            import(specifier),
+            new Promise((_, reject) => {
+                timer = setTimeout(
+                    () => reject(new Error(`Timed out importing ${specifier}.`)),
+                    timeout,
+                );
+            }),
+        ]);
+    } finally {
+        if (timer) clearTimeout(timer);
+    }
+};
+
+const commandDialog = await importWithTimeout('@cratis/components/CommandDialog');
+const dataPage = await importWithTimeout('@cratis/components/DataPage');
+const notifications = await importWithTimeout('@cratis/components/Notifications');
 if (!commandDialog.CommandDialog || !dataPage.DataPage || !notifications.toast) {
     throw new Error('The packed Components surface is incomplete.');
 }
@@ -54,7 +71,7 @@ if (pixiTopology === 'absent') {
         '@cratis/components/PivotViewer',
     ]) {
         try {
-            await import(spatial);
+            await importWithTimeout(spatial);
             throw new Error(`Unexpected spatial import success: ${spatial}`);
         } catch (error) {
             if (error instanceof Error && error.message.startsWith('Unexpected spatial'))
@@ -83,11 +100,17 @@ if (pixiTopology === 'absent') {
                 `${consumerPixi} versus ${componentsPixi}`,
         );
     }
-    const canvas = await import('@cratis/components/Canvas');
-    const pivotViewer = await import('@cratis/components/PivotViewer');
+    const canvas = await importWithTimeout('@cratis/components/Canvas');
+    const pivotViewer = await importWithTimeout('@cratis/components/PivotViewer');
     if (!canvas.Canvas || !pivotViewer.PivotViewer) {
         throw new Error('The packed Spatial surface is incomplete.');
     }
 }
 
-console.log(`Packed package-manager consumer verified with Pixi ${pixiTopology}.`);
+await new Promise((resolve, reject) => {
+    process.stdout.write(
+        `Packed package-manager consumer verified with Pixi ${pixiTopology}.\n`,
+        (error) => (error ? reject(error) : resolve()),
+    );
+});
+process.exit(0);
