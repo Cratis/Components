@@ -13,6 +13,7 @@ import { Tag } from '@cratis/components/Display';
 
 <Tag severity="success" value="In stock" />
 <Tag severity="danger" value="Out of stock" />
+<Tag severity="info" value="Member" icon="product-icons product-user" />
 ```
 
 | Prop | Type | Description |
@@ -20,7 +21,7 @@ import { Tag } from '@cratis/components/Display';
 | `value` | `ReactNode` | The label shown inside the tag (or pass `children`). |
 | `severity` | `'secondary' \| 'success' \| 'info' \| 'warn' \| 'danger' \| 'contrast'` | Severity tone (drives the color). |
 | `rounded` | `boolean` | Fully rounds the tag. |
-| `icon` | `ReactNode` | An icon rendered before the label. |
+| `icon` | `ReactNode` | An icon rendered before the label. A string is treated as a complete consumer-owned icon-font CSS class; other React nodes render as supplied. |
 | `className` | `string` | Extra CSS class. |
 
 ## Badge

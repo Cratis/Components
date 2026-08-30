@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
+import { IconDisplay } from '../Common/Icon';
 
 /** Severity tone of a {@link Tag}. */
 export type TagSeverity =
@@ -15,7 +16,10 @@ export interface TagProps {
     severity?: TagSeverity;
     /** When true, fully rounds the tag. */
     rounded?: boolean;
-    /** An icon rendered before the label. */
+    /**
+     * An icon rendered before the label. A string is treated as a complete consumer-owned
+     * icon-font CSS class; any other React node is rendered as supplied.
+     */
     icon?: ReactNode;
     /** Extra class name. */
     className?: string;
@@ -40,7 +44,7 @@ export const Tag = ({
     >
         {icon && (
             <span className='cratis-tag__icon' data-cratis-part='icon'>
-                {icon}
+                <IconDisplay icon={icon} />
             </span>
         )}
         <span className='cratis-tag__label' data-cratis-part='label'>
