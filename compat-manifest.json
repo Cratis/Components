@@ -156,8 +156,8 @@
             "rendererProfile": "stable-presentation/v1",
             "verifiedPeers": {
                 "minimum": {
-                    "@cratis/arc": "22.5.0",
-                    "@cratis/arc.react": "22.5.0",
+                    "@cratis/arc": "22.6.0",
+                    "@cratis/arc.react": "22.6.0",
                     "@cratis/fundamentals": "7.18.1",
                     "@emotion/react": "11.5.0",
                     "@emotion/styled": "11.11.0",
@@ -170,8 +170,8 @@
                     "tsyringe": "4.10.0"
                 },
                 "current": {
-                    "@cratis/arc": "22.5.0",
-                    "@cratis/arc.react": "22.5.0",
+                    "@cratis/arc": "22.6.0",
+                    "@cratis/arc.react": "22.6.0",
                     "@cratis/fundamentals": "7.18.1",
                     "@emotion/react": "11.14.0",
                     "@emotion/styled": "11.14.1",
@@ -214,8 +214,8 @@
             "rendererProfile": "stable-presentation/v1",
             "verifiedPeers": {
                 "minimum": {
-                    "@cratis/arc": "22.5.0",
-                    "@cratis/arc.react": "22.5.0",
+                    "@cratis/arc": "22.6.0",
+                    "@cratis/arc.react": "22.6.0",
                     "@cratis/fundamentals": "7.18.1",
                     "@primereact/core": "11.0.0",
                     "@primereact/headless": "11.0.0",
@@ -233,8 +233,8 @@
                     "tsyringe": "4.10.0"
                 },
                 "current": {
-                    "@cratis/arc": "22.5.0",
-                    "@cratis/arc.react": "22.5.0",
+                    "@cratis/arc": "22.6.0",
+                    "@cratis/arc.react": "22.6.0",
                     "@cratis/fundamentals": "7.18.1",
                     "@primereact/core": "11.1.0",
                     "@primereact/headless": "11.1.0",
@@ -276,8 +276,8 @@
             "rendererProfile": "stable-presentation/v1",
             "verifiedPeers": {
                 "minimum": {
-                    "@cratis/arc": "22.5.0",
-                    "@cratis/arc.react": "22.5.0",
+                    "@cratis/arc": "22.6.0",
+                    "@cratis/arc.react": "22.6.0",
                     "@cratis/fundamentals": "7.18.1",
                     "@types/react": "19.0.0",
                     "primereact": "10.9.9",
@@ -288,8 +288,8 @@
                     "tsyringe": "4.10.0"
                 },
                 "current": {
-                    "@cratis/arc": "22.5.0",
-                    "@cratis/arc.react": "22.5.0",
+                    "@cratis/arc": "22.6.0",
+                    "@cratis/arc.react": "22.6.0",
                     "@cratis/fundamentals": "7.18.1",
                     "@types/react": "19.2.18",
                     "primereact": "10.9.9",

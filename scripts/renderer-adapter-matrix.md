@@ -35,7 +35,7 @@ pnpm uses `--strict-peer-dependencies`, and Yarn uses Plug'n'Play rather than `n
 
 The matrix records only confirmed upstream manifest omissions:
 
-- `@cratis/arc.react@22.5.0` imports `rxjs` without declaring it;
+- `@cratis/arc.react@22.6.0` imports `rxjs` without declaring it;
 - each tested `@primereact/headless` 11 package needs React for its Core/headless dependencies;
 - each tested `@primereact/styles` 11 package needs `@primeuix/motion` for its types;
 - each tested `@primereact/ui` 11 package uses the aligned `@primereact/core` package and

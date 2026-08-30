@@ -465,7 +465,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                arc-version: ['20.3.1', '21.19.4', '22.5.0']
+                arc-version: ['20.3.1', '21.19.4', '22.6.0']
 
         steps:
             - name: Checkout code
@@ -578,7 +578,7 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   npm install --ignore-scripts --no-audit --no-fund \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.5.0 @cratis/arc.react@22.5.0 \
+                    @cratis/arc@22.6.0 @cratis/arc.react@22.6.0 \
                     @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
                     react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
@@ -593,7 +593,7 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   pnpm add --ignore-scripts --strict-peer-dependencies \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.5.0 @cratis/arc.react@22.5.0 \
+                    @cratis/arc@22.6.0 @cratis/arc.react@22.6.0 \
                     @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
                     react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
@@ -617,7 +617,7 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   yarn add \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.5.0 @cratis/arc.react@22.5.0 \
+                    @cratis/arc@22.6.0 @cratis/arc.react@22.6.0 \
                     @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
                     react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2 "${PIXI[@]}"
