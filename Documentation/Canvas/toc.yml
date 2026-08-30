@@ -1,16 +1,16 @@
-- name: Overview
+- name: Canvas reference
   href: index.md
-- name: Basic Usage
+- name: Basic usage
   href: basic-usage.md
-- name: Pan & Zoom
+- name: Pan and zoom
   href: pan-and-zoom.md
-- name: Controls Chrome
+- name: Controls chrome
   href: controls-chrome.md
 - name: Notes
   href: notes.md
 - name: Regions
   href: regions.md
-- name: Chat Bubble
+- name: Chat bubble
   href: chat-bubble.md
 - name: Messaging
   href: messaging.md

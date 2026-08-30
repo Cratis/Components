@@ -1,166 +1,70 @@
 name: Publish
 
-on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release'
-        required: true
-        default: '0.0.0'
-        type: string
-      release-notes:
-        description: 'Release notes'
-        required: true
-        default: 'No release notes'
-        type: string
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
-  # Releasing on push rather than on the pull_request closed event is deliberate. A pull request from a fork
-  # runs with a read-only GITHUB_TOKEN and no secrets even on merge, so it cannot create the release or reach
-  # the publishing credentials - which is how a merged, labeled fork contribution silently released nothing.
-  # A push to main always runs with a full-permission token, and the release action finds the merged pull
-  # request and its label from the commit.
-  push:
-    # Only main releases. On "**" every base branch released, so merging one pull
-    # request into another one's branch - the ordinary way to stack work - cut and published a version
-    # from a branch that was still in review. That is how Cratis.Fundamentals v7.17.0 came to be
-    # published from the head of an open pull request, carrying every unmerged change on that branch
-    # under release notes describing only the one that had just merged. A release must come from the
-    # branch that is released.
-    branches:
-      - main
+# V4 decision: publication is fail-closed for this draft source line. This workflow is a manual,
+# side-effect-free entry point only - it explains why publishing is blocked and exits non-zero. It
+# intentionally does not build, does not release, does not publish, and does not dispatch anything
+# downstream.
+#
+# There is no `push` trigger: nothing on this branch auto-publishes on merge. There is no
+# `id-token` permission, no `contents: write` permission, and no `secrets` usage - this workflow
+# cannot mint an OIDC token, cannot push a tag/release, and cannot reach any credential. It does
+# not call `npm publish`, `yarn publish-version`, `cratis/release-action`, or
+# `peter-evans/repository-dispatch` (or any other action with side effects).
+#
+# V4 publication stays blocked until all of the following exist and are reviewed:
+#   - the approved manual, tooling-first candidate publish workflow (built, reviewed, and staged
+#     specifically for a V4 release, not restored wholesale from main's automatic publisher)
+#   - trusted-publisher / OIDC bootstrap configured and verified against the npm registry for
+#     every package this workspace ships
+#   - an approved release workflow that installs with `yarn install --immutable` from the
+#     committed root `yarn.lock`, with local development honoring the same lockfile
+#   - a package set synchronized across every workspace, including any renderer packages not yet
+#     published
+#   - retained exact tarballs and checksums for whatever gets published, so a release can be
+#     verified after the fact
+#   - explicit owner approval to re-enable publication for this source line
+#
+# Do not restore a `push` trigger, `id-token: write`, `contents: write`, secrets, release
+# creation, `npm publish`/`yarn publish-version`, or any dispatch side effect to this workflow
+# without that review. See git history ("Restore the publish workflow", "Disable Components
+# package publishing", "Remove unverified provenance surfaces") for why this line remains manual
+# and blocked.
 
-permissions:
-  contents: write
+on:
+    workflow_dispatch: {}
+
+permissions: {}
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    outputs:
-      version: ${{ steps.release.outputs.version }}
-      publish: ${{ steps.release.outputs.should-publish }}
-      reason: ${{ steps.release.outputs.reason }}
+    publication-blocked:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions: {}
+        steps:
+            - name: Explain why publication is blocked
+              run: |
+                  cat <<'EOF'
+                  Publication is intentionally blocked for this V4 draft source line.
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+                  This workflow is a manual, no-op entry point. It does not build, release, publish,
+                  or trigger anything downstream - triggering it does nothing but print this message
+                  and fail.
 
-      - name: Release
-        id: release
-        uses: cratis/release-action@v1
-        with:
-          version: ${{ github.event.inputs.version }}
-          release-notes: ${{ github.event.inputs.release-notes }}
+                  V4 publication remains blocked until all of the following exist and have owner
+                  approval:
+                    1. An approved manual, tooling-first candidate publish workflow built and staged
+                       for V4 (not main's automatic source-first/continue-on-failure publisher).
+                    2. Trusted-publisher/OIDC bootstrap configured and verified for every package.
+                    3. An approved release workflow that installs with `yarn install --immutable`
+                       from the committed root `yarn.lock`, with local development honoring the
+                       same lockfile.
+                    4. A package set synchronized across every workspace, including future renderer
+                       packages.
+                    5. Retained exact tarballs and checksums for whatever gets published.
+                    6. Explicit owner approval to re-enable publication for this source line.
 
-  publish-npm-packages:
-    if: needs.release.outputs.publish == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    needs: [release]
-    permissions:
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.x
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Configure npm for OIDC-based publishing
-        run: |
-          # setup-node writes a placeholder _authToken (XXXXX-XXXXX-XXXXX-XXXXX) into
-          # .npmrc and exports NODE_AUTH_TOKEN with the same placeholder. npm uses this
-          # token as-is for registry auth → 404. Remove it so npm falls back to OIDC.
-          sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
-          echo "NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
-          echo "--- .npmrc after stripping placeholder ---"
-          cat "$NPM_CONFIG_USERCONFIG"
-
-      - name: Upgrade npm for trusted publishing (requires >= 11.5.1)
-        run: |
-          npm install -g npm@11
-          NPM_VER="$(npm --version)"
-          echo "Installed npm $NPM_VER"
-          node -e "
-            const v = '$NPM_VER'.split('.').map(Number);
-            if (v[0] < 11 || (v[0] === 11 && v[1] < 5) || (v[0] === 11 && v[1] === 5 && v[2] < 1)) {
-              console.error('npm >= 11.5.1 is required for trusted publishing, got $NPM_VER');
-              process.exit(1);
-            }
-          "
-
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: |
-            .yarn/cache
-            **/node_modules
-            **/.eslintcache
-            **/yarn.lock
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
-
-      - name: Yarn install
-        run: yarn
-
-      - name: Publish NPM packages
-        run: |
-          echo "npm $(npm --version) | node $(node --version)"
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL is $([ -n \"$ACTIONS_ID_TOKEN_REQUEST_URL\" ] && echo 'set' || echo 'NOT set')"
-          echo "NODE_AUTH_TOKEN is '${NODE_AUTH_TOKEN:-(unset)}'"
-          echo "--- .npmrc ---"
-          cat "$NPM_CONFIG_USERCONFIG" 2>/dev/null || echo "(no .npmrc)"
-          echo "---"
-          yarn build
-          yarn publish-version ${{ needs.release.outputs.version }}
-
-      - name: Git reset (package.json files changed)
-        run: |
-          git reset --hard
-
-      - name: Trigger Documentation Build
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PAT_DOCUMENTATION }}
-          repository: cratis/documentation
-          event-type: build-docs
-
-      - name: Trigger Dependency Updates on Sample Repository
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PAT_DOCUMENTATION }}
-          repository: cratis/samples
-          event-type: update-dependencies
-
-          
-
-  verify-published:
-    # A merge that publishes nothing is the failure mode that silently costs a release: the release job
-    # succeeds, every publish job is skipped for want of should-publish, and the whole run reports green. Fail
-    # instead, so a release that did not happen cannot be mistaken for one that did.
-    #
-    # Only for the reasons that mean something went wrong. Publishing nothing is correct and routine for the
-    # others - a commit pushed straight to main, a Dependabot merge, a re-run of a run that already released -
-    # and failing on those would make this job noise that everyone learns to ignore.
-    if: always() && needs.release.result == 'success' && contains(fromJSON('["no-label", "error"]'), needs.release.outputs.reason)
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    needs: [release]
-
-    steps:
-      - name: Report that nothing was published
-        run: |
-          echo "::error::Nothing was published and no release was cut (reason: ${{ needs.release.outputs.reason }}). For 'no-label', add exactly one of major, minor or patch to the merged pull request and re-run this workflow - see verify-semver-label, which is meant to catch this before the merge."
-          exit 1
+                  Until then, do not add a push trigger, id-token permission, contents: write
+                  permission, secrets usage, release creation, npm/yarn publish step, or any
+                  dispatch side effect to this workflow.
+                  EOF
+                  exit 1

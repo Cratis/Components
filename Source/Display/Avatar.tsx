@@ -1,8 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
-import { Avatar as PrimeAvatar } from 'primereact/avatar';
+import type { ReactNode } from 'react';
 
 /** Props for {@link Avatar}. */
 export interface AvatarProps {
@@ -11,7 +10,7 @@ export interface AvatarProps {
     /** Text fallback (e.g. initials) shown when no image is available. */
     label?: string;
     /** Icon fallback shown when no image/label is available. */
-    icon?: React.ReactNode;
+    icon?: ReactNode;
     /** Alt text for the image. */
     alt?: string;
     /** Avatar size. */
@@ -20,14 +19,35 @@ export interface AvatarProps {
     className?: string;
 }
 
-/**
- * A user/entity avatar built on PrimeReact 11's compositional `Avatar`. Shows
- * an image when available and falls back to initials or an icon otherwise.
- */
-export const Avatar = ({ image, label, icon, alt, size, className }: AvatarProps) => (
-    <PrimeAvatar.Root size={size} className={className}>
-        {image
-            ? <PrimeAvatar.Image src={image} alt={alt} />
-            : <PrimeAvatar.Fallback>{icon ?? label}</PrimeAvatar.Fallback>}
-    </PrimeAvatar.Root>
+/** A user or entity avatar with an image and text/icon fallback. */
+export const Avatar = ({
+    image,
+    label,
+    icon,
+    alt = '',
+    size = 'normal',
+    className,
+}: AvatarProps) => (
+    <span
+        className={['cratis-avatar', className].filter(Boolean).join(' ')}
+        data-cratis-part='root'
+        data-size={size}
+    >
+        {image ? (
+            <img
+                className='cratis-avatar__image'
+                data-cratis-part='image'
+                src={image}
+                alt={alt}
+            />
+        ) : (
+            <span
+                className='cratis-avatar__fallback'
+                data-cratis-part='fallback'
+                aria-hidden={!label}
+            >
+                {icon ?? label}
+            </span>
+        )}
+    </span>
 );

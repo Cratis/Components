@@ -2,7 +2,62 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useMemo, useState, type DragEvent } from 'react';
+import type { IconType } from 'react-icons';
+import {
+    FaAlignCenter,
+    FaAlignLeft,
+    FaArrowPointer,
+    FaArrowUpRightFromSquare,
+    FaArrowsRotate,
+    FaBell,
+    FaBold,
+    FaBolt,
+    FaBookmark,
+    FaCircle,
+    FaCircleExclamation,
+    FaCircleQuestion,
+    FaClockRotateLeft,
+    FaClone,
+    FaComment,
+    FaEraser,
+    FaExpand,
+    FaEye,
+    FaFile,
+    FaFilePen,
+    FaFilter,
+    FaFloppyDisk,
+    FaFolderOpen,
+    FaGear,
+    FaHand,
+    FaHeart,
+    FaHouse,
+    FaImage,
+    FaLink,
+    FaList,
+    FaMinus,
+    FaMoon,
+    FaPalette,
+    FaPencil,
+    FaPlay,
+    FaPlus,
+    FaRotateLeft,
+    FaShareNodes,
+    FaSitemap,
+    FaSortUp,
+    FaSquare,
+    FaSquareCheck,
+    FaStar,
+    FaStopwatch,
+    FaSun,
+    FaTable,
+    FaTableCellsLarge,
+    FaUnderline,
+    FaUpDownLeftRight,
+    FaUpload,
+    FaWrench,
+} from 'react-icons/fa6';
 import { Toolbar } from './Toolbar';
 import { ToolbarButton } from './ToolbarButton';
 import { ToolbarContext } from './ToolbarContext';
@@ -15,7 +70,7 @@ import { ToolbarSlot, ToolbarSlotProvider } from './ToolbarSlot';
 import { ToolbarLayout } from './ToolbarLayout';
 
 const meta: Meta<typeof Toolbar> = {
-    title: 'Components/Toolbar',
+    title: 'Toolbar/Toolbar',
     component: Toolbar,
     parameters: {
         layout: 'centered',
@@ -26,37 +81,121 @@ export default meta;
 
 type Story = StoryObj<typeof Toolbar>;
 
+const exerciseToolbarOverlay = async (
+    canvasElement: HTMLElement,
+    triggerName: string,
+    itemName: string,
+    triggerIndex = 0,
+) => {
+    const canvas = within(canvasElement);
+    const findTrigger = () =>
+        canvas
+            .getAllByRole('button', { name: triggerName })
+            .filter((button) => button.hasAttribute('aria-expanded'))[triggerIndex];
+    const trigger = findTrigger();
+    if (!trigger) throw new Error(`Could not find the ${triggerName} toolbar trigger.`);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(trigger);
+    await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'true'));
+    const item = await canvas.findByRole('button', { name: itemName });
+    await userEvent.click(item);
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'false'));
+    await waitFor(() => expect(findTrigger()).toHaveFocus());
+    await userEvent.click(findTrigger());
+    await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'true'));
+};
+
+const toolIcons: Record<string, IconType> = {
+    'align-center': FaAlignCenter,
+    'align-left': FaAlignLeft,
+    'arrow-up-left': FaArrowPointer,
+    'arrows-alt': FaUpDownLeftRight,
+    bell: FaBell,
+    bold: FaBold,
+    bolt: FaBolt,
+    bookmark: FaBookmark,
+    'check-square': FaSquareCheck,
+    circle: FaCircle,
+    clone: FaClone,
+    cog: FaGear,
+    comment: FaComment,
+    eraser: FaEraser,
+    'exclamation-circle': FaCircleExclamation,
+    expand: FaExpand,
+    'external-link': FaArrowUpRightFromSquare,
+    eye: FaEye,
+    file: FaFile,
+    'file-edit': FaFilePen,
+    filter: FaFilter,
+    'folder-open': FaFolderOpen,
+    'hand-paper': FaHand,
+    heart: FaHeart,
+    history: FaClockRotateLeft,
+    home: FaHouse,
+    image: FaImage,
+    link: FaLink,
+    list: FaList,
+    minus: FaMinus,
+    moon: FaMoon,
+    palette: FaPalette,
+    pencil: FaPencil,
+    play: FaPlay,
+    plus: FaPlus,
+    'question-circle': FaCircleQuestion,
+    refresh: FaArrowsRotate,
+    save: FaFloppyDisk,
+    'share-alt': FaShareNodes,
+    sitemap: FaSitemap,
+    'sort-up': FaSortUp,
+    star: FaStar,
+    stop: FaSquare,
+    stopwatch: FaStopwatch,
+    sun: FaSun,
+    table: FaTable,
+    'th-large': FaTableCellsLarge,
+    underline: FaUnderline,
+    undo: FaRotateLeft,
+    upload: FaUpload,
+};
+
+const ToolGlyph = ({ name }: { name: string }) => {
+    const Icon = toolIcons[name] ?? FaWrench;
+    return <Icon aria-hidden='true' />;
+};
+
 const folderIcons: string[] = [
-    'pi pi-exclamation-circle',
-    'pi pi-eye',
-    'pi pi-cog',
-    'pi pi-external-link',
-    'pi pi-clock',
-    'pi pi-globe',
-    'pi pi-bookmark',
-    'pi pi-send',
-    'pi pi-search',
-    'pi pi-car',
-    'pi pi-box',
-    'pi pi-bolt',
-    'pi pi-database',
-    'pi pi-cloud',
-    'pi pi-star',
-    'pi pi-heart',
-    'pi pi-map',
-    'pi pi-wifi',
-    'pi pi-lock',
-    'pi pi-bell',
+    'exclamation-circle',
+    'eye',
+    'cog',
+    'external-link',
+    'clock',
+    'globe',
+    'bookmark',
+    'send',
+    'search',
+    'car',
+    'box',
+    'bolt',
+    'database',
+    'cloud',
+    'star',
+    'heart',
+    'map',
+    'wifi',
+    'lock',
+    'bell',
 ];
 
 /**
  * Demonstrates that any React node can be used as an icon on {@link ToolbarButton} and
- * {@link ToolbarFanOutItem} — here using inline SVG elements in place of PrimeIcons CSS
- * class strings.
+ * {@link ToolbarFanOutItem} — here using inline SVG elements instead of relying on an icon-font stylesheet.
  *
- * Existing string-based usage is unchanged; the `icon` prop now accepts `string | ReactNode`.
+ * Consumer-owned icon-font class strings remain supported, while React nodes work without extra CSS.
  */
 export const WithReactNodeIcons: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'More shapes', 'Triangle'),
     render: () => {
         const CircleIcon = () => (
             <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='20' height='20' fill='currentColor' aria-hidden='true'>
@@ -92,8 +231,7 @@ export const WithReactNodeIcons: Story = {
                     <ToolbarButton icon={<TriangleIcon />} title='Triangle' />
                     <ToolbarButton icon={<PentagonIcon />} title='Pentagon' />
                 </ToolbarFanOutItem>
-                {/* String-based icons still work unchanged */}
-                <ToolbarButton icon='pi pi-undo' title='Undo' />
+                <ToolbarButton icon={<ToolGlyph name='undo' />} title='Undo' />
             </Toolbar>
         );
     },
@@ -103,11 +241,11 @@ export const WithReactNodeIcons: Story = {
 export const Default: Story = {
     render: () => (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-            <ToolbarButton icon='pi pi-clone' title='Layers' />
-            <ToolbarButton icon='pi pi-circle' title='Shapes' />
-            <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-            <ToolbarButton icon='pi pi-file' title='Sticky note' />
+            <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
+            <ToolbarButton icon={<ToolGlyph name='clone' />} title='Layers' />
+            <ToolbarButton icon={<ToolGlyph name='circle' />} title='Shapes' />
+            <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
+            <ToolbarButton icon={<ToolGlyph name='file' />} title='Sticky note' />
         </Toolbar>
     ),
 };
@@ -121,25 +259,25 @@ export const WithActiveButton: Story = {
             return (
                 <Toolbar>
                     <ToolbarButton
-                        icon='pi pi-arrow-up-left'
+                        icon={<ToolGlyph name='arrow-up-left' />}
                         title='Select'
                         active={active === 'select'}
                         onClick={() => setActive('select')}
                     />
                     <ToolbarButton
-                        icon='pi pi-clone'
+                        icon={<ToolGlyph name='clone' />}
                         title='Layers'
                         active={active === 'layers'}
                         onClick={() => setActive('layers')}
                     />
                     <ToolbarButton
-                        icon='pi pi-stop'
+                        icon={<ToolGlyph name='stop' />}
                         title='Rectangle'
                         active={active === 'rectangle'}
                         onClick={() => setActive('rectangle')}
                     />
                     <ToolbarButton
-                        icon='pi pi-file'
+                        icon={<ToolGlyph name='file' />}
                         title='Sticky note'
                         active={active === 'sticky'}
                         onClick={() => setActive('sticky')}
@@ -165,31 +303,31 @@ export const WithContexts: Story = {
             const [currentContext, setCurrentContext] = useState<string>('drawing');
 
             return (
-                <div className='flex flex-col items-center gap-6'>
+                <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                     <Toolbar>
-                        <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+                        <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
                         <ToolbarSection activeContext={currentContext}>
                             <ToolbarContext name='drawing'>
-                                <ToolbarButton icon='pi pi-pencil' title='Draw' />
-                                <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                                <ToolbarButton icon='pi pi-circle' title='Circle' />
-                                <ToolbarButton icon='pi pi-minus' title='Line' />
+                                <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw' />
+                                <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
+                                <ToolbarButton icon={<ToolGlyph name='circle' />} title='Circle' />
+                                <ToolbarButton icon={<ToolGlyph name='minus' />} title='Line' />
                             </ToolbarContext>
                             <ToolbarContext name='text'>
-                                <ToolbarButton icon='pi pi-align-center' title='Align Center' />
-                                <ToolbarButton icon='pi pi-align-left' title='Align Left' />
+                                <ToolbarButton icon={<ToolGlyph name='align-center' />} title='Align Center' />
+                                <ToolbarButton icon={<ToolGlyph name='align-left' />} title='Align Left' />
                             </ToolbarContext>
                         </ToolbarSection>
-                        <ToolbarButton icon='pi pi-undo' title='Undo' />
+                        <ToolbarButton icon={<ToolGlyph name='undo' />} title='Undo' />
                     </Toolbar>
 
-                    <div className='flex gap-2'>
+                    <div className='cratis:flex cratis:gap-2'>
                         <button
                             type='button'
                             onClick={() => setCurrentContext('drawing')}
-                            className={`px-3 py-1 rounded text-sm transition-colors ${currentContext === 'drawing'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${currentContext === 'drawing'
+                                ? 'cratis:bg-blue-600 cratis:text-white'
+                                : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                 }`}
                         >
                             Drawing tools
@@ -197,9 +335,9 @@ export const WithContexts: Story = {
                         <button
                             type='button'
                             onClick={() => setCurrentContext('text')}
-                            className={`px-3 py-1 rounded text-sm transition-colors ${currentContext === 'text'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${currentContext === 'text'
+                                ? 'cratis:bg-blue-600 cratis:text-white'
+                                : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                 }`}
                         >
                             Text tools
@@ -223,12 +361,12 @@ export const WithContexts: Story = {
 export const WithSeparators: Story = {
     render: () => (
         <Toolbar orientation='horizontal'>
-            <ToolbarButton icon='pi pi-th-large' title='Overview' tooltipPosition='bottom' />
+            <ToolbarButton icon={<ToolGlyph name='th-large' />} title='Overview' tooltipPosition='bottom' />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-minus' title='Zoom out' tooltipPosition='bottom' />
-            <ToolbarButton icon='pi pi-plus' title='Zoom in' tooltipPosition='bottom' />
+            <ToolbarButton icon={<ToolGlyph name='minus' />} title='Zoom out' tooltipPosition='bottom' />
+            <ToolbarButton icon={<ToolGlyph name='plus' />} title='Zoom in' tooltipPosition='bottom' />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-question-circle' title='Help' tooltipPosition='bottom' />
+            <ToolbarButton icon={<ToolGlyph name='question-circle' />} title='Help' tooltipPosition='bottom' />
         </Toolbar>
     ),
 };
@@ -248,13 +386,13 @@ export const ZoomBar: Story = {
 
             return (
                 <Toolbar orientation='horizontal'>
-                    <ToolbarButton icon='pi pi-th-large' title='Overview' tooltipPosition='bottom' />
+                    <ToolbarButton icon={<ToolGlyph name='th-large' />} title='Overview' tooltipPosition='bottom' />
                     <ToolbarSeparator orientation='horizontal' />
-                    <ToolbarButton icon='pi pi-minus' title='Zoom out' tooltipPosition='bottom' onClick={zoomOut} />
+                    <ToolbarButton icon={<ToolGlyph name='minus' />} title='Zoom out' tooltipPosition='bottom' onClick={zoomOut} />
                     <ToolbarButton text={`${zoom}%`} title='Reset zoom' tooltipPosition='bottom' onClick={resetZoom} />
-                    <ToolbarButton icon='pi pi-plus' title='Zoom in' tooltipPosition='bottom' onClick={zoomIn} />
+                    <ToolbarButton icon={<ToolGlyph name='plus' />} title='Zoom in' tooltipPosition='bottom' onClick={zoomIn} />
                     <ToolbarSeparator orientation='horizontal' />
-                    <ToolbarButton icon='pi pi-question-circle' title='Help' tooltipPosition='bottom' />
+                    <ToolbarButton icon={<ToolGlyph name='question-circle' />} title='Help' tooltipPosition='bottom' />
                 </Toolbar>
             );
         };
@@ -270,45 +408,46 @@ export const ZoomBar: Story = {
  * Click the button again or anywhere outside the panel to collapse it.
  */
 export const WithFanOut: Story = {
+    play: ({ canvasElement }) => exerciseToolbarOverlay(canvasElement, 'Shapes', 'Info'),
     render: () => {
         const WithFanOutDemo = () => {
             const [activeTool, setActiveTool] = useState<string>('select');
 
             return (
-                <div className='flex flex-col gap-2'>
+                <div className='cratis:flex cratis:flex-col cratis:gap-2'>
                     <Toolbar>
                         <ToolbarButton
-                            icon='pi pi-arrow-up-left'
+                            icon={<ToolGlyph name='arrow-up-left' />}
                             title='Select'
                             active={activeTool === 'select'}
                             onClick={() => setActiveTool('select')}
                         />
                         <ToolbarFanOutItem
-                            icon='pi pi-th-large'
+                            icon={<ToolGlyph name='th-large' />}
                             tooltip='Shapes'
                         >
-                            <ToolbarButton icon='pi pi-th-large' title='Shapes' onClick={() => setActiveTool('shapes')} />
-                            <ToolbarButton icon='pi pi-exclamation-circle' title='Info' onClick={() => setActiveTool('info')} />
-                            <ToolbarButton icon='pi pi-eye' title='Preview' onClick={() => setActiveTool('preview')} />
-                            <ToolbarButton icon='pi pi-cog' title='Settings' onClick={() => setActiveTool('settings')} />
-                            <ToolbarButton icon='pi pi-external-link' title='Open' onClick={() => setActiveTool('open')} />
+                            <ToolbarButton icon={<ToolGlyph name='th-large' />} title='Shapes' onClick={() => setActiveTool('shapes')} />
+                            <ToolbarButton icon={<ToolGlyph name='exclamation-circle' />} title='Info' onClick={() => setActiveTool('info')} />
+                            <ToolbarButton icon={<ToolGlyph name='eye' />} title='Preview' onClick={() => setActiveTool('preview')} />
+                            <ToolbarButton icon={<ToolGlyph name='cog' />} title='Settings' onClick={() => setActiveTool('settings')} />
+                            <ToolbarButton icon={<ToolGlyph name='external-link' />} title='Open' onClick={() => setActiveTool('open')} />
                         </ToolbarFanOutItem>
                         <ToolbarButton
-                            icon='pi pi-stop'
+                            icon={<ToolGlyph name='stop' />}
                             title='Rectangle'
                             active={activeTool === 'rectangle'}
                             onClick={() => setActiveTool('rectangle')}
                         />
                         <ToolbarButton
-                            icon='pi pi-file'
+                            icon={<ToolGlyph name='file' />}
                             title='Sticky note'
                             active={activeTool === 'sticky'}
                             onClick={() => setActiveTool('sticky')}
                         />
                     </Toolbar>
                     <Toolbar>
-                        <ToolbarButton icon='pi pi-undo' title='Undo' />
-                        <ToolbarButton icon='pi pi-refresh' title='Redo' />
+                        <ToolbarButton icon={<ToolGlyph name='undo' />} title='Undo' />
+                        <ToolbarButton icon={<ToolGlyph name='refresh' />} title='Redo' />
                     </Toolbar>
                 </div>
             );
@@ -320,63 +459,70 @@ export const WithFanOut: Story = {
 
 /** Demonstrates a {@link ToolbarFanOutItem} that fans out downwards. */
 export const WithFanOutDown: Story = {
+    play: ({ canvasElement }) => exerciseToolbarOverlay(canvasElement, 'Shapes', 'Info'),
     render: () => (
         <Toolbar orientation='horizontal'>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' tooltipPosition='bottom' />
+            <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' tooltipPosition='bottom' />
             <ToolbarFanOutItem
-                icon='pi pi-th-large'
+                icon={<ToolGlyph name='th-large' />}
                 tooltip='Shapes'
                 tooltipPosition='bottom'
                 fanOutDirection='down'
             >
-                <ToolbarButton icon='pi pi-th-large' title='Shapes' tooltipPosition='bottom' />
-                <ToolbarButton icon='pi pi-exclamation-circle' title='Info' tooltipPosition='bottom' />
-                <ToolbarButton icon='pi pi-eye' title='Preview' tooltipPosition='bottom' />
+                <ToolbarButton icon={<ToolGlyph name='th-large' />} title='Shapes' tooltipPosition='bottom' />
+                <ToolbarButton icon={<ToolGlyph name='exclamation-circle' />} title='Info' tooltipPosition='bottom' />
+                <ToolbarButton icon={<ToolGlyph name='eye' />} title='Preview' tooltipPosition='bottom' />
             </ToolbarFanOutItem>
-            <ToolbarButton icon='pi pi-stop' title='Rectangle' tooltipPosition='bottom' />
+            <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' tooltipPosition='bottom' />
         </Toolbar>
     ),
 };
 
 /** Demonstrates a folder with a single nested button. */
 export const WithFolderOneButton: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Folder (1 item)', 'Action 1'),
     render: () => (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-            <ToolbarFolder icon='pi pi-th-large' title='Folder (1 item)'>
-                <ToolbarButton icon={folderIcons[0]} title='Action 1' />
+            <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
+            <ToolbarFolder icon={<ToolGlyph name='th-large' />} title='Folder (1 item)'>
+                <ToolbarButton icon={<ToolGlyph name={folderIcons[0]} />} title='Action 1' />
             </ToolbarFolder>
-            <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+            <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
         </Toolbar>
     ),
 };
 
 /** Demonstrates a folder with four nested buttons in a balanced 2x2 grid. */
 export const WithFolderFourButtons: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Folder (4 items)', 'Action 2'),
     render: () => (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-            <ToolbarFolder icon='pi pi-th-large' title='Folder (4 items)'>
+            <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
+            <ToolbarFolder icon={<ToolGlyph name='th-large' />} title='Folder (4 items)'>
                 {folderIcons.slice(0, 4).map((icon, index) => (
-                    <ToolbarButton key={`folder-4-${index}`} icon={icon} title={`Action ${index + 1}`} />
+                    <ToolbarButton key={`folder-4-${index}`} icon={<ToolGlyph name={icon} />} title={`Action ${index + 1}`} />
                 ))}
             </ToolbarFolder>
-            <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+            <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
         </Toolbar>
     ),
 };
 
 /** Demonstrates a folder with twenty nested buttons and dynamic multi-row sizing. */
 export const WithFolderTwentyButtons: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Folder (20 items)', 'Action 20'),
     render: () => (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-            <ToolbarFolder icon='pi pi-th-large' title='Folder (20 items)'>
+            <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
+            <ToolbarFolder icon={<ToolGlyph name='th-large' />} title='Folder (20 items)'>
                 {folderIcons.slice(0, 20).map((icon, index) => (
-                    <ToolbarButton key={`folder-20-${index}`} icon={icon} title={`Action ${index + 1}`} />
+                    <ToolbarButton key={`folder-20-${index}`} icon={<ToolGlyph name={icon} />} title={`Action ${index + 1}`} />
                 ))}
             </ToolbarFolder>
-            <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+            <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
         </Toolbar>
     ),
 };
@@ -397,17 +543,17 @@ export const DragAndDrop: Story = {
             const [isDragOver, setIsDragOver] = useState(false);
 
             return (
-                <div className='flex gap-6 items-start'>
+                <div className='cratis:flex cratis:gap-6 cratis:items-start'>
                     <Toolbar
                         draggable
                         onItemDragStart={(data) =>
                             setDropped(`Dragging: ${(data as { tool: string }).tool}`)
                         }
                     >
-                        <ToolbarButton icon='pi pi-pencil' title='Pencil' data={{ tool: 'pencil' }} />
-                        <ToolbarButton icon='pi pi-stop' title='Rectangle' data={{ tool: 'rectangle' }} />
-                        <ToolbarButton icon='pi pi-circle' title='Circle' data={{ tool: 'circle' }} />
-                        <ToolbarButton icon='pi pi-minus' title='Line' data={{ tool: 'line' }} />
+                        <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Pencil' data={{ tool: 'pencil' }} />
+                        <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' data={{ tool: 'rectangle' }} />
+                        <ToolbarButton icon={<ToolGlyph name='circle' />} title='Circle' data={{ tool: 'circle' }} />
+                        <ToolbarButton icon={<ToolGlyph name='minus' />} title='Line' data={{ tool: 'line' }} />
                     </Toolbar>
 
                     <div
@@ -420,7 +566,7 @@ export const DragAndDrop: Story = {
                             const data = JSON.parse(raw) as { tool: string } | null;
                             setDropped(data ? `Dropped: ${data.tool}` : 'Dropped: (no data)');
                         }}
-                        className='flex items-center justify-center rounded-xl border-2 border-dashed transition-colors'
+                        className='cratis:flex cratis:items-center cratis:justify-center cratis:rounded-xl cratis:border-2 cratis:border-dashed cratis:transition-colors'
                         style={{
                             width: 240,
                             height: 180,
@@ -453,18 +599,18 @@ export const WithGroups: Story = {
     render: () => (
         <Toolbar>
             <ToolbarGroup>
-                <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-                <ToolbarButton icon='pi pi-hand-paper' title='Pan' />
+                <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
+                <ToolbarButton icon={<ToolGlyph name='hand-paper' />} title='Pan' />
             </ToolbarGroup>
             <ToolbarGroup>
-                <ToolbarButton icon='pi pi-pencil' title='Draw' />
-                <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                <ToolbarButton icon='pi pi-circle' title='Circle' />
-                <ToolbarButton icon='pi pi-minus' title='Line' />
+                <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw' />
+                <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
+                <ToolbarButton icon={<ToolGlyph name='circle' />} title='Circle' />
+                <ToolbarButton icon={<ToolGlyph name='minus' />} title='Line' />
             </ToolbarGroup>
             <ToolbarGroup>
-                <ToolbarButton icon='pi pi-undo' title='Undo' />
-                <ToolbarButton icon='pi pi-refresh' title='Redo' />
+                <ToolbarButton icon={<ToolGlyph name='undo' />} title='Undo' />
+                <ToolbarButton icon={<ToolGlyph name='refresh' />} title='Redo' />
             </ToolbarGroup>
         </Toolbar>
     ),
@@ -480,16 +626,18 @@ export const WithGroups: Story = {
  * adds important context.
  */
 export const WithFolderListMode: Story = {
+    play: ({ canvasElement }) =>
+        exerciseToolbarOverlay(canvasElement, 'Tools', 'Draw freehand'),
     render: () => (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-            <ToolbarFolder icon='pi pi-th-large' title='Tools' mode='list'>
-                <ToolbarButton icon='pi pi-pencil' title='Draw freehand' />
-                <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                <ToolbarButton icon='pi pi-circle' title='Ellipse' />
-                <ToolbarButton icon='pi pi-minus' title='Straight line' />
+            <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
+            <ToolbarFolder icon={<ToolGlyph name='th-large' />} title='Tools' mode='list'>
+                <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw freehand' />
+                <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
+                <ToolbarButton icon={<ToolGlyph name='circle' />} title='Ellipse' />
+                <ToolbarButton icon={<ToolGlyph name='minus' />} title='Straight line' />
             </ToolbarFolder>
-            <ToolbarButton icon='pi pi-undo' title='Undo' />
+            <ToolbarButton icon={<ToolGlyph name='undo' />} title='Undo' />
         </Toolbar>
     ),
 };
@@ -498,31 +646,35 @@ export const WithFolderListMode: Story = {
  * Side-by-side comparison of grid mode (default) and list mode for {@link ToolbarFolder}.
  */
 export const FolderGridVsList: Story = {
+    play: async ({ canvasElement }) => {
+        await exerciseToolbarOverlay(canvasElement, 'Tools', 'Draw', 0);
+        await exerciseToolbarOverlay(canvasElement, 'Tools', 'Draw freehand', 1);
+    },
     render: () => (
-        <div className='flex gap-8 items-start'>
-            <div className='flex flex-col items-center gap-2'>
+        <div className='cratis:flex cratis:gap-8 cratis:items-start'>
+            <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
                 <span style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.75rem' }}>Grid (default)</span>
                 <Toolbar>
-                    <ToolbarFolder icon='pi pi-th-large' title='Tools' mode='grid'>
-                        <ToolbarButton icon='pi pi-pencil' title='Draw' />
-                        <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                        <ToolbarButton icon='pi pi-circle' title='Ellipse' />
-                        <ToolbarButton icon='pi pi-minus' title='Line' />
-                        <ToolbarButton icon='pi pi-cog' title='Settings' />
-                        <ToolbarButton icon='pi pi-star' title='Favorite' />
+                    <ToolbarFolder icon={<ToolGlyph name='th-large' />} title='Tools' mode='grid'>
+                        <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw' />
+                        <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
+                        <ToolbarButton icon={<ToolGlyph name='circle' />} title='Ellipse' />
+                        <ToolbarButton icon={<ToolGlyph name='minus' />} title='Line' />
+                        <ToolbarButton icon={<ToolGlyph name='cog' />} title='Settings' />
+                        <ToolbarButton icon={<ToolGlyph name='star' />} title='Favorite' />
                     </ToolbarFolder>
                 </Toolbar>
             </div>
-            <div className='flex flex-col items-center gap-2'>
+            <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
                 <span style={{ color: 'var(--cratis-text-color-secondary)', fontSize: '0.75rem' }}>List</span>
                 <Toolbar>
-                    <ToolbarFolder icon='pi pi-list' title='Tools' mode='list'>
-                        <ToolbarButton icon='pi pi-pencil' title='Draw freehand' />
-                        <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                        <ToolbarButton icon='pi pi-circle' title='Ellipse' />
-                        <ToolbarButton icon='pi pi-minus' title='Straight line' />
-                        <ToolbarButton icon='pi pi-cog' title='Settings' />
-                        <ToolbarButton icon='pi pi-star' title='Favorite' />
+                    <ToolbarFolder icon={<ToolGlyph name='list' />} title='Tools' mode='list'>
+                        <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw freehand' />
+                        <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
+                        <ToolbarButton icon={<ToolGlyph name='circle' />} title='Ellipse' />
+                        <ToolbarButton icon={<ToolGlyph name='minus' />} title='Straight line' />
+                        <ToolbarButton icon={<ToolGlyph name='cog' />} title='Settings' />
+                        <ToolbarButton icon={<ToolGlyph name='star' />} title='Favorite' />
                     </ToolbarFolder>
                 </Toolbar>
             </div>
@@ -552,33 +704,33 @@ export const WithSlotInGroup: Story = {
             // Draw mode has the most tools (8) to make slot transitions visually dramatic.
             const drawTools = useMemo(() => (
                 <>
-                    <ToolbarButton icon='pi pi-pencil' title='Pencil' />
-                    <ToolbarButton icon='pi pi-eraser' title='Eraser' />
-                    <ToolbarButton icon='pi pi-palette' title='Color' />
-                    <ToolbarButton icon='pi pi-bolt' title='Airbrush' />
-                    <ToolbarButton icon='pi pi-image' title='Stamp' />
-                    <ToolbarButton icon='pi pi-filter' title='Blur' />
-                    <ToolbarButton icon='pi pi-sun' title='Dodge' />
-                    <ToolbarButton icon='pi pi-moon' title='Burn' />
+                    <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Pencil' />
+                    <ToolbarButton icon={<ToolGlyph name='eraser' />} title='Eraser' />
+                    <ToolbarButton icon={<ToolGlyph name='palette' />} title='Color' />
+                    <ToolbarButton icon={<ToolGlyph name='bolt' />} title='Airbrush' />
+                    <ToolbarButton icon={<ToolGlyph name='image' />} title='Stamp' />
+                    <ToolbarButton icon={<ToolGlyph name='filter' />} title='Blur' />
+                    <ToolbarButton icon={<ToolGlyph name='sun' />} title='Dodge' />
+                    <ToolbarButton icon={<ToolGlyph name='moon' />} title='Burn' />
                 </>
             ), []);
 
             const shapeTools = useMemo(() => (
                 <>
-                    <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                    <ToolbarButton icon='pi pi-circle' title='Circle' />
-                    <ToolbarButton icon='pi pi-minus' title='Line' />
-                    <ToolbarButton icon='pi pi-sort-up' title='Triangle' />
-                    <ToolbarButton icon='pi pi-star' title='Polygon' />
+                    <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
+                    <ToolbarButton icon={<ToolGlyph name='circle' />} title='Circle' />
+                    <ToolbarButton icon={<ToolGlyph name='minus' />} title='Line' />
+                    <ToolbarButton icon={<ToolGlyph name='sort-up' />} title='Triangle' />
+                    <ToolbarButton icon={<ToolGlyph name='star' />} title='Polygon' />
                 </>
             ), []);
 
             const selectTools = useMemo(() => (
                 <>
-                    <ToolbarButton icon='pi pi-arrows-alt' title='Move' />
-                    <ToolbarButton icon='pi pi-clone' title='Duplicate' />
-                    <ToolbarButton icon='pi pi-refresh' title='Rotate' />
-                    <ToolbarButton icon='pi pi-expand' title='Scale' />
+                    <ToolbarButton icon={<ToolGlyph name='arrows-alt' />} title='Move' />
+                    <ToolbarButton icon={<ToolGlyph name='clone' />} title='Duplicate' />
+                    <ToolbarButton icon={<ToolGlyph name='refresh' />} title='Rotate' />
+                    <ToolbarButton icon={<ToolGlyph name='expand' />} title='Scale' />
                 </>
             ), []);
 
@@ -592,9 +744,9 @@ export const WithSlotInGroup: Story = {
                     <Toolbar>
                         {/* Group 1: mode switcher — clicking a button changes which slot content is mounted */}
                         <ToolbarGroup>
-                            <ToolbarButton icon='pi pi-pencil' title='Draw mode' active={mode === 'draw'} onClick={() => setMode('draw')} />
-                            <ToolbarButton icon='pi pi-stop' title='Shape mode' active={mode === 'shape'} onClick={() => setMode('shape')} />
-                            <ToolbarButton icon='pi pi-arrow-up-left' title='Select mode' active={mode === 'select'} onClick={() => setMode('select')} />
+                            <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw mode' active={mode === 'draw'} onClick={() => setMode('draw')} />
+                            <ToolbarButton icon={<ToolGlyph name='stop' />} title='Shape mode' active={mode === 'shape'} onClick={() => setMode('shape')} />
+                            <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select mode' active={mode === 'select'} onClick={() => setMode('select')} />
                         </ToolbarGroup>
 
                         {/* Group 2: receives context-sensitive tools from the active mode via the slot */}
@@ -622,21 +774,21 @@ export const WithSlotInContext: Story = {
             const [currentContext, setCurrentContext] = useState<string>('drawing');
             const [slotContent, setSlotContent] = useState<'favorite' | 'bookmark' | 'none'>('favorite');
 
-            const favoriteBtn = useMemo(() => <ToolbarButton icon='pi pi-star' title='Favorite' />, []);
-            const bookmarkBtn = useMemo(() => <ToolbarButton icon='pi pi-bookmark' title='Bookmark' />, []);
+            const favoriteBtn = useMemo(() => <ToolbarButton icon={<ToolGlyph name='star' />} title='Favorite' />, []);
+            const bookmarkBtn = useMemo(() => <ToolbarButton icon={<ToolGlyph name='bookmark' />} title='Bookmark' />, []);
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
+                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                         <Toolbar>
                             <ToolbarSection activeContext={currentContext}>
                                 <ToolbarContext name='drawing' slotName='drawing-extras'>
-                                    <ToolbarButton icon='pi pi-pencil' title='Draw' />
-                                    <ToolbarButton icon='pi pi-stop' title='Rectangle' />
+                                    <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw' />
+                                    <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
                                 </ToolbarContext>
                                 <ToolbarContext name='text'>
-                                    <ToolbarButton icon='pi pi-align-left' title='Align Left' />
-                                    <ToolbarButton icon='pi pi-align-center' title='Align Center' />
+                                    <ToolbarButton icon={<ToolGlyph name='align-left' />} title='Align Left' />
+                                    <ToolbarButton icon={<ToolGlyph name='align-center' />} title='Align Center' />
                                 </ToolbarContext>
                             </ToolbarSection>
                         </Toolbar>
@@ -645,19 +797,19 @@ export const WithSlotInContext: Story = {
                         {slotContent === 'favorite' && <ToolbarSlot slotName='drawing-extras' order={5}>{favoriteBtn}</ToolbarSlot>}
                         {slotContent === 'bookmark' && <ToolbarSlot slotName='drawing-extras' order={5}>{bookmarkBtn}</ToolbarSlot>}
 
-                        <div className='flex flex-col gap-4 items-center'>
-                            <div className='flex flex-col gap-2 items-center'>
-                                <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Context</span>
-                                <div className='flex gap-2'>
+                        <div className='cratis:flex cratis:flex-col cratis:gap-4 cratis:items-center'>
+                            <div className='cratis:flex cratis:flex-col cratis:gap-2 cratis:items-center'>
+                                <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Context</span>
+                                <div className='cratis:flex cratis:gap-2'>
                                     {(['drawing', 'text'] as const).map(ctx => (
                                         <button
                                             key={ctx}
                                             type='button'
                                             onClick={() => setCurrentContext(ctx)}
-                                            className={`px-3 py-1 rounded text-sm transition-colors ${
+                                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
                                                 currentContext === ctx
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                                    ? 'cratis:bg-blue-600 cratis:text-white'
+                                                    : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                             }`}
                                         >
                                             {ctx}
@@ -666,18 +818,18 @@ export const WithSlotInContext: Story = {
                                 </div>
                             </div>
 
-                            <div className='flex flex-col gap-2 items-center'>
-                                <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Slot content (drawing-extras)</span>
-                                <div className='flex gap-2'>
+                            <div className='cratis:flex cratis:flex-col cratis:gap-2 cratis:items-center'>
+                                <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Slot content (drawing-extras)</span>
+                                <div className='cratis:flex cratis:gap-2'>
                                     {(['none', 'favorite', 'bookmark'] as const).map(s => (
                                         <button
                                             key={s}
                                             type='button'
                                             onClick={() => setSlotContent(s)}
-                                            className={`px-3 py-1 rounded text-sm transition-colors ${
+                                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
                                                 slotContent === s
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                                    ? 'cratis:bg-blue-600 cratis:text-white'
+                                                    : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                             }`}
                                         >
                                             {s === 'none' ? 'None' : s === 'favorite' ? 'Favorite ★' : 'Bookmark 🔖'}
@@ -702,29 +854,29 @@ export const WithSlotInContext: Story = {
 export const WithMultipleSlotContributors: Story = {
     render: () => {
         const ButtonA = () => {
-            const btn = useMemo(() => <ToolbarButton icon='pi pi-star' title='Slot A (order 10)' />, []);
+            const btn = useMemo(() => <ToolbarButton icon={<ToolGlyph name='star' />} title='Slot A (order 10)' />, []);
             return <ToolbarSlot slotName='shared' order={10}>{btn}</ToolbarSlot>;
         };
         const ButtonB = () => {
-            const btn = useMemo(() => <ToolbarButton icon='pi pi-heart' title='Slot B (order 5)' />, []);
+            const btn = useMemo(() => <ToolbarButton icon={<ToolGlyph name='heart' />} title='Slot B (order 5)' />, []);
             return <ToolbarSlot slotName='shared' order={5}>{btn}</ToolbarSlot>;
         };
         const ButtonC = () => {
-            const btn = useMemo(() => <ToolbarButton icon='pi pi-bell' title='Slot C (order 20)' />, []);
+            const btn = useMemo(() => <ToolbarButton icon={<ToolGlyph name='bell' />} title='Slot C (order 20)' />, []);
             return <ToolbarSlot slotName='shared' order={20}>{btn}</ToolbarSlot>;
         };
 
         return (
             <ToolbarSlotProvider>
-                <div className='flex gap-6 items-start'>
+                <div className='cratis:flex cratis:gap-6 cratis:items-start'>
                     <Toolbar>
                         <ToolbarGroup slotName='shared'>
-                            <ToolbarButton icon='pi pi-pencil' title='Draw (always first)' />
+                            <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw (always first)' />
                         </ToolbarGroup>
                     </Toolbar>
 
                     <div
-                        className='flex flex-col gap-1 p-4 rounded-lg border text-sm'
+                        className='cratis:flex cratis:flex-col cratis:gap-1 cratis:p-4 cratis:rounded-lg cratis:border cratis:text-sm'
                         style={{ borderColor: 'var(--cratis-surface-border)', background: 'var(--cratis-surface-ground)', color: 'var(--cratis-text-color-secondary)' }}
                     >
                         <strong style={{ color: 'var(--cratis-text-color)' }}>Three independent contributors</strong>
@@ -754,9 +906,9 @@ export const LayoutForEditorModules: Story = {
 
             const assetTools = useMemo(
                 () => (
-                    <ToolbarGroup>
-                        <ToolbarButton icon='pi pi-image' title='Asset Browser' />
-                        <ToolbarButton icon='pi pi-upload' title='Upload Asset' />
+                    <ToolbarGroup orientation='horizontal'>
+                        <ToolbarButton icon={<ToolGlyph name='image' />} title='Asset Browser' />
+                        <ToolbarButton icon={<ToolGlyph name='upload' />} title='Upload Asset' />
                     </ToolbarGroup>
                 ),
                 []
@@ -766,9 +918,9 @@ export const LayoutForEditorModules: Story = {
                 () => (
                     <>
                         <ToolbarSeparator />
-                        <ToolbarGroup>
-                            <ToolbarButton icon='pi pi-comment' title='Comments' />
-                            <ToolbarButton icon='pi pi-check-square' title='Approval Checks' />
+                        <ToolbarGroup orientation='horizontal'>
+                            <ToolbarButton icon={<ToolGlyph name='comment' />} title='Comments' />
+                            <ToolbarButton icon={<ToolGlyph name='check-square' />} title='Approval Checks' />
                         </ToolbarGroup>
                     </>
                 ),
@@ -777,52 +929,70 @@ export const LayoutForEditorModules: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
-                        <Toolbar orientation='horizontal'>
-                            <ToolbarButton icon='pi pi-file-edit' title='Open Editor' tooltipPosition='bottom' />
-                            <ToolbarSeparator orientation='horizontal' />
-                            <ToolbarLayout name='editor-modules' orientation='horizontal'>
-                                <ToolbarGroup orientation='horizontal'>
-                                    <ToolbarButton icon='pi pi-save' title='Save' tooltipPosition='bottom' />
-                                    <ToolbarButton icon='pi pi-refresh' title='Reload' tooltipPosition='bottom' />
-                                </ToolbarGroup>
-                            </ToolbarLayout>
-                            <ToolbarSeparator orientation='horizontal' />
-                            <ToolbarButton icon='pi pi-cog' title='Settings' tooltipPosition='bottom' />
-                        </Toolbar>
+                    <section
+                        className='cratis:flex cratis:flex-col cratis:gap-6 cratis:p-8 cratis:rounded-2xl cratis:border'
+                        style={{
+                            width: 'min(52rem, calc(100vw - 4rem))',
+                            borderColor: 'var(--cratis-surface-border)',
+                            background: 'var(--cratis-surface-card)',
+                            color: 'var(--cratis-text-color)',
+                            boxShadow: 'var(--cratis-shadow-overlay)',
+                        }}
+                    >
+                        <header className='cratis:flex cratis:flex-col cratis:gap-1'>
+                            <strong>Editor module toolbar</strong>
+                            <span className='cratis:text-sm' style={{ color: 'var(--cratis-text-color-secondary)' }}>
+                                Independent features contribute complete tool groups to one named layout region.
+                            </span>
+                        </header>
 
-                        {assetToolsEnabled && (
-                            <ToolbarSlot slotName='editor-modules' order={10}>
-                                {assetTools}
-                            </ToolbarSlot>
-                        )}
+                        <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
+                            <Toolbar orientation='horizontal'>
+                                <ToolbarButton icon={<ToolGlyph name='file-edit' />} title='Open Editor' tooltipPosition='bottom' />
+                                <ToolbarSeparator orientation='horizontal' />
+                                <ToolbarLayout name='editor-modules' orientation='horizontal'>
+                                    <ToolbarGroup orientation='horizontal'>
+                                        <ToolbarButton icon={<ToolGlyph name='save' />} title='Save' tooltipPosition='bottom' />
+                                        <ToolbarButton icon={<ToolGlyph name='refresh' />} title='Reload' tooltipPosition='bottom' />
+                                    </ToolbarGroup>
+                                </ToolbarLayout>
+                                <ToolbarSeparator orientation='horizontal' />
+                                <ToolbarButton icon={<ToolGlyph name='cog' />} title='Settings' tooltipPosition='bottom' />
+                            </Toolbar>
 
-                        {reviewToolsEnabled && (
-                            <ToolbarSlot slotName='editor-modules' order={20}>
-                                {reviewTools}
-                            </ToolbarSlot>
-                        )}
+                            {assetToolsEnabled && (
+                                <ToolbarSlot slotName='editor-modules' order={10}>
+                                    {assetTools}
+                                </ToolbarSlot>
+                            )}
 
-                        <div className='flex gap-6'>
-                            {[
-                                { label: 'Asset tools', enabled: assetToolsEnabled, toggle: () => setAssetToolsEnabled(v => !v) },
-                                { label: 'Review tools', enabled: reviewToolsEnabled, toggle: () => setReviewToolsEnabled(v => !v) },
-                            ].map(({ label, enabled, toggle }) => (
-                                <div key={label} className='flex flex-col items-center gap-2'>
-                                    <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>{label}</span>
-                                    <button
-                                        type='button'
-                                        onClick={toggle}
-                                        className={`px-3 py-1 rounded text-sm transition-colors ${
-                                            enabled ? 'bg-blue-600 text-white' : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
-                                        }`}
-                                    >
-                                        {enabled ? 'Disable' : 'Enable'}
-                                    </button>
-                                </div>
-                            ))}
+                            {reviewToolsEnabled && (
+                                <ToolbarSlot slotName='editor-modules' order={20}>
+                                    {reviewTools}
+                                </ToolbarSlot>
+                            )}
+
+                            <div className='cratis:flex cratis:gap-6'>
+                                {[
+                                    { label: 'Asset tools', enabled: assetToolsEnabled, toggle: () => setAssetToolsEnabled(v => !v) },
+                                    { label: 'Review tools', enabled: reviewToolsEnabled, toggle: () => setReviewToolsEnabled(v => !v) },
+                                ].map(({ label, enabled, toggle }) => (
+                                    <div key={label} className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-2'>
+                                        <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>{label}</span>
+                                        <button
+                                            type='button'
+                                            onClick={toggle}
+                                            className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:transition-colors ${
+                                                enabled ? 'cratis:bg-blue-600 cratis:text-white' : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
+                                            }`}
+                                        >
+                                            {enabled ? 'Disable' : 'Enable'}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    </section>
                 </ToolbarSlotProvider>
             );
         };
@@ -846,9 +1016,9 @@ export const LayoutWithSmoothEditorTransitions: Story = {
             const canvasTools = useMemo(
                 () => (
                     <ToolbarGroup orientation='horizontal'>
-                        <ToolbarButton icon='pi pi-pencil' title='Draw' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-stop' title='Rectangle' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-circle' title='Circle' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='pencil' />} title='Draw' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='circle' />} title='Circle' tooltipPosition='bottom' />
                     </ToolbarGroup>
                 ),
                 []
@@ -857,9 +1027,9 @@ export const LayoutWithSmoothEditorTransitions: Story = {
             const textTools = useMemo(
                 () => (
                     <ToolbarGroup orientation='horizontal'>
-                        <ToolbarButton icon='pi pi-align-left' title='Align Left' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-bold' title='Bold' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-underline' title='Underline' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='align-left' />} title='Align Left' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='bold' />} title='Bold' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='underline' />} title='Underline' tooltipPosition='bottom' />
                     </ToolbarGroup>
                 ),
                 []
@@ -869,12 +1039,12 @@ export const LayoutWithSmoothEditorTransitions: Story = {
                 () => (
                     <>
                         <ToolbarGroup orientation='horizontal'>
-                            <ToolbarButton icon='pi pi-table' title='Add Table' tooltipPosition='bottom' />
-                            <ToolbarButton icon='pi pi-link' title='Relationship' tooltipPosition='bottom' />
+                            <ToolbarButton icon={<ToolGlyph name='table' />} title='Add Table' tooltipPosition='bottom' />
+                            <ToolbarButton icon={<ToolGlyph name='link' />} title='Relationship' tooltipPosition='bottom' />
                         </ToolbarGroup>
                         <ToolbarSeparator orientation='horizontal' />
                         <ToolbarGroup orientation='horizontal'>
-                            <ToolbarButton icon='pi pi-check-square' title='Validate Schema' tooltipPosition='bottom' />
+                            <ToolbarButton icon={<ToolGlyph name='check-square' />} title='Validate Schema' tooltipPosition='bottom' />
                         </ToolbarGroup>
                     </>
                 ),
@@ -889,35 +1059,35 @@ export const LayoutWithSmoothEditorTransitions: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
+                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                         <Toolbar orientation='horizontal'>
-                            <ToolbarButton icon='pi pi-home' title='Workspace Home' tooltipPosition='bottom' />
+                            <ToolbarButton icon={<ToolGlyph name='home' />} title='Workspace Home' tooltipPosition='bottom' />
                             <ToolbarSeparator orientation='horizontal' />
                             <ToolbarLayout name='active-editor-tools' orientation='horizontal'>
                                 <ToolbarGroup orientation='horizontal'>
-                                    <ToolbarButton icon='pi pi-folder-open' title='Open' tooltipPosition='bottom' />
+                                    <ToolbarButton icon={<ToolGlyph name='folder-open' />} title='Open' tooltipPosition='bottom' />
                                 </ToolbarGroup>
                             </ToolbarLayout>
                             <ToolbarSeparator orientation='horizontal' />
-                            <ToolbarButton icon='pi pi-history' title='History' tooltipPosition='bottom' />
+                            <ToolbarButton icon={<ToolGlyph name='history' />} title='History' tooltipPosition='bottom' />
                         </Toolbar>
 
                         <ToolbarSlot slotName='active-editor-tools' order={0}>
                             {editorTools[activeEditor]}
                         </ToolbarSlot>
 
-                        <div className='flex flex-col items-center gap-3'>
-                            <span className='text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Active editor</span>
-                            <div className='flex gap-2'>
+                        <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-3'>
+                            <span className='cratis:text-xs' style={{ color: 'var(--cratis-text-color-secondary)' }}>Active editor</span>
+                            <div className='cratis:flex cratis:gap-2'>
                                 {(['canvas', 'text', 'schema'] as const).map(editor => (
                                     <button
                                         key={editor}
                                         type='button'
                                         onClick={() => setActiveEditor(editor)}
-                                        className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
+                                        className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:capitalize cratis:transition-colors ${
                                             activeEditor === editor
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                                ? 'cratis:bg-blue-600 cratis:text-white'
+                                                : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                         }`}
                                     >
                                         {editor}
@@ -946,8 +1116,8 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
             const globalActions = useMemo(
                 () => (
                     <ToolbarGroup orientation='horizontal'>
-                        <ToolbarButton icon='pi pi-save' title='Save Workspace' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-share-alt' title='Share' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='save' />} title='Save Workspace' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='share-alt' />} title='Share' tooltipPosition='bottom' />
                     </ToolbarGroup>
                 ),
                 []
@@ -956,8 +1126,8 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
             const pageEditorTools = useMemo(
                 () => (
                     <ToolbarGroup orientation='horizontal'>
-                        <ToolbarButton icon='pi pi-clone' title='Duplicate Block' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-palette' title='Theme' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='clone' />} title='Duplicate Block' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='palette' />} title='Theme' tooltipPosition='bottom' />
                     </ToolbarGroup>
                 ),
                 []
@@ -966,9 +1136,9 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
             const workflowEditorTools = useMemo(
                 () => (
                     <ToolbarGroup orientation='horizontal'>
-                        <ToolbarButton icon='pi pi-sitemap' title='Add Node' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-play' title='Run Flow' tooltipPosition='bottom' />
-                        <ToolbarButton icon='pi pi-stopwatch' title='Debug Step' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='sitemap' />} title='Add Node' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='play' />} title='Run Flow' tooltipPosition='bottom' />
+                        <ToolbarButton icon={<ToolGlyph name='stopwatch' />} title='Debug Step' tooltipPosition='bottom' />
                     </ToolbarGroup>
                 ),
                 []
@@ -981,7 +1151,7 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
 
             return (
                 <ToolbarSlotProvider>
-                    <div className='flex flex-col items-center gap-6'>
+                    <div className='cratis:flex cratis:flex-col cratis:items-center cratis:gap-6'>
                         <Toolbar orientation='horizontal'>
                             <ToolbarLayout name='global-region' orientation='horizontal' />
                             <ToolbarSeparator orientation='horizontal' />
@@ -996,16 +1166,16 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
                             {editorRegionTools[activeEditor]}
                         </ToolbarSlot>
 
-                        <div className='flex gap-2'>
+                        <div className='cratis:flex cratis:gap-2'>
                             {(['page', 'workflow'] as const).map(editor => (
                                 <button
                                     key={editor}
                                     type='button'
                                     onClick={() => setActiveEditor(editor)}
-                                    className={`px-3 py-1 rounded text-sm capitalize transition-colors ${
+                                    className={`cratis:px-3 cratis:py-1 cratis:rounded cratis:text-sm cratis:capitalize cratis:transition-colors ${
                                         activeEditor === editor
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                                            ? 'cratis:bg-blue-600 cratis:text-white'
+                                            : 'cratis:bg-gray-600 cratis:text-gray-200 cratis:hover:bg-gray-500'
                                     }`}
                                 >
                                     {editor} editor

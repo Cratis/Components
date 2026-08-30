@@ -4,7 +4,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
 import { useState } from 'react';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { FaCirclePlus, FaCopy } from 'react-icons/fa6';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { ChatConversation } from './ChatConversation';
 import type { ChatIdentifier } from './ChatIdentifier';
@@ -22,7 +23,12 @@ const authorOf = (authorId: ChatIdentifier): ChatAuthor =>
 
 const mentionCandidates = [
     { id: 'person-1', name: 'Sample User', hasAvatar: false, kind: ChatAuthorKind.User },
-    { id: 'person-2', name: 'Second Sample', hasAvatar: false, kind: ChatAuthorKind.User },
+    {
+        id: 'person-2',
+        name: 'Second Sample',
+        hasAvatar: false,
+        kind: ChatAuthorKind.User,
+    },
     { id: 'agent-1', name: 'Review Agent', hasAvatar: false, kind: ChatAuthorKind.Agent },
 ];
 
@@ -59,8 +65,8 @@ const meta = {
         docs: {
             description: {
                 component:
-                    'One conversation — messages in, sends out. Authors resolve through the host\'s `authorOf`, ' +
-                    'mentions render distinctly from the `mentions` on each message, and the host\'s own ' +
+                    "One conversation — messages in, sends out. Authors resolve through the host's `authorOf`, " +
+                    "mentions render distinctly from the `mentions` on each message, and the host's own " +
                     '`actions` appear on hover over a message.',
             },
         },
@@ -79,11 +85,25 @@ export const Playground: Story = {
         authorOf,
         mentionCandidates,
         actions: [
-            { id: 'create-issue', label: 'Create an issue', icon: 'pi pi-plus-circle', onInvoke: fn() },
+            {
+                id: 'create-issue',
+                label: 'Create an issue',
+                icon: <FaCirclePlus />,
+                onInvoke: fn(),
+            },
         ],
     },
-    render: args => (
-        <div style={{ height: 480, maxWidth: 420, display: 'flex', border: '1px solid var(--cratis-surface-border)', borderRadius: 8, overflow: 'hidden' }}>
+    render: (args) => (
+        <div
+            style={{
+                height: 480,
+                maxWidth: 420,
+                display: 'flex',
+                border: '1px solid var(--cratis-surface-border)',
+                borderRadius: 8,
+                overflow: 'hidden',
+            }}
+        >
             <ChatConversation {...args} />
         </div>
     ),
@@ -97,18 +117,30 @@ export const Interactive: Story = {
             const [messages, setMessages] = useState<ChatMessage[]>(seedMessages);
 
             const send = (body: string, mentions: ChatMention[]) => {
-                setMessages(current => [...current, {
-                    id: `message-${current.length + 1}`,
-                    topicId: 'topic-1',
-                    authorId: 'person-1',
-                    body,
-                    timestamp: new Date(),
-                    mentions,
-                }]);
+                setMessages((current) => [
+                    ...current,
+                    {
+                        id: `message-${current.length + 1}`,
+                        topicId: 'topic-1',
+                        authorId: 'person-1',
+                        body,
+                        timestamp: new Date(),
+                        mentions,
+                    },
+                ]);
             };
 
             return (
-                <div style={{ height: 480, maxWidth: 420, display: 'flex', border: '1px solid var(--cratis-surface-border)', borderRadius: 8, overflow: 'hidden' }}>
+                <div
+                    style={{
+                        height: 480,
+                        maxWidth: 420,
+                        display: 'flex',
+                        border: '1px solid var(--cratis-surface-border)',
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                    }}
+                >
                     <ChatConversation
                         messages={messages}
                         onSendMessage={send}
@@ -118,8 +150,9 @@ export const Interactive: Story = {
                             {
                                 id: 'copy',
                                 label: 'Copy the message',
-                                icon: 'pi pi-copy',
-                                onInvoke: message => navigator.clipboard?.writeText(message.body),
+                                icon: <FaCopy />,
+                                onInvoke: (message) =>
+                                    navigator.clipboard?.writeText(message.body),
                             },
                         ]}
                     />

@@ -1,0 +1,10 @@
+- name: Overview
+  href: index.md
+- name: DOM-coupled public component contract
+  href: 0001-dom-coupled-contract.md
+- name: Public component classification
+  href: 0002-component-classification.md
+- name: Repository-owned kernel boundary
+  href: 0003-kernel-boundary.md
+- name: Stable presentation renderer profile
+  href: 0004-stable-presentation-renderer-profile.md

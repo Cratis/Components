@@ -9,7 +9,7 @@ describe('when building selection keys for a selected row', () => {
     let keys: Record<string, boolean>;
 
     beforeEach(() => {
-        keys = selectionKeysForRow<Row>({ id: 7, name: 'Bob' }, 'id');
+        keys = selectionKeysForRow<Row>({ id: 7, name: 'Sample User 02' }, 'id');
     });
 
     it('should mark the stringified dataKey value as selected', () => {
@@ -29,6 +29,6 @@ describe('when building selection keys with nothing selected', () => {
 
 describe('when building selection keys without a dataKey', () => {
     it('should return an empty map', () => {
-        Object.keys(selectionKeysForRow<Row>({ id: 7, name: 'Bob' }, undefined)).should.have.lengthOf(0);
+        Object.keys(selectionKeysForRow<Row>({ id: 7, name: 'Sample User 02' }, undefined)).should.have.lengthOf(0);
     });
 });

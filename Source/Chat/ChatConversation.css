@@ -74,7 +74,7 @@
 }
 
 .cratis-chat-message__mention {
-    color: var(--cratis-primary-color);
+    color: var(--cratis-highlight-text-color);
     background: var(--cratis-highlight-bg);
     border-radius: 4px;
     padding: 0 0.2em;
@@ -123,7 +123,9 @@
     cursor: pointer;
     color: var(--cratis-text-color-secondary);
     font-size: 0.75rem;
-    transition: background 0.12s, color 0.12s;
+    transition:
+        background 0.12s,
+        color 0.12s;
 }
 
 .cratis-chat-message__action:hover {

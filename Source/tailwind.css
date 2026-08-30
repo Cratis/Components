@@ -2,15 +2,13 @@
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
 /*
- * Tailwind utility classes + Cratis CSS variable tokens compiled at build time.
- * This stylesheet is generated during the package build and contains only the
- * utility classes that are actually used across all components, plus the
- * --cratis-* token layer that every internal component depends on for theming.
+ * Build-only Tailwind input for Components' internal utility classes.
  *
- * It intentionally excludes preflight/base resets — those are the consumer app's responsibility.
- *
- * Usage in your app:
- *   import '@cratis/components/styles';
+ * Only Tailwind's theme data and generated utilities are included. Preflight/base resets are
+ * deliberately omitted so @cratis/components/styles never resets consumer markup. Both layers
+ * use Cratis-specific names and component CSS is wrapped separately by rollup.config.mjs.
+ * Product unlayered CSS therefore wins without specificity tricks.
  */
-@import "tailwindcss";
-@import "./tokens.css";
+@layer cratis-theme, cratis-components, cratis-utilities;
+@import 'tailwindcss/theme.css' layer(cratis-theme) prefix(cratis);
+@import 'tailwindcss/utilities.css' layer(cratis-utilities) prefix(cratis);

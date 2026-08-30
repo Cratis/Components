@@ -1,42 +1,105 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { type CSSProperties, type MouseEventHandler, type ReactNode } from 'react';
-import { Button as PrimeButton } from 'primereact/button';
-import type { ButtonProps as ButtonRootProps } from '@primereact/types/primitive/button';
-import { Tooltip, type TooltipPosition } from './Tooltip';
+import {
+    forwardRef,
+    type ButtonHTMLAttributes,
+    type CSSProperties,
+    type HTMLAttributes,
+    type ReactNode,
+} from 'react';
+import type { TooltipPosition } from './Tooltip';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { ButtonImplementation } from './ButtonImplementation';
 
-/** Severity tone of a {@link Button}. */
-export type ButtonSeverity = 'secondary' | 'info' | 'success' | 'warn' | 'help' | 'danger' | 'contrast';
+/** Visual treatment of a {@link Button}. */
+export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'link';
+
+/** Semantic color of a {@link Button}. */
+export type ButtonTone = 'neutral' | 'accent' | 'positive' | 'caution' | 'critical';
+
+/** Border shape of a {@link Button}. */
+export type ButtonShape = 'default' | 'pill';
 
 /**
- * Props for {@link Button}.
+ * Severity tone of a {@link Button}.
+ *
+ * @deprecated Use {@link ButtonTone} instead. Removed in 5.0.
  */
-export interface ButtonProps {
+export type ButtonSeverity =
+    'secondary' | 'info' | 'success' | 'warn' | 'help' | 'danger' | 'contrast';
+
+/** Stable Cratis-owned parts for styling a {@link Button}. */
+export interface ButtonParts {
+    /** Native button element. */
+    root?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Icon wrapper. */
+    icon?: HTMLAttributes<HTMLSpanElement>;
+    /** Label/content wrapper. */
+    label?: HTMLAttributes<HTMLSpanElement>;
+    /** Loading spinner. */
+    spinner?: HTMLAttributes<HTMLSpanElement>;
+}
+
+const buttonPartsMatchManifest: ExactPartKeys<ButtonParts, PartsOf<'Button'>> = true;
+void buttonPartsMatchManifest;
+
+/** Props for {@link Button}. */
+export interface ButtonProps extends Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'children' | 'className' | 'disabled' | 'size' | 'style' | 'type'
+> {
     /** The button's text. */
     label?: ReactNode;
-    /**
-     * The button's icon — either a PrimeIcons class name (`'pi pi-check'`) or an
-     * element. Rendered before the label.
-     */
+    /** The button's icon, rendered before the label. */
     icon?: ReactNode;
     /** Replaces the icon with a spinner and disables the button. */
     loading?: boolean;
-    /** Text shown on hover. */
+    /** Text shown on hover and keyboard focus. */
     tooltip?: string;
     /** Placement of the tooltip. */
     tooltipOptions?: { position?: TooltipPosition; className?: string };
-    /** PrimeReact pass-through for the underlying button. */
-    pt?: ButtonRootProps['pt'];
-    /** Renders the button borderless. */
+    /** Cratis-owned per-part attributes. */
+    pt?: ButtonParts;
+    /** Visual treatment. Defaults to `solid`. */
+    variant?: ButtonVariant;
+    /** Semantic color. Omit for the familiar primary action. */
+    tone?: ButtonTone;
+    /** Border shape. Defaults to `default`. */
+    shape?: ButtonShape;
+    /**
+     * Renders the button borderless.
+     *
+     * @deprecated Use `variant='ghost'` instead. Removed in 5.0.
+     */
     text?: boolean;
-    /** Renders the button as an inline link. */
+    /**
+     * Renders the button as an inline link.
+     *
+     * @deprecated Use `variant='link'` instead. Removed in 5.0.
+     */
     link?: boolean;
-    /** Renders the button with an outline instead of a fill. */
+    /**
+     * Renders the button with an outline instead of a fill.
+     *
+     * @deprecated Use `variant='outline'` instead. Removed in 5.0.
+     */
     outlined?: boolean;
-    /** Renders the button fully rounded. */
+    /**
+     * Renders the button fully rounded.
+     *
+     * @deprecated Use `shape='pill'` instead. Removed in 5.0.
+     */
     rounded?: boolean;
-    /** Controls the button's coloring. */
+    /**
+     * Controls the button's coloring. Omit for the familiar primary action.
+     *
+     * @deprecated Use `tone` instead. Removed in 5.0.
+     */
     severity?: ButtonSeverity;
     /** Sizes the button. */
     size?: 'small' | 'normal' | 'large';
@@ -44,87 +107,31 @@ export interface ButtonProps {
     disabled?: boolean;
     /** Native button type. */
     type?: 'button' | 'submit' | 'reset';
-    /** Native title attribute - the browser's own hover text, for when a full {@link tooltip} is too much. */
+    /** Native title attribute. */
     title?: string;
     /** Focuses the button when it mounts. */
     autoFocus?: boolean;
-    /** Called when the button is activated. */
-    onClick?: MouseEventHandler<HTMLButtonElement>;
     /** Applied to the button element. */
     className?: string;
     /** Applied to the button element. */
     style?: CSSProperties;
-    /** Accessible name — required when the button renders an icon and no label. */
+    /** Accessible name, required for an icon-only button. */
     'aria-label'?: string;
     /** Rendered inside the button, after the icon and label. */
     children?: ReactNode;
 }
 
-const renderIcon = (icon: ReactNode) =>
-    typeof icon === 'string' ? <i className={icon} aria-hidden='true' /> : icon;
+const coreButtonDeclaration = Object.freeze({
+    mode: 'presentation',
+    fidelity: 'native',
+    render: ButtonImplementation,
+}) satisfies unstable_SlotDeclaration<'common.button'>;
 
-/**
- * A button carrying the `label` / `icon` / `loading` / `tooltip` authoring model.
- *
- * PrimeReact 11's `Button` takes its content as **children** and dropped `label`,
- * `icon`, `loading`, `tooltip` and `text` entirely. Because its props type is
- * generic over `React.ElementType`, those props are still *accepted by the
- * compiler* and silently ignored at runtime — a `<Button label="Save" />`
- * typechecks and renders an empty button. This wrapper closes that trap once, for
- * every application, rather than leaving each call site to be caught by eye.
- *
- * `severity` is also stamped as `data-severity` on the element: the Cratis theme colors
- * by that attribute (as {@link Tag} does), and PrimeReact 11's button does not emit it.
- */
-export const Button = ({
-    label,
-    icon,
-    loading,
-    tooltip,
-    tooltipOptions,
-    pt,
-    text,
-    link,
-    outlined,
-    rounded,
-    severity,
-    size,
-    disabled,
-    type = 'button',
-    title,
-    autoFocus,
-    onClick,
-    className,
-    style,
-    'aria-label': ariaLabel,
-    children
-}: ButtonProps) => {
-    const variant = link ? 'link' : text ? 'text' : outlined ? 'outlined' : undefined;
-
-    const button = (
-        <PrimeButton
-            type={type}
-            title={title}
-            autoFocus={autoFocus}
-            variant={variant}
-            rounded={rounded}
-            severity={severity}
-            size={size}
-            iconOnly={!!icon && label === undefined && !children}
-            disabled={disabled || loading}
-            onClick={onClick}
-            className={className}
-            style={style}
-            aria-label={ariaLabel}
-            data-severity={severity}
-            pt={pt}>
-            {loading ? <i className='pi pi-spinner pi-spin' aria-hidden='true' /> : renderIcon(icon)}
-            {label}
-            {children}
-        </PrimeButton>
-    );
-
-    return tooltip
-        ? <Tooltip content={tooltip} position={tooltipOptions?.position} className={tooltipOptions?.className}>{button}</Tooltip>
-        : button;
-};
+/** A Cratis-owned button with stable parts and renderer-independent styling. */
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+    props,
+    ref,
+) {
+    const declaration = unstable_useSlot('common.button', coreButtonDeclaration);
+    return renderSlot(declaration, props, ref);
+});

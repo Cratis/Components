@@ -4,15 +4,35 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import {
+    existsSync,
+    mkdirSync,
+    readFileSync,
+    readdirSync,
+    unlinkSync,
+    writeFileSync,
+} from 'fs';
 import { dirname, join, relative, resolve } from 'path';
 import { createRequire } from 'module';
+import ts from 'typescript';
 
 /** Stylesheets that are entry points or token layers in their own right, not component rules. */
-const STANDALONE_STYLESHEETS = new Set(['tailwind.css', 'tailwind-utilities.css', 'tokens.css', 'theme.css', 'primereact-v10-palette.css', 'styles.css']);
+const STANDALONE_STYLESHEETS = new Set([
+    'tailwind.css',
+    'tailwind-utilities.css',
+    'tokens.css',
+    'theme.css',
+    'styles.css',
+]);
 
 /** Directories that never hold shipped component CSS. */
-const NON_SOURCE_DIRECTORIES = new Set(['node_modules', 'dist', 'storybook-static', '.storybook', 'wwwroot']);
+const NON_SOURCE_DIRECTORIES = new Set([
+    'node_modules',
+    'dist',
+    'storybook-static',
+    '.storybook',
+    'wwwroot',
+]);
 
 /** Every `.css` file under the package source that is expected to reach the published bundle. */
 function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) {
@@ -20,7 +40,11 @@ function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) 
         if (entry.isDirectory()) {
             if (NON_SOURCE_DIRECTORIES.has(entry.name)) continue;
             findComponentStylesheets(sourceDir, join(directory, entry.name), found);
-        } else if (entry.name.endsWith('.css') && !entry.name.endsWith('.module.css') && !STANDALONE_STYLESHEETS.has(entry.name)) {
+        } else if (
+            entry.name.endsWith('.css') &&
+            !entry.name.endsWith('.module.css') &&
+            !STANDALONE_STYLESHEETS.has(entry.name)
+        ) {
             found.push(join(directory, entry.name));
         }
     }
@@ -36,24 +60,33 @@ function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) 
  *
  * @returns The concatenated CSS, and the set of relative specifiers that were inlined.
  */
-function inlineStyleImports(manifestFile, sourceDir) {
+function inlineStyleImports(manifestFile) {
     const require = createRequire(manifestFile);
     const manifest = readFileSync(manifestFile, 'utf8');
     const parts = [];
     const inlined = new Set();
 
     // Keep the manifest's own header comment, then replace each @import with the file it names.
-    const body = manifest.replace(/@import\s+['"]([^'"]+)['"]\s*;/g, (_match, specifier) => {
-        const file = specifier.startsWith('.')
-            ? resolve(dirname(manifestFile), specifier)
-            : require.resolve(specifier);
-        if (specifier.startsWith('.')) inlined.add(resolve(dirname(manifestFile), specifier));
-        parts.push(`/* ── ${specifier} ─────────────────────────────────────── */\n${readFileSync(file, 'utf8')}`);
-        return `@__CRATIS_STYLE_${parts.length - 1}__@`;
-    });
+    const body = manifest.replace(
+        /@import\s+['"]([^'"]+)['"]\s*;/g,
+        (_match, specifier) => {
+            const file = specifier.startsWith('.')
+                ? resolve(dirname(manifestFile), specifier)
+                : require.resolve(specifier);
+            if (specifier.startsWith('.'))
+                inlined.add(resolve(dirname(manifestFile), specifier));
+            parts.push(
+                `/* ── ${specifier} ─────────────────────────────────────── */\n${readFileSync(file, 'utf8')}`,
+            );
+            return `@__CRATIS_STYLE_${parts.length - 1}__@`;
+        },
+    );
 
     return {
-        css: body.replace(/@__CRATIS_STYLE_(\d+)__@/g, (_match, index) => parts[Number(index)]),
+        css: body.replace(
+            /@__CRATIS_STYLE_(\d+)__@/g,
+            (_match, index) => parts[Number(index)],
+        ),
         inlined,
     };
 }
@@ -93,13 +126,16 @@ function bundleStyles(sourceDir, esmPath) {
             const { default: autoprefixer } = await import('autoprefixer');
 
             const tailwindEntry = resolve(sourceDir, 'tailwind.css');
-            const tailwind = await postcss([tailwindcss({ base: sourceDir }), autoprefixer]).process(
-                readFileSync(tailwindEntry, 'utf8'),
-                { from: tailwindEntry, to: resolve(esmPath, 'styles.css') }
-            );
+            const tailwind = await postcss([
+                tailwindcss({ base: sourceDir }),
+                autoprefixer,
+            ]).process(readFileSync(tailwindEntry, 'utf8'), {
+                from: tailwindEntry,
+                to: resolve(esmPath, 'styles.css'),
+            });
 
             const manifestFile = resolve(sourceDir, 'styles.css');
-            const { css: components, inlined } = inlineStyleImports(manifestFile, sourceDir);
+            const { css: components, inlined } = inlineStyleImports(manifestFile);
 
             const missing = findComponentStylesheets(sourceDir)
                 .filter((file) => !inlined.has(file))
@@ -108,24 +144,125 @@ function bundleStyles(sourceDir, esmPath) {
             if (missing.length > 0) {
                 this.error(
                     `${missing.length} component stylesheet(s) are not imported by Source/styles.css, so their rules ` +
-                    `would not ship in @cratis/components/styles:\n  ${missing.join('\n  ')}\n` +
-                    'Add an @import for each to Source/styles.css.'
+                        `would not ship in @cratis/components/styles:\n  ${missing.join('\n  ')}\n` +
+                        'Add an @import for each to Source/styles.css.',
                 );
             }
 
             const outputFile = resolve(esmPath, 'styles.css');
             mkdirSync(dirname(outputFile), { recursive: true });
-            writeFileSync(outputFile, `${tailwind.css}\n${components}`);
-            console.log(`✓ Bundled Tailwind utilities + ${inlined.size} component stylesheet(s) → dist/esm/styles.css`);
+            writeFileSync(
+                outputFile,
+                `${tailwind.css}\n@layer cratis-components {\n${components}\n}\n`,
+            );
+            console.log(
+                `✓ Bundled Tailwind utilities + ${inlined.size} component stylesheet(s) → dist/esm/styles.css`,
+            );
         },
     };
 }
 
 /**
  * Rollup plugin to generate the package.json in the ESM output directory,
- * marking it as an ES module. PrimeReact 11 is ESM-only, so the package ships
- * a single ESM build — there is no CJS output.
+ * marking it as an ES module. The package ships a single ESM build.
  */
+function resolvedRelativeSpecifier(file, specifier) {
+    if (!specifier.startsWith('.') || /\.[a-z0-9]+$/i.test(specifier)) return specifier;
+    const target = resolve(dirname(file), specifier);
+    if (existsSync(`${target}.js`)) return `${specifier}.js`;
+    if (existsSync(join(target, 'index.js'))) return `${specifier}/index.js`;
+    return specifier;
+}
+
+function findEmittedModules(directory, found = []) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        const file = join(directory, entry.name);
+        if (entry.isDirectory()) findEmittedModules(file, found);
+        else if (entry.name.endsWith('.js') || entry.name.endsWith('.d.ts'))
+            found.push(file);
+    }
+    return found;
+}
+
+/** Returns module-specifier string literals without matching comments or runtime strings. */
+function moduleSpecifiers(sourceFile) {
+    const specifiers = [];
+    const visit = (node) => {
+        if (
+            (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+            node.moduleSpecifier &&
+            ts.isStringLiteralLike(node.moduleSpecifier)
+        ) {
+            specifiers.push(node.moduleSpecifier);
+        } else if (
+            ts.isCallExpression(node) &&
+            node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+            node.arguments.length === 1 &&
+            ts.isStringLiteralLike(node.arguments[0])
+        ) {
+            specifiers.push(node.arguments[0]);
+        } else if (
+            ts.isImportTypeNode(node) &&
+            ts.isLiteralTypeNode(node.argument) &&
+            ts.isStringLiteralLike(node.argument.literal)
+        ) {
+            specifiers.push(node.argument.literal);
+        }
+        ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
+    return specifiers;
+}
+
+const sourceMapReference = /\n?\/\/# sourceMappingURL=[^\r\n]+(?:\r?\n)?$/u;
+
+/**
+ * Makes every relative ESM specifier directly executable by Node.
+ *
+ * Rewriting changes generated columns, so a pre-rewrite JavaScript/declaration map would be
+ * dishonest. Files that need a rewrite have their map reference and corresponding map removed;
+ * untouched files retain their valid maps. A future source-aware emit can preserve all maps.
+ */
+function fixRelativeEsmSpecifiers(esmPath) {
+    return {
+        name: 'fix-relative-esm-specifiers',
+        closeBundle() {
+            for (const file of findEmittedModules(esmPath)) {
+                const source = readFileSync(file, 'utf8');
+                const sourceFile = ts.createSourceFile(
+                    file,
+                    source,
+                    ts.ScriptTarget.Latest,
+                    true,
+                    file.endsWith('.d.ts') ? ts.ScriptKind.TS : ts.ScriptKind.JS,
+                );
+                const replacements = moduleSpecifiers(sourceFile)
+                    .map((node) => ({
+                        start: node.getStart(sourceFile) + 1,
+                        end: node.getEnd() - 1,
+                        specifier: resolvedRelativeSpecifier(file, node.text),
+                        original: node.text,
+                    }))
+                    .filter(({ specifier, original }) => specifier !== original)
+                    .sort((left, right) => right.start - left.start);
+
+                let rewritten = source;
+                for (const replacement of replacements) {
+                    rewritten =
+                        rewritten.slice(0, replacement.start) +
+                        replacement.specifier +
+                        rewritten.slice(replacement.end);
+                }
+                if (rewritten !== source) {
+                    writeFileSync(file, rewritten.replace(sourceMapReference, '\n'));
+                    const mapFile = `${file}.map`;
+                    if (existsSync(mapFile)) unlinkSync(mapFile);
+                }
+            }
+        },
+    };
+}
+
 function generatePackageJson(esmPath) {
     return {
         name: 'generate-package-json',
@@ -135,47 +272,99 @@ function generatePackageJson(esmPath) {
             writeFileSync(
                 join(esmDir, 'package.json'),
                 JSON.stringify({ type: 'module' }, null, 2),
-                'utf-8'
+                'utf-8',
             );
 
             console.log('✓ Generated package.json for ESM output');
-        }
+        },
     };
 }
 
 /**
- * Entry points that are deliberately NOT reachable from `index.ts`. The root re-exports every
- * component namespace, so anything imported there lands in every consumer's graph — and the
- * styled-mode entry pulls in `@primereact/styles` and `@primeuix/themes`, which are optional
- * peers a consumer that runs unstyled never installs. Listing them here gives them their own
- * bundle without touching the root.
+ * Derives one Rollup entry point per JavaScript `exports` map subpath instead of the
+ * single package-root `index.ts`.
+ *
+ * Why this exists: with `preserveModules: true`, Rollup emits one output file per
+ * *reachable* source module - reachable meaning "in the import graph of a declared
+ * entry point", not "present under `Source/`". A single `index.ts` entry only ever
+ * worked because the root barrel used to `import * as X from './X'` every namespace,
+ * making every subpath transitively reachable from that one file. The setup-only root
+ * (Cratis/Components root architecture) intentionally stops doing that - `index.ts` now
+ * imports only the provider/config surface - so every subpath the package promises in
+ * `exports` (`./Canvas`, `./CommandDialog`, `./DataPage`, ...) needs its own explicit
+ * entry point or its `dist/esm/<Subpath>/index.js` would silently stop being emitted.
+ *
+ * Each subpath's `types` target (`./dist/esm/Canvas/index.d.ts`) is mapped back to the
+ * source file it was compiled from (`Canvas/index.tsx` or `Canvas/index.ts`) the same
+ * way `Source/scripts/verify-api-docs.mjs`'s `resolveBarrelsFromExports` does, so the
+ * two stay in lockstep without sharing a runtime dependency. CSS/JSON asset entries and
+ * duplicate targets (`./CommandForm/fields` aliases `./CommandForm`'s own file) are
+ * skipped/deduplicated - Rollup only needs one entry per distinct source module.
  */
-const STANDALONE_ENTRIES = ['Styled/index.ts'];
+export function entryPointsFromExports(pkg, sourceDir) {
+    const seen = new Set();
+    const entries = [];
+    for (const [subpath, value] of Object.entries(pkg.exports ?? {})) {
+        if (subpath === './package.json') continue;
+        const conditionalExport = value && typeof value === 'object' ? value : undefined;
+        const typesTarget = conditionalExport?.types;
+        const importTarget = conditionalExport?.import;
+        if (
+            typeof typesTarget !== 'string' ||
+            !typesTarget.endsWith('.d.ts') ||
+            typeof importTarget !== 'string' ||
+            !importTarget.endsWith('.js')
+        )
+            continue;
+
+        const relative = typesTarget
+            .replace(/^\.\//, '')
+            .replace(/^dist\/esm\//, '')
+            .replace(/\.d\.ts$/, '');
+        const candidate = ['.tsx', '.ts']
+            .map((ext) => `${relative}${ext}`)
+            .find((file) => existsSync(join(sourceDir, file)));
+        if (!candidate) {
+            throw new Error(
+                `No source entry found for exports subpath '${subpath}' (looked for ` +
+                    `${relative}.tsx / ${relative}.ts under ${sourceDir}).`,
+            );
+        }
+        if (!seen.has(candidate)) {
+            seen.add(candidate);
+            entries.push(candidate);
+        }
+    }
+    if (entries.length === 0) {
+        throw new Error(
+            `No JavaScript entry points resolved from ${pkg.name}'s exports map.`,
+        );
+    }
+    return entries;
+}
 
 export function rollup(esmPath, tsconfigPath, pkg) {
     const sourceDir = dirname(tsconfigPath);
     return {
-        input: ['index.ts', ...STANDALONE_ENTRIES.filter((entry) => existsSync(resolve(sourceDir, entry)))],
+        input: entryPointsFromExports(pkg, sourceDir),
 
         output: [
             {
                 dir: esmPath,
-                format: "es",
-                exports: "named",
+                format: 'es',
+                exports: 'named',
                 sourcemap: true,
                 preserveModules: true,
-                preserveModulesRoot: "."
-            }
+                preserveModulesRoot: '.',
+            },
         ],
         external: [
             ...Object.keys(pkg.dependencies || {}),
             ...Object.keys(pkg.peerDependencies || {}),
             /^@cratis\/components/,
             /^@cratis\/arc/,
-            /^primereact\//,
-            /^@primereact\//,
-            /^@primeuix\//,
-            /^primeicons/,
+            /^react-aria-components(?:\/|$)/,
+            /^@internationalized\/date(?:\/|$)/,
             /^react-icons\//,
             /\.css$/,
             'react',
@@ -184,26 +373,38 @@ export function rollup(esmPath, tsconfigPath, pkg) {
         plugins: [
             peerDepsExternal(),
             nodeResolve({
-                extensions: ['.mjs', '.js', '.json', '.node', '.ts', '.tsx']
+                extensions: ['.mjs', '.js', '.json', '.node', '.ts', '.tsx'],
             }),
             typescript({
                 tsconfig: false,
-                exclude: ["node_modules", "../node_modules", "**/for_*/**/*", "**/when_*/**/*"],
+                exclude: [
+                    'node_modules',
+                    '../node_modules',
+                    '**/for_*/**/*',
+                    '**/when_*/**/*',
+                ],
                 compilerOptions: {
-                    target: "ES2022",
-                    module: "ESNext",
-                    moduleResolution: "bundler",
-                    jsx: "react-jsx",
+                    target: 'ES2022',
+                    module: 'ESNext',
+                    moduleResolution: 'bundler',
+                    jsx: 'react-jsx',
                     sourceMap: true,
                     importHelpers: false,
                     noCheck: true,
                     declaration: false,
                     declarationMap: false,
                     composite: false,
-                }
+                    // This pass produces the actual shipped runtime JS (it overwrites the
+                    // `.js` files `tsc -b` wrote, in place). Declaration emit is off here, so
+                    // stripping comments only affects runtime bytes, never the published
+                    // `.d.ts` - those come from the earlier `tsc -b` pass, which intentionally
+                    // keeps comments (root tsconfig.json) so TSDoc reaches consumers.
+                    removeComments: true,
+                },
             }),
             generatePackageJson(esmPath),
             bundleStyles(sourceDir, esmPath),
-        ]
+            fixRelativeEsmSpecifiers(esmPath),
+        ],
     };
 }

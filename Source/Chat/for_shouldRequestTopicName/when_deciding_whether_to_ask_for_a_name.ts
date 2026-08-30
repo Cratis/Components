@@ -12,7 +12,8 @@ describe('when a later message lands in a topic that is still unnamed', () => {
 });
 
 describe('when the first message lands in a topic that already has a name', () => {
-    it('should leave the name alone', () => shouldRequestTopicName(false, 0).should.be.false);
+    it('should leave the name alone', () =>
+        shouldRequestTopicName(false, 0).should.be.false);
 });
 
 describe('when a later message lands in a named topic', () => {

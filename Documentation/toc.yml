@@ -2,7 +2,11 @@
   href: index.mdx
 - name: Why Components
   href: why-components.md
-- name: PrimeReact and Components
+- name: UI foundation
+  href: ui-foundation.md
+- name: Architecture decisions
+  href: decisions/toc.yml
+- name: Coming from PrimeReact
   href: coming-from-primereact.md
 - name: Getting started
   href: getting-started.mdx
@@ -12,6 +16,8 @@
   href: choosing-a-component.md
 - name: Styling
   href: Styling/toc.yml
+- name: Renderer adapters
+  href: renderers/toc.yml
 - name: Storybook
   href: storybook.mdx
 - name: Building a form
@@ -22,6 +28,10 @@
   href: multi-step-form.md
 - name: A list screen with actions
   href: list-screen-with-actions.md
+- name: Canvas
+  href: Canvas/toc.yml
+- name: Chat
+  href: Chat/toc.yml
 - name: CommandDialog
   href: CommandDialog/toc.yml
 - name: CommandForm
@@ -39,21 +49,17 @@
 - name: Filter
   href: Filter/toc.yml
 - name: Dropdown
-  href: Dropdown/index.md
+  href: Dropdown/toc.yml
 - name: Display
-  href: Display/index.md
+  href: Display/toc.yml
 - name: Notifications
-  href: Notifications/index.md
+  href: Notifications/toc.yml
 - name: Toolbar
   href: Toolbar/toc.yml
 - name: ObjectNavigationalBar
-  href: ObjectNavigationalBar/index.md
+  href: ObjectNavigationalBar/toc.yml
 - name: ObjectContentEditor
-  href: ObjectContentEditor/index.md
-- name: Canvas
-  href: Canvas/toc.yml
-- name: Chat
-  href: Chat/toc.yml
+  href: ObjectContentEditor/toc.yml
 - name: PivotViewer
   href: PivotViewer/toc.yml
 - name: SchemaEditor

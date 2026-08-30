@@ -1,67 +1,37 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import * as Canvas from './Canvas';
-import * as Chat from './Chat';
-import * as CommandDialog from './CommandDialog';
-import * as CommandStepper from './CommandDialog';
-import * as CommandForm from './CommandForm';
-import * as Common from './Common';
-import * as Compatibility from './Compatibility';
-import * as DataPage from './DataPage';
-import * as DataTables from './DataTables';
-import * as Dialogs from './Dialogs';
-import * as Display from './Display';
-import * as Dropdown from './Dropdown';
-import * as Filter from './Filter';
-import * as Notifications from './Notifications';
-import * as ObjectContentEditor from './ObjectContentEditor';
-import * as ObjectNavigationalBar from './ObjectNavigationalBar';
-import * as PivotViewer from './PivotViewer';
-import * as SchemaEditor from './SchemaEditor';
-import * as TimeMachine from './TimeMachine';
-import * as Toolbar from './Toolbar';
-import * as Types from './types';
-
-export {
-    Canvas,
-    Chat,
-    CommandDialog,
-    CommandStepper,
-    CommandForm,
-    Common,
-    Compatibility,
-    DataPage,
-    DataTables,
-    Dialogs,
-    Display,
-    Dropdown,
-    Filter,
-    Notifications,
-    ObjectContentEditor,
-    ObjectNavigationalBar,
-    PivotViewer,
-    SchemaEditor,
-    TimeMachine,
-    Toolbar,
-    Types,
-};
-
-// Re-export the primary setup surface from the root so the recommended
-// `import { CratisComponentsProvider } from '@cratis/components'` works
-// without consumers having to know about the `Common` subpath.
+/**
+ * The package root is a setup-only surface: it carries the application-wide
+ * {@link CratisComponentsProvider} and its configuration contract - locale,
+ * messages, and the hook/merge helpers that read and build that configuration
+ * - and nothing else. Every component, part type, and utility lives behind its
+ * own explicit subpath (`@cratis/components/Canvas`, `@cratis/components/CommandDialog`,
+ * `@cratis/components/DataPage`, ...); the root barrel intentionally does not
+ * re-export those namespaces.
+ *
+ * This keeps a consumer's root import free of every optional-peer-heavy subsystem
+ * (Canvas and PivotViewer's Pixi dependency chief among them) and free of every
+ * `@cratis/arc`/`@cratis/arc.react` runtime or declaration edge. Importing the root
+ * therefore does not resolve or type-check Pixi or Arc modules; package-level peer metadata
+ * still describes the requirements of the complete set of optional capability subpaths.
+ * Import a component from its subpath; import the provider and its configuration
+ * types from here.
+ */
 export {
     CratisComponentsProvider,
+    useCratisComponentsConfig,
     cratisDefaults,
     mergeCratisComponentsConfig,
     type CratisComponentsConfig,
     type CratisComponentsProviderProps,
+    type CratisComponentsMessages,
+    type CratisPaginatorMessages,
+    type CratisDatePickerMessages,
+    type CratisDropdownMessages,
+    type CratisDialogMessages,
+    type CratisStepperMessages,
+    type CratisNotificationsMessages,
+    type CratisDataTableMessages,
+    type CratisColumnFilterMessages,
 } from './Common/CratisComponentsProvider';
-
-export {
-    assertPrimeReact11PassThroughCompatibility,
-    components3PrimeReact11PassThroughContract,
-    primeReact11PassThroughSentinelAttribute,
-    primeReact11PassThroughSentinelPreset,
-    type PrimeReact11PassThroughComponent,
-} from './Compatibility';

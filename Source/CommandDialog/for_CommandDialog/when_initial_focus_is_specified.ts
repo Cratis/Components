@@ -2,14 +2,26 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // @vitest-environment jsdom
 
+import { expect } from 'chai';
 import React from 'react';
 import { vi } from 'vitest';
 import { DialogInitialFocus } from '../../Dialogs/DialogInitialFocus';
-import { click, focusedElement, pressEnterOnFocusedElement, render, unmount, type DialogInTheDom } from '../../Dialogs/for_Dialog/given/a_dialog_in_the_dom';
+import {
+    click,
+    focusedElement,
+    pressEnterOnFocusedElement,
+    render,
+    unmount,
+    type DialogInTheDom,
+} from '../../Dialogs/for_Dialog/given/a_dialog_in_the_dom';
 
 const { executeCommand, succeeded } = vi.hoisted(() => ({
-    executeCommand: vi.fn(async () => ({ isSuccess: true, isValid: true, validationResults: [] })),
-    succeeded: vi.fn()
+    executeCommand: vi.fn(async () => ({
+        isSuccess: true,
+        isValid: true,
+        validationResults: [],
+    })),
+    succeeded: vi.fn(),
 }));
 
 vi.mock('@cratis/arc.react/commands', () => ({
@@ -17,12 +29,16 @@ vi.mock('@cratis/arc.react/commands', () => ({
         React.createElement('div', null, props.children),
     useCommandFormContext: () => ({
         isValid: true,
-        setCommandValues: () => { /* not part of this scenario */ },
-        setCommandResult: () => { /* not part of this scenario */ }
+        setCommandValues: () => {
+            /* not part of this scenario */
+        },
+        setCommandResult: () => {
+            /* not part of this scenario */
+        },
     }),
     useCommandInstance: () => ({ execute: executeCommand }),
     CommandFormFieldWrapper: (props: { field?: React.ReactNode }) =>
-        React.createElement('div', null, props.field)
+        React.createElement('div', null, props.field),
 }));
 
 class DeletePersonalData {
@@ -38,14 +54,17 @@ describe('when a command dialog is given an initial focus', () => {
 
         const { CommandDialog } = await import('../CommandDialog');
 
-        dialog = await render(React.createElement(CommandDialog, {
-            command: DeletePersonalData as unknown as new () => object,
-            title: 'Delete personal data',
-            visible: true,
-            initialFocus,
-            onSuccess: succeeded,
-            children: React.createElement('p', null, 'This cannot be undone')
-        }));
+        // SAFETY: The generated command proxy constructor is erased by this test harness only.
+        dialog = await render(
+            React.createElement(CommandDialog, {
+                command: DeletePersonalData as unknown as new () => object,
+                title: 'Delete personal data',
+                visible: true,
+                initialFocus,
+                onSuccess: succeeded,
+                children: React.createElement('p', null, 'This cannot be undone'),
+            }),
+        );
     };
 
     afterEach(async () => await unmount(dialog));
@@ -65,7 +84,7 @@ describe('when a command dialog is given an initial focus', () => {
     it('should forward a request to focus the content', async () => {
         await renderDialog(DialogInitialFocus.Content);
 
-        focusedElement().should.equal('span:Delete personal data');
+        focusedElement().should.equal('h2:Delete personal data');
     });
 
     it('should not run the command on an Enter that repeats onto the freshly mounted dialog', async () => {
@@ -73,7 +92,7 @@ describe('when a command dialog is given an initial focus', () => {
 
         await pressEnterOnFocusedElement();
 
-        executeCommand.should.not.have.been.called;
+        expect(executeCommand.mock.calls).to.have.lengthOf(0);
     });
 
     it('should still run the command when the user deliberately confirms', async () => {
@@ -81,7 +100,7 @@ describe('when a command dialog is given an initial focus', () => {
 
         await click('Ok');
 
-        executeCommand.should.have.been.calledOnce;
-        succeeded.should.have.been.calledOnce;
+        expect(executeCommand.mock.calls).to.have.lengthOf(1);
+        expect(succeeded.mock.calls).to.have.lengthOf(1);
     });
 });

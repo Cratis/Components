@@ -3,7 +3,6 @@
 
 /** Overrides for the strings {@link relativeTimestamp} composes. `{minutes}`/`{hours}` are substituted. */
 export interface RelativeTimestampLabels {
-
     /** Under a minute ago. Defaults to `'just now'`. */
     justNow?: string;
 
@@ -22,12 +21,24 @@ export interface RelativeTimestampLabels {
  * @param labels Overrides for the composed strings. Unset fields fall back to literal English defaults.
  * @returns The relative rendering.
  */
-export const relativeTimestamp = (moment: Date, now: Date = new Date(), labels?: RelativeTimestampLabels): string => {
+export const relativeTimestamp = (
+    moment: Date,
+    now: Date = new Date(),
+    labels?: RelativeTimestampLabels,
+): string => {
     const date = moment instanceof Date ? moment : new Date(moment);
     const differenceInMinutes = Math.floor((now.getTime() - date.getTime()) / 60_000);
     if (differenceInMinutes < 1) return labels?.justNow ?? 'just now';
-    if (differenceInMinutes < 60) return (labels?.minutesAgo ?? '{minutes}m ago').replace('{minutes}', differenceInMinutes.toString());
+    if (differenceInMinutes < 60)
+        return (labels?.minutesAgo ?? '{minutes}m ago').replace(
+            '{minutes}',
+            differenceInMinutes.toString(),
+        );
     const differenceInHours = Math.floor(differenceInMinutes / 60);
-    if (differenceInHours < 24) return (labels?.hoursAgo ?? '{hours}h ago').replace('{hours}', differenceInHours.toString());
+    if (differenceInHours < 24)
+        return (labels?.hoursAgo ?? '{hours}h ago').replace(
+            '{hours}',
+            differenceInHours.toString(),
+        );
     return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 };

@@ -1,51 +1,113 @@
 name: Markdown Verification
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - "Documentation/**"
-  pull_request:
-    branches:
-      - "**"
-    paths:
-      - "Documentation/**"
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+        paths:
+            - 'Documentation/**'
+            - 'README.md'
+            - 'release.md'
+            - 'Source/*.md'
+            - 'Migrator/*.md'
+            - 'ESLint/*.md'
+            - 'Conformance/*.md'
+            - 'Adapters/**/*.md'
+            - 'Storybook/*.md'
+            - 'scripts/*.md'
+    pull_request:
+        branches:
+            - '**'
+        paths:
+            - 'Documentation/**'
+            - 'README.md'
+            - 'release.md'
+            - 'Source/*.md'
+            - 'Migrator/*.md'
+            - 'ESLint/*.md'
+            - 'Conformance/*.md'
+            - 'Adapters/**/*.md'
+            - 'Storybook/*.md'
+            - 'scripts/*.md'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  markdown-lint:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    markdown-lint:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              with:
+                  persist-credentials: false
 
-      - name: Lint Markdown files
-        uses: DavidAnson/markdownlint-cli2-action@v18
-        with:
-          globs: 'Documentation/**/*.md'
+            - name: Lint Markdown files
+              uses: DavidAnson/markdownlint-cli2-action@eb5ca3ab411449c66620fe7f1b3c9e10547144b0 # v18
+              with:
+                  globs: |
+                      README.md
+                      release.md
+                      Documentation/**/*.md
+                      Documentation/**/*.mdx
+                      Source/*.md
+                      Migrator/*.md
+                      ESLint/*.md
+                      Conformance/*.md
+                      Adapters/**/*.md
+                      Storybook/*.md
+                      scripts/*.md
 
-  link-verification:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    link-verification:
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              with:
+                  persist-credentials: false
 
-      - name: Check links in Documentation
-        uses: JustinBeckwith/linkinator-action@v1
-        with:
-          paths: 'Documentation/**/*.md'
-          markdown: true
-          recurse: true
-          redirects: allow
-          statusCodes: '403:ok'
-          linksToSkip: '^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?(\/|$)'
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 23.x
+
+            - name: Check repository-local Markdown and MDX links
+              run: |
+                  node Documentation/verify-local-links.mjs Documentation
+                  node Documentation/verify-local-links.mjs Adapters
+                  node Documentation/verify-local-links.mjs scripts
+
+            - name: Check external links in consumer documentation
+              uses: JustinBeckwith/linkinator-action@7b6b0bc671f6264e1a8daa4488a5bd91ce61dcd4 # v2.4.2
+              with:
+                  paths: |
+                      README.md
+                      release.md
+                      Source/*.md
+                      Migrator/*.md
+                      ESLint/*.md
+                      Conformance/*.md
+                      Adapters/**/*.md
+                      Storybook/*.md
+                      scripts/*.md
+                      Documentation/**/*.md
+                      Documentation/**/*.mdx
+                  markdown: true
+                  recurse: true
+                  # Avoid GitHub's unauthenticated burst limit while checking several immutable
+                  # repository links. Retry 429 responses carrying Retry-After; treat any remaining
+                  # 429 as a transient warning rather than a broken-link result.
+                  concurrency: 2
+                  retry: true
+                  statusCodes: '{"429":"warn"}'
+                  # Stable Cratis repository anchors repeatedly trigger GitHub's unauthenticated
+                  # 429 limit; current-tree links are verified locally above, so skip only exact
+                  # current/immutable documentation paths and organization guidance here.
+                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/, ^https:\/\/github\.com\/Cratis\/Components\/blob\/[0-9a-f]{40}\/Documentation\/, ^https:\/\/github\.com\/Cratis\/Components\/tree\/main\/Documentation\/, ^https:\/\/github\.com\/Cratis\/\.github\/blob\/main\/contributing\.md$'

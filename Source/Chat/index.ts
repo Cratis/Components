@@ -12,7 +12,11 @@ export type { ChatMessageAction } from './ChatMessageAction';
 export { ChatMessageBody } from './ChatMessageBody';
 export type { ChatMessageBodyProps } from './ChatMessageBody';
 export { ChatSidebar } from './ChatSidebar';
-export type { ChatSidebarProps, ChatSidebarLabels } from './ChatSidebar';
+export type {
+    ChatSidebarProps,
+    ChatSidebarLabels,
+    ChatSidebarParts,
+} from './ChatSidebar';
 export { ChatSidebarForObservableQueries } from './ChatSidebarForObservableQueries';
 export type { ChatSidebarForObservableQueriesProps } from './ChatSidebarForObservableQueries';
 export type { ChatTopic } from './ChatTopic';
@@ -26,9 +30,9 @@ export { topicsByActivity } from './topicsByActivity';
 
 // The pieces of the conversation kit the chat builds on, re-exported so a host consuming
 // `@cratis/components/Chat` has the whole contract in one place.
-export { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
-export type { ChatTypingAuthor } from '../Canvas/shapes/ChatBubble/ChatTypingAuthor';
-export type { BuildAvatarUrlParams } from '../Canvas/shapes/ChatBubble/Avatar';
-export type { ChatComposerLabels } from '../Canvas/shapes/ChatBubble/ChatComposer';
-export { extractMentions, findMentionRanges, mentionSegments } from '../Canvas/shapes/ChatBubble/Mentions';
-export type { MentionCandidate, MentionRange, MentionSegment } from '../Canvas/shapes/ChatBubble/Mentions';
+export { ChatAuthorKind } from './Kit/ChatAuthorKind';
+export type { ChatTypingAuthor } from './Kit/ChatTypingAuthor';
+export type { BuildAvatarUrlParams } from './Kit/Avatar';
+export type { ChatComposerLabels } from './Kit/ChatComposer';
+export { extractMentions, findMentionRanges, mentionSegments } from './Kit/Mentions';
+export type { MentionCandidate, MentionRange, MentionSegment } from './Kit/Mentions';

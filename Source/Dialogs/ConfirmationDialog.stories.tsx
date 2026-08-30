@@ -4,15 +4,20 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { ConfirmationDialog } from './ConfirmationDialog';
-import { DialogButtons, DialogComponents, useConfirmationDialog } from '@cratis/arc.react/dialogs';
+import {
+    DialogButtons,
+    DialogComponents,
+    useConfirmationDialog,
+} from '@cratis/arc.react/dialogs';
+import { expect, userEvent, within } from 'storybook/test';
 
-const meta: Meta<typeof ConfirmationDialog> = {
+const meta: Meta<{ title: string; message: string }> = {
     title: 'Dialogs/ConfirmationDialog',
     component: ConfirmationDialog,
 };
 
 export default meta;
-type Story = StoryObj<typeof ConfirmationDialog>;
+type Story = StoryObj<{ title: string; message: string }>;
 
 const DialogWrapper = ({ title, message }: { title: string; message: string }) => {
     const [showDialog] = useConfirmationDialog(title, message, DialogButtons.YesNoCancel);
@@ -32,5 +37,11 @@ export const Default: Story = {
                 <DialogWrapper title={args.title} message={args.message} />
             </DialogComponents>
         </div>
-    )
+    ),
+    play: async ({ canvasElement }) => {
+        await userEvent.click(
+            within(canvasElement).getByRole('button', { name: 'Show dialog' }),
+        );
+        await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
+    },
 };

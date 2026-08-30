@@ -1,17 +1,23 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useMemo } from 'react';
-import { Command } from '@cratis/arc/commands';
-import { CommandForm, CommandFormProps } from '@cratis/arc.react/commands';
+import type React from 'react';
+import { useMemo } from 'react';
+import type { Command } from '@cratis/arc/commands';
+import { CommandForm, type CommandFormProps } from '@cratis/arc.react/commands';
+import { registerDefaultFieldTypeProviders } from './defaultFieldTypeProviders';
 import { resolveFieldTypeProvider } from './fieldTypeProviderRegistry';
-import './defaultFieldTypeProviders';
+
+registerDefaultFieldTypeProviders();
 
 /**
  * Props for {@link AutoCommandForm} - every {@link CommandFormProps} except `children`, which is
  * generated from the command's own properties instead of being written out by hand.
  */
-export interface AutoCommandFormProps<TCommand extends object, TResponse = object> extends Omit<CommandFormProps<TCommand, TResponse>, 'children'> {
+export interface AutoCommandFormProps<
+    TCommand extends object,
+    TResponse = object,
+> extends Omit<CommandFormProps<TCommand, TResponse>, 'children'> {
     /**
      * Property names to leave out of the generated field list - for a property that should not
      * be user-editable, or one a custom field placed elsewhere on the page already covers.
@@ -22,7 +28,7 @@ export interface AutoCommandFormProps<TCommand extends object, TResponse = objec
 function formatTitle(propertyName: string): string {
     return propertyName
         .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, character => character.toUpperCase())
+        .replace(/^./, (character) => character.toUpperCase())
         .trim();
 }
 
@@ -42,15 +48,22 @@ function formatTitle(propertyName: string): string {
  * ```
  */
 export function AutoCommandForm<TCommand extends object = object, TResponse = object>(
-    props: AutoCommandFormProps<TCommand, TResponse>
+    props: AutoCommandFormProps<TCommand, TResponse>,
 ): React.ReactElement {
     const { exclude, ...commandFormProps } = props;
-    const propertyDescriptors = useMemo(() => (new props.command() as unknown as Command).propertyDescriptors, [props.command]);
-    const excluded = useMemo(() => new Set<string>((exclude ?? []) as string[]), [exclude]);
+    // SAFETY: Arc command constructors expose the Command property-descriptor contract at runtime.
+    const propertyDescriptors = useMemo(
+        () => (new props.command() as unknown as Command).propertyDescriptors,
+        [props.command],
+    );
+    const excluded = useMemo(
+        () => new Set<string>((exclude ?? []) as string[]),
+        [exclude],
+    );
 
     const fields = propertyDescriptors
-        .filter(descriptor => !excluded.has(descriptor.name))
-        .map(descriptor => {
+        .filter((descriptor) => !excluded.has(descriptor.name))
+        .map((descriptor) => {
             const provider = resolveFieldTypeProvider(descriptor);
             if (!provider) {
                 return null;
@@ -60,7 +73,12 @@ export function AutoCommandForm<TCommand extends object = object, TResponse = ob
             return (
                 <Field
                     key={descriptor.name}
-                    value={(instance: TCommand) => (instance as unknown as Record<string, unknown>)[descriptor.name]}
+                    value={(instance: TCommand) => {
+                        // SAFETY: Arc descriptors name runtime properties on the same command instance.
+                        return (instance as unknown as Record<string, unknown>)[
+                            descriptor.name
+                        ];
+                    }}
                     title={formatTitle(descriptor.name)}
                 />
             );

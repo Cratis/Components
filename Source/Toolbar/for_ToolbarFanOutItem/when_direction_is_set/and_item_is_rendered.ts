@@ -16,7 +16,7 @@ describe('when ToolbarFanOutItem direction is set and item is rendered', () => {
             React.createElement(
                 ToolbarFanOutItem,
                 {
-                    icon: 'pi pi-th-large',
+                    icon: 'product-icons product-th-large',
                     tooltip: 'Shapes',
                     fanOutDirection,
                 },
@@ -37,5 +37,10 @@ describe('when ToolbarFanOutItem direction is set and item is rendered', () => {
     it('should_support_down_direction', () => {
         const html = render('down');
         html.should.include('toolbar-fanout-panel--down');
+    });
+
+    it('should_make_the_collapsed_panel_inert', () => {
+        const html = render();
+        html.should.match(/data-cratis-part="fanout-panel"[^>]*aria-hidden="true"[^>]*inert=""/);
     });
 });

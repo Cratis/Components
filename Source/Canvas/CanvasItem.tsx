@@ -1,11 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useContext, useEffect, useId, useRef, useState } from 'react';
+import type React from 'react';
+import { useContext, useEffect, useId, useRef, useState } from 'react';
 import { CanvasItemRegistryContext } from './Canvas';
 
+/** Props for a measured DOM item positioned in Canvas world space. */
 export interface CanvasItemProps {
-
     /**
      * Registers this item in the Canvas item registry under a caller-chosen key instead of an
      * internally generated one. Opting in makes the item's world-space bounds addressable — a
@@ -16,8 +17,9 @@ export interface CanvasItemProps {
      */
     id?: string;
 
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
 
     /**
@@ -29,11 +31,24 @@ export interface CanvasItemProps {
      */
     zIndex?: number;
 
+    /** Reports measured size changes. */
     onSize?: (width: number, height: number) => void;
+    /** Item content. */
     children: React.ReactNode;
 }
 
-export const CanvasItem: React.FC<CanvasItemProps> = ({ id, x, y, zIndex, onSize, children }) => {
+/**
+ * A measured DOM element positioned in Canvas world space, registered so the Canvas minimap can
+ * show it. Observes size changes and reports bounds to the nearest Canvas registry.
+ */
+export const CanvasItem: React.FC<CanvasItemProps> = ({
+    id,
+    x,
+    y,
+    zIndex,
+    onSize,
+    children,
+}) => {
     const elementRef = useRef<HTMLDivElement>(null);
     const onSizeRef = useRef(onSize);
     const registryContext = useContext(CanvasItemRegistryContext);
@@ -51,7 +66,7 @@ export const CanvasItem: React.FC<CanvasItemProps> = ({ id, x, y, zIndex, onSize
         const element = elementRef.current;
         if (!element) return;
 
-        const observer = new ResizeObserver(entries => {
+        const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const { width, height } = entry.contentRect;
                 onSizeRef.current?.(width, height);
@@ -68,15 +83,26 @@ export const CanvasItem: React.FC<CanvasItemProps> = ({ id, x, y, zIndex, onSize
         return () => observer.disconnect();
     }, [itemId]);
 
-    // Register with the Canvas registry whenever position or size changes
+    // Register with the Canvas registry whenever position or size changes. `anonymous` records
+    // whether the caller ever supplied an `id` at all — not just what key ended up in the registry —
+    // so a `Region` reading this entry back can tell a generated key from a real one and keep
+    // anonymous items out of region-membership reports while still feeding the minimap/fit-to-content.
     useEffect(() => {
         if (!size || !registryContext) return;
-        registryContext.register(itemId, { x, y, width: size.width, height: size.height });
-    }, [x, y, size, registryContext, itemId]);
+        registryContext.register(itemId, {
+            x,
+            y,
+            width: size.width,
+            height: size.height,
+            anonymous: id === undefined,
+        });
+    }, [x, y, size, registryContext, itemId, id]);
 
     // Unregister when unmounting
     useEffect(() => {
-        return () => { registryContext?.unregister(itemId); };
+        return () => {
+            registryContext?.unregister(itemId);
+        };
     }, [registryContext, itemId]);
 
     return (

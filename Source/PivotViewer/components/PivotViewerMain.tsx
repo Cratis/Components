@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import type { ItemId, LayoutResult, GroupingResult } from '../engine/types';
 import type { ViewMode } from './Toolbar';
 import type { PivotDimensionFilter } from '../hooks/useDimensionState';
+import type { PivotViewerColors } from '../types';
 import { Spinner } from './Spinner';
 import { PivotCanvas } from './PivotCanvas';
 import { AxisLabels } from './AxisLabels';
@@ -28,6 +29,7 @@ export interface PivotViewerMainProps<TItem extends object> {
   isZooming: boolean;
   viewMode: ViewMode;
   cardRenderer: (item: TItem) => { title: string; labels?: string[]; values?: string[] };
+  colorOverrides?: Partial<PivotViewerColors>;
   /** Optional renderer for a custom details panel when a card is selected */
   detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
   resolveId: (item: TItem, index: number) => ItemId;
@@ -62,6 +64,7 @@ export function PivotViewerMain<TItem extends object>({
   isZooming,
   viewMode,
   cardRenderer,
+  colorOverrides,
   detailRenderer,
   resolveId,
   emptyContent,
@@ -205,6 +208,7 @@ export function PivotViewerMain<TItem extends object>({
               hoveredGroupIndex={hoveredGroupIndex}
               isZooming={isZooming}
               cardRenderer={cardRenderer}
+              colorOverrides={colorOverrides}
               resolveId={resolveId}
               onCardClick={onCardClick}
               onPanStart={onPanStart}

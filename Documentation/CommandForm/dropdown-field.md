@@ -1,6 +1,6 @@
 # DropdownField
 
-`DropdownField` renders the Cratis [`Dropdown`](../Dropdown/index.md) — PrimeReact 11's `Select`, composed for you — for choosing a single value from a list of options.
+`DropdownField` renders the renderer-independent Cratis [`Dropdown`](../Dropdown/index.md) for choosing one value from a list.
 
 ## Usage
 
@@ -15,13 +15,13 @@ const statusOptions = [
 
 <CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <DropdownField<MyCommand>
-        value={c => c.status}
+        value={(c) => c.status}
         options={statusOptions}
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Select a status"
+        optionLabel='label'
+        optionValue='value'
+        placeholder='Select a status'
     />
-</CommandDialog>
+</CommandDialog>;
 ```
 
 With custom data:
@@ -33,24 +33,25 @@ const roles = [
 ];
 
 <DropdownField<MyCommand>
-    value={c => c.role}
+    value={(c) => c.role}
     options={roles}
-    optionLabel="display"
-    optionValue="id"
-/>
+    optionLabel='display'
+    optionValue='id'
+/>;
 ```
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | `(instance: TCommand) => unknown` | — | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
-| `options` | `Array<{ [key: string]: unknown }>` | — | **Required.** Array of option objects. |
-| `optionLabel` | `string` | — | **Required.** Key in each option object to use as the display label. |
-| `optionValue` | `string` | — | **Required.** Key in each option object to use as the submitted value. |
-| `placeholder` | `string` | — | Placeholder text shown when no value is selected. |
-| `className` | `string` | — | Extra CSS class combined with the default `w-full`. |
-| `pt` / `ptOptions` / `unstyled` | — | — | Pass-through styling for the underlying `Select`. |
+| Prop                     | Type                                | Default | Description                                                                                                                                                     |
+| ------------------------ | ----------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`                  | `(instance: TCommand) => unknown`   | —       | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
+| `options`                | `Array<{ [key: string]: unknown }>` | —       | **Required.** Array of option objects.                                                                                                                          |
+| `optionLabel`            | `string`                            | —       | **Required.** Key in each option object to use as the display label.                                                                                            |
+| `optionValue`            | `string`                            | —       | **Required.** Key in each option object to use as the submitted value.                                                                                          |
+| `placeholder`            | `string`                            | —       | Placeholder text shown when no value is selected.                                                                                                               |
+| `className`              | `string`                            | —       | Extra CSS class combined with the default `w-full`.                                                                                                             |
+| `pt`                     | `DropdownParts`                     | —       | Attributes for the Cratis-owned Dropdown's stable parts.                                                                                                        |
+| `ptOptions` / `unstyled` | —                                   | —       | Retained temporarily for source compatibility; ignored.                                                                                                         |
 
 `DropdownField` deliberately does not surface `multiple`, `filter` or `showClear` — use [`MultiSelectField`](multi-select-field.md) for multi-select, or the [`Dropdown`](../Dropdown/index.md) wrapper directly outside a command form.
 
@@ -58,5 +59,4 @@ const roles = [
 
 - Default value is an empty string.
 - The field spans full width within its container.
-- Validation state is reflected via the PrimeReact `invalid` flag.
-
+- Validation state is reflected through `aria-invalid` and `data-invalid`.

@@ -11,14 +11,13 @@ import type { ChatMessage } from './ChatMessage';
  * @typeParam TMessage The host's message type, so {@link onInvoke} receives the full message back.
  */
 export interface ChatMessageAction<TMessage extends ChatMessage = ChatMessage> {
-
     /** Identifies the action among its siblings — used as the rendering key. */
     id: string;
 
     /** The label, shown as the button's tooltip and accessible name. */
     label: string;
 
-    /** The icon — a PrimeIcons class name such as `'pi pi-bolt'`, or a ready element. */
+    /** The icon — a CSS class name for an icon font the host provides, or a ready element. */
     icon: string | ReactNode;
 
     /**

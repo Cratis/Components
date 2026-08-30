@@ -2,119 +2,60 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
+import { FaHouse, FaRocket } from 'react-icons/fa6';
 import { IconDisplay } from './Icon';
 
 const meta: Meta<typeof IconDisplay> = {
     title: 'Common/IconDisplay',
     component: IconDisplay,
-    parameters: {
-        layout: 'centered',
-    },
+    parameters: { layout: 'centered' },
 };
 
 export default meta;
 type Story = StoryObj<typeof IconDisplay>;
 
-/** Renders a PrimeIcons CSS class as an `<i>` element. */
+/** Renders a consumer-owned CSS class without inferring an icon provider. */
 export const StringIcon: Story = {
-    render: () => <IconDisplay icon='pi pi-home' />,
+    render: () => (
+        <>
+            <style>{'.story-product-home::before { content: "⌂"; font-size: 1.5rem; }'}</style>
+            <IconDisplay icon='story-product-home' />
+        </>
+    ),
 };
 
-/** Renders a PrimeIcons CSS class with an additional size class. */
+/** Adds consumer layout classes to the `<i>` element used by string icons. */
 export const StringIconWithExtraClass: Story = {
-    render: () => <IconDisplay icon='pi pi-home' className='text-3xl' />,
-};
-
-/**
- * A lone PrimeIcons class (`'pi-home'`) missing its required base `pi` class is repaired to
- * `'pi pi-home'` so it still renders — a common mistake that otherwise shows nothing.
- */
-export const PiClassMissingBase: Story = {
-    render: () => <IconDisplay icon='pi-home' className='text-3xl' />,
-};
-
-/**
- * A bare icon name (`'plus'`) is not a CSS class and renders nothing — passing one logs a
- * development warning pointing at the full `'pi pi-plus'` class. Shown here next to the
- * correct usage for contrast.
- */
-export const BareIconNameWarns: Story = {
     render: () => (
-        <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-            <div style={{ textAlign: 'center' }}>
-                <IconDisplay icon='plus' className='text-2xl' />
-                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
-                    'plus' (bare name — warns, renders nothing)
-                </p>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-                <IconDisplay icon='pi pi-plus' className='text-2xl' />
-                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
-                    'pi pi-plus' (correct)
-                </p>
-            </div>
-        </div>
+        <>
+            <style>{'.story-product-home::before { content: "⌂"; font-size: 1.5rem; }'}</style>
+            <IconDisplay icon='story-product-home' className='cratis:text-3xl' />
+        </>
     ),
 };
 
-/** Renders an SVG React node directly — no wrapping `<i>` element is produced. */
-export const SvgReactNode: Story = {
-    render: () => (
-        <IconDisplay
-            icon={
-                <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 24 24'
-                    width='24'
-                    height='24'
-                    fill='currentColor'
-                    aria-hidden='true'
-                >
-                    <path d='M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z' />
-                </svg>
-            }
-        />
-    ),
+/** Renders an icon-library React node directly without a wrapping `<i>`. */
+export const ReactIconNode: Story = {
+    render: () => <IconDisplay icon={<FaHouse aria-hidden='true' />} />,
 };
 
-/** Renders any arbitrary React element — here a styled emoji span — as an icon. */
+/** Renders any React node, including product-owned SVG or content. */
 export const ArbitraryReactNode: Story = {
-    render: () => (
-        <IconDisplay icon={<span style={{ fontSize: '1.5rem' }}>🚀</span>} />
-    ),
+    render: () => <IconDisplay icon={<FaRocket aria-hidden='true' />} />,
 };
 
-/**
- * Side-by-side comparison of the same logical "home" icon expressed as
- * a CSS-class string versus a custom SVG React node.
- */
+/** Shows the provider-owned CSS-class and React-node contracts side by side. */
 export const StringVsReactNode: Story = {
     render: () => (
         <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            <style>{'.story-product-home::before { content: "⌂"; font-size: 1.5rem; }'}</style>
             <div style={{ textAlign: 'center' }}>
-                <IconDisplay icon='pi pi-home' className='text-2xl' />
-                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
-                    string (CSS class)
-                </p>
+                <IconDisplay icon='story-product-home' />
+                <p>consumer CSS class</p>
             </div>
             <div style={{ textAlign: 'center' }}>
-                <IconDisplay
-                    icon={
-                        <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            viewBox='0 0 24 24'
-                            width='24'
-                            height='24'
-                            fill='currentColor'
-                            aria-hidden='true'
-                        >
-                            <path d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z' />
-                        </svg>
-                    }
-                />
-                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem', color: 'var(--cratis-text-color-secondary)' }}>
-                    ReactNode (SVG)
-                </p>
+                <IconDisplay icon={<FaHouse aria-hidden='true' />} />
+                <p>React node</p>
             </div>
         </div>
     ),

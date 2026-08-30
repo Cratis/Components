@@ -3,10 +3,13 @@
 
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { fn } from 'storybook/test';
 import { ObjectNavigationalBar } from './ObjectNavigationalBar';
 
+const navigateAction = fn();
+
 const meta: Meta<typeof ObjectNavigationalBar> = {
-    title: 'Components/ObjectNavigationalBar',
+    title: 'ObjectNavigationalBar/ObjectNavigationalBar',
     component: ObjectNavigationalBar,
     tags: ['autodocs'],
     parameters: {
@@ -47,20 +50,20 @@ export const Interactive: Story = {
 export const AtRoot: Story = {
     args: {
         navigationPath: [],
-        onNavigate: (index: number) => console.log('Navigate to', index),
+        onNavigate: navigateAction,
     },
 };
 
 export const SingleLevel: Story = {
     args: {
         navigationPath: ['users'],
-        onNavigate: (index: number) => console.log('Navigate to', index),
+        onNavigate: navigateAction,
     },
 };
 
 export const DeepPath: Story = {
     args: {
         navigationPath: ['users', '0', 'address', 'city'],
-        onNavigate: (index: number) => console.log('Navigate to', index),
+        onNavigate: navigateAction,
     },
 };

@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import type { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatIdentifier } from './ChatIdentifier';
 
 /**
@@ -11,7 +11,6 @@ import type { ChatIdentifier } from './ChatIdentifier';
  * re-parsing the text.
  */
 export interface ChatMention {
-
     /** The identifier of who is mentioned. */
     id: ChatIdentifier;
 

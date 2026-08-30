@@ -3,11 +3,11 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { ObjectContentEditor } from './ObjectContentEditor';
-import { JsonSchema, Json } from '../types/JsonSchema';
+import type { JsonSchema, Json } from '../types/JsonSchema';
 import { useState } from 'react';
 
 const meta: Meta<typeof ObjectContentEditor> = {
-    title: 'Components/ObjectContentEditor',
+    title: 'ObjectContentEditor/ObjectContentEditor',
     component: ObjectContentEditor,
     tags: ['autodocs'],
     parameters: {
@@ -75,8 +75,8 @@ const userSchema: JsonSchema = {
 
 const sampleUser: Json = {
     id: '123e4567-e89b-12d3-a456-426614174000',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: 'Sample User',
+    email: 'sample.user@example.invalid',
     age: 30,
     isActive: true,
     address: {
@@ -179,11 +179,11 @@ const editableSchema: JsonSchema = {
 };
 
 const editableObject: Json = {
-    name: 'Jane Smith',
-    email: 'jane@example.com',
+    name: 'Example Participant',
+    email: 'sample.user@example.invalid',
     age: 28,
     isActive: true,
-    website: 'https://example.com',
+    website: 'https://example.invalid',
     birthDate: '1996-03-15',
     notes: 'This field is intentionally long to demonstrate the textarea input. It contains more than fifty characters.'
 };
@@ -207,7 +207,7 @@ export const EditModeWithValidation: Story = {
         const [obj, setObj] = useState<Json>({ ...editableObject as object, name: '', email: 'not-an-email' });
         const [hasErrors, setHasErrors] = useState(false);
         return (
-            <div className="p-4">
+            <div className="cratis:p-4">
                 <ObjectContentEditor
                     object={obj}
                     schema={editableSchema}
@@ -215,16 +215,13 @@ export const EditModeWithValidation: Story = {
                     onChange={setObj}
                     onValidationChange={setHasErrors}
                 />
-                <div className="mt-4">
-                    <button
-                        className="p-button p-component"
-                        disabled={hasErrors}
-                        onClick={() => alert('Saved: ' + JSON.stringify(obj, null, 2))}
-                    >
+                <div className="cratis:mt-4">
+                    <button className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" data-disabled={hasErrors || undefined} disabled={hasErrors}
+                    onClick={() => alert('Saved: ' + JSON.stringify(obj, null, 2))}>
                         Save
                     </button>
                     {hasErrors && (
-                        <span className="p-error ml-3">Please fix validation errors before saving.</span>
+                        <span className="cratis:ml-3 cratis:text-[var(--cratis-red-500)]">Please fix validation errors before saving.</span>
                     )}
                 </div>
             </div>

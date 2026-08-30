@@ -4,10 +4,15 @@
 // @vitest-environment jsdom
 
 import { createElement } from 'react';
-import { ChatAuthorKind } from '../../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { ChatAuthorKind } from '../Kit/ChatAuthorKind';
 import { ChatTopicList } from '../ChatTopicList';
 import type { ChatTopic } from '../ChatTopic';
-import { click, render, unmount, type TopicListInTheDom } from './given/a_topic_list_in_the_dom';
+import {
+    click,
+    render,
+    unmount,
+    type TopicListInTheDom,
+} from './given/a_topic_list_in_the_dom';
 
 describe('when a topic is picked', () => {
     let list: TopicListInTheDom;
@@ -30,16 +35,18 @@ describe('when a topic is picked', () => {
     beforeEach(async () => {
         opened = undefined;
         started = false;
-        list = await render(createElement(ChatTopicList, {
-            topics: [planning, retro],
-            onOpen: topic => {
-                opened = topic;
-            },
-            onStart: () => {
-                started = true;
-            },
-            authorOf: () => ({ name: 'Sample User', kind: ChatAuthorKind.User }),
-        }));
+        list = await render(
+            createElement(ChatTopicList, {
+                topics: [planning, retro],
+                onOpen: (topic) => {
+                    opened = topic;
+                },
+                onStart: () => {
+                    started = true;
+                },
+                authorOf: () => ({ name: 'Sample User', kind: ChatAuthorKind.User }),
+            }),
+        );
     });
 
     afterEach(async () => {
@@ -47,18 +54,26 @@ describe('when a topic is picked', () => {
     });
 
     it('should list the most recently active topic first', () =>
-        document.querySelectorAll('.cratis-chat-topics__name')[0].textContent!.should.equal('Retro notes'));
+        document
+            .querySelectorAll('.cratis-chat-topics__name')[0]
+            .textContent!.should.equal('Retro notes'));
 
     it('should tell who started a topic', () =>
-        document.querySelectorAll('.cratis-chat-topics__started-by')[0].textContent!.should.equal('Started by Sample User'));
+        document
+            .querySelectorAll('.cratis-chat-topics__started-by')[0]
+            .textContent!.should.equal('Started by Sample User'));
 
     it('should hand the picked topic back', async () => {
-        await click(document.querySelectorAll<HTMLButtonElement>('.cratis-chat-topics__topic')[1]);
+        await click(
+            document.querySelectorAll<HTMLButtonElement>('.cratis-chat-topics__topic')[1],
+        );
         opened!.should.equal(planning);
     });
 
     it('should raise the intent to start a new topic', async () => {
-        await click(document.querySelector<HTMLButtonElement>('.cratis-chat-topics__start')!);
+        await click(
+            document.querySelector<HTMLButtonElement>('.cratis-chat-topics__start')!,
+        );
         started.should.be.true;
     });
 });

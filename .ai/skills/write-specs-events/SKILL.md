@@ -63,7 +63,7 @@ Use the fluent `Given` builder when the act phase depends on prior state:
 ```csharp
 await scenario.Given
     .ForEventSource(authorId)
-    .Events(new AuthorRegistered("Jane Smith"), new BookAdded("Clean Code"));
+    .Events(new AuthorRegistered("Example Author"), new BookAdded("Sample Book"));
 ```
 
 Chain multiple `ForEventSource` calls to seed different event sources:
@@ -71,11 +71,11 @@ Chain multiple `ForEventSource` calls to seed different event sources:
 ```csharp
 await scenario.Given
     .ForEventSource(author1Id)
-    .Events(new AuthorRegistered("Jane Smith"));
+    .Events(new AuthorRegistered("Example Author"));
 
 await scenario.Given
     .ForEventSource(author2Id)
-    .Events(new AuthorRegistered("John Doe"));
+    .Events(new AuthorRegistered("Sample Author"));
 ```
 
 **Rules:**
@@ -132,7 +132,7 @@ public class when_registering_an_author : Specification
     void Establish() => _scenario = new EventScenario();
 
     async Task Because() =>
-        _result = await _scenario.EventLog.Append(AuthorId.New(), new AuthorRegistered("Jane Smith"));
+        _result = await _scenario.EventLog.Append(AuthorId.New(), new AuthorRegistered("Example Author"));
 
     [Fact] void should_be_successful() => _result.ShouldBeSuccessful();
     [Fact] void should_not_have_constraint_violations() => _result.ShouldNotHaveConstraintViolations();
@@ -158,11 +158,11 @@ public class when_registering_an_author
             _scenario = new EventScenario();
             await _scenario.Given
                 .ForEventSource(AuthorId.New())
-                .Events(new AuthorRegistered("Jane Smith"));
+                .Events(new AuthorRegistered("Example Author"));
         }
 
         async Task Because() =>
-            _result = await _scenario.EventLog.Append(AuthorId.New(), new AuthorRegistered("Jane Smith"));
+            _result = await _scenario.EventLog.Append(AuthorId.New(), new AuthorRegistered("Example Author"));
 
         [Fact] void should_be_failed() => _result.ShouldBeFailed();
         [Fact] void should_have_a_constraint_violation() => _result.ShouldHaveConstraintViolations();

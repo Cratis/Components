@@ -27,14 +27,14 @@ interface Person {
 }
 
 const mockPersons: Person[] = [
-    { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin' },
-    { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'Editor' },
-    { id: 3, name: 'Carol White', email: 'carol@example.com', role: 'Viewer' },
-    { id: 4, name: 'David Brown', email: 'david@example.com', role: 'Editor' },
-    { id: 5, name: 'Eve Davis', email: 'eve@example.com', role: 'Admin' },
-    { id: 6, name: 'Frank Miller', email: 'frank@example.com', role: 'Viewer' },
-    { id: 7, name: 'Grace Wilson', email: 'grace@example.com', role: 'Editor' },
-    { id: 8, name: 'Henry Taylor', email: 'henry@example.com', role: 'Viewer' },
+    { id: 1, name: 'Sample User 01', email: 'sample.user@example.invalid', role: 'Admin' },
+    { id: 2, name: 'Sample User 02', email: 'sample02@example.invalid', role: 'Editor' },
+    { id: 3, name: 'Sample User 03', email: 'sample03@example.invalid', role: 'Viewer' },
+    { id: 4, name: 'Sample User 04', email: 'sample04@example.invalid', role: 'Editor' },
+    { id: 5, name: 'Sample User 05', email: 'sample05@example.invalid', role: 'Admin' },
+    { id: 6, name: 'Sample User 06', email: 'sample06@example.invalid', role: 'Viewer' },
+    { id: 7, name: 'Sample User 07', email: 'sample07@example.invalid', role: 'Editor' },
+    { id: 8, name: 'Sample User 08', email: 'sample08@example.invalid', role: 'Viewer' },
 ];
 
 // Mock query — overrides perform() to return static data instead of making HTTP calls
@@ -120,9 +120,9 @@ class ManyPersonsQuery extends QueryFor<Person, object> {
 
 const PersonDetails = ({ item }: { item: Person }) => {
     return (
-        <div className='p-4'>
-            <h2 className='text-2xl font-bold mb-4'>Person Details</h2>
-            <div className='space-y-2'>
+        <div className='cratis:p-4'>
+            <h2 className='cratis:text-2xl cratis:font-bold cratis:mb-4'>Person Details</h2>
+            <div className='cratis:space-y-2'>
                 <div>
                     <strong>ID:</strong> {item.id}
                 </div>
@@ -154,18 +154,18 @@ export const Default: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Add Person'
-                        icon={() => <i className='pi pi-plus' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Add person clicked')}
                     />
                     <MenuItem
                         label='Edit Person'
-                        icon={() => <i className='pi pi-pencil' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Edit person clicked')}
                         disableOnUnselected
                     />
                     <MenuItem
                         label='Delete Person'
-                        icon={() => <i className='pi pi-trash' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Delete person clicked')}
                         disableOnUnselected
                     />
@@ -209,7 +209,7 @@ export const WithoutDetails: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Refresh'
-                        icon={() => <i className='pi pi-refresh' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Refresh clicked')}
                     />
                 </DataPage.MenuItems>
@@ -290,9 +290,9 @@ const PersonDetailsWithRefresh = ({
     onRefresh?: () => void;
 }) => {
     return (
-        <div className='p-4'>
-            <h2 className='text-2xl font-bold mb-4'>Person Details</h2>
-            <div className='space-y-2 mb-4'>
+        <div className='cratis:p-4'>
+            <h2 className='cratis:text-2xl cratis:font-bold cratis:mb-4'>Person Details</h2>
+            <div className='cratis:space-y-2 cratis:mb-4'>
                 <div>
                     <strong>Name:</strong> {item.name}
                 </div>
@@ -303,13 +303,10 @@ const PersonDetailsWithRefresh = ({
                     <strong>Role:</strong> {item.role}
                 </div>
             </div>
-            <button
-                className='p-button p-component'
-                onClick={() => {
-                    alert(`Saved changes for ${item.name}`);
-                    onRefresh?.();
-                }}
-            >
+            <button className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
+                alert(`Saved changes for ${item.name}`);
+                onRefresh?.();
+            }}>
                 Save &amp; Refresh
             </button>
         </div>
@@ -371,7 +368,7 @@ export const MultiplePages: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Add Person'
-                        icon={() => <i className='pi pi-plus' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Add person clicked')}
                     />
                 </DataPage.MenuItems>
@@ -499,7 +496,7 @@ export const MultiplePagesWithDetails: Story = {
                 <DataPage.MenuItems>
                     <MenuItem
                         label='Edit Person'
-                        icon={() => <i className='pi pi-pencil' />}
+                        icon={() => <span aria-hidden='true'>◆</span>}
                         command={() => alert('Edit person clicked')}
                         disableOnUnselected
                     />

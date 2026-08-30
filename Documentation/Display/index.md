@@ -6,22 +6,23 @@ Use them for status indicators in tables and detail views, counts on icons, remo
 
 ## Tag
 
-A small colored status label. Prefer a `Tag` with a `severity` over hand-colored text — it is theme-aware and meets contrast in light and dark.
+A small colored status label. Prefer a `Tag` with a `severity` over hand-colored text so it follows the active semantic theme. Verify the resulting contrast in every application theme you ship.
 
 ```tsx
 import { Tag } from '@cratis/components/Display';
 
 <Tag severity="success" value="In stock" />
 <Tag severity="danger" value="Out of stock" />
+<Tag severity="info" value="Member" icon="product-icons product-user" />
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `ReactNode` | The label shown inside the tag (or pass `children`). |
-| `severity` | `'secondary' \| 'success' \| 'info' \| 'warn' \| 'danger' \| 'contrast'` | Severity tone (drives the color). |
-| `rounded` | `boolean` | Fully rounds the tag. |
-| `icon` | `ReactNode` | An icon rendered before the label. |
-| `className` | `string` | Extra CSS class. |
+| Prop        | Type                                                                     | Description                                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`     | `ReactNode`                                                              | The label shown inside the tag (or pass `children`).                                                                                           |
+| `severity`  | `'secondary' \| 'success' \| 'info' \| 'warn' \| 'danger' \| 'contrast'` | Severity tone (drives the color).                                                                                                              |
+| `rounded`   | `boolean`                                                                | Fully rounds the tag.                                                                                                                          |
+| `icon`      | `ReactNode`                                                              | An icon rendered before the label. A string is treated as a complete consumer-owned icon-font CSS class; other React nodes render as supplied. |
+| `className` | `string`                                                                 | Extra CSS class.                                                                                                                               |
 
 ## Badge
 
@@ -34,13 +35,13 @@ import { Badge } from '@cratis/components/Display';
 <Badge value="NEW" severity="success" />
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `ReactNode` | The value shown inside the badge (or pass `children`). |
-| `severity` | `'secondary' \| 'info' \| 'success' \| 'warn' \| 'danger' \| 'contrast'` | Severity tone. |
-| `size` | `'small' \| 'large' \| 'xlarge'` | Badge size. |
-| `shape` | `'circle'` | Renders the badge as a circle. |
-| `className` | `string` | Extra CSS class. |
+| Prop        | Type                                                                     | Description                                            |
+| ----------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
+| `value`     | `ReactNode`                                                              | The value shown inside the badge (or pass `children`). |
+| `severity`  | `'secondary' \| 'info' \| 'success' \| 'warn' \| 'danger' \| 'contrast'` | Severity tone.                                         |
+| `size`      | `'small' \| 'large' \| 'xlarge'`                                         | Badge size.                                            |
+| `shape`     | `'circle'`                                                               | Renders the badge as a circle.                         |
+| `className` | `string`                                                                 | Extra CSS class.                                       |
 
 ## Chip
 
@@ -53,14 +54,14 @@ import { Chip } from '@cratis/components/Display';
 <Chip label="Removable" removable onRemove={() => remove('design')} />
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `label` | `string` | The chip label. |
-| `icon` | `ReactNode` | An icon rendered before the label. |
-| `removable` | `boolean` | Shows a remove control. |
-| `onRemove` | `() => void` | Invoked when the remove control is activated. |
-| `removeAriaLabel` | `string` | Accessible name for the remove control. Override to localize. Defaults to `'Remove'`. |
-| `className` | `string` | Extra CSS class. |
+| Prop              | Type         | Description                                                                           |
+| ----------------- | ------------ | ------------------------------------------------------------------------------------- |
+| `label`           | `string`     | The chip label.                                                                       |
+| `icon`            | `ReactNode`  | An icon rendered before the label.                                                    |
+| `removable`       | `boolean`    | Shows a remove control.                                                               |
+| `onRemove`        | `() => void` | Invoked when the remove control is activated.                                         |
+| `removeAriaLabel` | `string`     | Accessible name for the remove control. Override to localize. Defaults to `'Remove'`. |
+| `className`       | `string`     | Extra CSS class.                                                                      |
 
 ## Avatar
 
@@ -69,20 +70,61 @@ A user/entity avatar showing an image, initials, or an icon fallback.
 ```tsx
 import { Avatar } from '@cratis/components/Display';
 
-<Avatar image="/users/jane.png" />
-<Avatar label="JD" />
+<Avatar image="/users/sample-user.png" />
+<Avatar label="SU" />
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `image` | `string` | Image URL. When present, the image is shown and everything below except `alt` is ignored. |
-| `alt` | `string` | Alternative text for `image`. Unused when there is no image. |
-| `icon` | `ReactNode` | Icon fallback when there is no image. Takes precedence over `label`. |
-| `label` | `string` | Initials/text fallback when there is no image and no icon. |
-| `size` | `'normal' \| 'large' \| 'xlarge'` | Avatar size. |
-| `className` | `string` | Extra CSS class. |
+| Prop        | Type                              | Description                                                                               |
+| ----------- | --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `image`     | `string`                          | Image URL. When present, the image is shown and everything below except `alt` is ignored. |
+| `alt`       | `string`                          | Alternative text for `image`. Unused when there is no image.                              |
+| `icon`      | `ReactNode`                       | Icon fallback when there is no image. Takes precedence over `label`.                      |
+| `label`     | `string`                          | Initials/text fallback when there is no image and no icon.                                |
+| `size`      | `'normal' \| 'large' \| 'xlarge'` | Avatar size.                                                                              |
+| `className` | `string`                          | Extra CSS class.                                                                          |
 
 The fallback order is `image` → `icon` → `label`, so passing both an `icon` and a `label` shows the icon.
+
+## Message
+
+An inline status message with a severity tone and optional leading icon.
+
+```tsx
+import { Message } from '@cratis/components/Display';
+
+<Message severity='success'>Saved successfully.</Message>
+<Message severity='error' text='The request failed.' />
+<Message severity='info' icon={false}>No icon is shown.</Message>
+```
+
+| Prop        | Type                                                                    | Description                                                                                         |
+| ----------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `severity`  | `'info' \| 'success' \| 'warn' \| 'error' \| 'secondary' \| 'contrast'` | Visual and semantic tone. Defaults to `'info'`.                                                     |
+| `text`      | `ReactNode`                                                             | Message content when `children` is not provided.                                                    |
+| `children`  | `ReactNode`                                                             | Message content; takes precedence over `text`.                                                      |
+| `icon`      | `ReactNode \| false`                                                    | Custom leading icon. Pass `false` to hide the icon; otherwise a severity symbol is used by default. |
+| `className` | `string`                                                                | Extra CSS class on the root.                                                                        |
+
+Error messages use `role='alert'`; every other severity uses `role='status'`. The decorative icon is hidden from assistive technology. Stable `root`, `icon`, and `text` `data-cratis-part` markers are available for styling and tests.
+
+## ProgressSpinner
+
+An indeterminate loading spinner for work whose completion percentage is unknown.
+
+```tsx
+import { ProgressSpinner } from '@cratis/components/Display';
+
+<ProgressSpinner aria-label='Loading authors' />
+<ProgressSpinner style={{ width: '2rem', height: '2rem' }} />
+```
+
+| Prop         | Type            | Description                                                                             |
+| ------------ | --------------- | --------------------------------------------------------------------------------------- |
+| `style`      | `CSSProperties` | Root styles; use width and height to size the spinner.                                  |
+| `className`  | `string`        | Extra CSS class on the root.                                                            |
+| `aria-label` | `string`        | Loading status announced to assistive technology. Defaults to `'Loading'`; localize it. |
+
+`ProgressSpinner` renders a `role='status'` root. It exposes stable `root`, `svg`, `track`, and `range` `data-cratis-part` markers plus `data-busy='true'` and `data-loading='true'` on the root.
 
 ## ProgressBar
 
@@ -95,12 +137,18 @@ import { ProgressBar } from '@cratis/components/Display';
 <ProgressBar mode="indeterminate" />
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `value` | `number` | Completion value, `0`–`100`. Ignored in `indeterminate` mode. |
-| `mode` | `'determinate' \| 'indeterminate'` | `determinate` (default) shows `value`; `indeterminate` shows a looping animation. |
-| `showValue` | `boolean` | Whether to render the percentage label. Defaults to `true` (determinate only). The label is always `value` followed by `%`. |
-| `className` | `string` | Extra CSS class. |
+| Prop              | Type                               | Description                                                                                                                 |
+| ----------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `value`           | `number`                           | Completion value, `0`–`100`. Ignored in `indeterminate` mode.                                                               |
+| `mode`            | `'determinate' \| 'indeterminate'` | `determinate` (default) shows `value`; `indeterminate` shows a looping animation.                                           |
+| `showValue`       | `boolean`                          | Whether to render the percentage label. Defaults to `true` (determinate only). The label is always `value` followed by `%`. |
+| `aria-label`      | `string`                           | Accessible name. Defaults to `'Progress'`; override it to describe the operation.                                           |
+| `aria-labelledby` | `string`                           | Id of an external element that labels the progress indicator.                                                               |
+| `className`       | `string`                           | Extra CSS class on the root.                                                                                                |
+
+`ProgressBar` exposes stable `root`, `indicator`, and `label` `data-cratis-part` markers and
+`data-mode` on the root. It does not expose a `pt` prop; use `className`, the stable markers, or
+semantic tokens for product styling.
 
 ## Skeleton
 
@@ -113,12 +161,12 @@ import { Skeleton } from '@cratis/components/Display';
 <Skeleton height="3rem" circle />
 ```
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `width` | `string` | Any CSS length. Defaults to `'100%'`. Ignored when `circle` is set. |
-| `height` | `string` | Any CSS length. Defaults to `'1rem'`. Drives **both** dimensions when `circle` is set. |
-| `borderRadius` | `string` | Any CSS length. Ignored when `circle` is set (which forces `50%`). |
-| `circle` | `boolean` | Renders a circle: `height` is used for width and height, and the radius is forced to `50%`. |
-| `className` | `string` | Extra CSS class. |
+| Prop           | Type      | Description                                                                                 |
+| -------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `width`        | `string`  | Any CSS length. Defaults to `'100%'`. Ignored when `circle` is set.                         |
+| `height`       | `string`  | Any CSS length. Defaults to `'1rem'`. Drives **both** dimensions when `circle` is set.      |
+| `borderRadius` | `string`  | Any CSS length. Ignored when `circle` is set (which forces `50%`).                          |
+| `circle`       | `boolean` | Renders a circle: `height` is used for width and height, and the radius is forced to `50%`. |
+| `className`    | `string`  | Extra CSS class.                                                                            |
 
 Because `circle` takes its size from `height`, set `height` rather than `width` for a circular skeleton — `<Skeleton circle />` on its own renders at the `1rem` default.

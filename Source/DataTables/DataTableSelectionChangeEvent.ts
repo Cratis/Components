@@ -5,8 +5,7 @@ import type { SyntheticEvent } from 'react';
 
 /**
  * Fired when the selected row of a Cratis data table changes. Replaces
- * PrimeReact 10's `DataTableSelectionSingleChangeEvent` (removed in
- * PrimeReact 11, which models selection by key rather than by row object).
+ * the legacy renderer's single-selection event.
  * The `value` field is preserved so existing `event.value` call sites keep
  * working.
  *

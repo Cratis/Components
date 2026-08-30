@@ -1,6 +1,6 @@
 # NumberField
 
-`NumberField` wraps the PrimeReact `InputNumber` component for numeric input with optional constraints.
+`NumberField` renders a Cratis-owned native numeric input with optional constraints.
 
 ## Usage
 
@@ -28,6 +28,6 @@ import { NumberField } from '@cratis/components/CommandForm';
 
 - Default value is `0`.
 - The field spans full width within its container.
-- Validation state is reflected via the PrimeReact `invalid` flag.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.
 - When the value is cleared, it falls back to `0`.
 

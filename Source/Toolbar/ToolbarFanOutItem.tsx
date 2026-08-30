@@ -1,15 +1,38 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+    type ButtonHTMLAttributes,
+    type HTMLAttributes,
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useId,
+    useRef,
+    useState,
+} from 'react';
 import { IconDisplay } from '../Common/Icon';
 import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
+import {
+    ToolbarItemVisibilityProvider,
+    useToolbarItemVisibility,
+} from './ToolbarItemVisibilityContext';
+
+/** Stable part attributes for {@link ToolbarFanOutItem}. */
+export interface ToolbarFanOutParts {
+    /** Fan-out composition root. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Native trigger button. */
+    trigger?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Expanded tool panel. */
+    panel?: HTMLAttributes<HTMLDivElement>;
+}
 
 /** Props for the {@link ToolbarFanOutItem} component. */
 export interface ToolbarFanOutItemProps {
-    /** The icon to display on the trigger button — either a PrimeIcons CSS class string (e.g. `'pi pi-home'`) or a React node. */
+    /** React icon node or consumer-owned icon-font class for the trigger. */
     icon: Icon;
 
     /** Tooltip text shown when hovering over the trigger button. */
@@ -20,6 +43,12 @@ export interface ToolbarFanOutItemProps {
 
     /** Direction the panel fans out from the trigger button (default: 'right'). */
     fanOutDirection?: 'right' | 'left' | 'up' | 'down';
+
+    /** Extra class name for the fan-out root. */
+    className?: string;
+
+    /** Stable fan-out part attributes. */
+    pt?: ToolbarFanOutParts;
 
     /** The toolbar items to render inside the fan-out panel. */
     children: ReactNode;
@@ -40,12 +69,18 @@ export const ToolbarFanOutItem = ({
     tooltip,
     tooltipPosition = 'right',
     fanOutDirection = 'right',
+    className,
+    pt,
     children,
 }: ToolbarFanOutItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isSettled, setIsSettled] = useState(false);
+    const isToolbarItemVisible = useToolbarItemVisibility();
     const containerRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLButtonElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
+    const generatedPanelId = useId();
+    const panelId = pt?.panel?.id ?? generatedPanelId;
 
     // A settled panel has `clip-path: none`, which cannot interpolate — closing
     // straight from it would snap the panel shut instead of wiping it closed.
@@ -74,7 +109,11 @@ export const ToolbarFanOutItem = ({
     };
 
     const handleTransitionEnd = (event: React.TransitionEvent<HTMLDivElement>) => {
-        if (event.target === panelRef.current && event.propertyName === 'clip-path' && isExpanded) {
+        if (
+            event.target === panelRef.current &&
+            event.propertyName === 'clip-path' &&
+            isExpanded
+        ) {
             setIsSettled(true);
         }
     };
@@ -84,41 +123,83 @@ export const ToolbarFanOutItem = ({
         if (!isExpanded) return;
 
         const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target as Node)
+            ) {
                 collapse();
             }
         };
 
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            event.preventDefault();
+            event.stopPropagation();
+            collapse();
+            window.setTimeout(() => triggerRef.current?.focus(), 0);
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape, true);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape, true);
         };
     }, [isExpanded, collapse]);
 
     const activeClass = isExpanded ? 'toolbar-button--active' : '';
     const panelVisibleClass = isExpanded ? 'toolbar-fanout-panel--visible' : '';
-    const panelSettledClass = isExpanded && isSettled ? 'toolbar-fanout-panel--settled' : '';
+    const panelSettledClass =
+        isExpanded && isSettled ? 'toolbar-fanout-panel--settled' : '';
     const directionClass = `toolbar-fanout-panel--${fanOutDirection}`;
 
     return (
-        <div className='toolbar-fanout-item' ref={containerRef}>
-            <Tooltip content={tooltip} position={tooltipPosition} disabled={isExpanded}>
+        <div
+            {...pt?.root}
+            className={`toolbar-fanout-item ${pt?.root?.className ?? ''} ${className ?? ''}`}
+            data-cratis-part='fanout-root'
+            data-open={isExpanded || undefined}
+            ref={containerRef}
+        >
+            <Tooltip
+                content={tooltip}
+                position={tooltipPosition}
+                disabled={isExpanded || !isToolbarItemVisible}
+            >
                 <button
+                    {...pt?.trigger}
+                    ref={triggerRef}
                     type='button'
                     aria-label={tooltip}
                     aria-expanded={isExpanded}
+                    aria-controls={panelId}
                     onClick={handleToggle}
-                    className={`toolbar-button w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer ${activeClass}`}
+                    className={`toolbar-button cratis:w-10 cratis:h-10 cratis:flex cratis:items-center cratis:justify-center cratis:rounded-lg cratis:cursor-pointer ${activeClass} ${pt?.trigger?.className ?? ''}`}
+                    data-cratis-part='fanout-trigger'
+                    data-open={isExpanded || undefined}
                 >
-                    <IconDisplay icon={icon} className='text-lg' />
+                    <IconDisplay icon={icon} className='cratis:text-lg' />
                 </button>
             </Tooltip>
             <div
+                {...pt?.panel}
+                id={panelId}
+                role='group'
+                aria-label={tooltip}
                 ref={panelRef}
-                className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass}`}
+                className={`toolbar-fanout-panel ${directionClass} ${panelVisibleClass} ${panelSettledClass} ${pt?.panel?.className ?? ''}`}
+                data-cratis-part='fanout-panel'
+                data-expanded={isExpanded || undefined}
+                data-open={isExpanded || undefined}
+                data-direction={fanOutDirection}
+                data-settled={isSettled || undefined}
+                aria-hidden={!isExpanded}
+                inert={!isExpanded}
                 onTransitionEnd={handleTransitionEnd}
             >
-                {children}
+                <ToolbarItemVisibilityProvider value={isExpanded && isToolbarItemVisible}>
+                    {children}
+                </ToolbarItemVisibilityProvider>
             </div>
         </div>
     );

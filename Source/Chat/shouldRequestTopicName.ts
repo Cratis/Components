@@ -10,5 +10,7 @@
  * @param existingMessageCount How many messages the topic already holds, before this send.
  * @returns True when the host should be asked for a name.
  */
-export const shouldRequestTopicName = (topicIsUnnamed: boolean, existingMessageCount: number): boolean =>
-    topicIsUnnamed && existingMessageCount === 0;
+export const shouldRequestTopicName = (
+    topicIsUnnamed: boolean,
+    existingMessageCount: number,
+): boolean => topicIsUnnamed && existingMessageCount === 0;

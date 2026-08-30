@@ -15,8 +15,8 @@ type Story = StoryObj<typeof Properties>;
 
 const sampleData = {
     userId: 'user-12345',
-    username: 'john.doe',
-    email: 'john.doe@example.com',
+    username: 'sample.user',
+    email: 'sample.user@example.invalid',
     age: 30,
     isActive: true,
     lastLogin: new Date('2024-02-10T10:30:00'),
@@ -30,7 +30,7 @@ export const Default: Story = {
         data: sampleData,
     },
     render: (args) => (
-        <div style={{ padding: '20px', background: '#1a1a1a', minHeight: '400px' }}>
+        <div className='time-machine' style={{ height: '400px', padding: '20px' }}>
             <Properties {...args} />
         </div>
     )
@@ -42,7 +42,7 @@ export const LeftAligned: Story = {
         align: 'left',
     },
     render: (args) => (
-        <div style={{ padding: '20px', background: '#1a1a1a', minHeight: '400px' }}>
+        <div className='time-machine' style={{ height: '400px', padding: '20px' }}>
             <Properties {...args} />
         </div>
     )
@@ -54,7 +54,7 @@ export const RightAligned: Story = {
         align: 'right',
     },
     render: (args) => (
-        <div style={{ padding: '20px', background: '#1a1a1a', minHeight: '400px' }}>
+        <div className='time-machine' style={{ height: '400px', padding: '20px' }}>
             <Properties {...args} />
         </div>
     )
@@ -63,7 +63,7 @@ export const RightAligned: Story = {
 export const WithNullValues: Story = {
     args: {
         data: {
-            name: 'John Doe',
+            name: 'Sample User',
             email: null,
             phone: undefined,
             age: 30,
@@ -71,7 +71,7 @@ export const WithNullValues: Story = {
         },
     },
     render: (args) => (
-        <div style={{ padding: '20px', background: '#1a1a1a', minHeight: '400px' }}>
+        <div className='time-machine' style={{ height: '400px', padding: '20px' }}>
             <Properties {...args} />
         </div>
     )

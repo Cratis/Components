@@ -5,7 +5,7 @@
 .toolbar {
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
 }
 
 /* ── Toolbar button ──────────────────────────────────────────────────────── */
@@ -13,7 +13,9 @@
     color: var(--cratis-text-color-secondary);
     background: transparent;
     border: none;
-    transition: background 0.15s, color 0.15s;
+    transition:
+        background 0.15s,
+        color 0.15s;
 }
 
 .toolbar-button:hover {
@@ -22,13 +24,13 @@
 }
 
 .toolbar-button--active {
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
 }
 
 .toolbar-button--active:hover {
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background-hover);
+    color: var(--cratis-action-text);
 }
 
 .toolbar-button--draggable {
@@ -144,7 +146,7 @@
     padding: 0.5rem;
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
     border-radius: 1rem;
     white-space: nowrap;
     z-index: 10;
@@ -225,7 +227,7 @@
     padding: 0.5rem;
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
     border-radius: 1rem;
     z-index: 10;
     pointer-events: none;
@@ -282,7 +284,7 @@
  * When a Toolbar contains ToolbarGroup children it becomes a transparent
  * layout wrapper — each group renders as its own pill.
  */
-.toolbar:has(.toolbar-group) {
+.toolbar:has(> .toolbar-group) {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -297,9 +299,8 @@
 .toolbar-group {
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
 }
-
 
 /* ── Toolbar slot transition (ToolbarGroup slot content) ─────────────────── */
 
@@ -324,13 +325,21 @@
 }
 
 @keyframes toolbar-slot-fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes toolbar-slot-fade-out {
-    from { opacity: 1; }
-    to   { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 
 /*
@@ -354,4 +363,23 @@
     left: 0;
     animation: toolbar-slot-fade-out 0.2s ease forwards;
     pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toolbar,
+    .toolbar-button,
+    .toolbar-section,
+    .toolbar-context,
+    .toolbar-fanout-panel,
+    .toolbar-folder-panel,
+    .toolbar-slot-section,
+    .toolbar-slot-incoming,
+    .toolbar-slot-outgoing {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .toolbar-fanout-panel--visible {
+        clip-path: none !important;
+    }
 }

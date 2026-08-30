@@ -1,0 +1,50 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+html.cratis-light {
+    --primary-color: #005ea8;
+    --primary-color-text: #ffffff;
+    --red-400: #b91c1c;
+    --surface-400: #475569;
+}
+
+html.cratis-light .p-button {
+    color: #ffffff;
+    background: #005ea8;
+    border-color: #005ea8;
+}
+
+html.cratis-light .p-button.p-button-secondary {
+    background: #475569;
+    border-color: #475569;
+}
+
+html.cratis-light .p-button.p-button-danger {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
+html.cratis-light .p-button.p-button-warning {
+    background: #8a3b00;
+    border-color: #8a3b00;
+}
+
+html.cratis-light .p-button:is(.p-button-text, .p-button-link, .p-button-outlined) {
+    color: #005ea8;
+    background: transparent;
+}
+
+html.cratis-light
+    .p-button.p-button-secondary:is(.p-button-text, .p-button-link, .p-button-outlined) {
+    color: #475569;
+}
+
+html.cratis-light
+    .p-button.p-button-danger:is(.p-button-text, .p-button-link, .p-button-outlined) {
+    color: #b91c1c;
+}
+
+html.cratis-light
+    .p-button.p-button-warning:is(.p-button-text, .p-button-link, .p-button-outlined) {
+    color: #8a3b00;
+}

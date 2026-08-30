@@ -1,119 +1,105 @@
-# Notifications
+---
+title: Notifications
+description: App-wide notifications with documented region and dismissal labels through the Cratis-owned toast queue.
+---
 
-`CommandDialog` shows success and error feedback for you. But when you run a command **programmatically** — `command.execute()` outside a dialog — nothing tells the user what happened. The `Notifications` components fill that gap with app-wide toasts. Import them from `@cratis/components/Notifications`.
-
-## Mount one Toaster
-
-Mount a single `Toaster` near your app root. Every toast — from anywhere in the tree, even outside React — appears here and auto-dismisses.
-
-```tsx
-import { Toaster } from '@cratis/components/Notifications';
-
-<Toaster position='top-right' />;
-```
-
-Or let the provider mount it for you:
+Mount one toaster, then dispatch notifications from React components or ordinary modules.
 
 ```tsx
 <CratisComponentsProvider toaster>
-    <App />
+    <Application />
 </CratisComponentsProvider>
 ```
 
-| `Toaster` prop     | Type                 | Description                                                                                                                                                                     |
-| ------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `position`         | `ToasterPosition`    | Corner/edge the toasts stack from — `'top-left'`, `'top-center'`, `'top-right'`, `'bottom-left'`, `'bottom-center'`, `'bottom-right'` or `'center'`. Defaults to `'top-right'`. |
-| `limit`            | `number`             | Maximum toasts shown at once. Defaults to `3`.                                                                                                                                  |
-| `timeout`          | `number`             | Auto-dismiss timeout in milliseconds. Defaults to `6000`.                                                                                                                       |
-| `dismissAriaLabel` | `string`             | Accessible name for each toast's dismiss button. Override to localize. Defaults to `'Dismiss'`.                                                                                 |
-| `pt`               | `ToasterPassThrough` | Pass-through configuration for `region` and every `toast` frame.                                                                                                                |
-
-Use `pt.region` for the app-wide region and `pt.toast` for each toast's root, content, icon, title, description, action and close slots:
-
-```tsx
-<Toaster
-    pt={{
-        region: { root: { className: 'notification-region' } },
-        toast: {
-            root: { className: 'notification' },
-            close: { className: 'notification-close' },
-        },
-    }}
-/>
-```
-
-## Surface a command result with `toastCommandResult`
-
-When you execute a command outside a dialog you have to branch on the granular `ICommandResult` flags — authorized? valid? did it throw? `toastCommandResult` does that branching for you and shows the right toast: a success toast, a warning when not authorized, an error listing the per-field validation messages, or a generic error when the handler threw (stack traces are never shown to users).
-
-```tsx
-import { toastCommandResult } from '@cratis/components/Notifications';
-
-const result = await command.execute();
-if (toastCommandResult(result, { successTitle: 'Author registered' })) {
-    refresh();
-}
-```
-
-It returns `true` on success, so you can gate follow-up work (close a panel, refresh a query) on the same call. The branches are checked in order and the first match wins: success, then not-authorized (a **warning**, not an error), then validation, then exceptions. `result.exceptionMessages` and stack traces are deliberately never shown to the user — the exception toast carries the generic `exceptionTitle` and nothing else.
-
-| `toastCommandResult` option | Type      | Description                                                           |
-| --------------------------- | --------- | --------------------------------------------------------------------- |
-| `successTitle`              | `string`  | Title for the success toast. Defaults to `'Success'`.                 |
-| `successDescription`        | `string`  | Description for the success toast.                                    |
-| `unauthorizedTitle`         | `string`  | Title when rejected by authorization. Defaults to `'Not authorized'`. |
-| `validationTitle`           | `string`  | Title when validation failed. Defaults to `'Validation failed'`.      |
-| `exceptionTitle`            | `string`  | Title when the handler threw. Defaults to `'Something went wrong'`.   |
-| `showSuccess`               | `boolean` | When `false`, no toast is shown on success. Defaults to `true`.       |
-
-Every title is overridable — pass translated strings to localize.
-
-## Ad-hoc toasts with `toast`
-
-For notifications unrelated to a command, call the imperative `toast`. Each method takes an **options object**, not a bare string.
-
-```tsx
+```ts
 import { toast } from '@cratis/components/Notifications';
 
-toast.success({ title: 'Saved', description: 'Your changes were saved.' });
-toast.info({ title: 'Heads up' });
-toast.warn({ title: 'Check your input' });
-toast.error({ title: 'Failed', description: 'Please try again.' });
-```
-
-### Custom content keeps the toast frame
-
-`render` replaces only the toast's content body. Components retains the severity icon and accessible dismiss control, so you do not need to preallocate a toast ID or render your own close button:
-
-```tsx
-toast.error({
-    render: (
-        <div>
-            <strong>Import failed</strong>
-            <p>Three rows contain invalid email addresses.</p>
-        </div>
-    ),
+toast.success({
+    title: 'Saved',
+    description: 'Your changes were saved.',
 });
 ```
 
-The same framing applies when `toast.update` or a `toast.promise` success/error callback supplies `render`. `dismissible: false` and loading toasts still follow PrimeReact's normal no-close behavior.
+## Imperative API
 
-The severity method is `warn`, not `warning`. Alongside the four above, `toast` also offers `secondary` and `contrast`, and calling `toast(...)` directly takes the same options object with an explicit `severity`.
+- `toast(options)`
+- `toast.success(options)`
+- `toast.info(options)`
+- `toast.warn(options)`
+- `toast.error(options)`
+- `toast.secondary(options)`
+- `toast.contrast(options)`
+- `toast.update(id, updates)`
+- `toast.dismiss(id?)`
+- `toast.promise(promise, states)`
 
-Every call returns a `ToastId` you can hold on to: `toast.dismiss(id?)` closes that toast (or all of them), `toast.update(id, updates)` rewrites one in place, and `toast.promise(promise, options)` tracks a promise through pending/success/error states.
+The queue is shared across loaded Components copies. `setToastDispatch()` installs an application-owned dispatch and returns a scoped restore callback.
 
-## Supply an existing notification system
+## Building a custom rendering surface
 
-`toast` is a Cratis-owned dispatch contract; PrimeReact is only its default renderer. Install an application-owned implementation with `setToastDispatch()` and restore the previous dispatch when the scope ends:
+The default `Toaster` is optional. An application that wants full control over how
+notifications render — a different animation library, a non-portal placement, or
+integration with an existing app-wide notification center — can build its own surface
+on the same primitives `Toaster` itself uses:
 
-```typescript
-import { setToastDispatch, type ToastDispatch } from '@cratis/components/Notifications';
+- `subscribeToToasts(listener)` subscribes to the shared queue and returns an
+  unsubscribe callback. Call it inside a `useSyncExternalStore`/`useEffect` binding.
+- `getToastSnapshot()` returns the current, immutable array of queued `ToastRecord`
+  values — the snapshot to read whenever the subscription notifies of a change.
+- `ToastRecord` is `ToastOptions & { id: ToastId }`, the exact shape stored in the
+  queue; render each record's `title`/`description`/`render`, honor `dismissible`,
+  and call the imperative `toast` API (or a custom `ToastDispatch`) to dismiss it.
+- `ToastDispatch` is the interface implemented by whatever `setToastDispatch()`
+  installs — implement it to redirect every `toast(...)` call to a different
+  in-app system (or to a test double) instead of the built-in queue.
 
-const restore = setToastDispatch(myToastDispatch satisfies ToastDispatch);
+A minimal custom subscriber:
 
-// toast.success(...) and toastCommandResult(...) now use myToastDispatch.
-// Later, during teardown:
-restore();
+```tsx
+import { useSyncExternalStore } from 'react';
+import { subscribeToToasts, getToastSnapshot } from '@cratis/components/Notifications';
+
+const CustomToastRegion = () => {
+    const toasts = useSyncExternalStore(subscribeToToasts, getToastSnapshot);
+    return (
+        <div role='region' aria-label='Notifications'>
+            {toasts.map((toast) => (
+                <CustomToastFrame key={toast.id} toast={toast} />
+            ))}
+        </div>
+    );
+};
 ```
 
-The contract preserves the existing callable API and severity methods: `show`, `success`, `info`, `warn`, `error`, `secondary`, `contrast`, `update`, `dismiss`, and `promise`. `toastCommandResult` depends on this Cratis dispatch, so command feedback follows the renderer you supply.
+## Accessible behavior
+
+- Error frames use `role="alert"`; other frames use `role="status"`.
+- The notification region is labeled and polite.
+- Every dismissible frame retains a localized close control, including custom bodies.
+- Auto-dismiss pauses while the frame is hovered or contains keyboard focus.
+- Timeouts have a five-second accessibility floor.
+
+## Custom body
+
+```tsx
+toast.error({
+    render: <FailureDetails />,
+    dismissible: true,
+});
+```
+
+Custom content replaces only the body. The frame, severity indicator, timeout, and dismiss control remain owned by Components.
+
+## Toaster props
+
+| Prop               | Purpose                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------- |
+| `position`         | One of the six viewport edges/corners.                                                            |
+| `limit`            | Maximum visible frames.                                                                           |
+| `timeout`          | Default timeout in milliseconds.                                                                  |
+| `dismissAriaLabel` | Accessible name for close controls. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.notifications.dismiss`, then `'Dismiss'`. |
+| `regionAriaLabel`  | Accessible name for the notification region. Falls back to the provider's `messages.notifications.region`, then `'Notifications'`. |
+| `pt`               | Stable `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, and `close` parts. |
+
+Configure `dismissAriaLabel` / `regionAriaLabel` once for the whole application through
+`CratisComponentsProvider`'s `messages.notifications`, or override either per `<Toaster>` instance.

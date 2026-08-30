@@ -1,7 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+    type HTMLAttributes,
+    type ReactNode,
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 import { useToolbarSlot } from './ToolbarSlot';
 
 /** How long the fade-out animation runs (ms). React unmounts exiting content after this. */
@@ -18,7 +26,15 @@ const SLOT_TRANSITION_MS = 220;
  * the opacity animations start one frame before the resize — matching the feel of
  * {@link ToolbarSection} context switching.
  */
-const SlotTransition = ({ slotName, flexClass }: { slotName: string; flexClass: string }) => {
+const SlotTransition = ({
+    slotName,
+    flexClass,
+    pt,
+}: {
+    slotName: string;
+    flexClass: string;
+    pt?: ToolbarGroupParts;
+}) => {
     const liveItems = useToolbarSlot(slotName);
 
     // `current` is the content fading in (or already settled at full opacity).
@@ -91,13 +107,18 @@ const SlotTransition = ({ slotName, flexClass }: { slotName: string; flexClass: 
 
     return (
         <div
-            className={`toolbar-slot-section ${transitioningClass}`}
-            style={size ? { width: size.width, height: size.height } : undefined}
+            {...pt?.slot}
+            className={`toolbar-slot-section ${transitioningClass} ${pt?.slot?.className ?? ''}`}
+            style={{ ...pt?.slot?.style, ...(size ? { width: size.width, height: size.height } : {}) }}
+            data-cratis-part='toolbar-slot'
+            data-transitioning={exiting.length > 0 || undefined}
         >
             {/* Incoming content — fades in via @keyframes animation on mount */}
             <div
+                {...pt?.incoming}
                 ref={incomingRef}
-                className={`toolbar-slot-incoming inline-flex ${flexClass} items-center gap-1`}
+                className={`toolbar-slot-incoming cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.incoming?.className ?? ''}`}
+                data-cratis-part='toolbar-slot-incoming'
             >
                 {current}
             </div>
@@ -105,7 +126,11 @@ const SlotTransition = ({ slotName, flexClass }: { slotName: string; flexClass: 
             {exiting.length > 0 && (
                 <div
                     key={exitRevision}
-                    className={`toolbar-slot-outgoing inline-flex ${flexClass} items-center gap-1`}
+                    {...pt?.outgoing}
+                    className={`toolbar-slot-outgoing cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.outgoing?.className ?? ''}`}
+                    data-cratis-part='toolbar-slot-outgoing'
+                    aria-hidden='true'
+                    inert
                 >
                     {exiting}
                 </div>
@@ -113,6 +138,18 @@ const SlotTransition = ({ slotName, flexClass }: { slotName: string; flexClass: 
         </div>
     );
 };
+
+/** Stable part attributes for {@link ToolbarGroup}. */
+export interface ToolbarGroupParts {
+    /** Group root used as one logical measurement boundary. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Slot-transition boundary rendered when {@link ToolbarGroupProps.slotName} is used. */
+    slot?: HTMLAttributes<HTMLDivElement>;
+    /** Current slot content. */
+    incoming?: HTMLAttributes<HTMLDivElement>;
+    /** Previous slot content while it exits. */
+    outgoing?: HTMLAttributes<HTMLDivElement>;
+}
 
 /** Props for the {@link ToolbarGroup} component. */
 export interface ToolbarGroupProps {
@@ -129,6 +166,9 @@ export interface ToolbarGroupProps {
 
     /** Layout direction of the group, should match the parent {@link Toolbar} (default: `'vertical'`). */
     orientation?: 'vertical' | 'horizontal';
+
+    /** Stable group and slot-transition part attributes. */
+    pt?: ToolbarGroupParts;
 }
 
 /**
@@ -143,18 +183,28 @@ export interface ToolbarGroupProps {
  * ```tsx
  * <Toolbar>
  *     <ToolbarGroup slotName="canvas-tools">
- *         <ToolbarButton icon="pi pi-pencil" title="Draw" />
+ *         <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Draw" />
  *     </ToolbarGroup>
  * </Toolbar>
  * ```
  */
-export const ToolbarGroup = ({ children, slotName, orientation = 'vertical' }: ToolbarGroupProps) => {
-    const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
+export const ToolbarGroup = ({
+    children,
+    slotName,
+    orientation = 'vertical',
+    pt,
+}: ToolbarGroupProps) => {
+    const flexClass = orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col';
 
     return (
-        <div className={`toolbar-group inline-flex ${flexClass} items-center gap-1 p-2 rounded-2xl`}>
+        <div
+            {...pt?.root}
+            className={`toolbar-group cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl ${pt?.root?.className ?? ''}`}
+            data-cratis-part='toolbar-group'
+            data-orientation={orientation}
+        >
             {children}
-            {slotName && <SlotTransition slotName={slotName} flexClass={flexClass} />}
+            {slotName && <SlotTransition slotName={slotName} flexClass={flexClass} pt={pt} />}
         </div>
     );
 };

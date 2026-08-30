@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PivotPrimitive } from '../types';
+import type { ChangeHandler } from '../../types/ChangeHandler';
 
 export interface RangeHistogramFilterProps {
   values: PivotPrimitive[];
@@ -10,7 +11,7 @@ export interface RangeHistogramFilterProps {
   max: number;
   buckets?: number;
   selectedRange: [number, number] | null;
-  onChange: (range: [number, number] | null) => void;
+  onChange: ChangeHandler<[number, number] | null>;
 }
 
 interface HistogramBucket {
@@ -127,7 +128,7 @@ export function RangeHistogramFilter({
         newRange = [newStart, newEnd];
       }
 
-      onChange(newRange);
+      onChange(newRange, { source: 'user', nativeEvent: e });
     };
 
     const handleMouseUp = () => {
@@ -144,12 +145,18 @@ export function RangeHistogramFilter({
     };
   }, [isDragging, dragStart, min, max, onChange]);
 
-  const handleBarClick = (bucket: HistogramBucket) => {
-    onChange([bucket.start, bucket.end]);
+  const handleBarClick = (
+    bucket: HistogramBucket,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    onChange([bucket.start, bucket.end], {
+      source: 'user',
+      nativeEvent: event.nativeEvent,
+    });
   };
 
-  const handleClear = () => {
-    onChange(null);
+  const handleClear = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onChange(null, { source: 'user', nativeEvent: event.nativeEvent });
   };
 
   const leftPos = getPositionFromValue(currentRange[0]);
@@ -175,7 +182,7 @@ export function RangeHistogramFilter({
               key={i}
               className={`pv-histogram-bar ${isInRange ? 'in-range' : ''} ${isPartiallyInRange && !isInRange ? 'partial' : ''}`}
               style={{ height: `${heightPercent}%` }}
-              onClick={() => handleBarClick(bucket)}
+              onClick={(event) => handleBarClick(bucket, event)}
               title={`${formatValue(bucket.start)} - ${formatValue(bucket.end)}: ${bucket.count} items`}
               type="button"
             />

@@ -9,13 +9,13 @@ function DrawingToolbar() {
     return (
         <Toolbar>
             <ToolbarButton
-                icon='pi pi-arrow-up-left'
+                icon={<span aria-hidden='true'>◆</span>}
                 title='Select'
                 active={activeTool === 'select'}
                 onClick={() => setActiveTool('select')}
             />
             <ToolbarButton
-                icon='pi pi-pencil'
+                icon={<span aria-hidden='true'>◆</span>}
                 title='Draw'
                 active={activeTool === 'draw'}
                 onClick={() => setActiveTool('draw')}

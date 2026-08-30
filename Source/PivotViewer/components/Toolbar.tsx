@@ -117,6 +117,7 @@ export function Toolbar<TItem extends object>({
           </button>
           <input
             type="range"
+            aria-label="Zoom level"
             className="pv-zoom-slider"
             min={ZOOM_MIN}
             max={ZOOM_MAX}

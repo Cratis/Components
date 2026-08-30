@@ -6,10 +6,10 @@ The library ships no actions of its own — whatever a message can be turned int
 
 ```typescript
 interface ChatMessageAction<TMessage extends ChatMessage = ChatMessage> {
-    id: string;                                 // rendering key among its siblings
-    label: string;                              // tooltip and accessible name
-    icon: string | ReactNode;                   // 'pi pi-bolt', or a ready element
-    isAvailable?: (message: TMessage) => boolean;   // omit to offer on every message
+    id: string; // rendering key among its siblings
+    label: string; // tooltip and accessible name
+    icon: string | ReactNode; // a ready element, or a CSS class name for an icon font you provide
+    isAvailable?: (message: TMessage) => boolean; // omit to offer on every message
     onInvoke: (message: TMessage) => void;
 }
 ```
@@ -25,19 +25,19 @@ Actions appear as a small button row over a message's corner while it is hovered
         {
             id: 'create-issue',
             label: 'Create an issue from this',
-            icon: 'pi pi-plus-circle',
+            icon: <FaCirclePlus />,
             onInvoke: message => openCreateIssueDialog(message),
         },
         {
             id: 'associate-issue',
             label: 'Associate with an issue',
-            icon: 'pi pi-link',
+            icon: <FaLink />,
             onInvoke: message => openAssociateIssueDialog(message),
         },
         {
             id: 'retry',
             label: 'Run this again',
-            icon: 'pi pi-refresh',
+            icon: 'my-icon-font-refresh', // a class name works just as well
             isAvailable: message => message.metadata?.failed === true,
             onInvoke: message => retry(message),
         },

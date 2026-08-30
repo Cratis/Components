@@ -1,6 +1,6 @@
 {
     "name": "@cratis/components",
-    "version": "3.0.0",
+    "version": "4.0.0",
     "description": "React components for CQRS and event-sourced apps — command dialogs, typed forms, and query-backed data tables for Cratis Arc",
     "keywords": [
         "react",
@@ -30,10 +30,16 @@
     "type": "module",
     "files": [
         "dist",
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md",
+        "MIGRATION.md",
+        "CONFORMANCE.md",
+        "compat-manifest.json",
         "!dist/**/*.stories.*",
         "!dist/**/given.*",
         "!dist/**/storybook-static/**",
         "!dist/**/vite.config.*",
+        "!dist/**/vitest.storybook.config.*",
         "!dist/**/vitest.setup.*",
         "!dist/**/*.tsbuildinfo",
         "!dist/cjs/**"
@@ -46,6 +52,7 @@
     ],
     "exports": {
         "./package.json": "./package.json",
+        "./compat-manifest.json": "./compat-manifest.json",
         ".": {
             "types": "./dist/esm/index.d.ts",
             "import": "./dist/esm/index.js"
@@ -77,10 +84,6 @@
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
             "import": "./dist/esm/Common/index.js"
-        },
-        "./compatibility": {
-            "types": "./dist/esm/Compatibility/index.d.ts",
-            "import": "./dist/esm/Compatibility/index.js"
         },
         "./DataPage": {
             "types": "./dist/esm/DataPage/index.d.ts",
@@ -122,6 +125,18 @@
             "types": "./dist/esm/PivotViewer/index.d.ts",
             "import": "./dist/esm/PivotViewer/index.js"
         },
+        "./renderer": {
+            "types": "./dist/esm/renderer/index.d.ts",
+            "import": "./dist/esm/renderer/index.js"
+        },
+        "./renderer/builtin": {
+            "types": "./dist/esm/renderer/builtin/index.d.ts",
+            "import": "./dist/esm/renderer/builtin/index.js"
+        },
+        "./schemas/ui-adapter.schema.json": {
+            "types": "./dist/esm/schemas/ui-adapter.schema.d.ts",
+            "import": "./dist/esm/schemas/ui-adapter.schema.json"
+        },
         "./SchemaEditor": {
             "types": "./dist/esm/SchemaEditor/index.d.ts",
             "import": "./dist/esm/SchemaEditor/index.js"
@@ -134,79 +149,143 @@
             "types": "./dist/esm/Toolbar/index.d.ts",
             "import": "./dist/esm/Toolbar/index.js"
         },
-        "./styled": {
-            "types": "./dist/esm/Styled/index.d.ts",
-            "import": "./dist/esm/Styled/index.js"
-        },
         "./types": {
             "types": "./dist/esm/types/index.d.ts",
             "import": "./dist/esm/types/index.js"
         },
         "./styles": "./dist/esm/styles.css",
         "./tokens": "./dist/esm/tokens.css",
-        "./theme": "./dist/esm/theme.css",
-        "./primereact-v10-palette": "./dist/esm/primereact-v10-palette.css"
+        "./theme": "./dist/esm/theme.css"
+    },
+    "cratis": {
+        "kind": "ui-adapter",
+        "id": "cratis-built-in",
+        "displayName": "Cratis built-in renderer",
+        "abi": "^1",
+        "level": "full",
+        "profile": "core/v1",
+        "category": "built-in",
+        "entry": "./dist/esm/renderer/builtin/index.js",
+        "export": "unstable_cratisBuiltIn",
+        "slots": [
+            "common.button",
+            "common.iconButton",
+            "common.textInput",
+            "common.textArea",
+            "common.checkbox",
+            "common.radio",
+            "common.switch",
+            "common.progress",
+            "common.surface",
+            "common.tooltip",
+            "dropdown.select",
+            "dialogs.dialog",
+            "display.datePicker",
+            "datatables.paginator"
+        ],
+        "modes": {
+            "common.button": "presentation",
+            "common.iconButton": "presentation",
+            "common.textInput": "presentation",
+            "common.textArea": "presentation",
+            "common.checkbox": "presentation",
+            "common.radio": "presentation",
+            "common.switch": "presentation",
+            "common.progress": "presentation",
+            "common.surface": "presentation",
+            "common.tooltip": "atomic",
+            "dropdown.select": "atomic",
+            "dialogs.dialog": "atomic",
+            "display.datePicker": "atomic",
+            "datatables.paginator": "atomic"
+        },
+        "capabilities": [
+            "slot.render",
+            "parts.passthrough",
+            "focus.trap",
+            "focus.restore",
+            "overlay.portal",
+            "selection.multi",
+            "datetime.i18n",
+            "form.validationMessage",
+            "theme.tokens",
+            "ssr.staticRender",
+            "rtl",
+            "forcedColors",
+            "motion.reduced"
+        ],
+        "ssr": "safe",
+        "a11y": {
+            "axeProfile": "wcag22aa",
+            "evidence": "./CONFORMANCE.md"
+        },
+        "license": {
+            "spdx": "MIT",
+            "requiresKey": false
+        },
+        "upstream": {
+            "react": "^19.0.0"
+        }
     },
     "scripts": {
-        "prepare": "yarn g:build",
-        "clean": "yarn g:clean",
-        "build": "tsc -p tsconfig.json",
-        "compile": "tsc -p tsconfig.json -noEmit && yarn g:lint",
+        "generate-parts": "node ./scripts/generate-parts.mjs",
+        "verify-parts-manifest": "node ./scripts/verify-parts-manifest.mjs",
+        "prepare": "yarn generate-parts && yarn clean && yarn g:build",
+        "clean": "rm -rf dist && yarn g:clean",
+        "build": "yarn generate-parts && tsc -p tsconfig.json",
+        "compile": "yarn generate-parts && tsc -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
+        "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
+        "verify-packed-production": "node ./scripts/verify-packed-production.mjs",
+        "verify-api-docs": "node ./scripts/verify-api-docs.mjs",
+        "verify-public-types": "node ./scripts/verify-public-types.mjs",
+        "verify-package-graph": "node ./scripts/verify-package-graph.mjs",
+        "verify-package-graph-report": "node ./scripts/verify-package-graph-report.mjs",
+        "verify-no-pixi-consumer": "node ./scripts/verify-no-pixi-consumer.mjs",
+        "verify-spatial-consumer": "node ./scripts/verify-spatial-consumer.mjs",
+        "verify-provider-context-identity": "node ./scripts/verify-provider-context-identity.mjs",
+        "verify-renderer-contracts": "node ./scripts/verify-renderer-contracts.mjs",
+        "typecheck-stories": "node ../node_modules/typescript/bin/tsc -p tsconfig.stories.json && yarn workspace @cratis/components.storybook typecheck",
+        "test-storybook": "yarn workspace @cratis/components.storybook test-storybook",
+        "test-storybook:light": "yarn workspace @cratis/components.storybook test-storybook:light",
+        "test-storybook:dark": "yarn workspace @cratis/components.storybook test-storybook:dark",
+        "verify-storybook-index": "yarn workspace @cratis/components.storybook verify-indexes",
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
-        "ci": "yarn g:ci",
+        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts && yarn verify-package-graph-report",
         "up": "yarn g:up",
-        "dev": "npx storybook dev -p 6006",
-        "build-storybook": "npx storybook build"
+        "dev": "yarn workspace @cratis/components.storybook dev",
+        "build-storybook": "yarn workspace @cratis/components.storybook build"
     },
     "dependencies": {
+        "@internationalized/date": "3.12.3",
         "allotment": "1.20.5",
         "framer-motion": "13.1.1",
-        "pixi.js": "^8.20.1",
+        "react-aria": "3.51.0",
+        "react-aria-components": "1.20.0",
         "react-icons": "5.7.0",
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
         "@cratis/arc.vite": "22.6.2",
-        "@primereact/core": "11.1.0",
-        "@primereact/headless": "11.1.0",
-        "@primereact/hooks": "11.1.0",
-        "@primereact/styles": "11.1.0",
-        "@primereact/types": "11.1.0",
-        "@primeuix/motion": "^1.0.0",
-        "@primeuix/styled": "^1.0.0",
-        "@primeuix/themes": "3.0.0",
-        "primeicons": "8.0.0",
-        "primereact": "11.1.0"
+        "pixi.js": "^8.20.1",
+        "react": "19.2.8",
+        "react-dom": "19.2.8"
     },
     "peerDependencies": {
         "@cratis/arc": ">=20.3.1 <23",
         "@cratis/arc.react": ">=20.3.1 <23",
         "@cratis/fundamentals": "^7.10.3",
-        "@primereact/core": "^11.0.0",
-        "@primereact/headless": "^11.0.0",
-        "@primereact/hooks": "^11.0.0",
-        "@primereact/styles": "^11.0.0",
-        "@primereact/types": "^11.0.0",
-        "@primeuix/themes": "^3.0.0",
-        "primeicons": "^8.0.0",
-        "primereact": "^11.0.0",
+        "pixi.js": "^8.20.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "reflect-metadata": "0.2.2",
         "tsyringe": "4.10.0"
     },
     "peerDependenciesMeta": {
-        "@primereact/styles": {
-            "optional": true
-        },
-        "@primereact/types": {
-            "optional": true
-        },
-        "@primeuix/themes": {
+        "pixi.js": {
             "optional": true
         }
     }

@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import type { ChatAuthorKind } from './Kit/ChatAuthorKind';
 
 /**
  * What it takes to render whoever wrote something — resolved by the host from an author id at
@@ -10,7 +10,6 @@ import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
  * a new picture.
  */
 export interface ChatAuthor {
-
     /** The display name. */
     name: string;
 

@@ -1,8 +1,8 @@
 ---
-applyTo: "**/*.stories.tsx"
+applyTo: '**/*.stories.tsx'
 profile: application
 paths:
-  - "**/*.stories.tsx"
+    - '**/*.stories.tsx'
 ---
 
 # Storybook Story Conventions
@@ -17,7 +17,7 @@ Good candidates: a presentational card/list-item/form-field with multiple visual
 
 ## Preview infrastructure (what you get for free)
 
-A configured `.storybook/preview` should wrap every story in `CratisComponentsProvider` (from `@cratis/components/Common`) and import `@cratis/components/styles` so PrimeReact-based components render correctly. With that in place:
+A configured `.storybook/preview` should wrap every story in `CratisComponentsProvider` (from `@cratis/components/Common`) and import `@cratis/components/tokens`, `@cratis/components/styles`, and either the optional baseline `theme` or product token mappings. With that in place:
 
 - **Auto prop tables** via `react-docgen-typescript` — a component's `interface` + per-prop JSDoc renders as a Docs prop table, and union props become `select` controls automatically. Keep a JSDoc comment on every prop. **`argTypes` is an override layer** (change control type, group under `table.category`, disable a control) — don't re-list every prop.
 - **Accessibility panel** (`@storybook/addon-a11y`) scans each story with axe-core. Treat new violations as defects.
@@ -29,10 +29,10 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { MyComponent } from './MyComponent';
 
 const meta = {
-    title: 'Components/MyComponent',          // sidebar path
+    title: 'Components/MyComponent', // sidebar path
     component: MyComponent,
-    parameters: { layout: 'centered' },       // 'centered' | 'padded' | 'fullscreen'
-    tags: ['autodocs'],                       // always include
+    parameters: { layout: 'centered' }, // 'centered' | 'padded' | 'fullscreen'
+    tags: ['autodocs'], // always include
 } satisfies Meta<typeof MyComponent>;
 
 export default meta;
@@ -62,12 +62,15 @@ export const Interactive: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getAllByRole('tab')[1]);
-        await expect(canvas.getAllByRole('tab')[1]).toHaveAttribute('aria-selected', 'true');
+        await expect(canvas.getAllByRole('tab')[1]).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
     },
 };
 ```
 
-- **Stateful only** — presentational atoms get no `play:`. Thin PrimeReact wrappers (overlay-portal components) are excluded — their behavior is the framework's.
+- **Stateful only** — presentational atoms get no `play:`. Low-level interaction details delegated to React Aria are excluded, but every Cratis-owned composition still needs specs for the behavior it promises.
 - Prefer role/structure queries over localized text. `play:` runs in the Interactions panel (documentation/QA); the enforced behavioral gate is the Vitest spec.
 
 ## Router-dependent components

@@ -6,15 +6,17 @@
         "skipLibCheck": true,
         "types": []
     },
-    "include": [
-        "./**/*.ts",
-        "./**/*.tsx"
-    ],
+    "include": ["./**/*.ts", "./**/*.tsx"],
     "references": [],
     "exclude": [
         "dist",
         "**/for_*/**",
+        "**/*.stories.ts",
+        "**/*.stories.tsx",
+        ".storybook/**",
+        "vite.config.ts",
         "vite.config.mts",
+        "vitest.storybook.config.ts",
         "node_modules",
         "../node_modules"
     ]

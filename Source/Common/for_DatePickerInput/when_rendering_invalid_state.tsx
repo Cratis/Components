@@ -14,7 +14,8 @@ import { DatePickerInput } from '../DatePickerInput';
     describe(`when rendering with invalid set to ${invalid}`, () => {
         let container: HTMLDivElement;
         let root: Root;
-        let input: HTMLInputElement;
+        let pickerRoot: HTMLElement;
+        let group: HTMLElement;
         let errorSpy: ReturnType<typeof vi.spyOn>;
 
         beforeEach(async () => {
@@ -39,13 +40,19 @@ import { DatePickerInput } from '../DatePickerInput';
                 );
             });
 
-            const renderedInput = container.querySelector<HTMLInputElement>(
-                '[data-scope="datepicker"][data-part="input"]',
+            const renderedRoot = container.querySelector<HTMLElement>(
+                '[data-cratis-part="root"]',
             );
-            if (!renderedInput) {
-                throw new Error('DatePickerInput did not render its input element.');
+            const renderedGroup = container.querySelector<HTMLElement>(
+                '[data-cratis-part="group"]',
+            );
+            if (!renderedRoot || !renderedGroup) {
+                throw new Error(
+                    'DatePickerInput did not render its stable Cratis parts.',
+                );
             }
-            input = renderedInput;
+            pickerRoot = renderedRoot;
+            group = renderedGroup;
         });
 
         afterEach(async () => {
@@ -58,9 +65,24 @@ import { DatePickerInput } from '../DatePickerInput';
             expect(errorSpy.mock.calls).to.deep.equal([]);
         });
 
-        it('should represent the invalid state through accepted input attributes', () => {
-            expect(input.getAttribute('aria-invalid')).to.equal(invalid ? 'true' : null);
-            expect(input.hasAttribute('data-invalid')).to.equal(invalid);
+        it('should represent the invalid state on every editable date part', () => {
+            const input = container.querySelector('[data-cratis-part="input"]');
+            const segments = container.querySelectorAll('[data-cratis-part="segment"]');
+            const trigger = container.querySelector('[data-cratis-part="trigger"]');
+
+            expect(group.getAttribute('aria-invalid')).to.equal(invalid ? 'true' : null);
+            expect(pickerRoot.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(group.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(input?.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(
+                Array.from(segments).every(
+                    (segment) => segment.hasAttribute('data-invalid') === invalid,
+                ),
+            ).to.equal(true);
+            expect(trigger?.hasAttribute('data-invalid')).to.equal(invalid);
+            expect(
+                container.querySelector('[data-cratis-part][data-invalid="false"]'),
+            ).to.equal(null);
         });
     });
 });

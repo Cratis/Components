@@ -9,10 +9,17 @@ import type { ViewMode } from '../components/Toolbar';
 import {
     getCardPositionFromLayout,
     normalizeIdToLayoutKey,
+    resolveLayoutItemId,
     type CardPosition,
 } from '../utils/idResolution';
 import { createCardPositionCallbacks } from '../utils/cardPosition';
-import { ZOOM_MAX, MIN_ZOOM_ON_SELECT, ZOOM_MULTIPLIER, BASE_CARD_WIDTH, BASE_CARD_HEIGHT } from '../utils/constants';
+import {
+    ZOOM_MAX,
+    MIN_ZOOM_ON_SELECT,
+    ZOOM_MULTIPLIER,
+    BASE_CARD_WIDTH,
+    BASE_CARD_HEIGHT,
+} from '../utils/constants';
 
 interface UseCardSelectionParams<TItem extends object> {
     data: TItem[];
@@ -32,7 +39,9 @@ interface UseCardSelectionParams<TItem extends object> {
     setZoomLevel: (level: number) => void;
     setIsZooming: (zooming: boolean) => void;
     setSelectedItem: (item: TItem | null) => void;
-    setPreSelectionState: (state: { zoom: number; scrollLeft: number; scrollTop: number } | null) => void;
+    setPreSelectionState: (
+        state: { zoom: number; scrollLeft: number; scrollTop: number } | null,
+    ) => void;
 }
 
 export function useCardSelection<TItem extends object>({
@@ -55,77 +64,118 @@ export function useCardSelection<TItem extends object>({
     setSelectedItem,
     setPreSelectionState,
 }: UseCardSelectionParams<TItem>) {
-    return useCallback((item: TItem, e: MouseEvent, id?: number | string) => {
-        if (isPanning) return;
+    return useCallback(
+        (item: TItem, e: MouseEvent, id?: number | string) => {
+            if (isPanning) return;
 
-        // Use the containerRef directly as the scrollable viewport
-        const container = containerRef.current;
-        if (!container) return;
+            // Use the containerRef directly as the scrollable viewport
+            const container = containerRef.current;
+            if (!container) return;
 
-        // Resolve item ID
-        let itemId = (id !== undefined && id !== null) ? id : resolveId(item, 0);
-        itemId = normalizeIdToLayoutKey(itemId, layout);
+            // Resolve item ID. `id` (when provided by the sprite click) is already the array-index
+            // layout key; only fall back to the array-index/resolveId resolution when it's missing,
+            // never to a raw consumer id - internal layout ids are array indices, not consumer ids.
+            const itemId =
+                id !== undefined && id !== null
+                    ? normalizeIdToLayoutKey(id, layout)
+                    : resolveLayoutItemId(data, item, layout, resolveId);
 
-        const selectedId = selectedItem
-            ? (() => {
-                const index = data.indexOf(selectedItem);
-                const rawSelectedId = index !== -1 ? resolveId(selectedItem, index) : resolveId(selectedItem, 0);
-                return normalizeIdToLayoutKey(rawSelectedId, layout);
-            })()
-            : null;
+            const selectedId = selectedItem
+                ? resolveLayoutItemId(data, selectedItem, layout, resolveId)
+                : null;
 
-        // Get card position from layout
-        const cardPosition = getCardPositionFromLayout(itemId, layout, BASE_CARD_WIDTH, BASE_CARD_HEIGHT);
-
-        // Calculate target position for animation
-        let targetCardPosition: CardPosition | null = null;
-        let callbacks = { getCardPositionAtZoom: null as unknown as ((zoom: number) => CardPosition | null), getLayoutSizeAtZoom: null as unknown as ((zoom: number) => { width: number; height: number }) };
-        let targetTotalHeight = layout.totalHeight;
-
-        if (viewMode === 'grouped' && cardPosition) {
-            // Calculate target zoom
-            const targetZoom = Math.min(ZOOM_MAX, Math.max(MIN_ZOOM_ON_SELECT, zoomLevel * ZOOM_MULTIPLIER));
-
-            const targetContainerWidth = containerDimensions.width / targetZoom;
-            const targetContainerHeight = containerDimensions.height;
-
-            callbacks = createCardPositionCallbacks(
+            // Get card position from layout
+            const cardPosition = getCardPositionFromLayout(
                 itemId,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                grouping as unknown as any,
-                viewMode,
-                targetContainerWidth,
-                targetContainerHeight,
+                layout,
+                BASE_CARD_WIDTH,
+                BASE_CARD_HEIGHT,
             );
 
-            const targetPosition = callbacks.getCardPositionAtZoom(targetZoom);
-            if (targetPosition) {
-                targetCardPosition = targetPosition;
+            // Calculate target position for animation
+            let targetCardPosition: CardPosition | null = null;
+            // SAFETY: these placeholders are only read when viewMode === 'grouped' && cardPosition,
+            // and callbacks is always reassigned to createCardPositionCallbacks' real functions before
+            // that branch reads it, so the null placeholder is never actually invoked.
+            let callbacks = {
+                getCardPositionAtZoom: null as unknown as (
+                    zoom: number,
+                ) => CardPosition | null,
+                getLayoutSizeAtZoom: null as unknown as (zoom: number) => {
+                    width: number;
+                    height: number;
+                },
+            };
+            let targetTotalHeight = layout.totalHeight;
+
+            if (viewMode === 'grouped' && cardPosition) {
+                // Calculate target zoom
+                const targetZoom = Math.min(
+                    ZOOM_MAX,
+                    Math.max(MIN_ZOOM_ON_SELECT, zoomLevel * ZOOM_MULTIPLIER),
+                );
+
+                const targetContainerWidth = containerDimensions.width / targetZoom;
+                const targetContainerHeight = containerDimensions.height;
+
+                callbacks = createCardPositionCallbacks(
+                    itemId,
+                    // SAFETY: `grouping` is typed `unknown` in this hook's params to avoid a circular
+                    // type import; it is always the GroupingResult produced by the engine, which is
+                    // exactly what createCardPositionCallbacks expects.
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    grouping as unknown as any,
+                    viewMode,
+                    targetContainerWidth,
+                    targetContainerHeight,
+                );
+
+                const targetPosition = callbacks.getCardPositionAtZoom(targetZoom);
+                if (targetPosition) {
+                    targetCardPosition = targetPosition;
+                }
+
+                const targetLayout = callbacks.getLayoutSizeAtZoom(targetZoom);
+                targetTotalHeight = targetLayout.height;
             }
 
-            const targetLayout = callbacks.getLayoutSizeAtZoom(targetZoom);
-            targetTotalHeight = targetLayout.height;
-        }
-
-        handleCardSelection({
-            item,
-            itemId,
-            selectedItemId: selectedId,
-            container,
-            cardPosition,
-            targetCardPosition,
-            getCardPositionAtZoom: callbacks.getCardPositionAtZoom,
-            getLayoutSizeAtZoom: callbacks.getLayoutSizeAtZoom,
-            spacer: spacerRef.current,
-            preSelectionState,
-            startScrollPosition: { x: scrollPosition.x, y: scrollPosition.y },
-            setZoomLevel,
-            setIsZooming,
-            setSelectedItem,
-            setPreSelectionState,
-            viewMode,
+            handleCardSelection({
+                item,
+                itemId,
+                selectedItemId: selectedId,
+                container,
+                cardPosition,
+                targetCardPosition,
+                getCardPositionAtZoom: callbacks.getCardPositionAtZoom,
+                getLayoutSizeAtZoom: callbacks.getLayoutSizeAtZoom,
+                spacer: spacerRef.current,
+                preSelectionState,
+                startScrollPosition: { x: scrollPosition.x, y: scrollPosition.y },
+                setZoomLevel,
+                setIsZooming,
+                setSelectedItem,
+                setPreSelectionState,
+                viewMode,
+                zoomLevel,
+                totalHeight: targetTotalHeight,
+            });
+        },
+        [
+            isPanning,
+            selectedItem,
             zoomLevel,
-            totalHeight: targetTotalHeight,
-        });
-    }, [isPanning, selectedItem, zoomLevel, preSelectionState, viewMode, resolveId, setZoomLevel, layout, grouping, containerRef, spacerRef, containerDimensions, scrollPosition, data, getItemId]);
+            preSelectionState,
+            viewMode,
+            resolveId,
+            setZoomLevel,
+            layout,
+            grouping,
+            containerRef,
+            spacerRef,
+            containerDimensions,
+            scrollPosition,
+            data,
+            getItemId,
+        ],
+    );
 }

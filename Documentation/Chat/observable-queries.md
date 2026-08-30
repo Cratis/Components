@@ -6,20 +6,20 @@
 
 ```tsx
 import { ChatSidebarForObservableQueries } from '@cratis/components/Chat';
-import { AllTopics, MessagesForTopic } from './queries';    // generated observable query proxies
+import { AllTopics, MessagesForTopic } from './queries'; // generated observable query proxies
 
 <ChatSidebarForObservableQueries
     open={chatOpen}
     onClose={() => setChatOpen(false)}
     topicsQuery={AllTopics}
     messagesQuery={MessagesForTopic}
-    messagesArguments={topicId => (topicId ? { topicId: String(topicId) } : undefined)}
+    messagesArguments={(topicId) => (topicId ? { topicId: String(topicId) } : undefined)}
     authorOf={authorOf}
     onStartTopic={startTopic}
     onSendMessage={send}
     onRequestTopicName={nameTopic}
     mentionCandidates={candidates}
-/>
+/>;
 ```
 
 - `topicsQuery` subscribes immediately (pass `topicsArguments` when the query takes any).

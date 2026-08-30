@@ -6,20 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { CommandFormFieldDisplayName, markAsCommandFormField } from '../../CommandForm/commandFormMarkers';
 
-vi.mock('primereact/dialog', () => {
-    const part = (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children);
-    return {
-        Dialog: {
-            Root: part, Portal: part, Backdrop: part, Positioner: part, Popup: part,
-            Header: part, Title: part, Close: part, Content: part, Footer: part,
-        },
-    };
-});
 
-vi.mock('primereact/button', () => ({
-    Button: (props: { disabled?: boolean; children?: React.ReactNode }) =>
-        React.createElement('button', { disabled: props.disabled }, props.children),
-}));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },

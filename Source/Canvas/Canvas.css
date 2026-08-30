@@ -13,7 +13,7 @@
        user-select: text explicitly), but the canvas as a whole must never let a drag start a native
        text/element selection instead of a move or resize — a freshly created item can be dragged
        before its own CSS has had a chance to matter to a gesture that started a pixel outside its
-       still-settling bounds, and the resulting native selection is what StudioIssues#227 reports. */
+       still-settling bounds, which would otherwise start a native selection. */
     -webkit-user-select: none;
     user-select: none;
 }
@@ -24,13 +24,13 @@
     display: inline-flex;
 }
 
-/* Fallback for large boards where the LiquidGlass capture is too expensive: a frosted pill using the
-   GPU-composited backdrop-filter instead of an html2canvas re-rasterization every frame. */
+/* Fallback for large boards where a full-scene compositor capture is too expensive: a frosted pill
+   using the GPU-composited backdrop-filter instead of re-rasterizing every interaction frame. */
 .canvas-controls-glass--plain {
-    background: color-mix(in srgb, var(--surface-card) 78%, transparent);
+    background: color-mix(in srgb, var(--cratis-surface-card) 78%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--surface-border);
+    border: 1px solid var(--cratis-surface-border);
     border-radius: 999px;
 }
 
@@ -46,7 +46,7 @@
     display: inline-block;
     width: 1px;
     height: 20px;
-    background: var(--surface-border);
+    background: var(--cratis-surface-border);
     border-radius: 1px;
     margin-inline: 2px;
     flex-shrink: 0;
@@ -54,43 +54,43 @@
 
 /* ── Canvas control icon button ──────────────────────────────────────────── */
 .canvas-controls-icon-btn {
-    color: var(--text-color-secondary);
+    color: var(--cratis-text-color-secondary);
     background: transparent;
     border: none;
     transition: background 0.15s, color 0.15s;
 }
 
 .canvas-controls-icon-btn:hover {
-    background: var(--surface-100);
-    color: var(--text-color);
+    background: var(--cratis-surface-100);
+    color: var(--cratis-text-color);
 }
 
 .canvas-controls-icon-btn--active {
-    background: var(--surface-100);
-    color: var(--text-color);
+    background: var(--cratis-surface-100);
+    color: var(--cratis-text-color);
 }
 
 /* ── Canvas control zoom percentage button ───────────────────────────────── */
 .canvas-controls-zoom-btn {
-    color: var(--text-color-secondary);
+    color: var(--cratis-text-color-secondary);
     background: transparent;
     border: none;
     transition: background 0.15s, color 0.15s;
 }
 
 .canvas-controls-zoom-btn:hover {
-    background: var(--surface-100);
-    color: var(--text-color);
+    background: var(--cratis-surface-100);
+    color: var(--cratis-text-color);
 }
 
 /* ── Canvas minimap ──────────────────────────────────────────────────────── */
 .canvas-minimap {
-    background: var(--surface-50);
-    border: 1px solid var(--surface-border);
+    background: var(--cratis-surface-hover);
+    border: 1px solid var(--cratis-surface-border);
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 .canvas-minimap-viewport {
-    border: 2px solid var(--primary-color);
-    background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+    border: 2px solid var(--cratis-primary-color);
+    background: color-mix(in srgb, var(--cratis-primary-color) 12%, transparent);
 }

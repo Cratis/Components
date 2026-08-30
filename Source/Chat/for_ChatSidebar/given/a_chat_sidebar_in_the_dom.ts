@@ -15,24 +15,32 @@ export interface ChatSidebarInTheDom {
 }
 
 /**
- * Renders an element into a real document and lets PrimeReact's show transition complete, so the
- * drawer has settled by the time the spec looks at it.
+ * Renders an element into a real document and lets the sidebar's open transition complete, so it
+ * has settled by the time the spec looks at it.
  *
- * PrimeReact 11 components resolve their configuration from a `PrimeReactProvider` and throw
- * without one, so the element is mounted inside the Cratis provider that supplies it.
- * `ResizeObserver` is stubbed because jsdom has no layout engine, and `scrollIntoView` because
- * the conversation keeps its newest message in view with it.
+ * The sidebar is built on React Aria's overlay primitives, which read locale (and other shared
+ * configuration) from the `I18nProvider` `CratisComponentsProvider` supplies, so the element is
+ * mounted inside it. `ResizeObserver` is stubbed because jsdom has no layout engine, and
+ * `scrollIntoView` because the conversation keeps its newest message in view with it.
  * @param element - The element to render.
  * @returns The mounted sidebar, to be passed to {@link unmount}.
  */
-export const render = async (element: React.ReactElement): Promise<ChatSidebarInTheDom> => {
-    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+export const render = async (
+    element: React.ReactElement,
+): Promise<ChatSidebarInTheDom> => {
+    // SAFETY: React reads this process-wide test flag from globalThis.
+    (
+        globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: jsdom has no layout engine, so ResizeObserver is a test-only polyfill absent from its typings.
     (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-        observe() { }
-        unobserve() { }
-        disconnect() { }
+        observe() {}
+        unobserve() {}
+        disconnect() {}
     };
-    (Element.prototype as unknown as { scrollIntoView?: () => void }).scrollIntoView ??= () => { };
+    // SAFETY: jsdom has no layout engine, so scrollIntoView is a test-only stub absent from its typings.
+    (Element.prototype as unknown as { scrollIntoView?: () => void }).scrollIntoView ??=
+        () => {};
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -43,7 +51,7 @@ export const render = async (element: React.ReactElement): Promise<ChatSidebarIn
     });
 
     await act(async () => {
-        await new Promise(resolve => setTimeout(resolve, 400));
+        await new Promise((resolve) => setTimeout(resolve, 400));
     });
 
     return { container, root };
@@ -68,7 +76,10 @@ export const unmount = async (sidebar: ChatSidebarInTheDom) => {
  * @param value - The text it should hold.
  */
 export const typeInto = async (textarea: HTMLTextAreaElement, value: string) => {
-    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!;
+    const setter = Object.getOwnPropertyDescriptor(
+        HTMLTextAreaElement.prototype,
+        'value',
+    )!.set!;
     await act(async () => {
         setter.call(textarea, value);
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -81,7 +92,9 @@ export const typeInto = async (textarea: HTMLTextAreaElement, value: string) => 
  */
 export const pressEnter = async (element: HTMLElement) => {
     await act(async () => {
-        element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        element.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+        );
     });
 };
 

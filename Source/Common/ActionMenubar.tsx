@@ -1,75 +1,88 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React from 'react';
-import { Button } from 'primereact/button';
-import type { ButtonProps } from '@primereact/types/primitive/button';
+import { Fragment, type ReactNode } from 'react';
+import { Button, type ButtonParts, type ButtonSeverity, type ButtonTone } from './Button';
 
 /** A single action in an {@link ActionMenubar}. */
 export interface ActionMenuItem {
     /** The visible label. */
     label?: string;
     /** An icon element rendered before the label. */
-    icon?: React.ReactNode;
+    icon?: ReactNode;
     /** Invoked when the item is activated. */
     command?: () => void;
     /** When true, the item is greyed out and not clickable. */
     disabled?: boolean;
     /** Extra class name for the item. */
     className?: string;
-    /** Severity styling for the underlying button (e.g. `danger`). */
-    severity?: 'secondary' | 'info' | 'success' | 'warn' | 'help' | 'danger' | 'contrast';
-    /** Fully custom render for this item; when present it replaces the default button. */
-    template?: (item: ActionMenuItem) => React.ReactNode;
+    /** Severity styling for the action. */
+    severity?: ButtonSeverity;
+    /** Fully custom render for this item. */
+    template?: (item: ActionMenuItem) => ReactNode;
 }
 
 /** Props for {@link ActionMenubar}. */
 export interface ActionMenubarProps {
-    /** The actions to render, left to right. */
+    /** Actions to render from left to right. */
     model: ActionMenuItem[];
     /** Extra class name for the toolbar container. */
     className?: string;
     /** Accessible label for the toolbar. */
     'aria-label'?: string;
-    /** PrimeReact pass-through configuration applied to each action button. */
-    pt?: ButtonProps['pt'];
-    /** PrimeReact pass-through options applied to each action button. */
-    ptOptions?: ButtonProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the action buttons. */
+    /** Cratis-owned per-part attributes applied to each action button. */
+    pt?: ButtonParts;
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
+    ptOptions?: object;
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
-/**
- * A horizontal bar of command actions. Replaces the PrimeReact 10 `Menubar`
- * (removed in PrimeReact 11, and never a great fit for a bar of *actions*
- * rather than navigation) with a simple button toolbar driven by the same
- * `model` array shape. Each item is a text `Button` unless it supplies a
- * `template`.
- */
-export const ActionMenubar = ({ model, className, pt, ptOptions, unstyled, ...rest }: ActionMenubarProps) => (
+const buttonToneForSeverity: Record<ButtonSeverity, ButtonTone> = {
+    secondary: 'neutral',
+    info: 'accent',
+    help: 'accent',
+    success: 'positive',
+    warn: 'caution',
+    danger: 'critical',
+    contrast: 'neutral',
+};
+
+/** A horizontal, accessible toolbar of command actions. */
+export const ActionMenubar = ({
+    model,
+    className,
+    pt,
+    'aria-label': ariaLabel,
+}: ActionMenubarProps) => (
     <div
-        role="toolbar"
-        className={className ? `cratis-action-menubar ${className}` : 'cratis-action-menubar'}
-        {...rest}>
+        role='toolbar'
+        className={['cratis-action-menubar', className].filter(Boolean).join(' ')}
+        data-cratis-part='root'
+        aria-label={ariaLabel}
+    >
         {model.map((item, index) => {
-            if (item.template) {
-                return <React.Fragment key={index}>{item.template(item)}</React.Fragment>;
-            }
+            if (item.template)
+                return <Fragment key={index}>{item.template(item)}</Fragment>;
 
             return (
                 <Button
                     key={index}
-                    variant="text"
-                    severity={item.severity}
+                    variant='ghost'
+                    tone={
+                        item.severity ? buttonToneForSeverity[item.severity] : undefined
+                    }
                     onClick={item.command}
                     disabled={item.disabled}
                     className={item.className}
+                    icon={item.icon}
+                    label={item.label}
                     pt={pt}
-                    ptOptions={ptOptions}
-                    unstyled={unstyled}>
-                    {item.icon}
-                    {item.label && <span>{item.label}</span>}
-                </Button>
+                />
             );
         })}
     </div>

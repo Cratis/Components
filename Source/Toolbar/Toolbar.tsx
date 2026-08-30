@@ -1,8 +1,20 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ReactNode } from 'react';
+import { type HTMLAttributes, type ReactNode } from 'react';
 import { ToolbarDragContext } from './ToolbarDragContext';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
+
+/** Stable part attributes for {@link Toolbar}. */
+export interface ToolbarParts {
+    /** Toolbar root. */
+    root?: HTMLAttributes<HTMLDivElement>;
+}
+
+const toolbarPartsMatchManifest: ExactPartKeys<ToolbarParts, PartsOf<'Toolbar'>> = true;
+void toolbarPartsMatchManifest;
 
 /** Props for the {@link Toolbar} component. */
 export interface ToolbarProps {
@@ -10,6 +22,14 @@ export interface ToolbarProps {
     children: ReactNode;
     /** Layout direction of the toolbar (default: 'vertical'). */
     orientation?: 'vertical' | 'horizontal';
+    /** Extra class name for the toolbar root. */
+    className?: string;
+    /** Accessible toolbar name. Overrides the provider's `messages.toolbar.label` fallback. */
+    'aria-label'?: string;
+    /** Identifies an external element that names the toolbar. Takes precedence over `aria-label`. */
+    'aria-labelledby'?: string;
+    /** Stable toolbar part attributes. */
+    pt?: ToolbarParts;
     /**
      * When `true`, all {@link ToolbarButton} children become draggable by default.
      * Individual buttons can still override this with their own `draggable` prop.
@@ -28,14 +48,41 @@ export interface ToolbarProps {
  * mimicking the style of tools panels found in canvas-based applications.
  * Supports both vertical (default) and horizontal orientations.
  */
-export const Toolbar = ({ children, orientation = 'vertical', draggable = false, onItemDragStart }: ToolbarProps) => (
-    <ToolbarDragContext.Provider value={{ draggable, onItemDragStart }}>
-        <div
-            className={`toolbar inline-flex ${
-                orientation === 'horizontal' ? 'flex-row' : 'flex-col'
-            } items-center gap-1 p-2 rounded-2xl`}
-        >
-            {children}
-        </div>
-    </ToolbarDragContext.Provider>
-);
+export const Toolbar = ({
+    children,
+    orientation = 'vertical',
+    draggable = false,
+    onItemDragStart,
+    className,
+    'aria-label': ariaLabel,
+    'aria-labelledby': ariaLabelledBy,
+    pt,
+}: ToolbarProps) => {
+    const { messages } = useCratisComponentsConfig();
+    const resolvedAriaLabel = ariaLabel ?? messages?.toolbar?.label ?? 'Tools';
+
+    return (
+        <ToolbarDragContext.Provider value={{ draggable, onItemDragStart }}>
+            <div
+                {...pt?.root}
+                role='toolbar'
+                aria-orientation={orientation}
+                aria-label={ariaLabelledBy ? undefined : resolvedAriaLabel}
+                aria-labelledby={ariaLabelledBy}
+                className={[
+                    'toolbar cratis:inline-flex',
+                    orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col',
+                    'cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl',
+                    pt?.root?.className,
+                    className,
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='root'
+                data-orientation={orientation}
+            >
+                {children}
+            </div>
+        </ToolbarDragContext.Provider>
+    );
+};

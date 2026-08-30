@@ -114,7 +114,7 @@ Renders a checkbox list — multiple values may be selected simultaneously.
 
 ### Numeric range with histogram (`type: 'number'`)
 
-Renders a `RangeHistogramFilter` — a draggable range slider overlaid on a histogram of the actual data distribution.
+Renders a `RangeHistogramFilter` — a range slider overlaid on a histogram of the actual data distribution. Users can drag either handle, focus the named minimum/maximum sliders and use Arrow/Home/End keys, or activate a histogram bar to snap to its bounds.
 
 ```tsx
 {
@@ -197,7 +197,9 @@ Custom filter editors should not implement their own clear buttons; the header c
 | `rangeValues` | `RangeValues` | ✓ | Current numeric range selections |
 | `customValues` | `CustomFilterValues` | — | Values for custom-editor filters |
 | `search` | `string` | — | Current search-box value |
-| `searchPlaceholder` | `string` | — | Placeholder for search input (default: `'Search…'`) |
+| `searchPlaceholder` | `string` | — | Placeholder for the panel's search input (default: `'Search…'`). Also the fallback placeholder for a searchable filter group that does not declare its own `searchPlaceholder`. |
+| `clearFilterAriaLabel` | `string` | — | Accessible name and tooltip for a string/custom filter's clear button (default: `'Clear filter'`) |
+| `clearRangeAriaLabel` | `string` | — | Accessible name and tooltip for a numeric/date filter's clear button (default: `'Clear range'`) |
 | `expandedFilterKey` | `string \| null` | — | Which filter group is open |
 | `anchorRef` | `RefObject<HTMLButtonElement>` | ✓ | Button the panel anchors below |
 | `onClose` | `() => void` | ✓ | Called when panel should close |
@@ -252,28 +254,25 @@ The hook re-syncs state when the `filters` array reference changes — existing 
 
 `RangeHistogramFilter` can also be used standalone, independently of `FilterPanel`.
 
-| Prop | Type | Required | Description |
-|---|---|---|---|
-| `values` | `FilterValue[]` | ✓ | Raw data values used to compute the histogram |
-| `min` | `number` | ✓ | Lower bound of the full range |
-| `max` | `number` | ✓ | Upper bound of the full range |
-| `buckets` | `number` | | Number of histogram bars (default `20`) |
-| `selectedRange` | `[number, number] \| null` | ✓ | Currently selected range, or `null` for none |
-| `onChange` | `(range: [number, number] \| null) => void` | ✓ | Called when the range changes |
+| Prop               | Type                                        | Required | Description                                                                                |
+| ------------------ | ------------------------------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| `values`           | `FilterValue[]`                             | —        | Raw data values used to compute the histogram. Omit when `histogram` is supplied.          |
+| `histogram`        | `HistogramBucket[]`                         | —        | Pre-counted buckets, typically covering the complete server-side result set.               |
+| `min`              | `number`                                    | ✓        | Lower bound of the full range                                                              |
+| `max`              | `number`                                    | ✓        | Upper bound of the full range                                                              |
+| `buckets`          | `number`                                    |          | Number of histogram bars (default `20`)                                                    |
+| `selectedRange`    | `[number, number] \| null`                  | ✓        | Currently selected range, or `null` for none                                               |
+| `onChange`         | `(range: [number, number] \| null) => void` | ✓        | Called when the range changes                                                              |
+| `formatValue`      | `(value: number) => string`                 | —        | Formatter for endpoint labels and bar-tooltip numbers (default: a plain numeric formatter) |
+| `itemsLabel`       | `string`                                    | —        | Unit word shown after a bar tooltip's count, e.g. `'42 items'` (default: `'items'`)        |
+| `minimumAriaLabel` | `string`                                    | —        | Accessible name for the lower-bound slider (default: `'Minimum value'`)                    |
+| `maximumAriaLabel` | `string`                                    | —        | Accessible name for the upper-bound slider (default: `'Maximum value'`)                    |
 
 ## Importing
 
-The Filter module is available at its own subpath — you do not need to import from the root package:
+The Filter module is available only at its explicit component subpath; the Components 4 package root is setup-only:
 
 ```tsx
 import { FilterPanel, FilterEditor, useFilterState } from '@cratis/components/Filter';
 import type { FilterDefinition } from '@cratis/components/Filter';
-```
-
-From the package root, the module is available under the `Filter` namespace:
-
-```tsx
-import { Filter } from '@cratis/components';
-
-// Use as Filter.FilterPanel, Filter.FilterEditor, Filter.useFilterState
 ```

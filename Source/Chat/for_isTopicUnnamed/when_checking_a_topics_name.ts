@@ -4,7 +4,8 @@
 import { isTopicUnnamed } from '../isTopicUnnamed';
 
 describe('when the topic has a name', () => {
-    it('should not count as unnamed', () => isTopicUnnamed({ id: 'topic', name: 'Sprint planning' }).should.be.false);
+    it('should not count as unnamed', () =>
+        isTopicUnnamed({ id: 'topic', name: 'Sprint planning' }).should.be.false);
 });
 
 describe('when the topic has no name at all', () => {
@@ -12,5 +13,6 @@ describe('when the topic has no name at all', () => {
 });
 
 describe('when the name is only whitespace', () => {
-    it('should count as unnamed', () => isTopicUnnamed({ id: 'topic', name: '   ' }).should.be.true);
+    it('should count as unnamed', () =>
+        isTopicUnnamed({ id: 'topic', name: '   ' }).should.be.true);
 });

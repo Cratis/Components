@@ -31,9 +31,10 @@ export type DataTableCustomFilterMatchMode = string & {
 /**
  * Built-in or custom match-mode name.
  *
- * Arbitrary strings remain accepted for source compatibility with renderers
- * whose matcher was registered outside Components. New custom matchers should
- * use `registerDataTableFilterMatcher()`, which returns a branded name.
+ * Arbitrary strings remain accepted only for source compatibility. Components does
+ * not consult an external renderer's matcher registry, and an unregistered custom mode
+ * deliberately matches nothing. Register new custom matchers with
+ * `registerDataTableFilterMatcher()`, which returns a branded name.
  */
 export type DataTableFilterMatchMode =
     | (typeof DataTableFilterMatchMode)[keyof typeof DataTableFilterMatchMode]
@@ -57,5 +58,17 @@ export interface DataTableFilterConstraint {
     matchMode?: DataTableFilterMatchMode;
 }
 
+/** Legacy multi-constraint entry accepted during the Components 3 migration. */
+export interface DataTableOperatorFilterConstraint {
+    /** Combines constraints with `or`; every other value uses `and` semantics. */
+    operator?: string;
+    /** Constraints applied to the same field value. */
+    constraints: DataTableFilterConstraint[];
+}
+
+/** One simple or legacy operator-based filter entry. */
+export type DataTableFilterEntry =
+    DataTableFilterConstraint | DataTableOperatorFilterConstraint;
+
 /** Filter state for a Cratis data table, keyed by field name. */
-export type DataTableFilterMeta = Record<string, DataTableFilterConstraint>;
+export type DataTableFilterMeta = Record<string, DataTableFilterEntry>;

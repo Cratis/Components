@@ -4,6 +4,7 @@ import { noRootBarrelImport } from './lib/noRootBarrelImport.js';
 import { onbeforeexecuteMustReturn } from './lib/onbeforeexecuteMustReturn.js';
 import { noHooksInViewModel } from './lib/noHooksInViewModel.js';
 import { noRawCommandFormMarker } from './lib/noRawCommandFormMarker.js';
+import { noReactInKernel } from './lib/noReactInKernel.js';
 
 const { version } = createRequire(import.meta.url)('./package.json');
 
@@ -19,6 +20,7 @@ const plugin = {
         'onbeforeexecute-must-return': onbeforeexecuteMustReturn,
         'no-hooks-in-view-model': noHooksInViewModel,
         'no-raw-command-form-marker': noRawCommandFormMarker,
+        'no-react-in-kernel': noReactInKernel,
     },
     configs: {},
 };
@@ -32,7 +34,7 @@ Object.assign(plugin.configs, {
     recommended: [
         {
             name: '@cratis/components/recommended',
-            files: ['**/*.ts', '**/*.tsx'],
+            files: ['**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}'],
             plugins: { '@cratis/components': plugin },
             rules: {
                 '@cratis/components/no-primereact-dialog': 'error',
@@ -47,4 +49,4 @@ Object.assign(plugin.configs, {
 
 export default plugin;
 export const { configs, rules, meta } = plugin;
-export { noPrimereactDialog, noRootBarrelImport, onbeforeexecuteMustReturn, noHooksInViewModel, noRawCommandFormMarker };
+export { noPrimereactDialog, noRootBarrelImport, onbeforeexecuteMustReturn, noHooksInViewModel, noRawCommandFormMarker, noReactInKernel };

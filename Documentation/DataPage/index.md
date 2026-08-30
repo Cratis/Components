@@ -84,7 +84,7 @@ function Authors() {
 }
 ```
 
-Selection is managed for you; to drive it yourself, pass `selection` and `onSelectionChange`.
+Selection is managed for you; to drive it yourself, pass `selection` and `onSelectionChange`. In controlled mode, clear the selection with `null`. Omitting `selection`/passing `undefined` selects uncontrolled mode. Provide `dataKey` when query refreshes can replace row object instances.
 
 ## Props
 
@@ -100,9 +100,14 @@ Selection is managed for you; to drive it yourself, pass `selection` and `onSele
 - `dataKey`: Unique key field for data items
 - `selection`: Currently selected item
 - `onSelectionChange`: Callback when the selection changes
-- `globalFilterFields`: Fields to include in global search
+- `globalFilterFields`: Fields to include in loaded-page search
+- `globalSearchPlaceholder`: Placeholder for the search input
+- `globalSearchAriaLabel`: Accessible name for the search input; localize independently from the placeholder
 - `defaultFilters`: Initial filter state, a `DataTableFilterMeta` (a `{ value, matchMode }` constraint per field)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded query page
+- `tablePt` / `tableClassName`: Stable table-part attributes and root class
+- `paginatorPt` / `paginatorClassName`: Stable paginator-part attributes and root class
+- `paginatorAriaLabels`: Localized labels for the paginator navigation and controls
 
 The query-backed table inside `DataPage` suppresses `emptyMessage` while its first result is still performing, so a pending query is not presented as a confirmed empty result.
 
@@ -174,7 +179,7 @@ DataPage integrates with:
 
 - `@cratis/arc/queries` for data fetching
 - `DataTableForQuery` and `DataTableForObservableQuery` components
-- PrimeReact's DataTable, plus a Cratis action toolbar of `Button`s (PrimeReact 11 removed Menubar)
+- the semantic Cratis data table plus a Cratis action toolbar of Buttons
 - Allotment for split view layout — its stylesheet is vendored into `@cratis/components/styles`, so the split view lays out as long as you import that
 
 ## See Also

@@ -1,19 +1,26 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { DatePickerInput } from '../../Common/DatePickerInput';
-import type { DatePickerRootProps } from '@primereact/types/primitive/datepicker';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    DatePickerInput,
+    type DatePickerInputPassThrough,
+} from '../../Common/DatePickerInput';
 import React from 'react';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 /**
  * Component-level props for {@link CalendarField}.
  */
-interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
+interface CalendarFieldComponentProps
+    extends WrappedFieldProps<Date | null>, FieldAccessibilityProps {
     /** Placeholder text shown when no date is selected. */
     placeholder?: string;
 
-    /** PrimeReact-style date format mask (e.g. `'yy-mm-dd'`). */
+    /** legacy date format mask (e.g. `'yy-mm-dd'`). */
     dateFormat?: string;
 
     /** When true, renders a trailing calendar icon button. */
@@ -34,13 +41,17 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying DatePicker. */
-    pt?: DatePickerRootProps['pt'];
+    /** Cratis-owned per-part attributes applied to the date picker. */
+    pt?: DatePickerInputPassThrough;
 
-    /** PrimeReact pass-through options applied to the underlying DatePicker. */
-    ptOptions?: DatePickerRootProps['ptOptions'];
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
+    ptOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the underlying DatePicker. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
@@ -58,27 +69,37 @@ interface CalendarFieldComponentProps extends WrappedFieldProps<Date | null> {
  * ```
  */
 export const CalendarField = asCommandFormField<CalendarFieldComponentProps>(
-    (props) => (
-        <DatePickerInput
-            value={props.value}
-            onChange={props.onChange}
-            onBlur={props.onBlur}
-            invalid={props.invalid}
-            placeholder={props.placeholder}
-            dateFormat={props.dateFormat}
-            showIcon={props.showIcon}
-            showTime={props.showTime}
-            hourFormat={props.hourFormat}
-            minDate={props.minDate}
-            maxDate={props.maxDate}
-            className={props.className}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
-    ),
-    {
-        defaultValue: null,
-        extractValue: (e: unknown) => e instanceof Date ? e : null
-    }
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
+                <DatePickerInput
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    value={props.value}
+                    onChange={(value) => props.onChange(value)}
+                    onBlur={props.onBlur}
+                    invalid={props.invalid}
+                    placeholder={props.placeholder}
+                    dateFormat={props.dateFormat}
+                    showIcon={props.showIcon}
+                    showTime={props.showTime}
+                    hourFormat={props.hourFormat}
+                    minDate={props.minDate}
+                    maxDate={props.maxDate}
+                    className={props.className}
+                    pt={props.pt}
+                    ptOptions={props.ptOptions}
+                    unstyled={props.unstyled}
+                />
+                {accessibility.hiddenError}
+            </>
+        );
+    },
+    { defaultValue: null },
 );

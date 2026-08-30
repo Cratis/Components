@@ -1,0 +1,19 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "composite": false,
+        "noEmit": true,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "skipLibCheck": false,
+        "types": ["vitest/globals"]
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "for_*/**/*.ts",
+        "for_*/**/*.tsx",
+        "vitest.setup.ts"
+    ],
+    "exclude": ["dist", "node_modules"]
+}

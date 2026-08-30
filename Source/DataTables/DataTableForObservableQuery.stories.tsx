@@ -2,12 +2,17 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState } from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { DataTableForObservableQuery } from './DataTableForObservableQuery';
 import { Column } from './Column';
 import { Tag, type TagSeverity } from '../Display/Tag';
-import { ObservableQueryFor, QueryResult, ObservableQuerySubscription } from '@cratis/arc/queries';
+import {
+    ObservableQueryFor,
+    type QueryResult,
+    type ObservableQuerySubscription,
+} from '@cratis/arc/queries';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
+import { expect, within } from 'storybook/test';
 
 const meta: Meta<typeof DataTableForObservableQuery> = {
     title: 'DataTables/DataTableForObservableQuery',
@@ -27,14 +32,62 @@ interface Task {
 }
 
 const mockTasks: Task[] = [
-    { id: 1, title: 'Design system architecture', status: 'done', priority: 'high', assignee: 'Alice' },
-    { id: 2, title: 'Implement authentication', status: 'in-progress', priority: 'high', assignee: 'Bob' },
-    { id: 3, title: 'Write unit tests', status: 'in-progress', priority: 'medium', assignee: 'Alice' },
-    { id: 4, title: 'Set up CI/CD pipeline', status: 'done', priority: 'medium', assignee: 'Charlie' },
-    { id: 5, title: 'Update documentation', status: 'todo', priority: 'low', assignee: 'Bob' },
-    { id: 6, title: 'Performance profiling', status: 'todo', priority: 'medium', assignee: 'Charlie' },
-    { id: 7, title: 'Security audit', status: 'todo', priority: 'high', assignee: 'Alice' },
-    { id: 8, title: 'Dependency updates', status: 'in-progress', priority: 'low', assignee: 'Bob' },
+    {
+        id: 1,
+        title: 'Design system architecture',
+        status: 'done',
+        priority: 'high',
+        assignee: 'Sample User 01',
+    },
+    {
+        id: 2,
+        title: 'Implement authentication',
+        status: 'in-progress',
+        priority: 'high',
+        assignee: 'Sample User 02',
+    },
+    {
+        id: 3,
+        title: 'Write unit tests',
+        status: 'in-progress',
+        priority: 'medium',
+        assignee: 'Sample User 01',
+    },
+    {
+        id: 4,
+        title: 'Set up CI/CD pipeline',
+        status: 'done',
+        priority: 'medium',
+        assignee: 'Sample User 03',
+    },
+    {
+        id: 5,
+        title: 'Update documentation',
+        status: 'todo',
+        priority: 'low',
+        assignee: 'Sample User 02',
+    },
+    {
+        id: 6,
+        title: 'Performance profiling',
+        status: 'todo',
+        priority: 'medium',
+        assignee: 'Sample User 03',
+    },
+    {
+        id: 7,
+        title: 'Security audit',
+        status: 'todo',
+        priority: 'high',
+        assignee: 'Sample User 01',
+    },
+    {
+        id: 8,
+        title: 'Dependency updates',
+        status: 'in-progress',
+        priority: 'low',
+        assignee: 'Sample User 02',
+    },
 ];
 
 // Mock observable query — overrides subscribe() to deliver static data instead of opening a WebSocket
@@ -48,10 +101,17 @@ class TasksQuery extends ObservableQueryFor<Task, object> {
     constructor() {
         super(Object, false);
     }
-    override subscribe(callback: (result: QueryResult<Task>) => void): ObservableQuerySubscription<Task> {
+    override subscribe(
+        callback: (result: QueryResult<Task>) => void,
+    ): ObservableQuerySubscription<Task> {
         callback({
             data: mockTasks,
-            paging: { totalItems: mockTasks.length, totalPages: 1, page: 0, size: mockTasks.length },
+            paging: {
+                totalItems: mockTasks.length,
+                totalPages: 1,
+                page: 0,
+                size: mockTasks.length,
+            },
             isSuccess: true,
             isAuthorized: true,
             isValid: true,
@@ -60,7 +120,52 @@ class TasksQuery extends ObservableQueryFor<Task, object> {
             exceptionMessages: [],
             exceptionStackTrace: '',
         } as unknown as QueryResult<Task>);
-        return { unsubscribe: () => undefined } as unknown as ObservableQuerySubscription<Task>;
+        return {
+            unsubscribe: () => undefined,
+        } as unknown as ObservableQuerySubscription<Task>;
+    }
+}
+
+class LiveTasksQuery extends TasksQuery {
+    override subscribe(
+        callback: (result: QueryResult<Task>) => void,
+    ): ObservableQuerySubscription<Task> {
+        const publish = (data: Task[]) =>
+            callback({
+                data,
+                paging: {
+                    totalItems: data.length,
+                    totalPages: 1,
+                    page: 0,
+                    size: data.length,
+                },
+                isSuccess: true,
+                isAuthorized: true,
+                isValid: true,
+                hasExceptions: false,
+                validationResults: [],
+                exceptionMessages: [],
+                exceptionStackTrace: '',
+            } as unknown as QueryResult<Task>);
+
+        publish(mockTasks);
+        const timer = setTimeout(
+            () =>
+                publish([
+                    ...mockTasks,
+                    {
+                        id: 9,
+                        title: 'Live update received',
+                        status: 'todo',
+                        priority: 'high',
+                        assignee: 'Demo User',
+                    },
+                ]),
+            250,
+        );
+        return {
+            unsubscribe: () => clearTimeout(timer),
+        } as unknown as ObservableQuerySubscription<Task>;
     }
 }
 
@@ -68,52 +173,96 @@ class TasksQuery extends ObservableQueryFor<Task, object> {
 // WCAG-legible on both light and dark surfaces (unlike fixed text colors).
 const getStatusSeverity = (status: string): TagSeverity => {
     switch (status) {
-        case 'done': return 'success';
-        case 'in-progress': return 'info';
-        default: return 'secondary';
+        case 'done':
+            return 'success';
+        case 'in-progress':
+            return 'info';
+        default:
+            return 'secondary';
     }
 };
 
 const getPrioritySeverity = (priority: string): TagSeverity => {
     switch (priority) {
-        case 'high': return 'danger';
-        case 'medium': return 'warn';
-        default: return 'secondary';
+        case 'high':
+            return 'danger';
+        case 'medium':
+            return 'warn';
+        default:
+            return 'secondary';
     }
 };
 
 export const Default: Story = {
     render: () => (
-        <div className="p-4">
+        <div className='cratis:p-4'>
             <DataTableForObservableQuery<TasksQuery, Task, object>
                 query={TasksQuery}
-                emptyMessage="No tasks found"
-                dataKey="id"
+                emptyMessage='No tasks found'
+                dataKey='id'
             >
-                <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                <Column field="title" header="Task Title" sortable style={{ width: '35%' }} />
+                <Column field='id' header='ID' sortable style={{ width: '10%' }} />
                 <Column
-                    field="status"
-                    header="Status"
+                    field='title'
+                    header='Task Title'
+                    sortable
+                    style={{ width: '35%' }}
+                />
+                <Column
+                    field='status'
+                    header='Status'
                     sortable
                     style={{ width: '20%' }}
                     body={(rowData: Task) => (
-                        <Tag severity={getStatusSeverity(rowData.status)} value={rowData.status} />
+                        <Tag
+                            severity={getStatusSeverity(rowData.status)}
+                            value={rowData.status}
+                        />
                     )}
                 />
                 <Column
-                    field="priority"
-                    header="Priority"
+                    field='priority'
+                    header='Priority'
                     sortable
                     style={{ width: '15%' }}
                     body={(rowData: Task) => (
-                        <Tag severity={getPrioritySeverity(rowData.priority)} value={rowData.priority} />
+                        <Tag
+                            severity={getPrioritySeverity(rowData.priority)}
+                            value={rowData.priority}
+                        />
                     )}
                 />
-                <Column field="assignee" header="Assignee" sortable style={{ width: '20%' }} />
+                <Column
+                    field='assignee'
+                    header='Assignee'
+                    sortable
+                    style={{ width: '20%' }}
+                />
             </DataTableForObservableQuery>
         </div>
-    )
+    ),
+};
+
+export const LiveUpdate: Story = {
+    render: () => (
+        <div className='cratis:p-4'>
+            <p>The query pushes a ninth row after mount.</p>
+            <DataTableForObservableQuery<LiveTasksQuery, Task, object>
+                query={LiveTasksQuery}
+                emptyMessage='No tasks found'
+                dataKey='id'
+            >
+                <Column field='id' header='ID' />
+                <Column field='title' header='Task Title' />
+                <Column field='status' header='Status' />
+            </DataTableForObservableQuery>
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        await expect(
+            await within(canvasElement).findByText('Live update received'),
+        ).toBeTruthy();
+    },
 };
 
 export const WithSelection: Story = {
@@ -121,39 +270,62 @@ export const WithSelection: Story = {
         const [selectedTask, setSelectedTask] = useState<Task | undefined>();
 
         return (
-            <div className="p-4">
+            <div className='cratis:p-4'>
                 <DataTableForObservableQuery<TasksQuery, Task, object>
                     query={TasksQuery}
-                    emptyMessage="No tasks found"
-                    dataKey="id"
+                    emptyMessage='No tasks found'
+                    dataKey='id'
                     selection={selectedTask}
-                    onSelectionChange={(e: DataTableSelectionChangeEvent<Task>) => setSelectedTask(e.value ?? undefined)}
+                    onSelectionChange={(e: DataTableSelectionChangeEvent<Task>) =>
+                        setSelectedTask(e.value ?? undefined)
+                    }
                 >
-                    <Column selectionMode="single" headerStyle={{ width: '3rem' }} />
-                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                    <Column field="title" header="Task Title" sortable style={{ width: '35%' }} />
+                    <Column selectionMode='single' headerStyle={{ width: '3rem' }} />
+                    <Column field='id' header='ID' sortable style={{ width: '10%' }} />
                     <Column
-                        field="status"
-                        header="Status"
+                        field='title'
+                        header='Task Title'
+                        sortable
+                        style={{ width: '35%' }}
+                    />
+                    <Column
+                        field='status'
+                        header='Status'
                         sortable
                         style={{ width: '20%' }}
                         body={(rowData: Task) => (
-                            <Tag severity={getStatusSeverity(rowData.status)} value={rowData.status} />
+                            <Tag
+                                severity={getStatusSeverity(rowData.status)}
+                                value={rowData.status}
+                            />
                         )}
                     />
-                    <Column field="assignee" header="Assignee" sortable style={{ width: '20%' }} />
+                    <Column
+                        field='assignee'
+                        header='Assignee'
+                        sortable
+                        style={{ width: '20%' }}
+                    />
                 </DataTableForObservableQuery>
 
                 {selectedTask && (
-                    <div className="mt-4 p-4 border rounded">
-                        <h3 className="font-bold mb-2">Selected Task:</h3>
-                        <p><strong>Title:</strong> {selectedTask.title}</p>
-                        <p><strong>Status:</strong> {selectedTask.status}</p>
-                        <p><strong>Priority:</strong> {selectedTask.priority}</p>
-                        <p><strong>Assignee:</strong> {selectedTask.assignee}</p>
+                    <div className='cratis:mt-4 cratis:p-4 cratis:border cratis:rounded'>
+                        <h3 className='cratis:font-bold cratis:mb-2'>Selected Task:</h3>
+                        <p>
+                            <strong>Title:</strong> {selectedTask.title}
+                        </p>
+                        <p>
+                            <strong>Status:</strong> {selectedTask.status}
+                        </p>
+                        <p>
+                            <strong>Priority:</strong> {selectedTask.priority}
+                        </p>
+                        <p>
+                            <strong>Assignee:</strong> {selectedTask.assignee}
+                        </p>
                     </div>
                 )}
             </div>
         );
-    }
+    },
 };

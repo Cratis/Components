@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from 'storybook/test';
 import { Tooltip } from './Tooltip';
 
 const meta = {
@@ -12,7 +13,11 @@ const meta = {
     args: {
         content: 'A helpful hint shown on hover',
         position: 'top',
-        children: <span style={{ padding: '0.5rem 1rem', border: '1px solid var(--cratis-surface-border)', borderRadius: '0.25rem' }}>Hover me</span>,
+        children: (
+            <button type='button' style={{ padding: '0.5rem 1rem' }}>
+                Hover me
+            </button>
+        ),
     },
 } satisfies Meta<typeof Tooltip>;
 
@@ -26,15 +31,31 @@ export const Playground: Story = {};
 export const Positions: Story = {
     render: () => (
         <div style={{ display: 'flex', gap: '2rem', padding: '4rem' }}>
-            {(['top', 'right', 'bottom', 'left'] as const).map(position => (
-                <Tooltip key={position} content={`Position: ${position}`} position={position}>
-                    <span style={{ padding: '0.5rem 1rem', border: '1px solid var(--cratis-surface-border)', borderRadius: '0.25rem' }}>
+            {(['top', 'right', 'bottom', 'left'] as const).map((position) => (
+                <Tooltip
+                    key={position}
+                    content={`Position: ${position}`}
+                    position={position}
+                >
+                    <button type='button' style={{ padding: '0.5rem 1rem' }}>
                         {position}
-                    </span>
+                    </button>
                 </Tooltip>
             ))}
         </div>
     ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const body = within(document.body);
+        for (const position of ['top', 'right', 'bottom', 'left'] as const) {
+            const trigger = canvas.getByRole('button', { name: position });
+            trigger.focus();
+            await expect(trigger).toHaveFocus();
+            const popup = await body.findByText(`Position: ${position}`);
+            await expect(popup).toHaveAttribute('role', 'tooltip');
+            await expect(popup).toHaveAttribute('data-cratis-part', 'popup');
+        }
+    },
 };
 
 /** With no content the child renders on its own — no tooltip attached. */

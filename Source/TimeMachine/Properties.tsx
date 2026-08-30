@@ -12,37 +12,52 @@ interface PropertiesProps {
     align?: 'left' | 'right';
 }
 
-export const Properties: React.FC<PropertiesProps> = ({ data, className, align = 'left' }) => {
+/**
+ * Renders a key-value property table showing an entity's properties at a point in time.
+ * Used by {@link EventsView} to display event content and by {@link ReadModelView} for
+ * version snapshots. A public composable building block for rendering structured data.
+ */
+export const Properties: React.FC<PropertiesProps> = ({
+    data,
+    className,
+    align = 'left',
+}) => {
     const isRight = align === 'right';
 
     const renderValue = (value: unknown): React.ReactNode => {
         if (value === null || value === undefined) {
-            return <span className="tm-properties-null">null</span>;
+            return <span className='tm-properties-null'>null</span>;
         }
 
         if (typeof value === 'boolean') {
-            return <span className={value ? 'tm-properties-boolean-true' : 'tm-properties-boolean-false'}>{value.toString()}</span>;
-        }
-
-        if (typeof value === 'number') {
-            return <span className="tm-properties-number">{value}</span>;
-        }
-
-        if (value instanceof Date) {
-            return <span className="tm-properties-date">{value.toLocaleString()}</span>;
-        }
-
-        if (Array.isArray(value)) {
             return (
-                <span className="tm-properties-complex">
-                    Array[{value.length}]
+                <span
+                    className={
+                        value
+                            ? 'tm-properties-boolean-true'
+                            : 'tm-properties-boolean-false'
+                    }
+                >
+                    {value.toString()}
                 </span>
             );
         }
 
+        if (typeof value === 'number') {
+            return <span className='tm-properties-number'>{value}</span>;
+        }
+
+        if (value instanceof Date) {
+            return <span className='tm-properties-date'>{value.toLocaleString()}</span>;
+        }
+
+        if (Array.isArray(value)) {
+            return <span className='tm-properties-complex'>Array[{value.length}]</span>;
+        }
+
         if (typeof value === 'object') {
             return (
-                <span className="tm-properties-complex">
+                <span className='tm-properties-complex'>
                     {'{'}...{'}'}
                 </span>
             );
@@ -53,17 +68,25 @@ export const Properties: React.FC<PropertiesProps> = ({ data, className, align =
 
     return (
         <div className={className}>
-            <table className="tm-properties-table">
+            <table className='tm-properties-table'>
                 <tbody>
-                    {data && Object.entries(data).map(([key, value], index) => (
-                        <tr key={`${key}-${index}`} className="tm-properties-row">
-                            <td className={`tm-properties-label${isRight ? ' tm-properties-label--right' : ''}`}>{formatPropertyName(key)}</td>
-                            <td className={`tm-properties-value${isRight ? ' tm-properties-value--right' : ''}`}>{renderValue(value)}</td>
-                        </tr>
-                    ))}
+                    {data &&
+                        Object.entries(data).map(([key, value], index) => (
+                            <tr key={`${key}-${index}`} className='tm-properties-row'>
+                                <td
+                                    className={`tm-properties-label${isRight ? ' tm-properties-label--right' : ''}`}
+                                >
+                                    {formatPropertyName(key)}
+                                </td>
+                                <td
+                                    className={`tm-properties-value${isRight ? ' tm-properties-value--right' : ''}`}
+                                >
+                                    {renderValue(value)}
+                                </td>
+                            </tr>
+                        ))}
                 </tbody>
             </table>
         </div>
     );
 };
-

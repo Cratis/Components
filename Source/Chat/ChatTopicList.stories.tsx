@@ -3,7 +3,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import type { ChatIdentifier } from './ChatIdentifier';
 import { ChatTopicList } from './ChatTopicList';
@@ -37,16 +37,38 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {
     args: {
         topics: [
-            { id: 'topic-1', name: 'Rollout planning', startedBy: 'person-1', lastActivity: new Date(Date.now() - 5 * 60_000) },
-            { id: 'topic-2', startedBy: 'person-1', started: new Date(Date.now() - 30_000), lastActivity: new Date(Date.now() - 30_000) },
-            { id: 'topic-3', name: 'Retro follow-ups', startedBy: 'agent-1', lastActivity: new Date(Date.now() - 3 * 60 * 60_000) },
+            {
+                id: 'topic-1',
+                name: 'Rollout planning',
+                startedBy: 'person-1',
+                lastActivity: new Date(Date.now() - 5 * 60_000),
+            },
+            {
+                id: 'topic-2',
+                startedBy: 'person-1',
+                started: new Date(Date.now() - 30_000),
+                lastActivity: new Date(Date.now() - 30_000),
+            },
+            {
+                id: 'topic-3',
+                name: 'Retro follow-ups',
+                startedBy: 'agent-1',
+                lastActivity: new Date(Date.now() - 3 * 60 * 60_000),
+            },
         ],
         onOpen: fn(),
         onStart: fn(),
         authorOf,
     },
-    render: args => (
-        <div style={{ width: 360, border: '1px solid var(--cratis-surface-border)', borderRadius: 8, overflow: 'hidden' }}>
+    render: (args) => (
+        <div
+            style={{
+                width: 360,
+                border: '1px solid var(--cratis-surface-border)',
+                borderRadius: 8,
+                overflow: 'hidden',
+            }}
+        >
             <ChatTopicList {...args} />
         </div>
     ),
@@ -59,8 +81,15 @@ export const Empty: Story = {
         onOpen: fn(),
         onStart: fn(),
     },
-    render: args => (
-        <div style={{ width: 360, border: '1px solid var(--cratis-surface-border)', borderRadius: 8, overflow: 'hidden' }}>
+    render: (args) => (
+        <div
+            style={{
+                width: 360,
+                border: '1px solid var(--cratis-surface-border)',
+                borderRadius: 8,
+                overflow: 'hidden',
+            }}
+        >
             <ChatTopicList {...args} />
         </div>
     ),

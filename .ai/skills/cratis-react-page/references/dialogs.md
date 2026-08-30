@@ -172,7 +172,6 @@ Use when the dialog collects data and returns it without executing a command.
 ```tsx
 import { DialogProps, DialogResult } from '@cratis/arc.react/dialogs';
 import { Dialog } from '@cratis/components/Dialogs';
-import { InputText } from 'primereact/inputtext';
 import { useState } from 'react';
 
 export const RenameDialog = ({ closeDialog }: DialogProps<{ name: string }>) => {
@@ -185,9 +184,10 @@ export const RenameDialog = ({ closeDialog }: DialogProps<{ name: string }>) => 
             onConfirm={() => closeDialog(DialogResult.Ok, { name })}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
-            <InputText
+            <input
                 value={name}
-                onChange={event => setName(event.target.value)}
+                onChange={(event) => setName(event.target.value)}
+                className='cratis-field-input w-full'
                 autoFocus
             />
         </Dialog>

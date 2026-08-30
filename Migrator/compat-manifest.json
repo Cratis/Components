@@ -1,0 +1,305 @@
+{
+    "schemaVersion": 2,
+    "releaseStatus": "source-candidate",
+    "publicationEnabled": false,
+    "gaScope": {
+        "publicPackages": [
+            "@cratis/components",
+            "@cratis/eslint-plugin-components",
+            "@cratis/components.migrator",
+            "@cratis/components.conformance",
+            "@cratis/components.mui",
+            "@cratis/components.primereact",
+            "@cratis/components.primereact10"
+        ],
+        "privateEvidence": [
+            {
+                "id": "plain",
+                "name": "Plain DOM renderer conformance falsification fixture",
+                "purpose": "private-conformance-evidence",
+                "private": true,
+                "published": false
+            },
+            {
+                "id": "storybook",
+                "name": "Composed renderer Storybook",
+                "purpose": "private-renderer-evidence",
+                "private": true,
+                "published": false
+            }
+        ]
+    },
+    "toolingCompatibility": {
+        "componentsCore": ">=4 <5",
+        "eslint": ">=4 <5",
+        "migrator": ">=4 <5"
+    },
+    "supportWindows": {
+        "components3": {
+            "components": ">=3 <4",
+            "status": "maintenance-security-critical",
+            "migrationRole": "source",
+            "migrationTarget": ">=4 <5",
+            "tooling": ">=4 <5",
+            "eolAt": null,
+            "eolApprovedByOwners": false,
+            "ownerDecisionPolicy": "Set and approve EOL no later than 12 months after Components 4 GA."
+        },
+        "components4": {
+            "components": ">=4 <5",
+            "status": "current-candidate",
+            "migrationRole": "target",
+            "rendererAbi": 1,
+            "coreProfile": "core/v1",
+            "adapterProfile": "stable-presentation/v1",
+            "tooling": {
+                "eslint": ">=4 <5",
+                "migrator": ">=4 <5"
+            },
+            "adapters": {
+                "@cratis/components.conformance": ">=4 <5",
+                "@cratis/components.mui": ">=4 <5",
+                "@cratis/components.primereact": ">=4 <5",
+                "@cratis/components.primereact10": ">=4 <5"
+            }
+        }
+    },
+    "packages": [
+        {
+            "name": "@cratis/components",
+            "role": "core",
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/arc": ">=20.3.1 <23",
+                "@cratis/arc.react": ">=20.3.1 <23",
+                "@cratis/fundamentals": "^7.10.3",
+                "pixi.js": "^8.20.0",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0",
+                "reflect-metadata": "0.2.2",
+                "tsyringe": "4.10.0"
+            },
+            "upstream": {
+                "react": "^19.0.0"
+            },
+            "rendererAbi": 1,
+            "rendererProfile": "core/v1"
+        },
+        {
+            "name": "@cratis/eslint-plugin-components",
+            "role": "eslint",
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "eslint": ">=9"
+            },
+            "upstream": {}
+        },
+        {
+            "name": "@cratis/components.migrator",
+            "role": "migrator",
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {},
+            "upstream": {}
+        },
+        {
+            "name": "@cratis/components.conformance",
+            "role": "conformance",
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=4 <5",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {},
+            "rendererAbi": 1
+        },
+        {
+            "name": "@cratis/components.mui",
+            "role": "renderer-adapter",
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=4 <5",
+                "@emotion/react": ">=11.5 <12",
+                "@emotion/styled": ">=11.11 <12",
+                "@mui/material": ">=9 <10",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {
+                "@emotion/react": ">=11.5 <12",
+                "@emotion/styled": ">=11.11 <12",
+                "@mui/material": ">=9 <10",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "rendererAbi": 1,
+            "rendererProfile": "stable-presentation/v1",
+            "verifiedPeers": {
+                "minimum": {
+                    "@cratis/arc": "22.6.2",
+                    "@cratis/arc.react": "22.6.2",
+                    "@cratis/fundamentals": "7.18.1",
+                    "@emotion/react": "11.5.0",
+                    "@emotion/styled": "11.11.0",
+                    "@mui/material": "9.0.0",
+                    "@types/react": "19.0.0",
+                    "react": "19.0.0",
+                    "react-dom": "19.0.0",
+                    "reflect-metadata": "0.2.2",
+                    "rxjs": "7.8.2",
+                    "tsyringe": "4.10.0"
+                },
+                "current": {
+                    "@cratis/arc": "22.6.2",
+                    "@cratis/arc.react": "22.6.2",
+                    "@cratis/fundamentals": "7.18.1",
+                    "@emotion/react": "11.14.0",
+                    "@emotion/styled": "11.14.1",
+                    "@mui/material": "9.4.0",
+                    "@types/react": "19.2.18",
+                    "react": "19.2.8",
+                    "react-dom": "19.2.8",
+                    "reflect-metadata": "0.2.2",
+                    "rxjs": "7.8.2",
+                    "tsyringe": "4.10.0"
+                }
+            }
+        },
+        {
+            "name": "@cratis/components.primereact",
+            "role": "renderer-adapter",
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=4 <5",
+                "@primereact/core": ">=11 <12",
+                "@primereact/ui": ">=11 <12",
+                "@primeuix/themes": ">=3 <4",
+                "primereact": ">=11 <12",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {
+                "@primereact/core": ">=11 <12",
+                "@primereact/ui": ">=11 <12",
+                "@primeuix/themes": ">=3 <4",
+                "primereact": ">=11 <12",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "rendererAbi": 1,
+            "rendererProfile": "stable-presentation/v1",
+            "verifiedPeers": {
+                "minimum": {
+                    "@cratis/arc": "22.6.2",
+                    "@cratis/arc.react": "22.6.2",
+                    "@cratis/fundamentals": "7.18.1",
+                    "@primereact/core": "11.0.0",
+                    "@primereact/headless": "11.0.0",
+                    "@primereact/styles": "11.0.0",
+                    "@primereact/ui": "11.0.0",
+                    "@primeuix/motion": "1.0.0",
+                    "@primeuix/themes": "3.0.0",
+                    "@primeuix/utils": "0.8.0",
+                    "@types/react": "19.0.0",
+                    "primereact": "11.0.0",
+                    "react": "19.0.0",
+                    "react-dom": "19.0.0",
+                    "reflect-metadata": "0.2.2",
+                    "rxjs": "7.8.2",
+                    "tsyringe": "4.10.0"
+                },
+                "current": {
+                    "@cratis/arc": "22.6.2",
+                    "@cratis/arc.react": "22.6.2",
+                    "@cratis/fundamentals": "7.18.1",
+                    "@primereact/core": "11.1.0",
+                    "@primereact/headless": "11.1.0",
+                    "@primereact/styles": "11.1.0",
+                    "@primereact/ui": "11.1.0",
+                    "@primeuix/motion": "1.0.0",
+                    "@primeuix/themes": "3.0.0",
+                    "@primeuix/utils": "0.8.1",
+                    "@types/react": "19.2.18",
+                    "primereact": "11.1.0",
+                    "react": "19.2.8",
+                    "react-dom": "19.2.8",
+                    "reflect-metadata": "0.2.2",
+                    "rxjs": "7.8.2",
+                    "tsyringe": "4.10.0"
+                }
+            }
+        },
+        {
+            "name": "@cratis/components.primereact10",
+            "role": "renderer-adapter",
+            "version": "4.0.0",
+            "releaseMajorRange": ">=4 <5",
+            "independentRelease": false,
+            "private": false,
+            "packageAccess": "public",
+            "peerDependencies": {
+                "@cratis/components": ">=4 <5",
+                "primereact": ">=10.9.9 <11",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "upstream": {
+                "primereact": ">=10.9.9 <11",
+                "react": "^19.0.0",
+                "react-dom": "^19.0.0"
+            },
+            "rendererAbi": 1,
+            "rendererProfile": "stable-presentation/v1",
+            "verifiedPeers": {
+                "minimum": {
+                    "@cratis/arc": "22.6.2",
+                    "@cratis/arc.react": "22.6.2",
+                    "@cratis/fundamentals": "7.18.1",
+                    "@types/react": "19.0.0",
+                    "primereact": "10.9.9",
+                    "react": "19.0.0",
+                    "react-dom": "19.0.0",
+                    "reflect-metadata": "0.2.2",
+                    "rxjs": "7.8.2",
+                    "tsyringe": "4.10.0"
+                },
+                "current": {
+                    "@cratis/arc": "22.6.2",
+                    "@cratis/arc.react": "22.6.2",
+                    "@cratis/fundamentals": "7.18.1",
+                    "@types/react": "19.2.18",
+                    "primereact": "10.9.9",
+                    "react": "19.2.8",
+                    "react-dom": "19.2.8",
+                    "reflect-metadata": "0.2.2",
+                    "rxjs": "7.8.2",
+                    "tsyringe": "4.10.0"
+                }
+            }
+        }
+    ]
+}

@@ -10,7 +10,9 @@
  */
 export class ItemAddedToRegion {
     constructor(
+        /** Caller-owned identity of the region that now contains the item. */
         readonly regionId: string,
+        /** Caller-owned identity of the item whose center entered the region. */
         readonly itemId: string,
     ) {}
 }

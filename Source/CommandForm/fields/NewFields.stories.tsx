@@ -17,7 +17,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-class ProfileValidator extends CommandValidator {
+class ProfileValidator extends CommandValidator<ProfileCommand> {
     constructor() {
         super();
         this.ruleFor((c: ProfileCommand) => c.password).notEmpty().minLength(6);

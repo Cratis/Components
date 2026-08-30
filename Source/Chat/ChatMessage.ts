@@ -15,7 +15,6 @@ import type { ChatMention } from './ChatMention';
  * over the message type, and every action callback receives the full message back.
  */
 export interface ChatMessage {
-
     /** The identifier of the message. */
     id: ChatIdentifier;
 

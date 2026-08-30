@@ -240,6 +240,9 @@ node_modules/
 typings/
 *.d.ts
 !*.scss.d.ts
+!Adapters/**/src/upstream-*-shim.d.ts
+!Source/schemas/ui-adapter.schema.d.ts
+!Storybook/**/*.d.ts
 
 # Visual Studio 6 build log
 *.plg
@@ -297,8 +300,8 @@ out
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-yarn.lock
 coverage
+.pi/
 
 .DS_Store
 

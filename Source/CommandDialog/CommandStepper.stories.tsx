@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { StepperPanel } from './StepperPanel';
 import { CommandStepper } from './CommandStepper';
@@ -17,7 +17,7 @@ const meta: Meta<typeof CommandStepper> = {
 export default meta;
 type Story = StoryObj<typeof CommandStepper>;
 
-class CreateProjectValidator extends CommandValidator {
+class CreateProjectValidator extends CommandValidator<CreateProjectCommand> {
     constructor() {
         super();
         this.ruleFor((c: CreateProjectCommand) => c.name).notEmpty().minLength(2).maxLength(100);
@@ -112,7 +112,7 @@ export const Default: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -166,14 +166,14 @@ export const InDialogFrame: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                            <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
                     </div>
                     <div className="command-stepper-stories-footer">
-                        <button className="p-button p-button-secondary">Cancel</button>
-                        <button className="p-button p-button-primary">Create</button>
+                        <button className="cratis-button" data-variant="outline" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Cancel</button>
+                        <button  className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Create</button>
                     </div>
                 </div>
             </div>
@@ -229,14 +229,14 @@ export const InDialogFrameWithCenteredHeader: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                            <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
                     </div>
                     <div className="command-stepper-stories-footer">
-                        <button className="p-button p-button-secondary">Cancel</button>
-                        <button className="p-button p-button-primary">Complete</button>
+                        <button className="cratis-button" data-variant="outline" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Cancel</button>
+                        <button  className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Complete</button>
                     </div>
                 </div>
             </div>
@@ -287,7 +287,7 @@ export const Vertical: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -341,7 +341,7 @@ export const WithValidationIndicators: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -362,13 +362,8 @@ export const ConditionalSteps: Story = {
 
         return (
             <div style={{ width: '600px', padding: '1.5rem' }}>
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => setIncludeBudgetStep(current => !current)}
-                >
-                    {includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}
-                </button>
-                <p className="mb-3 text-sm text-color-secondary">
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
+                <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
                     The Budget step is currently <strong>{includeBudgetStep ? 'shown' : 'hidden'}</strong>, so the
                     wizard has {includeBudgetStep ? 'three' : 'two'} steps.
                 </p>
@@ -406,7 +401,7 @@ export const ConditionalSteps: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}

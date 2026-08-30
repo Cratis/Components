@@ -33,7 +33,7 @@
 }
 
 .tm-properties-null {
-    color: var(--tm-text-faint, rgba(255, 255, 255, 0.4));
+    color: var(--tm-text-faint, var(--cratis-text-color-secondary));
 }
 
 .tm-properties-boolean-true {

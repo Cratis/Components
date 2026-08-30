@@ -22,23 +22,27 @@
 
 ## Example Configuration
 
-```typescript
+```tsx
 <PivotViewer
     data={items}
     dimensions={dimensions}
     filters={filters}
-    defaultDimensionKey="status"
+    defaultDimensionKey='status'
     cardRenderer={renderCard}
     detailRenderer={renderDetails}
     getItemId={(item) => item.id}
-    searchFields={[item => item.title, item => item.description, item => item.assignee]}
-    className="my-pivot-viewer"
+    searchFields={[
+        (item) => item.title,
+        (item) => item.description,
+        (item) => item.assignee,
+    ]}
+    className='my-pivot-viewer'
     emptyContent={<div>No items match your filters</div>}
     isLoading={isLoadingData}
     colors={{
         primaryColor: '#4CAF50',
         surfaceGround: '#1a1a1a',
-        surfaceCard: '#2d2d2d'
+        surfaceCard: '#2d2d2d',
     }}
 />
 ```
@@ -47,31 +51,40 @@
 
 Customize the color scheme:
 
-```typescript
+```tsx
 const customColors = {
-    primaryColor: '#0066cc',     // Primary accent color
-    surfaceGround: '#ffffff',    // Main background
-    surfaceCard: '#f5f5f5',      // Card backgrounds
-    textColor: '#333333',        // Text color
-    surfaceBorder: '#e0e0e0'     // Border color
+    primaryColor: '#0066cc', // Primary accent color
+    surfaceGround: '#ffffff', // Main background
+    surfaceCard: '#f5f5f5', // Pixi card base and DOM card backgrounds
+    surfaceSection: '#e8e8e8', // Pixi card secondary surface
+    textColor: '#333333', // Text color
+    surfaceBorder: '#e0e0e0', // Border color
 };
 
 <PivotViewer
     colors={customColors}
     // ... other props
-/>
+/>;
 ```
+
+Color props map to semantic `--cratis-*` variables and the Pixi renderer's card palette. Updating `colors` after mount refreshes both surfaces, including existing title, label, and value text.
+
+## Server rendering and hydration
+
+`PivotViewer` can render its structural fallback on the server without `document`, canvas, or Pixi initialization. Browser-only color resolution, portals, observers, and the Pixi renderer start after hydration. An initially closed filter panel produces the same server and first-client tree; if application state opens it immediately, the portal is deliberately mounted only after hydration.
+
+The server does not rasterize cards. Treat the server output as a stable loading/empty structure, then let the client build the interactive Pixi surface.
 
 ## Loading State
 
 Show a loading indicator while data is being fetched:
 
-```typescript
+```tsx
 const [data, setData] = useState([]);
 const [loading, setLoading] = useState(true);
 
 useEffect(() => {
-    fetchData().then(result => {
+    fetchData().then((result) => {
         setData(result);
         setLoading(false);
     });
@@ -81,33 +94,40 @@ useEffect(() => {
     data={data}
     isLoading={loading}
     // ... other props
-/>
+/>;
 ```
 
 ## Empty State
 
 Customize the message when filters return no results:
 
-```typescript
+```tsx
+import { FaInbox } from 'react-icons/fa6';
+
 <PivotViewer
     emptyContent={
-        <div className="empty-state">
-            <i className="pi pi-inbox" style={{ fontSize: '3rem' }} />
+        <div className='empty-state'>
+            <FaInbox aria-hidden='true' style={{ fontSize: '3rem' }} />
             <h3>No results found</h3>
             <p>Try adjusting your filters</p>
         </div>
     }
     // ... other props
-/>
+/>;
 ```
 
 ## Search Configuration
 
 Specify which fields should be searchable by passing accessor functions:
 
-```typescript
+```tsx
 <PivotViewer
-    searchFields={[item => item.title, item => item.description, item => item.tags, item => item.author]}
+    searchFields={[
+        (item) => item.title,
+        (item) => item.description,
+        (item) => item.tags,
+        (item) => item.author,
+    ]}
     // ... other props
 />
 ```

@@ -12,7 +12,7 @@ import { type DialogInTheDom, render, unmount } from './given/a_dialog_in_the_do
 const footerButtons = () =>
     Array.from(
         document.querySelectorAll<HTMLButtonElement>(
-            '[data-scope="dialog"][data-part="footer"] button',
+            '[data-cratis-part="footer"] button',
         ),
     );
 
@@ -49,12 +49,11 @@ describe('when rendering footer buttons', () => {
         await unmount(dialog);
     });
 
-    it('should hide every decorative icon from accessibility APIs', () => {
-        const icons = footerButtons().map((button) => button.querySelector('i'));
-        expect(icons).to.have.lengthOf(2);
-        expect(
-            icons.every((icon) => icon?.getAttribute('aria-hidden') === 'true'),
-        ).to.equal(true);
+    it('should not add decorative content to the action labels', () => {
+        const decorativeElements = footerButtons().flatMap((button) =>
+            Array.from(button.querySelectorAll('i, svg')),
+        );
+        expect(decorativeElements).to.have.lengthOf(0);
     });
 
     it('should give each button exactly its visible label as accessible content', () => {

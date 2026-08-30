@@ -6,7 +6,12 @@
 import { createElement } from 'react';
 import { ChatConversation } from '../ChatConversation';
 import type { ChatMessage } from '../ChatMessage';
-import { click, render, unmount, type ConversationInTheDom } from './given/a_conversation_in_the_dom';
+import {
+    click,
+    render,
+    unmount,
+    type ConversationInTheDom,
+} from './given/a_conversation_in_the_dom';
 
 describe('when a message action is invoked', () => {
     let conversation: ConversationInTheDom;
@@ -22,28 +27,30 @@ describe('when a message action is invoked', () => {
 
     beforeEach(async () => {
         invokedWith = undefined;
-        conversation = await render(createElement(ChatConversation, {
-            messages: [message],
-            onSendMessage: () => { },
-            quickReply: false,
-            actions: [
-                {
-                    id: 'create-issue',
-                    label: 'Create an issue',
-                    icon: 'pi pi-plus-circle',
-                    onInvoke: invoked => {
-                        invokedWith = invoked;
+        conversation = await render(
+            createElement(ChatConversation, {
+                messages: [message],
+                onSendMessage: () => {},
+                quickReply: false,
+                actions: [
+                    {
+                        id: 'create-issue',
+                        label: 'Create an issue',
+                        icon: 'icon-create-issue',
+                        onInvoke: (invoked) => {
+                            invokedWith = invoked;
+                        },
                     },
-                },
-                {
-                    id: 'never-offered',
-                    label: 'Never offered',
-                    icon: 'pi pi-ban',
-                    isAvailable: () => false,
-                    onInvoke: () => { },
-                },
-            ],
-        }));
+                    {
+                        id: 'never-offered',
+                        label: 'Never offered',
+                        icon: 'icon-ban',
+                        isAvailable: () => false,
+                        onInvoke: () => {},
+                    },
+                ],
+            }),
+        );
     });
 
     afterEach(async () => {
@@ -51,13 +58,16 @@ describe('when a message action is invoked', () => {
     });
 
     it('should offer the available action', () =>
-        (document.querySelector('[aria-label="Create an issue"]') !== null).should.be.true);
+        (document.querySelector('[aria-label="Create an issue"]') !== null).should.be
+            .true);
 
     it('should not offer the action that said no', () =>
         (document.querySelector('[aria-label="Never offered"]') === null).should.be.true);
 
     it('should hand the full message to the action when clicked', async () => {
-        await click(document.querySelector<HTMLButtonElement>('[aria-label="Create an issue"]')!);
+        await click(
+            document.querySelector<HTMLButtonElement>('[aria-label="Create an issue"]')!,
+        );
         invokedWith!.should.equal(message);
     });
 });

@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { act } from 'react';
+import type React from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 /**
@@ -18,9 +19,16 @@ export interface ConversationInTheDom {
  * @param element - The element to render.
  * @returns The mounted component, to be passed to {@link unmount}.
  */
-export const render = async (element: React.ReactElement): Promise<ConversationInTheDom> => {
-    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-    (Element.prototype as unknown as { scrollIntoView?: () => void }).scrollIntoView ??= () => { };
+export const render = async (
+    element: React.ReactElement,
+): Promise<ConversationInTheDom> => {
+    // SAFETY: React reads this process-wide test flag from globalThis.
+    (
+        globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: jsdom has no layout engine, so scrollIntoView is a test-only stub absent from its typings.
+    (Element.prototype as unknown as { scrollIntoView?: () => void }).scrollIntoView ??=
+        () => {};
 
     const container = document.createElement('div');
     document.body.appendChild(container);
@@ -52,7 +60,10 @@ export const unmount = async (rendered: ConversationInTheDom) => {
  * @param value - The text it should hold.
  */
 export const typeInto = async (textarea: HTMLTextAreaElement, value: string) => {
-    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!;
+    const setter = Object.getOwnPropertyDescriptor(
+        HTMLTextAreaElement.prototype,
+        'value',
+    )!.set!;
     await act(async () => {
         setter.call(textarea, value);
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -65,7 +76,9 @@ export const typeInto = async (textarea: HTMLTextAreaElement, value: string) => 
  */
 export const pressEnter = async (element: HTMLElement) => {
     await act(async () => {
-        element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        element.dispatchEvent(
+            new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+        );
     });
 };
 

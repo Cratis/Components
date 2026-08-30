@@ -8,32 +8,46 @@ import { ChatSidebar } from '../ChatSidebar';
 import type { ChatIdentifier } from '../ChatIdentifier';
 import type { ChatMessage } from '../ChatMessage';
 import type { ChatTopic } from '../ChatTopic';
-import { pressEnter, render, typeInto, unmount, type ChatSidebarInTheDom } from './given/a_chat_sidebar_in_the_dom';
+import {
+    pressEnter,
+    render,
+    typeInto,
+    unmount,
+    type ChatSidebarInTheDom,
+} from './given/a_chat_sidebar_in_the_dom';
 
-const renderSidebar = async (topic: ChatTopic, messages: ChatMessage[], recorded: {
-    sentIn?: ChatIdentifier;
-    sentBody?: string;
-    namingAskedFor?: ChatTopic;
-    namingFrom?: string;
-}) =>
-    render(createElement(ChatSidebar, {
-        open: true,
-        onClose: () => { },
-        topics: [topic],
-        messages,
-        selectedTopicId: topic.id,
-        onSendMessage: (topicId: ChatIdentifier, body: string) => {
-            recorded.sentIn = topicId;
-            recorded.sentBody = body;
-        },
-        onRequestTopicName: (named: ChatTopic, firstMessageBody: string) => {
-            recorded.namingAskedFor = named;
-            recorded.namingFrom = firstMessageBody;
-        },
-    }));
+const renderSidebar = async (
+    topic: ChatTopic,
+    messages: ChatMessage[],
+    recorded: {
+        sentIn?: ChatIdentifier;
+        sentBody?: string;
+        namingAskedFor?: ChatTopic;
+        namingFrom?: string;
+    },
+) =>
+    render(
+        createElement(ChatSidebar, {
+            open: true,
+            onClose: () => {},
+            topics: [topic],
+            messages,
+            selectedTopicId: topic.id,
+            onSendMessage: (topicId: ChatIdentifier, body: string) => {
+                recorded.sentIn = topicId;
+                recorded.sentBody = body;
+            },
+            onRequestTopicName: (named: ChatTopic, firstMessageBody: string) => {
+                recorded.namingAskedFor = named;
+                recorded.namingFrom = firstMessageBody;
+            },
+        }),
+    );
 
 const sendMessage = async (body: string) => {
-    const textarea = document.querySelector<HTMLTextAreaElement>('.chat-composer__input')!;
+    const textarea = document.querySelector<HTMLTextAreaElement>(
+        '.chat-composer__input',
+    )!;
     await typeInto(textarea, body);
     await pressEnter(textarea);
 };
@@ -54,7 +68,9 @@ describe('when the first message is sent in an unnamed topic', () => {
     });
 
     it('should render the pending placeholder as the title', () =>
-        document.querySelector('.cratis-chat-sidebar__title--pending')!.textContent!.should.equal('New topic'));
+        document
+            .querySelector('.cratis-chat-sidebar__title--pending')!
+            .textContent!.should.equal('New topic'));
 
     it('should send the message into the topic', () => {
         String(recorded.sentIn!).should.equal('topic-1');
@@ -83,11 +99,15 @@ describe('when a message is sent in a topic that already has a name', () => {
     });
 
     it('should show the topic name as the title', () =>
-        document.querySelector('.cratis-chat-sidebar__title')!.textContent!.should.equal('Rollout planning'));
+        document
+            .querySelector('.cratis-chat-sidebar__title')!
+            .textContent!.should.equal('Rollout planning'));
 
-    it('should still send the message', () => recorded.sentBody!.should.equal('adding a thought'));
+    it('should still send the message', () =>
+        recorded.sentBody!.should.equal('adding a thought'));
 
-    it('should leave the name alone', () => (recorded.namingAskedFor === undefined).should.be.true);
+    it('should leave the name alone', () =>
+        (recorded.namingAskedFor === undefined).should.be.true);
 });
 
 describe('when a later message is sent in a topic that is still unnamed', () => {
@@ -112,5 +132,6 @@ describe('when a later message is sent in a topic that is still unnamed', () => 
         await unmount(sidebar);
     });
 
-    it('should not ask again', () => (recorded.namingAskedFor === undefined).should.be.true);
+    it('should not ask again', () =>
+        (recorded.namingAskedFor === undefined).should.be.true);
 });

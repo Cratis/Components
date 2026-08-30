@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ICommandResult } from '@cratis/arc/commands';
+import type { ICommandResult } from '@cratis/arc/commands';
 import { DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
 import { Dialog, type DialogProps } from '../Dialogs/Dialog';
 import React, { useState } from 'react';
@@ -10,10 +10,13 @@ import {
     CommandFormFieldWrapper,
     useCommandFormContext,
     useCommandInstance,
-    type CommandFormProps
+    type CommandFormProps,
 } from '@cratis/arc.react/commands';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
-import { isCommandFormField, markAsCommandFormColumn } from '../CommandForm/commandFormMarkers';
+import {
+    isCommandFormField,
+    markAsCommandFormColumn,
+} from '../CommandForm/commandFormMarkers';
 
 /**
  * Props for {@link CommandDialog}. Combines the props of a `CommandForm`
@@ -25,8 +28,9 @@ import { isCommandFormField, markAsCommandFormColumn } from '../CommandForm/comm
  * @typeParam TResponse - The response payload type returned by a successful command. Defaults to `object`.
  */
 export interface CommandDialogProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
-        Omit<DialogProps, 'children'> {
+    extends
+        Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
+        Omit<DialogProps, 'children' | 'isBusy'> {
     /**
      * A transformer invoked with the current command values immediately before
      * the command executes on confirm. It **must return** the values to run with
@@ -72,12 +76,14 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onSuccess,
     onValidationFailure,
     onFailed,
+    onException,
+    onUnauthorized,
     onBeforeExecute,
     className,
     pt,
     ptOptions,
     unstyled,
-    children
+    children,
 }: {
     title: string;
     visible?: boolean;
@@ -100,6 +106,8 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
+    onException?: CommandFormProps<TCommand, TResponse>['onException'];
+    onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
     className?: DialogProps['className'];
     pt?: DialogProps['pt'];
@@ -107,29 +115,40 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     unstyled?: DialogProps['unstyled'];
     children?: React.ReactNode;
 }) => {
-    const { setCommandValues, setCommandResult, isValid: isCommandFormValid } = useCommandFormContext<TCommand>();
+    const {
+        setCommandValues,
+        setCommandResult,
+        isValid: isCommandFormValid,
+    } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
     const [isBusy, setIsBusy] = useState(false);
 
     const handleConfirm = async () => {
-        if (onBeforeExecute) {
-            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-            setCommandValues(applied instanceof Promise ? await applied : applied);
-        }
-
         setIsBusy(true);
         let result: ICommandResult<TResponse>;
         try {
-            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
+            if (onBeforeExecute) {
+                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+                setCommandValues(applied instanceof Promise ? await applied : applied);
+            }
+            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
+            result = await (
+                commandInstance as unknown as {
+                    execute: () => Promise<ICommandResult<TResponse>>;
+                }
+            ).execute();
         } finally {
             setIsBusy(false);
         }
 
         if (!result.isSuccess) {
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
+            }
+            if (!result.isAuthorized) await onUnauthorized?.();
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
-            } else {
-                await onFailed?.(result);
             }
             setCommandResult(result);
             return false;
@@ -156,15 +175,23 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
 
             const component = child.type as React.ComponentType<unknown>;
             if (isCommandFormField(component)) {
-                type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
-                return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
+                type FieldElement = Parameters<
+                    typeof CommandFormFieldWrapper
+                >[0]['field'];
+                // SAFETY: isCommandFormField guards that child.type is a command form field component.
+                return (
+                    <CommandFormFieldWrapper field={child as unknown as FieldElement} />
+                );
             }
 
             const childProps = child.props as Record<string, unknown>;
             if (childProps.children != null) {
-                return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-                    children: processChildren(childProps.children as React.ReactNode)
-                });
+                return React.cloneElement(
+                    child as React.ReactElement<Record<string, unknown>>,
+                    {
+                        children: processChildren(childProps.children as React.ReactNode),
+                    },
+                );
             }
 
             return child;
@@ -172,7 +199,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     };
 
     const processedChildren = processChildren(children);
-    const isDialogValid = (isValid !== false) && isCommandFormValid;
+    const isDialogValid = isValid !== false && isCommandFormValid;
 
     return (
         <Dialog
@@ -323,7 +350,9 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
  * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
  * @param props - {@link CommandDialogProps}.
  */
-const CommandDialogComponent = <TCommand extends object = object, TResponse = object>(props: CommandDialogProps<TCommand, TResponse>) => {
+const CommandDialogComponent = <TCommand extends object = object, TResponse = object>(
+    props: CommandDialogProps<TCommand, TResponse>,
+) => {
     const {
         title,
         visible,
@@ -376,6 +405,8 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
+                onException={props.onException}
+                onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
                 className={className}
                 pt={pt}
@@ -395,4 +426,16 @@ markAsCommandFormColumn(CommandDialogColumnWrapper);
 
 CommandDialogComponent.Column = CommandDialogColumnWrapper;
 
+/**
+ * A {@link Dialog} that hosts a Cratis Arc `CommandForm`, runs the bound
+ * command on confirm, and only closes when the command succeeds. This is
+ * the standard pattern for "user fills in a form, clicks OK, command runs
+ * server-side, dialog dismisses" — `CommandDialog` collapses about thirty
+ * lines of orchestration into the props on a single component.
+ *
+ * See {@link CommandDialogComponent} for full documentation.
+ *
+ * @typeParam TCommand - The command class (proxy generated from C# `[Command]`).
+ * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
+ */
 export const CommandDialog = CommandDialogComponent;

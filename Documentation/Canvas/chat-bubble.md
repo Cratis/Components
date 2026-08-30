@@ -4,6 +4,8 @@ The `ChatBubble` kit is a full commenting/chat system — a message thread, a co
 
 Like `Note` and `Region`, none of these components live inside a `CanvasItem` by requirement — `Chat` is a normal floating/docked panel, most often placed inside a `CanvasItem` so it can sit next to whatever it is commenting on, or rendered outside the `Canvas` entirely for a docked sidebar.
 
+The kit itself is generic and needs no `pixi.js` — it lives in source at `Source/Chat/Kit`, the shared, non-spatial implementation both `@cratis/components/Canvas` (below) and `@cratis/components/Chat` build on. Import it from `@cratis/components/Canvas` as shown here; `@cratis/components/Chat`'s [conversation components](../Chat/index.md) build their own higher-level `ChatConversation`/`ChatSidebar` on top of the same kit.
+
 ## `Chat` — the conversation panel
 
 ```tsx
@@ -22,22 +24,25 @@ function Conversation() {
             authorInitials: 'SU',
             hasAvatar: false,
             authorKind: ChatAuthorKind.User,
-            text: 'What do you think of this layout?',
+            text: 'This is a sample message.',
             timestamp: new Date(),
         },
     ]);
 
     const send = (text: string) => {
-        setMessages(current => [...current, {
-            id: Guid.create(),
-            authorId: me,
-            authorName: 'You',
-            authorInitials: 'Y',
-            hasAvatar: false,
-            authorKind: ChatAuthorKind.User,
-            text,
-            timestamp: new Date(),
-        }]);
+        setMessages((current) => [
+            ...current,
+            {
+                id: Guid.create(),
+                authorId: me,
+                authorName: 'You',
+                authorInitials: 'Y',
+                hasAvatar: false,
+                authorKind: ChatAuthorKind.User,
+                text,
+                timestamp: new Date(),
+            },
+        ]);
     };
 
     return (
@@ -46,7 +51,9 @@ function Conversation() {
             onSend={send}
             onClose={() => {}}
             currentUserId={me}
-            onReact={(messageId, emoji) => console.log('react', messageId.toString(), emoji)}
+            onReact={(messageId, emoji) =>
+                console.log('react', messageId.toString(), emoji)
+            }
         />
     );
 }
@@ -54,17 +61,21 @@ function Conversation() {
 
 `messages`, `onSend`, and `onClose` are the only required props — everything else is opt-in, and each opt-in feature is gated on its own prop rather than a single "mode" switch:
 
-| Feature | Enabled by |
-|---|---|
-| Reactions | `currentUserId` **and** `onReact` both given |
-| Quick reply (prefills the composer with `@name`, followed by a space) | Always available once there is more than one author |
-| "Turn into an action" button | `onAct` given (optionally filtered per-message by `canAct`) |
-| `@`-mentions in the composer | `mentionCandidates` given |
-| Typing indicator | `typingAuthors` given (a list of who's currently typing/working) |
-| Avatar images (instead of initials) | `buildAvatarUrl` given |
-| "Report a bug" link on a failed turn | `buildReportUrl` given |
+| Feature                                                               | Enabled by                                                       |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Reactions                                                             | `currentUserId` **and** `onReact` both given                     |
+| Quick reply (prefills the composer with `@name`, followed by a space) | Always available once there is more than one author              |
+| "Turn into an action" button                                          | `onAct` given (optionally filtered per-message by `canAct`)      |
+| `@`-mentions in the composer                                          | `mentionCandidates` given                                        |
+| Typing indicator                                                      | `typingAuthors` given (a list of who's currently typing/working) |
+| Avatar images (instead of initials)                                   | `buildAvatarUrl` given                                           |
+| "Report a bug" link on a failed turn                                  | `buildReportUrl` given                                           |
 
 `variant` (`ChatVariant.Floating`, the default, or `ChatVariant.Docked`) controls whether `Chat` renders its own header/close button (`Floating`) or leaves the frame and heading to whatever contains it (`Docked`, for a sidebar that already has its own).
+
+## Opt-in messaging — `id`
+
+`Chat` accepts an optional `id`. When given, every send additionally publishes a `ChatMessageAdded` (carrying `chatId` and `text`) over the `@cratis/arc.react` messenger, at the same moment `onSend` fires — `onSend` remains the primary contract either way. Omit `id` for exactly the previous behavior: nothing published. See [Messaging](messaging.md) for the full catalog, the opt-in rules, and why this is silently inert without Arc.
 
 ## Avatars — `buildAvatarUrl`
 
@@ -80,6 +91,8 @@ Omit it and every avatar falls back to the person's initials on a color determin
 ## Reactions
 
 Reactions are quick emoji given to a message (`ChatMessage.reactions: ChatMessageReaction[]`, each grouping the users who gave that emoji). The reaction button opens a `ReactionPicker`: a row of recently-used emoji (remembered per-browser in `localStorage` by default, or wherever a `memory: EmojiMemory` you pass points instead) plus a button that opens the full `EmojiPicker`. Picking the emoji already given is how a reaction is taken back — `onReact` is called either way and the caller decides give/change/revoke from what was clicked.
+
+Applications that own those give/change/revoke commands can import `findOwnReaction(reactions, currentUserId)` from `@cratis/components/Canvas`. It returns the current person's `reactionId` and emoji, or `undefined`, so application command logic can follow the same one-reaction-per-person rule as the built-in chat composition.
 
 ## Mentions
 

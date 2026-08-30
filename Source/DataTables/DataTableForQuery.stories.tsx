@@ -104,7 +104,7 @@ class ManyProductsQuery extends QueryFor<Product, object> {
 
 export const Default: Story = {
     render: () => (
-        <div className="p-4">
+        <div className="cratis:p-4">
             <DataTableForQuery<ProductsQuery, Product, object>
                 query={ProductsQuery}
                 emptyMessage="No products found"
@@ -145,7 +145,7 @@ export const Default: Story = {
  */
 export const InBoundedHeight: Story = {
     render: () => (
-        <div className="p-4">
+        <div className="cratis:p-4">
             <div style={{ height: '560px' }}>
                 <DataTableForQuery<ManyProductsQuery, Product, object>
                     query={ManyProductsQuery}
@@ -173,7 +173,7 @@ export const WithSelection: Story = {
         const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
 
         return (
-            <div className="p-4">
+            <div className="cratis:p-4">
                 <DataTableForQuery<ProductsQuery, Product, object>
                     query={ProductsQuery}
                     emptyMessage="No products found"
@@ -195,8 +195,8 @@ export const WithSelection: Story = {
                 </DataTableForQuery>
                 
                 {selectedProduct && (
-                    <div className="mt-4 p-4 border rounded">
-                        <h3 className="font-bold mb-2">Selected Product:</h3>
+                    <div className="cratis:mt-4 cratis:p-4 cratis:border cratis:rounded">
+                        <h3 className="cratis:font-bold cratis:mb-2">Selected Product:</h3>
                         <p><strong>Name:</strong> {selectedProduct.name}</p>
                         <p><strong>Category:</strong> {selectedProduct.category}</p>
                         <p><strong>Price:</strong> ${selectedProduct.price.toFixed(2)}</p>

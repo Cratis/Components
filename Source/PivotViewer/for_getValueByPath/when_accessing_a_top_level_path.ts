@@ -9,7 +9,7 @@ interface TestItem {
 }
 
 describe('when getting a value by a top-level path', () => {
-    const item: TestItem = { name: 'Alice', age: 30 };
+    const item: TestItem = { name: 'Sample User 01', age: 30 };
     let result: unknown;
 
     beforeEach(() => {
@@ -17,6 +17,6 @@ describe('when getting a value by a top-level path', () => {
     });
 
     it('should return the value at the given path', () => {
-        result.should.equal('Alice');
+        result.should.equal('Sample User 01');
     });
 });

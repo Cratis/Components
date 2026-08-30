@@ -3,17 +3,30 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
-import { LAYER_ATTR, TRANSFORM_HOST_ATTR } from './glassAttributes';
-import { CanvasControls, CanvasControlsLabels } from './CanvasControls';
-import { CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
+import { CanvasControls, type CanvasControlsLabels } from './CanvasControls';
+import type { CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
 import { canvasGesture } from './canvasGesture';
 import { canvasTransformActivity } from './canvasTransformActivity';
 import { isBackgroundPointerTarget } from './isBackgroundPointerTarget';
 import { isWithinScrollableContent } from './isWithinScrollableContent';
-import { PanSample, decayVelocity, trimSamples, velocityFromSamples } from './panMomentum';
-import { PinchSnapshot, PointerPosition, pinchChangeBetween, pinchSnapshotOf } from './pinchGesture';
+import {
+    type PanSample,
+    decayVelocity,
+    trimSamples,
+    velocityFromSamples,
+} from './panMomentum';
+import {
+    type PinchSnapshot,
+    type PointerPosition,
+    pinchChangeBetween,
+    pinchSnapshotOf,
+} from './pinchGesture';
 import { useDragSelectionGuard } from './useDragSelectionGuard';
-import { applyZoomLayer, isMultiTouchCapableDevice, shouldUseCssZoom } from './zoomMechanism';
+import {
+    applyZoomLayer,
+    isMultiTouchCapableDevice,
+    shouldUseCssZoom,
+} from './zoomMechanism';
 
 /**
  * The easing curve for programmatic camera moves: a cubic ease-in-out, so the camera picks up speed gently
@@ -24,7 +37,7 @@ import { applyZoomLayer, isMultiTouchCapableDevice, shouldUseCssZoom } from './z
 function easeInOutCubic(progress: number): number {
     return progress < 0.5
         ? 4 * progress * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        : 1 - (-2 * progress + 2) ** 3 / 2;
 }
 
 /**
@@ -42,21 +55,31 @@ interface WebKitGestureEvent extends Event {
     readonly clientY: number;
 }
 
+/** Measured world-space bounds for one registered {@link CanvasItem}. */
 export interface CanvasItemRegistryEntry {
-
+    /** World-space horizontal position. */
     x: number;
-
+    /** World-space vertical position. */
     y: number;
-
+    /** Measured width. */
     width: number;
-
+    /** Measured height. */
     height: number;
+
+    /**
+     * Whether this entry is registered under an internally generated id rather than one the caller
+     * supplied through {@link CanvasItem}'s `id` prop. An anonymous entry still feeds every consumer
+     * of the registry — the minimap, fit-to-content — but `Region` (via `itemsWithinRegion`) never
+     * reports it as a region member, since there is no caller-owned id a host could recognize it by.
+     */
+    anonymous?: boolean;
 }
 
+/** Registry contract used by {@link CanvasItem} to publish measured bounds. */
 export interface CanvasItemRegistryContextValue {
-
+    /** Adds or updates one measured item. */
     register: (id: string, entry: CanvasItemRegistryEntry) => void;
-
+    /** Removes one measured item. */
     unregister: (id: string) => void;
 
     /**
@@ -79,100 +102,114 @@ export interface CanvasItemRegistryContextValue {
     subscribe?: (listener: () => void) => () => void;
 }
 
-export const CanvasItemRegistryContext = React.createContext<CanvasItemRegistryContextValue | null>(null);
+/** Context carrying the nearest Canvas item registry. */
+export const CanvasItemRegistryContext =
+    React.createContext<CanvasItemRegistryContextValue | null>(null);
 
+/** Minimum data shape for an optional Pixi-rendered canvas item. */
 export interface CanvasItemData {
+    /** Stable item identity. */
     id: string;
+    /** World-space horizontal position. */
     x: number;
+    /** World-space vertical position. */
     y: number;
 }
 
+/** Pixi objects supplied after the Canvas renderer initializes. */
 export interface CanvasContext {
+    /** Pixi application owned by the Canvas. */
     app: PIXI.Application;
+    /** Pixi world container receiving rendered items. */
     world: PIXI.Container;
 }
 
+/** Imperative camera and measurement operations exposed by {@link Canvas}. */
 export interface CanvasHandle {
-
+    /** Smoothly centers a world point. */
     smoothPanToWorld(worldX: number, worldY: number, durationMs?: number): void;
-
-    /** Smoothly pans the world point to the viewport center while simultaneously animating to the target zoom. */
-    smoothPanZoomToWorld(worldX: number, worldY: number, targetZoom?: number, durationMs?: number): void;
-
+    /** Smoothly centers a world point while animating to a target zoom. */
+    smoothPanZoomToWorld(
+        worldX: number,
+        worldY: number,
+        targetZoom?: number,
+        durationMs?: number,
+    ): void;
+    /** Returns the current viewport rectangle, or `null` before mounting. */
     getContainerRect(): DOMRect | null;
-
-    /** The world-space bounds every registered CanvasItem currently occupies, as measured on screen. */
+    /** Returns world-space bounds for every registered CanvasItem. */
     getItemBounds(): MinimapItem[];
 }
 
+/** Optional product compositor/capture marker names applied by {@link Canvas}. */
+export interface CanvasCaptureAttributes {
+    /** Attribute placed on the Pixi canvas so a product capture pipeline can exclude it. */
+    layer?: string;
+    /** Attribute placed on non-plain integrated controls that own composited content. */
+    content?: string;
+    /** Attribute placed on pan/zoom transform hosts whose churn moves existing layers. */
+    transformHost?: string;
+}
+
+/** Props for the pan, zoom, item, minimap, and control surface. */
 export interface CanvasProps<T extends CanvasItemData = CanvasItemData> {
-
+    /** DOM content positioned inside the transformed world. */
     children?: React.ReactNode;
-
+    /** Optional Pixi-rendered item data. */
     items?: T[];
-
+    /** Builds a Pixi display object for one item. */
     renderItem?: (item: T) => PIXI.Container;
-
+    /** Receives pointer activation for a Pixi-rendered item. */
     onItemPointerDown?: (item: T, event: PIXI.FederatedPointerEvent) => void;
-
+    /** Receives the initialized Pixi application and world. */
     onReady?: (context: CanvasContext) => void;
-
+    /** Reports every camera transform change. */
     onTransformChange?: (zoom: number, pan: { x: number; y: number }) => void;
-
+    /** Initial zoom factor. Defaults to `1`. */
     initialZoom?: number;
-
+    /** Initial viewport translation. Defaults to `{ x: 0, y: 0 }`. */
     initialPan?: { x: number; y: number };
-
+    /** Minimum zoom factor. Defaults to `0.1`. */
     minZoom?: number;
-
+    /** Maximum zoom factor. Defaults to `5`. */
     maxZoom?: number;
-
+    /** Whether integrated zoom controls render. Defaults to `true`. */
     showControls?: boolean;
-
+    /** Whether controls expose the minimap toggle. Defaults to `false`. */
     showMinimap?: boolean;
-
+    /** World width represented by the minimap. */
     minimapWorldWidth?: number;
-
+    /** World height represented by the minimap. */
     minimapWorldHeight?: number;
-
+    /** Explicit minimap item rectangles; measured CanvasItem bounds are used otherwise. */
     minimapItems?: MinimapItem[];
-
+    /** Edge used by the integrated control bar. Defaults to `'bottom-left'`. */
     controlsPlacement?: 'bottom-left' | 'bottom-right';
+    /** Extra class name for the Canvas root. */
     className?: string;
+    /** Inline style for the Canvas root. */
     style?: React.CSSProperties;
-
-    /** Invoked when the controls' help button is clicked. When omitted, the help button does nothing. */
+    /** Invoked when the optional help action is activated. */
     onHelp?: () => void;
-    /** Tooltip for the controls' help button. */
+    /** Accessible label and tooltip for the help action. */
     helpTitle?: string;
-
-    /** Disables the LiquidGlass surface behind the control pill (falls back to a cheap backdrop-filter).
-     *  Large canvases set this because the per-frame glass capture stalls pan/zoom. */
-    disableControlsGlass?: boolean;
-
-    /** Forwarded to the internally-rendered `CanvasControls` as its `glassSurface` prop - a consumer
-     *  with its own glass/frosted-panel component (for instance `@cratis/liquid-glass`'s
-     *  `LiquidGlassSurface`) supplies it here to get the same chrome `disableControlsGlass={false}`
-     *  implies, since `Canvas` owns the `CanvasControls` instance and there is no other way to reach
-     *  it. Ignored when `disableControlsGlass` is `true`. */
-    controlsGlassSurface?: React.ReactNode;
-
-    /** Forwarded to the internally-rendered `CanvasControls` as its `labels` prop - overrides for the
-     *  controls' button labels/tooltips, for a consumer that wants its own localized copy instead of
-     *  the literal English defaults. */
+    /** Localized labels for integrated zoom/minimap/help controls. */
     controlsLabels?: CanvasControlsLabels;
-
+    /** Optional product-owned glass/acrylic surface behind integrated controls. */
+    controlsGlassSurface?: React.ReactNode;
+    /** Uses a low-cost CSS frosted pill instead of a consumer-supplied glass surface. */
+    disableControlsGlass?: boolean;
+    /** Product-owned capture/compositor marker names. Canvas has no capture-provider dependency. */
+    captureAttributes?: CanvasCaptureAttributes;
+    /** Receives imperative camera and measurement operations. */
     onHandleReady?: (handle: CanvasHandle) => void;
-
-    /** Renders an inert preview: content can still be panned and zoomed, but nothing on it can be clicked,
-     *  dragged, or dropped into — a transparent cover absorbs every pointer event before it reaches the
-     *  board content, so no leaf component needs its own read-only handling. */
+    /** Keeps pan/zoom available while absorbing interaction with canvas content. */
     readOnly?: boolean;
-
-    /** Whether a left-button mouse or pen drag on the empty background pans the board. Boards that claim
-     *  that gesture for themselves (rubber-band selection) set this to false; the pointer events then
-     *  bubble up untouched. Wheel/trackpad panning, middle-drag panning, and one-finger touch panning are
-     *  never affected — turning this off must not leave a tablet unable to move the board. */
+    /**
+     * Whether mouse/pen drag on empty background pans the board. Disable when
+     * the product owns that gesture for selection; wheel, middle-button, and
+     * touch panning remain available.
+     */
     backgroundDragPans?: boolean;
 }
 
@@ -198,6 +235,11 @@ const MOMENTUM_MIN_VELOCITY = 0.02;
 // responsive, slow enough to read as a coast rather than a snap.
 const MOMENTUM_FRICTION = 0.0035;
 
+/**
+ * A pan/zoom/Pixi-backed infinite canvas with optional HTML overlay items, integrated minimap, and
+ * zoom controls. Renders Pixi-backed sprites and DOM content under one synchronized camera, manages
+ * wheel/touch/trackpad gestures, and exposes imperative camera navigation.
+ */
 function Canvas<T extends CanvasItemData = CanvasItemData>({
     children,
     items = [] as T[],
@@ -220,9 +262,10 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     style,
     onHelp,
     helpTitle,
-    disableControlsGlass = false,
-    controlsGlassSurface,
     controlsLabels,
+    controlsGlassSurface,
+    disableControlsGlass = false,
+    captureAttributes,
     readOnly = false,
     backgroundDragPans = true,
 }: CanvasProps<T>): React.ReactElement {
@@ -254,17 +297,20 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     // composited transform path with virtualization told to hold still. The settle timer restores the crisp
     // resting state shortly after the last wheel event.
     const gestureActiveRef = useRef(false);
-    const gestureSettleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    const gestureSettleTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+        undefined,
+    );
     const transformFramePendingRef = useRef(false);
     const isPanningRef = useRef(false);
     const lastPointerRef = useRef({ x: 0, y: 0 });
 
-    // Direct DOM write, not React state — the container's base cursor is 'default' (StudioIssues#222:
-    // an idle background shouldn't look grabbable until you actually start dragging it), and swapping
-    // to 'grabbing' for the life of a drag-pan is exactly the kind of per-gesture churn this file
+    // Direct DOM write, not React state — an idle background should not look grabbable until a drag
+    // starts. Swapping to 'grabbing' for the life of a drag-pan is exactly the kind of per-gesture
+    // churn this file
     // already avoids re-rendering for elsewhere (see the transform writes below).
     const setPanCursor = useCallback((panning: boolean) => {
-        if (containerRef.current) containerRef.current.style.cursor = panning ? 'grabbing' : 'default';
+        if (containerRef.current)
+            containerRef.current.style.cursor = panning ? 'grabbing' : 'default';
     }, []);
 
     // Touch pointers currently down on the canvas, in the order they landed, plus the pinch geometry
@@ -283,16 +329,23 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     const onTransformChangeRef = useRef(onTransformChange);
     const onHandleReadyRef = useRef(onHandleReady);
     const itemsRef = useRef(items);
-    useEffect(() => { onReadyRef.current = onReady; }, [onReady]);
-    useEffect(() => { onItemPointerDownRef.current = onItemPointerDown; }, [onItemPointerDown]);
-    useEffect(() => { onTransformChangeRef.current = onTransformChange; }, [onTransformChange]);
-    useEffect(() => { onHandleReadyRef.current = onHandleReady; }, [onHandleReady]);
+    useEffect(() => {
+        onReadyRef.current = onReady;
+    }, [onReady]);
+    useEffect(() => {
+        onItemPointerDownRef.current = onItemPointerDown;
+    }, [onItemPointerDown]);
+    useEffect(() => {
+        onTransformChangeRef.current = onTransformChange;
+    }, [onTransformChange]);
+    useEffect(() => {
+        onHandleReadyRef.current = onHandleReady;
+    }, [onHandleReady]);
     useEffect(() => {
         itemsRef.current = items;
     }, [items]);
 
     // ── Item registry — auto-builds minimap items from CanvasItem children ──
-
 
     const itemRegistryRef = useRef<Map<string, CanvasItemRegistryEntry>>(new Map());
     const [itemRegistryVersion, setItemRegistryVersion] = useState(0);
@@ -302,57 +355,80 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     // is a faithful change signal for useSyncExternalStore consumers — same reference back means
     // nothing changed. Entry objects are replaced wholesale on update, never mutated, so entries
     // shared between an old snapshot and a new one are safe to hold onto.
-    const registrySnapshotRef = useRef<ReadonlyMap<string, CanvasItemRegistryEntry>>(new Map());
+    const registrySnapshotRef = useRef<ReadonlyMap<string, CanvasItemRegistryEntry>>(
+        new Map(),
+    );
     const registryListenersRef = useRef<Set<() => void>>(new Set());
 
     const notifyRegistryChanged = useCallback(() => {
         registrySnapshotRef.current = new Map(itemRegistryRef.current);
-        setItemRegistryVersion(version => version + 1);
-        registryListenersRef.current.forEach(listener => listener());
+        setItemRegistryVersion((version) => version + 1);
+        registryListenersRef.current.forEach((listener) => listener());
     }, []);
 
-    const registerItem = useCallback((id: string, entry: CanvasItemRegistryEntry) => {
-        const existing = itemRegistryRef.current.get(id);
-        if (existing &&
-            existing.x === entry.x && existing.y === entry.y &&
-            existing.width === entry.width && existing.height === entry.height) return;
-        itemRegistryRef.current.set(id, entry);
-        notifyRegistryChanged();
-    }, [notifyRegistryChanged]);
+    const registerItem = useCallback(
+        (id: string, entry: CanvasItemRegistryEntry) => {
+            const existing = itemRegistryRef.current.get(id);
+            if (
+                existing &&
+                existing.x === entry.x &&
+                existing.y === entry.y &&
+                existing.width === entry.width &&
+                existing.height === entry.height &&
+                existing.anonymous === entry.anonymous
+            )
+                return;
+            itemRegistryRef.current.set(id, entry);
+            notifyRegistryChanged();
+        },
+        [notifyRegistryChanged],
+    );
 
-    const unregisterItem = useCallback((id: string) => {
-        if (!itemRegistryRef.current.delete(id)) return;
-        notifyRegistryChanged();
-    }, [notifyRegistryChanged]);
+    const unregisterItem = useCallback(
+        (id: string) => {
+            if (!itemRegistryRef.current.delete(id)) return;
+            notifyRegistryChanged();
+        },
+        [notifyRegistryChanged],
+    );
 
-    const getRegistrySnapshot = useCallback((): ReadonlyMap<string, CanvasItemRegistryEntry> =>
-        registrySnapshotRef.current, []);
+    const getRegistrySnapshot = useCallback(
+        (): ReadonlyMap<string, CanvasItemRegistryEntry> => registrySnapshotRef.current,
+        [],
+    );
 
     const subscribeToRegistry = useCallback((listener: () => void): (() => void) => {
         registryListenersRef.current.add(listener);
-        return () => { registryListenersRef.current.delete(listener); };
+        return () => {
+            registryListenersRef.current.delete(listener);
+        };
     }, []);
 
-    const registryContextValue = useMemo<CanvasItemRegistryContextValue>(() => ({
-        register: registerItem,
-        unregister: unregisterItem,
-        getSnapshot: getRegistrySnapshot,
-        subscribe: subscribeToRegistry,
-    }), [registerItem, unregisterItem, getRegistrySnapshot, subscribeToRegistry]);
-
+    const registryContextValue = useMemo<CanvasItemRegistryContextValue>(
+        () => ({
+            register: registerItem,
+            unregister: unregisterItem,
+            getSnapshot: getRegistrySnapshot,
+            subscribe: subscribeToRegistry,
+        }),
+        [registerItem, unregisterItem, getRegistrySnapshot, subscribeToRegistry],
+    );
 
     const autoMinimapItems = useMemo((): MinimapItem[] => {
         void itemRegistryVersion; // subscribe to registry changes
         const result: MinimapItem[] = [];
-        itemRegistryRef.current.forEach(entry => {
-            result.push({ x: entry.x, y: entry.y, width: entry.width, height: entry.height });
+        itemRegistryRef.current.forEach((entry) => {
+            result.push({
+                x: entry.x,
+                y: entry.y,
+                width: entry.width,
+                height: entry.height,
+            });
         });
         return result;
     }, [itemRegistryVersion]);
 
-
     const effectiveMinimapItems = minimapItems ?? autoMinimapItems;
-
 
     const refreshMinimap = useCallback(() => {
         const app = appRef.current;
@@ -384,7 +460,11 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             overlayRef.current.style.transform = `translate(${panRef.current.x}px, ${panRef.current.y}px)`;
         }
         if (zoomLayerRef.current) {
-            applyZoomLayer(zoomLayerRef.current, zoomRef.current, gestureActiveRef.current);
+            applyZoomLayer(
+                zoomLayerRef.current,
+                zoomRef.current,
+                gestureActiveRef.current,
+            );
         }
         onTransformChangeRef.current?.(zoomRef.current, panRef.current);
         // Every applied transform frame is announced so followers (cursors, selection toolbar, tour
@@ -446,9 +526,6 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             const canvas = app.canvas as HTMLCanvasElement;
             canvas.style.display = 'block';
             canvas.style.touchAction = 'none';
-            // WebGL canvases rasterize as opaque black in the glass capture pipeline - exclude
-            // this one from every captured scene so glass never refracts a black rectangle.
-            canvas.setAttribute(LAYER_ATTR, 'true');
             containerRef.current.appendChild(canvas);
 
             setPixiReady(true);
@@ -457,8 +534,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             // Initializing a renderer hooks pixi's SchedulerSystem onto the auto-starting system
             // ticker, which then runs a requestAnimationFrame loop forever even though nothing here
             // renders from a ticker (autoStart is false and every render is explicit) — one of the
-            // permanent loops that kept an idle board page busy (StudioIssues#200). Stop it after
-            // every init, because each new renderer restarts it; render() drives the scheduled
+            // permanent loops that kept an idle canvas busy. Stop it after every init, because each
+            // new renderer restarts it; render() drives the scheduled
             // housekeeping instead.
             PIXI.Ticker.system.stop();
 
@@ -475,6 +552,16 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             spritesRef.current.clear();
         };
     }, []); // intentional: PIXI init runs exactly once
+
+    // Products with a capture/compositor pipeline can mark the Pixi canvas without making that
+    // provider a Components dependency. Keep the marker synchronized if product configuration changes.
+    useEffect(() => {
+        const canvas = appRef.current?.canvas as HTMLCanvasElement | undefined;
+        const attribute = captureAttributes?.layer;
+        if (!canvas || !attribute) return;
+        canvas.setAttribute(attribute, 'true');
+        return () => canvas.removeAttribute(attribute);
+    }, [pixiReady, captureAttributes?.layer]);
 
     // Handle container resize
     useEffect(() => {
@@ -521,22 +608,34 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         }, GESTURE_SETTLE_MS);
     }, [applyWorldTransform]);
 
-    useEffect(() => () => {
-        clearTimeout(gestureSettleTimerRef.current);
-        canvasGesture.set(false);
-    }, []);
+    useEffect(
+        () => () => {
+            clearTimeout(gestureSettleTimerRef.current);
+            canvasGesture.set(false);
+        },
+        [],
+    );
 
     // Zooms toward a fixed focus point on the container, holding the world point under it still —
     // the one zoom every input path shares, whether the factor came from a wheel delta or a pinch.
-    const zoomTowards = useCallback((focusX: number, focusY: number, factor: number) => {
-        const newZoom = Math.max(minZoom, Math.min(maxZoom, zoomRef.current * factor));
-        const worldX = (focusX - panRef.current.x) / zoomRef.current;
-        const worldY = (focusY - panRef.current.y) / zoomRef.current;
-        panRef.current = { x: focusX - worldX * newZoom, y: focusY - worldY * newZoom };
-        zoomRef.current = newZoom;
-        noteGestureActivity();
-        scheduleTransformApply();
-    }, [minZoom, maxZoom, noteGestureActivity, scheduleTransformApply]);
+    const zoomTowards = useCallback(
+        (focusX: number, focusY: number, factor: number) => {
+            const newZoom = Math.max(
+                minZoom,
+                Math.min(maxZoom, zoomRef.current * factor),
+            );
+            const worldX = (focusX - panRef.current.x) / zoomRef.current;
+            const worldY = (focusY - panRef.current.y) / zoomRef.current;
+            panRef.current = {
+                x: focusX - worldX * newZoom,
+                y: focusY - worldY * newZoom,
+            };
+            zoomRef.current = newZoom;
+            noteGestureActivity();
+            scheduleTransformApply();
+        },
+        [minZoom, maxZoom, noteGestureActivity, scheduleTransformApply],
+    );
 
     // Wheel: pan (scroll) or zoom (Ctrl+scroll / pinch)
     const handleWheel = useCallback(
@@ -545,10 +644,14 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             if (!container) return;
 
             // A plain scroll/trackpad gesture landing over a scrollable overlay (a chat's message list
-            // and similar) scrolls that content instead of panning the board underneath it
-            // (StudioIssues#229). A zoom gesture (ctrl/cmd) always wins — pinch-to-zoom over a chat
+            // and similar) scrolls that content instead of panning the board underneath it. A zoom
+            // gesture (ctrl/cmd) always wins — pinch-to-zoom over a chat
             // panel is still a zoom, not a captured scroll.
-            if (!(e.ctrlKey || e.metaKey) && isWithinScrollableContent(e.target, container)) return;
+            if (
+                !(e.ctrlKey || e.metaKey) &&
+                isWithinScrollableContent(e.target, container)
+            )
+                return;
 
             e.preventDefault();
 
@@ -565,12 +668,15 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             if (e.ctrlKey || e.metaKey) {
                 zoomTowards(mouseX, mouseY, Math.exp(-e.deltaY * ZOOM_INTENSITY));
             } else {
-                panRef.current = { x: panRef.current.x - e.deltaX, y: panRef.current.y - e.deltaY };
+                panRef.current = {
+                    x: panRef.current.x - e.deltaX,
+                    y: panRef.current.y - e.deltaY,
+                };
                 noteGestureActivity();
                 scheduleTransformApply();
             }
         },
-        [zoomTowards, noteGestureActivity, scheduleTransformApply]
+        [zoomTowards, noteGestureActivity, scheduleTransformApply],
     );
 
     useEffect(() => {
@@ -606,16 +712,24 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             if (!gesture.scale || !lastScale) return;
 
             const rect = container.getBoundingClientRect();
-            zoomTowards(gesture.clientX - rect.left, gesture.clientY - rect.top, gesture.scale / lastScale);
+            zoomTowards(
+                gesture.clientX - rect.left,
+                gesture.clientY - rect.top,
+                gesture.scale / lastScale,
+            );
             lastScale = gesture.scale;
         };
         const handleGestureEnd = (event: Event) => event.preventDefault();
 
         // Explicitly non-passive: WebKit is free to treat an options-less gesture listener as
-        // passive, silently ignoring preventDefault() — which reads as "pinch zooms the browser
-        // page" on an iPad Magic Keyboard trackpad (StudioIssues#241, previously #73).
-        container.addEventListener('gesturestart', handleGestureStart, { passive: false });
-        container.addEventListener('gesturechange', handleGestureChange, { passive: false });
+        // passive, silently ignoring preventDefault() — which would zoom the browser page instead
+        // of the canvas on an iPad Magic Keyboard trackpad.
+        container.addEventListener('gesturestart', handleGestureStart, {
+            passive: false,
+        });
+        container.addEventListener('gesturechange', handleGestureChange, {
+            passive: false,
+        });
         container.addEventListener('gestureend', handleGestureEnd, { passive: false });
         return () => {
             container.removeEventListener('gesturestart', handleGestureStart);
@@ -628,23 +742,33 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     // subtree — but a toolbar, panel, or minimap floating over the canvas is frequently portalled to
     // document.body (or otherwise rendered as a sibling, not a descendant), so a pinch or Ctrl/Cmd+
     // wheel with the cursor sitting over one of those never reaches the listeners above at all, and
-    // the browser is free to zoom the whole page instead (StudioIssues#228). Listen at the window
-    // level too, and go purely by screen position — no matter what element actually receives the
-    // event, if it lands within the canvas's own rectangle the browser's native zoom is cancelled.
+    // the browser is free to zoom the whole page instead. Listen at the window level too, and go
+    // purely by screen position — no matter what element actually receives the
+    // event, if it lands within the canvas's own rectangle the browser's native zoom is canceled.
     // For events whose target sits inside the canvas subtree this only cancels the browser zoom —
     // the container's own listeners drive the canvas zoom, so applying it here too would double up.
     // For a pinch whose target is a portalled sibling (never reaching the container listeners), it
     // also drives the same zoom-towards-focus, so a pinch over a floating panel zooms the board
-    // instead of dying with the browser zoom cancelled (StudioIssues#241).
+    // instead of being swallowed after the browser zoom is canceled.
     useEffect(() => {
         const isWithinCanvas = (x: number, y: number) => {
             const rect = containerRef.current?.getBoundingClientRect();
-            return !!rect && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+            return (
+                !!rect &&
+                x >= rect.left &&
+                x <= rect.right &&
+                y >= rect.top &&
+                y <= rect.bottom
+            );
         };
         const reachesContainerListeners = (event: Event) =>
-            event.target instanceof Node && !!containerRef.current?.contains(event.target);
+            event.target instanceof Node &&
+            !!containerRef.current?.contains(event.target);
         const handleWindowWheel = (event: WheelEvent) => {
-            if ((event.ctrlKey || event.metaKey) && isWithinCanvas(event.clientX, event.clientY)) {
+            if (
+                (event.ctrlKey || event.metaKey) &&
+                isWithinCanvas(event.clientX, event.clientY)
+            ) {
                 event.preventDefault();
             }
         };
@@ -666,7 +790,11 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
 
             const rect = containerRef.current?.getBoundingClientRect();
             if (!rect) return;
-            zoomTowards(gesture.clientX - rect.left, gesture.clientY - rect.top, gesture.scale / lastScale);
+            zoomTowards(
+                gesture.clientX - rect.left,
+                gesture.clientY - rect.top,
+                gesture.scale / lastScale,
+            );
             lastScale = gesture.scale;
         };
         const handleWindowGestureEnd = (event: Event) => {
@@ -677,8 +805,12 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         // Non-passive everywhere: WebKit treating any of these as passive is what lets the page
         // zoom through, and window-level listeners are exactly where it is most inclined to.
         window.addEventListener('wheel', handleWindowWheel, { passive: false });
-        window.addEventListener('gesturestart', handleWindowGestureStart, { passive: false });
-        window.addEventListener('gesturechange', handleWindowGestureChange, { passive: false });
+        window.addEventListener('gesturestart', handleWindowGestureStart, {
+            passive: false,
+        });
+        window.addEventListener('gesturechange', handleWindowGestureChange, {
+            passive: false,
+        });
         window.addEventListener('gestureend', handleWindowGestureEnd, { passive: false });
         return () => {
             window.removeEventListener('wheel', handleWindowWheel);
@@ -705,7 +837,10 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         const rect = container.getBoundingClientRect();
         const focusX = snapshot.center.x - rect.left;
         const focusY = snapshot.center.y - rect.top;
-        const newZoom = Math.max(minZoom, Math.min(maxZoom, zoomRef.current * change.scale));
+        const newZoom = Math.max(
+            minZoom,
+            Math.min(maxZoom, zoomRef.current * change.scale),
+        );
         // The world point that was under the midpoint BEFORE this step is the one being held, so the
         // midpoint's own movement is what pans — exactly as zoom-towards-cursor does for the wheel.
         const worldX = (focusX - change.panX - panRef.current.x) / zoomRef.current;
@@ -722,7 +857,10 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     // Shares animationFrameRef with smoothPanToWorld/smoothPanZoomToWorld so only one of the three
     // ever drives the transform at once; each cancels whichever of the others was still running.
     const startTouchMomentum = useCallback(() => {
-        const initialVelocity = velocityFromSamples(touchPanSamplesRef.current, MOMENTUM_MIN_VELOCITY);
+        const initialVelocity = velocityFromSamples(
+            touchPanSamplesRef.current,
+            MOMENTUM_MIN_VELOCITY,
+        );
         if (!initialVelocity) return;
 
         if (animationFrameRef.current !== null) {
@@ -759,40 +897,50 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     }, [applyWorldTransform, refreshMinimap, render, noteGestureActivity]);
 
     // Pointer: pan via middle mouse, left-click on empty background, or a single finger on it
-    const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-        // A fresh gesture always wins over a still-coasting one from the last touch pan.
-        if (animationFrameRef.current !== null) {
-            cancelAnimationFrame(animationFrameRef.current);
-            animationFrameRef.current = null;
-        }
-
-        if (e.pointerType === 'touch') {
-            touchPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (touchPointersRef.current.size > 1) {
-                // A second finger turns whatever was happening into a pinch: end the one-finger drag
-                // so the two paths never both move the board in the same frame.
-                isPanningRef.current = false;
-                setPanCursor(false);
-                pinchRef.current = pinchSnapshotOf(touchPointersRef.current.values());
-                return;
+    const handlePointerDown = useCallback(
+        (e: React.PointerEvent<HTMLDivElement>) => {
+            // A fresh gesture always wins over a still-coasting one from the last touch pan.
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+                animationFrameRef.current = null;
             }
-        }
 
-        const isBackground = isBackgroundPointerTarget(e.pointerType, readOnly, e.target, containerRef.current);
-        // A host that claims the background drag for itself only gives up the mouse/pen gesture: touch
-        // has no middle button and no wheel, so one finger must keep panning or the board is stuck.
-        const mayDragPan = backgroundDragPans || e.pointerType === 'touch';
-        if (e.button === 1 || (e.button === 0 && isBackground && mayDragPan)) {
-            if (e.button === 1) e.preventDefault();
-            isPanningRef.current = true;
-            setPanCursor(true);
-            lastPointerRef.current = { x: e.clientX, y: e.clientY };
             if (e.pointerType === 'touch') {
-                touchPanSamplesRef.current = [{ x: e.clientX, y: e.clientY, time: performance.now() }];
+                touchPointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+                if (touchPointersRef.current.size > 1) {
+                    // A second finger turns whatever was happening into a pinch: end the one-finger drag
+                    // so the two paths never both move the board in the same frame.
+                    isPanningRef.current = false;
+                    setPanCursor(false);
+                    pinchRef.current = pinchSnapshotOf(touchPointersRef.current.values());
+                    return;
+                }
             }
-            e.currentTarget.setPointerCapture(e.pointerId);
-        }
-    }, [readOnly, backgroundDragPans, setPanCursor]);
+
+            const isBackground = isBackgroundPointerTarget(
+                e.pointerType,
+                readOnly,
+                e.target,
+                containerRef.current,
+            );
+            // A host that claims the background drag for itself only gives up the mouse/pen gesture: touch
+            // has no middle button and no wheel, so one finger must keep panning or the board is stuck.
+            const mayDragPan = backgroundDragPans || e.pointerType === 'touch';
+            if (e.button === 1 || (e.button === 0 && isBackground && mayDragPan)) {
+                if (e.button === 1) e.preventDefault();
+                isPanningRef.current = true;
+                setPanCursor(true);
+                lastPointerRef.current = { x: e.clientX, y: e.clientY };
+                if (e.pointerType === 'touch') {
+                    touchPanSamplesRef.current = [
+                        { x: e.clientX, y: e.clientY, time: performance.now() },
+                    ];
+                }
+                e.currentTarget.setPointerCapture(e.pointerId);
+            }
+        },
+        [readOnly, backgroundDragPans, setPanCursor],
+    );
 
     const handlePointerMove = useCallback(
         (e: React.PointerEvent<HTMLDivElement>) => {
@@ -807,11 +955,20 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             const deltaX = e.clientX - lastPointerRef.current.x;
             const deltaY = e.clientY - lastPointerRef.current.y;
             lastPointerRef.current = { x: e.clientX, y: e.clientY };
-            panRef.current = { x: panRef.current.x + deltaX, y: panRef.current.y + deltaY };
+            panRef.current = {
+                x: panRef.current.x + deltaX,
+                y: panRef.current.y + deltaY,
+            };
 
             if (e.pointerType === 'touch') {
-                const samples = [...touchPanSamplesRef.current, { x: e.clientX, y: e.clientY, time: performance.now() }];
-                touchPanSamplesRef.current = trimSamples(samples, MOMENTUM_SAMPLE_WINDOW_MS);
+                const samples = [
+                    ...touchPanSamplesRef.current,
+                    { x: e.clientX, y: e.clientY, time: performance.now() },
+                ];
+                touchPanSamplesRef.current = trimSamples(
+                    samples,
+                    MOMENTUM_SAMPLE_WINDOW_MS,
+                );
             }
 
             // Same gesture path as wheel pan: coalesce onto one rAF and signal the gesture so
@@ -819,38 +976,43 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
             noteGestureActivity();
             scheduleTransformApply();
         },
-        [applyPinch, noteGestureActivity, scheduleTransformApply]
+        [applyPinch, noteGestureActivity, scheduleTransformApply],
     );
 
-    const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-        if (touchPointersRef.current.delete(e.pointerId)) {
-            // Re-baseline on the fingers that are left: keeping the old geometry would register the
-            // lifted finger's absence as a huge pinch/pan step on the next move.
-            pinchRef.current = pinchSnapshotOf(touchPointersRef.current.values());
-            const [remaining] = [...touchPointersRef.current.values()];
-            if (remaining) {
-                // Lifting back down to one finger continues the same gesture as a plain drag-pan
-                // rather than stopping dead until the user lifts and starts over.
-                isPanningRef.current = true;
-                setPanCursor(true);
-                lastPointerRef.current = { x: remaining.x, y: remaining.y };
-                touchPanSamplesRef.current = [{ x: remaining.x, y: remaining.y, time: performance.now() }];
-                return;
+    const handlePointerUp = useCallback(
+        (e: React.PointerEvent<HTMLDivElement>) => {
+            if (touchPointersRef.current.delete(e.pointerId)) {
+                // Re-baseline on the fingers that are left: keeping the old geometry would register the
+                // lifted finger's absence as a huge pinch/pan step on the next move.
+                pinchRef.current = pinchSnapshotOf(touchPointersRef.current.values());
+                const [remaining] = [...touchPointersRef.current.values()];
+                if (remaining) {
+                    // Lifting back down to one finger continues the same gesture as a plain drag-pan
+                    // rather than stopping dead until the user lifts and starts over.
+                    isPanningRef.current = true;
+                    setPanCursor(true);
+                    lastPointerRef.current = { x: remaining.x, y: remaining.y };
+                    touchPanSamplesRef.current = [
+                        { x: remaining.x, y: remaining.y, time: performance.now() },
+                    ];
+                    return;
+                }
             }
-        }
 
-        const wasPanningTouch = e.pointerType === 'touch' && isPanningRef.current;
-        isPanningRef.current = false;
-        setPanCursor(false);
-        if (wasPanningTouch) startTouchMomentum();
-    }, [startTouchMomentum, setPanCursor]);
+            const wasPanningTouch = e.pointerType === 'touch' && isPanningRef.current;
+            isPanningRef.current = false;
+            setPanCursor(false);
+            if (wasPanningTouch) startTouchMomentum();
+        },
+        [startTouchMomentum, setPanCursor],
+    );
 
     // Sync items → PIXI containers
     useEffect(() => {
         const world = worldRef.current;
         if (!pixiReady || !world || !renderItem) return;
 
-        const incoming = new Map(items.map(item => [item.id, item]));
+        const incoming = new Map(items.map((item) => [item.id, item]));
 
         // Remove deleted items
         spritesRef.current.forEach((container, id) => {
@@ -862,7 +1024,7 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         });
 
         // Add new items; update positions of existing ones
-        items.forEach(item => {
+        items.forEach((item) => {
             const existing = spritesRef.current.get(item.id);
             if (existing) {
                 existing.position.set(item.x, item.y);
@@ -928,7 +1090,6 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         render();
     }, [applyWorldTransform, refreshMinimap, render]);
 
-
     const handleMinimapPan = useCallback(
         (pan: { x: number; y: number }) => {
             panRef.current = pan;
@@ -938,7 +1099,6 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         },
         [applyWorldTransform, refreshMinimap, render],
     );
-
 
     const smoothPanToWorld = useCallback(
         (worldX: number, worldY: number, durationMs = 600) => {
@@ -980,7 +1140,6 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
         },
         [applyWorldTransform, refreshMinimap, render],
     );
-
 
     const smoothPanZoomToWorld = useCallback(
         (worldX: number, worldY: number, targetZoom = 1, durationMs = 600) => {
@@ -1034,19 +1193,38 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     // Measured, not estimated: the registry holds what each CanvasItem's ResizeObserver last reported, so a
     // fit-to-content computed from it includes everything an item really renders (specifications under the
     // rows included), unlike the size estimates the minimap falls back to before anything has mounted.
-    const getItemBounds = useCallback((): MinimapItem[] =>
-        Array.from(itemRegistryRef.current.values(), entry => ({ x: entry.x, y: entry.y, width: entry.width, height: entry.height })), []);
+    const getItemBounds = useCallback(
+        (): MinimapItem[] =>
+            Array.from(itemRegistryRef.current.values(), (entry) => ({
+                x: entry.x,
+                y: entry.y,
+                width: entry.width,
+                height: entry.height,
+            })),
+        [],
+    );
 
     // Expose imperative handle once the canvas is set up
     useEffect(() => {
         if (!pixiReady) return;
-        onHandleReadyRef.current?.({ smoothPanToWorld, smoothPanZoomToWorld, getContainerRect, getItemBounds });
-    }, [pixiReady, smoothPanToWorld, smoothPanZoomToWorld, getContainerRect, getItemBounds]);
+        onHandleReadyRef.current?.({
+            smoothPanToWorld,
+            smoothPanZoomToWorld,
+            getContainerRect,
+            getItemBounds,
+        });
+    }, [
+        pixiReady,
+        smoothPanToWorld,
+        smoothPanZoomToWorld,
+        getContainerRect,
+        getItemBounds,
+    ]);
 
     return (
         <div
             ref={containerRef}
-            className={`canvas-surface relative overflow-hidden${className ? ` ${className}` : ''}`}
+            className={`canvas-surface cratis:relative cratis:overflow-hidden${className ? ` ${className}` : ''}`}
             style={{ cursor: 'default', ...style }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
@@ -1066,7 +1244,9 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                     and instead refreshes once the gesture settles. */}
                 <div
                     ref={overlayRef}
-                    {...{ [TRANSFORM_HOST_ATTR]: 'true' }}
+                    {...(captureAttributes?.transformHost
+                        ? { [captureAttributes.transformHost]: 'true' }
+                        : {})}
                     style={{
                         position: 'absolute',
                         top: 0,
@@ -1078,14 +1258,25 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                 >
                     <div
                         ref={zoomLayerRef}
-                        {...{ [TRANSFORM_HOST_ATTR]: 'true' }}
+                        {...(captureAttributes?.transformHost
+                            ? { [captureAttributes.transformHost]: 'true' }
+                            : {})}
                         // The read-only overlay below keeps pointers off the board; `inert` keeps the keyboard
                         // and assistive tech off it too, so nothing on a read-only board can be tabbed to and
                         // activated (a public viewer must never be able to fire a command).
                         inert={readOnly}
-                        style={shouldUseCssZoom(initialTransformRef.current.zoom, false, isMultiTouchCapableDevice)
-                            ? { zoom: initialTransformRef.current.zoom }
-                            : { transform: `scale(${initialTransformRef.current.zoom})`, transformOrigin: '0 0' }}
+                        style={
+                            shouldUseCssZoom(
+                                initialTransformRef.current.zoom,
+                                false,
+                                isMultiTouchCapableDevice,
+                            )
+                                ? { zoom: initialTransformRef.current.zoom }
+                                : {
+                                      transform: `scale(${initialTransformRef.current.zoom})`,
+                                      transformOrigin: '0 0',
+                                  }
+                        }
                     >
                         {children}
                     </div>
@@ -1096,7 +1287,9 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                 // z-index) but below the controls/minimap, which render after it. Nothing underneath can
                 // ever become a pointer event's target, so no CanvasItem consumer needs its own read-only
                 // handling — this is the entire read-only guarantee.
-                <div style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'grab' }} />
+                <div
+                    style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'grab' }}
+                />
             )}
             {showControls && (
                 <CanvasControls
@@ -1113,9 +1306,10 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                     placement={controlsPlacement}
                     onHelp={onHelp}
                     helpTitle={helpTitle}
-                    disableGlass={disableControlsGlass}
-                    glassSurface={controlsGlassSurface}
                     labels={controlsLabels}
+                    glassSurface={controlsGlassSurface}
+                    contentCaptureAttribute={captureAttributes?.content}
+                    disableGlass={disableControlsGlass}
                 />
             )}
         </div>

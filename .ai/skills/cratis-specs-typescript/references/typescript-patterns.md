@@ -18,7 +18,7 @@ Never use `expect()`. The `.should` style reads as a natural English sentence.
 ```ts
 // Equality
 value.should.equal(expected);
-value.should.deep.equal({ id: 1, name: 'John' });
+value.should.deep.equal({ id: 1, name: 'Sample Author' });
 
 // Booleans
 flag.should.be.true;

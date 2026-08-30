@@ -14,7 +14,8 @@ export type ChatIdentifier = string | { toString(): string };
  * @param identifier The identifier to render.
  * @returns The identifier as a string.
  */
-export const chatIdentifierString = (identifier: ChatIdentifier): string => String(identifier);
+export const chatIdentifierString = (identifier: ChatIdentifier): string =>
+    String(identifier);
 
 /**
  * Whether two identifiers refer to the same thing, compared by their string form so a `Guid`
@@ -23,5 +24,7 @@ export const chatIdentifierString = (identifier: ChatIdentifier): string => Stri
  * @param right The other identifier, possibly not set.
  * @returns True when both are set and equal.
  */
-export const sameChatIdentifier = (left?: ChatIdentifier, right?: ChatIdentifier): boolean =>
-    left !== undefined && right !== undefined && String(left) === String(right);
+export const sameChatIdentifier = (
+    left?: ChatIdentifier,
+    right?: ChatIdentifier,
+): boolean => left !== undefined && right !== undefined && String(left) === String(right);

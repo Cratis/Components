@@ -57,8 +57,8 @@ A working library admin screen where a librarian can:
 
 ## The tour
 
-1. **[List the authors](./list-it)** — a live table from the `AllAuthors` query.
-2. **[Act on the list](./act-on-it)** — add, rename, and remove with command dialogs, driven by selection.
-3. **[List and detail](./list-and-detail)** — swap the plain table for a `DataPage` and show each author's books.
+1. **[List the authors](./list-it.mdx)** — a live table from the `AllAuthors` query.
+2. **[Act on the list](./act-on-it.mdx)** — add, rename, and remove with command dialogs, driven by selection.
+3. **[List and detail](./list-and-detail.mdx)** — swap the plain table for a `DataPage` and show each author's books.
 
-By the end you'll have a real screen, and the pattern for every other one in your app. Ready? [Let's put the authors on screen →](./list-it)
+By the end you'll have a real screen, and the pattern for every other one in your app. Ready? [Let's put the authors on screen →](./list-it.mdx)

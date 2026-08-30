@@ -9,13 +9,24 @@ import { CalendarField } from './fields/CalendarField';
 
 /**
  * Registers the built-in {@link FieldTypeProvider}s {@link AutoCommandForm} falls back to for the
- * JavaScript primitive types a command property can have. Registered once, on module load.
+ * JavaScript primitive types a command property can have. {@link AutoCommandForm} calls this
+ * explicitly when its module loads so production tree shaking cannot discard the registration.
  */
 export function registerDefaultFieldTypeProviders(): void {
-    registerFieldTypeProvider({ canHandle: descriptor => descriptor.type === String, component: InputTextField });
-    registerFieldTypeProvider({ canHandle: descriptor => descriptor.type === Number, component: NumberField });
-    registerFieldTypeProvider({ canHandle: descriptor => descriptor.type === Boolean, component: CheckboxField });
-    registerFieldTypeProvider({ canHandle: descriptor => descriptor.type === Date, component: CalendarField });
+    registerFieldTypeProvider({
+        canHandle: (descriptor) => descriptor.type === String,
+        component: InputTextField,
+    });
+    registerFieldTypeProvider({
+        canHandle: (descriptor) => descriptor.type === Number,
+        component: NumberField,
+    });
+    registerFieldTypeProvider({
+        canHandle: (descriptor) => descriptor.type === Boolean,
+        component: CheckboxField,
+    });
+    registerFieldTypeProvider({
+        canHandle: (descriptor) => descriptor.type === Date,
+        component: CalendarField,
+    });
 }
-
-registerDefaultFieldTypeProviders();

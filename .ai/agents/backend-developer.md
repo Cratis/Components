@@ -34,13 +34,13 @@ Always read and follow the canonical rules in `.ai/rules/`:
 - Slice type (`State Change`, `State View`, `Automation`, `Translation`)
 - Domain requirements (what the slice should do)
 - Any existing events from other slices this slice depends on
-- The namespace root (read from `global.json` or existing source files, e.g. `Studio`, `Library`)
+- The namespace root (read from `global.json` or existing source files, e.g. `Product`, `Library`)
 
 ---
 
 ## Process
 
-1. **Determine the namespace root** by reading an existing source file to identify the convention (e.g. `Studio`, `Library`, `MyApp`).
+1. **Determine the namespace root** by reading an existing source file to identify the convention (e.g. `Product`, `Library`, `MyApp`).
 2. **Read existing slices** in the same feature to understand naming, existing concepts, and events you may reference.
 3. **Create a single `.cs` file** at `<Feature>/<Slice>/<Slice>.cs` (under the app source root; an optional `<Module>/` may group the feature — there is **no** top-level `Features/` wrapper).
 4. **Validate** by building Debug *and* Release (Debug regenerates the TypeScript proxies and compiles `#if DEBUG` spec code; build Release with `-p:CratisProxiesOutputPath=` to skip re-running proxy generation).

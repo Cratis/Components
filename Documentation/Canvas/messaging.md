@@ -13,10 +13,12 @@ import { useOnMessage } from '@cratis/arc.react/messaging';
 import { ItemAddedToRegion, ItemRemovedFromRegion } from '@cratis/components/Canvas';
 
 function Board() {
-    useOnMessage(ItemAddedToRegion, message => {
+    useOnMessage(ItemAddedToRegion, (message) => {
         // message.regionId, message.itemId — persist membership, issue a command, whatever the board means by it
     });
-    useOnMessage(ItemRemovedFromRegion, message => { /* ... */ });
+    useOnMessage(ItemRemovedFromRegion, (message) => {
+        /* ... */
+    });
     // ... render the Canvas
 }
 ```
@@ -32,16 +34,16 @@ Messages are keyed by ids the host already owns, opted in per shape:
 
 ## Message catalog
 
-| Message | Fields | Published when |
-|---|---|---|
-| `ItemAddedToRegion` | `regionId`, `itemId` | A sibling `CanvasItem` carrying an `id` newly has its center point within a `Region`'s bounds — whether the item moved into the region, or the region was moved/resized over it. Also published on mount for every item already contained, so a subscriber never misses the initial state. |
-| `ItemRemovedFromRegion` | `regionId`, `itemId` | Such an item's center point leaves the region's bounds — including by the item unmounting. |
-| `NoteTextChanged` | `noteId`, `text` | A `Note` edit is committed (the editor loses focus) — the same moment `onTextChange` fires, never per keystroke. Carries the full committed text. |
-| `ChatMessageAdded` | `chatId`, `text` | A `Chat` given an `id` sends a message from its composer — the same moment `onSend` fires. |
+| Message                 | Fields               | Published when                                                                                                                                                                                                                                                                             |
+| ----------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ItemAddedToRegion`     | `regionId`, `itemId` | A sibling `CanvasItem` carrying an `id` newly has its center point within a `Region`'s bounds — whether the item moved into the region, or the region was moved/resized over it. Also published on mount for every item already contained, so a subscriber never misses the initial state. |
+| `ItemRemovedFromRegion` | `regionId`, `itemId` | Such an item's center point leaves the region's bounds — including by the item unmounting.                                                                                                                                                                                                 |
+| `NoteTextChanged`       | `noteId`, `text`     | A `Note` edit is committed (the editor loses focus) — the same moment `onTextChange` fires, never per keystroke. Carries the full committed text.                                                                                                                                          |
+| `ChatMessageAdded`      | `chatId`, `text`     | A `Chat` given an `id` sends a message from its composer — the same moment `onSend` fires.                                                                                                                                                                                                 |
 
 All of them are plain classes with `constructor(readonly ...)` fields, importable from `@cratis/components/Canvas`.
 
-Containment is by center point, inclusive of the region's edges, and the pure function behind it — `itemsWithinRegion(regionBounds, items, excludeId?)` — is exported for hosts that want the same math outside the messenger flow (hit-testing a drop, say). Overlapping regions may each claim the same item; resolving exclusivity is deliberately the host's job, as is everything else membership implies — the region never moves members, persists nothing, and knows nothing about item types (see [Regions](regions.md)).
+Containment is by center point, inclusive of the region's edges, and the pure function behind it — `itemsWithinRegion(regionBounds, items, excludeId?)` — is exported for hosts that want the same math outside the messenger flow (hit-testing a drop, say). The Canvas item registry marks an id-less `CanvasItem`'s entry `anonymous: true`, and `itemsWithinRegion` always excludes such an entry from its result, even when its center genuinely lies within the region — that marker is the mechanism behind "items without an `id` are anonymous to containment detection" above; the entry still feeds the minimap and fit-to-content, since exclusion is scoped to region membership only. A host calling `itemsWithinRegion` with its own `{x, y, width, height}` map never needs to set this field — it is optional and absent means reported, so existing callers are unaffected. Overlapping regions may each claim the same item; resolving exclusivity is deliberately the host's job, as is everything else membership implies — the region never moves members, persists nothing, and knows nothing about item types (see [Regions](regions.md)).
 
 ## Defining your own messages for your own shapes
 
@@ -61,7 +63,7 @@ import { useMessenger } from '@cratis/arc.react/messaging';
 
 const messenger = useMessenger();
 const handleFlip = () => {
-    onFlip(card.id);                                   // the callback contract stays primary
+    onFlip(card.id); // the callback contract stays primary
     messenger.publish(new CardFlipped(card.id, !card.faceUp));
 };
 ```

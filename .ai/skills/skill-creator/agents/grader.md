@@ -111,9 +111,9 @@ Write a JSON file with this structure:
 {
   "expectations": [
     {
-      "text": "The output includes the name 'John Smith'",
+      "text": "The output includes the name 'Sample User'",
       "passed": true,
-      "evidence": "Found in transcript Step 3: 'Extracted names: John Smith, Sarah Johnson'"
+      "evidence": "Found in transcript Step 3: 'Extracted names: Sample User, Example Participant'"
     },
     {
       "text": "The spreadsheet has a SUM formula in cell B10",
@@ -171,7 +171,7 @@ Write a JSON file with this structure:
   "eval_feedback": {
     "suggestions": [
       {
-        "assertion": "The output includes the name 'John Smith'",
+        "assertion": "The output includes the name 'Sample User'",
         "reason": "A hallucinated document that mentions the name would also pass — consider checking it appears as the primary contact with matching phone and email from the input"
       },
       {

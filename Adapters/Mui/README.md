@@ -1,0 +1,78 @@
+<!-- Copyright (c) Cratis. All rights reserved. -->
+<!-- Licensed under the MIT license. See LICENSE file in the project root for full license information. -->
+
+# `@cratis/components.mui`
+
+Material UI adapter for the nine stable presentation slots in the Cratis Components renderer ABI v1.
+The package shares the Components repository release version while the renderer ABI remains
+versioned separately. It exports one stable `CratisPresentationUiLibrary` manifest, `muiUiLibrary`. This certifies nine-slot primitive
+adaptation, never full-catalog replacement.
+
+> **Publication status:** The install example targets the owner-authorized 4.0.0 npm release. When
+> reading this README from repository source before that release, verify availability with
+> `npm view @cratis/components.mui@4.0.0 version`; source contributors use the workspace in this
+> checkout.
+
+## Install
+
+```sh
+npm install @cratis/components.mui@^4 @cratis/components@^4 \
+  @mui/material@^9 @emotion/react@^11 @emotion/styled@^11 react@^19 react-dom@^19
+```
+
+Node-based build, test, and server-rendering environments require Node.js 23 or newer.
+
+Select the adapter on the application Components provider:
+
+```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+import { muiUiLibrary } from '@cratis/components.mui';
+
+export const Application = () => (
+    <CratisComponentsProvider value={{ locale: 'en-US' }} library={muiUiLibrary}>
+        <main>Application content</main>
+    </CratisComponentsProvider>
+);
+```
+
+The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch,
+ProgressBar, and Surface. It deliberately excludes MUI X and does not implement the five atomic
+interaction slots.
+
+## Theme integration
+
+The manifest provider mounts the MUI `ThemeProvider`. An outer CSS-variable MUI theme is reused.
+An outer non-variable theme is converted to an equivalent CSS-variable theme so its palette and
+other values remain in force. Without an outer provider, MUI's default theme becomes a sane
+CSS-variable-enabled theme. The conversion is memoized and deterministic during server rendering.
+
+Put application customization outside `CratisComponentsProvider`:
+
+```tsx
+<ThemeProvider theme={applicationTheme}>
+    <CratisComponentsProvider value={{ locale: 'en-US' }} library={muiUiLibrary}>
+        <Application />
+    </CratisComponentsProvider>
+</ThemeProvider>
+```
+
+The renderer provider ABI receives only `children` and non-secret boolean setup attestations; it
+cannot receive an Emotion cache. SSR hosts
+must create an Emotion cache per request, mount Emotion's `CacheProvider` outside the Components
+provider, and extract critical styles from that same request-local cache. Sharing a cache between
+requests can leak styles and ordering. RTL additionally requires the host MUI theme direction and
+an Emotion cache configured with the RTL Stylis plugin. These are application/host integration
+concerns and do not justify a Core ABI change.
+
+## Peer policy
+
+MUI Core is bounded to `>=9 <10`, `@emotion/react` to `>=11.5 <12`,
+`@emotion/styled` to `>=11.11 <12`, and React/ReactDOM to React 19. Vendor packages are peers.
+The repository's packed-consumer matrix proves both these effective lower boundaries and the
+current-highest compatible boundary; exact current versions remain dev dependencies only.
+
+The adapter requires `@cratis/components >=4 <5`. This range is intentionally bounded to the
+Components major whose renderer ABI and stable presentation profile it implements.
+
+See [CONFORMANCE.md](./CONFORMANCE.md) for the bounded evidence and
+[THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licenses.

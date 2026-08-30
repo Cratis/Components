@@ -5,19 +5,21 @@ export { FilterPanel } from './FilterPanel';
 export type { FilterPanelProps } from './FilterPanel';
 export { FilterEditor } from './FilterEditor';
 export type { FilterEditorSlotProps } from './FilterEditor';
+export type { FilterEditorProps } from './FilterEditorProps';
 export { RangeHistogramFilter } from './RangeHistogramFilter';
 export type { RangeHistogramFilterProps } from './RangeHistogramFilter';
 export { useFilterState } from './useFilterState';
 export type { UseFilterStateResult } from './useFilterState';
-export { buildFilterValues, buildRangeValues, buildHistogram } from './utils';
-export type { RenderedHistogramBucket } from './utils';
+// `buildFilterValues`, `buildRangeValues`, and `RenderedHistogramBucket` are internal
+// helpers used by `useFilterState`/`RangeHistogramFilter` and are intentionally not
+// part of the public API.
+export { buildHistogram } from './utils';
 export type {
-  FilterValue,
-  FilterOption,
-  FilterEditorProps,
-  FilterDefinition,
-  HistogramBucket,
-  FilterValues,
-  RangeValues,
-  CustomFilterValues,
+    FilterValue,
+    FilterOption,
+    FilterDefinition,
+    HistogramBucket,
+    FilterValues,
+    RangeValues,
+    CustomFilterValues,
 } from './types';

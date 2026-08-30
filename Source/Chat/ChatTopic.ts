@@ -10,7 +10,6 @@ import type { ChatIdentifier } from './ChatIdentifier';
  * still underway.
  */
 export interface ChatTopic {
-
     /** The identifier of the topic. */
     id: ChatIdentifier;
 

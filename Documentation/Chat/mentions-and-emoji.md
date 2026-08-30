@@ -21,7 +21,7 @@ People and agents are offered side by side — a candidate's `kind` (`ChatAuthor
 
 ## How mentions travel
 
-The body stays plain readable text — a mention is written into it as `@Name`. Alongside the text, the send callback reports *who* the body actually mentions:
+The body stays plain readable text — a mention is written into it as `@Name`. Alongside the text, the send callback reports _who_ the body actually mentions:
 
 ```tsx
 onSendMessage={(topicId, body, mentions) => {

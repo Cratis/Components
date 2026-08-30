@@ -4,7 +4,7 @@ The `Chat` components give an application a topic-based chat that opens in a sid
 
 ## Purpose
 
-Everything about *data* stays with your application:
+Everything about _data_ stays with your application:
 
 - **Topics and messages come in as plain arrays.** Hand the components the data a live (observable) query delivers and they re-render as it changes.
 - **Everything going out is a callback.** Sending a message, starting a topic, naming a topic, resolving an author, offering actions — the components raise intents; your application decides what they mean.
@@ -12,7 +12,7 @@ Everything about *data* stays with your application:
 
 ## Key Features
 
-- Sidebar (PrimeReact Drawer) opening to the right of the view, with a topics list and per-topic conversations
+- Sidebar (an overlay panel with documented focus and dismissal behavior, built on Components' own React Aria-based primitives) opening to the right of the view, with a topics list and per-topic conversations
 - Host-side topic auto-naming contract with a pending placeholder until the name arrives
 - `@`-mentions from a list you hold or a provider callback you resolve, rendered distinctly in message bodies
 - Emoji picker in the composer, with a quick row of recently used emoji
@@ -22,24 +22,33 @@ Everything about *data* stays with your application:
 
 ## Components
 
-| Component | What it is |
-|---|---|
-| `ChatSidebar` | The whole thing in a Drawer: topics list ⇄ conversation, back navigation, naming contract |
-| `ChatTopicList` | Just the topics — pick one, start a new one |
-| `ChatConversation` | Just one conversation — messages plus composer |
-| `ChatSidebarForObservableQueries` | Optional: `ChatSidebar` bound to two Cratis Arc observable queries |
+| Component                         | What it is                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `ChatSidebar`                     | The whole thing in an overlay panel: topics list ⇄ conversation, back navigation, naming contract |
+| `ChatTopicList`                   | Just the topics — pick one, start a new one                                                       |
+| `ChatConversation`                | Just one conversation — messages plus composer                                                    |
+| `ChatMessageBody`                 | Plain message text with known `@`-mentions marked for styling                                     |
+| `ChatSidebarForObservableQueries` | Optional: `ChatSidebar` bound to two Cratis Arc observable queries                                |
 
 ## Basic Usage
 
 ```tsx
-import { ChatSidebar, ChatAuthorKind, type ChatAuthor, type ChatIdentifier } from '@cratis/components/Chat';
+import {
+    ChatSidebar,
+    ChatAuthorKind,
+    type ChatAuthor,
+    type ChatIdentifier,
+} from '@cratis/components/Chat';
 
 const authorOf = (authorId: ChatIdentifier): ChatAuthor =>
-    teamMembers.get(String(authorId)) ?? { name: String(authorId), kind: ChatAuthorKind.User };
+    teamMembers.get(String(authorId)) ?? {
+        name: String(authorId),
+        kind: ChatAuthorKind.User,
+    };
 
 export const Workspace = () => {
     const [chatOpen, setChatOpen] = useState(false);
-    const { topics, messages } = useMyChatData();    // however your app gets its live data
+    const { topics, messages } = useMyChatData(); // however your app gets its live data
 
     return (
         <>
@@ -50,9 +59,11 @@ export const Workspace = () => {
                 topics={topics}
                 messages={messages}
                 authorOf={authorOf}
-                onStartTopic={() => startTopic()}                              // create it, answer its id
+                onStartTopic={() => startTopic()} // create it, answer its id
                 onSendMessage={(topicId, body, mentions) => send(topicId, body, mentions)}
-                onRequestTopicName={(topic, firstMessage) => nameTopic(topic, firstMessage)}
+                onRequestTopicName={(topic, firstMessage) =>
+                    nameTopic(topic, firstMessage)
+                }
                 mentionCandidates={candidates}
             />
         </>
@@ -69,10 +80,10 @@ interface ChatMessage {
     id: ChatIdentifier;
     topicId: ChatIdentifier;
     authorId: ChatIdentifier;
-    body: string;                          // mentions appear in it as plain `@Name`
+    body: string; // mentions appear in it as plain `@Name`
     timestamp: Date;
-    mentions?: ChatMention[];              // who the body mentions
-    metadata?: Record<string, unknown>;    // whatever else your shape carries
+    mentions?: ChatMention[]; // who the body mentions
+    metadata?: Record<string, unknown>; // whatever else your shape carries
 }
 ```
 
@@ -90,11 +101,14 @@ interface ProjectMessage extends ChatMessage {
     actions={[{
         id: 'open-project',
         label: 'Open the project',
-        icon: 'pi pi-folder-open',
+        icon: <FaFolderOpen />, // or a CSS class name for an icon font your app already uses
         onInvoke: message => navigate(`/projects/${message.projectId}`),
     }]}
 />
 ```
+
+`icon` is opaque to the library — a ready element (as above) or a CSS class name string for
+whatever icon font the host provides. The chat itself does not depend on any icon library.
 
 ## Authors are resolved, not stored
 
@@ -106,13 +120,41 @@ A message deliberately carries only `authorId`. The `authorOf` callback resolves
     onSendMessage={send}
     authorOf={authorOf}
     renderAvatar={(authorId, author) => <MyAvatar id={authorId} title={author.name} />}
-    renderAuthorName={(authorId, author) => <MyProfileLink id={authorId}>{author.name}</MyProfileLink>}
+    renderAuthorName={(authorId, author) => (
+        <MyProfileLink id={authorId}>{author.name}</MyProfileLink>
+    )}
 />
 ```
 
+## Rendering a message body directly
+
+`ChatConversation` uses `ChatMessageBody` internally. Import it directly when an application-owned message list, notification, or transcript needs the same mention rendering without the rest of the conversation UI.
+
+```tsx
+import { ChatMessageBody, ChatAuthorKind } from '@cratis/components/Chat';
+
+<ChatMessageBody
+    body='Ask @Review Bot about this change.'
+    mentions={[
+        {
+            id: 'review-bot',
+            name: 'Review Bot',
+            kind: ChatAuthorKind.Agent,
+        },
+    ]}
+/>;
+```
+
+| Prop       | Type            | Description                                                                                  |
+| ---------- | --------------- | -------------------------------------------------------------------------------------------- |
+| `body`     | `string`        | Plain message text. Mention names remain ordinary `@Name` text in the stored body.           |
+| `mentions` | `ChatMention[]` | Known mentions to mark within the text. Omit it when the body contains no resolved mentions. |
+
+The component renders text, not HTML or Markdown. Each resolved mention gets the `cratis-chat-message__mention` class and a `data-kind` attribute so people and agents can be styled differently. Text that does not match a supplied mention remains unchanged.
+
 ## Styling
 
-Every color comes from the `--cratis-*` token layer, so the chat follows the PrimeReact theme the application runs — light, dark, or its own overrides. The Drawer itself accepts `pt`, `ptOptions`, and `unstyled` for full control.
+Every color comes from the `--cratis-*` token layer, so the chat follows whatever theme the application runs — light, dark, or its own overrides. `ChatSidebar` accepts a `pt` prop typed as `ChatSidebarParts` — per-part attributes (`className`, `style`, `data-*`, and more) for its backdrop, root panel, header, title, back/close buttons, and content region — for full control over structure and styling.
 
 ## See also
 

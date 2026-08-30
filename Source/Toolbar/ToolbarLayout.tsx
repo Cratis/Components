@@ -1,8 +1,17 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Children, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    Children,
+    type HTMLAttributes,
+    type ReactNode,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { useToolbarSlot } from './ToolbarSlot';
+import { ToolbarItemVisibilityProvider } from './ToolbarItemVisibilityContext';
 
 /** How long the fade-out animation runs (ms). React unmounts exiting content after this. */
 const LAYOUT_TRANSITION_MS = 220;
@@ -13,7 +22,15 @@ const LAYOUT_TRANSITION_MS = 220;
  * - The container resizes smoothly to fit incoming layout content.
  * - Outgoing content fades out while incoming content fades in.
  */
-const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass: string }) => {
+const LayoutTransition = ({
+    items,
+    flexClass,
+    pt,
+}: {
+    items: ReactNode[];
+    flexClass: string;
+    pt?: ToolbarLayoutParts;
+}) => {
     const [current, setCurrent] = useState<ReactNode[]>(items);
     const [exiting, setExiting] = useState<ReactNode[]>([]);
     const [exitRevision, setExitRevision] = useState(0);
@@ -69,26 +86,49 @@ const LayoutTransition = ({ items, flexClass }: { items: ReactNode[]; flexClass:
 
     return (
         <div
-            className={`toolbar-slot-section ${transitioningClass}`}
-            style={size ? { width: size.width, height: size.height } : undefined}
+            {...pt?.slot}
+            className={`toolbar-slot-section ${transitioningClass} ${pt?.slot?.className ?? ''}`}
+            style={{ ...pt?.slot?.style, ...(size ? { width: size.width, height: size.height } : {}) }}
+            data-cratis-part='toolbar-slot'
+            data-transitioning={exiting.length > 0 || undefined}
         >
             <div
+                {...pt?.incoming}
                 ref={incomingRef}
-                className={`toolbar-slot-incoming inline-flex ${flexClass} items-center gap-1`}
+                className={`toolbar-slot-incoming cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.incoming?.className ?? ''}`}
+                data-cratis-part='toolbar-slot-incoming'
             >
                 {current}
             </div>
             {exiting.length > 0 && (
                 <div
                     key={exitRevision}
-                    className={`toolbar-slot-outgoing inline-flex ${flexClass} items-center gap-1`}
+                    {...pt?.outgoing}
+                    className={`toolbar-slot-outgoing cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.outgoing?.className ?? ''}`}
+                    data-cratis-part='toolbar-slot-outgoing'
+                    aria-hidden='true'
+                    inert
                 >
-                    {exiting}
+                    <ToolbarItemVisibilityProvider value={false}>
+                        {exiting}
+                    </ToolbarItemVisibilityProvider>
                 </div>
             )}
         </div>
     );
 };
+
+/** Stable part attributes for {@link ToolbarLayout}. */
+export interface ToolbarLayoutParts {
+    /** Named layout root. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Slot-transition measurement boundary. */
+    slot?: HTMLAttributes<HTMLDivElement>;
+    /** Current layout content. */
+    incoming?: HTMLAttributes<HTMLDivElement>;
+    /** Previous layout content while it exits. */
+    outgoing?: HTMLAttributes<HTMLDivElement>;
+}
 
 /** Props for the {@link ToolbarLayout} component. */
 export interface ToolbarLayoutProps {
@@ -108,6 +148,8 @@ export interface ToolbarLayoutProps {
     /** Layout direction matching the parent {@link Toolbar} (default: `'vertical'`). */
     orientation?: 'vertical' | 'horizontal';
 
+    /** Stable layout and transition attributes. */
+    pt?: ToolbarLayoutParts;
 }
 
 /**
@@ -130,10 +172,10 @@ export interface ToolbarLayoutProps {
  * // Application shell — define the layout region with optional fallback content:
  * <ToolbarSlotProvider>
  *     <Toolbar>
- *         <ToolbarButton icon="pi pi-arrow-up-left" title="Select" />
+ *         <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Select" />
  *         <ToolbarLayout name="canvas-tools">
  *             <ToolbarGroup>
- *                 <ToolbarButton icon="pi pi-pencil" title="Draw (default)" />
+ *                 <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Draw (default)" />
  *             </ToolbarGroup>
  *         </ToolbarLayout>
  *     </Toolbar>
@@ -145,27 +187,38 @@ export interface ToolbarLayoutProps {
  * const CanvasFeature = () => (
  *     <ToolbarSlot slotName="canvas-tools">
  *         <ToolbarGroup>
- *             <ToolbarButton icon="pi pi-star" title="Feature tool" />
+ *             <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Feature tool" />
  *         </ToolbarGroup>
  *         <ToolbarSeparator />
  *         <ToolbarGroup>
- *             <ToolbarButton icon="pi pi-bolt" title="Quick action" />
+ *             <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title="Quick action" />
  *         </ToolbarGroup>
  *     </ToolbarSlot>
  * );
  * ```
  */
-export const ToolbarLayout = ({ name, children, orientation = 'vertical' }: ToolbarLayoutProps) => {
+export const ToolbarLayout = ({
+    name,
+    children,
+    orientation = 'vertical',
+    pt,
+}: ToolbarLayoutProps) => {
     const slotItems = useToolbarSlot(name);
-    const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
+    const flexClass = orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col';
     const fallbackItems = useMemo(() => Children.toArray(children), [children]);
     const items = slotItems.length > 0 ? slotItems : fallbackItems;
 
     if (items.length === 0) return null;
 
     return (
-        <div className={`toolbar-layout inline-flex ${flexClass} items-center gap-1`}>
-            <LayoutTransition items={items} flexClass={flexClass} />
+        <div
+            {...pt?.root}
+            className={`toolbar-layout cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${pt?.root?.className ?? ''}`}
+            data-cratis-part='toolbar-layout'
+            data-layout-name={name}
+            data-orientation={orientation}
+        >
+            <LayoutTransition items={items} flexClass={flexClass} pt={pt} />
         </div>
     );
 };

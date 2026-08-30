@@ -1,0 +1,42 @@
+{
+    "name": "@cratis/components.migrator",
+    "version": "4.0.0",
+    "description": "Migration tooling for updating @cratis/components consumers from Components 3 to Components 4.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "files": [
+        "lib",
+        "scripts",
+        "README.md",
+        "LICENSE",
+        "compat-manifest.json"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "exports": {
+        "./package.json": "./package.json"
+    },
+    "bin": {
+        "cratis-components-button-variant-tone": "./scripts/button-variant-tone.js",
+        "cratis-components-change-handler": "./scripts/change-handler.js",
+        "cratis-components-remove-root-namespace-imports": "./scripts/remove-root-namespace-imports.js"
+    },
+    "scripts": {
+        "test": "yarn g:test",
+        "verify-package": "node ./test/verify-packed-package.mjs",
+        "ci": "yarn g:test"
+    },
+    "dependencies": {
+        "semver": "7.8.5",
+        "typescript": "^6.0.3"
+    }
+}

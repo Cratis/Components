@@ -1,9 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
-import { Drawer as PrimeDrawer } from 'primereact/drawer';
-import type { DrawerRootProps, DrawerRootChangeEvent } from '@primereact/types/primitive/drawer';
+import { useState } from 'react';
+import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
+import { Modal, ModalOverlay } from 'react-aria-components';
 import type { ChatConversationLabels, ChatConversationProps } from './ChatConversation';
 import { ChatConversation } from './ChatConversation';
 import { sameChatIdentifier, type ChatIdentifier } from './ChatIdentifier';
@@ -14,11 +14,45 @@ import type { ChatTopicListLabels } from './ChatTopicList';
 import { ChatTopicList } from './ChatTopicList';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { shouldRequestTopicName } from './shouldRequestTopicName';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
+
+type ChatSidebarPartAttributes<TElement> = HTMLAttributes<TElement> & {
+    [attribute: `data-${string}`]: string | number | boolean | undefined;
+};
+
+type ChatSidebarButtonAttributes = Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'type'
+>;
+
+/** Stable Cratis-owned parts for styling a {@link ChatSidebar}. */
+export interface ChatSidebarParts {
+    /** Viewport overlay layer the sidebar portals into — only paints/blocks when {@link ChatSidebarProps.modal} is true. */
+    backdrop?: ChatSidebarPartAttributes<HTMLDivElement>;
+    /** The sidebar panel itself. */
+    root?: ChatSidebarPartAttributes<HTMLDivElement>;
+    /** Header containing the back affordance, title, and close button. */
+    header?: ChatSidebarPartAttributes<HTMLElement>;
+    /** The topic list title, or the open topic's name. */
+    title?: ChatSidebarPartAttributes<HTMLHeadingElement>;
+    /** Back-to-topics button, present only while a topic is open. */
+    back?: ChatSidebarButtonAttributes;
+    /** Close button. */
+    close?: ChatSidebarButtonAttributes;
+    /** The topic list / conversation content region. */
+    content?: ChatSidebarPartAttributes<HTMLDivElement>;
+}
+
+const chatSidebarPartsMatchManifest: ExactPartKeys<
+    ChatSidebarParts,
+    PartsOf<'ChatSidebar'>
+> = true;
+void chatSidebarPartsMatchManifest;
 
 /** Overrides for every label the {@link ChatSidebar} and its children render. Any field left
  *  unset falls back to a literal English default. */
 export interface ChatSidebarLabels {
-
     /** The sidebar's title while the topic list is showing. Defaults to `'Topics'`. */
     topics?: string;
 
@@ -43,9 +77,13 @@ export interface ChatSidebarLabels {
  * @typeParam TMessage The host's message type — anything extending {@link ChatMessage}.
  * @typeParam TTopic The host's topic type — anything extending {@link ChatTopic}.
  */
-export interface ChatSidebarProps<TMessage extends ChatMessage = ChatMessage, TTopic extends ChatTopic = ChatTopic>
-    extends Omit<ChatConversationProps<TMessage>, 'messages' | 'onSendMessage' | 'labels' | 'className'> {
-
+export interface ChatSidebarProps<
+    TMessage extends ChatMessage = ChatMessage,
+    TTopic extends ChatTopic = ChatTopic,
+> extends Omit<
+    ChatConversationProps<TMessage>,
+    'messages' | 'onSendMessage' | 'labels' | 'className'
+> {
     /** Whether the sidebar is open. */
     open: boolean;
 
@@ -95,7 +133,11 @@ export interface ChatSidebarProps<TMessage extends ChatMessage = ChatMessage, TT
      * @param body The message text, mentions written into it as plain `@Name`.
      * @param mentions Who the body mentions.
      */
-    onSendMessage: (topicId: ChatIdentifier, body: string, mentions: ChatMention[]) => void;
+    onSendMessage: (
+        topicId: ChatIdentifier,
+        body: string,
+        mentions: ChatMention[],
+    ) => void;
 
     /**
      * Invoked when the very first message is sent in a topic that has no name yet — the host
@@ -121,37 +163,54 @@ export interface ChatSidebarProps<TMessage extends ChatMessage = ChatMessage, TT
     width?: string;
 
     /**
-     * Whether the sidebar is modal — a backdrop behind it, and dismissing by clicking outside.
-     * Defaults to false: a chat lives *next to* the work, so it should not block it.
+     * Whether the sidebar is modal — a backdrop behind it, and dismissing by Escape or clicking
+     * outside. Defaults to false: a chat lives *next to* the work, so it should not block it —
+     * the background stays visible and interactive, and only the close/back affordances dismiss it.
      */
     modal?: boolean;
 
     /** Overrides for every label rendered. Unset fields fall back to literal English defaults. */
     labels?: ChatSidebarLabels;
 
-    /** Additional class name for the sidebar's popup element. */
+    /** Additional class name for the sidebar's panel element. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying Drawer. */
-    pt?: DrawerRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying Drawer. */
-    ptOptions?: DrawerRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying Drawer. */
-    unstyled?: boolean;
+    /** Cratis-owned per-part attributes. */
+    pt?: ChatSidebarParts;
 }
 
+const classNames = (...values: Array<string | undefined>) =>
+    values.filter(Boolean).join(' ');
+
+const BackIcon = () => (
+    <svg
+        width='14'
+        height='14'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2.5'
+        aria-hidden='true'
+    >
+        <line x1='19' y1='12' x2='5' y2='12' />
+        <polyline points='12 19 5 12 12 5' />
+    </svg>
+);
+
 /**
- * A topic-based chat in a sidebar next to the view, built on PrimeReact's Drawer. It opens on
- * the topic list; picking a topic (or starting a new one) slides into that conversation, with a
- * back affordance to the list. Everything about *data* is the host's: topics and messages come
- * in as arrays (hand it live query data and it stays current), sends and new topics go out as
+ * A topic-based chat in a sidebar next to the view, built on Components' own overlay primitives
+ * (React Aria internally, for accessible dismissal and focus handling). It opens on the topic
+ * list; picking a topic (or starting a new one) slides into that conversation, with a back
+ * affordance to the list. Everything about *data* is the host's: topics and messages come in as
+ * arrays (hand it live query data and it stays current), sends and new topics go out as
  * callbacks, and when the first message lands in an unnamed topic the sidebar asks the host for
  * a name through {@link ChatSidebarProps.onRequestTopicName | onRequestTopicName} — rendering a
  * pending placeholder until the name arrives.
  */
-export const ChatSidebar = <TMessage extends ChatMessage = ChatMessage, TTopic extends ChatTopic = ChatTopic>({
+export const ChatSidebar = <
+    TMessage extends ChatMessage = ChatMessage,
+    TTopic extends ChatTopic = ChatTopic,
+>({
     open,
     onClose,
     topics,
@@ -168,21 +227,34 @@ export const ChatSidebar = <TMessage extends ChatMessage = ChatMessage, TTopic e
     labels,
     className,
     pt,
-    ptOptions,
-    unstyled,
     ...conversation
 }: ChatSidebarProps<TMessage, TTopic>) => {
-    const [internalSelectedId, setInternalSelectedId] = useState<ChatIdentifier | undefined>(undefined);
+    const [internalSelectedId, setInternalSelectedId] = useState<
+        ChatIdentifier | undefined
+    >();
     const isControlled = selectedTopicId !== undefined;
-    const openTopicId = isControlled ? (selectedTopicId ?? undefined) : internalSelectedId;
-    const openTopic = openTopicId !== undefined ? topics.find(topic => sameChatIdentifier(topic.id, openTopicId)) : undefined;
+    const openTopicId = isControlled
+        ? (selectedTopicId ?? undefined)
+        : internalSelectedId;
+    const openTopic =
+        openTopicId === undefined
+            ? undefined
+            : topics.find((topic) => sameChatIdentifier(topic.id, openTopicId));
     const unnamed = isTopicUnnamed ?? defaultIsTopicUnnamed;
 
     const select = (topicId: ChatIdentifier | undefined, topic?: TTopic) => {
         if (!isControlled) {
             setInternalSelectedId(topicId);
         }
-        onTopicSelected?.(topicId, topic ?? (topicId !== undefined ? topics.find(candidate => sameChatIdentifier(candidate.id, topicId)) : undefined));
+        onTopicSelected?.(
+            topicId,
+            topic ??
+                (topicId === undefined
+                    ? undefined
+                    : topics.find((candidate) =>
+                          sameChatIdentifier(candidate.id, topicId),
+                      )),
+        );
     };
 
     const startTopic = async () => {
@@ -192,94 +264,159 @@ export const ChatSidebar = <TMessage extends ChatMessage = ChatMessage, TTopic e
         }
     };
 
-    const openMessages = openTopicId === undefined
-        ? []
-        : messages.filter(message => sameChatIdentifier(message.topicId, openTopicId));
+    const openMessages =
+        openTopicId === undefined
+            ? []
+            : messages.filter((message) =>
+                  sameChatIdentifier(message.topicId, openTopicId),
+              );
 
     const send = (body: string, mentions: ChatMention[]) => {
         if (openTopicId === undefined) return;
         onSendMessage(openTopicId, body, mentions);
-        if (openTopic && shouldRequestTopicName(unnamed(openTopic), openMessages.length)) {
+        if (
+            openTopic &&
+            shouldRequestTopicName(unnamed(openTopic), openMessages.length)
+        ) {
             onRequestTopicName?.(openTopic, body);
         }
     };
 
-    const handleOpenChange = (event: DrawerRootChangeEvent) => {
-        if (!event.value) {
-            onClose();
-        }
-    };
+    const title =
+        openTopicId === undefined
+            ? (labels?.topics ?? 'Topics')
+            : openTopic && !unnamed(openTopic)
+              ? openTopic.name
+              : (labels?.unnamedTopic ?? 'New topic');
+    const titleIsPending =
+        openTopicId !== undefined && (!openTopic || unnamed(openTopic));
 
-    const title = openTopicId === undefined
-        ? (labels?.topics ?? 'Topics')
-        : openTopic && !unnamed(openTopic)
-            ? openTopic.name
-            : (labels?.unnamedTopic ?? 'New topic');
-    const titleIsPending = openTopicId !== undefined && (!openTopic || unnamed(openTopic));
+    const panel = (
+        <>
+            <header
+                {...pt?.header}
+                className={classNames(
+                    'cratis-chat-sidebar__header',
+                    pt?.header?.className,
+                )}
+                data-cratis-part='header'
+            >
+                {openTopicId !== undefined && (
+                    <button
+                        {...pt?.back}
+                        type='button'
+                        className={classNames(
+                            'cratis-chat-sidebar__back',
+                            pt?.back?.className,
+                        )}
+                        data-cratis-part='back'
+                        title={labels?.back ?? 'Back to topics'}
+                        aria-label={labels?.back ?? 'Back to topics'}
+                        onClick={() => select(undefined)}
+                    >
+                        <BackIcon />
+                    </button>
+                )}
+                <h2
+                    {...pt?.title}
+                    className={classNames(
+                        'cratis-chat-sidebar__title',
+                        titleIsPending
+                            ? 'cratis-chat-sidebar__title--pending'
+                            : undefined,
+                        pt?.title?.className,
+                    )}
+                    data-cratis-part='title'
+                >
+                    {title}
+                </h2>
+                <button
+                    {...pt?.close}
+                    type='button'
+                    className={classNames(
+                        'cratis-chat-sidebar__close',
+                        pt?.close?.className,
+                    )}
+                    data-cratis-part='close'
+                    aria-label={labels?.close ?? 'Close chat'}
+                    onClick={onClose}
+                >
+                    <span aria-hidden='true'>×</span>
+                </button>
+            </header>
+            <div
+                {...pt?.content}
+                className={classNames(
+                    'cratis-chat-sidebar__content',
+                    pt?.content?.className,
+                )}
+                data-cratis-part='content'
+            >
+                {openTopicId === undefined ? (
+                    <ChatTopicList<TTopic>
+                        topics={topics}
+                        onOpen={(topic) => select(topic.id, topic)}
+                        onStart={
+                            onStartTopic
+                                ? () => {
+                                      void startTopic();
+                                  }
+                                : undefined
+                        }
+                        authorOf={conversation.authorOf}
+                        renderAvatar={conversation.renderAvatar}
+                        isTopicUnnamed={isTopicUnnamed}
+                        buildAvatarUrl={conversation.buildAvatarUrl}
+                        labels={{
+                            unnamedTopic: labels?.unnamedTopic,
+                            ...labels?.topicList,
+                        }}
+                    />
+                ) : (
+                    <ChatConversation<TMessage>
+                        {...conversation}
+                        messages={openMessages}
+                        onSendMessage={send}
+                        labels={labels?.conversation}
+                    />
+                )}
+            </div>
+        </>
+    );
 
     return (
-        <PrimeDrawer.Root
-            open={open}
-            position={position}
-            dismissable={modal}
-            onOpenChange={handleOpenChange}
-            pt={pt}
-            ptOptions={ptOptions}
-            unstyled={unstyled}
+        <ModalOverlay
+            {...pt?.backdrop}
+            isOpen={open}
+            onOpenChange={(openState) => {
+                if (!openState) onClose();
+            }}
+            isDismissable={modal}
+            isKeyboardDismissDisabled={!modal}
+            className={classNames(
+                'cratis-chat-sidebar__backdrop',
+                pt?.backdrop?.className,
+            )}
+            data-cratis-part='backdrop'
+            data-modal={modal}
+            data-open={open || undefined}
+            data-selected={openTopicId !== undefined || undefined}
         >
-            <PrimeDrawer.Portal>
-                {modal && <PrimeDrawer.Backdrop />}
-                <PrimeDrawer.Popup
-                    className={`cratis-chat-sidebar${className ? ` ${className}` : ''}`}
-                    style={{ width }}
-                >
-                    <PrimeDrawer.Header className='cratis-chat-sidebar__header'>
-                        {openTopicId !== undefined && (
-                            <button
-                                type='button'
-                                className='cratis-chat-sidebar__back'
-                                title={labels?.back ?? 'Back to topics'}
-                                aria-label={labels?.back ?? 'Back to topics'}
-                                onClick={() => select(undefined)}
-                            >
-                                <i className='pi pi-arrow-left' aria-hidden='true' />
-                            </button>
-                        )}
-                        <PrimeDrawer.Title className={`cratis-chat-sidebar__title${titleIsPending ? ' cratis-chat-sidebar__title--pending' : ''}`}>
-                            {title}
-                        </PrimeDrawer.Title>
-                        <PrimeDrawer.Close
-                            className='cratis-chat-sidebar__close'
-                            aria-label={labels?.close ?? 'Close chat'}
-                        >
-                            <i className='pi pi-times' aria-hidden='true' />
-                        </PrimeDrawer.Close>
-                    </PrimeDrawer.Header>
-                    <PrimeDrawer.Content className='cratis-chat-sidebar__content'>
-                        {openTopicId === undefined
-                            ? (
-                                <ChatTopicList<TTopic>
-                                    topics={topics}
-                                    onOpen={topic => select(topic.id, topic)}
-                                    onStart={onStartTopic ? () => { void startTopic(); } : undefined}
-                                    authorOf={conversation.authorOf}
-                                    renderAvatar={conversation.renderAvatar}
-                                    isTopicUnnamed={isTopicUnnamed}
-                                    buildAvatarUrl={conversation.buildAvatarUrl}
-                                    labels={{ unnamedTopic: labels?.unnamedTopic, ...labels?.topicList }}
-                                />
-                            )
-                            : (
-                                <ChatConversation<TMessage>
-                                    {...conversation}
-                                    messages={openMessages}
-                                    onSendMessage={send}
-                                    labels={labels?.conversation}
-                                />
-                            )}
-                    </PrimeDrawer.Content>
-                </PrimeDrawer.Popup>
-            </PrimeDrawer.Portal>
-        </PrimeDrawer.Root>
+            <Modal
+                {...pt?.root}
+                className={classNames(
+                    'cratis-chat-sidebar',
+                    pt?.root?.className,
+                    className,
+                )}
+                style={{ width, ...pt?.root?.style }}
+                data-cratis-part='root'
+                data-position={position}
+                data-open={open || undefined}
+                data-selected={openTopicId !== undefined || undefined}
+            >
+                {panel}
+            </Modal>
+        </ModalOverlay>
     );
 };

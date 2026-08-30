@@ -21,9 +21,14 @@ describe('when an item center lies exactly on the edge', () => {
         ['on-corner', { x: 80, y: 80, width: 40, height: 40 }],
     ]);
 
-    it('should include the item centered on the left edge', () => result.should.contain('on-left-edge'));
-    it('should include the item centered on the right edge', () => result.should.contain('on-right-edge'));
-    it('should include the item centered on the top edge', () => result.should.contain('on-top-edge'));
-    it('should include the item centered on the bottom edge', () => result.should.contain('on-bottom-edge'));
-    it('should include the item centered on the corner', () => result.should.contain('on-corner'));
+    it('should include the item centered on the left edge', () =>
+        result.should.contain('on-left-edge'));
+    it('should include the item centered on the right edge', () =>
+        result.should.contain('on-right-edge'));
+    it('should include the item centered on the top edge', () =>
+        result.should.contain('on-top-edge'));
+    it('should include the item centered on the bottom edge', () =>
+        result.should.contain('on-bottom-edge'));
+    it('should include the item centered on the corner', () =>
+        result.should.contain('on-corner'));
 });

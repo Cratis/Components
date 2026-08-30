@@ -5,11 +5,15 @@ import { type CSSProperties, type ReactNode, useMemo } from 'react';
 import { Page } from '../Common/Page';
 import React from 'react';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
-import type { ButtonProps } from '@primereact/types/primitive/button';
+import type { ButtonParts } from '../Common/Button';
 import { type IObservableQueryFor, type IQueryFor, QueryFor } from '@cratis/arc/queries';
 import { DataTableForObservableQuery } from '../DataTables/DataTableForObservableQuery';
-import type { DataTableRootProps } from '@primereact/types/primitive/datatable';
+import type { DataTableParts } from '../DataTables/DataTableCore';
 import { DataTableForQuery } from '../DataTables/DataTableForQuery';
+import type {
+    TablePaginatorParts,
+    TablePaginatorProps,
+} from '../DataTables/TablePaginator';
 import type { DataTableFilterMeta } from '../DataTables/DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from '../DataTables/DataTableSelectionChangeEvent';
 import { Allotment } from 'allotment';
@@ -23,8 +27,6 @@ import { DataPageLayout } from './DataPageLayout';
 // (Cratis/Components#118). The rules now ship inside this package's own `./styles` entry point,
 // which the build concatenates from every component stylesheet plus this third-party one — so a
 // consumer still gets a working split view, from the single stylesheet they already import.
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * Props for {@link MenuItem} — a single action in a {@link DataPage}'s
@@ -68,7 +70,7 @@ export interface MenuItemsProps {
  * Props for {@link Columns}.
  */
 export interface ColumnProps {
-    /** PrimeReact `<Column>` elements describing each visible column. */
+    /** Cratis-owned `<Column>` markers describing each visible column. */
     children: ReactNode;
 }
 
@@ -114,7 +116,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
                 menuItems.push({
                     label: child.props.label,
                     command: child.props.command,
-                    icon: Icon ? <Icon className='mr-2' /> : undefined,
+                    icon: Icon ? <Icon className='cratis:mr-2' /> : undefined,
                     disabled:
                         (child.props.disabled ?? false) ||
                         (isDisabled && (child.props.disableOnUnselected ?? false)),
@@ -126,7 +128,10 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
     }, [children, isDisabled]);
 
     return (
-        <div className='cratis-data-page-actions px-4 py-2' style={actionsStyle}>
+        <div
+            className='cratis-data-page-actions cratis:px-4 cratis:py-2'
+            style={actionsStyle}
+        >
             <ActionMenubar
                 aria-label={context.actionsAriaLabel ?? 'Actions'}
                 model={items}
@@ -145,18 +150,27 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
  * {@link DataTableForObservableQuery} (real-time observable) based on the
  * `query` type provided to the surrounding `<DataPage>`.
  *
- * Use as `<DataPage.Columns>` inside a `<DataPage>`, with PrimeReact `<Column>`
+ * Use as `<DataPage.Columns>` inside a `<DataPage>`, with Cratis-owned `<Column>`
  * children defining the table columns.
  */
 export const Columns = ({ children }: ColumnProps) => {
     const context = useDataPageContext();
     const isSnapshotQuery = context.query.prototype instanceof QueryFor;
+    // SAFETY: The runtime prototype check above narrows a constructor shape that
+    // TypeScript cannot discriminate after the generic DataPage context is erased.
+    const snapshotQuery = context.query as Constructor<
+        IQueryFor<object, object> | IQueryFor<object[], object>
+    >;
+    const observableQuery = context.query as Constructor<
+        IObservableQueryFor<object, object> | IObservableQueryFor<object[], object>
+    >;
 
     return (
         <div className='cratis-data-page-table' style={tableRegionStyle}>
             {isSnapshotQuery ? (
                 <DataTableForQuery
                     {...context}
+                    query={snapshotQuery}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
                     className={context.tableClassName}
@@ -169,6 +183,7 @@ export const Columns = ({ children }: ColumnProps) => {
             ) : (
                 <DataTableForObservableQuery
                     {...context}
+                    query={observableQuery}
                     selection={context.selectedItem}
                     onSelectionChange={context.onSelectionChanged}
                     className={context.tableClassName}
@@ -201,9 +216,13 @@ export interface IDetailsComponentProps<TDataType> {
     onRefresh?: () => void;
 }
 
-interface IDataPageContext extends DataPageProps<any, any, any> {
-    selectedItem: any;
-    onSelectionChanged: (e: DataTableSelectionChangeEvent<any>) => void;
+interface IDataPageContext extends DataPageProps<
+    IQueryFor<object, object> | IObservableQueryFor<object, object>,
+    object,
+    object
+> {
+    selectedItem: object | null | undefined;
+    onSelectionChanged: (event: DataTableSelectionChangeEvent<object>) => void;
 }
 
 const DataPageContext = React.createContext<IDataPageContext | null>(null);
@@ -224,9 +243,13 @@ function useDataPageContext(): IDataPageContext {
  * @typeParam TArguments - The query's argument object type, or `object` if the query takes none.
  */
 export interface DataPageProps<
-    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType>,
+    TQuery extends
+        | IQueryFor<TDataType, TArguments>
+        | IQueryFor<TDataType[], TArguments>
+        | IObservableQueryFor<TDataType, TArguments>
+        | IObservableQueryFor<TDataType[], TArguments>,
     TDataType extends object,
-    TArguments,
+    TArguments extends object,
 > {
     /**
      * The title of the page
@@ -241,7 +264,7 @@ export interface DataPageProps<
     /**
      * Component to render when the selection changes
      */
-    detailsComponent?: React.FC<IDetailsComponentProps<any>>;
+    detailsComponent?: React.FC<IDetailsComponentProps<TDataType>>;
 
     /**
      * The type of query to use
@@ -266,17 +289,23 @@ export interface DataPageProps<
     /**
      * The current selection.
      */
-    selection?: any | undefined | null;
+    selection?: TDataType | undefined | null;
 
     /**
      * Callback for when the selection changes
      */
-    onSelectionChange?(event: DataTableSelectionChangeEvent<any>): void;
+    onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
 
     /**
      * Fields to use for global filtering
      */
     globalFilterFields?: string[] | undefined;
+
+    /** Placeholder for the loaded-page search input. */
+    globalSearchPlaceholder?: string;
+
+    /** Accessible name for the loaded-page search input. */
+    globalSearchAriaLabel?: string;
 
     /**
      * Default filters to use
@@ -286,7 +315,7 @@ export interface DataPageProps<
     /**
      * @deprecated Filtering is always applied to the currently loaded page.
      * This compatibility prop no longer toggles behavior and does not change
-     * server-reported pagination totals.
+     * server-reported pagination totals. Retained for source compatibility only.
      */
     clientFiltering?: boolean;
 
@@ -300,27 +329,49 @@ export interface DataPageProps<
      */
     tableClassName?: string;
 
-    /** PrimeReact pass-through configuration applied to the inner DataTable. */
-    tablePt?: DataTableRootProps['pt'];
+    /** Cratis-owned per-part attributes applied to the inner table. */
+    tablePt?: DataTableParts;
 
-    /** PrimeReact pass-through options applied to the inner DataTable. */
-    tablePtOptions?: DataTableRootProps['ptOptions'];
+    /**
+     * @deprecated Cratis table parts always merge. Remove this renderer-era option.
+     */
+    tablePtOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the inner DataTable. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `tablePt` and CSS instead.
+     */
     tableUnstyled?: boolean;
+
+    /** Extra CSS class name forwarded to the query table paginator. */
+    paginatorClassName?: string;
+
+    /** Cratis-owned attributes applied to the query table paginator. */
+    paginatorPt?: TablePaginatorParts;
+
+    /**
+     * @deprecated Cratis paginator parts always merge. Remove this renderer-era option.
+     */
+    paginatorPtOptions?: object;
+
+    /** Accessible paginator labels. Override any value to localize it. */
+    paginatorAriaLabels?: TablePaginatorProps['ariaLabels'];
 
     /**
      * Extra CSS class name forwarded to the action menubar root.
      */
     menubarClassName?: string;
 
-    /** PrimeReact pass-through configuration applied to the action menubar's buttons. */
-    menubarPt?: ButtonProps['pt'];
+    /** Cratis-owned part attributes applied to the action menubar's buttons. */
+    menubarPt?: ButtonParts;
 
-    /** PrimeReact pass-through options applied to the action menubar's buttons. */
-    menubarPtOptions?: ButtonProps['ptOptions'];
+    /**
+     * @deprecated Cratis menubar parts always merge. Remove this renderer-era option.
+     */
+    menubarPtOptions?: object;
 
-    /** When true, disables every base PrimeReact style on the action menubar's buttons. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `menubarPt` and CSS instead.
+     */
     menubarUnstyled?: boolean;
 
     /**
@@ -363,9 +414,9 @@ export interface DataPageProps<
  *   `disableOnUnselected` so they automatically grey out until the user
  *   picks a row — useful for Edit / Delete actions that need a target.
  *
- * - **`<DataPage.Columns>`** wraps PrimeReact `<Column>` elements that
+ * - **`<DataPage.Columns>`** wraps Cratis-owned `<Column>` markers that
  *   describe the visible columns. The columns themselves are
- *   PrimeReact's — anything supported by their `DataTable` `<Column>` is
+ *   Cratis-owned — the documented `ColumnProps` surface is
  *   supported here (sorting, filtering, custom body templates, …).
  *
  * - **`detailsComponent`** (optional) is a React component rendered in a
@@ -426,9 +477,10 @@ export interface DataPageProps<
  *
  * The inner DataTable and action toolbar each have their own per-slot props:
  * `tablePt` / `tableUnstyled` / `tableClassName` for the table;
+ * `paginatorPt` / `paginatorClassName` / `paginatorAriaLabels` for paging;
  * `menubarPt` / `menubarPtOptions` / `menubarUnstyled` / `menubarClassName` for
- * the action toolbar's buttons (in PrimeReact 11 the v10 Menubar is replaced by
- * a button toolbar, so `menubarPt` targets those buttons). See the
+ * the action toolbar's stable button parts (the action bar is implemented as
+ * a button toolbar, so `menubarPt` targets the stable Cratis button parts). See the
  * [pass-through cheat sheet](../../Documentation/Styling/pass-through.md) for
  * the full slot reference.
  *
@@ -438,28 +490,41 @@ export interface DataPageProps<
  * @param props - {@link DataPageProps}.
  */
 const DataPage = <
-    TQuery extends IQueryFor<TDataType> | IObservableQueryFor<TDataType, TArguments>,
+    TQuery extends
+        | IQueryFor<TDataType, TArguments>
+        | IQueryFor<TDataType[], TArguments>
+        | IObservableQueryFor<TDataType, TArguments>
+        | IObservableQueryFor<TDataType[], TArguments>,
     TDataType extends object,
     TArguments extends object,
 >(
     props: DataPageProps<TQuery, TDataType, TArguments>,
 ) => {
-    const [selectedItem, setSelectedItem] = React.useState(undefined);
+    const [internalSelection, setInternalSelection] = React.useState<
+        TDataType | null | undefined
+    >(props.selection);
+    const selectedItem =
+        props.selection === undefined ? internalSelection : props.selection;
 
-    const selectionChanged = (e: DataTableSelectionChangeEvent<any>) => {
-        setSelectedItem(e.value);
-        if (props.onSelectionChange) {
-            props.onSelectionChange(e);
-        }
+    const selectionChanged = (event: DataTableSelectionChangeEvent<TDataType>) => {
+        if (props.selection === undefined) setInternalSelection(event.value);
+        props.onSelectionChange?.(event);
     };
 
-    const context = { ...props, selectedItem, onSelectionChanged: selectionChanged };
+    // SAFETY: React context cannot retain this component's generic parameters. The
+    // provider and every consumer are nested in the same DataPage invocation, so the
+    // erased object-level context never crosses between differently typed pages.
+    const context = {
+        ...props,
+        selectedItem,
+        onSelectionChanged: selectionChanged,
+    } as unknown as IDataPageContext;
 
     return (
         <DataPageContext.Provider value={context}>
             <Page title={props.title} panel={true} style={pageStyle}>
                 {props.detailsComponent ? (
-                    <Allotment className='h-full' proportionalLayout={false}>
+                    <Allotment className='cratis:h-full' proportionalLayout={false}>
                         <Allotment.Pane>
                             <DataPageLayout>{props.children}</DataPageLayout>
                         </Allotment.Pane>
@@ -480,6 +545,7 @@ const DataPage = <
     );
 };
 
+DataPage.MenuItem = MenuItem;
 DataPage.MenuItems = MenuItems;
 DataPage.Columns = Columns;
 

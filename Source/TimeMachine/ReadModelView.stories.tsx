@@ -27,8 +27,8 @@ const sampleVersions: Version[] = [
             <Properties 
                 data={{
                     userId: 'user-001',
-                    username: 'john.doe',
-                    email: 'john.doe@example.com',
+                    username: 'sample.user',
+                    email: 'sample.user@example.invalid',
                     role: 'user',
                     isActive: false
                 }}
@@ -44,8 +44,8 @@ const sampleVersions: Version[] = [
             <Properties 
                 data={{
                     userId: 'user-001',
-                    username: 'john.doe',
-                    email: 'john.doe@example.com',
+                    username: 'sample.user',
+                    email: 'sample.user@example.invalid',
                     role: 'user',
                     isActive: true
                 }}
@@ -68,8 +68,8 @@ const sampleVersions: Version[] = [
             <Properties 
                 data={{
                     userId: 'user-001',
-                    username: 'john.doe',
-                    email: 'john.doe@example.com',
+                    username: 'sample.user',
+                    email: 'sample.user@example.invalid',
                     role: 'admin',
                     isActive: true
                 }}

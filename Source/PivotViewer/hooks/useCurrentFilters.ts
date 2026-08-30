@@ -5,24 +5,20 @@ import { useMemo } from 'react';
 import type { FilterSpec, GroupSpec } from '../engine/types';
 import type { PivotDimension, PivotFilter } from '../types';
 
+/**
+ * Builds the engine {@link FilterSpec}s for the UI's categorical/range/dimension filter state.
+ * Free-text search is not part of this - `searchFields` narrows already-visible ids client-side
+ * after the engine filters run (see `filterVisibleIdsBySearch`), so it never becomes a FilterSpec.
+ */
 export function useCurrentFilters<TItem extends object>(
     filters: PivotFilter<TItem>[] | undefined,
     filterState: Record<string, Set<string>>,
     rangeFilterState: Record<string, [number | null, number | null] | null>,
-    search: string,
-    searchFields: unknown[] | undefined,
     dimensionFilter: string | null,
     activeDimension: PivotDimension<TItem> | undefined,
 ): FilterSpec[] {
     return useMemo((): FilterSpec[] => {
         const specs: FilterSpec[] = [];
-
-        // Search filter
-        const searchTerm = search.trim().toLowerCase();
-        if (searchTerm && searchFields && searchFields.length > 0) {
-            // TODO: Implement search in worker
-            // For now, search will be handled client-side after worker filtering
-        }
 
         // Categorical filters
         for (const [key, values] of Object.entries(filterState)) {
@@ -59,7 +55,7 @@ export function useCurrentFilters<TItem extends object>(
         }
 
         return specs;
-    }, [filterState, rangeFilterState, search, searchFields, dimensionFilter, activeDimension]);
+    }, [filterState, rangeFilterState, dimensionFilter, activeDimension]);
 }
 
 export function useCurrentGroupBy<TItem extends object>(

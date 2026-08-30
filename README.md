@@ -1,84 +1,205 @@
 # Cratis Components
 
-React components for CQRS and event-sourced applications built with [Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms, and query-backed data tables.
+React components for CQRS and event-sourced applications built with
+[Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms,
+query-backed data tables, and higher-order application surfaces.
 
-## Packages
+This is the owning source repository for `@cratis/components`. The current
+package uses Cratis-owned React markup, public TypeScript types, design tokens,
+stable parts, and state attributes. React Aria is an internal implementation
+dependency for selected interaction primitives.
 
 [![NPM](https://img.shields.io/npm/v/@cratis/components?label=@cratis/components&logo=npm)](https://www.npmjs.com/package/@cratis/components)
-
-## Builds
-
-[![Publish](https://github.com/Cratis/Components/actions/workflows/publish.yml/badge.svg)](https://github.com/Cratis/Components/actions/workflows/publish.yml)
 [![Documentation site](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml/badge.svg)](https://github.com/Cratis/Documentation/actions/workflows/docs-site.yml)
+[Documentation](https://cratis.io/components/)
 
-## Description
+## Start here
 
-Cratis Components is a React component library aligned with the patterns of [Arc](https://github.com/Cratis/Arc), the Cratis CQRS application framework for ASP.NET Core. The components consume Arc's generated TypeScript proxies, so commands, queries, and read models flow fully typed from your backend into the UI — including event-sourced applications backed by [Chronicle](https://github.com/Cratis/Chronicle), the Cratis event-sourcing database and runtime.
+- [Browse the canonical Components documentation](https://cratis.io/components/)
+- [Install and mount the provider](#minimal-setup)
+- [Choose a component area](#what-components-owns)
+- [Inspect the package source](https://github.com/Cratis/Components/tree/main/Source)
 
-The library builds on PrimeReact and ships with flexible styling: use the Cratis baseline theme, PrimeReact's styled mode, your own palette, or go fully unstyled with a `pt` preset.
+## What Components owns
 
-Components carries the same design intent as the rest of Cratis: building on an event-sourced backend should feel like ordinary React, with typed commands, queries, and read models designed to take friction and boilerplate out of the UI layer. It is part of one deliberately simple ecosystem, built with productivity, quality, and reliability in mind — AI-friendly by design, with free [AI skills](https://github.com/Cratis/AI) for building with the stack.
+| Area                 | Current package role                                                              |
+| -------------------- | --------------------------------------------------------------------------------- |
+| Command input        | Typed fields, embedded forms, dialogs, and multi-step command flows               |
+| Data display         | Query-backed tables, local-array tables, list pages, filters, and detail surfaces |
+| Application surfaces | Dialogs, notifications, dropdowns, display primitives, page chrome, and toolbars  |
+| Structured editors   | JSON content, JSON Schema, navigation, canvas, pivot, and time-oriented views     |
+| Styling boundary     | Cratis tokens, component styles, an optional baseline theme, and stable parts     |
 
-`@cratis/components` itself is MIT licensed. Version 3.x builds on PrimeReact 11, which carries its own license terms — see the [licensing section in the package README](./Source/README.md#licensing) for details.
+## Relationship to Arc
 
-## Install
+Components consumes generated command and query contracts and React contexts
+from Arc packages. Arc owns those application contracts; Components owns the
+React markup, public component types, styling tokens, stable parts, and component
+behavior in this repository.
+
+Components carries the same design intent as the rest of Cratis: building on a CQRS or
+event-sourced backend should feel like ordinary React. Typed commands, queries, and read models
+remove friction and boilerplate from the UI layer. The ecosystem is designed for productivity,
+quality, reliability, and AI-assisted development, with free [AI skills](https://github.com/Cratis/AI)
+for building with the stack.
+
+Applications may use Arc without Components. Components does not by itself
+establish design-system completeness, accessibility conformance, browser
+coverage, or compatibility with every Arc/React/package-version combination.
+Verify those properties for the exact application and component profile shipped.
+
+## Minimal setup
+
+Install the package:
 
 ```bash
-npm install @cratis/components primereact @primereact/core @primereact/headless @primereact/hooks primeicons
+npm install @cratis/components@^4
 ```
+
+> **Publication status:** This example targets the owner-authorized 4.0.0 npm release. When reading
+> it from repository source before that release, verify availability with
+> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace.
+
+Import the semantic tokens and component structure. The baseline theme is
+optional:
 
 ```tsx
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
+import '@cratis/components/theme'; // optional baseline appearance
 import { CratisComponentsProvider } from '@cratis/components';
-import { DataPage } from '@cratis/components/DataPage';
 
 export const App = () => (
-    <CratisComponentsProvider>
+    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
         <YourApp />
     </CratisComponentsProvider>
 );
 ```
 
-See the [package README](./Source/README.md) for peer dependencies, stylesheets, and styling setups, and the [getting started guide](https://www.cratis.io/components/getting-started/) for a full walkthrough.
+The package root is setup-only: import the provider and configuration helpers there, then import
+every component from its explicit subpath. The built-in renderer needs no additional package or
+configuration.
 
-## What's in the box
+The current package manifest defines the exact React, Arc, Fundamentals, and
+optional Pixi peer ranges. Verify those ranges before installing the package.
 
-| Component | What it does |
-|---|---|
-| `CommandDialog` / `CommandStepper` | Instantiates, validates, and executes a generated Arc command — single-step or multi-step |
-| `CommandForm` | Typed input fields bound to command properties — text, number, dropdown, date, and more |
-| `DataPage` | A resizable page that lists query data with toolbar actions and detail panels |
-| `DataTables` | Data-table wrappers that render an Arc query or observable query, with filtering and paging |
-| `Dialogs` | Data-collection dialogs that return values without executing a command |
-| `Chat` | Topic-based chat with host-supplied data, mentions, emoji, and per-message actions |
-| `SchemaEditor` | Edit JSON schemas visually |
-| `TimeMachine` | Navigate state over time — a natural fit for event-sourced read models |
-| `PivotViewer` | Explore collections across multiple dimensions |
-| `Notifications`, `Toolbar`, `Dropdown`, `Display`, … | Supporting building blocks — see the [full export list](./Source/README.md#available-subpath-exports) |
+## Current boundaries
+
+- The package manifest, exports, source, and migration guide define the current
+  Components major-version surface.
+- Generated compatibility schema v2 is checked in as [`compat-manifest.json`](./compat-manifest.json).
+  It records the seven-package source-candidate scope and support windows; the durable
+  [release policy](./release.md) explains why that metadata does not authorize publication.
+- Workspace manifest versions in a source checkout are development inputs, not release
+  identity. Publication is intentionally fail-closed while the Components 4 package set and
+  trusted-publisher workflow are completed. Do not infer a release from a branch, tag, or local
+  package version.
+- Package existence, examples, Storybook output, and passing checks do not
+  establish maturity, accessibility conformance, browser coverage, support,
+  security, or production suitability.
+- Direct third-party UI dependencies retained by an application keep their own
+  package, provider, styling, and license boundaries.
+- Use the exact package archive and application profile when evaluating an
+  upgrade.
+
+## Documentation and migration
+
+- [Canonical Components documentation](https://cratis.io/components/)
+- [Product-owned documentation source](https://github.com/Cratis/Components/tree/main/Documentation)
+- [Package README](./Source/README.md)
+- [Components 3 to 4 migration guide](./Source/MIGRATION.md)
 
 ## The Cratis ecosystem
 
-This project is part of [Cratis](https://www.cratis.io) — free, MIT-licensed tools for building event-sourced and CQRS applications.
+This project is part of [Cratis](https://www.cratis.io) — free, MIT-licensed tools for building
+CQRS and event-sourced applications.
 
-- **[Chronicle](https://github.com/Cratis/Chronicle)** — event-sourcing database and runtime. Orleans-based kernel, pluggable storage (MongoDB default; PostgreSQL, SQL Server, SQLite, in-memory), language-agnostic gRPC contracts. [Docs](https://www.cratis.io/chronicle/)
-- **Chronicle clients** — first-class [.NET SDK](https://github.com/Cratis/Chronicle), plus [TypeScript](https://github.com/Cratis/Chronicle.TypeScript), [Kotlin/Java](https://github.com/Cratis/Chronicle.Kotlin), and [Elixir](https://github.com/Cratis/Chronicle.Elixir); [Python](https://github.com/Cratis/Chronicle.Python) coming soon (pre-alpha). AI agents connect through the [Chronicle MCP server](https://github.com/Cratis/Chronicle.Mcp).
-- **[Arc](https://github.com/Cratis/Arc)** — opinionated CQRS framework for ASP.NET Core with commands, queries, validation, authorization, and TypeScript proxy generation. Works without event sourcing. [Docs](https://www.cratis.io/arc/)
-- **Components** — this repository. [Docs](https://www.cratis.io/components/)
-- **[CLI](https://github.com/Cratis/cli) + Workbench** — inspect and diagnose Chronicle from the terminal or the browser. [Docs](https://www.cratis.io/cli/)
-- **Supporting** — [Fundamentals](https://github.com/Cratis/Fundamentals), [Specifications](https://github.com/Cratis/Specifications), [Synopsis](https://github.com/Cratis/Synopsis), [Lens](https://github.com/Cratis/Lens), [Narrator](https://github.com/Cratis/Narrator)
-- **[Samples](https://github.com/Cratis/Samples)** — runnable event sourcing and CQRS samples for the whole stack
+- **[Chronicle](https://github.com/Cratis/Chronicle)** — event-sourcing database and runtime with an
+  Orleans-based kernel, pluggable storage, and language-agnostic gRPC contracts.
+  [Documentation](https://www.cratis.io/chronicle/)
+- **Chronicle clients** — first-class [.NET SDK](https://github.com/Cratis/Chronicle), plus
+  [TypeScript](https://github.com/Cratis/Chronicle.TypeScript),
+  [Kotlin/Java](https://github.com/Cratis/Chronicle.Kotlin), and
+  [Elixir](https://github.com/Cratis/Chronicle.Elixir). AI agents connect through the
+  [Chronicle MCP server](https://github.com/Cratis/Chronicle.Mcp).
+- **[Arc](https://github.com/Cratis/Arc)** — CQRS framework for ASP.NET Core with commands, queries,
+  validation, authorization, and TypeScript proxy generation. Arc does not require event sourcing.
+  [Documentation](https://www.cratis.io/arc/)
+- **Components** — this repository. [Documentation](https://www.cratis.io/components/)
+- **[CLI](https://github.com/Cratis/cli) and Workbench** — inspect and diagnose Chronicle from the
+  terminal or browser. [Documentation](https://www.cratis.io/cli/)
+- **Supporting projects** — [Fundamentals](https://github.com/Cratis/Fundamentals),
+  [Specifications](https://github.com/Cratis/Specifications),
+  [Synopsis](https://github.com/Cratis/Synopsis), [Lens](https://github.com/Cratis/Lens), and
+  [Narrator](https://github.com/Cratis/Narrator).
+- **[Samples](https://github.com/Cratis/Samples)** — runnable event-sourcing and CQRS examples.
 
-Blog: [blog.cratis.io](https://blog.cratis.io)
+Release notes and announcements are published on the [Cratis blog](https://blog.cratis.io).
 
-## Support
+## Migration and adapter tooling
 
-Cratis is an open community, and we are glad to help users, teams evaluating the stack, and contributors.
+`@cratis/components.migrator` is an optional development CLI for upgrading application source from
+Components 3 to 4. It uses syntax-aware codemods internally to update root imports, Button
+appearance props, and value-first callbacks; it is not a runtime dependency and is only needed while
+migrating. The [migration guide](./Source/MIGRATION.md) owns its commands and manual-review stop
+cases.
 
-| Channel | Details |
-|---|---|
-| Discord | Join the community on [Discord](https://discord.gg/kt4AMpV8WV) for questions and discussions |
-| GitHub Issues | [Report bugs or request features](https://github.com/Cratis/Components/issues) |
-| Documentation | Read the docs at [cratis.io](https://cratis.io) |
+`@cratis/eslint-plugin-components` prevents migrated source from drifting back to removed APIs.
+`@cratis/components.conformance` is different: it is a development test harness for authors of
+renderer adapters, proving slot behavior, parts, state, SSR, and accessibility. Ordinary
+applications do not install Conformance unless they are implementing an adapter.
 
-Release notes and announcements: the [Cratis blog](https://blog.cratis.io).
+Migrator, ESLint, adapters, Conformance, and Core share the repository release version. Use the
+bounded `>=4 <5` tooling range instead of `latest`; compatibility preflight validates the installed
+Components migration window. Publication remains fail closed under the repository
+[release policy](./release.md).
+
+## Contributing
+
+This is a framework-library repository. [Component source](https://github.com/Cratis/Components/tree/main/Source)
+keeps public types, stories, and specifications near each component; export and
+package verification lives under `Source/scripts/`.
+
+For root and package README changes, verify the exact files explicitly:
+
+```bash
+npx markdownlint-cli2 README.md Source/README.md
+npx linkinator README.md Source/README.md --markdown --recurse
+```
+
+Release-policy contributors can verify the deterministic contract, fail-closed workflow guards,
+and source-candidate evidence generator without publishing anything:
+
+```bash
+yarn verify-compat-manifest
+yarn verify-release-safety
+yarn test-release-policy
+yarn test-release-evidence
+yarn test-renderer-adapter-matrix
+yarn generate-release-evidence --output /absolute/path/to/empty/evidence-directory
+```
+
+The caller-provided evidence directory is temporary/untracked output. The hosted workflow retains
+its source-candidate artifact for 30 days; that upload is not npm provenance and grants no
+publication authority. Trusted-publisher provenance remains a separate future owner-authorized
+publish-job requirement.
+
+Source changes follow the repository's framework rules and the applicable build,
+type, specification, export, package-archive, accessibility-diagnostic, and
+Storybook gates. Renderer adapter contributors must also run the
+[packed lower/current package-manager matrix](./scripts/renderer-adapter-matrix.md).
+
+## Community and repository
+
+Cratis is an open community, and we are glad to help users, teams evaluating the stack, and
+contributors.
+
+| Path                      | Destination                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| Questions and discussion  | [Cratis Discord](https://discord.gg/kt4AMpV8WV)                                          |
+| Bugs and feature requests | [GitHub Issues](https://github.com/Cratis/Components/issues)                             |
+| Releases                  | [GitHub Releases](https://github.com/Cratis/Components/releases)                         |
+| Contributing              | [Cratis contribution guide](https://github.com/Cratis/.github/blob/main/contributing.md) |
+| Security reports          | [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)                   |
+| Source license            | [`LICENSE`](./LICENSE)                                                                   |
+| Package notices           | [`Source/THIRD_PARTY_NOTICES.md`](./Source/THIRD_PARTY_NOTICES.md)                       |

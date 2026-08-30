@@ -1,0 +1,64 @@
+{
+    "name": "@cratis/components.conformance",
+    "version": "4.0.0",
+    "description": "Programmatic conformance evidence for Cratis Components renderer adapter authors.",
+    "author": "Cratis",
+    "license": "MIT",
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Cratis/Components"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "engines": {
+        "node": ">=23.0.0"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CONFORMANCE.md",
+        "LICENSE"
+    ],
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "sideEffects": false,
+    "cratisUiAbi": 1,
+    "scripts": {
+        "clean": "rm -rf dist",
+        "prepare-core": "yarn workspace @cratis/components prepare",
+        "build": "node ../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+        "typecheck-specs:prepared": "node ../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "typecheck-specs": "yarn prepare-core && yarn typecheck-specs:prepared",
+        "lint": "node ../node_modules/eslint/bin/eslint.js . --quiet",
+        "test": "node ../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+        "verify-package": "node ./scripts/verify-packed-package.mjs",
+        "ci": "yarn clean && yarn prepare-core && yarn lint && yarn build && yarn typecheck-specs:prepared && yarn test && yarn verify-package"
+    },
+    "dependencies": {
+        "axe-core": "^4.13.0"
+    },
+    "peerDependencies": {
+        "@cratis/components": ">=4 <5",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@cratis/arc": "22.6.2",
+        "@cratis/arc.react": "22.6.2",
+        "@cratis/components": "workspace:^",
+        "@cratis/fundamentals": "^7.10.3",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "reflect-metadata": "0.2.2",
+        "tsyringe": "4.10.0"
+    }
+}

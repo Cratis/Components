@@ -1,6 +1,40 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
+/* The overlay layer the sidebar portals into. It is transparent and does not intercept pointer
+   events by default (`modal={false}`, the default) — a chat lives next to the work, so the rest
+   of the page stays visible and interactive behind it. Only `data-modal='true'` paints a backdrop
+   and blocks clicks outside the panel, matching a dialog's masking. */
+.cratis-chat-sidebar__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--cratis-z-index-dialog);
+    pointer-events: none;
+}
+
+.cratis-chat-sidebar__backdrop[data-modal='true'] {
+    background: var(--cratis-maskbg);
+    pointer-events: auto;
+}
+
+.cratis-chat-sidebar__backdrop[data-entering] {
+    animation: cratis-chat-sidebar-backdrop-fade 160ms ease-out;
+}
+
+.cratis-chat-sidebar__backdrop[data-exiting] {
+    animation: cratis-chat-sidebar-backdrop-fade 160ms reverse ease-in;
+}
+
+@keyframes cratis-chat-sidebar-backdrop-fade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 /* Baseline chat sidebar — a panel needs a visible surface even before a theme preset is applied,
    so this ships a token-based default that a preset or `pt` can still override. Every color comes
    from the --cratis-* token seam so the sidebar follows whatever theme the host runs. */
@@ -15,7 +49,29 @@
     color: var(--cratis-text-color);
     border-left: 1px solid var(--cratis-surface-border);
     box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
-    z-index: 1100;
+    pointer-events: auto;
+    outline: none;
+    transform: translateX(0);
+    transition: transform 200ms ease;
+}
+
+.cratis-chat-sidebar[data-entering] {
+    transform: translateX(100%);
+    animation: cratis-chat-sidebar-slide-in 200ms ease-out forwards;
+}
+
+.cratis-chat-sidebar[data-exiting] {
+    animation: cratis-chat-sidebar-slide-in 200ms ease-in reverse;
+}
+
+@keyframes cratis-chat-sidebar-slide-in {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
 }
 
 .cratis-chat-sidebar[data-position='left'] {
@@ -23,6 +79,24 @@
     right: auto;
     border-left: none;
     border-right: 1px solid var(--cratis-surface-border);
+}
+
+.cratis-chat-sidebar[data-position='left'][data-entering] {
+    animation-name: cratis-chat-sidebar-slide-in-left;
+}
+
+.cratis-chat-sidebar[data-position='left'][data-exiting] {
+    animation-name: cratis-chat-sidebar-slide-in-left;
+}
+
+@keyframes cratis-chat-sidebar-slide-in-left {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
 }
 
 .cratis-chat-sidebar__header {
@@ -64,7 +138,9 @@
     color: var(--cratis-text-color-secondary);
     font-size: 0.875rem;
     flex-shrink: 0;
-    transition: color 0.12s, background 0.12s;
+    transition:
+        color 0.12s,
+        background 0.12s;
 }
 
 .cratis-chat-sidebar__back:hover,

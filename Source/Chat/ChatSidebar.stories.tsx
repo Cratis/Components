@@ -4,7 +4,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
 import { useRef, useState } from 'react';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
+import { FaCopy } from 'react-icons/fa6';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import type { ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';
@@ -52,8 +53,18 @@ export const Playground: Story = {
         open: true,
         onClose: fn(),
         topics: [
-            { id: 'topic-1', name: 'Rollout planning', startedBy: 'person-1', lastActivity: new Date(Date.now() - 5 * 60_000) },
-            { id: 'topic-2', startedBy: 'agent-1', started: new Date(Date.now() - 30_000), lastActivity: new Date(Date.now() - 30_000) },
+            {
+                id: 'topic-1',
+                name: 'Rollout planning',
+                startedBy: 'person-1',
+                lastActivity: new Date(Date.now() - 5 * 60_000),
+            },
+            {
+                id: 'topic-2',
+                startedBy: 'agent-1',
+                started: new Date(Date.now() - 30_000),
+                lastActivity: new Date(Date.now() - 30_000),
+            },
         ],
         messages: [],
         onSendMessage: fn(),
@@ -77,29 +88,61 @@ export const InteractiveHost: Story = {
         const Demo = () => {
             const [open, setOpen] = useState(true);
             const [topics, setTopics] = useState<ChatTopic[]>([
-                { id: 'topic-1', name: 'Rollout planning', startedBy: 'person-1', lastActivity: new Date(Date.now() - 5 * 60_000) },
+                {
+                    id: 'topic-1',
+                    name: 'Rollout planning',
+                    startedBy: 'person-1',
+                    lastActivity: new Date(Date.now() - 5 * 60_000),
+                },
             ]);
             const [messages, setMessages] = useState<ChatMessage[]>([
-                { id: 'message-1', topicId: 'topic-1', authorId: 'person-1', body: 'Kicking this off 🚀', timestamp: new Date(Date.now() - 5 * 60_000) },
+                {
+                    id: 'message-1',
+                    topicId: 'topic-1',
+                    authorId: 'person-1',
+                    body: 'Kicking this off 🚀',
+                    timestamp: new Date(Date.now() - 5 * 60_000),
+                },
             ]);
             const nextId = useRef(2);
 
             const startTopic = () => {
                 const id = `topic-${nextId.current++}`;
-                setTopics(current => [...current, { id, startedBy: 'person-1', started: new Date(), lastActivity: new Date() }]);
+                setTopics((current) => [
+                    ...current,
+                    {
+                        id,
+                        startedBy: 'person-1',
+                        started: new Date(),
+                        lastActivity: new Date(),
+                    },
+                ]);
                 return id;
             };
 
-            const send = (topicId: ChatIdentifier, body: string, mentions: ChatMention[]) => {
-                setMessages(current => [...current, {
-                    id: `message-${nextId.current++}`,
-                    topicId,
-                    authorId: 'person-1',
-                    body,
-                    timestamp: new Date(),
-                    mentions,
-                }]);
-                setTopics(current => current.map(topic => (String(topic.id) === String(topicId) ? { ...topic, lastActivity: new Date() } : topic)));
+            const send = (
+                topicId: ChatIdentifier,
+                body: string,
+                mentions: ChatMention[],
+            ) => {
+                setMessages((current) => [
+                    ...current,
+                    {
+                        id: `message-${nextId.current++}`,
+                        topicId,
+                        authorId: 'person-1',
+                        body,
+                        timestamp: new Date(),
+                        mentions,
+                    },
+                ]);
+                setTopics((current) =>
+                    current.map((topic) =>
+                        String(topic.id) === String(topicId)
+                            ? { ...topic, lastActivity: new Date() }
+                            : topic,
+                    ),
+                );
             };
 
             const nameTopic = (topic: ChatTopic, firstMessageBody: string) => {
@@ -107,20 +150,34 @@ export const InteractiveHost: Story = {
                 // Simulated here with a timer and a derived name.
                 const name = firstMessageBody.split(/\s+/).slice(0, 4).join(' ');
                 setTimeout(() => {
-                    setTopics(current => current.map(candidate =>
-                        String(candidate.id) === String(topic.id) ? { ...candidate, name } : candidate));
+                    setTopics((current) =>
+                        current.map((candidate) =>
+                            String(candidate.id) === String(topic.id)
+                                ? { ...candidate, name }
+                                : candidate,
+                        ),
+                    );
                 }, 1500);
             };
 
             return (
                 <div style={{ height: '100vh', position: 'relative' }}>
                     <div style={{ padding: 16 }}>
-                        <button type='button' onClick={() => setOpen(current => !current)}>
+                        <button
+                            type='button'
+                            onClick={() => setOpen((current) => !current)}
+                        >
                             {open ? 'Close chat' : 'Open chat'}
                         </button>
-                        <p style={{ maxWidth: '32rem', color: 'var(--cratis-text-color-secondary)' }}>
-                            Start a new topic and send a message in it — the topic name shows as a pending
-                            placeholder until the simulated LLM answers a moment later.
+                        <p
+                            style={{
+                                maxWidth: '32rem',
+                                color: 'var(--cratis-text-color-secondary)',
+                            }}
+                        >
+                            Start a new topic and send a message in it — the topic name
+                            shows as a pending placeholder until the simulated LLM answers
+                            a moment later.
                         </p>
                     </div>
                     <ChatSidebar
@@ -137,8 +194,9 @@ export const InteractiveHost: Story = {
                             {
                                 id: 'copy',
                                 label: 'Copy the message',
-                                icon: 'pi pi-copy',
-                                onInvoke: message => navigator.clipboard?.writeText(message.body),
+                                icon: <FaCopy />,
+                                onInvoke: (message) =>
+                                    navigator.clipboard?.writeText(message.body),
                             },
                         ]}
                     />

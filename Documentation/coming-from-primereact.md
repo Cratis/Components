@@ -1,198 +1,68 @@
 ---
-title: PrimeReact and Components
-description: You already know PrimeReact. Here's how forms and tables map onto Cratis Components — concept by concept, side by side — plus what PrimeReact 11 renamed, removed, and rebuilt.
+title: Coming from PrimeReact
+description: Map direct PrimeReact usage onto renderer-independent Components 4 APIs.
 ---
 
-Cratis Components isn't a different component kit — it's built **on** PrimeReact. Your `Column`, your `Button`, your icons all still apply. What changes is the *wiring*: instead of keeping form state and query subscriptions in the screen, you point a component at an Arc-generated proxy and let the component own that integration. This page maps familiar PrimeReact code onto its Components equivalent — and, because `@cratis/components` 3.0 moved to **PrimeReact 11**, tells you what PrimeReact itself renamed, removed, and rebuilt underneath.
+Components 4 does not render PrimeReact or expose Prime types. The public API uses Cratis-owned props, events, tokens, and parts.
 
-If you already have an app on `@cratis/components` 2.x, read the [migration guide](Migration/2-to-3.md) first — it is the ordered checklist. This page is the map you keep open while you work through it.
+## Replace direct imports
 
-## The one-paragraph version
+| PrimeReact                       | Components                            |
+| -------------------------------- | ------------------------------------- |
+| Button                           | `Common/Button`                       |
+| Dialog                           | `Dialogs/Dialog`                      |
+| Select / Dropdown                | `Dropdown`                            |
+| DataTable / Column               | `DataTables/DataTableCore` / `Column` |
+| Input fields in command forms    | `CommandForm` fields                  |
+| Tag / Badge / Message / Skeleton | `Display`                             |
+| Toast / Toaster                  | `Notifications`                       |
 
-In a PrimeReact app, the screen often owns request creation, loading state, dialog footer actions, field binding, API calls, and live updates. Components centralizes that wiring around generated command and query proxies — so a form or a table is declarative, and it's type-checked against the C# it came from. You keep PrimeReact while reducing screen-specific integration code.
+Use native HTML for simple application-owned controls that do not need Components behavior. CommandForm fields are specifically for generated command properties; they are not a general local-state input suite.
 
-## A command form
+Components does not provide one-for-one replacements for every Prime widget. Keep an application-owned or direct Prime surface during migration when it requires tabs, sidebars, timelines, knobs, select-button groups, general popovers, grouped/expandable tables, or controlled lazy/server table sorting. Components `Toolbar` is a canvas/tool-palette control, not a replacement for every page action bar.
 
-You have a dialog with a field and a save button. By hand, that's local state, a saving flag, a fetch, and footer buttons you wire yourself:
+The optional MUI, PrimeReact 11, and PrimeReact 10 adapters cover only nine `common.*` presentation slots: button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface. They do not replace Dialog, Dropdown, DatePicker, paginator, table, or another complete widget. Core retains focus, overlay, selection, and keyboard behavior; installing an adapter does not delegate key handling or recreate a Prime public API.
 
-```tsx
-// Manual: local state, a saving flag, a fetch, and hand-wired footer buttons
-const [name, setName] = useState('');
-const [saving, setSaving] = useState(false);
+## Map common Dialog props
 
-const save = async () => {
-    setSaving(true);
-    await fetch('/api/authors/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
-    });
-    setSaving(false);
-};
+| Prime Dialog             | Components Dialog                                     |
+| ------------------------ | ----------------------------------------------------- |
+| `header`                 | `title`                                               |
+| `visible`                | `visible`                                             |
+| `onHide`                 | `onCancel` or `onClose`, according to product meaning |
+| `footer`                 | `buttons` custom content                              |
+| `style={{ width }}`      | `width`                                               |
+| Prime pass-through slots | `DialogParts` through `pt`                            |
 
-<Dialog title="Add author" onCancel={hide} buttons={
-    <>
-        <Button onClick={hide}>Cancel</Button>
-        <Button disabled={saving} onClick={save}>Add</Button>
-    </>
-}>
-    <InputText value={name} onChange={e => setName(e.target.value)} />
-</Dialog>
-```
+A custom `buttons` footer owns its close result through `useDialogContext`; Components cannot infer which custom action confirms or cancels.
 
-With Components, the command *is* the form — instantiation, the footer, the executing state, and validation are handled:
+## Choose the table boundary
 
-```tsx
-// Components
-<CommandDialog<RegisterAuthor> command={RegisterAuthor} title="Add author" okLabel="Add">
-    <InputTextField<RegisterAuthor> value={i => i.name} title="Name" />
-</CommandDialog>
-```
+- Use `DataTableCore` for an already-loaded local array.
+- Use `DataTableForQuery` for a paged Arc query.
+- Use `DataTableForObservableQuery` for an observable paged Arc query.
+- Use `DataPage` for a complete list screen with actions and optional details.
+- Keep an application-owned/Prime adapter for grouping, row expansion, or controlled lazy/server sorting until an explicit state contract exists.
 
-`i => i.name` is typed against the generated `RegisterAuthor` — rename the property in C#, rebuild, and this line stops compiling.
+For direct Prime migration, rename `value` to `data`. Replace compact size, stripes, and column alignment with `DataTableParts`, `Column` classes/styles, and product CSS. Prime `Column` cannot be passed to a Components table or `DataPage`; import the Cratis marker for those surfaces.
 
-## A data table
+## Replace provider configuration
 
-With plain PrimeReact, a table typically fetches on mount, holds rows in state, and — if you want live data — subscribes to updates:
+If Components was the application's only Prime consumer, remove `PrimeReactProvider`, license keys, presets, renderer defaults, and global Prime pass-through configuration. Mount `CratisComponentsProvider` for locale, owned labels, and the optional toaster.
 
-```tsx
-// PrimeReact, local state
-const [authors, setAuthors] = useState([]);
+If the application still imports Prime directly, keep its installed-version provider, styling, dependencies, and license configuration around those remaining surfaces while mounting `CratisComponentsProvider` independently for Components. Remove the Prime root only after direct UI imports, icon classes, generated schemas, and any intentional prototype/catalog tooling are accounted for.
 
-useEffect(() => {
-    fetch('/api/authors').then(r => r.json()).then(setAuthors);
-    // ...and a subscription if you want it to stay current
-}, []);
+A PrimeReact 10 / Components 2 application may migrate directly to Components 4. It does not need to adopt PrimeReact 11 first; keep Prime 10 isolated while replacing surfaces in batches.
 
-<DataTable value={authors}>
-    <Column field="name" header="Name" sortable />
-</DataTable>
-```
+## Replace styling
 
-With Components, you hand the table the query proxy; it subscribes and re-renders as the read model changes:
+- Map product values to `--cratis-*` tokens.
+- Replace `.p-*`, `data-scope`, and `data-part` selectors with stable `data-cratis-part` selectors.
+- Replace Prime pass-through keys with each component's Cratis-owned `pt` type.
+- Replace PrimeIcons with React icon nodes or product-owned SVGs.
 
-```tsx
-// Components
-<DataTableForObservableQuery query={AllAuthors} emptyMessage="No authors yet">
-    <Column field="name" header="Name" sortable />
-</DataTableForObservableQuery>
-```
+## Keep server data behavior explicit
 
-The `Column` is the same PrimeReact component you already use. Only the data binding changed — and it stays live with no subscription code.
+Components tables render one Arc-provided page. Filtering and sorting the complete dataset belongs on the server before paging. Do not reproduce a client-side DataTable mode over partial data.
 
-## A list-and-detail page
-
-The "table left, details right, toolbar on top" layout has several moving parts: split panes, selection state, and a detail panel that appears only when a row is picked. `DataPage` is that layout as one component:
-
-```tsx
-// Components
-import { DataPage, MenuItem, Column } from '@cratis/components/DataPage';
-import { FaPencil, FaPlus } from 'react-icons/fa6';
-
-<DataPage title="Authors" query={AllAuthorsWithBooks} emptyMessage="No authors yet"
-          detailsComponent={AuthorDetails}>
-    <DataPage.MenuItems>
-        <MenuItem label="Add author" icon={FaPlus} command={() => showAddAuthor()} />
-        <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={openEdit} />
-    </DataPage.MenuItems>
-    <DataPage.Columns>
-        <Column field="name" header="Name" sortable />
-    </DataPage.Columns>
-</DataPage>
-```
-
-`MenuItem`'s `icon` is a **component type**, not a PrimeIcons class string and not a JSX element — `DataPage` instantiates it itself.
-
-Selection, the resizable split, and disabling menu items until a row is selected all come built in.
-
-## How the pieces map
-
-| You know (PrimeReact) | In Components |
-|---|---|
-| `Dialog` + footer `Button`s + a fetch | `CommandDialog command={...}` |
-| `InputText` + `useState` + manual validation | `InputTextField value={i => i.field}` — typed to the command |
-| `DataTable value={...}` + `useEffect` fetch | `DataTableForObservableQuery query={...}` (live) or `DataTableForQuery` |
-| Split panes + selection + detail wiring | `DataPage` with `detailsComponent` |
-| A multi-step wizard you build yourself | `StepperCommandDialog` |
-| A PrimeReact theme | the Cratis baseline theme, or PrimeReact's styled mode (`styledMode()` — a `@primeuix/themes` preset plus PrimeReact's component styles), plus `--cratis-*` tokens for repainting |
-
-## The v11 module renames
-
-If you import from `primereact/*` anywhere in your own code, this is the table you need. PrimeReact 11 ships **80** modules where v10 shipped 117, and a dozen of the survivors moved:
-
-| v10 module | v11 module |
-|---|---|
-| `dropdown` | `select` |
-| `calendar` | `datepicker` |
-| `overlaypanel` | `popover` |
-| `inputswitch` | `toggleswitch` |
-| `tabview` + `tabpanel` | `tabs` |
-| `inputtextarea` | `textarea` |
-| `password` | `inputpassword` |
-| `chips` | `inputtags` |
-| `colorpicker` | `inputcolor` |
-| `galleria` | `gallery` |
-| `scrollpanel` | `scrollarea` |
-| `selectbutton` | `togglebuttongroup` |
-
-**A rename is usually not a one-line edit.** This is the part that surprises people: v11 is **compositional**. `primereact/select` does not export a `Select` you drop in with props — it exports `Select.Root`, `Select.Trigger`, `Select.Value`, `Select.Portal`, `Select.Positioner`, `Select.Popup`, `Select.List` and `Select.Option`, and you assemble them yourself. So does `Chip`, `Avatar`, `ProgressBar`, `Rating`, `ToggleSwitch`, `InputColor`, and most of the rest. Budget for restructuring the JSX, not for a find-and-replace.
-
-Which is exactly why you should prefer a Cratis wrapper where one exists: [`Dropdown`](Dropdown/index.md) is that seven-part `Select` assembly behind one element with props, and it stays put across PrimeReact versions.
-
-### The `Sidebar` trap
-
-> [!CAUTION]
-> v10's `Sidebar` — the overlay drawer — is now **`primereact/drawer`**. `primereact/sidebar` **still exists** in v11, but it is a **different, new app-shell primitive**. A name-preserving migration therefore compiles cleanly and silently swaps your overlay for an app shell. There is no error, no warning, and no type mismatch to catch it. Check every `Sidebar` usage by hand.
-
-### Removed with no drop-in replacement
-
-These v10 modules are gone from v11 entirely — no rename, no equivalent:
-
-`menubar`, `megamenu`, `tieredmenu`, `steps`, `multiselect`, `treeselect`, `treetable`, `cascadeselect`, `splitbutton`, `image`, `virtualscroller`, `confirmdialog`, `column`, `columngroup`, `row`, `inputicon`, `messages`, and the infrastructure modules `api`, `menuitem`, `treenode`, `utils`, `hooks`, `passthrough`, `componentbase`.
-
-`inputmask`, `keyfilter` and `scrolltop` exist in **neither** `primereact/*` nor `@primereact/headless/*`. `orderlist` and `picklist` survive only as **headless hooks** (`@primereact/headless/orderlist`, `.../picklist`) — you build the presentation.
-
-Where the library needed one of these, it now owns a replacement, so your authoring model is unchanged even though the import moved:
-
-| You used to import | Now |
-|---|---|
-| `Column` from `primereact/column` | `Column` from `@cratis/components/DataTables` (also re-exported from `@cratis/components/DataPage`) |
-| `StepperPanel` from `primereact/stepperpanel` | `StepperPanel` from `@cratis/components/CommandDialog` |
-| `Menubar` from `primereact/menubar` | `<DataPage.MenuItems>` for list-page actions; a `Button` toolbar of your own otherwise |
-| `Dropdown` from `primereact/dropdown` | `Dropdown` from `@cratis/components/Dropdown` |
-| `MultiSelect` from `primereact/multiselect` | `MultiSelectField` from `@cratis/components/CommandForm` (re-expressed over the Cratis `Dropdown` — v11's `Select` has no `multiple` prop of the v10 shape) |
-| `ConfirmDialog` from `primereact/confirmdialog` | `ConfirmationDialog` from `@cratis/components/Dialogs` |
-| `PrimeReactProvider` from `primereact/api` | `PrimeReactProvider` from `@primereact/core` — or just use [`CratisComponentsProvider`](Common/cratis-components-provider.md) |
-| `Messages` from `primereact/messages` | `Toaster` / `toast` from [`@cratis/components/Notifications`](Notifications/index.md) |
-
-`<Column field="name" header="Name" sortable filter />` and `<StepperPanel header="…">` work exactly as they did. Inside `DataPage`, the action toolbar that replaced Menubar keeps the same `model` array shape, so `<DataPage.MenuItems>` reads as it always did.
-
-## What stays the same
-
-- The authoring model. `Column`, `StepperPanel`, `DataPage`, `CommandDialog` and the CommandForm fields all take the same props they took on 2.x — the churn above is PrimeReact's, and the wrappers absorbed it.
-- You keep using plain PrimeReact for purely presentational widgets that aren't tied to a command or query — the two coexist happily on the same screen.
-- Your styling knowledge carries over, though the *mechanism* changed: see the next section.
-
-## What changed in PrimeReact 11 itself
-
-Three things bite even when you only use Cratis wrappers.
-
-**PrimeReact is now a peer dependency.** You install `primereact`, `@primereact/core`, `@primereact/headless` and `primeicons` yourself. Two copies of PrimeReact means two `PrimeReactProvider` contexts, which breaks overlays and `pt` with no error to point at — the peer declaration is what prevents that. See [Getting started](/components/getting-started/).
-
-**PrimeReact 11 ships zero CSS.** `primereact/resources/themes/*.css` does not exist. A theme is now [PrimeReact's styled mode](Styling/themed.md) — `styledMode()` from `@cratis/components/styled`, which hands the provider a `@primeuix/themes` preset (a JavaScript token object turned into `--p-*` custom properties at runtime) together with PrimeReact's own component styles; a preset by itself paints nothing — or the [Cratis baseline theme](Styling/baseline-theme.md), or your own `pt`. **PrimeReact 11 needs a PrimeUI license key whichever you pick** — the check runs when the provider mounts, not when a theme is applied. See [Licensing](Migration/2-to-3.md#licensing) and [Styling](/components/styling/).
-
-**Outside styled mode, elements carry no `p-*` class.** The `primereact` primitives identify parts by data attributes — `[data-scope="dialog"][data-part="close"]`, `[data-scope="select"][data-part="trigger"]`; the `p-*` class names come from PrimeReact's component styles, which only `styledMode()` applies. Elsewhere, CSS selectors written against v10 class names silently match nothing. (`pt` slot keys are unaffected, though the top-level keys follow the renames above: `select`, not `dropdown`.)
-
-Two smaller ones: `Button` renders its content as **children**, not `label`/`icon` props; and the data-table selection event is now `DataTableSelectionChangeEvent<T>` rather than `DataTableSelectionSingleChangeEvent`.
-
-## What changes (and why it's less code)
-
-- **Forms bind to commands, not to local state.** No `useState` per field, no loading flag, no hand-written validation — the command carries its own rules, and the proxy runs them on both sides.
-- **Tables bind to queries, not to fetched arrays.** An observable query keeps the table current with no subscription code and no "refresh after save."
-- **The binding is type-checked.** Field accessors and column fields line up with the generated types, so a backend change that breaks the screen is a compile error, not a runtime surprise.
-
-## Where to go next
-
-- [Getting started](/components/getting-started/) — install Components and mount the provider.
-- [Build the library screen](/components/tutorial/) — the same ideas built up one screen at a time.
-- [Why Components](/components/why-components/) — the case for the library, and when plain PrimeReact is the better choice.
+Follow the complete [Components 3 to 4 migration](Migration/3-to-4.md).

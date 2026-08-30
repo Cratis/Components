@@ -15,12 +15,10 @@ describe('when configuring toaster pass-through', () => {
     beforeEach(async () => {
         toaster = await renderToaster({
             pt: {
-                region: { root: { className: 'region-probe' } },
-                toast: {
-                    root: { className: 'toast-probe' },
-                    content: { className: 'content-probe' },
-                    close: { className: 'close-probe' },
-                },
+                region: { className: 'region-probe' },
+                toast: { className: 'toast-probe' },
+                content: { className: 'content-probe' },
+                close: { className: 'close-probe' },
             },
         });
         await act(async () => {

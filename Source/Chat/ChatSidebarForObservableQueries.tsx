@@ -26,8 +26,10 @@ export interface ChatSidebarForObservableQueriesProps<
     TMessagesQuery extends IObservableQueryFor<TMessage[], TMessagesArguments>,
     TTopicsArguments extends object = object,
     TMessagesArguments extends object = object,
-> extends Omit<ChatSidebarProps<TMessage, TTopic>, 'topics' | 'messages' | 'selectedTopicId'> {
-
+> extends Omit<
+    ChatSidebarProps<TMessage, TTopic>,
+    'topics' | 'messages' | 'selectedTopicId'
+> {
     /** The observable query delivering the topics. */
     topicsQuery: Constructor<TTopicsQuery>;
 
@@ -43,7 +45,9 @@ export interface ChatSidebarForObservableQueriesProps<
      * @param topicId The identifier of the open topic, or undefined for none.
      * @returns The arguments, or undefined to hold the subscription.
      */
-    messagesArguments: (topicId: ChatIdentifier | undefined) => TMessagesArguments | undefined;
+    messagesArguments: (
+        topicId: ChatIdentifier | undefined,
+    ) => TMessagesArguments | undefined;
 }
 
 /**
@@ -67,13 +71,27 @@ export const ChatSidebarForObservableQueries = <
     messagesArguments,
     onTopicSelected,
     ...sidebar
-}: ChatSidebarForObservableQueriesProps<TMessage, TTopic, TTopicsQuery, TMessagesQuery, TTopicsArguments, TMessagesArguments>) => {
+}: ChatSidebarForObservableQueriesProps<
+    TMessage,
+    TTopic,
+    TTopicsQuery,
+    TMessagesQuery,
+    TTopicsArguments,
+    TMessagesArguments
+>) => {
     const [selectedId, setSelectedId] = useState<ChatIdentifier | undefined>(undefined);
 
-    const [topicsResult] = useObservableQuery<TTopic[], TTopicsQuery, TTopicsArguments>(topicsQuery, topicsArguments);
+    const [topicsResult] = useObservableQuery<TTopic[], TTopicsQuery, TTopicsArguments>(
+        topicsQuery,
+        topicsArguments,
+    );
 
     const messagesQueryArguments = messagesArguments(selectedId);
-    const [messagesResult] = useObservableQuery<TMessage[], TMessagesQuery, TMessagesArguments>(
+    const [messagesResult] = useObservableQuery<
+        TMessage[],
+        TMessagesQuery,
+        TMessagesArguments
+    >(
         messagesQuery,
         messagesQueryArguments,
         undefined,
@@ -81,7 +99,10 @@ export const ChatSidebarForObservableQueries = <
     );
 
     const topics = Array.isArray(topicsResult.data) ? topicsResult.data : [];
-    const messages = selectedId !== undefined && Array.isArray(messagesResult.data) ? messagesResult.data : [];
+    const messages =
+        selectedId !== undefined && Array.isArray(messagesResult.data)
+            ? messagesResult.data
+            : [];
 
     return (
         <ChatSidebar<TMessage, TTopic>

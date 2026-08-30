@@ -50,9 +50,9 @@ import { DialogInitialFocus } from './DialogInitialFocus';
  *   behind the modal mask.
  * - **No per-instance pass-through.** The request type
  *   ({@link BusyIndicatorDialogRequest}) is owned by `@cratis/arc.react`, so
- *   `pt` / `unstyled` are not exposed on a per-call basis. Restyle the
- *   busy dialog (and every dialog) via the global `pt` preset on
- *   `CratisComponentsProvider`.
+ *   `pt` / `unstyled` are not exposed on a per-call basis. Restyle this
+ *   surface through `.cratis-busy-indicator-dialog` together with the stable
+ *   Dialog `data-cratis-part` values and semantic tokens.
  *
  * @param props - The request from the dialog host, containing `title` and `message`.
  */
@@ -64,14 +64,13 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             onCancel={() => undefined}
             buttons={null}
             initialFocus={DialogInitialFocus.Content}
+            className='cratis-busy-indicator-dialog'
         >
-            <div className="flex flex-col items-center justify-center gap-4 py-4">
+            <div className='cratis:flex cratis:flex-col cratis:items-center cratis:justify-center cratis:gap-4 cratis:py-4'>
                 {/* The spinner's role="progressbar" needs an accessible name; use the
                     consumer-supplied message/title (already localized), never a baked-in string. */}
                 <ProgressSpinner aria-label={props.message || props.title || 'Loading'} />
-                <p className="m-0 text-center">
-                    {props.message}
-                </p>
+                <p className='cratis:m-0 cratis:text-center'>{props.message}</p>
             </div>
         </Dialog>
     );

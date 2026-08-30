@@ -7,10 +7,10 @@ A chat is a set of topics — separate conversations, most recently active first
 ```typescript
 interface ChatTopic {
     id: ChatIdentifier;
-    name?: string;                         // unset or blank while not named yet
-    startedBy?: ChatIdentifier;            // resolved through authorOf at render time
+    name?: string; // unset or blank while not named yet
+    startedBy?: ChatIdentifier; // resolved through authorOf at render time
     started?: Date;
-    lastActivity?: Date;                   // orders the list; falls back to started
+    lastActivity?: Date; // orders the list; falls back to started
     metadata?: Record<string, unknown>;
 }
 ```

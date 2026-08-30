@@ -2,17 +2,18 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // @vitest-environment jsdom
 
+import { expect } from 'chai';
 import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Dropdown } from '../Dropdown';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
+import { Dropdown } from '../Dropdown';
 
 /**
- * PrimeReact 10's `Dropdown` displayed `option.label` and compared `option.value` when no
- * `optionLabel` / `optionValue` was given, so `[{ label, value }]` with a scalar `value` was
- * the everyday shape. v11's `Select` matches the option object itself against the value, which
- * shows the raw scalar in the trigger. The wrapper keeps the v10 convention.
+ * The Cratis convention displays `option.label` and compares `option.value` when no
+ * explicit field names are supplied, preserving the everyday `{ label, value }` shape
+ * independently of the internal select implementation.
  */
 describe('when options carry label and value', () => {
     let root: Root;
@@ -20,9 +21,15 @@ describe('when options carry label and value', () => {
     let triggerText: string;
 
     beforeEach(async () => {
-        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+        // SAFETY: React's test-environment flag and ResizeObserver polyfill are test-only globals absent from jsdom typings.
+        (
+            globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+        ).IS_REACT_ACT_ENVIRONMENT = true;
+        // SAFETY: The overlay implementation only needs the observer methods supplied by this jsdom polyfill.
         (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver ??= class {
-            observe() { } unobserve() { } disconnect() { }
+            observe() {}
+            unobserve() {}
+            disconnect() {}
         };
 
         container = document.createElement('div');
@@ -30,15 +37,21 @@ describe('when options carry label and value', () => {
         root = createRoot(container);
 
         await act(async () => {
-            root.render(React.createElement(CratisComponentsProvider, {
-                children: React.createElement(Dropdown, {
-                    value: 'new',
-                    options: [{ label: 'New project', value: 'new' }, { label: 'Sample', value: 'sample' }],
-                })
-            }));
+            root.render(
+                React.createElement(CratisComponentsProvider, {
+                    children: React.createElement(Dropdown, {
+                        value: 'new',
+                        options: [
+                            { label: 'New project', value: 'new' },
+                            { label: 'Sample', value: 'sample' },
+                        ],
+                    }),
+                }),
+            );
         });
 
-        triggerText = container.querySelector('[data-scope="select"][data-part="value"]')?.textContent ?? '';
+        triggerText =
+            container.querySelector('[data-cratis-part="value"]')?.textContent ?? '';
     });
 
     afterEach(async () => {
@@ -47,6 +60,6 @@ describe('when options carry label and value', () => {
     });
 
     it('should show the label of the selected option', () => {
-        triggerText.should.equal('New project');
+        expect(triggerText).to.equal('New project');
     });
 });

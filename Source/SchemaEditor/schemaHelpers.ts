@@ -1,14 +1,24 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { JsonSchemaProperty, NavigationItem } from '../types/JsonSchema';
+import type { JsonSchemaProperty, NavigationItem } from '../types/JsonSchema';
+
+const reservedPrototypeKeys = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
  * Validates a property name, returning an error string or undefined if valid.
  */
-export function validatePropertyName(name: string, propertyId: string, allProperties: JsonSchemaProperty[]): string | undefined {
+export function validatePropertyName(
+    name: string,
+    propertyId: string,
+    allProperties: JsonSchemaProperty[],
+): string | undefined {
     if (!name || name.trim() === '') {
         return 'Property name cannot be empty';
+    }
+
+    if (reservedPrototypeKeys.has(name)) {
+        return 'Property name cannot be a reserved prototype key';
     }
 
     const validIdentifierPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
@@ -16,7 +26,9 @@ export function validatePropertyName(name: string, propertyId: string, allProper
         return 'Property name must start with a letter or underscore and contain only letters, numbers, and underscores';
     }
 
-    const duplicates = allProperties.filter(p => p.name === name && p.id !== propertyId);
+    const duplicates = allProperties.filter(
+        (p) => p.name === name && p.id !== propertyId,
+    );
     if (duplicates.length > 0) {
         return 'Property name must be unique';
     }
@@ -27,7 +39,10 @@ export function validatePropertyName(name: string, propertyId: string, allProper
 /**
  * Builds the list of breadcrumb navigation items from a path, using the event type name as the root.
  */
-export function buildBreadcrumbItems(eventTypeName: string, currentPath: string[]): NavigationItem[] {
+export function buildBreadcrumbItems(
+    eventTypeName: string,
+    currentPath: string[],
+): NavigationItem[] {
     const items: NavigationItem[] = [{ name: eventTypeName, path: [] }];
 
     for (let i = 0; i < currentPath.length; i++) {

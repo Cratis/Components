@@ -11,9 +11,13 @@
 
 set -euo pipefail
 
-mkdir -p dist/esm
+mkdir -p dist/esm dist/esm/schemas
 
-for stylesheet in tokens.css theme.css primereact-v10-palette.css; do
+cp schemas/ui-adapter.schema.json dist/esm/schemas/ui-adapter.schema.json
+cp schemas/ui-adapter.schema.d.ts dist/esm/schemas/ui-adapter.schema.d.ts
+echo "Copied ui-adapter.schema.json and its declaration"
+
+for stylesheet in tokens.css theme.css; do
     cp "$stylesheet" "dist/esm/$stylesheet"
     echo "Copied $stylesheet"
 done
@@ -26,10 +30,16 @@ done
 # components would need a rethink (a subfolder plus matching url() rewrite), but nothing ships one yet.
 # `find`, not a bash 4+ `globstar` glob, because macOS ships bash 3.2 as `/bin/bash`.
 find . -path ./dist -prune -o -path ./node_modules -prune -o \
+    -path ./storybook-static -prune -o \
     \( -iname '*.woff2' -o -iname '*.woff' -o -iname '*.ttf' -o -iname '*.otf' \) -print |
-while IFS= read -r font; do
-    cp "$font" "dist/esm/$(basename "$font")"
-    echo "Copied $(basename "$font")"
-done
+    while IFS= read -r font; do
+        cp "$font" "dist/esm/$(basename "$font")"
+        echo "Copied $(basename "$font")"
+    done
+
+# Patrick Hand is distributed under the SIL Open Font License. Keep its notice beside the
+# packaged font binaries so every redistributed archive carries the required license text.
+cp Canvas/shapes/Note/PatrickHand-OFL.txt dist/esm/PatrickHand-OFL.txt
+echo "Copied PatrickHand-OFL.txt"
 
 echo "Stylesheet layers copied successfully"

@@ -1,0 +1,195 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-dialog__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--cratis-z-index-dialog);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--cratis-maskbg);
+}
+.cratis-dialog__backdrop[data-entering] {
+    animation: cratis-dialog-fade 160ms ease-out;
+}
+.cratis-dialog__backdrop[data-exiting] {
+    animation: cratis-dialog-fade 120ms reverse ease-in;
+}
+.cratis-dialog__positioner {
+    display: flex;
+    max-width: 100%;
+    max-height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+.cratis-dialog {
+    display: flex;
+    max-width: min(100%, calc(100vw - 2rem));
+    max-height: min(90vh, calc(100vh - 2rem));
+    overflow: hidden;
+    flex-direction: column;
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-surface-overlay);
+    color: var(--cratis-text-color);
+    box-shadow: var(--cratis-shadow-dialog);
+    outline: none;
+}
+.cratis-dialog__document {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    outline: none;
+}
+.cratis-dialog__header {
+    display: flex;
+    padding: 1rem 1.25rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex: 0 0 auto;
+    border-bottom: 1px solid var(--cratis-surface-border);
+}
+.cratis-dialog__title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    outline: none;
+}
+.cratis-dialog__title:focus-visible {
+    border-radius: var(--cratis-border-radius);
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-dialog__close {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--cratis-text-color-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+.cratis-dialog__close:hover {
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
+}
+.cratis-dialog__close:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-dialog__content {
+    min-height: 0;
+    padding: 1.25rem;
+    overflow: auto;
+    flex: 1 1 auto;
+}
+.cratis-dialog__busy-scope {
+    display: contents;
+    min-inline-size: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+.cratis-dialog__footer {
+    display: flex;
+    padding: 0.9rem 1.25rem;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    flex: 0 0 auto;
+    border-top: 1px solid var(--cratis-surface-border);
+}
+.cratis-dialog__button {
+    display: inline-flex;
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.75rem 1.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border: 1px solid var(--cratis-action-background);
+    border-radius: var(--cratis-border-radius);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.cratis-dialog__button--primary {
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
+}
+.cratis-dialog__button--secondary {
+    background: transparent;
+    color: var(--cratis-action-background);
+}
+.cratis-dialog__button--primary:hover:not(:disabled) {
+    border-color: var(--cratis-action-background-hover);
+    background: var(--cratis-action-background-hover);
+}
+.cratis-dialog__button--primary:active:not(:disabled) {
+    border-color: var(--cratis-action-background-active);
+    background: var(--cratis-action-background-active);
+}
+.cratis-dialog__button--secondary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--cratis-action-background) 4%, transparent);
+}
+.cratis-dialog__button--secondary:active:not(:disabled) {
+    background: color-mix(in srgb, var(--cratis-action-background) 16%, transparent);
+}
+.cratis-dialog__button:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-dialog__button:disabled {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-dialog__spinner {
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: cratis-dialog-spin 700ms linear infinite;
+}
+
+@keyframes cratis-dialog-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@keyframes cratis-dialog-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cratis-dialog__backdrop,
+    .cratis-dialog__spinner {
+        animation: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .cratis-dialog,
+    .cratis-dialog__button {
+        border-color: CanvasText;
+    }
+    .cratis-dialog__close:focus-visible,
+    .cratis-dialog__button:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+}

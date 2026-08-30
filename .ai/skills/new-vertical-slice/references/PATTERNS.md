@@ -244,30 +244,20 @@ public record StockDecreased(ISBN Isbn, BookStock StockBeforeDecrease);
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Column } from '@cratis/components/DataPage';
-import { DataTable } from 'primereact/datatable';
+import { Column, DataTableForQuery } from '@cratis/components/DataTables';
 import { AllProjects } from './AllProjects';
 
-const pageSize = 10;
-
-export const Listing = () => {
-    const [result, , setPage] = AllProjects.useWithPaging(pageSize);
-
-    return (
-        <DataTable
-            lazy paginator
-            value={result.data}
-            rows={pageSize}
-            totalRecords={result.paging.totalItems}
-            alwaysShowPaginator={false}
-            first={result.paging.page * pageSize}
-            onPage={event => setPage(event.page ?? 0)}
-            scrollable scrollHeight="flex"
-            emptyMessage="No projects found.">
-            <Column field="name" header="Name" />
-        </DataTable>
-    );
-};
+export const Listing = () => (
+    <DataTableForQuery
+        query={AllProjects}
+        pageSize={10}
+        emptyMessage='No projects found.'
+        scrollable
+        scrollHeight='flex'
+    >
+        <Column field='name' header='Name' />
+    </DataTableForQuery>
+);
 ```
 
 ### CommandDialog for state-change commands
@@ -276,39 +266,28 @@ export const Listing = () => {
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState } from 'react';
 import { DialogProps, DialogResult } from '@cratis/arc.react/dialogs';
 import { CommandDialog } from '@cratis/components/CommandDialog';
-import { InputText } from 'primereact/inputtext';
+import { InputTextField } from '@cratis/components/CommandForm';
 import { RegisterProject } from './RegisterProject';
 
-export const AddProject = ({ closeDialog }: DialogProps) => {
-    const [name, setName] = useState('');
-
-    return (
-        <CommandDialog
-            command={RegisterProject}
-            visible
-            header="Add Project"
-            width="32rem"
-            confirmLabel="Add"
-            cancelLabel="Cancel"
-            onBeforeExecute={(values) => {
-                values.name = name;
-                return values;
-            }}
-            onConfirm={() => closeDialog(DialogResult.Ok)}
-            onCancel={() => closeDialog(DialogResult.Cancelled)}>
-            <CommandDialog.Fields>
-                <InputText
-                    value={name}
-                    onChange={event => setName(event.target.value)}
-                    autoFocus
-                />
-            </CommandDialog.Fields>
-        </CommandDialog>
-    );
-};
+export const AddProject = ({ closeDialog }: DialogProps) => (
+    <CommandDialog<RegisterProject>
+        command={RegisterProject}
+        title='Add Project'
+        width='32rem'
+        okLabel='Add'
+        cancelLabel='Cancel'
+        onSuccess={() => closeDialog(DialogResult.Ok)}
+        onCancel={() => closeDialog(DialogResult.Cancelled)}
+    >
+        <InputTextField<RegisterProject>
+            value={(command) => command.name}
+            title='Project name'
+            autoFocus
+        />
+    </CommandDialog>
+);
 ```
 
 ### Composition page
@@ -318,7 +297,7 @@ export const AddProject = ({ closeDialog }: DialogProps) => {
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { DialogResult, useDialog } from '@cratis/arc.react/dialogs';
-import { Button } from 'primereact/button';
+import { Button } from '@cratis/components/Common';
 import * as mdIcons from 'react-icons/md';
 import { Page } from '@cratis/components/Common';
 import { AddProject } from './Registration/AddProject';
@@ -327,15 +306,16 @@ import { Listing } from './Listing/Listing';
 export const Projects = () => {
     const [AddProjectDialog, showAddProjectDialog] = useDialog(AddProject);
 
-    // PrimeReact 11 removed the standalone Menubar; for a query-backed list
-    // page prefer `DataPage` + `<DataPage.MenuItems>`, or compose `Button`s
-    // (content is children in v11) for a custom toolbar.
+    // For a query-backed list page prefer `DataPage` +
+    // `<DataPage.MenuItems>`, or compose Cratis `Button`s for a custom toolbar.
     return (
         <Page title="Projects">
-            <Button variant="text" onClick={() => showAddProjectDialog()}>
-                <mdIcons.MdAdd />
-                <span>Add Project</span>
-            </Button>
+            <Button
+                text
+                icon={<mdIcons.MdAdd />}
+                label='Add Project'
+                onClick={() => showAddProjectDialog()}
+            />
             <Listing />
             <AddProjectDialog />
         </Page>

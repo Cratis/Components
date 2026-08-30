@@ -75,4 +75,4 @@ The `BusyIndicatorDialogRequest` the host threads into the dialog carries:
 
 ## Integration
 
-Uses PrimeReact ProgressSpinner for the loading animation.
+Uses the Cratis-owned progress spinner for the loading animation.

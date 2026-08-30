@@ -1,10 +1,22 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Children, ReactElement, ReactNode, isValidElement, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+    Children,
+    type HTMLAttributes,
+    type ReactElement,
+    type ReactNode,
+    isValidElement,
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 
 import type { ToolbarContextProps } from './ToolbarContext';
 import { useToolbarSlot } from './ToolbarSlot';
+import { ToolbarItemVisibilityProvider } from './ToolbarItemVisibilityContext';
 
 /** Width/height transition duration used by the section resize animation (ms). */
 const SECTION_TRANSITION_MS = 350;
@@ -26,6 +38,14 @@ const ContextRenderer = ({ children, slotName }: { children: ReactNode; slotName
     );
 };
 
+/** Stable part attributes for {@link ToolbarSection}. */
+export interface ToolbarSectionParts {
+    /** Animated section root. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** One named context, with active state exposed through data attributes. */
+    context?: HTMLAttributes<HTMLDivElement>;
+}
+
 /** Props for the {@link ToolbarSection} component. */
 export interface ToolbarSectionProps {
     /**
@@ -40,6 +60,9 @@ export interface ToolbarSectionProps {
 
     /** Layout direction matching the parent {@link Toolbar} (default: 'vertical'). */
     orientation?: 'vertical' | 'horizontal';
+
+    /** Stable section and context attributes. */
+    pt?: ToolbarSectionParts;
 }
 
 /**
@@ -53,7 +76,12 @@ export interface ToolbarSectionProps {
  * Contexts are defined by placing {@link ToolbarContext} children inside this section.
  * Switching contexts only affects this section; other sections are unaffected.
  */
-export const ToolbarSection = ({ activeContext, children, orientation = 'vertical' }: ToolbarSectionProps) => {
+export const ToolbarSection = ({
+    activeContext,
+    children,
+    orientation = 'vertical',
+    pt,
+}: ToolbarSectionProps) => {
     const contextRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
     const mutationObserverRef = useRef<MutationObserver | null>(null);
@@ -70,7 +98,7 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
     // Default to the first context if activeContext is not provided
     const effectiveContext = activeContext ?? (contexts[0]?.props as ToolbarContextProps)?.name ?? '';
 
-    const flexClass = orientation === 'horizontal' ? 'flex-row' : 'flex-col';
+    const flexClass = orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col';
 
     /** Measure the given context's natural dimensions and update the section size. */
     const measureAndSetSize = useCallback((contextName: string) => {
@@ -162,8 +190,12 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
 
     return (
         <div
-            className={`toolbar-section ${isTransitioning ? 'toolbar-section--transitioning' : ''}`}
-            style={size ? { width: size.width, height: size.height } : undefined}
+            {...pt?.root}
+            className={`toolbar-section ${isTransitioning ? 'toolbar-section--transitioning' : ''} ${pt?.root?.className ?? ''}`}
+            style={{ ...pt?.root?.style, ...(size ? { width: size.width, height: size.height } : {}) }}
+            data-cratis-part='toolbar-section'
+            data-transitioning={isTransitioning || undefined}
+            data-orientation={orientation}
         >
             {contexts.map((child) => {
                 const { name, children: contextChildren, slotName } = child.props as ToolbarContextProps;
@@ -172,12 +204,23 @@ export const ToolbarSection = ({ activeContext, children, orientation = 'vertica
                 return (
                     <div
                         key={name}
+                        {...pt?.context}
                         ref={(element) => { contextRefs.current[name] = element; }}
-                        className={`toolbar-context inline-flex ${flexClass} items-center gap-1 ${
+                        className={`toolbar-context cratis:inline-flex ${flexClass} cratis:items-center cratis:gap-1 ${
                             isActive ? 'toolbar-context--active' : 'toolbar-context--inactive'
-                        }`}
+                        } ${pt?.context?.className ?? ''}`}
+                        data-cratis-part='toolbar-context'
+                        data-context-name={name}
+                        data-active={isActive || undefined}
+                        data-selected={isActive || undefined}
+                        aria-hidden={!isActive}
+                        inert={!isActive}
                     >
-                        <ContextRenderer slotName={slotName}>{contextChildren}</ContextRenderer>
+                        <ToolbarItemVisibilityProvider value={isActive}>
+                            <ContextRenderer slotName={slotName}>
+                                {contextChildren}
+                            </ContextRenderer>
+                        </ToolbarItemVisibilityProvider>
                     </div>
                 );
             })}

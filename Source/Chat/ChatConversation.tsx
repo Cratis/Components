@@ -1,13 +1,17 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useEffect, useMemo, useRef, type ReactNode } from 'react';
-import { PersonAvatarCircle, type BuildAvatarUrlParams } from '../Canvas/shapes/ChatBubble/Avatar';
-import { ChatAuthorKind } from '../Canvas/shapes/ChatBubble/ChatAuthorKind';
-import { ChatComposer, type ChatComposerHandle, type ChatComposerLabels } from '../Canvas/shapes/ChatBubble/ChatComposer';
-import type { ChatTypingAuthor } from '../Canvas/shapes/ChatBubble/ChatTypingAuthor';
-import type { MentionCandidate } from '../Canvas/shapes/ChatBubble/Mentions';
-import { TypingIndicator } from '../Canvas/shapes/ChatBubble/TypingIndicator';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { PersonAvatarCircle, type BuildAvatarUrlParams } from './Kit/Avatar';
+import { ChatAuthorKind } from './Kit/ChatAuthorKind';
+import {
+    ChatComposer,
+    type ChatComposerHandle,
+    type ChatComposerLabels,
+} from './Kit/ChatComposer';
+import type { ChatTypingAuthor } from './Kit/ChatTypingAuthor';
+import type { MentionCandidate } from './Kit/Mentions';
+import { TypingIndicator } from './Kit/TypingIndicator';
 import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';
@@ -16,11 +20,25 @@ import type { ChatMessageAction } from './ChatMessageAction';
 import { ChatMessageBody } from './ChatMessageBody';
 import { relativeTimestamp, type RelativeTimestampLabels } from './relativeTimestamp';
 
+const ReplyIcon = () => (
+    <svg
+        width='14'
+        height='14'
+        viewBox='0 0 24 24'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='2.5'
+        aria-hidden='true'
+    >
+        <polyline points='9 17 4 12 9 7' />
+        <path d='M4 12h10a6 6 0 0 1 6 6v1' />
+    </svg>
+);
+
 /** Overrides for every label the {@link ChatConversation} renders. Any field left unset falls
  *  back to a literal English default — this library ships no i18n mechanism of its own, so a host
  *  that localizes passes its own translated strings through here. */
 export interface ChatConversationLabels {
-
     /** Shown when there are no messages yet. Defaults to `'No messages yet. Say hello!'`. */
     empty?: string;
 
@@ -48,7 +66,6 @@ export interface ChatConversationLabels {
  * @typeParam TMessage The host's message type — anything extending {@link ChatMessage}.
  */
 export interface ChatConversationProps<TMessage extends ChatMessage = ChatMessage> {
-
     /**
      * The messages of the conversation, rendered in the order given. Hand this the array a live
      * (observable) query delivers and the conversation re-renders as it changes.
@@ -101,7 +118,9 @@ export interface ChatConversationProps<TMessage extends ChatMessage = ChatMessag
      * @param query What has been typed after the `@`.
      * @returns The candidates matching the query.
      */
-    resolveMentionCandidates?: (query: string) => MentionCandidate[] | Promise<MentionCandidate[]>;
+    resolveMentionCandidates?: (
+        query: string,
+    ) => MentionCandidate[] | Promise<MentionCandidate[]>;
 
     /** Who the conversation is currently waiting on — someone typing, or an agent working. */
     typingAuthors?: ChatTypingAuthor[];
@@ -135,7 +154,6 @@ const sameMinute = (left: Date, right: Date): boolean =>
     left.getMinutes() === right.getMinutes();
 
 interface MessageRenderInfo {
-
     /** Whether to show the author row — false for a continuation by the same author. */
     showAuthor: boolean;
 
@@ -148,10 +166,14 @@ const computeRenderInfo = (messages: ChatMessage[]): MessageRenderInfo[] =>
         const previous = index > 0 ? messages[index - 1] : undefined;
         const next = index < messages.length - 1 ? messages[index + 1] : undefined;
 
-        const showAuthor = !previous || chatIdentifierString(previous.authorId) !== chatIdentifierString(message.authorId);
+        const showAuthor =
+            !previous ||
+            chatIdentifierString(previous.authorId) !==
+                chatIdentifierString(message.authorId);
         const showTimestamp =
             !next ||
-            chatIdentifierString(next.authorId) !== chatIdentifierString(message.authorId) ||
+            chatIdentifierString(next.authorId) !==
+                chatIdentifierString(message.authorId) ||
             !sameMinute(timestampOf(message), timestampOf(next));
 
         return { showAuthor, showTimestamp };
@@ -163,10 +185,17 @@ const computeRenderInfo = (messages: ChatMessage[]): MessageRenderInfo[] =>
  * @param labels Label overrides, as passed to {@link ChatConversation}.
  * @returns The label to show, empty when nobody is.
  */
-const typingLabel = (authors: ChatTypingAuthor[], labels: ChatConversationLabels | undefined): string => {
+const typingLabel = (
+    authors: ChatTypingAuthor[],
+    labels: ChatConversationLabels | undefined,
+): string => {
     if (authors.length === 0) return '';
-    if (authors.length === 1) return (labels?.typing ?? '{name} is typing').replace('{name}', authors[0].name);
-    if (authors.length === 2) return (labels?.typingTwo ?? '{first} and {second} are typing').replace('{first}', authors[0].name).replace('{second}', authors[1].name);
+    if (authors.length === 1)
+        return (labels?.typing ?? '{name} is typing').replace('{name}', authors[0].name);
+    if (authors.length === 2)
+        return (labels?.typingTwo ?? '{first} and {second} are typing')
+            .replace('{first}', authors[0].name)
+            .replace('{second}', authors[1].name);
     return labels?.typingSeveral ?? 'Several people are typing';
 };
 
@@ -204,10 +233,23 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
     }, [messages, typingAuthors.length]);
 
     const authorFor = (authorId: ChatIdentifier): ChatAuthor =>
-        authorOf?.(authorId) ?? { name: chatIdentifierString(authorId), kind: ChatAuthorKind.User };
+        authorOf?.(authorId) ?? {
+            name: chatIdentifierString(authorId),
+            kind: ChatAuthorKind.User,
+        };
 
     const send = (text: string, mentioned: MentionCandidate[]) =>
-        onSendMessage(text, mentioned.map(candidate => ({ id: candidate.id, name: candidate.name, kind: candidate.kind } satisfies ChatMention)));
+        onSendMessage(
+            text,
+            mentioned.map(
+                (candidate) =>
+                    ({
+                        id: candidate.id,
+                        name: candidate.name,
+                        kind: candidate.kind,
+                    }) satisfies ChatMention,
+            ),
+        );
 
     const quickReplyTo = (name: string) => composerRef.current?.prefill(`@${name} `);
 
@@ -215,12 +257,16 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
         <div className={`cratis-chat-conversation${className ? ` ${className}` : ''}`}>
             <div className='cratis-chat-conversation__messages'>
                 {messages.length === 0 && (
-                    <p className='cratis-chat-conversation__empty'>{labels?.empty ?? 'No messages yet. Say hello!'}</p>
+                    <p className='cratis-chat-conversation__empty'>
+                        {labels?.empty ?? 'No messages yet. Say hello!'}
+                    </p>
                 )}
                 {messages.map((message, index) => {
                     const author = authorFor(message.authorId);
                     const { showAuthor, showTimestamp } = renderInfo[index];
-                    const availableActions = (actions ?? []).filter(action => action.isAvailable?.(message) ?? true);
+                    const availableActions = (actions ?? []).filter(
+                        (action) => action.isAvailable?.(message) ?? true,
+                    );
                     const showActionsRow = quickReply || availableActions.length > 0;
 
                     return (
@@ -230,50 +276,80 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                         >
                             {showAuthor && (
                                 <div className='cratis-chat-message__author'>
-                                    {renderAvatar
-                                        ? renderAvatar(message.authorId, author)
-                                        : (
-                                            <PersonAvatarCircle
-                                                userId={chatIdentifierString(message.authorId)}
-                                                name={author.name}
-                                                hasAvatar={author.hasAvatar ?? false}
-                                                size={22}
-                                                ownerType={author.kind === ChatAuthorKind.Agent ? 'Agents' : 'Users'}
-                                                version={author.avatarVersion}
-                                                buildAvatarUrl={buildAvatarUrl}
-                                            />
-                                        )}
+                                    {renderAvatar ? (
+                                        renderAvatar(message.authorId, author)
+                                    ) : (
+                                        <PersonAvatarCircle
+                                            userId={chatIdentifierString(
+                                                message.authorId,
+                                            )}
+                                            name={author.name}
+                                            hasAvatar={author.hasAvatar ?? false}
+                                            size={22}
+                                            ownerType={
+                                                author.kind === ChatAuthorKind.Agent
+                                                    ? 'Agents'
+                                                    : 'Users'
+                                            }
+                                            version={author.avatarVersion}
+                                            buildAvatarUrl={buildAvatarUrl}
+                                        />
+                                    )}
                                     <span className='cratis-chat-message__author-name'>
-                                        {renderAuthorName ? renderAuthorName(message.authorId, author) : author.name}
+                                        {renderAuthorName
+                                            ? renderAuthorName(message.authorId, author)
+                                            : author.name}
                                     </span>
                                 </div>
                             )}
                             <div className='cratis-chat-message__content'>
-                                <div className={`cratis-chat-message__panel${showActionsRow ? ' cratis-chat-message__panel--with-actions' : ''}`}>
-                                    <ChatMessageBody body={message.body} mentions={message.mentions} />
+                                <div
+                                    className={`cratis-chat-message__panel${showActionsRow ? ' cratis-chat-message__panel--with-actions' : ''}`}
+                                >
+                                    <ChatMessageBody
+                                        body={message.body}
+                                        mentions={message.mentions}
+                                    />
                                     {showActionsRow && (
                                         <div className='cratis-chat-message__actions'>
                                             {quickReply && (
                                                 <button
                                                     type='button'
                                                     className='cratis-chat-message__action'
-                                                    title={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', author.name)}
-                                                    aria-label={(labels?.quickReplyTo ?? 'Reply to {name}').replace('{name}', author.name)}
-                                                    onClick={() => quickReplyTo(author.name)}
+                                                    title={(
+                                                        labels?.quickReplyTo ??
+                                                        'Reply to {name}'
+                                                    ).replace('{name}', author.name)}
+                                                    aria-label={(
+                                                        labels?.quickReplyTo ??
+                                                        'Reply to {name}'
+                                                    ).replace('{name}', author.name)}
+                                                    onClick={() =>
+                                                        quickReplyTo(author.name)
+                                                    }
                                                 >
-                                                    <i className='pi pi-reply' aria-hidden='true' />
+                                                    <ReplyIcon />
                                                 </button>
                                             )}
-                                            {availableActions.map(action => (
+                                            {availableActions.map((action) => (
                                                 <button
                                                     key={action.id}
                                                     type='button'
                                                     className='cratis-chat-message__action'
                                                     title={action.label}
                                                     aria-label={action.label}
-                                                    onClick={() => action.onInvoke(message)}
+                                                    onClick={() =>
+                                                        action.onInvoke(message)
+                                                    }
                                                 >
-                                                    {typeof action.icon === 'string' ? <i className={action.icon} aria-hidden='true' /> : action.icon}
+                                                    {typeof action.icon === 'string' ? (
+                                                        <i
+                                                            className={action.icon}
+                                                            aria-hidden='true'
+                                                        />
+                                                    ) : (
+                                                        action.icon
+                                                    )}
                                                 </button>
                                             ))}
                                         </div>
@@ -281,14 +357,22 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                                 </div>
                                 {showTimestamp && (
                                     <span className='cratis-chat-message__time'>
-                                        {relativeTimestamp(timestampOf(message), new Date(), labels?.timestamps)}
+                                        {relativeTimestamp(
+                                            timestampOf(message),
+                                            new Date(),
+                                            labels?.timestamps,
+                                        )}
                                     </span>
                                 )}
                             </div>
                         </div>
                     );
                 })}
-                <TypingIndicator authors={typingAuthors} label={typingLabel(typingAuthors, labels)} buildAvatarUrl={buildAvatarUrl} />
+                <TypingIndicator
+                    authors={typingAuthors}
+                    label={typingLabel(typingAuthors, labels)}
+                    buildAvatarUrl={buildAvatarUrl}
+                />
                 <div ref={messagesEndRef} />
             </div>
 

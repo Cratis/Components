@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { act } from 'react';
+import type React from 'react';
+import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 
 /**
@@ -18,7 +19,10 @@ export interface TopicListInTheDom {
  * @returns The mounted list, to be passed to {@link unmount}.
  */
 export const render = async (element: React.ReactElement): Promise<TopicListInTheDom> => {
-    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    // SAFETY: React reads this process-wide test flag from globalThis.
+    (
+        globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
 
     const container = document.createElement('div');
     document.body.appendChild(container);

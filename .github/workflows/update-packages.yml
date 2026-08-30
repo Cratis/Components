@@ -1,12 +1,18 @@
 name: Update Packages
 
 on:
-  schedule:
-    - cron: '0 6 * * *'
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
-  update:
-    uses: Cratis/Workflows/.github/workflows/update-packages.yml@main
-    secrets:
-      PAT_WORKFLOWS: ${{ secrets.PAT_WORKFLOWS }}
+  block:
+    name: Block direct dependency updates
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    permissions: {}
+    steps:
+      - name: Explain reviewed dependency update requirement
+        run: |
+          echo "::error::Dependency updates must be made through a reviewed pull request containing both manifest changes and the committed root yarn.lock."
+          exit 1

@@ -1,6 +1,6 @@
 # SliderField
 
-`SliderField` wraps the PrimeReact `Slider` component for selecting a numeric value within a range. The current value is displayed below the slider.
+`SliderField` renders a Cratis-owned native range input for selecting a numeric value. The current value is displayed below the slider.
 
 ## Usage
 

@@ -76,7 +76,7 @@ describe('when rendering a custom filter element', () => {
         expect(latestOptions.matchMode).to.equal('equals');
     });
 
-    it('should update and apply the custom draft', async () => {
+    it('should update and apply the custom draft with one-argument compatibility', async () => {
         await act(async () => latestOptions.onChange('advisor'));
         const apply = menu.querySelector<HTMLButtonElement>('[data-custom-filter-apply]');
         if (!apply) {
@@ -89,5 +89,27 @@ describe('when rendering a custom filter element', () => {
             value: 'advisor',
             matchMode: 'equals',
         });
+    });
+
+    it('should update the match mode only through its dedicated callback', async () => {
+        await act(async () => {
+            latestOptions.onChange('advisor', { source: 'user' });
+            latestOptions.onMatchModeChange('contains');
+        });
+        const apply = menu.querySelector<HTMLButtonElement>('[data-custom-filter-apply]');
+        if (!apply) throw new Error('Custom filter did not render its apply action.');
+        await act(async () => apply.click());
+
+        expect(onFilter.mock.calls[0][0].roleCode).to.deep.equal({
+            value: 'advisor',
+            matchMode: 'contains',
+        });
+    });
+
+    it('should store function values without invoking React updater semantics', async () => {
+        const functionValue = vi.fn(() => 'computed');
+        await act(async () => latestOptions.onChange(functionValue));
+        expect(functionValue).not.toHaveBeenCalled();
+        expect(latestOptions.value).to.equal(functionValue);
     });
 });

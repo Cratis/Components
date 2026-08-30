@@ -1,14 +1,19 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
 import { Dropdown, type DropdownProps } from '../../Dropdown/Dropdown';
 import React from 'react';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
 
 /**
  * Component-level props for {@link MultiSelectField}.
  */
-interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string | number>> {
+interface MultiSelectFieldComponentProps
+    extends WrappedFieldProps<Array<string | number>>, FieldAccessibilityProps {
     /** Source array of objects to populate the multi-select options. */
     options: Array<Record<string, unknown>>;
 
@@ -22,19 +27,12 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
     placeholder?: string;
 
     /**
-     * How the selection is displayed in the field: comma-separated or as chips.
-     *
-     * PrimeReact 11's `Select` (in `multiple` mode) renders the selection through
-     * its value slot rather than v10 MultiSelect's chip/comma modes, so this is
-     * currently accepted for API compatibility and does not change rendering.
+     * @deprecated Native multiple selection has one presentation. Remove this renderer-era option.
      */
     display?: 'comma' | 'chip';
 
     /**
-     * Maximum number of selected labels to show before collapsing into a count.
-     *
-     * Accepted for API compatibility; not applied under the PrimeReact 11
-     * `Select` value rendering.
+     * @deprecated Native multiple selection does not collapse labels. Remove this renderer-era option.
      */
     maxSelectedLabels?: number;
 
@@ -47,13 +45,17 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
     /** Extra CSS class name combined with the default `w-full`. */
     className?: string;
 
-    /** PrimeReact pass-through configuration applied to the underlying Select. */
+    /** Cratis-owned per-part attributes applied to the underlying Select. */
     pt?: DropdownProps['pt'];
 
-    /** PrimeReact pass-through options applied to the underlying Select. */
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
     ptOptions?: DropdownProps['ptOptions'];
 
-    /** When true, disables every base PrimeReact style on the underlying Select. */
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
@@ -70,25 +72,42 @@ interface MultiSelectFieldComponentProps extends WrappedFieldProps<Array<string 
  * ```
  */
 export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProps>(
-    (props) => (
-        <Dropdown<Array<string | number>>
-            multiple
-            value={props.value}
-            onChange={(e) => props.onChange(e.value ?? [])}
-            onBlur={props.onBlur}
-            options={props.options}
-            optionValue={props.optionValue}
-            optionLabel={props.optionLabel}
-            placeholder={props.placeholder}
-            filter={props.filter}
-            showClear={props.showClear}
-            invalid={props.invalid}
-            className={props.className ? `w-full ${props.className}` : 'w-full'}
-            pt={props.pt}
-            ptOptions={props.ptOptions}
-            unstyled={props.unstyled}
-        />
-    ),
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
+                <Dropdown<Array<string | number>>
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    multiple
+                    value={props.value}
+                    onChange={(value) => props.onChange(value ?? [])}
+                    onBlur={props.onBlur}
+                    options={props.options}
+                    optionValue={props.optionValue}
+                    optionLabel={props.optionLabel}
+                    placeholder={props.placeholder}
+                    filter={props.filter}
+                    showClear={props.showClear}
+                    invalid={props.invalid}
+                    className={
+                        props.className
+                            ? `cratis:w-full ${props.className}`
+                            : 'cratis:w-full'
+                    }
+                    pt={props.pt}
+                    ptOptions={props.ptOptions}
+                    unstyled={props.unstyled}
+                />
+                {accessibility.hiddenError}
+            </>
+        );
+    },
     {
         defaultValue: [],
         extractValue: (e: unknown) => {
@@ -96,7 +115,10 @@ export const MultiSelectField = asCommandFormField<MultiSelectFieldComponentProp
                 return [];
             }
 
-            return e.filter((item): item is string | number => typeof item === 'string' || typeof item === 'number');
-        }
-    }
+            return e.filter(
+                (item): item is string | number =>
+                    typeof item === 'string' || typeof item === 'number',
+            );
+        },
+    },
 );

@@ -36,29 +36,9 @@ vi.mock('../../../Dialogs/Dialog', () => ({
         React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-// PrimeReact 11's Stepper is compositional: each part renders its children, and the step the
-// wizard is on is no longer an `activeStep` prop — the Root is driven by `value`, the step's
-// index as a string — so the Root part surfaces that value for the given helpers to read.
-vi.mock('primereact/stepper', () => {
-    const part = (name: string) => {
-        const Component = (props: { children?: React.ReactNode; style?: React.CSSProperties; value?: string }) =>
-            React.createElement('div', { 'data-part': name, style: props.style, 'data-value': props.value }, props.children);
-        Component.displayName = name;
-        return Component;
-    };
-    return {
-        Stepper: {
-            Root: part('root'), List: part('list'), Step: part('step'),
-            Header: part('header'), Number: part('number'), Title: part('title'),
-            Separator: part('separator'), Panels: part('panels'), Panel: part('panel'),
-        },
-    };
-});
 
 
-// PrimeReact 11's Button takes its label as children, not a `label` prop — the button's
-// text content is what the given helpers read a button's label from.
-vi.mock('primereact/button', () => ({
+vi.mock('../../../Common/Button', () => ({
     Button: (props: { children?: React.ReactNode; disabled?: boolean; onClick?: () => void }) =>
         React.createElement('button', { disabled: props.disabled, onClick: props.onClick }, props.children),
 }));

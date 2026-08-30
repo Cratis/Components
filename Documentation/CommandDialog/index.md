@@ -105,7 +105,7 @@ function MyComponent() {
 - `yesLabel`, `noLabel`: Labels for `YesNo` and `YesNoCancel` button modes
 - `buttons`: `DialogButtons` value or custom footer content
 - `initialFocus`: Where keyboard focus lands when the dialog opens — forwarded to `Dialog` (see below)
-- `resizable`: Accepted but a no-op in PrimeReact 11 — the headless dialog has no built-in resize handle
+- `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle
 - `isValid`: Additional validity gate combined with command form validity
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
@@ -113,10 +113,11 @@ function MyComponent() {
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `width`: Dialog width
-- `className`, `pt`, `ptOptions`, `unstyled`: Styling hooks forwarded to the underlying dialog
+- `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts
+- `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
 
 > [!NOTE]
-> `CommandDialog` inherits `Dialog`'s prop type, so `dismissable`, `closeAriaLabel` and `isBusy` type-check here — but they are not plumbed through. `isBusy` is owned by the dialog (it is raised while the command executes), and `dismissable` / `closeAriaLabel` currently fall back to `Dialog`'s own defaults. Use [`Dialog`](../Dialogs/dialog.md) directly when you need to control them.
+> `dismissable` and `closeAriaLabel` are forwarded to the underlying `Dialog`. `isBusy` is managed internally while the command executes, so consumers should not set it directly.
 
 ## Callback Behavior
 
@@ -159,21 +160,23 @@ import { DialogInitialFocus } from '@cratis/components/Dialogs';
 
 <CommandDialog<DeletePersonalData>
     command={DeletePersonalData}
-    title="Delete personal data?"
-    okLabel="Delete"
+    title='Delete personal data?'
+    okLabel='Delete'
     initialFocus={DialogInitialFocus.Cancel}
-    onSuccess={() => closeDialog(DialogResult.Ok)}>
+    onSuccess={() => closeDialog(DialogResult.Ok)}
+>
     This cannot be undone.
-</CommandDialog>
+</CommandDialog>;
 ```
 
 ## Busy State
 
-`CommandDialog` automatically manages a busy state during command execution:
+`CommandDialog` automatically manages a busy state from the start of `onBeforeExecute` until command execution settles:
 
-- When the Ok/Yes button is clicked and command execution begins, all buttons are disabled and the primary button shows a loading spinner.
+- All buttons, including header close, are disabled and the primary button shows a loading spinner.
+- Escape and backdrop dismissal are ignored while work is in flight.
 - Once execution completes (success or failure), the buttons return to their normal state.
-- This prevents duplicate submissions and gives users clear visual feedback.
+- This prevents duplicate submissions and accidental dismissal while giving users clear visual feedback.
 
 ## Context
 
@@ -187,7 +190,7 @@ CommandDialog integrates with:
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- PrimeReact Dialog component for UI
+- React Aria modal/focus behavior behind Cratis-owned markup
 
 ## See Also
 

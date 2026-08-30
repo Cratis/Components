@@ -1,225 +1,142 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type React from 'react';
-import { Select } from 'primereact/select';
 import type {
-    SelectRootProps,
-    SelectValueChangeEvent,
-} from '@primereact/types/primitive/select';
+    ButtonHTMLAttributes,
+    CSSProperties,
+    FocusEventHandler,
+    HTMLAttributes,
+    InputHTMLAttributes,
+    SelectHTMLAttributes,
+} from 'react';
+import type { ChangeHandler } from '../types/ChangeHandler';
+import { unstable_useSlot } from '../renderer/RendererContext';
+import { renderSlot } from '../renderer/renderSlot';
+import type { unstable_SlotDeclaration } from '../renderer/slots';
+import { DropdownImplementation } from './DropdownImplementation';
 
-/**
- * Change event emitted by {@link Dropdown}. Wrapper-owned so the public API does
- * not leak a raw PrimeReact type; carries the newly selected `value` (a single
- * option value, or an array when `multiple` is set) plus the originating event.
- */
-export interface DropdownChangeEvent<T = unknown> {
-    /** The newly selected value. An array of values when `multiple` is set. */
-    value: T;
+type DropdownTriggerAttributes = Omit<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'tabIndex' | 'value'
+>;
 
-    /** The underlying React event that produced the change, when available. */
-    originalEvent?: SelectValueChangeEvent['originalEvent'];
+/** Narrow migration aliases shared by the legacy `input` and `select` keys. */
+interface DropdownLegacyControlAttributes {
+    id?: string;
+    className?: string;
+    style?: CSSProperties;
+    'aria-label'?: string;
+    'aria-labelledby'?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean | 'true' | 'false' | 'grammar' | 'spelling';
 }
 
-/**
- * Props for {@link Dropdown}. Wrapper-owned — the common single/multi select
- * surface every Cratis form needs, without exposing PrimeReact's internal
- * compositional Select parts.
- */
+/** Stable Cratis-owned parts for styling a {@link Dropdown}. */
+export interface DropdownParts {
+    /** Outer Dropdown wrapper. */
+    root?: HTMLAttributes<HTMLElement>;
+    /** Legacy visible-control part, mapped onto the current trigger/filter input. */
+    input?: DropdownLegacyControlAttributes;
+    /** Legacy select-root alias for class, style, identity, and ARIA migration. */
+    select?: DropdownLegacyControlAttributes;
+    /** Single-select trigger or filtered options button. */
+    trigger?: DropdownTriggerAttributes;
+    /** Selected value display. */
+    value?: HTMLAttributes<HTMLSpanElement>;
+    /** Selection clear button. */
+    clear?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Dropdown indicator. */
+    indicator?: HTMLAttributes<HTMLSpanElement>;
+    /** Portaled options popover. */
+    popover?: HTMLAttributes<HTMLDivElement>;
+    /** Options listbox. */
+    listbox?: HTMLAttributes<HTMLDivElement>;
+    /** One option. */
+    option?: HTMLAttributes<HTMLDivElement>;
+    /** Filter input. */
+    filter?: InputHTMLAttributes<HTMLInputElement>;
+    /** Native multiple-select element used when filtering is off. */
+    multiple?: SelectHTMLAttributes<HTMLSelectElement>;
+}
+
+/** Props for {@link Dropdown}. */
 export interface DropdownProps<T = unknown> {
-    /** The selected value. An array of values when `multiple` is set. */
+    /** Controlled selected value, or selected-value array in multiple mode. */
     value?: T;
-
-    /** Source array of option objects (or primitives). */
+    /** Available scalar values or option objects. */
     options?: unknown[];
-
-    /**
-     * Property name on each option object used as the visible label. When omitted and the
-     * options are objects carrying a `label`, that is used - the v10 `Dropdown` convention.
-     */
+    /** Property containing an option object's visible label. */
     optionLabel?: string;
-
-    /**
-     * Property name on each option object used as the underlying value. When omitted and the
-     * options are objects carrying a `value`, that is used - the v10 `Dropdown` convention.
-     */
+    /** Property containing an option object's bound value. */
     optionValue?: string;
-
-    /** Placeholder shown in the trigger when nothing is selected. */
+    /** Empty-selection text. */
     placeholder?: string;
-
-    /** When true, shows a filter input inside the options popup. */
+    /** Enables the filterable combobox path. */
     filter?: boolean;
-
-    /** Placeholder shown in the filter input. Defaults to {@link placeholder}. */
+    /** Filter-input placeholder. */
     filterPlaceholder?: string;
-
-    /** When true, the dropdown accepts multiple selections. */
+    /** Enables multiple selection. */
     multiple?: boolean;
-
-    /** When true, shows a clear control that resets the selection. */
+    /** Shows a clear-selection action. */
     showClear?: boolean;
-
-    /** Renders the trigger in an invalid (error) state. */
+    /** Marks the control invalid. */
     invalid?: boolean;
-
-    /** Disables the control. */
+    /** Disables every control and clear action. */
     disabled?: boolean;
-
-    /** Extra CSS class name forwarded to the Select root. */
+    /** Extra class name for the outer wrapper. */
     className?: string;
-
-    /** Inline style forwarded to the Select root. */
-    style?: React.CSSProperties;
-
-    /** DOM id forwarded to the focusable combobox — pair it with a label's `htmlFor`. */
+    /** Inline style for the outer wrapper. */
+    style?: CSSProperties;
+    /** DOM identity of the focusable primary control. */
     id?: string;
-
-    /** Form field name forwarded to the Select root. */
+    /** Legacy identity alias mapped to {@link id}. */
+    inputId?: string;
+    /** Legacy popup class alias mapped to the `popover` part. */
+    panelClassName?: string;
+    /** Native form field name. */
     name?: string;
-
-    /** Tab order for the control. */
+    /** Primary-control tab order. */
     tabIndex?: number;
-
-    /** Accessible name for the control (when no visible label is associated). */
+    /** Accessible control name. */
     'aria-label'?: string;
-
-    /** Id of the element that labels the control. */
+    /** Id of an external labeling element. */
     'aria-labelledby'?: string;
-
-    /** Id of the element that describes the control. */
+    /** Id(s) of external descriptions. */
     'aria-describedby'?: string;
-
-    /** Fired when the selection changes. */
-    onChange?: (event: DropdownChangeEvent<T>) => void;
-
-    /** Fired when focus leaves the control (rides the root's blur). */
-    onBlur?: React.FocusEventHandler<HTMLElement>;
-
-    /** PrimeReact pass-through configuration applied to the Select. */
-    pt?: SelectRootProps['pt'];
-
-    /** PrimeReact pass-through options applied to the Select. */
-    ptOptions?: SelectRootProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the Select. */
+    /** Camel-case aliases retained for existing product wrappers. */
+    ariaLabel?: string;
+    /** Legacy camel-case alias for `aria-labelledby`. */
+    ariaLabelledBy?: string;
+    /** Legacy camel-case alias for `aria-describedby`. */
+    ariaDescribedBy?: string;
+    /** Legacy invalid-state alias. */
+    ariaInvalid?: boolean;
+    /** Invoked with the selected value(s) and optional change-origin metadata. */
+    onChange?: ChangeHandler<T>;
+    /** Invoked when focus leaves the Dropdown wrapper. */
+    onBlur?: FocusEventHandler<HTMLElement>;
+    /** Cratis-owned per-part attributes. */
+    pt?: DropdownParts;
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
+    ptOptions?: object;
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
     unstyled?: boolean;
 }
 
-/**
- * Cratis single/multi select built on PrimeReact 11's compositional `Select`.
- *
- * PrimeReact 11 replaced the monolithic v10 `Dropdown` with a headless,
- * compositional `Select` (Root → Trigger/Value → Portal → Positioner → Popup →
- * List/Option). This wrapper assembles that composition once behind a small,
- * familiar `value` / `options` / `optionLabel` / `optionValue` / `onChange`
- * API so slices never touch the parts directly. `Select.List` auto-renders the
- * `options`, so no manual option mapping is needed.
- *
- * The options popup renders through `Select.Portal` and stacks correctly above
- * modal dialogs via PrimeReact 11's overlay manager — the v10 `appendTo` /
- * manual z-index workaround is no longer required.
- */
-/**
- * PrimeReact 10's `Dropdown` read `label` and `value` off option objects when no
- * `optionLabel` / `optionValue` was given; v11's `Select` compares the option object
- * itself against the value instead, so `[{ label, value }]` options with a scalar
- * `value` never match. Resolve the v10 convention here so those call sites keep working.
- */
-const conventionalField = (
-    options: unknown[] | undefined,
-    field: 'label' | 'value',
-): string | undefined => {
-    const first = options?.[0];
-    return first !== null && typeof first === 'object' && field in (first as object)
-        ? field
-        : undefined;
-};
+const coreDropdownDeclaration = Object.freeze({
+    mode: 'atomic',
+    fidelity: 'native',
+    render: DropdownImplementation,
+}) satisfies unstable_SlotDeclaration<'dropdown.select'>;
 
-export const Dropdown = <T = unknown,>({
-    value,
-    options,
-    optionLabel = conventionalField(options, 'label'),
-    optionValue = conventionalField(options, 'value'),
-    placeholder,
-    filter,
-    filterPlaceholder,
-    multiple,
-    showClear,
-    invalid,
-    disabled,
-    className,
-    style,
-    id,
-    name,
-    tabIndex,
-    'aria-label': ariaLabel,
-    'aria-labelledby': ariaLabelledby,
-    'aria-describedby': ariaDescribedby,
-    onChange,
-    onBlur,
-    pt,
-    ptOptions,
-    unstyled,
-}: DropdownProps<T>) => {
-    return (
-        // `onBlur` rides the wrapping span because React blur bubbles (focusout).
-        <span onBlur={onBlur}>
-            <Select.Root
-                value={value}
-                options={options}
-                optionLabel={optionLabel}
-                optionValue={optionValue}
-                multiple={multiple}
-                invalid={invalid}
-                disabled={disabled}
-                className={className}
-                style={style}
-                name={name}
-                onValueChange={(event: SelectValueChangeEvent) =>
-                    onChange?.({
-                        value: event.value as T,
-                        originalEvent: event.originalEvent,
-                    })
-                }
-                pt={pt}
-                ptOptions={ptOptions}
-                unstyled={unstyled}
-            >
-                <Select.Trigger
-                    id={id}
-                    tabIndex={tabIndex}
-                    aria-label={ariaLabel}
-                    aria-labelledby={ariaLabelledby}
-                    aria-describedby={ariaDescribedby}
-                >
-                    <Select.Value placeholder={placeholder} />
-                    {/* v11's parts render no glyph of their own - the icon is the composer's to supply.
-                        `Indicator` is the trigger's chevron; `Arrow` would be the popup's pointer. */}
-                    {showClear && (
-                        <Select.Clear>
-                            <i className='pi pi-times' />
-                        </Select.Clear>
-                    )}
-                    <Select.Indicator>
-                        <i className='pi pi-chevron-down' />
-                    </Select.Indicator>
-                </Select.Trigger>
-                <Select.Portal>
-                    <Select.Positioner>
-                        <Select.Popup>
-                            {filter && (
-                                <Select.Filter
-                                    placeholder={filterPlaceholder ?? placeholder}
-                                />
-                            )}
-                            <Select.List />
-                        </Select.Popup>
-                    </Select.Positioner>
-                </Select.Portal>
-            </Select.Root>
-        </span>
-    );
+/** A renderer-independent single or multiple select with stable Cratis parts. */
+export const Dropdown = <T = unknown,>(props: DropdownProps<T>) => {
+    const declaration = unstable_useSlot('dropdown.select', coreDropdownDeclaration);
+    return renderSlot(declaration, props as DropdownProps<unknown>);
 };
 
 Dropdown.displayName = 'Dropdown';
