@@ -46,13 +46,8 @@ function MyNavigator() {
 
 ### Required Props
 
-- `navigationPath`: Array of strings representing the current path
-    - Empty array `[]` represents root level
-    - `['profile']` represents one level deep
-    - `['profile', 'address', 'city']` represents three levels deep
-
-- `onNavigate`: Callback function called when user clicks breadcrumb or back button
-    - Receives `index` parameter (0 = root, 1 = first level, etc.)
+- `navigationPath`: Array of strings representing the current path. `[]` is the root, `['profile']` is one level deep, and `['profile', 'address', 'city']` is three levels deep.
+- `onNavigate`: Callback invoked for a breadcrumb or back-button activation. It receives the destination index (`0` means root).
 
 ## Visual Display
 

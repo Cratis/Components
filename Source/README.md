@@ -55,7 +55,7 @@ not authorized for publication; `release.md` at the repository root is the durab
 Renderer-adapter authors can import the public draft 2020-12 metadata schema from
 `@cratis/components/schemas/ui-adapter.schema.json`. It validates the static `package.json#cratis`
 object; runtime behavior still requires `@cratis/components.conformance`. See the
-[renderer-adapter documentation](https://cratis.io/components/renderers/#adapter-package-metadata-schema)
+[renderer-adapter documentation](https://github.com/Cratis/Components/blob/16dd95b7c894f3275b03714ffdc676d2d3505fd8/Documentation/renderers/index.md#adapter-package-metadata-schema)
 for the boundary and limitations.
 
 **Yarn PnP note:** the current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.6.2`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
