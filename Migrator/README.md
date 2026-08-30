@@ -2,6 +2,13 @@
 
 The Components 4 Migrator updates a Components 3 codebase to the Components 4 public contracts. It moves root namespaces to explicit subpath imports, replaces deprecated Button appearance props, and changes legacy event-wrapper callbacks to semantic value callbacks. The CLI uses syntax-aware codemods internally, but each command is named for the migration it performs, can be run independently, and is idempotent. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). The companion `@cratis/eslint-plugin-components` package's `no-root-barrel-import` rule enforces this once a consumer has migrated.
 
+> **Publication status:** The install examples target the owner-authorized 4.0.0 npm release. When
+> reading this README from repository source before that release, verify availability with
+> `npm view @cratis/components.migrator@4.0.0 version`; source contributors run the workspace
+> commands from this checkout instead. The Migrator is never an application runtime dependency.
+
+The published package is a **CLI-only** tool. Its public surface is the documented `cratis-components-*` executable names (plus `./package.json` for tooling metadata); `lib/`, `scripts/`, and individual transforms are implementation details and are blocked by the package export map. Do not import them from application code or build custom migration APIs on them.
+
 ## `remove-root-namespace-imports`
 
 An idempotent, AST-based codemod built on the TypeScript compiler API. The published CLI
