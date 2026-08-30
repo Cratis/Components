@@ -133,6 +133,7 @@ jobs:
                   echo "--- .npmrc ---"
                   cat "$NPM_CONFIG_USERCONFIG" 2>/dev/null || echo "(no .npmrc)"
                   echo "---"
+                  yarn workspace @cratis/components prepare
                   yarn build
                   yarn publish-version "$RELEASE_VERSION"
 
