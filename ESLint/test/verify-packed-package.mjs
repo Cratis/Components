@@ -16,6 +16,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const repositoryDir = path.resolve(packageDir, '..');
 const scratch = mkdtempSync(path.join(tmpdir(), 'cratis-components-eslint-pack-'));
 const archive = path.join(scratch, 'eslint-plugin.tgz');
 const consumer = path.join(scratch, 'consumer');
@@ -66,6 +67,21 @@ try {
         '@cratis',
         'eslint-plugin-components',
     );
+    const packedPackage = JSON.parse(
+        readFileSync(path.join(installedRoot, 'package.json'), 'utf8'),
+    );
+    const repositoryPackage = JSON.parse(
+        readFileSync(path.join(repositoryDir, 'Source/package.json'), 'utf8'),
+    );
+    if (
+        packedPackage.version !== repositoryPackage.version ||
+        Object.hasOwn(packedPackage, 'cratisIndependentVersion')
+    ) {
+        throw new Error(
+            'The ESLint plugin must share the repository release version and must not declare cratisIndependentVersion.',
+        );
+    }
+
     const publishedEntries = readdirSync(installedRoot).sort();
     for (const required of ['LICENSE', 'README.md', 'index.js', 'lib', 'package.json']) {
         if (!publishedEntries.includes(required)) {
