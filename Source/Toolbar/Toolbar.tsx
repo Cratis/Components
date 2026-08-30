@@ -71,9 +71,7 @@ export const Toolbar = ({
                 aria-labelledby={ariaLabelledBy}
                 className={[
                     'toolbar cratis:inline-flex',
-                    orientation === 'horizontal'
-                        ? 'cratis:flex-row'
-                        : 'cratis:flex-col',
+                    orientation === 'horizontal' ? 'cratis:flex-row' : 'cratis:flex-col',
                     'cratis:items-center cratis:gap-1 cratis:p-2 cratis:rounded-2xl',
                     pt?.root?.className,
                     className,

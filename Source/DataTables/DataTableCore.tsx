@@ -492,7 +492,9 @@ export const DataTableCore = <TData extends object>({
                                                     type='button'
                                                     className='cratis-datatable__sort'
                                                     data-cratis-part='sort'
-                                                    data-pressed={Boolean(ariaSort) || undefined}
+                                                    data-pressed={
+                                                        Boolean(ariaSort) || undefined
+                                                    }
                                                     onClick={() =>
                                                         setSort((current) => ({
                                                             field: column.props

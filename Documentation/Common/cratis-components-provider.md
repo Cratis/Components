@@ -63,13 +63,13 @@ and adapter authors.
 
 The provider exposes:
 
-| Prop                 | Purpose                                                                                                        |
-| -------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `library`            | One stable presentation manifest. Ordered arrays are experimental last-wins composition. Omit for built-in.   |
-| `libraryMode`        | Experimental profile-promise behavior: `strict` rejects invalid promises; `degrade` reports after mount.      |
+| Prop                 | Purpose                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `library`            | One stable presentation manifest. Ordered arrays are experimental last-wins composition. Omit for built-in.     |
+| `libraryMode`        | Experimental profile-promise behavior: `strict` rejects invalid promises; `degrade` reports after mount.        |
 | `rendererFallback`   | `core` keeps the built-in slot fallback; `throw` rejects an undeclared slot instead of expanding adapter scope. |
-| `overlayEnvironment` | Stable, post-commit portal-container lookup through `CratisOverlayEnvironment`.                                |
-| `rendererSetup`      | Stable adapter-declared boolean attestations. Never put credentials, keys, or caches here.                     |
+| `overlayEnvironment` | Stable, post-commit portal-container lookup through `CratisOverlayEnvironment`.                                 |
+| `rendererSetup`      | Stable adapter-declared boolean attestations. Never put credentials, keys, or caches here.                      |
 
 Adapter packages declaration-merge their own keys into `CratisRendererSetupExtensions`, so
 importing an adapter gives typed setup without adding vendor fields to Core. The provider copies and

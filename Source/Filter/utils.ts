@@ -63,10 +63,7 @@ export function resolveDropdownPosition(
     const verticalGutter = Math.min(DROPDOWN_GUTTER, viewportHeight / 2);
     const width = Math.max(
         0,
-        Math.min(
-            DROPDOWN_MAX_WIDTH,
-            viewportWidth - horizontalGutter * 2,
-        ),
+        Math.min(DROPDOWN_MAX_WIDTH, viewportWidth - horizontalGutter * 2),
     );
     const left = clamp(
         anchor.left,

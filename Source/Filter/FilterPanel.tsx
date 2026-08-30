@@ -19,10 +19,7 @@ import type {
     RangeValues,
     CustomFilterValues,
 } from './types';
-import {
-    resolveDropdownPosition,
-    type DropdownPosition,
-} from './utils';
+import { resolveDropdownPosition, type DropdownPosition } from './utils';
 import type { FilterEditorProps } from './FilterEditorProps';
 import { FilterEditor } from './FilterEditor';
 import { RangeHistogramFilter } from './RangeHistogramFilter';
