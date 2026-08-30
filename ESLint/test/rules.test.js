@@ -18,10 +18,7 @@ import { onbeforeexecuteMustReturn } from '../lib/onbeforeexecuteMustReturn.js';
 import { noHooksInViewModel } from '../lib/noHooksInViewModel.js';
 import { noRawCommandFormMarker } from '../lib/noRawCommandFormMarker.js';
 import { noReactInKernel } from '../lib/noReactInKernel.js';
-import {
-    isKernelReactSpecifier,
-    kernelSourcePaths,
-} from '../lib/kernelBoundary.js';
+import { isKernelReactSpecifier, kernelSourcePaths } from '../lib/kernelBoundary.js';
 
 RuleTester.afterAll = afterAll;
 RuleTester.describe = describe;
@@ -599,7 +596,7 @@ tsRuleTester.run('no-react-in-kernel', noReactInKernel, {
         },
         {
             filename: 'Source/PivotViewer/engine/store.ts',
-            code: 'const document = { title: \'local\' }; document.title;',
+            code: "const document = { title: 'local' }; document.title;",
         },
         {
             filename: 'Source/Canvas/Canvas.tsx',
