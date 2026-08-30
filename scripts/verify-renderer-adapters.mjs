@@ -2,7 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+    existsSync,
+    mkdtempSync,
+    mkdirSync,
+    readFileSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -211,6 +218,25 @@ const install = (manager, consumerDirectory, archives, fixture) => {
     }
 };
 
+const prepareCore = () => {
+    run('yarn', ['prepare'], path.join(repositoryDirectory, 'Source'));
+    for (const declaration of [
+        'Common/index.d.ts',
+        'Display/index.d.ts',
+        'renderer/index.d.ts',
+    ]) {
+        if (
+            !existsSync(
+                path.join(repositoryDirectory, 'Source/dist/esm', declaration),
+            )
+        ) {
+            throw new Error(
+                `Core preparation did not emit required declaration '${declaration}'.`,
+            );
+        }
+    }
+};
+
 const verifyFixture = (adapterKey, boundary, manager) => {
     const manifests = sourceManifests();
     validateMatrix(matrix, manifests);
@@ -220,7 +246,6 @@ const verifyFixture = (adapterKey, boundary, manager) => {
     try {
         const coreArchive = path.join(temporary, 'components-core.tgz');
         const adapterArchive = path.join(temporary, 'components-adapter.tgz');
-        run('yarn', ['prepare'], path.join(repositoryDirectory, 'Source'));
         run('yarn', ['clean'], path.join(repositoryDirectory, fixture.adapter.directory));
         run('yarn', ['build'], path.join(repositoryDirectory, fixture.adapter.directory));
         run('yarn', ['workspace', '@cratis/components', 'pack', '--out', coreArchive]);
@@ -290,6 +315,12 @@ for (const manager of selectedManagers) {
     if (!managers.includes(manager))
         throw new Error(`Unknown package manager '${manager}'.`);
 }
+
+// Every profile must consume the same packed Core bytes. Build Core once before the matrix
+// instead of repeatedly deleting/recreating its declaration tree between adjacent profiles.
+// Besides matching release pack-once semantics, this removes a filesystem race where an adapter
+// compiler could observe Rollup's JavaScript output before the declaration tree was visible.
+prepareCore();
 
 for (const adapterKey of adapterKeys) {
     for (const boundary of selectedBoundaries) {
