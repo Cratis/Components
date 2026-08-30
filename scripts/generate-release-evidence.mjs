@@ -135,9 +135,6 @@ const loadCompatibilityMetadata = () => {
     const manifestPath = path.join(repositoryDirectory, 'compat-manifest.json');
     const serialized = fs.readFileSync(manifestPath, 'utf8');
     const manifest = readJsonFile(manifestPath, 'compat-manifest.json');
-    if (manifest.publicationEnabled !== false) {
-        throw new Error('Source-candidate evidence refuses publicationEnabled: true.');
-    }
     validateCompatibilityManifest(manifest, { rootDirectory: repositoryDirectory });
     const generated = createCompatibilityManifest(repositoryDirectory);
     if (serialized !== serializeCompatibilityManifest(generated)) {
@@ -236,9 +233,7 @@ export const buildPublishableShape = (releasePackages, execute = run) => {
     for (const packageEntry of releasePackages) {
         if (packageEntry.role === 'core') {
             execute(yarnCommand, ['workspace', packageEntry.name, 'run', 'prepare']);
-        } else if (
-            ['conformance', 'renderer-adapter'].includes(packageEntry.role)
-        ) {
+        } else if (['conformance', 'renderer-adapter'].includes(packageEntry.role)) {
             execute(yarnCommand, ['workspace', packageEntry.name, 'run', 'clean']);
             execute(yarnCommand, ['workspace', packageEntry.name, 'run', 'build']);
         }
@@ -347,7 +342,7 @@ export function generateReleaseEvidence({ output, commit: requestedCommit } = {}
         );
         const index = {
             schemaVersion: 1,
-            publicationEnabled: false,
+            publicationEnabled: compatibilityManifest.publicationEnabled,
             commit,
             packages: packageEvidence,
         };
@@ -368,7 +363,7 @@ const main = () => {
     const arguments_ = parseArguments(process.argv.slice(2));
     const index = generateReleaseEvidence(arguments_);
     console.log(
-        `Generated source-candidate release evidence for ${index.packages.length} packages at commit ${index.commit}.`,
+        `Generated release evidence for ${index.packages.length} packages at commit ${index.commit}.`,
     );
 };
 

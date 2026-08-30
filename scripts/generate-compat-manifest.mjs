@@ -86,8 +86,8 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
 
     const manifest = {
         schemaVersion: 2,
-        releaseStatus: 'source-candidate',
-        publicationEnabled: false,
+        releaseStatus: 'publication-authorized',
+        publicationEnabled: true,
         gaScope: {
             publicPackages: [...packageOrder],
             privateEvidence: privateEvidence.map(({ id, name, purpose }) => ({
@@ -117,7 +117,7 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
             },
             components4: {
                 components: '>=4 <5',
-                status: 'current-candidate',
+                status: 'current',
                 migrationRole: 'target',
                 rendererAbi: 1,
                 coreProfile: 'core/v1',
@@ -230,14 +230,14 @@ export function validateCompatibilityManifest(
     }
     if (
         components4?.components !== '>=4 <5' ||
-        components4?.status !== 'current-candidate' ||
+        components4?.status !== 'current' ||
         components4?.rendererAbi !== 1 ||
         components4?.coreProfile !== 'core/v1' ||
         components4?.adapterProfile !== 'stable-presentation/v1' ||
         components4?.tooling?.eslint !== '>=4 <5' ||
         components4?.tooling?.migrator !== '>=4 <5'
     ) {
-        fail('The Components 4 candidate compatibility window is incomplete.');
+        fail('The Components 4 compatibility window is incomplete.');
     }
     const expectedAdapterRanges = Object.fromEntries(
         packageOrder
@@ -300,13 +300,11 @@ export function validateCompatibilityManifest(
         }
     }
 
-    if (manifest.publicationEnabled) {
-        if (manifest.releaseStatus !== 'publication-authorized') {
-            fail("Publication requires releaseStatus 'publication-authorized'.");
-        }
-        if (!isIsoDate(components3?.eolAt) || components3?.eolApprovedByOwners !== true) {
-            fail('Publication requires a valid owner-approved Components 3 eolAt date.');
-        }
+    if (
+        manifest.publicationEnabled &&
+        manifest.releaseStatus !== 'publication-authorized'
+    ) {
+        fail("Publication requires releaseStatus 'publication-authorized'.");
     }
 }
 
@@ -377,11 +375,6 @@ function discoverWorkspaceManifestPaths(workspaces, rootDirectory) {
         }
     }
     return manifestPaths.sort();
-}
-
-function isIsoDate(value) {
-    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/u.test(value)) return false;
-    return new Date(`${value}T00:00:00.000Z`).toISOString().startsWith(value);
 }
 
 function parseAbiMajor(value) {

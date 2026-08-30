@@ -191,20 +191,20 @@ Repository issues may track these gaps, but an open issue is not a public roadma
 The following issues preserve follow-up decisions outside the Components 4 contract. They are
 tracking records, not promises that an unstable API already exists or will ship unchanged:
 
-| Issue                                                   | Tracked decision or evidence gap                                                                              |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [#207](https://github.com/Cratis/Components/issues/207) | Owner-authorized Components 4 publication; publication remains disabled until that separate review completes. |
-| [#208](https://github.com/Cratis/Components/issues/208) | Proof and possible promotion of atomic slots and mixed-renderer islands.                                      |
-| [#209](https://github.com/Cratis/Components/issues/209) | Schema-driven public renderer discovery tooling.                                                              |
-| [#210](https://github.com/Cratis/Components/issues/210) | Lazy renderer preload semantics for streaming server rendering.                                               |
-| [#211](https://github.com/Cratis/Components/issues/211) | Cross-browser and assistive-technology renderer certification.                                                |
-| [#212](https://github.com/Cratis/Components/issues/212) | CSS theme bridges and vendor portal-interoperability recipes.                                                 |
-| [#213](https://github.com/Cratis/Components/issues/213) | Source-map preservation through ESM specifier rewriting.                                                      |
-| [#214](https://github.com/Cratis/Components/issues/214) | Evidence for or against a renderer-exclusive slim distribution.                                               |
-| [#215](https://github.com/Cratis/Components/issues/215) | Reviewed dependency-update pull requests.                                                                     |
-| [#216](https://github.com/Cratis/Components/issues/216) | Packed public-API snapshots and semantic-version surface diffs.                                               |
-| [#217](https://github.com/Cratis/Components/issues/217) | Generated evidence inventories instead of hardcoded check counts.                                             |
-| [#218](https://github.com/Cratis/Components/issues/218) | Renderer bundle and runtime-performance regression budgets.                                                   |
+| Issue                                                   | Tracked decision or evidence gap                                                       |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [#207](https://github.com/Cratis/Components/issues/207) | Components 4 registry bootstrap, release execution, and post-publication verification. |
+| [#208](https://github.com/Cratis/Components/issues/208) | Proof and possible promotion of atomic slots and mixed-renderer islands.               |
+| [#209](https://github.com/Cratis/Components/issues/209) | Schema-driven public renderer discovery tooling.                                       |
+| [#210](https://github.com/Cratis/Components/issues/210) | Lazy renderer preload semantics for streaming server rendering.                        |
+| [#211](https://github.com/Cratis/Components/issues/211) | Cross-browser and assistive-technology renderer certification.                         |
+| [#212](https://github.com/Cratis/Components/issues/212) | CSS theme bridges and vendor portal-interoperability recipes.                          |
+| [#213](https://github.com/Cratis/Components/issues/213) | Source-map preservation through ESM specifier rewriting.                               |
+| [#214](https://github.com/Cratis/Components/issues/214) | Evidence for or against a renderer-exclusive slim distribution.                        |
+| [#215](https://github.com/Cratis/Components/issues/215) | Reviewed dependency-update pull requests.                                              |
+| [#216](https://github.com/Cratis/Components/issues/216) | Packed public-API snapshots and semantic-version surface diffs.                        |
+| [#217](https://github.com/Cratis/Components/issues/217) | Generated evidence inventories instead of hardcoded check counts.                      |
+| [#218](https://github.com/Cratis/Components/issues/218) | Renderer bundle and runtime-performance regression budgets.                            |
 
 Until those issues produce reviewed changes, the stable boundary remains the setup-only root, the
 exact nine-slot `stable-presentation/v1` profile, boolean setup attestations, and

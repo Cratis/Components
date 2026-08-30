@@ -48,9 +48,9 @@ The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI package
 
 The generated compatibility schema v2 contract is published at
 `@cratis/components/compat-manifest.json`. It records the supported Components and tooling
-windows, the seven-package source-candidate scope, independent package trains, renderer ABI/profile
-ranges, and exact lower/current adapter evidence. `publicationEnabled: false` means the source is
-not authorized for publication; `release.md` at the repository root is the durable policy.
+windows, the authorized seven-package scope, shared release version, renderer ABI/profile ranges,
+and exact lower/current adapter evidence. `release.md` at the repository root describes the
+label-driven publication policy.
 
 Renderer-adapter authors can import the public draft 2020-12 metadata schema from
 `@cratis/components/schemas/ui-adapter.schema.json`. It validates the static `package.json#cratis`

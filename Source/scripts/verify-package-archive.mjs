@@ -93,8 +93,8 @@ const coreEntry = compatibilityManifest.packages?.find(
 );
 if (
     compatibilityManifest.schemaVersion !== 2 ||
-    compatibilityManifest.releaseStatus !== 'source-candidate' ||
-    compatibilityManifest.publicationEnabled !== false ||
+    compatibilityManifest.releaseStatus !== 'publication-authorized' ||
+    compatibilityManifest.publicationEnabled !== true ||
     compatibilityManifest.gaScope?.publicPackages?.length !== 7 ||
     coreEntry?.version !== packedPackage.version ||
     !semver.satisfies(packedPackage.version, coreEntry?.releaseMajorRange ?? '')

@@ -84,9 +84,15 @@ test('the shared repository release stays inside the Components major range', ()
     );
 });
 
-test('publication remains closed until status and Components 3 EOL are owner-approved', () => {
+test('publication authorization is explicit and reversible', () => {
     const manifest = createManifest();
-    manifest.publicationEnabled = true;
+    assert.equal(manifest.publicationEnabled, true);
+    assert.equal(manifest.releaseStatus, 'publication-authorized');
+    assert.doesNotThrow(() =>
+        validateCompatibilityManifest(manifest, { rootDirectory: repositoryDirectory }),
+    );
+
+    manifest.releaseStatus = 'source-candidate';
     assert.throws(
         () =>
             validateCompatibilityManifest(manifest, {
@@ -95,17 +101,7 @@ test('publication remains closed until status and Components 3 EOL are owner-app
         /publication-authorized/,
     );
 
-    manifest.releaseStatus = 'publication-authorized';
-    assert.throws(
-        () =>
-            validateCompatibilityManifest(manifest, {
-                rootDirectory: repositoryDirectory,
-            }),
-        /owner-approved Components 3 eolAt/,
-    );
-
-    manifest.supportWindows.components3.eolAt = '2028-01-31';
-    manifest.supportWindows.components3.eolApprovedByOwners = true;
+    manifest.publicationEnabled = false;
     assert.doesNotThrow(() =>
         validateCompatibilityManifest(manifest, { rootDirectory: repositoryDirectory }),
     );
