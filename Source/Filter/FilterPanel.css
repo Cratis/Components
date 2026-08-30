@@ -335,7 +335,7 @@
 .pv-option-count {
     font-feature-settings: 'tnum';
     font-variant-numeric: tabular-nums;
-    color: var(--cratis-text-color);
+    color: var(--cratis-text-color-secondary);
     font-size: 0.75rem;
 }
 
@@ -351,10 +351,10 @@
     );
     border: 1px solid var(--cratis-surface-border);
     border-radius: 0.85rem;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--cratis-shadow-overlay);
     backdrop-filter: blur(16px);
     overflow: hidden;
-    z-index: 1000;
+    z-index: var(--cratis-z-index-filter);
     display: flex;
     flex-direction: column;
     will-change: opacity, transform;
@@ -469,7 +469,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 0.75rem;
-    color: var(--cratis-text-color);
+    color: var(--cratis-text-color-secondary);
     font-variant-numeric: tabular-nums;
 }
 
@@ -497,6 +497,8 @@
         width: calc(100% - 2.5rem);
         left: 1.25rem;
         right: 1.25rem;
+        top: 1.25rem;
+        max-height: calc(100vh - 2.5rem);
     }
 }
 

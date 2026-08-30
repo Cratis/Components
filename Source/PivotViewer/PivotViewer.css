@@ -161,22 +161,6 @@
     box-shadow: 0 15px 38px rgba(0, 0, 0, 0.3);
 }
 
-.pv-filter-trigger {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    background: none;
-    border: none;
-    color: inherit;
-    padding: 0;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
 .pv-filter-label {
     display: flex;
     align-items: center;
@@ -285,13 +269,6 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     cursor: pointer;
-}
-
-.pv-option-count {
-    font-feature-settings: 'tnum';
-    font-variant-numeric: tabular-nums;
-    color: var(--cratis-text-color-secondary);
-    font-size: 0.75rem;
 }
 
 .pv-main {
@@ -421,27 +398,6 @@
 }
 
 /* Filter Dropdown */
-.pv-filter-dropdown {
-    position: fixed;
-    width: min(320px, calc(100vw - 2rem));
-    max-height: calc(100vh - 8rem);
-    background: linear-gradient(
-        180deg,
-        var(--cratis-surface-card),
-        var(--cratis-surface-ground)
-    );
-    border: 1px solid var(--cratis-surface-border);
-    border-radius: 0.85rem;
-    box-shadow: var(--cratis-shadow-overlay);
-    backdrop-filter: blur(16px);
-    overflow: hidden;
-    z-index: var(--cratis-z-index-filter);
-    display: flex;
-    flex-direction: column;
-    will-change: opacity, transform;
-    contain: layout;
-}
-
 .pv-filter-dropdown-content {
     padding: 1rem;
     overflow-y: auto;
@@ -1326,14 +1282,6 @@
     box-shadow: 0 4px 12px var(--cratis-primary-color);
 }
 
-.pv-range-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
-    color: var(--cratis-text-color-secondary);
-    font-variant-numeric: tabular-nums;
-}
-
 .pv-range-clear {
     margin-top: 0.75rem;
     appearance: none;
@@ -1354,14 +1302,6 @@
 }
 
 @media (max-width: 900px) {
-    .pv-filter-panel {
-        width: calc(100% - 2.5rem);
-        left: 1.25rem;
-        right: 1.25rem;
-        top: 1.25rem;
-        max-height: calc(100vh - 2.5rem);
-    }
-
     .pv-toolbar {
         flex-wrap: wrap;
         gap: 1rem;

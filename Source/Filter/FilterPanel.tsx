@@ -19,6 +19,10 @@ import type {
     RangeValues,
     CustomFilterValues,
 } from './types';
+import {
+    resolveDropdownPosition,
+    type DropdownPosition,
+} from './utils';
 import type { FilterEditorProps } from './FilterEditorProps';
 import { FilterEditor } from './FilterEditor';
 import { RangeHistogramFilter } from './RangeHistogramFilter';
@@ -259,20 +263,39 @@ export function FilterPanel({
         serverSnapshot,
     );
     const panelRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState({ top: 0, left: 0 });
+    const [position, setPosition] = useState<DropdownPosition>({
+        top: 0,
+        left: 0,
+        maxHeight: 0,
+    });
 
     const editorMap = useMemo(() => buildEditorMap(children), [children]);
 
-    // Calculate position when opening
+    // Keep the fixed-position portal attached to its anchor and clamped inside the viewport.
+    // Capture-phase scroll observation also covers nested scrolling containers.
     useEffect(() => {
-        if (isOpen && anchorRef.current) {
-            const rect = anchorRef.current.getBoundingClientRect();
-            setPosition({
-                top: rect.bottom + 8,
-                left: rect.left,
-            });
-        }
-    }, [isOpen]);
+        if (!isOpen) return;
+
+        const updatePosition = () => {
+            if (!anchorRef.current) return;
+
+            setPosition(
+                resolveDropdownPosition(anchorRef.current.getBoundingClientRect(), {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                }),
+            );
+        };
+
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        window.addEventListener('scroll', updatePosition, true);
+
+        return () => {
+            window.removeEventListener('resize', updatePosition);
+            window.removeEventListener('scroll', updatePosition, true);
+        };
+    }, [anchorRef, isOpen]);
 
     // Handle click outside to close
     useEffect(() => {
@@ -312,6 +335,8 @@ export function FilterPanel({
                         position: 'fixed',
                         left: position.left,
                         top: position.top,
+                        bottom: position.bottom,
+                        maxHeight: position.maxHeight,
                     }}
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
