@@ -42,6 +42,14 @@ export interface CardSprite {
     lastTitle?: string;
     lastLabels?: string;
     lastValues?: string;
+    // The text and width the fitted title and values were last measured against, so a card
+    // only re-measures when what it shows, or the room it has, actually changed.
+    lastFittedSource?: string;
+    lastFittedWidth?: number;
+    /** The title as it fits the card, ellipsized when the full text does not. */
+    fittedTitle?: string;
+    /** The value column as it fits the card, ellipsized line by line. */
+    fittedValues?: string;
 }
 
 export default {};
