@@ -59,6 +59,7 @@ export function PivotViewer<TItem extends object>({
     detailRenderer,
     getItemId,
     searchFields,
+    title,
     className,
     emptyContent,
     isLoading = false,
@@ -438,6 +439,7 @@ export function PivotViewer<TItem extends object>({
                     activeDimensionKey={activeDimensionKey}
                     dimensions={dimensions}
                     activeFilterCount={activeFilterCount}
+                    title={title}
                     onFiltersToggle={() => setFiltersOpen((prev) => !prev)}
                     onViewModeChange={setViewMode}
                     onZoomIn={handleZoomIn}

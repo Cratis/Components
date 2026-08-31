@@ -16,6 +16,8 @@ export interface ToolbarProps<TItem extends object> {
   activeDimensionKey: string;
   dimensions: PivotDimension<TItem>[];
   activeFilterCount: number;
+  /** Heading shown at the left of the toolbar. Omitted entirely when not given. */
+  title?: string;
   onFiltersToggle: () => void;
   onViewModeChange: (mode: ViewMode) => void;
   onZoomIn: () => void;
@@ -36,6 +38,7 @@ export function Toolbar<TItem extends object>({
   activeDimensionKey,
   dimensions,
   activeFilterCount,
+  title,
   onFiltersToggle,
   onViewModeChange,
   onZoomIn,
@@ -102,7 +105,7 @@ export function Toolbar<TItem extends object>({
             )}
           </button>
         )}
-        <h1>Pivot Viewer</h1>
+        {title && <span className="pv-title">{title}</span>}
         <span className="pv-count">{filteredCount} events</span>
       </div>
       <div className="pv-toolbar-right">
