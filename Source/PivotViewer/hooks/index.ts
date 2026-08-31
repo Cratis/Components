@@ -8,6 +8,7 @@ export { useFilterOptions } from './useFilterOptions';
 export { useZoomState } from './useZoomState';
 export { usePanning } from './usePanning';
 export { useWheelZoom } from './useWheelZoom';
+export { useZoomScrollAnchor } from './useZoomScrollAnchor';
 export { useFilterPanelDrag } from './useFilterPanelDrag';
 export { useSelectedItem } from './useSelectedItem';
 export * from './usePivotEngine';
