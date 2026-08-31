@@ -4,6 +4,14 @@
 import * as PIXI from 'pixi.js';
 import { CARD_GAP, CARD_PADDING, CARD_RADIUS } from './constants';
 import type { CardSprite, CardColors } from './constants';
+import { ellipsizeBlock, ellipsizeLine } from './ellipsize';
+
+/** How far the value column is inset from the card's text origin, matching where it is drawn. */
+const VALUES_INSET = 65;
+
+/** Measures a candidate string with the style the sprite draws it in. */
+const measureWith = (candidate: string, style: PIXI.TextStyle) =>
+    PIXI.CanvasTextMetrics.measureText(candidate, style).width;
 
 const spritePool: CardSprite[] = [];
 
@@ -341,15 +349,36 @@ export function updateCardContent<TItem extends object>(
 
     const colors = cardColors;
     const cardData = cardRenderer(item);
-    const titleDisplay = cardData.title;
+    const rawTitle = cardData.title;
     const labelsText = (cardData.labels || []).join('\n');
-    const valuesText = (cardData.values || []).join('\n');
+    const rawValues = (cardData.values || []).join('\n');
     const colorsChanged = sprite.lastCardColors !== colors;
 
     // Ensure text objects exist before using them
     if (!sprite.titleText || sprite.titleText.destroyed) return;
     if (!sprite.labelsText || sprite.labelsText.destroyed) return;
     if (!sprite.valuesText || sprite.valuesText.destroyed) return;
+
+    // The title and the value column are drawn with word wrapping off, so without a budget they
+    // paint straight past the card and over its neighbour. Both start at a known inset, so the
+    // room each has is the card's inner width less where it begins.
+    const innerWidth = cardWidth - CARD_GAP - CARD_PADDING * 2;
+    const fitSource = `${rawTitle}\u0000${rawValues}`;
+    if (sprite.lastFittedSource !== fitSource || sprite.lastFittedWidth !== innerWidth) {
+        sprite.lastFittedSource = fitSource;
+        sprite.lastFittedWidth = innerWidth;
+        sprite.fittedTitle = ellipsizeLine(
+            rawTitle,
+            innerWidth,
+            candidate => measureWith(candidate, sprite.titleText.style));
+        sprite.fittedValues = ellipsizeBlock(
+            rawValues,
+            innerWidth - VALUES_INSET,
+            candidate => measureWith(candidate, sprite.valuesText.style));
+    }
+
+    const titleDisplay = sprite.fittedTitle ?? rawTitle;
+    const valuesText = sprite.fittedValues ?? rawValues;
 
     if (sprite.lastTitle !== titleDisplay) {
         sprite.titleText.text = titleDisplay;

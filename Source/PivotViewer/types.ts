@@ -162,6 +162,13 @@ export interface PivotViewerProps<TItem extends object> {
     getItemId?: (item: TItem, index: number) => string | number;
     /** Property accessors defining which fields are searchable. */
     searchFields?: PropertyAccessor<TItem>[];
+    /**
+     * Optional heading shown at the left of the toolbar.
+     *
+     * Omit it when the host already names the view - the heading collapses entirely and the
+     * item count sits directly beside the filter button.
+     */
+    title?: string;
     /** Optional CSS class name to apply to the root element. */
     className?: string;
     /** Content to display when no items match the current filters/search. */

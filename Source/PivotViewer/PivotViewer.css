@@ -1,4 +1,7 @@
 .pivot-viewer {
+    /* The height every toolbar control on the left of the bar shares, so the filter button and
+       the item count line up as one group. */
+    --pv-toolbar-control-size: 2.25rem;
     position: relative;
     /* CRITICAL: Don't set explicit height - let parent control it via container constraints */
     display: flex;
@@ -311,22 +314,30 @@
     gap: 1rem;
 }
 
-.pv-toolbar h1 {
+/* A span rather than a heading: the host owns its page's heading levels, and a bare `h1`
+   inherited whatever heading size the consuming application had set. */
+.pv-title {
     margin: 0;
     font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.2;
     letter-spacing: -0.01em;
     white-space: nowrap;
 }
 
+/* Sized to the filter button beside it, so the two read as one group whether or not a title
+   separates them. */
 .pv-count {
-    margin-left: 1rem;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.35rem;
-    padding: 0.3rem 0.65rem;
+    height: var(--pv-toolbar-control-size);
+    padding: 0 0.65rem;
     border-radius: 999px;
     background: var(--cratis-highlight-bg);
     font-size: 0.8rem;
+    line-height: 1;
     color: var(--cratis-text-color);
 }
 
@@ -358,8 +369,8 @@
     appearance: none;
     border: none;
     border-radius: 0.5rem;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: var(--pv-toolbar-control-size);
+    height: var(--pv-toolbar-control-size);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -608,6 +619,10 @@
         var(--cratis-primary-500),
         var(--cratis-surface-ground)
     );
+    /* Panning stays with the browser, pinching comes to us: without this a touch device
+       resolves a two-finger gesture as its own page zoom and never delivers the moves the
+       viewer needs to scale the cards. */
+    touch-action: pan-x pan-y;
 }
 
 .pv-groups-grouped {

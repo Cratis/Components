@@ -18,7 +18,7 @@ import {
 import { PivotViewerMain } from './components/PivotViewerMain';
 import { FilterPanelContainer } from './components/FilterPanelContainer';
 import { ToolbarContainer } from './components/ToolbarContainer';
-import { usePanning, useWheelZoom, useFilterOptions } from './hooks';
+import { usePanning, useWheelZoom, useZoomScrollAnchor, useFilterOptions } from './hooks';
 import { useContainerDimensions } from './hooks/useContainerDimensions';
 import type { ViewMode } from './components/Toolbar';
 import { useFieldExtractors } from './hooks/useFieldExtractors';
@@ -59,6 +59,7 @@ export function PivotViewer<TItem extends object>({
     detailRenderer,
     getItemId,
     searchFields,
+    title,
     className,
     emptyContent,
     isLoading = false,
@@ -125,6 +126,7 @@ export function PivotViewer<TItem extends object>({
     );
 
     useWheelZoom(containerRef, zoomLevel, setZoomLevel);
+    useZoomScrollAnchor(containerRef, spacerRef, viewMode);
 
     // Track container dimensions for responsive layout
     const containerDimensions = useContainerDimensions(containerRef, isLoading);
@@ -438,6 +440,7 @@ export function PivotViewer<TItem extends object>({
                     activeDimensionKey={activeDimensionKey}
                     dimensions={dimensions}
                     activeFilterCount={activeFilterCount}
+                    title={title}
                     onFiltersToggle={() => setFiltersOpen((prev) => !prev)}
                     onViewModeChange={setViewMode}
                     onZoomIn={handleZoomIn}

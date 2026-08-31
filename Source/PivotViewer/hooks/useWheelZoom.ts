@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ZOOM_MIN, ZOOM_MAX } from '../utils/utils';
 
 export function useWheelZoom(
@@ -53,8 +53,19 @@ export function useWheelZoom(
     }
   }, [zoomLevel, setZoomLevel, containerRef]);
 
+  // The viewport this binds to mounts a render or more after the hook first runs - it sits
+  // behind the loading gate, inside a child component - and a ref object keeps the same identity
+  // forever, so an effect keyed on the ref alone bound to nothing and never retried. Pinching did
+  // nothing until something else happened to change `zoomLevel` and re-run the effect, which
+  // meant zooming with the toolbar first was the only way to make the gesture start working.
+  // Comparing the node after every render picks it up the moment it appears, and lets go again
+  // if it is unmounted.
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
-    const container = containerRef.current;
+    if (containerRef.current !== container) setContainer(containerRef.current);
+  });
+
+  useEffect(() => {
     if (!container) return;
 
     container.addEventListener('wheel', handleWheel, { passive: false });
@@ -113,12 +124,14 @@ export function useWheelZoom(
     container.addEventListener('touchstart', handleTouchStart, { passive: true });
     container.addEventListener('touchmove', handleTouchMove, { passive: false });
     container.addEventListener('touchend', handleTouchEnd, { passive: true });
+    container.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
       container.removeEventListener('wheel', handleWheel);
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchmove', handleTouchMove);
       container.removeEventListener('touchend', handleTouchEnd);
+      container.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [handleWheel, zoomLevel, setZoomLevel, containerRef]);
+  }, [container, handleWheel, zoomLevel, setZoomLevel]);
 }
