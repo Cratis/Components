@@ -619,6 +619,10 @@
         var(--cratis-primary-500),
         var(--cratis-surface-ground)
     );
+    /* Panning stays with the browser, pinching comes to us: without this a touch device
+       resolves a two-finger gesture as its own page zoom and never delivers the moves the
+       viewer needs to scale the cards. */
+    touch-action: pan-x pan-y;
 }
 
 .pv-groups-grouped {
