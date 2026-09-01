@@ -162,9 +162,9 @@ export const ObjectContentEditor = ({
         }
     }, [validationErrors, editMode, onValidationChange]);
 
-    const navigateToProperty = useCallback(
-        (key: string) => {
-            setNavigationPath([...navigationPath, key]);
+    const navigateTo = useCallback(
+        (segments: string[]) => {
+            setNavigationPath([...navigationPath, ...segments]);
         },
         [navigationPath],
     );
@@ -185,28 +185,15 @@ export const ObjectContentEditor = ({
             return object;
         }
 
-        const lastKey = navigationPath[navigationPath.length - 1];
-        const pathToParent = navigationPath.slice(0, -1);
+        const value = getValueAtPath(object, navigationPath);
+        return value !== null && typeof value === 'object' ? value : null;
+    }, [object, navigationPath]);
 
-        const parentValue =
-            pathToParent.length > 0 ? getValueAtPath(object, pathToParent) : object;
-
-        if (
-            parentValue &&
-            typeof parentValue === 'object' &&
-            !Array.isArray(parentValue)
-        ) {
-            const value = (parentValue as { [k: string]: Json })[lastKey];
-
-            if (Array.isArray(value)) {
-                return value;
-            } else if (value && typeof value === 'object') {
-                return value;
-            }
+    useEffect(() => {
+        if (navigationPath.length > 0 && currentData === null) {
+            setNavigationPath([]);
         }
-
-        return object;
-    }, [object, navigationPath, getValueAtPath]);
+    }, [currentData, navigationPath]);
 
     const currentProperties = useMemo(() => {
         const properties = schema.properties || {};
@@ -447,7 +434,11 @@ export const ObjectContentEditor = ({
         );
     };
 
-    const renderValue = (value: Json, propertyName: string) => {
+    const renderValue = (
+        value: Json,
+        propertyName: string,
+        pathSegments: string[],
+    ) => {
         if (value === null || value === undefined) return '';
 
         if (Array.isArray(value)) {
@@ -455,7 +446,7 @@ export const ObjectContentEditor = ({
                 <button
                     type='button'
                     className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
-                    onClick={() => navigateToProperty(propertyName)}
+                    onClick={() => navigateTo(pathSegments)}
                     style={{
                         color: 'var(--cratis-primary-color)',
                         display: 'flex',
@@ -481,7 +472,7 @@ export const ObjectContentEditor = ({
                 <button
                     type='button'
                     className='cratis:flex cratis:items-center cratis:gap-2 cratis:cursor-pointer'
-                    onClick={() => navigateToProperty(propertyName)}
+                    onClick={() => navigateTo(pathSegments)}
                     style={{
                         color: 'var(--cratis-primary-color)',
                         display: 'flex',
@@ -506,6 +497,10 @@ export const ObjectContentEditor = ({
     };
 
     const renderTable = () => {
+        if (currentData === null) {
+            return null;
+        }
+
         if (Array.isArray(currentData)) {
             if (currentData.length === 0)
                 return (
@@ -549,6 +544,7 @@ export const ObjectContentEditor = ({
                                                 {renderValue(
                                                     (item as Record<string, Json>)[key],
                                                     key,
+                                                    [String(index), key],
                                                 )}
                                             </td>
                                         </tr>
@@ -566,7 +562,9 @@ export const ObjectContentEditor = ({
                                 <tr key={index} style={rowStyle}>
                                     <td style={labelStyle}>[{index}]</td>
                                     <td style={valueStyle}>
-                                        {renderValue(item, `[${index}]`)}
+                                        {renderValue(item, `[${index}]`, [
+                                            String(index),
+                                        ])}
                                     </td>
                                 </tr>
                             ))}
@@ -647,7 +645,9 @@ export const ObjectContentEditor = ({
                                                   property,
                                                   value,
                                               )
-                                            : renderValue(value as Json, propertyName)}
+                                            : renderValue(value as Json, propertyName, [
+                                                  propertyName,
+                                              ])}
                                     </td>
                                 </tr>
                             );
