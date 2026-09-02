@@ -24,7 +24,7 @@ const collectTextFiles = directory => readdirSync(directory, { withFileTypes: tr
     return entry.isFile() && /\.(?:html|js|json)$/u.test(entry.name) ? [entryPath] : [];
 });
 const storyFiles = collectStoryFiles(sourceRoot);
-if (storyFiles.length !== 67) throw new Error(`Expected the existing 67 story modules, found ${storyFiles.length}.`);
+if (storyFiles.length !== 68) throw new Error(`Expected the existing 68 story modules, found ${storyFiles.length}.`);
 
 let canonicalStoryIds;
 let canonicalDocsIds;
@@ -39,8 +39,8 @@ for (const adapter of inventory.adapters) {
     const entries = Object.values(index.entries ?? {});
     const storyIds = entries.filter(entry => entry.type === 'story').map(entry => entry.id).sort();
     const docsIds = entries.filter(entry => entry.type === 'docs').map(entry => entry.id).sort();
-    if (storyIds.length !== 277 || docsIds.length !== 67) {
-        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 277 and 67.`);
+    if (storyIds.length !== 285 || docsIds.length !== 68) {
+        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 285 and 68.`);
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;
@@ -65,11 +65,11 @@ for (const adapter of inventory.adapters) {
             throw new Error(`PrimeReact 11 preview exposed a license-key environment contract in ${exposedEnvironmentContract}.`);
         }
     }
-    console.log(`${adapter.metadata.id}: 277 stories, 67 autodocs pages, primereact [${expectedVersions.join(', ') || 'none'}].`);
+    console.log(`${adapter.metadata.id}: 285 stories, 68 autodocs pages, primereact [${expectedVersions.join(', ') || 'none'}].`);
 }
 
 const appearances = 2;
-const matrixCount = inventory.adapters.length * 277 * appearances;
-console.log(`Storybook indexes verified: ${inventory.adapters.length} previews × 277 stable stories × ${appearances} appearances = ${matrixCount} story/appearance cases.`);
+const matrixCount = inventory.adapters.length * 285 * appearances;
+console.log(`Storybook indexes verified: ${inventory.adapters.length} previews × 285 stable stories × ${appearances} appearances = ${matrixCount} story/appearance cases.`);
 console.log('Story exclusions: none. Every indexed story is included in light, dark, and axe execution.');
 console.log(`Renderer exclusions: ${inventory.exclusions.map(item => `${item.id} (${item.reason})`).join(', ') || 'none'}; private adapters such as Plain are never composed.`);
