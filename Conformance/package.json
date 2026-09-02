@@ -35,7 +35,7 @@
     "scripts": {
         "clean": "rm -rf dist",
         "prepare-core": "yarn workspace @cratis/components prepare",
-        "build": "node ../node_modules/typescript/bin/tsc -p tsconfig.build.json",
+        "build": "yarn prepare-core && node ../node_modules/typescript/bin/tsc -p tsconfig.build.json",
         "typecheck-specs:prepared": "node ../node_modules/typescript/bin/tsc -p tsconfig.json",
         "typecheck-specs": "yarn prepare-core && yarn typecheck-specs:prepared",
         "lint": "node ../node_modules/eslint/bin/eslint.js . --quiet",
