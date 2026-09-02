@@ -17,6 +17,9 @@
     --cratis-surface-border: #dfe7ef;
     --cratis-control-background: #ffffff;
     --cratis-control-border: #8492a6;
+    --cratis-number-input-adornment-color: var(--cratis-text-color-secondary);
+    --cratis-number-input-step-background: var(--cratis-surface-100);
+    --cratis-number-input-step-background-hover: var(--cratis-surface-hover);
 
     --cratis-text-color: #4b5563;
     --cratis-text-color-secondary: #6b7280;
