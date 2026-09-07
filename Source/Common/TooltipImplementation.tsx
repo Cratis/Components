@@ -9,7 +9,7 @@ import {
 } from 'react-aria-components/Tooltip';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
-import { TOOLTIP_OFFSET } from '../renderer/dialogStack';
+import { TOOLTIP_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import type { TooltipProps } from './Tooltip';
 
@@ -33,7 +33,7 @@ export const TooltipImplementation = ({
     const resolvedZIndex =
         nearestDialogZIndex === null
             ? 'var(--cratis-z-index-tooltip)'
-            : nearestDialogZIndex + TOOLTIP_OFFSET;
+            : zIndexAboveDialog(nearestDialogZIndex, TOOLTIP_OFFSET);
     if (!content || disabled) return children;
 
     const trigger = cloneElement(children, {

@@ -10,15 +10,7 @@ import { afterEach, beforeEach, describe, it } from 'vitest';
 import { Dialog } from '../../Dialogs/Dialog';
 import { Dropdown } from '../Dropdown';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
-
-const resolvedZIndex = (element: HTMLElement) => {
-    const declaration = element.style.zIndex || getComputedStyle(element).zIndex;
-    const variable = declaration.match(/var\((--[^)]+)\)/u)?.[1];
-    const value = variable
-        ? getComputedStyle(document.documentElement).getPropertyValue(variable)
-        : declaration;
-    return Number.parseInt(value, 10);
-};
+import { resolveZIndex } from '../../renderer/for_dialog_stack/resolveZIndex';
 
 /**
  * A compound case beyond a dropdown in a single dialog: a dropdown opened inside a dialog that
@@ -45,6 +37,10 @@ describe('when a dropdown is opened inside a dialog opened from another dialog',
             disconnect() {}
         };
 
+        // Dialog tiers resolve relative to these tokens rather than to hardcoded numbers, so they
+        // have to be defined for the stacking order to be measurable at all.
+        document.documentElement.style.setProperty('--cratis-z-index-dialog', '1100');
+        document.documentElement.style.setProperty('--cratis-z-index-overlay', '1200');
         container = document.createElement('div');
         document.body.appendChild(container);
         root = createRoot(container);
@@ -94,12 +90,12 @@ describe('when a dropdown is opened inside a dialog opened from another dialog',
             '.cratis-dialog__backdrop[data-cratis-part="backdrop"]',
         );
         const [firstBackdrop, secondBackdrop] = Array.from(backdrops) as HTMLElement[];
-        firstDialogZIndex = resolvedZIndex(firstBackdrop);
-        secondDialogZIndex = resolvedZIndex(secondBackdrop);
+        firstDialogZIndex = resolveZIndex(firstBackdrop);
+        secondDialogZIndex = resolveZIndex(secondBackdrop);
         const panel = document.querySelector(
             '[data-cratis-part="popover"]',
         ) as HTMLElement;
-        panelZIndex = resolvedZIndex(panel);
+        panelZIndex = resolveZIndex(panel);
     });
 
     afterEach(async () => {
@@ -107,6 +103,8 @@ describe('when a dropdown is opened inside a dialog opened from another dialog',
             root.unmount();
         });
         container.remove();
+        document.documentElement.style.removeProperty('--cratis-z-index-dialog');
+        document.documentElement.style.removeProperty('--cratis-z-index-overlay');
     });
 
     it('should stack the second dialog above the first', () => {

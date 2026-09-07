@@ -11,7 +11,7 @@ import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import {
-    DIALOG_BASE_ZINDEX,
+    DIALOG_ZINDEX_TOKEN,
     closeDialogTier,
     dialogZIndexForTier,
     openDialogTier,
@@ -240,7 +240,7 @@ export const DialogImplementation = ({
     };
 
     const dialogDocument = (
-        <DialogStackContext.Provider value={resolvedZIndex ?? DIALOG_BASE_ZINDEX}>
+        <DialogStackContext.Provider value={resolvedZIndex ?? DIALOG_ZINDEX_TOKEN}>
         <AriaDialog className='cratis-dialog__document'>
             <>
                 <header
@@ -343,7 +343,7 @@ export const DialogImplementation = ({
                 {...pt?.backdrop}
                 className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
                 style={{
-                    zIndex: resolvedZIndex ?? 'var(--cratis-z-index-dialog)',
+                    zIndex: resolvedZIndex ?? DIALOG_ZINDEX_TOKEN,
                     ...pt?.backdrop?.style,
                 }}
                 data-cratis-part='backdrop'
@@ -392,7 +392,7 @@ export const DialogImplementation = ({
                 isKeyboardDismissDisabled={!isDismissable}
                 className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
                 style={{
-                    zIndex: resolvedZIndex ?? 'var(--cratis-z-index-dialog)',
+                    zIndex: resolvedZIndex ?? DIALOG_ZINDEX_TOKEN,
                     ...pt?.backdrop?.style,
                 }}
                 data-cratis-part='backdrop'
