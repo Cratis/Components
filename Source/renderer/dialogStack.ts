@@ -26,7 +26,16 @@ export const closeDialogTier = (tier: number): void => {
     if (openDialogTiers.size === 0) nextDialogTier = 0;
 };
 
-/** The z-index a dialog with no open ancestor uses today - unchanged from the static token. */
+/**
+ * The custom property every tier is measured from. Tiers resolve to a CSS expression built on this
+ * token rather than to a plain number, because an application is expected to retune the token to fit
+ * its own stacking order - Cratis Studio, for example, raises it to 10100 so dialogs clear the
+ * full-screen overlay its settings pages live in. Resolving a tier to a bare number would discard
+ * that override and pin every dialog back to the default band, behind whatever opened it.
+ */
+export const DIALOG_ZINDEX_TOKEN = 'var(--cratis-z-index-dialog)';
+
+/** The default value of {@link DIALOG_ZINDEX_TOKEN}, for applications that do not override it. */
 export const DIALOG_BASE_ZINDEX = 1100;
 
 /**
@@ -45,6 +54,18 @@ export const FILTER_OFFSET = 150;
 /** Offset above its owning dialog a tooltip uses - mirrors the static tooltip token gap. */
 export const TOOLTIP_OFFSET = 200;
 
-/** Resolves the z-index a dialog at the given tier should use. */
-export const dialogZIndexForTier = (tier: number): number =>
-    DIALOG_BASE_ZINDEX + tier * DIALOG_TIER_STEP;
+/**
+ * Resolves the z-index a dialog at the given tier should use, as a CSS expression relative to
+ * {@link DIALOG_ZINDEX_TOKEN} so an application's override of that token is preserved. The first
+ * tier is the token itself, so a lone dialog stacks exactly where it did before tiering existed.
+ */
+export const dialogZIndexForTier = (tier: number): string =>
+    tier === 0 ? DIALOG_ZINDEX_TOKEN : `calc(${DIALOG_ZINDEX_TOKEN} + ${tier * DIALOG_TIER_STEP})`;
+
+/**
+ * Stacks an overlay-producing descendant - a dropdown or date-picker popover, a filter menu, a
+ * tooltip - the given offset above its owning dialog, keeping it relative to whatever expression
+ * that dialog resolved to.
+ */
+export const zIndexAboveDialog = (dialogZIndex: string, offset: number): string =>
+    `calc(${dialogZIndex} + ${offset})`;

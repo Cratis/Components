@@ -23,7 +23,7 @@ import {
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
-import { OVERLAY_OFFSET } from '../renderer/dialogStack';
+import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import type { DropdownProps } from './Dropdown';
 import {
@@ -138,7 +138,7 @@ export const DropdownImplementation = <T = unknown,>({
     const resolvedPopoverZIndex =
         nearestDialogZIndex === null
             ? 'var(--cratis-z-index-overlay)'
-            : nearestDialogZIndex + OVERLAY_OFFSET;
+            : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
     const { messages } = useCratisComponentsConfig();
     const dropdownMessages = messages?.dropdown;
     const showOptionsLabel =

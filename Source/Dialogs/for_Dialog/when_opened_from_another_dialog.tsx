@@ -7,6 +7,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { Dialog } from '../Dialog';
 import { render, unmount, type DialogInTheDom } from './given/a_dialog_in_the_dom';
+import { resolveZIndex } from '../../renderer/for_dialog_stack/resolveZIndex';
 
 /**
  * A second dialog opened while the first is still visible is not a React child of the first -
@@ -20,6 +21,9 @@ describe('when a dialog is opened from another dialog that is still open', () =>
     let secondZIndex: number;
 
     beforeEach(async () => {
+        // Tiers resolve relative to this token rather than to a hardcoded number, so it has to be
+        // defined for the stacking order to be measurable at all.
+        document.documentElement.style.setProperty('--cratis-z-index-dialog', '1100');
         first = await render(
             React.createElement(
                 React.Fragment,
@@ -41,11 +45,12 @@ describe('when a dialog is opened from another dialog that is still open', () =>
             '.cratis-dialog__backdrop[data-cratis-part="backdrop"]',
         );
         const [firstBackdrop, secondBackdrop] = Array.from(backdrops) as HTMLElement[];
-        firstZIndex = Number.parseInt(firstBackdrop.style.zIndex, 10);
-        secondZIndex = Number.parseInt(secondBackdrop.style.zIndex, 10);
+        firstZIndex = resolveZIndex(firstBackdrop);
+        secondZIndex = resolveZIndex(secondBackdrop);
     });
 
     afterEach(async () => {
+        document.documentElement.style.removeProperty('--cratis-z-index-dialog');
         await unmount(first);
     });
 

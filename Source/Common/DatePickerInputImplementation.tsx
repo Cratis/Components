@@ -22,7 +22,7 @@ import { Heading } from 'react-aria-components/Heading';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from './CratisComponentsProvider';
-import { OVERLAY_OFFSET } from '../renderer/dialogStack';
+import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import { asReactAriaButtonProps } from './reactAriaProps';
 import {
@@ -82,7 +82,7 @@ export const DatePickerInputImplementation = ({
     const resolvedPopoverZIndex =
         nearestDialogZIndex === null
             ? 'var(--cratis-z-index-overlay)'
-            : nearestDialogZIndex + OVERLAY_OFFSET;
+            : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
     const { messages } = useCratisComponentsConfig();
     const datePickerMessages = messages?.datePicker;
     const resolvedTodayLabel = todayLabel ?? datePickerMessages?.today ?? 'Today';
