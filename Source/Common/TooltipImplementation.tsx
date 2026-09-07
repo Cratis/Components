@@ -9,6 +9,8 @@ import {
 } from 'react-aria-components/Tooltip';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
+import { TOOLTIP_OFFSET } from '../renderer/dialogStack';
+import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import type { TooltipProps } from './Tooltip';
 
 interface TooltipTriggerElementProps {
@@ -27,6 +29,11 @@ export const TooltipImplementation = ({
     children,
 }: TooltipProps) => {
     const overlayEnvironment = unstable_useOverlayEnvironment();
+    const nearestDialogZIndex = useNearestDialogZIndex();
+    const resolvedZIndex =
+        nearestDialogZIndex === null
+            ? 'var(--cratis-z-index-tooltip)'
+            : nearestDialogZIndex + TOOLTIP_OFFSET;
     if (!content || disabled) return children;
 
     const trigger = cloneElement(children, {
@@ -52,6 +59,7 @@ export const TooltipImplementation = ({
                     placement={position}
                     offset={8}
                     className='cratis-tooltip-popup'
+                    style={{ zIndex: resolvedZIndex }}
                     data-cratis-part='popup'
                     data-open
                 >

@@ -5,11 +5,18 @@ import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react
 import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
 import { UNSAFE_PortalProvider } from 'react-aria';
-import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import {
+    DIALOG_BASE_ZINDEX,
+    closeDialogTier,
+    dialogZIndexForTier,
+    openDialogTier,
+} from '../renderer/dialogStack';
+import { DialogStackContext } from '../renderer/DialogStackContext';
 
 const classNames = (...values: Array<string | undefined>) =>
     values.filter(Boolean).join(' ');
@@ -82,6 +89,21 @@ export const DialogImplementation = ({
     const focusesTitle = resolvedInitialFocus === DialogInitialFocus.Content;
     const allowsDismissal = dismissable ?? typeof buttons === 'number';
     const isDismissable = allowsDismissal && !isBusy;
+
+    // Assigns this dialog a strictly increasing tier for as long as it is visible, so a second
+    // dialog opened while this one is still open - from anywhere, not necessarily as a React
+    // child of this one - stacks above it rather than colliding on the same static z-index.
+    const [dialogTier, setDialogTier] = useState<number | null>(null);
+    useLayoutEffect(() => {
+        if (!visible) {
+            setDialogTier(null);
+            return;
+        }
+        const tier = openDialogTier();
+        setDialogTier(tier);
+        return () => closeDialogTier(tier);
+    }, [visible]);
+    const resolvedZIndex = dialogTier === null ? undefined : dialogZIndexForTier(dialogTier);
 
     useEffect(() => {
         if (!visible) return;
@@ -218,6 +240,7 @@ export const DialogImplementation = ({
     };
 
     const dialogDocument = (
+        <DialogStackContext.Provider value={resolvedZIndex ?? DIALOG_BASE_ZINDEX}>
         <AriaDialog className='cratis-dialog__document'>
             <>
                 <header
@@ -305,6 +328,7 @@ export const DialogImplementation = ({
                 )}
             </>
         </AriaDialog>
+        </DialogStackContext.Provider>
     );
 
     const dialogStyle = { width, ...pt?.root?.style, ...style };
@@ -319,7 +343,7 @@ export const DialogImplementation = ({
                 {...pt?.backdrop}
                 className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
                 style={{
-                    zIndex: 'var(--cratis-z-index-dialog)',
+                    zIndex: resolvedZIndex ?? 'var(--cratis-z-index-dialog)',
                     ...pt?.backdrop?.style,
                 }}
                 data-cratis-part='backdrop'
@@ -368,7 +392,7 @@ export const DialogImplementation = ({
                 isKeyboardDismissDisabled={!isDismissable}
                 className={classNames('cratis-dialog__backdrop', pt?.backdrop?.className)}
                 style={{
-                    zIndex: 'var(--cratis-z-index-dialog)',
+                    zIndex: resolvedZIndex ?? 'var(--cratis-z-index-dialog)',
                     ...pt?.backdrop?.style,
                 }}
                 data-cratis-part='backdrop'
