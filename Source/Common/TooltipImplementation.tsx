@@ -9,8 +9,8 @@ import {
 } from 'react-aria-components/Tooltip';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
-import { TOOLTIP_OFFSET } from '../Dialogs/dialogStack';
-import { useNearestDialogZIndex } from '../Dialogs/DialogStackContext';
+import { TOOLTIP_OFFSET } from '../renderer/dialogStack';
+import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import type { TooltipProps } from './Tooltip';
 
 interface TooltipTriggerElementProps {

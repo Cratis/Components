@@ -15,8 +15,8 @@ import {
     closeDialogTier,
     dialogZIndexForTier,
     openDialogTier,
-} from './dialogStack';
-import { DialogStackContext } from './DialogStackContext';
+} from '../renderer/dialogStack';
+import { DialogStackContext } from '../renderer/DialogStackContext';
 
 const classNames = (...values: Array<string | undefined>) =>
     values.filter(Boolean).join(' ');

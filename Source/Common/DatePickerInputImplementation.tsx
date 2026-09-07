@@ -22,8 +22,8 @@ import { Heading } from 'react-aria-components/Heading';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from './CratisComponentsProvider';
-import { OVERLAY_OFFSET } from '../Dialogs/dialogStack';
-import { useNearestDialogZIndex } from '../Dialogs/DialogStackContext';
+import { OVERLAY_OFFSET } from '../renderer/dialogStack';
+import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import { asReactAriaButtonProps } from './reactAriaProps';
 import {
     fromDate,
