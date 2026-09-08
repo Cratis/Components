@@ -146,6 +146,49 @@
     box-shadow: var(--cratis-focus-ring);
 }
 
+/* Reusable checkbox/radio option list (CheckboxListFilter) */
+.pv-option-list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: var(--cratis-filter-option-list-max-height, 14rem);
+    overflow-y: auto;
+}
+
+/* Off-screen clone of every option, used only to measure whether the real (possibly
+   search-filtered) list would overflow the box - see useOptionListOverflow. */
+.pv-option-list-mirror {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    visibility: hidden;
+    pointer-events: none;
+    max-height: none;
+    overflow: visible;
+}
+
+/* Rendered via `content: attr(...)` rather than a DOM text node - see CheckboxListFilter.tsx -
+   so a mirror row's label/count can never be found by a text-content query. */
+.pv-option-mirror-label::before {
+    content: attr(data-label);
+}
+
+.pv-option-list-search {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--cratis-surface-overlay);
+}
+
+.pv-option-list-empty {
+    margin: 0;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.85rem;
+    color: var(--cratis-text-color-secondary);
+}
+
 .pv-filter-groups {
     display: flex;
     flex-direction: column;
