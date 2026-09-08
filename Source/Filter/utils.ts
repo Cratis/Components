@@ -26,6 +26,14 @@ export interface DropdownViewport {
     height: number;
 }
 
+/** The measured height budget behind the decision to show an option list's search box. */
+export interface OptionListOverflowMetrics {
+    /** The combined natural height of every option row, in pixels. */
+    contentHeight: number;
+    /** The maximum height the option list box is allowed to grow to, in pixels. */
+    maxHeight: number;
+}
+
 /** Fixed-position coordinates and bounds for the filter dropdown. */
 export interface DropdownPosition {
     left: number;
@@ -104,6 +112,20 @@ export function resolveDropdownPosition(
         left,
         maxHeight: Math.min(roomAbove, configuredMaxHeight),
     };
+}
+
+/**
+ * Whether an option list has more rows than fit inside its box - the signal a filter group uses to
+ * grow a search box the caller did not explicitly ask for. `maxHeight` of zero means the box has not
+ * been measured yet (e.g. before first layout), so the answer defaults to "not overflowing" rather
+ * than flashing a search box speculatively. Pulled out of the measuring hook so the decision is
+ * testable on plain numbers, without a real layout engine.
+ */
+export function optionListOverflows({
+    contentHeight,
+    maxHeight,
+}: OptionListOverflowMetrics): boolean {
+    return maxHeight > 0 && contentHeight > maxHeight;
 }
 
 /** Initialise the string/option selection map for all string/date filters. */
