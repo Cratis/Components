@@ -12,6 +12,7 @@ import { Button } from '../../Common/Button';
 import {
     InputTextField,
     NumberField,
+    NumberInputField,
     TextAreaField,
     CheckboxField,
     SliderField,
@@ -773,6 +774,37 @@ export const RadioButtonFieldExample: Story = {
             </StoryContainer>
         );
     },
+};
+
+export const NativeAndLocaleAwareNumberFields: Story = {
+    render: () => (
+        <StoryContainer size='sm' asCard>
+            <h2>Native and locale-aware number fields</h2>
+            <p>
+                Use NumberField for simple native entry and NumberInputField when locale
+                formatting, nullable edit state, adornments, or explicit commits matter.
+            </p>
+            <CommandForm<FormFieldsCommand>
+                command={FormFieldsCommand}
+                initialValues={{ numberInput: 1234.5 }}
+            >
+                <NumberField<FormFieldsCommand>
+                    value={(command) => command.numberInput}
+                    title='Native amount'
+                    step={0.5}
+                />
+                <NumberInputField<FormFieldsCommand>
+                    value={(command) => command.numberInput}
+                    title='Locale-aware amount'
+                    required
+                    suffix='kg'
+                    step={0.5}
+                    minimumFractionDigits={1}
+                    maximumFractionDigits={1}
+                />
+            </CommandForm>
+        </StoryContainer>
+    ),
 };
 
 export const RadioGroupFieldExample: Story = {

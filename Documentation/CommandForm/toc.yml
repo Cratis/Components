@@ -18,6 +18,8 @@
   href: multi-select-field.md
 - name: NumberField
   href: number-field.md
+- name: NumberInputField
+  href: number-input-field.md
 - name: PasswordField
   href: password-field.md
 - name: RadioButtonField
