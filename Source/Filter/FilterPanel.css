@@ -169,6 +169,12 @@
     overflow: visible;
 }
 
+/* Rendered via `content: attr(...)` rather than a DOM text node - see CheckboxListFilter.tsx -
+   so a mirror row's label/count can never be found by a text-content query. */
+.pv-option-mirror-label::before {
+    content: attr(data-label);
+}
+
 .pv-option-list-search {
     position: sticky;
     top: 0;

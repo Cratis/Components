@@ -153,10 +153,17 @@ export function CheckboxListFilter({
                         <li key={option.key}>
                             <label>
                                 <input type={multi ? 'checkbox' : 'radio'} disabled tabIndex={-1} />
-                                <span>{option.label}</span>
-                                <span className='pv-option-count'>
-                                    {renderOptionCount(option.count)}
-                                </span>
+                                {/*
+                                  The mirror exists purely to measure height, so its rows must occupy
+                                  the same space a real row with this label would - but as plain text
+                                  nodes, that same content is indistinguishable from the real (possibly
+                                  filtered-out) row to text-content queries like Testing Library's
+                                  `getByText`, defeating the point of filtering. CSS generated content
+                                  renders identically for layout purposes without ever becoming a DOM
+                                  text node, so it can't be found that way.
+                                */}
+                                <span className='pv-option-mirror-label' data-label={option.label} />
+                                <span className='pv-option-count pv-option-mirror-label' data-label={renderOptionCount(option.count)} />
                             </label>
                         </li>
                     ))}
