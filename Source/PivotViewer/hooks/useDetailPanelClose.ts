@@ -6,10 +6,7 @@ import type React from 'react';
 import { animateZoomAndScroll, smoothScrollTo } from '../utils/animations';
 import type { Layout } from '../utils/cardPosition';
 import type { ViewMode } from '../components/Toolbar';
-import {
-    getCardPositionFromLayout,
-    normalizeIdToLayoutKey,
-} from '../utils/idResolution';
+import { getCardPositionFromLayout, resolveLayoutItemId } from '../utils/idResolution';
 import { createCardPositionCallbacks } from '../utils/cardPosition';
 import { BASE_CARD_WIDTH, BASE_CARD_HEIGHT } from '../utils/constants';
 
@@ -55,12 +52,15 @@ export function useDetailPanelClose<TItem extends object>({
         }
 
         // Resolve item ID
-        const index = data.indexOf(selectedItem);
-        let itemId: string | number = index !== -1 ? index : resolveId(selectedItem, 0);
-        itemId = normalizeIdToLayoutKey(itemId, layout);
+        const itemId = resolveLayoutItemId(data, selectedItem, layout, resolveId);
 
         // Get card position from layout
-        const cardPosition = getCardPositionFromLayout(itemId, layout, BASE_CARD_WIDTH, BASE_CARD_HEIGHT);
+        const cardPosition = getCardPositionFromLayout(
+            itemId,
+            layout,
+            BASE_CARD_WIDTH,
+            BASE_CARD_HEIGHT,
+        );
 
         if (!preSelectionState) {
             setSelectedItem(null);
@@ -70,7 +70,12 @@ export function useDetailPanelClose<TItem extends object>({
         // Collection mode: just scroll back
         if (viewMode === 'collection') {
             setSelectedItem(null);
-            smoothScrollTo(container, preSelectionState.scrollLeft, preSelectionState.scrollTop, true);
+            smoothScrollTo(
+                container,
+                preSelectionState.scrollLeft,
+                preSelectionState.scrollTop,
+                true,
+            );
             setPreSelectionState(null);
             return;
         }
@@ -80,7 +85,12 @@ export function useDetailPanelClose<TItem extends object>({
 
         if (!zoomChanged || !cardPosition) {
             setSelectedItem(null);
-            smoothScrollTo(container, preSelectionState.scrollLeft, preSelectionState.scrollTop, true);
+            smoothScrollTo(
+                container,
+                preSelectionState.scrollLeft,
+                preSelectionState.scrollTop,
+                true,
+            );
             setPreSelectionState(null);
             return;
         }
@@ -92,6 +102,9 @@ export function useDetailPanelClose<TItem extends object>({
 
         const callbacks = createCardPositionCallbacks(
             itemId,
+            // SAFETY: `grouping` is typed `unknown` in this hook's params to avoid a circular
+            // type import; it is always the GroupingResult produced by the engine, which is
+            // exactly what createCardPositionCallbacks expects.
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             grouping as unknown as any,
             viewMode,
@@ -119,5 +132,20 @@ export function useDetailPanelClose<TItem extends object>({
                 setPreSelectionState(null);
             },
         });
-    }, [preSelectionState, selectedItem, zoomLevel, viewMode, resolveId, setZoomLevel, layout, grouping, containerRef, containerDimensions, data, setSelectedItem, setPreSelectionState, setIsZooming]);
+    }, [
+        preSelectionState,
+        selectedItem,
+        zoomLevel,
+        viewMode,
+        resolveId,
+        setZoomLevel,
+        layout,
+        grouping,
+        containerRef,
+        containerDimensions,
+        data,
+        setSelectedItem,
+        setPreSelectionState,
+        setIsZooming,
+    ]);
 }

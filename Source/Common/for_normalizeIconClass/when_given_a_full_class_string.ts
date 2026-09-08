@@ -4,13 +4,9 @@
 import { normalizeIconClass } from '../normalizeIconClass';
 
 describe('when normalizeIconClass is given a full class string', () => {
-    const result = normalizeIconClass('pi pi-home');
+    const result = normalizeIconClass('product-icons product-home');
 
     it('should_return_the_class_unchanged', () => {
-        result.className.should.equal('pi pi-home');
-    });
-
-    it('should_not_produce_a_warning', () => {
-        (result.warning === undefined).should.be.true;
+        result.className.should.equal('product-icons product-home');
     });
 });

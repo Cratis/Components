@@ -3,9 +3,21 @@
   "default": true,
   "MD013": false,
   "MD033": {
-    "allowed_elements": ["antml:function_calls", "antml:invoke", "antml:parameter", "a"]
+    "allowed_elements": [
+      "antml:function_calls",
+      "antml:invoke",
+      "antml:parameter",
+      "a",
+      "Steps",
+      "Aside",
+      "CardGrid",
+      "SimpleCard",
+      "Card",
+      "StorybookEmbed"
+    ]
   },
   "MD041": false,
+  "MD046": false,
   "MD012": {
     "maximum": 3
   },

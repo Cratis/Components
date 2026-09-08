@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useMemo } from 'react';
-import { Button } from 'primereact/button';
+import { Button } from '../Common/Button';
 import * as faIcons from 'react-icons/fa6';
+import { Tooltip } from '../Common/Tooltip';
 import { buildNavigationBreadcrumbs } from './breadcrumbHelpers';
-import './ObjectNavigationalBar.css';
 
 /**
  * Props for {@link ObjectNavigationalBar}.
@@ -24,6 +24,9 @@ export interface ObjectNavigationalBarProps {
      */
     onNavigate: (index: number) => void;
 
+    /** Label and accessible name for the back button (tooltip + aria-label). Override to localize. Defaults to `'Navigate back'`. */
+    backLabel?: string;
+
     /** Extra CSS class names appended to the navigation bar root. */
     className?: string;
 }
@@ -36,37 +39,65 @@ export interface ObjectNavigationalBarProps {
  *
  * @param props - {@link ObjectNavigationalBarProps}.
  */
-export function ObjectNavigationalBar({ navigationPath, onNavigate, className }: ObjectNavigationalBarProps) {
-    const breadcrumbItems = useMemo(() => buildNavigationBreadcrumbs(navigationPath), [navigationPath]);
+export function ObjectNavigationalBar({
+    navigationPath,
+    onNavigate,
+    backLabel = 'Navigate back',
+    className,
+}: ObjectNavigationalBarProps) {
+    const breadcrumbItems = useMemo(
+        () => buildNavigationBreadcrumbs(navigationPath),
+        [navigationPath],
+    );
     const rootClassName = className
-        ? `cratis-object-navigational-bar px-4 py-2 mb-2 ${className}`
-        : 'cratis-object-navigational-bar px-4 py-2 mb-2';
+        ? `cratis-object-navigational-bar cratis:px-4 cratis:py-2 cratis:mb-2 ${className}`
+        : 'cratis-object-navigational-bar cratis:px-4 cratis:py-2 cratis:mb-2';
 
     return (
         <div className={rootClassName}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Button
-                    icon={<faIcons.FaArrowLeft />}
-                    text
-                    size="small"
-                    onClick={() => onNavigate(navigationPath.length - 1)}
-                    tooltip="Navigate back"
-                    tooltipOptions={{ position: 'top' }}
-                    disabled={navigationPath.length === 0}
-                />
-                <div style={{ fontSize: '0.9rem', color: 'var(--cratis-text-color-secondary)' }}>
+                <Tooltip content={backLabel} position='top'>
+                    <Button
+                        variant='ghost'
+                        size='small'
+                        icon={<faIcons.FaArrowLeft />}
+                        onClick={() => onNavigate(navigationPath.length - 1)}
+                        disabled={navigationPath.length === 0}
+                        aria-label={backLabel}
+                    />
+                </Tooltip>
+                <div
+                    style={{
+                        fontSize: '0.9rem',
+                        color: 'var(--cratis-text-color-secondary)',
+                    }}
+                >
                     {breadcrumbItems.map((item, index) => (
                         <span key={index}>
-                            {index > 0 && <span className="mx-2">&gt;</span>}
-                            <span
+                            {index > 0 && <span className='cratis:mx-2'>&gt;</span>}
+                            <button
+                                type='button'
                                 onClick={() => onNavigate(item.index)}
+                                aria-current={
+                                    index === breadcrumbItems.length - 1
+                                        ? 'location'
+                                        : undefined
+                                }
                                 style={{
+                                    padding: 0,
+                                    border: 0,
+                                    background: 'transparent',
+                                    color: 'inherit',
+                                    font: 'inherit',
                                     cursor: 'pointer',
-                                    textDecoration: index < breadcrumbItems.length - 1 ? 'underline' : 'none'
+                                    textDecoration:
+                                        index < breadcrumbItems.length - 1
+                                            ? 'underline'
+                                            : 'none',
                                 }}
                             >
                                 {item.name}
-                            </span>
+                            </button>
                         </span>
                     ))}
                 </div>

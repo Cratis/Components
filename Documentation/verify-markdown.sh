@@ -1,9 +1,10 @@
 #!/bin/bash
+# Copyright (c) Cratis. All rights reserved.
+# Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-# Markdown Verification Script
-# This script runs the same markdown linting and link verification that runs in CI
+# Runs Markdown linting and deterministic, repository-local link verification.
 
-set -e
+set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -13,12 +14,9 @@ echo "Markdown Verification"
 echo "=========================================="
 echo ""
 
-# Check if running from repository root or Documentation folder
-if [ "$(basename "$PWD")" = "Documentation" ]; then
-    cd ..
-fi
-
-echo "Working directory: $PWD"
+# Always resolve from this script rather than trusting an inherited/symlinked PWD.
+cd "$ROOT_DIR"
+echo "Working directory: $(pwd -P)"
 echo ""
 
 # Step 1: Markdown Linting
@@ -27,12 +25,24 @@ echo "Step 1: Running markdownlint..."
 echo "=========================================="
 echo ""
 
-if ! command -v npx &> /dev/null; then
+if ! command -v npx >/dev/null 2>&1; then
     echo "Error: npx is not installed. Please install Node.js and npm."
     exit 1
 fi
 
-npx markdownlint-cli2 "Documentation/**/*.md"
+npx markdownlint-cli2 \
+    "README.md" \
+    "release.md" \
+    "Documentation/**/*.md" \
+    "Documentation/**/*.mdx" \
+    "Source/*.md" \
+    "Migrator/*.md" \
+    "ESLint/*.md" \
+    "Conformance/*.md" \
+    "Adapters/**/*.md" \
+    "scripts/*.md" \
+    "Storybook/*.md" \
+    "!**/node_modules/**"
 LINT_EXIT_CODE=$?
 
 echo ""
@@ -45,14 +55,19 @@ echo ""
 
 # Step 2: Link Verification
 echo "=========================================="
-echo "Step 2: Running link verification..."
+echo "Step 2: Running local link verification..."
 echo "=========================================="
 echo ""
-echo "This may take a few minutes to check all links..."
-echo ""
 
-npx linkinator "Documentation/**/*.md" --markdown --recurse --verbosity error --status-code "403:ok" --skip "^(https?:\\/\\/)?(localhost|127\\.0\\.0\\.1)(:\\d+)?(\\/|$)"
-LINK_EXIT_CODE=$?
+if ! command -v node >/dev/null 2>&1; then
+    echo "Error: node is not installed. Please install Node.js."
+    exit 1
+fi
+
+LINK_EXIT_CODE=0
+for SCAN_ROOT in "$SCRIPT_DIR" "$ROOT_DIR/Adapters" "$ROOT_DIR/scripts"; do
+    node "$SCRIPT_DIR/verify-local-links.mjs" "$SCAN_ROOT" || LINK_EXIT_CODE=$?
+done
 
 echo ""
 if [ $LINK_EXIT_CODE -eq 0 ]; then

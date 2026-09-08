@@ -22,12 +22,9 @@ const ErrorThrowingComponent = () => {
     }
     
     return (
-        <div className="p-4">
-            <h2 className="text-xl mb-3">Click the button to trigger an error</h2>
-            <button 
-                className="p-button p-component"
-                onClick={() => setShouldThrow(true)}
-            >
+        <div className="cratis:p-4">
+            <h2 className="cratis:text-xl cratis:mb-3">Click the button to trigger an error</h2>
+            <button className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setShouldThrow(true)}>
                 Throw Error
             </button>
         </div>
@@ -37,8 +34,8 @@ const ErrorThrowingComponent = () => {
 export const Default: Story = {
     render: () => (
         <ErrorBoundary>
-            <div className="p-4">
-                <h1 className="text-2xl mb-3">Normal Content</h1>
+            <div className="cratis:p-4">
+                <h1 className="cratis:text-2xl cratis:mb-3">Normal Content</h1>
                 <p>This content is wrapped in an ErrorBoundary. Everything works fine here.</p>
             </div>
         </ErrorBoundary>

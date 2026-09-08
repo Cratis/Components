@@ -1,0 +1,187 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-button {
+    display: inline-flex;
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.75rem 1.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border: 1px solid var(--cratis-action-background);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
+    font: inherit;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background-color 140ms ease,
+        border-color 140ms ease,
+        color 140ms ease,
+        opacity 140ms ease;
+}
+.cratis-button:not([data-tone])[data-variant='solid']:hover:not(:disabled) {
+    border-color: var(--cratis-action-background-hover);
+    background: var(--cratis-action-background-hover);
+}
+.cratis-button:not([data-tone])[data-variant='solid']:active:not(:disabled) {
+    border-color: var(--cratis-action-background-active);
+    background: var(--cratis-action-background-active);
+}
+.cratis-button:is([data-variant='outline'], [data-variant='ghost']):hover:not(:disabled) {
+    background: color-mix(in srgb, currentColor 4%, transparent);
+}
+.cratis-button:is([data-variant='outline'], [data-variant='ghost']):active:not(
+        :disabled
+    ) {
+    background: color-mix(in srgb, currentColor 16%, transparent);
+}
+.cratis-button:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-button:disabled {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-button[data-size='small'] {
+    min-height: var(--cratis-control-height-small);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
+.cratis-button[data-size='large'] {
+    min-height: var(--cratis-control-height-large);
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+}
+.cratis-button[data-shape='pill'],
+.cratis-button[data-icon-only='true'] {
+    border-radius: 999px;
+}
+.cratis-button[data-icon-only='true'] {
+    width: var(--cratis-control-height);
+    padding: 0;
+}
+.cratis-button[data-size='small'][data-icon-only='true'] {
+    width: var(--cratis-control-height-small);
+}
+.cratis-button[data-size='large'][data-icon-only='true'] {
+    width: var(--cratis-control-height-large);
+}
+
+.cratis-button[data-variant='outline'] {
+    border-color: currentColor;
+    background: transparent;
+    color: var(--cratis-primary-color);
+}
+.cratis-button[data-variant='ghost'] {
+    border-color: transparent;
+    background: transparent;
+    color: var(--cratis-text-color);
+}
+.cratis-button[data-variant='link'] {
+    min-height: auto;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    color: var(--cratis-primary-color);
+    text-decoration: underline;
+}
+
+.cratis-button[data-tone='neutral'] {
+    --cratis-button-tone: var(--cratis-text-color);
+    --cratis-button-fill: var(--cratis-surface-100);
+    --cratis-button-fill-text: var(--cratis-text-color);
+}
+.cratis-button[data-tone='accent'] {
+    --cratis-button-tone: var(--cratis-info-background);
+    --cratis-button-fill: var(--cratis-info-background);
+    --cratis-button-fill-text: var(--cratis-info-text);
+}
+.cratis-button[data-tone='positive'] {
+    --cratis-button-tone: var(--cratis-success-background);
+    --cratis-button-fill: var(--cratis-success-background);
+    --cratis-button-fill-text: var(--cratis-success-text);
+}
+.cratis-button[data-tone='caution'] {
+    --cratis-button-tone: var(--cratis-warning-background);
+    --cratis-button-fill: var(--cratis-warning-background);
+    --cratis-button-fill-text: var(--cratis-warning-text);
+}
+.cratis-button[data-tone='critical'] {
+    --cratis-button-tone: var(--cratis-danger-background);
+    --cratis-button-fill: var(--cratis-danger-background);
+    --cratis-button-fill-text: var(--cratis-danger-text);
+}
+.cratis-button[data-tone='accent'][data-severity='help'] {
+    --cratis-button-tone: var(--cratis-primary-600);
+    --cratis-button-fill: var(--cratis-primary-600);
+    --cratis-button-fill-text: var(--cratis-primary-600-text);
+}
+.cratis-button[data-tone='neutral'][data-severity='contrast'] {
+    --cratis-button-tone: var(--cratis-text-color);
+    --cratis-button-fill: var(--cratis-text-color);
+    --cratis-button-fill-text: var(--cratis-surface-0);
+}
+.cratis-button[data-tone][data-variant='solid'] {
+    border-color: var(--cratis-button-fill);
+    background: var(--cratis-button-fill);
+    color: var(--cratis-button-fill-text);
+}
+.cratis-button[data-tone][data-variant='solid']:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--cratis-button-fill) 88%, black);
+    background: color-mix(in srgb, var(--cratis-button-fill) 88%, black);
+}
+.cratis-button[data-tone][data-variant='solid']:active:not(:disabled) {
+    border-color: color-mix(in srgb, var(--cratis-button-fill) 76%, black);
+    background: color-mix(in srgb, var(--cratis-button-fill) 76%, black);
+}
+.cratis-button[data-tone]:is(
+        [data-variant='outline'],
+        [data-variant='ghost'],
+        [data-variant='link']
+    ) {
+    color: var(--cratis-button-tone);
+}
+
+.cratis-button__icon,
+.cratis-button__spinner {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+.cratis-button__spinner {
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: cratis-button-spin 700ms linear infinite;
+}
+
+@keyframes cratis-button-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cratis-button,
+    .cratis-button__spinner {
+        transition: none;
+        animation: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .cratis-button {
+        border-color: ButtonText;
+    }
+    .cratis-button:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+}

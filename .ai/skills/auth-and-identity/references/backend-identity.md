@@ -103,8 +103,8 @@ Claims contain everything the authentication handler extracted from the token. C
 | Claim Key | Description | Example Value |
 |-----------|-------------|---------------|
 | `http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier` | User ID | `abc123` |
-| `name` | Display name | `Jane Doe` |
-| `email` or `preferred_username` | Email | `jane@contoso.com` |
+| `name` | Display name | `Sample User` |
+| `email` or `preferred_username` | Email | `sample.user@example.invalid` |
 | `http://schemas.microsoft.com/ws/2008/06/identity/claims/role` | Role | `Admin` |
 | Custom claims | Anything your IdP adds | `department`, `tenant_id`, etc. |
 

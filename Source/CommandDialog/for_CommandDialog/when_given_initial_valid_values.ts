@@ -6,15 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { CommandDialog } from '../CommandDialog';
 
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, props.footer, props.children)
-}));
 
-vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean }) =>
-        React.createElement('button', { disabled: props.disabled }, props.label)
-}));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },
@@ -45,7 +37,7 @@ describe('when CommandDialog is given initial valid values', () => {
     beforeEach(() => {
         const element = React.createElement(CommandDialog, {
             command: TestCommand as unknown as new () => object,
-            initialValues: { name: 'John Doe' } as Partial<TestCommand>,
+            initialValues: { name: 'Sample User' } as Partial<TestCommand>,
             visible: true,
             title: 'Test Dialog'
         });

@@ -1,12 +1,19 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
+import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { Dialog } from './Dialog';
-import { DialogButtons, DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
-import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
+import { DialogInitialFocus } from './DialogInitialFocus';
+import {
+    DialogButtons,
+    DialogResult,
+    useDialog,
+    useDialogContext,
+} from '@cratis/arc.react/dialogs';
+import { Button } from '../Common/Button';
+import { expect, userEvent, within } from 'storybook/test';
 
 const meta: Meta<typeof Dialog> = {
     title: 'Dialogs/Dialog',
@@ -19,7 +26,19 @@ const meta: Meta<typeof Dialog> = {
 export default meta;
 type Story = StoryObj<typeof Dialog>;
 
-const DialogWrapper = ({ buttons, title, children, isValid }: { buttons: DialogButtons; title: string; children: React.ReactNode; isValid?: boolean }) => {
+const DialogWrapper = ({
+    buttons,
+    title,
+    children,
+    isValid,
+    initialFocus,
+}: {
+    buttons: DialogButtons;
+    title: string;
+    children: React.ReactNode;
+    isValid?: boolean;
+    initialFocus?: DialogInitialFocus;
+}) => {
     const ResultDialog = () => {
         const { closeDialog } = useDialogContext();
 
@@ -27,6 +46,7 @@ const DialogWrapper = ({ buttons, title, children, isValid }: { buttons: DialogB
             <Dialog
                 title={title}
                 buttons={buttons}
+                initialFocus={initialFocus}
                 onConfirm={() => closeDialog(DialogResult.Ok)}
                 onCancel={() => closeDialog(DialogResult.Cancelled)}
                 isValid={isValid}
@@ -40,45 +60,99 @@ const DialogWrapper = ({ buttons, title, children, isValid }: { buttons: DialogB
 
     return (
         <>
-            <Button label="Open Dialog" onClick={async () => await showDialog()} />
+            <Button onClick={async () => await showDialog()}>Open Dialog</Button>
             <DialogComponent />
         </>
     );
 };
 
+const openDialog = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: /open/i }));
+    await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
+};
+
 export const OkCancel: Story = {
+    play: openDialog,
     render: () => (
-        <DialogWrapper title="Confirm Action" buttons={DialogButtons.OkCancel}>
+        <DialogWrapper title='Confirm Action' buttons={DialogButtons.OkCancel}>
             <p>Are you sure you want to perform this action?</p>
         </DialogWrapper>
-    )
+    ),
 };
 
 export const YesNo: Story = {
+    play: openDialog,
     render: () => (
-        <DialogWrapper title="Delete Item" buttons={DialogButtons.YesNo}>
+        <DialogWrapper title='Delete Item' buttons={DialogButtons.YesNo}>
             <p>Do you want to delete this item? This cannot be undone.</p>
         </DialogWrapper>
-    )
+    ),
 };
 
 export const YesNoCancel: Story = {
+    play: openDialog,
     render: () => (
-        <DialogWrapper title="Save Changes" buttons={DialogButtons.YesNoCancel}>
+        <DialogWrapper title='Save Changes' buttons={DialogButtons.YesNoCancel}>
             <p>You have unsaved changes. Do you want to save them before closing?</p>
         </DialogWrapper>
-    )
+    ),
 };
 
 export const Ok: Story = {
+    play: openDialog,
     render: () => (
-        <DialogWrapper title="Information" buttons={DialogButtons.Ok}>
+        <DialogWrapper title='Information' buttons={DialogButtons.Ok}>
             <p>The operation completed successfully.</p>
         </DialogWrapper>
-    )
+    ),
+};
+
+/**
+ * A destructive dialog that needs no input. Initial focus is put on the
+ * dismissing button, so the `Enter` still held down from the row that opened
+ * the dialog — or a reflexive second press — cannot confirm it. Hold `Enter`
+ * on the trigger button to see the difference against the stories above.
+ */
+export const DestructiveFocusesDismiss: Story = {
+    play: openDialog,
+    render: () => (
+        <DialogWrapper
+            title='Delete personal data?'
+            buttons={DialogButtons.YesNo}
+            initialFocus={DialogInitialFocus.Cancel}
+        >
+            <p>
+                This permanently removes the person and every record about them. It cannot
+                be undone.
+            </p>
+        </DialogWrapper>
+    ),
+};
+
+/**
+ * Nothing is armed at all: focus goes to the dialog's own title, so screen
+ * readers announce the dialog from the top and the first `Tab` walks the
+ * content. Use it when the dialog should be read before it is answered.
+ */
+export const DestructiveArmsNothing: Story = {
+    play: openDialog,
+    render: () => (
+        <DialogWrapper
+            title='Delete personal data?'
+            buttons={DialogButtons.OkCancel}
+            initialFocus={DialogInitialFocus.Content}
+        >
+            <p>
+                This permanently removes the person and every record about them. It cannot
+                be undone.
+            </p>
+        </DialogWrapper>
+    ),
 };
 
 export const WithForm: Story = {
+    play: openDialog,
     render: () => {
         type NameResult = { name: string };
 
@@ -88,50 +162,56 @@ export const WithForm: Story = {
 
             return (
                 <Dialog
-                    title="Edit Name"
+                    title='Edit Name'
                     buttons={DialogButtons.OkCancel}
                     onConfirm={() => closeDialog(DialogResult.Ok, { name })}
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
                     isValid={name.trim().length > 0}
                 >
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="name">Name</label>
-                        <InputText
-                            id="name"
+                    <div className='cratis:flex cratis:flex-col cratis:gap-2'>
+                        <label htmlFor='name'>Name</label>
+                        <input
+                            id='name'
+                            className='cratis-field-input'
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter name..."
+                            onChange={(event) => setName(event.target.value)}
+                            placeholder='Enter name…'
                         />
                         {name.trim().length === 0 && (
-                            <small className="p-error">Name is required</small>
+                            <small className='cratis:text-[var(--cratis-red-500)]'>
+                                Name is required
+                            </small>
                         )}
                     </div>
                 </Dialog>
             );
         };
 
-        const [AddNameDialogComponent, showAddNameDialog] = useDialog<NameResult>(AddNameDialog);
+        const [AddNameDialogComponent, showAddNameDialog] =
+            useDialog<NameResult>(AddNameDialog);
         const [result, setResult] = useState('');
 
         return (
             <>
                 <Button
-                    label="Open Form Dialog"
                     onClick={async () => {
                         const [dialogResult, value] = await showAddNameDialog();
                         if (dialogResult === DialogResult.Ok && value) {
                             setResult(value.name);
                         }
                     }}
-                />
+                >
+                    Open Form Dialog
+                </Button>
                 {result && <p>Last saved name: {result}</p>}
                 <AddNameDialogComponent />
             </>
         );
-    }
+    },
 };
 
 export const IsBusy: Story = {
+    play: openDialog,
     render: () => {
         const [busy, setBusy] = useState(false);
 
@@ -140,11 +220,11 @@ export const IsBusy: Story = {
 
             return (
                 <Dialog
-                    title="Saving changes"
+                    title='Saving changes'
                     buttons={DialogButtons.OkCancel}
                     onConfirm={async () => {
                         setBusy(true);
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        await new Promise((resolve) => setTimeout(resolve, 3000));
                         setBusy(false);
                         closeDialog(DialogResult.Ok);
                         return true;
@@ -152,7 +232,10 @@ export const IsBusy: Story = {
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
                     isBusy={busy}
                 >
-                    <p>Click Ok to simulate a 3-second save operation. All buttons become disabled and the primary button shows a spinner.</p>
+                    <p>
+                        Click Ok to simulate a 3-second save operation. All buttons become
+                        disabled and the primary button shows a spinner.
+                    </p>
                 </Dialog>
             );
         };
@@ -161,14 +244,15 @@ export const IsBusy: Story = {
 
         return (
             <>
-                <Button label="Open Dialog" onClick={async () => await showDialog()} />
+                <Button onClick={async () => await showDialog()}>Open Dialog</Button>
                 <DialogComponent />
             </>
         );
-    }
+    },
 };
 
 export const CustomButtons: Story = {
+    play: openDialog,
     render: () => {
         type ActionResult = { action: 'draft' | 'publish' };
 
@@ -177,20 +261,24 @@ export const CustomButtons: Story = {
 
             return (
                 <Dialog
-                    title="Custom Actions"
+                    title='Custom Actions'
                     buttons={
                         <>
                             <Button
-                                label="Save Draft"
-                                icon="pi pi-save"
-                                severity="secondary"
-                                onClick={() => closeDialog(DialogResult.Ok, { action: 'draft' })}
-                            />
+                                tone='neutral'
+                                onClick={() =>
+                                    closeDialog(DialogResult.Ok, { action: 'draft' })
+                                }
+                            >
+                                <span aria-hidden='true'>◆</span> Save Draft
+                            </Button>
                             <Button
-                                label="Publish"
-                                icon="pi pi-send"
-                                onClick={() => closeDialog(DialogResult.Ok, { action: 'publish' })}
-                            />
+                                onClick={() =>
+                                    closeDialog(DialogResult.Ok, { action: 'publish' })
+                                }
+                            >
+                                <span aria-hidden='true'>◆</span> Publish
+                            </Button>
                         </>
                     }
                     onCancel={() => closeDialog(DialogResult.Cancelled)}
@@ -200,23 +288,25 @@ export const CustomButtons: Story = {
             );
         };
 
-        const [CustomActionsDialogComponent, showCustomActionsDialog] = useDialog<ActionResult>(CustomActionsDialog);
+        const [CustomActionsDialogComponent, showCustomActionsDialog] =
+            useDialog<ActionResult>(CustomActionsDialog);
         const [result, setResult] = useState('');
 
         return (
             <>
                 <Button
-                    label="Open Custom Dialog"
                     onClick={async () => {
                         const [dialogResult, value] = await showCustomActionsDialog();
                         if (dialogResult === DialogResult.Ok && value) {
                             setResult(value.action);
                         }
                     }}
-                />
+                >
+                    Open Custom Dialog
+                </Button>
                 {result && <p>Last action: {result}</p>}
                 <CustomActionsDialogComponent />
             </>
         );
-    }
+    },
 };

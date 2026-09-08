@@ -1,0 +1,168 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+html.cratis-light .cratis-primereact-button {
+    color: #ffffff !important;
+    background: #005ea8 !important;
+    border-color: #005ea8 !important;
+}
+
+html.cratis-light .cratis-primereact-button[data-tone='neutral'] {
+    background: #475569 !important;
+    border-color: #475569 !important;
+}
+
+html.cratis-light .cratis-primereact-button[data-tone='accent'] {
+    background: #0369a1 !important;
+    border-color: #0369a1 !important;
+}
+
+html.cratis-light .cratis-primereact-button[data-tone='positive'] {
+    background: #047857 !important;
+    border-color: #047857 !important;
+}
+
+html.cratis-light .cratis-primereact-button[data-tone='caution'] {
+    background: #8a3b00 !important;
+    border-color: #8a3b00 !important;
+}
+
+html.cratis-light .cratis-primereact-button[data-tone='critical'] {
+    background: #b91c1c !important;
+    border-color: #b91c1c !important;
+}
+
+html.cratis-light
+    .cratis-primereact-button:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #005ea8 !important;
+    background: transparent !important;
+}
+
+html.cratis-light
+    .cratis-primereact-button[data-tone='neutral']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #475569 !important;
+}
+
+html.cratis-light
+    .cratis-primereact-button[data-tone='accent']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #0369a1 !important;
+}
+
+html.cratis-light
+    .cratis-primereact-button[data-tone='positive']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #047857 !important;
+}
+
+html.cratis-light
+    .cratis-primereact-button[data-tone='caution']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #8a3b00 !important;
+}
+
+html.cratis-light
+    .cratis-primereact-button[data-tone='critical']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #b91c1c !important;
+}
+
+html.cratis-dark .cratis-primereact-button {
+    color: #111827 !important;
+    background: #6ee7b7 !important;
+    border-color: #6ee7b7 !important;
+}
+
+html.cratis-dark .cratis-primereact-button[data-tone='neutral'] {
+    background: #cbd5e1 !important;
+    border-color: #cbd5e1 !important;
+}
+
+html.cratis-dark .cratis-primereact-button[data-tone='accent'] {
+    background: #7dd3fc !important;
+    border-color: #7dd3fc !important;
+}
+
+html.cratis-dark .cratis-primereact-button[data-tone='caution'] {
+    background: #fbbf24 !important;
+    border-color: #fbbf24 !important;
+}
+
+html.cratis-dark .cratis-primereact-button[data-tone='critical'] {
+    background: #fca5a5 !important;
+    border-color: #fca5a5 !important;
+}
+
+html.cratis-dark
+    .cratis-primereact-button:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #6ee7b7 !important;
+    background: transparent !important;
+}
+
+html.cratis-dark
+    .cratis-primereact-button[data-tone='neutral']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #cbd5e1 !important;
+}
+
+html.cratis-dark
+    .cratis-primereact-button[data-tone='accent']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #7dd3fc !important;
+}
+
+html.cratis-dark
+    .cratis-primereact-button[data-tone='caution']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #fbbf24 !important;
+}
+
+html.cratis-dark
+    .cratis-primereact-button[data-tone='critical']:is(
+        [data-variant='ghost'],
+        [data-variant='link'],
+        [data-variant='outline']
+    ) {
+    color: #fca5a5 !important;
+}
+
+html.cratis-light .cratis-primereact-progress .p-progressbar-label {
+    color: #111827 !important;
+}
+
+html.cratis-dark .cratis-primereact-progress .p-progressbar-label {
+    color: #ffffff !important;
+}

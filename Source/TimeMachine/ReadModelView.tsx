@@ -1,9 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import type { Version } from './types';
+import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineLabels';
 import { Properties } from './Properties';
+import { FaArrowRotateLeft, FaArrowRotateRight } from 'react-icons/fa6';
 
 /**
  * Props for {@link ReadModelView}.
@@ -30,6 +33,9 @@ interface ReadModelViewProps {
      * the hover state.
      */
     onHoveringCardChange: (isHovering: boolean) => void;
+
+    /** Accessible-name overrides; defaults to English. See {@link TimeMachineLabels}. */
+    labels?: TimeMachineLabels;
 }
 
 /**
@@ -48,6 +54,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
     hoveredIndex,
     onVersionSelect,
     onHoveringCardChange,
+    labels = defaultTimeMachineLabels,
 }) => {
     const displayIndex = hoveredIndex ?? selectedIndex;
     const [flippedMap, setFlippedMap] = useState<Record<string, boolean>>({});
@@ -75,6 +82,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                     {versions.map((version, index) => {
                         const depth = index - displayIndex;
                         const isActive = index === displayIndex;
+                        const isSelected = index === selectedIndex;
                         const isVisible = depth >= 0 && depth < 10;
                         const isFlipped = flippedMap[version.id] ?? false;
 
@@ -99,6 +107,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                     '--opacity': 1 - depth * 0.12,
                                 } as React.CSSProperties}
                                 onClick={() => onVersionSelect(index)}
+                                data-selected={isSelected || undefined}
                                 onMouseEnter={() => onHoveringCardChange(true)}
                                 onMouseLeave={() => onHoveringCardChange(false)}
                             >
@@ -116,10 +125,15 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     type="button"
                                                     className="window-flip-button"
                                                     onClick={toggleFlip(version.id)}
-                                                    aria-label="Show related events"
+                                                    aria-label={labels.showRelatedEvents}
                                                     aria-pressed={isFlipped}
+                                                    data-pressed={isFlipped || undefined}
                                                 >
-                                                    <i className={`pi ${isFlipped ? 'pi-undo' : 'pi-refresh'}`} />
+                                                    {isFlipped ? (
+                                                        <FaArrowRotateLeft aria-hidden='true' />
+                                                    ) : (
+                                                        <FaArrowRotateRight aria-hidden='true' />
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>
@@ -140,10 +154,15 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                     type="button"
                                                     className="window-flip-button"
                                                     onClick={toggleFlip(version.id)}
-                                                    aria-label="Show read model snapshot"
+                                                    aria-label={labels.showReadModelSnapshot}
                                                     aria-pressed={isFlipped}
+                                                    data-pressed={isFlipped || undefined}
                                                 >
-                                                    <i className={`pi ${isFlipped ? 'pi-undo' : 'pi-refresh'}`} />
+                                                    {isFlipped ? (
+                                                        <FaArrowRotateLeft aria-hidden='true' />
+                                                    ) : (
+                                                        <FaArrowRotateRight aria-hidden='true' />
+                                                    )}
                                                 </button>
                                             </div>
                                         </div>

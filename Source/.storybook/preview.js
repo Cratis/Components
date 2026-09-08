@@ -3,71 +3,53 @@
 
 import { addons } from 'storybook/preview-api';
 import React from 'react';
-import 'primeicons/primeicons.css';
+import './foundation.css';
 import './preview.css';
-import darkThemeUrl from 'primereact/resources/themes/lara-dark-blue/theme.css?url';
-import lightThemeUrl from 'primereact/resources/themes/lara-light-blue/theme.css?url';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
-import { tailwindPtPreset } from './pt-preset';
 
-const STYLING_MODES = {
-    'lara-dark': {
-        title: 'Path A — Lara Dark Blue',
-        themeUrl: darkThemeUrl,
+const DARK_SELECTOR = 'cratis-dark';
+const LIGHT_SELECTOR = 'cratis-light';
+
+const APPEARANCE_MODES = {
+    'baseline-dark': {
+        title: 'Cratis baseline — dark',
+        dark: true,
         bodyClass: null,
-        providerValue: {},
     },
-    'lara-light': {
-        title: 'Path A — Lara Light Blue',
-        themeUrl: lightThemeUrl,
+    'baseline-light': {
+        title: 'Cratis baseline — light',
+        dark: false,
         bodyClass: null,
-        providerValue: {},
     },
-    'cratis-themed': {
-        title: 'Path B — Themed with custom palette',
-        themeUrl: darkThemeUrl,
-        bodyClass: 'cratis-themed',
-        providerValue: {},
-    },
-    'unstyled-bare': {
-        title: 'Path C — Unstyled (bare structure)',
-        themeUrl: null,
-        bodyClass: 'cratis-unstyled-bare',
-        providerValue: { unstyled: true },
-    },
-    'unstyled-pt': {
-        title: 'Path C — Unstyled + Tailwind pt',
-        themeUrl: null,
-        bodyClass: 'cratis-unstyled-pt',
-        providerValue: { unstyled: true, pt: tailwindPtPreset },
+    'product-theme': {
+        title: 'Product-owned token mapping',
+        dark: true,
+        bodyClass: 'storybook-product-theme',
     },
 };
 
-const ALL_BODY_CLASSES = Object.values(STYLING_MODES)
-    .map(mode => mode.bodyClass)
+const ALL_BODY_CLASSES = Object.values(APPEARANCE_MODES)
+    .map((mode) => mode.bodyClass)
     .filter(Boolean);
 
-// Tracks the theme relayed from manager.js via the Storybook channel.
-// null means "not embedded — use the toolbar selection".
-let _docsSiteTheme = null;
+let docsSiteAppearance = null;
 
 addons.getChannel().on('STORYBOOK_THEME_CHANGE', ({ theme }) => {
-    _docsSiteTheme = theme === 'light' ? 'lara-light' : 'lara-dark';
-    const mode = STYLING_MODES[_docsSiteTheme];
-    if (mode) {
-        applyThemeLink(mode.themeUrl);
-        applyBodyClass(mode.bodyClass);
-    }
+    docsSiteAppearance = theme === 'light' ? 'baseline-light' : 'baseline-dark';
+    const mode = APPEARANCE_MODES[docsSiteAppearance];
+    if (mode) applyAppearance(mode);
 });
 
+export const tags = ['autodocs'];
+
 export const globalTypes = {
-    theme: {
-        name: 'Styling',
-        description: 'Which README styling path to render the story under',
-        defaultValue: 'lara-dark',
+    appearance: {
+        name: 'Appearance',
+        description: 'Render with the Cratis baseline or a product-owned token mapping',
+        defaultValue: 'baseline-dark',
         toolbar: {
             icon: 'paintbrush',
-            items: Object.entries(STYLING_MODES).map(([value, mode]) => ({
+            items: Object.entries(APPEARANCE_MODES).map(([value, mode]) => ({
                 value,
                 title: mode.title,
             })),
@@ -76,46 +58,24 @@ export const globalTypes = {
     },
 };
 
-function applyThemeLink(href) {
-    let link = document.getElementById('primereact-theme');
-    if (href === null) {
-        if (link) {
-            link.remove();
-        }
-        return;
-    }
-    if (!link) {
-        link = document.createElement('link');
-        link.id = 'primereact-theme';
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-    }
-    // Changed: use getAttribute instead of .href property to avoid triggering HMR
-    const currentHref = link.getAttribute('href');
-    if (currentHref !== href) {
-        link.setAttribute('href', href);
-    }
-}
-
-function applyBodyClass(className) {
+function applyAppearance(mode) {
+    document.documentElement.classList.toggle(DARK_SELECTOR, mode.dark);
+    document.documentElement.classList.toggle(LIGHT_SELECTOR, !mode.dark);
     document.body.classList.remove(...ALL_BODY_CLASSES);
-    if (className) {
-        document.body.classList.add(className);
-    }
+    if (mode.bodyClass) document.body.classList.add(mode.bodyClass);
 }
 
 export const decorators = [
     (Story, context) => {
-        const themeKey = _docsSiteTheme ?? context.globals.theme ?? 'lara-dark';
-        const mode = STYLING_MODES[themeKey] ?? STYLING_MODES['lara-dark'];
-
-        applyThemeLink(mode.themeUrl);
-        applyBodyClass(mode.bodyClass);
+        const appearanceKey =
+            docsSiteAppearance ?? context.globals.appearance ?? 'baseline-dark';
+        const mode = APPEARANCE_MODES[appearanceKey] ?? APPEARANCE_MODES['baseline-dark'];
+        applyAppearance(mode);
 
         return React.createElement(
             CratisComponentsProvider,
-            { value: mode.providerValue },
-            React.createElement(Story)
+            { key: appearanceKey, value: { locale: 'en-US' } },
+            React.createElement(Story),
         );
     },
 ];
@@ -123,6 +83,7 @@ export const decorators = [
 export const parameters = {
     actions: { argTypesRegex: '^on[A-Z].*' },
     controls: { expanded: true },
+    a11y: { test: 'error' },
     backgrounds: {
         default: 'dark',
         values: [
@@ -133,5 +94,3 @@ export const parameters = {
         ],
     },
 };
-
-

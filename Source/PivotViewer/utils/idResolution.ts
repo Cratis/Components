@@ -59,6 +59,54 @@ export function normalizeIdToLayoutKey(
 }
 
 /**
+ * Resolves an item to the engine's canonical array-index identity. A stale object reference is
+ * relocated by its consumer identity when a stable `getItemId` is available; raw consumer ids are
+ * never returned as layout keys.
+ */
+export function resolveInternalItemIndex<TItem extends object>(
+    data: TItem[],
+    item: TItem,
+    getItemId?: (item: TItem, index: number) => string | number,
+): number {
+    const referenceIndex = data.indexOf(item);
+    if (referenceIndex !== -1) return referenceIndex;
+
+    const implicitId = (item as Record<string, unknown>)['id'];
+    const identity = getItemId
+        ? getItemId(item, 0)
+        : typeof implicitId === 'string' || typeof implicitId === 'number'
+          ? implicitId
+          : undefined;
+    if (identity === undefined) return -1;
+
+    return data.findIndex((candidate, index) => {
+        const candidateImplicitId = (candidate as Record<string, unknown>)['id'];
+        const candidateIdentity = getItemId
+            ? getItemId(candidate, index)
+            : typeof candidateImplicitId === 'string' ||
+                typeof candidateImplicitId === 'number'
+              ? candidateImplicitId
+              : undefined;
+        return Object.is(candidateIdentity, identity);
+    });
+}
+
+/**
+ * Resolves the layout key for a specific item. `resolveId` must return the internal array index (or
+ * `-1` when the item cannot be relocated), never a consumer-supplied id.
+ */
+export function resolveLayoutItemId<TItem extends object>(
+    data: TItem[],
+    item: TItem,
+    layout: Layout,
+    resolveId: (item: TItem, index: number) => string | number,
+): string | number {
+    const index = data.indexOf(item);
+    const itemId = index !== -1 ? index : resolveId(item, 0);
+    return normalizeIdToLayoutKey(itemId, layout);
+}
+
+/**
  * Gets the card position from the layout, handling ID type mismatches
  */
 export function getCardPositionFromLayout(

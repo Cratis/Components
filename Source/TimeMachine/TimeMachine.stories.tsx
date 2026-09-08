@@ -27,8 +27,8 @@ const sampleVersions: Version[] = [
             <Properties 
                 data={{
                     userId: 'user-001',
-                    username: 'alice.smith',
-                    email: 'alice@example.com',
+                    username: 'sample.user',
+                    email: 'sample.user@example.invalid',
                     role: 'user',
                     isActive: false,
                     credits: 0
@@ -45,8 +45,8 @@ const sampleVersions: Version[] = [
             <Properties 
                 data={{
                     userId: 'user-001',
-                    username: 'alice.smith',
-                    email: 'alice@example.com',
+                    username: 'sample.user',
+                    email: 'sample.user@example.invalid',
                     role: 'user',
                     isActive: true,
                     credits: 100
@@ -70,8 +70,8 @@ const sampleVersions: Version[] = [
             <Properties 
                 data={{
                     userId: 'user-001',
-                    username: 'alice.smith',
-                    email: 'alice@example.com',
+                    username: 'sample.user',
+                    email: 'sample.user@example.invalid',
                     role: 'user',
                     isActive: true,
                     credits: 500
@@ -95,8 +95,8 @@ const sampleVersions: Version[] = [
             <Properties 
                 data={{
                     userId: 'user-001',
-                    username: 'alice.smith',
-                    email: 'alice@example.com',
+                    username: 'sample.user',
+                    email: 'sample.user@example.invalid',
                     role: 'admin',
                     isActive: true,
                     credits: 500
@@ -138,6 +138,28 @@ export const StartAtLatestVersion: Story = {
             <TimeMachine {...args} />
         </div>
     )
+};
+
+export const LocalizedLabels: Story = {
+    args: {
+        versions: sampleVersions,
+        currentVersionIndex: 1,
+        labels: {
+            readModelView: 'Lesemodell',
+            eventsView: 'Hendelser',
+            previousVersion: 'Forrige versjon',
+            nextVersion: 'Neste versjon',
+            showRelatedEvents: 'Vis relaterte hendelser',
+            showReadModelSnapshot: 'Vis lesemodell',
+            scrollToTop: 'Rull til toppen',
+            scrollToBottom: 'Rull til bunnen',
+        },
+    },
+    render: (args) => (
+        <div style={{ height: '100vh', width: '100vw' }}>
+            <TimeMachine {...args} />
+        </div>
+    ),
 };
 
 export const HighScrollSensitivity: Story = {

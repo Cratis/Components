@@ -1,555 +1,290 @@
-# Cratis Components
+# @cratis/components
 
-A collection of React components for building modern applications with Cratis.
+React components for CQRS and event-sourced applications built with
+[Cratis Arc](https://github.com/Cratis/Arc) — command dialogs, typed forms,
+query-backed data tables, and higher-order application surfaces.
 
-## Requirements
+The package provides React components for Arc commands, queries, dialogs,
+forms, and application surfaces. Components owns its public markup, TypeScript
+contracts, stable parts, and design tokens. React Aria supplies selected
+interaction primitives internally; consumers do not import or style React Aria.
 
-### Minimum Versions
+- [Canonical Components documentation](https://cratis.io/components/)
+- [Renderer adapters and coexistence](https://github.com/Cratis/Components/tree/main/Documentation/renderers)
+- [Migration guide](./MIGRATION.md)
+- [Private security reporting](mailto:oss@cratis.io?subject=Security%3A)
 
-- TypeScript: 4.7+
-- React: 18.0+ or 19.0+
-- Node.js: 16+ (for development)
-
-### TypeScript Configuration
-
-This package is compatible with all modern TypeScript `moduleResolution` strategies:
-
-- ✅ `"bundler"` (recommended for Vite, esbuild, webpack 5+)
-- ✅ `"node16"` / `"nodenext"` (for Node.js projects)
-- ✅ `"node"` (legacy, but supported)
-
-The package provides dual CommonJS and ES Module builds with proper conditional exports for optimal module resolution and tree-shaking.
-
-## Installation
+## Install
 
 ```bash
-npm install @cratis/components primereact primeicons
-# or
-yarn add @cratis/components primereact primeicons
+npm install @cratis/components@^4
 ```
 
-`primereact` and `primeicons` are peer dependencies — installing them in your
-app ensures a single copy is shared with the wrappers in this package. The
-`@cratis/arc*` packages and `react`/`react-dom` are also peer dependencies;
-you typically already have them.
+> **Publication status:** This install example targets the owner-authorized 4.0.0 npm release. When
+> reading this README from repository source before that release, verify availability with
+> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace
+> instead.
 
-The following are **optional** peer dependencies, only required if you use the
-component that depends on them:
+The current package manifest declares these peer dependencies:
 
-| Component | Optional peer |
-|---|---|
-| `PivotViewer` | `pixi.js` (canvas) and `framer-motion` (animated panels) |
-| `DataPage` resizable layout | `allotment` |
+- `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`
+- `@cratis/fundamentals` `^7.10.3`
+- optional `pixi.js` `^8.20.0`
+- `react` and `react-dom` `^19.0.0`
+- `reflect-metadata` `0.2.2`
+- `tsyringe` `4.10.0`
 
-Install them only when you reach for the corresponding component.
+Strict installers can declare them explicitly; keep both Arc packages on the same application version:
 
-## Usage
-
-### Importing Components
-
-You can import components using subpath imports for better tree-shaking:
-
-```typescript
-// Import specific component modules
-import { TimeMachine } from '@cratis/components/TimeMachine';
-import { DataPage } from '@cratis/components/DataPage';
-import { CommandForm } from '@cratis/components/CommandForm';
-
-// Or import from the main entry point
-import { TimeMachine, DataPage } from '@cratis/components';
+```bash
+ARC_VERSION=22.6.2
+npm install @cratis/components@^4 \
+  "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
+  @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
+  reflect-metadata@0.2.2 tsyringe@4.10.0
 ```
 
-### Available Subpath Exports
+The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.
 
-Components:
+The generated compatibility schema v2 contract is published at
+`@cratis/components/compat-manifest.json`. It records the supported Components and tooling
+windows, the authorized seven-package scope, shared release version, renderer ABI/profile ranges,
+and exact lower/current adapter evidence. `release.md` at the repository root describes the
+label-driven publication policy.
 
-- `@cratis/components` — package root (re-exports `CratisComponentsProvider` and the namespaced component groups)
-- `@cratis/components/CommandDialog`
-- `@cratis/components/CommandStepper`
-- `@cratis/components/CommandForm`
-- `@cratis/components/CommandForm/fields`
-- `@cratis/components/Common`
-- `@cratis/components/DataPage`
-- `@cratis/components/DataTables`
-- `@cratis/components/Dialogs`
-- `@cratis/components/Dropdown`
-- `@cratis/components/ObjectContentEditor`
-- `@cratis/components/ObjectNavigationalBar`
-- `@cratis/components/PivotViewer`
-- `@cratis/components/SchemaEditor`
-- `@cratis/components/TimeMachine`
-- `@cratis/components/Toolbar`
-- `@cratis/components/types`
+Renderer-adapter authors can import the public draft 2020-12 metadata schema from
+`@cratis/components/schemas/ui-adapter.schema.json`. It validates the static `package.json#cratis`
+object; runtime behavior still requires `@cratis/components.conformance`. See the
+[renderer-adapter documentation](https://github.com/Cratis/Components/blob/16dd95b7c894f3275b03714ffdc676d2d3505fd8/Documentation/renderers/index.md#adapter-package-metadata-schema)
+for the boundary and limitations.
 
-Stylesheets:
+**Yarn PnP note:** the current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.6.2`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
-- `@cratis/components/styles` — Tailwind utilities + Cratis CSS variable tokens (single stylesheet, recommended)
-- `@cratis/components/tokens` — only the `--cratis-*` CSS variable tokens (for consumers using their own utility CSS solution)
+`pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
 
-## Styling
-
-This package ships primarily for its functionality and Arc integrations.
-Styling is designed to stay out of the way: choose the setup that matches how
-much control you want, and the other layers stay invisible.
-
-> **Tip — see each setup live:** every Storybook story includes a **Styling**
-> toolbar (paintbrush icon) that flips between five modes that demonstrate
-> the three setups below: *Lara Dark Blue*, *Lara Light Blue*, *Themed with
-> custom palette*, *Unstyled (bare structure)*, and *Unstyled + Tailwind pt*.
-> Open any story (`yarn dev`) and switch modes to see the same component under
-> each setup.
-
-### TL;DR — choose a styling setup
-
-| Setup | When | Effort | What you write |
-|---|---|---|---|
-| **Use a PrimeReact theme** | You want components to look good immediately and tweak from there. | Lowest | Theme CSS import + provider |
-| **Use a custom palette on top of a PrimeReact theme** | You want PrimeReact's structure but your own colors. | Low | A PrimeReact theme + CSS variable overrides |
-| **Use fully unstyled mode** | You're integrating into a tightly controlled design system. | Highest | `unstyled: true` + a `pt` preset in CSS or Tailwind |
-
-> **Why the first two options still load a PrimeReact theme**
->
-> In PrimeReact 10, every widget's *structural* CSS (padding, borders, dialog
-> frame, focus rings, button shapes) ships **inside the theme file**. There is
-> no separate "primitives" stylesheet. So a consumer who doesn't load any
-> PrimeReact theme also has no structural CSS — components render as their
-> raw HTML primitives.
->
-> The `--cratis-*` token layer is therefore an **additive Cratis-scoped tint**
-> for surfaces *our* wrappers own (validation error text, the FormElement
-> addon, breadcrumb borders, etc.). It is not, by itself, enough to skin
-> PrimeReact widgets. Override PrimeReact's variables when you want the whole
-> UI in your palette. Use `unstyled: true` and a `pt` preset when you want to
-> replace PrimeReact's visuals entirely.
-
-All three setups use the same one-line setup. You can change direction later
-because the same provider, tokens, and `pt` hooks stay available.
-
-### One-line setup (every styling option)
-
-```tsx
-import '@cratis/components/styles';
-import { CratisComponentsProvider } from '@cratis/components';
-
-export const App = () => (
-    <CratisComponentsProvider>
-        <YourApp />
-    </CratisComponentsProvider>
-);
+```bash
+npm install pixi.js@^8.20.0
 ```
 
-- `@cratis/components/styles` ships the Tailwind utility classes used inside
-  the package plus the `--cratis-*` CSS variable token layer that every
-  internal component reads from. (Use `@cratis/components/tokens` instead if
-  you're bringing your own Tailwind.)
-- `CratisComponentsProvider` is a thin wrapper over PrimeReact's
-  `PrimeReactProvider` so Cratis has one place to layer in defaults. Drop in
-  raw `PrimeReactProvider` if you'd rather.
+Keep exactly one compatible Pixi resolution across the application and Components; two installed copies produce nominal TypeScript incompatibilities for `PIXI.Container` and pointer-event types even when both satisfy `^8.20.0`. The capability-subpath table below identifies the current Pixi-dependent surfaces.
 
-The three setups below differ only in **what else** you load on top of this
-setup.
-
----
-
-### Use a PrimeReact theme
-
-Load any PrimeReact theme stylesheet alongside Cratis Components. PrimeReact's
-own widgets paint themselves from the theme, and the `--cratis-*` tokens cascade
-to the matching theme variables so Cratis-scoped surfaces follow along.
-
-```tsx
-// 1. Theme first, then Cratis styles so any --cratis-* override wins.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
-import 'primeicons/primeicons.css';
-import '@cratis/components/styles';
-
-import { CratisComponentsProvider } from '@cratis/components';
-
-export const App = () => (
-    <CratisComponentsProvider>
-        <YourApp />
-    </CratisComponentsProvider>
-);
-```
-
-#### Override a single component with CSS
-
-Plain CSS works fine on top of the theme. Target either PrimeReact's class
-names or your own `className`:
-
-```css
-/* yourApp.css */
-.p-button {
-    border-radius: 999px;            /* pill buttons everywhere */
-}
-
-.dangerous-button {
-    background: var(--cratis-red-500);
-    color: white;
-}
-```
-
-```tsx
-<Button label="Delete" className="dangerous-button" />
-```
-
-#### Override a single component with Tailwind
-
-Pass Tailwind utility classes through the wrapper's `className` prop:
-
-```tsx
-<InputTextField value={c => c.name}
-                className="rounded-2xl bg-slate-900 text-slate-50" />
-
-<Dialog title="Confirm" className="shadow-2xl rounded-3xl">
-    {/* … */}
-</Dialog>
-```
-
-**Use this setup when:** you're prototyping, building internal tools, or are
-happy with one of the prebuilt PrimeReact themes.
-
----
-
-### Use a custom palette on top of a PrimeReact theme
-
-Keep a PrimeReact theme as your **structural baseline** (so every widget gets
-its padding, dialog frame, button shape, focus ring, etc.) and override the
-PrimeReact CSS variables on `:root` to repaint the whole UI in your own
-colors. The `--cratis-*` tokens follow along through tokens.css's cascade, so
-Cratis-scoped surfaces stay in sync — and you can override the Cratis tokens
-independently if you want Cratis surfaces to differ from PrimeReact widgets.
-
-#### With plain CSS
-
-```css
-/* palette.override.css — imported once, after @cratis/components/styles */
-:root {
-    /* PrimeReact variables — these are what PrimeReact widgets read. */
-    --surface-0:        #1e293b;
-    --surface-100:      #1e293b;
-    --surface-ground:   #020617;
-    --surface-section:  #0f172a;
-    --surface-card:     #1e293b;
-    --surface-overlay:  #1e293b;
-    --surface-hover:    #334155;
-    --surface-border:   #334155;
-
-    --text-color:           #f8fafc;
-    --text-color-secondary: #94a3b8;
-
-    --primary-color:      #38bdf8;
-    --primary-color-text: #0b1220;
-
-    --highlight-bg:         #1e40af;
-    --highlight-text-color: #ffffff;
-
-    --border-radius: 10px;
-
-    /* --cratis-* tokens default to var(--surface-*) etc. via tokens.css, so
-       the overrides above flow through automatically. Set these explicitly
-       only if you want Cratis-scoped surfaces tinted differently. */
-    --cratis-red-500:   #ef4444;
-    --cratis-green-500: #22c55e;
-}
-```
-
-```tsx
-// 1. PrimeReact theme provides the structure.
-import 'primereact/resources/themes/lara-dark-blue/theme.css';
-import 'primeicons/primeicons.css';
-import '@cratis/components/styles';
-// 2. Your palette overrides — must come after the theme so they win.
-import './palette.override.css';
-```
-
-#### Scoped (dark-on-light, light-on-dark, etc.)
-
-PrimeReact variables cascade like any other CSS variable, so an ancestor
-scope works:
-
-```css
-.dark-zone {
-    --surface-card: #0b1220;
-    --text-color:   #f8fafc;
-    --primary-color: #60a5fa;
-}
-```
-
-```tsx
-<div className="dark-zone">
-    <Dialog title="Always dark">…</Dialog>
-</div>
-```
-
-#### With Tailwind CSS
-
-Tailwind's `@layer base` is the idiomatic spot — declare the palette once and
-Tailwind handles cascade and dark mode:
-
-```css
-/* app.css */
-@import "tailwindcss";
-@import "primereact/resources/themes/lara-dark-blue/theme.css";
-@import "@cratis/components/styles";
-
-@layer base {
-    :root {
-        --surface-card:   theme('colors.slate.800');
-        --surface-border: theme('colors.slate.700');
-        --text-color:     theme('colors.slate.50');
-        --primary-color:  theme('colors.sky.400');
-        --cratis-red-500: theme('colors.red.500');
-    }
-
-    .dark {
-        --surface-card: theme('colors.slate.900');
-        --text-color:   theme('colors.slate.100');
-    }
-}
-```
-
-#### What `--cratis-*` tokens are for
-
-PrimeReact widgets read PrimeReact's own variables (`--surface-card`,
-`--text-color`, `--primary-color`, …) directly. Cratis wrappers add some
-surfaces of their own (inline validation error text, the FormElement addon
-background, the breadcrumb bottom border, etc.) — those use a parallel set
-of `--cratis-*` tokens that default to the PrimeReact value via the cascade
-defined in `tokens.css`.
-
-The upshot:
-
-- Override **PrimeReact variables** to repaint the whole UI (PrimeReact widgets + Cratis surfaces).
-- Override **`--cratis-*` tokens** when you specifically want Cratis surfaces to differ from PrimeReact widgets.
-
-#### `--cratis-*` token reference (Cratis-scoped surfaces)
-
-| Group | Tokens |
-|---|---|
-| Surfaces | `--cratis-surface-0`, `--cratis-surface-100`, `--cratis-surface-ground`, `--cratis-surface-section`, `--cratis-surface-card`, `--cratis-surface-overlay`, `--cratis-surface-hover`, `--cratis-surface-border` |
-| Text | `--cratis-text-color`, `--cratis-text-color-secondary` |
-| Brand | `--cratis-primary-color`, `--cratis-primary-color-text`, `--cratis-primary-300`, `--cratis-primary-400`, `--cratis-primary-500`, `--cratis-primary-600` |
-| Selection | `--cratis-highlight-bg`, `--cratis-highlight-text-color` |
-| Semantic | `--cratis-green-500`, `--cratis-orange-500`, `--cratis-red-500` |
-| Geometry | `--cratis-border-radius` |
-| Effects | `--cratis-focus-ring`, `--cratis-maskbg` |
-
-Each defaults to the PrimeReact variable with the same name minus the
-`--cratis-` prefix (e.g. `--cratis-surface-card` → `var(--surface-card)`).
-
-**Use this setup when:** you want a custom look without writing a PrimeReact
-theme from scratch, you're shipping multiple palette variants (light/dark/
-brand), or you want Cratis-scoped surfaces tinted differently from PrimeReact
-widgets.
-
----
-
-### Use fully unstyled mode
-
-Turn off every PrimeReact base style at the provider and supply visuals
-through PrimeReact's `pt` (pass-through) mechanism, your own CSS, or both.
-Components render structurally only and become a blank canvas.
-
-```tsx
-import '@cratis/components/styles';   // tokens + Tailwind utilities still useful for spacing/layout
-import { CratisComponentsProvider } from '@cratis/components';
-
-export const App = () => (
-    <CratisComponentsProvider value={{ unstyled: true, pt: globalPt }}>
-        <YourApp />
-    </CratisComponentsProvider>
-);
-```
-
-#### A `pt` preset in plain CSS
-
-Attach a `className` from your own stylesheet via a global preset:
+## Styles
 
 ```ts
-// pt-preset.ts
-export const globalPt = {
-    button: {
-        root: { className: 'my-btn' },
-    },
-    dialog: {
-        root: { className: 'my-dialog' },
-        header: { className: 'my-dialog__header' },
-        content: { className: 'my-dialog__body' },
-    },
-    inputtext: {
-        root: { className: 'my-input' },
-    },
-} as const;
+import '@cratis/components/tokens';
+import '@cratis/components/styles';
+import '@cratis/components/theme'; // optional baseline appearance
 ```
 
-```css
-/* yourApp.css */
-.my-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
-    border: none;
-    border-radius: var(--cratis-border-radius);
-    cursor: pointer;
-}
+`tokens` supplies conservative light defaults. `styles` contains structural rules and internal utilities in low-priority Cratis cascade layers, with no Tailwind Preflight/reset or token duplication. `theme` adds automatic/explicit dark mode, forced colors, and themed subtrees.
 
-.my-dialog__header {
-    padding: 1rem 1.25rem;
-    background: var(--cratis-surface-card);
-    border-bottom: 1px solid var(--cratis-surface-border);
-    font-weight: 600;
-}
-```
+A custom product design omits `theme`, imports product CSS after `tokens` and `styles`, and maps its canonical values directly to `--cratis-*`.
 
-#### A `pt` preset in Tailwind
-
-Same shape, Tailwind utilities as the class strings:
-
-```ts
-// pt-preset.ts
-export const globalPt = {
-    button: {
-        root: { className: 'inline-flex items-center px-4 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-400 disabled:opacity-50' },
-    },
-    dialog: {
-        root:    { className: 'rounded-2xl shadow-2xl overflow-hidden' },
-        header:  { className: 'px-5 py-3 bg-slate-800 text-slate-50 font-semibold border-b border-slate-700' },
-        content: { className: 'p-5 bg-slate-900 text-slate-100' },
-    },
-    inputtext: {
-        root: { className: 'w-full px-3 py-2 rounded-md bg-slate-800 text-slate-50 border border-slate-700 focus:border-sky-400 focus:outline-none' },
-    },
-} as const;
-```
-
-#### Per-instance overrides
-
-Anything global can be overridden per-instance — useful when one component
-needs to look different:
+## Provider
 
 ```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+
+export const App = () => (
+    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+        <Application />
+    </CratisComponentsProvider>
+);
+```
+
+The provider owns locale, Components-specific labels, optional renderer selection, and the toast
+region. The default renderer needs no additional package. Certified renderer packages implement the
+stable, nine-slot `stable-presentation/v1` primitive profile; they never replace the full Components
+catalog. They share the Components repository release version and are selected with the provider's
+`library` prop:
+
+- `@cratis/components.mui@4.0.0` — MUI 9.x / Emotion 11.x stable presentation slots;
+- `@cratis/components.primereact@4.0.0` — PrimeReact 11.x stable presentation slots, with an
+  application-owned outer provider and license key;
+- `@cratis/components.primereact10@4.0.0` — PrimeReact 10.9.9+ stable presentation slots, with its
+  separate MIT-era provider, global theme, and upstream-major boundary.
+
+Adapter-specific themes, providers, SSR setup, peers, and license boundaries remain documented by
+the adapter package. Styling for the built-in renderer is CSS-owned. The canonical renderer guide
+bounds primitive adaptation, direct vendor coexistence, custom composition, unsupported claims, and
+license/key ownership.
+
+```tsx
+<CratisComponentsProvider
+    value={{
+        locale: 'nb-NO',
+        messages: {
+            paginator: {
+                navigation: 'Sidenavigasjon',
+                first: 'Første side',
+                previous: 'Forrige side',
+                next: 'Neste side',
+                last: 'Siste side',
+            },
+            datePicker: {
+                today: 'I dag',
+                clear: 'Tøm',
+                openCalendar: 'Åpne kalender',
+                previousMonth: 'Forrige måned',
+                nextMonth: 'Neste måned',
+            },
+        },
+    }}
+>
+    <Application />
+</CratisComponentsProvider>
+```
+
+## Command forms
+
+```tsx
+import { CommandDialog } from '@cratis/components/CommandDialog';
+import { InputTextField } from '@cratis/components/CommandForm';
+import { RegisterAuthor } from './RegisterAuthor';
+
+export const RegisterAuthorDialog = () => (
+    <CommandDialog<RegisterAuthor>
+        command={RegisterAuthor}
+        title='Register author'
+        okLabel='Register'
+    >
+        <InputTextField<RegisterAuthor> value={(command) => command.name} title='Name' />
+    </CommandDialog>
+);
+```
+
+Fields bind directly to generated command properties and surface server validation through the Arc command-form context.
+
+## Query-backed tables
+
+```tsx
+import { Column, DataTableForObservableQuery } from '@cratis/components/DataTables';
+import { ObserveAuthors } from './ObserveAuthors';
+
+<DataTableForObservableQuery
+    query={ObserveAuthors}
+    dataKey='id'
+    emptyMessage='No authors'
+>
+    <Column field='name' header='Name' sortable filter />
+    <Column field='email' header='Email' filter />
+</DataTableForObservableQuery>;
+```
+
+Arc owns server paging. Client filters apply only to the loaded page; complete-result filtering belongs in query arguments and runs on the server before paging.
+
+## Notifications
+
+```tsx
+import { Toaster, toast } from '@cratis/components/Notifications';
+
+<Toaster position='top-right' />;
+
+toast.success({
+    title: 'Saved',
+    description: 'Your changes were saved.',
+});
+```
+
+The queue, promise lifecycle, timers, dispatch substitution, toast frame, and region are Components-owned implementation surfaces.
+
+## Custom styling
+
+Documented customizable component parts use stable `data-cratis-part` names. Components with per-instance customization expose a typed `pt` object containing ordinary HTML attributes for their documented parts.
+
+```tsx
+import { Dialog } from '@cratis/components/Dialogs';
+
 <Dialog
-    title="Brand callout"
-    pt={{ root: { className: 'rounded-none' },
-          header: { className: 'bg-pink-600 text-white' } }}>
-    …
-</Dialog>
-
-<InputTextField value={c => c.name}
-                pt={{ root: { className: 'border-2 border-pink-500' } }} />
+    title='Edit account'
+    pt={{
+        backdrop: { className: 'product-dialog-backdrop' },
+        root: { className: 'product-dialog' },
+        content: { className: 'product-dialog-content' },
+    }}
+>
+    Content
+</Dialog>;
 ```
 
-#### Composite components in unstyled mode
+```css
+:root {
+    --cratis-primary-color: var(--product-accent);
+    --cratis-action-background: var(--product-action);
+    --cratis-action-background-hover: var(--product-action-hover);
+    --cratis-action-background-active: var(--product-action-active);
+    --cratis-action-text: var(--product-on-action);
+    --cratis-surface-card: var(--product-surface);
+    --cratis-surface-overlay: var(--product-surface-raised);
+    --cratis-surface-border: var(--product-border);
+    --cratis-control-background: var(--product-control);
+    --cratis-control-border: var(--product-control-border);
+    --cratis-text-color: var(--product-text);
+    --cratis-focus-ring: var(--product-focus-ring);
+}
 
-`DataPage` and `StepperCommandDialog` compose multiple PrimeReact widgets and
-expose explicit per-slot props. The global `pt` reaches every internal widget;
-per-instance overrides target the inner slot directly:
-
-```tsx
-<DataPage<AllAuthors, Author, never>
-    title="Authors" query={AllAuthors}
-    tablePt={{ table: { className: 'min-w-full divide-y divide-slate-700' } }}
-    menubarPt={{ root: { className: 'px-3 py-2 bg-slate-900' } }}>
-    <DataPage.MenuItems>…</DataPage.MenuItems>
-    <DataPage.Columns>…</DataPage.Columns>
-</DataPage>
-
-<StepperCommandDialog<RegisterOrder> command={RegisterOrder} title="New order"
-    /* pt targets the Stepper */
-    pt={{ stepperpanel: { content: { className: 'pt-6' } } }}
-    /* dialogPt targets the outer Dialog */
-    dialogPt={{ header: { className: 'bg-slate-900' } }}>
-    …
-</StepperCommandDialog>
-```
-
-`ObjectContentEditor`, `ObjectNavigationalBar`, and `SchemaEditor` accept only
-`className` on the root — restyle their internals via the **global** `pt`
-preset.
-
-**Use this setup when:** you have a design system to honor, you're matching a
-brand kit, or you want zero PrimeReact CSS in the final bundle.
-
----
-
-### Combining styling setups
-
-The styling options compose, so you don't have to choose one for the whole app:
-
-- **Themed with one unstyled component** — keep the PrimeReact theme and pass
-  `unstyled` per-component to opt that one widget out:
-  ```tsx
-  <Dialog title="Custom" unstyled pt={brandDialogPt}>…</Dialog>
-  ```
-- **Unstyled with one themed island** — wrap a subtree in a second
-  `CratisComponentsProvider` that restores defaults:
-  ```tsx
-  <CratisComponentsProvider value={{ unstyled: true, pt: globalPt }}>
-      <App />
-      <CratisComponentsProvider value={{ unstyled: false }}>
-          <PrimeReactThemedSubtree />
-      </CratisComponentsProvider>
-  </CratisComponentsProvider>
-  ```
-- **Dark mode** — scope the palette overrides to `.dark` (override
-  `--surface-card`, `--text-color`, `--primary-color`, etc., plus any
-  `--cratis-*` tokens you want to diverge) and toggle the class on the root
-  element. PrimeReact widgets and Cratis surfaces both follow the cascade.
-
-### Per-component `pt` cheat sheet
-
-Three patterns, depending on how much PrimeReact a wrapper composes:
-
-1. **Single-widget wrappers** — `Dialog`, every `CommandForm` field,
-   `EventsView`, and `Dropdown` forward `pt`, `ptOptions`, `unstyled`, and
-   `className` straight to their inner PrimeReact component.
-2. **Multi-slot composites** — `StepperCommandDialog` (`pt` for Stepper,
-   `dialogPt` for Dialog), `DataPage` (`tablePt` for DataTable, `menubarPt`
-   for Menubar), and `DataTableForQuery` / `DataTableForObservableQuery`
-   (`pt` for DataTable, `paginatorPt` for Paginator) — each slot has
-   `*PtOptions`, `*Unstyled`, and (where applicable) `*ClassName` siblings.
-3. **Large composites** — `ObjectContentEditor`, `ObjectNavigationalBar`,
-   `SchemaEditor` expose `className` only; restyle internals via the global
-   `pt` preset.
-
-### What is *not* fully pass-through
-
-A small number of internal usages opt into PrimeReact's slot-rendering by
-name (for example, a custom Menubar item template uses `p-menuitem-link` /
-`p-menuitem-text` to match the surrounding default-rendered items). These are
-correct contracts with PrimeReact's own slot rendering, not hard-coded
-theming — they have no effect in `unstyled` mode and match the rest of the
-menu in themed mode.
-
-`BusyIndicatorDialog` only honors the global `pt` set via
-`CratisComponentsProvider`; it does not accept per-instance `pt` because its
-request type is owned by `@cratis/arc.react`.
-
-## Troubleshooting
-
-### Module Resolution Errors
-
-If you encounter errors like:
-
-```
-Cannot find module '@cratis/components/TimeMachine' or its corresponding type declarations.
-```
-
-**Solution:** Ensure you're using the correct case-sensitive import paths (e.g., `TimeMachine`, not `timeMachine`).
-
-If using TypeScript 4.7+, try updating your `tsconfig.json`:
-
-```json
-{
-  "compilerOptions": {
-    "moduleResolution": "bundler"  // or "node16" / "nodenext"
-  }
+.product-dialog[data-cratis-part='root'] {
+    border-radius: 1rem;
 }
 ```
 
-### Import Errors
+Do not target React Aria classes or internal DOM structure.
 
-Ensure you're using the correct import paths. The package uses case-sensitive paths that match the actual component names.
+## Import from explicit subpaths
+
+The canonical rule: **the package root is setup-only; every component ships from its own subpath.** Import `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig` from the root; import every component from the subpath in its capability profile:
+
+| Subpath                                    | Capability profile                |
+| ------------------------------------------ | --------------------------------- |
+| `@cratis/components/Canvas`                | Spatial (optional `pixi.js` peer) |
+| `@cratis/components/Chat`                  | Advanced React                    |
+| `@cratis/components/CommandDialog`         | Foundation                        |
+| `@cratis/components/CommandStepper`        | Foundation                        |
+| `@cratis/components/CommandForm`           | Foundation                        |
+| `@cratis/components/CommandForm/fields`    | Foundation                        |
+| `@cratis/components/Common`                | Foundation                        |
+| `@cratis/components/DataPage`              | Foundation                        |
+| `@cratis/components/DataTables`            | Foundation                        |
+| `@cratis/components/Dialogs`               | Foundation                        |
+| `@cratis/components/Display`               | Foundation                        |
+| `@cratis/components/Dropdown`              | Foundation                        |
+| `@cratis/components/Filter`                | Foundation                        |
+| `@cratis/components/Notifications`         | Foundation                        |
+| `@cratis/components/ObjectContentEditor`   | Advanced React                    |
+| `@cratis/components/ObjectNavigationalBar` | Advanced React                    |
+| `@cratis/components/PivotViewer`           | Spatial (optional `pixi.js` peer) |
+| `@cratis/components/SchemaEditor`          | Advanced React                    |
+| `@cratis/components/TimeMachine`           | Advanced React                    |
+| `@cratis/components/Toolbar`               | Advanced React                    |
+| `@cratis/components/types`                 | Foundation                        |
+
+Foundation, Advanced React, and Spatial describe dependency and usage
+boundaries, not stability, maturity, accessibility, support, or quality tiers.
+`Spatial` identifies the subpaths that require the optional Pixi peer.
+
+Components 4 removes component-family namespaces from the root. The root is
+setup-only so importing the provider does not traverse optional or unrelated
+component graphs. [MIGRATION.md](./MIGRATION.md) contains the current
+namespace-to-subpath mapping and migration command for existing root imports.
+
+## Components 3 migration
+
+The current package manifest does not declare PrimeReact as a required runtime
+or peer. Follow the [Components 3 to 4 migration guide](./MIGRATION.md)
+for dependency removal, provider changes, product token mapping, stable part
+names, DatePicker changes, table behavior, notifications, direct Prime import
+replacements, the bounded Components 4 `@cratis/components.migrator` commands, and the
+`@cratis/eslint-plugin-components` guard. The optional Migrator is a development CLI used only while
+upgrading application source; its syntax-aware transforms validate the bundled compatibility
+manifest and installed Components support window before scanning. `@cratis/components.conformance`
+is a separate development test harness for renderer adapter authors and is not an application
+runtime dependency.
+
+The old `@cratis/components/styled`, `styledMode`, `CratisPreset`, and `primeReactStyles` renderer exports are removed. Move styling to tokens and stable parts before upgrading.
+
+## License
+
+The package metadata declares MIT for `@cratis/components`. Dependencies and
+bundled assets retain their own terms. Review the packaged `LICENSE`,
+`THIRD_PARTY_NOTICES.md`, and included font-license files for the exact package
+version you use.

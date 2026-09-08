@@ -1,0 +1,12 @@
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+import * as Canvas from '@cratis/components/Canvas';
+import * as Common from '@cratis/components/Common';
+import * as Toolbar from '@cratis/components/Toolbar';
+import type * as Types from '@cratis/components/types';
+
+export const shapes = Canvas.ChatBubble;
+export const button = Common.Button;
+export const toolbar = Toolbar.Toolbar;
+export type Json = Types.Json;

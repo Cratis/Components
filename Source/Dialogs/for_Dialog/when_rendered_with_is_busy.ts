@@ -1,30 +1,20 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { expect } from 'chai';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { vi } from 'vitest';
+import { beforeEach, describe, it, vi } from 'vitest';
 import { Dialog } from '../Dialog';
-
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, props.footer, props.children),
-}));
-
-vi.mock('primereact/button', () => ({
-    Button: (props: { icon?: string; label?: string; onClick?: () => void | Promise<void>; disabled?: boolean; loading?: boolean }) => {
-        if (props.icon === 'pi pi-check' && props.onClick) {
-            props.onClick();
-        }
-        return React.createElement('button', { disabled: props.disabled }, props.label);
-    },
-}));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },
     DialogResult: { None: 0, Yes: 1, No: 2, Ok: 3, Cancelled: 4 },
     useDialogContext: () => undefined,
 }));
+
+const markupForPart = (html: string, part: string) =>
+    html.match(new RegExp(`<[^>]+data-cratis-part="${part}"[^>]*>`))?.[0] ?? '';
 
 describe('when rendered with is busy', () => {
     let html: string;
@@ -41,9 +31,35 @@ describe('when rendered with is busy', () => {
         html = renderToStaticMarkup(element);
     });
 
-    it('should_disable_all_buttons', () => {
-        const disabledCount = (html.match(/disabled=""/g) || []).length;
-        disabledCount.should.equal(2);
+    it('should disable footer and header dismissal buttons', () => {
+        const disabledButtons = html.match(/<button[^>]*disabled=""/g) ?? [];
+        expect(disabledButtons).to.have.length(3);
+    });
+
+    it('should disable content and footer custom-action scopes', () => {
+        const disabledScopes = html.match(/<fieldset[^>]*disabled=""/g) ?? [];
+        expect(disabledScopes).to.have.length(2);
+    });
+
+    it('should expose open and busy on every modal framing part', () => {
+        ['backdrop', 'positioner', 'root', 'content'].forEach((part) => {
+            expect(markupForPart(html, part)).to.contain('data-open="true"');
+            expect(markupForPart(html, part)).to.contain('data-busy="true"');
+        });
+    });
+
+    it('should expose busy on disabled actions and scopes', () => {
+        ['close', 'confirm', 'cancel'].forEach((part) => {
+            expect(markupForPart(html, part)).to.contain('data-disabled="true"');
+            expect(markupForPart(html, part)).to.contain('data-busy="true"');
+        });
+        const busyScopes = html.match(
+            /<fieldset[^>]*data-cratis-part="busy-scope"[^>]*data-busy="true"/g,
+        );
+        expect(busyScopes).to.have.lengthOf(2);
+    });
+
+    it('should never serialize false state values', () => {
+        expect(html).not.to.match(/data-(?:open|busy|disabled)="false"/);
     });
 });
-

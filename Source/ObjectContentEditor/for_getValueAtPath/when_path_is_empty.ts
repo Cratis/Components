@@ -5,7 +5,7 @@ import { getValueAtPath } from '../objectHelpers';
 import type { Json } from '../../types/JsonSchema';
 
 describe('when getting a value with an empty path', () => {
-    const data: Json = { name: 'Alice', age: 30 };
+    const data: Json = { name: 'Sample User 01', age: 30 };
     let result: Json | null;
 
     beforeEach(() => {

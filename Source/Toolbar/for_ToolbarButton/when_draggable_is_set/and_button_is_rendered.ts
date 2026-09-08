@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { ToolbarButton } from '../../ToolbarButton';
 
-vi.mock('../../Common/Tooltip', () => ({
+vi.mock('../../../Common/Tooltip', () => ({
     Tooltip: (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children),
 }));
 
@@ -15,7 +15,7 @@ describe('when ToolbarButton has draggable set and is rendered', () => {
 
     beforeEach(() => {
         const element = React.createElement(ToolbarButton, {
-            icon: 'pi pi-pencil',
+            icon: 'product-icons product-pencil',
             title: 'Draw',
             draggable: true,
             data: { tool: 'pencil' },

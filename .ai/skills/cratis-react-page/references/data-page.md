@@ -1,102 +1,97 @@
 # DataPage — Reference
 
-`DataPage` (from `@cratis/components`) is the standard full-page layout providing a menubar, data table, and optional detail panel in one component.
+`DataPage` is the standard full-page list layout. It combines an action menubar, a query-backed table, and an optional details pane. Import it from its explicit Components 4 subpath.
 
 ## Import
 
 ```tsx
-import { DataPage, MenuItemGroup, MenuItem, Column } from '@cratis/components';
+import { DataPage, Column } from '@cratis/components/DataPage';
 ```
 
 ## Core props
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `query` | Query or observable query class | Proxy-generated query — standard *or* observable; `DataPage` auto-detects and goes real-time for an observable query |
-| `columns` | `Column<T>[]` | Column definitions (see below) |
-| `menuItems` | `ReactNode` | Toolbar content (usually `<MenuItemGroup>`) |
-| `detailPanel` | `(row: T) => ReactNode` | Renders to the right when a row is selected |
-| `onRowSelected` | `(row: T) => void` | Callback when user clicks a row |
-| `noDataMessage` | `string` | Message when the query returns no rows |
-| `queryArgs` | `object` | Arguments forwarded to the query proxy |
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `title` | `string` | ✓ | Page heading |
+| `query` | generated query class | ✓ | Snapshot or observable Arc query; `DataPage` selects the correct table automatically |
+| `emptyMessage` | `string` | ✓ | Message shown when the query returns no rows |
+| `children` | `ReactNode` | ✓ | `<DataPage.MenuItems>` and `<DataPage.Columns>` composition |
+| `queryArguments` | query argument object | | Arguments forwarded to the generated query |
+| `detailsComponent` | `React.FC<IDetailsComponentProps<T>>` | | Details pane shown for the selected row |
+| `selection` | row, `null`, or `undefined` | | Controlled/current selection |
+| `onSelectionChange` | `(event: DataTableSelectionChangeEvent<T>) => void` | | Selection callback; the selected row is `event.value` |
+| `dataKey` | `string` | | Stable row identity field |
+| `globalFilterFields` | `string[]` | | Fields searched within the currently loaded page |
+| `defaultFilters` | `DataTableFilterMeta` | | Initial loaded-page filters |
+| `onRefresh` | `() => void` | | Refresh callback exposed to the details component |
 
-Pass either a standard or observable query to the single `query` prop — `DataPage` auto-detects which; there is no separate `observableQuery` prop.
+## Declarative composition
 
-## Column definition
+Actions use the static `DataPage.MenuItems` and `DataPage.MenuItem` members. `command` is the activation callback; `disableOnUnselected` handles actions that require a selected row.
 
 ```tsx
-type Column<T> = {
-    header: string;
-    field: keyof T | ((row: T) => string);
-    width?: number | string;
-    sortable?: boolean;
-};
+<DataPage.MenuItems>
+    <DataPage.MenuItem icon={FaPlus} label="Add" command={openCreate} />
+    <DataPage.MenuItem
+        icon={FaPencil}
+        label="Edit"
+        command={openEdit}
+        disableOnUnselected
+    />
+</DataPage.MenuItems>
 ```
 
-Example with custom renderer:
+Columns are children, not a `columns` prop:
 
 ```tsx
-columns={[
-    { header: 'Name', field: 'name' },
-    { header: 'Balance', field: (row) => row.balance.toFixed(2) },
-]}
+<DataPage.Columns>
+    <Column field="name" header="Name" sortable />
+    <Column
+        field="balance"
+        header="Balance"
+        body={(account) => account.balance.toFixed(2)}
+    />
+</DataPage.Columns>
 ```
 
-## MenuItemGroup / MenuItem
+## Details component
+
+The details component receives the selected row as `item` and an `onRefresh` callback.
 
 ```tsx
-<MenuItemGroup>
-    <MenuItem label="Add" onClick={openCreate} />
-    <MenuItem label="Delete" onClick={openDelete} disabled={!selectedRow} />
-</MenuItemGroup>
-```
-
-Multiple `MenuItemGroup` children create visual separators between groups.
-
-## Detail panel
-
-The detail panel receives the currently selected row. It is hidden when no row is selected.
-
-```tsx
-<DataPage
-    query={AllAccounts}
-    columns={...}
-    detailPanel={(account) => (
-        <AccountDetail accountId={account.id} />
-    )}
-/>
+const AccountDetails = ({ item, onRefresh }: IDetailsComponentProps<Account>) => (
+    <AccountEditor account={item} onSaved={onRefresh} />
+);
 ```
 
 ## Full example
 
 ```tsx
-import { useDialog } from '@cratis/arc.react/dialogs';
-import { CreateAccountDialog } from './CreateAccountDialog';
+import { FaPencil, FaPlus } from 'react-icons/fa6';
+import { DataPage, Column } from '@cratis/components/DataPage';
+import { AllAccounts } from './AllAccounts';
 
-export const AccountsPage = () => {
-    const [CreateAccountWrapper, showCreateAccount] = useDialog(CreateAccountDialog);
-
-    return (
-        <>
-            <DataPage
-                query={AllAccounts}
-                columns={[
-                    { header: 'Account', field: 'name' },
-                    { header: 'Owner', field: 'ownerName' },
-                    { header: 'Balance', field: (r) => `$${r.balance.toFixed(2)}` },
-                ]}
-                menuItems={
-                    <MenuItemGroup>
-                        <MenuItem label="Create Account" onClick={() => showCreateAccount()} />
-                    </MenuItemGroup>
-                }
-                detailPanel={(row) => <AccountDetail account={row} />}
-                noDataMessage="No accounts found."
+export const AccountsPage = () => (
+    <DataPage
+        title="Accounts"
+        query={AllAccounts}
+        emptyMessage="No accounts found."
+        detailsComponent={AccountDetails}>
+        <DataPage.MenuItems>
+            <DataPage.MenuItem icon={FaPlus} label="Add" command={openCreate} />
+            <DataPage.MenuItem
+                icon={FaPencil}
+                label="Edit"
+                command={openEdit}
+                disableOnUnselected
             />
-            <CreateAccountWrapper />
-        </>
-    );
-};
+        </DataPage.MenuItems>
+        <DataPage.Columns>
+            <Column field="name" header="Account" sortable />
+            <Column field="ownerName" header="Owner" />
+        </DataPage.Columns>
+    </DataPage>
+);
 ```
 
-`CreateAccountDialog` is a separate component that receives `closeDialog` via `DialogProps` and renders a `CommandDialog`. See `dialogs.md` for the full dialog pattern.
+`DataPage` needs a bounded-height ancestor so its table and paginator can size correctly.

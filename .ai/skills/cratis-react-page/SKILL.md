@@ -8,13 +8,13 @@ description: Step-by-step guidance for building a React page in a Cratis Arc app
 ### Step 1 — Prerequisites
 
 - Backend query and command endpoints must already exist (see `cratis-readmodel` and `cratis-command` skills).
-- Run a Release `dotnet build` on the backend to regenerate proxies before importing them.
+- Run a Debug `dotnet build` on the backend to regenerate proxies before importing them.
 
 Import `DataPage` (and its `Column`/`MenuItem` helpers) from the **subpath**, not the root barrel:
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { CommandDialog } from '@cratis/components/CommandDialog';
 import { useDialog, DialogProps } from '@cratis/arc.react/dialogs';
 ```
@@ -23,21 +23,18 @@ import { useDialog, DialogProps } from '@cratis/arc.react/dialogs';
 
 ### Step 2 — Basic DataPage setup
 
-`DataPage` combines a toolbar/menu, a data table, and an optional details component. `title`, `query`, `emptyMessage`, and `children` are required; columns are declared compositionally inside `<DataPage.Columns>` using PrimeReact `<Column>`.
+`DataPage` combines a toolbar/menu, a data table, and an optional details component. `title`, `query`, `emptyMessage`, and `children` are required; columns are declared compositionally inside `<DataPage.Columns>` using the Cratis-owned `<Column>` marker.
 
 ```tsx
 import { DataPage } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { AllAccounts } from './AllAccounts';
 
 export const AccountsPage = () => (
-    <DataPage
-        title="Accounts"
-        query={AllAccounts}
-        emptyMessage="No accounts yet.">
+    <DataPage title='Accounts' query={AllAccounts} emptyMessage='No accounts yet.'>
         <DataPage.Columns>
-            <Column field="name" header="Name" />
-            <Column field="balance" header="Balance" />
+            <Column field='name' header='Name' />
+            <Column field='balance' header='Balance' />
         </DataPage.Columns>
     </DataPage>
 );
@@ -47,7 +44,7 @@ export const AccountsPage = () => (
 
 ### Step 3 — Add menu actions
 
-Toolbar actions go in `<DataPage.MenuItems>`. `MenuItem` is a PrimeReact menu item (use `command`, not `onClick`); the `disableOnUnselected` flag greys it out until a row is selected. Create a separate dialog component using `DialogProps`, then wire it up with `useDialog`.
+Toolbar actions go in `<DataPage.MenuItems>`. `MenuItem` is a Cratis-owned action marker (use `command`, not `onClick`); the `disableOnUnselected` flag greys it out until a row is selected. Create a separate dialog component using `DialogProps`, then wire it up with `useDialog`.
 
 **Dialog component (`CreateAccountDialog.tsx`):**
 
@@ -58,8 +55,12 @@ import { InputTextField } from '@cratis/components/CommandForm';
 import { CreateAccount } from './CreateAccount';
 
 export const CreateAccountDialog = ({ closeDialog }: DialogProps) => (
-    <CommandDialog<CreateAccount> command={CreateAccount} title="Create Account" okLabel="Create">
-        <InputTextField<CreateAccount> value={c => c.name} title="Account Name" />
+    <CommandDialog<CreateAccount>
+        command={CreateAccount}
+        title='Create Account'
+        okLabel='Create'
+    >
+        <InputTextField<CreateAccount> value={(c) => c.name} title='Account Name' />
     </CommandDialog>
 );
 ```
@@ -68,7 +69,7 @@ export const CreateAccountDialog = ({ closeDialog }: DialogProps) => (
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataPage';
 import { useDialog } from '@cratis/arc.react/dialogs';
 import { CreateAccountDialog } from './CreateAccountDialog';
 
@@ -77,12 +78,16 @@ export const AccountsPage = () => {
 
     return (
         <>
-            <DataPage title="Accounts" query={AllAccounts} emptyMessage="No accounts yet.">
+            <DataPage
+                title='Accounts'
+                query={AllAccounts}
+                emptyMessage='No accounts yet.'
+            >
                 <DataPage.Columns>
-                    <Column field="name" header="Name" />
+                    <Column field='name' header='Name' />
                 </DataPage.Columns>
                 <DataPage.MenuItems>
-                    <MenuItem label="Add Account" command={() => showCreateAccount()} />
+                    <MenuItem label='Add Account' command={() => showCreateAccount()} />
                 </DataPage.MenuItems>
             </DataPage>
             <CreateAccountWrapper />
@@ -115,11 +120,12 @@ interface EditAccountDialogProps extends DialogProps {
 export const EditAccountDialog = ({ accountId, name }: EditAccountDialogProps) => (
     <CommandDialog<EditAccount>
         command={EditAccount}
-        title="Edit Account"
-        okLabel="Save"
+        title='Edit Account'
+        okLabel='Save'
         initialValues={{ accountId }}
-        currentValues={{ name }}>
-        <InputTextField<EditAccount> value={c => c.name} title="Account Name" />
+        currentValues={{ name }}
+    >
+        <InputTextField<EditAccount> value={(c) => c.name} title='Account Name' />
     </CommandDialog>
 );
 ```
@@ -156,9 +162,9 @@ const [EditAccountWrapper, showEditAccount] = useDialog(EditAccountDialog);
 The **same `query` prop** accepts a standard query (`IQueryFor`) or an observable query (`IObservableQueryFor`) — there is no separate `observableQuery` prop. Pass the observable query proxy and `DataPage` subscribes to live updates automatically:
 
 ```tsx
-<DataPage title="Accounts" query={ObserveAllAccounts} emptyMessage="No accounts yet.">
+<DataPage title='Accounts' query={ObserveAllAccounts} emptyMessage='No accounts yet.'>
     <DataPage.Columns>
-        <Column field="name" header="Name" />
+        <Column field='name' header='Name' />
     </DataPage.Columns>
 </DataPage>
 ```
@@ -178,11 +184,16 @@ const AccountDetail = ({ item }: IDetailsComponentProps<AccountSummary>) => (
     <div>{item.name}</div>
 );
 
-<DataPage title="Accounts" query={AllAccounts} emptyMessage="No accounts yet." detailsComponent={AccountDetail}>
+<DataPage
+    title='Accounts'
+    query={AllAccounts}
+    emptyMessage='No accounts yet.'
+    detailsComponent={AccountDetail}
+>
     <DataPage.Columns>
-        <Column field="name" header="Name" />
+        <Column field='name' header='Name' />
     </DataPage.Columns>
-</DataPage>
+</DataPage>;
 ```
 
 ---
@@ -198,15 +209,21 @@ import { injectable } from 'tsyringe';
 @injectable()
 class AccountsViewModel {
     selectedAccount?: AccountSummary;
-    select(account: AccountSummary) { this.selectedAccount = account; }
+    select(account: AccountSummary) {
+        this.selectedAccount = account;
+    }
 }
 
 export const AccountsPage = withViewModel(AccountsViewModel, ({ viewModel }) => (
-    <DataPage title="Accounts" query={AllAccounts} emptyMessage="No accounts yet."
+    <DataPage
+        title='Accounts'
+        query={AllAccounts}
+        emptyMessage='No accounts yet.'
         selection={viewModel.selectedAccount}
-        onSelectionChange={(e) => viewModel.select(e.value)}>
+        onSelectionChange={(e) => viewModel.select(e.value)}
+    >
         <DataPage.Columns>
-            <Column field="name" header="Name" />
+            <Column field='name' header='Name' />
         </DataPage.Columns>
     </DataPage>
 ));
@@ -218,26 +235,26 @@ Read `viewModel.property` inside JSX (never destructure observables at the top o
 
 ## Quick decision guide
 
-| Need | Use |
-|---|---|
-| Read-only list | `DataPage` with a standard `query` |
-| Real-time updates | `DataPage` with an observable query passed to the same `query` prop |
-| Add / create action | `<DataPage.MenuItems>` + `MenuItem` + `CommandDialog` + `useDialog` |
-| Edit selected row | `selection` + `onSelectionChange` + `CommandDialog` + `currentValues`/`initialValues` |
-| Detail for selected row | `detailsComponent` prop |
-| Complex page logic | `withViewModel` MVVM wrapper |
+| Need                    | Use                                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| Read-only list          | `DataPage` with a standard `query`                                                    |
+| Real-time updates       | `DataPage` with an observable query passed to the same `query` prop                   |
+| Add / create action     | `<DataPage.MenuItems>` + `MenuItem` + `CommandDialog` + `useDialog`                   |
+| Edit selected row       | `selection` + `onSelectionChange` + `CommandDialog` + `currentValues`/`initialValues` |
+| Detail for selected row | `detailsComponent` prop                                                               |
+| Complex page logic      | `withViewModel` MVVM wrapper                                                          |
 
 ## Key DataPage props
 
-| Prop | Purpose |
-|---|---|
-| `title` (required) | toolbar title |
-| `query` (required) | the query proxy — standard or observable |
-| `emptyMessage` (required) | shown when there are no rows |
-| `children` (required) | `<DataPage.Columns>` + optional `<DataPage.MenuItems>` |
-| `queryArguments` | arguments passed to the query |
-| `selection` / `onSelectionChange` | controlled single-row selection |
-| `detailsComponent` | `React.FC<IDetailsComponentProps<T>>` rendered for the selected row |
-| `globalFilterFields` / `defaultFilters` / `clientFiltering` | filtering |
-| `onRefresh` | invoked to re-fetch a standard query |
-| `tablePt` / `menubarPt` / `*Unstyled` | PrimeReact pass-through styling |
+| Prop                                    | Purpose                                                             |
+| --------------------------------------- | ------------------------------------------------------------------- |
+| `title` (required)                      | toolbar title                                                       |
+| `query` (required)                      | the query proxy — standard or observable                            |
+| `emptyMessage` (required)               | shown when there are no rows                                        |
+| `children` (required)                   | `<DataPage.Columns>` + optional `<DataPage.MenuItems>`              |
+| `queryArguments`                        | arguments passed to the query                                       |
+| `selection` / `onSelectionChange`       | controlled single-row selection                                     |
+| `detailsComponent`                      | `React.FC<IDetailsComponentProps<T>>` rendered for the selected row |
+| `globalFilterFields` / `defaultFilters` | filtering                                                           |
+| `onRefresh`                             | invoked to re-fetch a standard query                                |
+| `tablePt` / `menubarPt`                 | Cratis-owned stable part styling                                    |

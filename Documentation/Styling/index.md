@@ -1,44 +1,43 @@
-# Styling
+---
+title: Styling
+description: Style Components with Cratis tokens, structural CSS, and stable parts.
+---
 
-Cratis Components is built on top of PrimeReact and stays out of your way when it comes to styling. You can use the look that PrimeReact gives you out of the box, keep PrimeReact's structure while applying your own palette, or take complete control and provide every visual yourself — all without forking the library or fighting it.
+Components separates behavior from product appearance through three independently published Cratis-owned layers:
 
-There are three supported styling options. They are not mutually exclusive: every component still exposes the same building blocks, so you can combine them per-component or per-region of your app.
+1. `@cratis/components/tokens` defines the semantic `--cratis-*` seam with conservative light defaults.
+2. `@cratis/components/styles` supplies component structure and only the internal utility rules Components uses. It contains no token copy and no Tailwind Preflight or global reset.
+3. `@cratis/components/theme` optionally adds document/subtree foreground and background, automatic or explicit dark mode, and forced-colors behavior.
 
-## TL;DR — choose a styling setup
+```ts
+import '@cratis/components/tokens';
+import '@cratis/components/styles';
+import '@cratis/components/theme';
+```
 
-| Setup | When | Effort | What you write |
-|---|---|---|---|
-| [**Use a PrimeReact theme**](themed.md) | You want components to look good immediately and tweak from there. | Lowest | Theme CSS import + provider |
-| [**Use a custom palette on top of a PrimeReact theme**](custom-palette.md) | You want PrimeReact's structure but your own colors. | Low | A PrimeReact theme + CSS variable overrides |
-| [**Use fully unstyled mode**](unstyled.md) | You're integrating into a tightly controlled design system. | Highest | `unstyled: true` + a `pt` preset in CSS or Tailwind |
+A product design system omits `theme`, maps its canonical values directly onto `--cratis-*`, and uses stable parts for component-specific treatment.
 
-All three setups use the same one-line setup described in [Getting Started](getting-started.md). You can change direction later because the same provider, tokens, and `pt` hooks stay available.
+## Choose a path
 
-## Why the first two options still load a PrimeReact theme
+| Situation                                           | Imports                                                                     | Product responsibility                                                                                                                        |
+| --------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| New app that wants the maintained Cratis appearance | `tokens`, `styles`, `theme`                                                 | Choose `cratis-dark`, `cratis-light`, or system preference; override only intentional brand values.                                           |
+| Product with its own `--product-*` tokens           | `tokens`, `styles`, then product CSS                                        | Omit `theme`; map the complete product palette to `--cratis-*`; keep product typography, spacing, motion, contrast, and component treatments. |
+| Existing app migrating gradually from PrimeReact    | `tokens`, `styles`, optional `theme`, plus the product's existing Prime CSS | Mount Components and Prime providers independently. Keep Prime styling and licensing only for direct Prime surfaces until they are removed.   |
+| Independently themed embedded surface               | `tokens`, `styles`, `theme`                                                 | Put `cratis-theme` on the subtree and add `cratis-dark` or `cratis-light` there.                                                              |
 
-In PrimeReact 10 every widget's *structural* CSS — padding, borders, dialog frame, focus rings, button shapes — ships **inside the theme file**. There is no separate primitives stylesheet. So a setup without any PrimeReact theme has no widget chrome at all and components render as the raw HTML primitives the browser supplies by default. PrimeReact 11's styled mode (`@primeuix/themes`) works the same way — the active preset supplies the chrome — so the reasoning here is unchanged across versions.
+Read [Use the baseline theme](baseline-theme.md), [Build a product theme](themed.md), [Own all styling](unstyled.md), and [Stable component parts](pass-through.md) for the corresponding implementation.
 
-The `--cratis-*` token layer is an additive Cratis-scoped tint for surfaces the wrappers in this package own — validation error text, the FormElement addon background, breadcrumb borders — and **is not, by itself, sufficient to skin PrimeReact widgets**. Override PrimeReact's variables when you want the whole UI in your palette. Use `unstyled: true` and a `pt` preset when you want to replace PrimeReact's visuals entirely.
+## Cascade contract
 
-The token layer is **version-spanning**: each `--cratis-*` token resolves the PrimeReact v11 design token (`@primeuix/themes`) first and falls back to the v10 theme variable, so the same build of this package is themed correctly whether your app is on PrimeReact 10 or 11. (Note: this covers the *theming* surface only — full PrimeReact 11 component/`pt`-slot compatibility is tracked separately.)
+The structural bundle declares low-priority `cratis-theme`, `cratis-components`, and `cratis-utilities` layers. Internal Tailwind-generated utility selectors are prefixed (`cratis:*`) and are not public styling hooks. Product CSS written outside a layer wins over all three without specificity tricks. If the product uses its own cascade layers, declare their order explicitly after the Components imports. Components does not inject Preflight, reset headings/forms/lists, or copy token values into `styles`.
 
-## Mental model
+Import product mappings and overrides after Components:
 
-Every component you import from `@cratis/components` is a thin wrapper around a PrimeReact component plus a few Cratis additions (validation hooks, command-form integration, …). Styling flows in three layers:
+```ts
+import '@cratis/components/tokens';
+import '@cratis/components/styles';
+import './product-components.css';
+```
 
-1. **PrimeReact theme tokens** — on v10 the theme variables `--surface-card`, `--text-color`, `--primary-color`, …; on v11 the `@primeuix/themes` design tokens (`--p-*`, customized via `definePreset`). Read directly by PrimeReact widgets. Override these to repaint the whole UI.
-2. **Cratis tokens** — `--cratis-surface-card`, `--cratis-text-color`, `--cratis-primary-color`, … Read only by Cratis-scoped surfaces. In `tokens.css` each resolves the PrimeReact v11 design token (e.g. `--p-content-border-color`) first and falls back to the v10 theme variable (e.g. `--surface-border`), so they stay in sync with the loaded PrimeReact theme on either major. Override these when you want a Cratis surface tinted differently from the surrounding PrimeReact widgets.
-3. **PrimeReact `pt` (pass-through)** — A per-component prop that lets you attach CSS class names (or inline styles) to every slot inside a PrimeReact widget. The strongest customization knob; works hand-in-hand with `unstyled` mode.
-
-The [Cratis token reference](cratis-tokens.md) lists every token and the surface it tints. The [pass-through cheat sheet](pass-through.md) lists every Cratis wrapper and which pt props it exposes.
-
-## See also
-
-- [Getting Started](getting-started.md) — the one-line setup every option shares
-- [Use a PrimeReact theme](themed.md)
-- [Use a custom palette on top of a PrimeReact theme](custom-palette.md)
-- [Use fully unstyled mode](unstyled.md)
-- [Cratis token reference](cratis-tokens.md)
-- [Pass-through (pt) cheat sheet](pass-through.md)
-- [Combining styling setups](mixing-paths.md)
-- [CratisComponentsProvider](../Common/cratis-components-provider.md)
+React Aria is internal. Never style React Aria class names or undocumented DOM structure.

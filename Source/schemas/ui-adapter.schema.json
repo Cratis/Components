@@ -1,0 +1,210 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://cratis.io/schemas/ui-adapter.schema.json",
+    "title": "Cratis UI adapter package metadata",
+    "description": "Static package.json `cratis` metadata for a Cratis UI adapter.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "kind",
+        "id",
+        "displayName",
+        "abi",
+        "level",
+        "profile",
+        "category",
+        "entry",
+        "export",
+        "slots",
+        "modes",
+        "capabilities",
+        "ssr",
+        "a11y",
+        "license",
+        "upstream"
+    ],
+    "properties": {
+        "kind": {
+            "const": "ui-adapter"
+        },
+        "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+        },
+        "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+        },
+        "abi": {
+            "type": "string",
+            "pattern": "^\\^[1-9][0-9]{0,2}$"
+        },
+        "level": {
+            "enum": ["full", "primitive", "behavior", "portal", "theme"]
+        },
+        "profile": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-z0-9.-]*/v[1-9][0-9]{0,2}$"
+        },
+        "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "entry": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 256,
+            "pattern": "^\\./(?!.*(?:^|/)\\.\\.(?:/|$))[^\\s]+$"
+        },
+        "export": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"
+        },
+        "slots": {
+            "type": "array",
+            "maxItems": 256,
+            "uniqueItems": true,
+            "items": {
+                "$ref": "#/$defs/slotId"
+            }
+        },
+        "modes": {
+            "type": "object",
+            "maxProperties": 256,
+            "propertyNames": {
+                "$ref": "#/$defs/slotId"
+            },
+            "additionalProperties": {
+                "enum": ["presentation", "atomic"]
+            }
+        },
+        "capabilities": {
+            "type": "array",
+            "maxItems": 16,
+            "uniqueItems": true,
+            "items": {
+                "enum": [
+                    "slot.render",
+                    "parts.passthrough",
+                    "focus.trap",
+                    "focus.restore",
+                    "overlay.portal",
+                    "collection.virtualize",
+                    "selection.multi",
+                    "datetime.i18n",
+                    "form.validationMessage",
+                    "theme.tokens",
+                    "ssr.staticRender",
+                    "rtl",
+                    "forcedColors",
+                    "motion.reduced",
+                    "machine.binding",
+                    "paging.server"
+                ]
+            }
+        },
+        "ssr": {
+            "enum": ["safe", "client-only", "hydration-risk"]
+        },
+        "a11y": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["axeProfile", "evidence"],
+            "properties": {
+                "axeProfile": {
+                    "enum": ["wcag21a", "wcag21aa", "wcag22a", "wcag22aa"]
+                },
+                "evidence": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 256,
+                    "pattern": "^\\./(?!.*(?:^|/)\\.\\.(?:/|$))[^\\s]+$"
+                }
+            }
+        },
+        "license": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["spdx", "requiresKey"],
+            "properties": {
+                "spdx": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                },
+                "requiresKey": {
+                    "type": "boolean"
+                },
+                "keyEnv": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[A-Z][A-Z0-9_]*$"
+                },
+                "url": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 2048,
+                    "pattern": "^https://[^\\s]+$"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "requiresKey": {
+                                "const": true
+                            }
+                        },
+                        "required": ["requiresKey"]
+                    },
+                    "then": {
+                        "required": ["keyEnv"]
+                    }
+                }
+            ]
+        },
+        "upstream": {
+            "type": "object",
+            "minProperties": 1,
+            "maxProperties": 32,
+            "propertyNames": {
+                "pattern": "^(?:@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*$"
+            },
+            "additionalProperties": {
+                "$ref": "#/$defs/boundedSemverRange"
+            }
+        }
+    },
+    "$defs": {
+        "slotId": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 128,
+            "pattern": "^[a-z][a-zA-Z0-9]*(?:[.-][a-zA-Z0-9]+)+$"
+        },
+        "boundedSemverRange": {
+            "type": "string",
+            "oneOf": [
+                {
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+                },
+                {
+                    "pattern": "^[~^][0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+                },
+                {
+                    "pattern": "^>=[0-9]+(?:\\.[0-9]+){0,2}(?:-[0-9A-Za-z.-]+)? <[0-9]+(?:\\.[0-9]+){0,2}(?:-[0-9A-Za-z.-]+)?$"
+                }
+            ]
+        }
+    }
+}

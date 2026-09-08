@@ -6,8 +6,7 @@
         "sourceMap": true,
         "importHelpers": true,
         "composite": true,
-        "removeComments": true,
-        "strict": false,
+        "strict": true,
         "allowJs": false,
         "checkJs": false,
         "module": "ES2022",
@@ -15,14 +14,9 @@
         "target": "ES2022",
         "noEmit": false,
         "pretty": true,
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "skipLibCheck": true,
-        "lib": [
-            "ESNext",
-            "ES2022",
-            "DOM",
-            "DOM.Iterable"
-        ],
+        "lib": ["ESNext", "ES2022", "DOM", "DOM.Iterable"],
         "jsx": "react-jsx",
         "esModuleInterop": true,
         "strictNullChecks": true,
@@ -39,9 +33,5 @@
         "preserveConstEnums": true,
         "newLine": "lf"
     },
-    "exclude": [
-        "**/dist",
-        "**/for_*/**",
-        "**/vite.config.mts"
-    ]
+    "exclude": ["**/dist", "**/for_*/**", "**/vite.config.mts"]
 }

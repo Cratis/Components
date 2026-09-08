@@ -1,25 +1,33 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { ICommandResult } from '@cratis/arc/commands';
+import React, { useState, type CSSProperties } from 'react';
+import type { ICommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
-import { Dialog as PrimeDialog, type DialogProps as PrimeDialogProps } from 'primereact/dialog';
-import { Button } from 'primereact/button';
-import React, { useState } from 'react';
+import { Button } from '../Common/Button';
+import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import {
     CommandForm,
     useCommandFormContext,
     useCommandInstance,
-    type CommandFormProps
+    type CommandFormProps,
 } from '@cratis/arc.react/commands';
-import type { CloseDialog, ConfirmCallback, CancelCallback } from '../Dialogs/Dialog';
-import { CommandStepperContent, type StepperCustomizationProps } from './CommandStepper';
+import {
+    Dialog,
+    type DialogProps,
+    type CloseDialog,
+    type ConfirmCallback,
+    type CancelCallback,
+} from '../Dialogs/Dialog';
+import type { StepperCustomizationProps } from './CommandStepper';
+import { CommandStepperContent } from './CommandStepperContent';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import { getStepPanels } from './stepChildren';
 
 /**
  * Props for {@link StepperCommandDialog}. Combines the command-form props,
- * the stepper customization props (`orientation`, `headerPosition`, `linear`,
- * `pt`, …), and dialog-specific props for the outer modal.
+ * the stepper customization props (`linear`, `pt`, …), and dialog-specific
+ * props for the outer modal.
  *
  * The Stepper customization props (`pt`/`ptOptions`/`unstyled`) target the
  * inner Stepper. To customize the outer Dialog use `dialogPt`, `dialogPtOptions`,
@@ -29,7 +37,8 @@ import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExe
  * @typeParam TResponse - The response payload type returned by a successful command.
  */
 export interface StepperCommandDialogProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
+    extends
+        Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
         StepperCustomizationProps {
     /**
      * A transformer invoked with the current command values immediately before
@@ -51,9 +60,9 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     /** Dialog width. */
     width?: string;
     /** Custom CSS styles applied to the dialog. */
-    style?: PrimeDialogProps['style'];
+    style?: CSSProperties;
     /** Custom CSS styles applied to the dialog content area. */
-    contentStyle?: PrimeDialogProps['contentStyle'];
+    contentStyle?: CSSProperties;
     /** Whether the dialog can be resized. Defaults to `false`. */
     resizable?: boolean;
     /** Additional validity gate combined with command form validity. */
@@ -62,28 +71,74 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
     onClose?: CloseDialog;
     /** Confirm callback — called only after successful command execution. */
     onConfirm?: ConfirmCallback;
-    /** Cancel callback — invoked when the dialog X button is clicked. */
+    /**
+     * Cancel callback — invoked for every dismissal that is not a successful submit: the X in the
+     * dialog header, the Escape key, and the footer Cancel button when `showCancel` is on. Return
+     * `true` to let the dialog close through the dialog context. None of the three is offered while
+     * the command is executing.
+     */
     onCancel?: CancelCallback;
-    /** Label for the submit button shown on the last step when valid. Defaults to `'Submit'`. */
+    /** Label for the submit button shown on the last step when valid. Falls back to the provider's `stepper.submit` message, then `'Submit'`. */
     okLabel?: string;
-    /** Label for the next step button. Defaults to `'Next'`. */
+    /** Label for the next step button. Falls back to the provider's `stepper.next` message, then `'Next'`. */
     nextLabel?: string;
-    /** Label for the previous step button. Defaults to `'Previous'`. */
+    /** Label for the previous step button. Falls back to the provider's `stepper.previous` message, then `'Previous'`. */
     previousLabel?: string;
     /**
-     * Extra CSS class name forwarded to the underlying PrimeReact Dialog root.
+     * Show a Cancel action in the footer. Defaults to `false`, leaving the X in the header as the
+     * only way to dismiss. Turn it on for a wizard whose dismissal should be as reachable as its
+     * submit — a destructive or long flow, or one presented without a visible header.
+     */
+    showCancel?: boolean;
+    /** Label for the footer cancel button. Falls back to the provider's `dialog.cancel` message, then `'Cancel'`. */
+    cancelLabel?: string;
+    /**
+     * Extra CSS class name forwarded to the underlying Cratis Dialog root.
      * Use the inherited `pt`/`ptOptions`/`unstyled` props to customize the Stepper.
      */
     dialogClassName?: string;
-    /** PrimeReact pass-through configuration applied to the outer Dialog. */
-    dialogPt?: PrimeDialogProps['pt'];
-    /** PrimeReact pass-through options applied to the outer Dialog. */
-    dialogPtOptions?: PrimeDialogProps['ptOptions'];
-    /** When true, disables every base PrimeReact style on the outer Dialog. */
+    /** Cratis-owned per-part attributes applied to the outer Dialog. */
+    dialogPt?: DialogProps['pt'];
+    /**
+     * @deprecated Cratis dialog parts always merge. Remove this renderer-era option.
+     */
+    dialogPtOptions?: DialogProps['ptOptions'];
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `dialogPt` and CSS instead.
+     */
     dialogUnstyled?: boolean;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
 }
+
+type StepperCommandDialogWrapperProps<TCommand extends object, TResponse = object> = {
+    title: string;
+    visible?: boolean;
+    width?: string;
+    style?: CSSProperties;
+    contentStyle?: CSSProperties;
+    resizable?: boolean;
+    isValid?: boolean;
+    onClose?: CloseDialog;
+    onConfirm?: ConfirmCallback;
+    onCancel?: CancelCallback;
+    onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
+    onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
+    onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
+    onException?: CommandFormProps<TCommand, TResponse>['onException'];
+    onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+    okLabel?: string;
+    nextLabel?: string;
+    previousLabel?: string;
+    showCancel?: boolean;
+    cancelLabel?: string;
+    dialogClassName?: string;
+    dialogPt?: DialogProps['pt'];
+    dialogPtOptions?: DialogProps['ptOptions'];
+    dialogUnstyled?: boolean;
+    children?: React.ReactNode;
+} & StepperCustomizationProps;
 
 const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object>({
     title,
@@ -99,16 +154,20 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     onSuccess,
     onValidationFailure,
     onFailed,
+    onException,
+    onUnauthorized,
     onBeforeExecute,
-    okLabel = 'Submit',
-    nextLabel = 'Next',
-    previousLabel = 'Previous',
-    orientation = 'horizontal',
-    headerPosition,
+    okLabel,
+    nextLabel,
+    previousLabel,
+    showCancel = false,
+    cancelLabel,
     linear = true,
-    onChangeStep,
+    orientation,
+    headerPosition,
     start,
     end,
+    onChangeStep,
     pt,
     ptOptions,
     unstyled,
@@ -116,32 +175,22 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     dialogPt,
     dialogPtOptions,
     dialogUnstyled,
-    children
-}: {
-    title: string;
-    visible?: boolean;
-    width?: string;
-    style?: PrimeDialogProps['style'];
-    contentStyle?: PrimeDialogProps['contentStyle'];
-    resizable?: boolean;
-    isValid?: boolean;
-    onClose?: CloseDialog;
-    onConfirm?: ConfirmCallback;
-    onCancel?: CancelCallback;
-    onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
-    onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
-    onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
-    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
-    okLabel?: string;
-    nextLabel?: string;
-    previousLabel?: string;
-    dialogClassName?: string;
-    dialogPt?: PrimeDialogProps['pt'];
-    dialogPtOptions?: PrimeDialogProps['ptOptions'];
-    dialogUnstyled?: boolean;
-    children?: React.ReactNode;
-} & StepperCustomizationProps) => {
-    const { setCommandValues, setCommandResult, isValid: isCommandFormValid, getFieldError } = useCommandFormContext<TCommand>();
+    children,
+}: StepperCommandDialogWrapperProps<TCommand, TResponse>) => {
+    const { messages } = useCratisComponentsConfig();
+    const stepperMessages = messages?.stepper;
+    const dialogMessages = messages?.dialog;
+    const resolvedOkLabel = okLabel ?? stepperMessages?.submit ?? 'Submit';
+    const resolvedNextLabel = nextLabel ?? stepperMessages?.next ?? 'Next';
+    const resolvedPreviousLabel =
+        previousLabel ?? stepperMessages?.previous ?? 'Previous';
+    const resolvedCancelLabel = cancelLabel ?? dialogMessages?.cancel ?? 'Cancel';
+    const {
+        setCommandValues,
+        setCommandResult,
+        isValid: isCommandFormValid,
+        getFieldError,
+    } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
     const [isBusy, setIsBusy] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
@@ -159,12 +208,24 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         contextCloseDialog = undefined;
     }
 
-    const stepCount = React.Children.count(children);
-    const isLastStep = activeStep === stepCount - 1;
-    const isFirstStep = activeStep === 0;
+    // Only the steps that actually render count. That count is not fixed: a conditional step
+    // (`{condition && <StepperPanel/>}`) can disappear after the user has already advanced past
+    // it — a late-resolving query or a `currentValues` overlay flipping the condition is enough.
+    // The step the wizard is on is therefore clamped into the set that still renders, and the
+    // last/first tests are inequalities, so an index left stranded above the end still resolves
+    // to the last surviving step instead of a step that is neither last nor navigable. Same
+    // shape as CommandStepperContent, which this dialog's body is.
+    const stepCount = getStepPanels(children).length;
+    const currentStep = Math.min(Math.max(activeStep, 0), Math.max(stepCount - 1, 0));
+    const isLastStep = currentStep >= stepCount - 1;
+    const isFirstStep = currentStep <= 0;
     const isDialogValid = isValid !== false && isCommandFormValid;
-    const isCurrentStepInvalid = stepErrors[activeStep] ?? false;
+    const isCurrentStepInvalid = stepErrors[currentStep] ?? false;
 
+    // Both close paths this wrapper owns — the footer Cancel and the successful Submit — run the
+    // caller's gate before closing through the dialog host. The header X and Escape are owned by
+    // the outer Cratis Dialog instead, which runs the same `onCancel` / `onClose` callbacks; that
+    // keeps one contract for the caller no matter which affordance was used.
     const handleClose = async (result: DialogResult) => {
         let shouldCloseThroughContext = true;
 
@@ -176,14 +237,12 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 const closeResult = await onClose(result);
                 shouldCloseThroughContext = closeResult !== false;
             }
-        } else {
-            if (onCancel) {
-                const closeResult = await onCancel();
-                shouldCloseThroughContext = closeResult === true;
-            } else if (onClose) {
-                const closeResult = await onClose(result);
-                shouldCloseThroughContext = closeResult !== false;
-            }
+        } else if (onCancel) {
+            const closeResult = await onCancel();
+            shouldCloseThroughContext = closeResult === true;
+        } else if (onClose) {
+            const closeResult = await onClose(result);
+            shouldCloseThroughContext = closeResult !== false;
         }
 
         if (shouldCloseThroughContext) {
@@ -191,97 +250,132 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         }
     };
 
+    // Busy is set before anything is awaited, not just around execute(). `onBeforeExecute` may be
+    // async, and from the moment Submit is pressed the dialog is committed to running the command -
+    // so every dismissal has to be withdrawn for the whole window, not only for the part of it the
+    // request is in flight. Setting it after the transform would leave Cancel live while the command
+    // is already on its way: the operator cancels, the dialog closes reporting cancellation, the
+    // transform resolves, and the command executes anyway. The `finally` is what releases it, so the
+    // flag is cleared on the failure paths and on a transform that throws just as it is on success.
     const handleSubmit = async () => {
-        if (onBeforeExecute) {
-            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-            setCommandValues(applied instanceof Promise ? await applied : applied);
-        }
-
         setIsBusy(true);
         let result: ICommandResult<TResponse>;
 
         try {
-            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
+            if (onBeforeExecute) {
+                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+                setCommandValues(applied instanceof Promise ? await applied : applied);
+            }
+
+            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
+            result = await (
+                commandInstance as unknown as {
+                    execute: () => Promise<ICommandResult<TResponse>>;
+                }
+            ).execute();
         } finally {
             setIsBusy(false);
         }
 
         if (!result.isSuccess) {
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
+            }
+            if (!result.isAuthorized) await onUnauthorized?.();
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
-            } else {
-                await onFailed?.(result);
             }
             setCommandResult(result);
             return;
         }
 
         await onSuccess?.(result.response as TResponse);
-
         await handleClose(DialogResult.Ok);
     };
 
-    const headerElement = (
-        <div className="inline-flex items-center justify-center gap-2">
-            <span className="font-bold whitespace-nowrap">{title}</span>
-        </div>
-    );
-
     const footer = (
-        <div className="flex items-center w-full gap-3">
+        <div
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                width: '100%',
+                gap: '0.75rem',
+            }}
+        >
+            {showCancel && (
+                <Button
+                    variant='outline'
+                    onClick={() => handleClose(DialogResult.Cancelled)}
+                    disabled={isBusy}
+                    style={{ width: 'auto' }}
+                >
+                    <span>{resolvedCancelLabel}</span>
+                </Button>
+            )}
             {!isFirstStep && (
                 <Button
-                    label={previousLabel}
-                    icon="pi pi-arrow-left"
-                    onClick={() => setActiveStep(s => s - 1)}
+                    variant='outline'
+                    onClick={() => setActiveStep(Math.max(0, currentStep - 1))}
                     disabled={isBusy}
-                    outlined
-                />
+                    style={{ width: 'auto' }}
+                >
+                    <span>{resolvedPreviousLabel}</span>
+                </Button>
             )}
-            <div className="flex-1" />
+            <div style={{ flex: 1 }} />
             {!isLastStep && (
                 <Button
-                    label={nextLabel}
-                    icon="pi pi-arrow-right"
-                    iconPos="right"
                     onClick={() => {
-                        setVisitedSteps(prev => new Set(prev).add(activeStep));
-                        setActiveStep(s => s + 1);
+                        setVisitedSteps((previous) => new Set(previous).add(currentStep));
+                        setActiveStep(Math.min(stepCount - 1, currentStep + 1));
                     }}
                     disabled={isBusy || isCurrentStepInvalid}
-                />
+                    style={{ width: 'auto' }}
+                >
+                    <span>{resolvedNextLabel}</span>
+                </Button>
             )}
             {isLastStep && isDialogValid && (
                 <Button
-                    label={okLabel}
-                    icon="pi pi-check"
                     onClick={handleSubmit}
-                    loading={isBusy}
                     disabled={isBusy}
                     autoFocus
-                />
+                    style={{ width: 'auto' }}
+                >
+                    {isBusy && (
+                        <span className='cratis-dialog__spinner' aria-hidden='true' />
+                    )}
+                    <span>{resolvedOkLabel}</span>
+                </Button>
             )}
         </div>
     );
 
+    // The header X and the Escape key are withdrawn on the same flag as the footer Cancel. A
+    // dismissal that still worked mid-flight would close the dialog and then let onSuccess fire on
+    // a dialog that is already gone. `dismissable` is the single switch on the Cratis Dialog that
+    // governs all three affordances — the header close button, the backdrop click
+    // and `closeOnEscape` — so withdrawing it withdraws every dismissal at once.
     return (
-        <PrimeDialog
-            header={headerElement}
-            modal
-            footer={footer}
-            onHide={() => handleClose(DialogResult.Cancelled)}
+        <Dialog
+            title={title}
             visible={visible}
-            style={{ width, ...style }}
+            width={width}
+            style={style}
             contentStyle={contentStyle}
             resizable={resizable}
-            closable
+            dismissable={!isBusy}
+            buttons={footer}
+            onCancel={onCancel}
+            onClose={onClose}
             className={dialogClassName}
             pt={dialogPt}
             ptOptions={dialogPtOptions}
             unstyled={dialogUnstyled}
         >
             <CommandStepperContent
-                activeStep={activeStep}
+                activeStep={currentStep}
                 visitedSteps={visitedSteps}
                 getFieldError={getFieldError}
                 onActiveStepChange={setActiveStep}
@@ -292,22 +386,22 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 linear={linear}
                 orientation={orientation}
                 headerPosition={headerPosition}
-                onChangeStep={onChangeStep}
                 start={start}
                 end={end}
+                onChangeStep={onChangeStep}
                 pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}
             >
                 {children}
             </CommandStepperContent>
-        </PrimeDialog>
+        </Dialog>
     );
 };
 
 /**
  * A multi-step wizard dialog backed by a single Cratis Arc command. Wraps
- * PrimeReact's `Stepper` inside a Cratis {@link Dialog}, tracks per-step
+ * the Cratis-owned Stepper inside a Cratis {@link Dialog}, tracks per-step
  * visit state, surfaces inline error indicators on steps with invalid
  * fields, and executes the bound command when the user submits the last
  * step. Use it when one command has enough fields that they should be
@@ -351,8 +445,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
  *
  * ```tsx
  * import { useDialog, DialogResult } from '@cratis/arc.react/dialogs';
- * import { StepperCommandDialog } from '@cratis/components/CommandDialog';
- * import { StepperPanel } from 'primereact/stepperpanel';
+ * import { StepperCommandDialog, StepperPanel } from '@cratis/components/CommandDialog';
  * import { RegisterOrder } from './RegisterOrder';   // proxy from C#
  *
  * const RegisterOrderDialog = () => {
@@ -391,8 +484,11 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
  * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
  * @param props - {@link StepperCommandDialogProps}.
  */
-const StepperCommandDialogComponent = <TCommand extends object = object, TResponse = object>(
-    props: StepperCommandDialogProps<TCommand, TResponse>
+const StepperCommandDialogComponent = <
+    TCommand extends object = object,
+    TResponse = object,
+>(
+    props: StepperCommandDialogProps<TCommand, TResponse>,
 ) => {
     const {
         title,
@@ -409,12 +505,14 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
         okLabel,
         nextLabel,
         previousLabel,
+        showCancel,
+        cancelLabel,
+        linear,
         orientation,
         headerPosition,
-        linear,
-        onChangeStep,
         start,
         end,
+        onChangeStep,
         pt,
         ptOptions,
         unstyled,
@@ -442,16 +540,20 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
+                onException={props.onException}
+                onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
                 okLabel={okLabel}
                 nextLabel={nextLabel}
                 previousLabel={previousLabel}
+                showCancel={showCancel}
+                cancelLabel={cancelLabel}
+                linear={linear}
                 orientation={orientation}
                 headerPosition={headerPosition}
-                linear={linear}
-                onChangeStep={onChangeStep}
                 start={start}
                 end={end}
+                onChangeStep={onChangeStep}
                 pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}
@@ -466,4 +568,18 @@ const StepperCommandDialogComponent = <TCommand extends object = object, TRespon
     );
 };
 
+/**
+ * A multi-step wizard dialog backed by a single Cratis Arc command. Wraps
+ * the Cratis-owned Stepper inside a Cratis {@link Dialog}, tracks per-step
+ * visit state, surfaces inline error indicators on steps with invalid
+ * fields, and executes the bound command when the user submits the last
+ * step. Use it when one command has enough fields that they should be
+ * broken into named stages; for single-stage commands, use
+ * {@link CommandDialog}.
+ *
+ * See {@link StepperCommandDialogComponent} for full documentation.
+ *
+ * @typeParam TCommand - The command class (proxy generated from C# `[Command]`).
+ * @typeParam TResponse - The success payload type returned by the command's `Handle()` method on the backend.
+ */
 export const StepperCommandDialog = StepperCommandDialogComponent;

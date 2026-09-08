@@ -1,62 +1,78 @@
 # Data Tables — Reference
 
-Use standalone data table components when you need a table without the built-in `DataPage` full-page chrome (e.g., embedded inside another panel or card).
+Use standalone data tables when a query-backed table is needed without `DataPage` page chrome. Import both tables and `Column` from the explicit DataTables subpath.
 
-## DataTableForQuery
+## Snapshot query
 
 ```tsx
-import { DataTableForQuery } from '@cratis/components';
-import { AllAccounts } from './queries/AllAccounts';
+import { DataTableForQuery, Column } from '@cratis/components/DataTables';
+import { AllAccounts } from './AllAccounts';
 
-<DataTableForQuery
-    query={AllAccounts}
-    columns={[
-        { header: 'Name', field: 'name' },
-        { header: 'Balance', field: 'balance' },
-    ]}
-    onRowSelected={(row) => setSelected(row)}
-/>
+<DataTableForQuery query={AllAccounts} emptyMessage="No accounts">
+    <Column field="name" header="Name" sortable />
+    <Column field="balance" header="Balance" />
+</DataTableForQuery>
 ```
 
-## DataTableForObservableQuery
+## Observable query
 
 ```tsx
-import { DataTableForObservableQuery } from '@cratis/components';
-import { AllAccountsLive } from './queries/AllAccountsLive';
+import {
+    DataTableForObservableQuery,
+    Column,
+} from '@cratis/components/DataTables';
+import { AllAccountsLive } from './AllAccountsLive';
 
 <DataTableForObservableQuery
     query={AllAccountsLive}
-    columns={...}
-    onRowSelected={(row) => setSelected(row)}
-/>
+    emptyMessage="No accounts">
+    <Column field="name" header="Name" sortable />
+    <Column field="balance" header="Balance" />
+</DataTableForObservableQuery>
 ```
 
 ## Shared props
 
-| Prop | Type | Description |
-| --- | --- | --- |
-| `query` / `query` | Query class | Proxy query (use the appropriate component for type) |
-| `columns` | `Column<T>[]` | Column definitions (same shape as DataPage) |
-| `onRowSelected` | `(row: T) => void` | Row click callback |
-| `selectedRow` | `T \| undefined` | Externally controlled selected row |
-| `noDataMessage` | `string` | Message when no rows are returned |
-| `queryArgs` | `object` | Arguments forwarded to the query |
+| Prop | Type | Required | Description |
+| --- | --- | --- | --- |
+| `query` | generated query class | ✓ | Snapshot or observable query matching the chosen component |
+| `emptyMessage` | `string` | ✓ | Message shown when no rows are returned |
+| `children` | `ReactNode` | | `<Column>` markers describing visible columns |
+| `queryArguments` | query argument object | | Arguments forwarded to the generated query |
+| `selection` | row, `null`, or `undefined` | | Controlled/current selection |
+| `onSelectionChange` | `(event: DataTableSelectionChangeEvent<T>) => void` | | Selection callback; selected row is `event.value` |
+| `dataKey` | `string` | | Stable row identity field |
+| `globalFilterFields` | `string[]` | | Fields searched within the currently loaded page |
+| `defaultFilters` | `DataTableFilterMeta` | | Initial loaded-page filters |
+| `className` / `pt` | styling hooks | | Root class and stable Cratis table parts |
+| `paginatorClassName` / `paginatorPt` | styling hooks | | Paginator class and parts |
 
 ## Column definition
 
-```ts
-type Column<T> = {
-    header: string;
-    field: keyof T | ((row: T) => string);
-    width?: number | string;
-};
+`Column` is a marker component. Common props include:
+
+- `field`, `header`, and optional `body` cell renderer;
+- `sortable`;
+- `filter`, `filterField`, `filterPlaceholder`, and `dataType`;
+- `selectionMode="single"`;
+- cell/header class, style, and part customization.
+
+```tsx
+<Column
+    field="balance"
+    header="Balance"
+    sortable
+    body={(account) => account.balance.toFixed(2)}
+/>
 ```
 
-## When to use each component
+## Choose the surface
 
 | Situation | Component |
 | --- | --- |
-| Full page with toolbar | `DataPage` |
-| Embedded table, standard query | `DataTableForQuery` |
-| Embedded table, real-time push | `DataTableForObservableQuery` |
-| Inline data (no query) | Custom table (out of scope) |
+| Full page with actions/details | `DataPage` |
+| Embedded snapshot table | `DataTableForQuery` |
+| Embedded real-time table | `DataTableForObservableQuery` |
+| Already-loaded inline rows | `DataTableCore` |
+
+Filtering and sorting apply to the currently loaded page. Complete-result filtering/sorting belongs in server query arguments before paging.

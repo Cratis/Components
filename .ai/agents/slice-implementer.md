@@ -10,13 +10,19 @@ tools: [githubRepo, codeSearch, usages, rename, terminalLastCommand]
 
 # Slice Implementer
 
+## Scope before checklists
+
+Identify the repository profile and changed lane before selecting rules or running a checklist. Read the repository's `AGENTS.md` and applicable universal rules in `.ai/rules/`. For framework contributions, load `.ai/rules/framework.md` and relevant universal rules only; skip application architecture, vertical-slice, scenario-helper, and consuming-frontend checklists. Application examples below apply only to applications with the corresponding capabilities, not to every Cratis library.
+
+Scope verification to affected projects/packages and behavior. Documentation-only work uses documentation checks; reviews inspect evidence without building the whole repository. Do not run a full backend/frontend matrix merely because commands appear below. Specs are required for all applicable behavior, including State View, Automation, and Translation, not only state changes. Report skipped or unavailable checks honestly.
+
 You implement vertical slices end-to-end. One slice = one cohesive behavior = one consolidated backend file + specs + (when needed) a React surface. You do write code; you also know when to stop and ask.
 
 ## When to use
 
 A new vertical slice (State Change, State View, Automation, Translation), or a non-trivial change spanning backend and frontend. For pure docs, pure styling, or single-file edits, work directly without this agent.
 
-## Source of truth (read before starting; refer throughout)
+## Source of truth (select applicable profile/lane entries before starting)
 
 - `.ai/rules/general.md` — universal rules, layout, gates, authority model.
 - `.ai/rules/vertical-slices.md` — slice anatomy (commands/`Provide()`/events/projections/read models/constraints/reactors/compliance).
@@ -30,7 +36,7 @@ A new vertical slice (State Change, State View, Automation, Translation), or a n
 For new behavior, unclear event names/stream boundaries, or multi-slice flows, run the `event-modeling` skill first. Confirm Module/Feature/slice name + type, the behavior in one sentence, whether a UI surface is needed, and the event/read-model/scenario outline. Ask only when a real product/domain choice can't be answered from the repo.
 
 ### Phase 2 — Backend
-Write `<Module>/<Feature>/<Slice>/<Slice>.cs` with all backend artifacts (declaration order per `general.md`). **Gate:** build clean in **Debug and Release** (zero errors/warnings — Debug validates `#if DEBUG` spec code, Release regenerates the TypeScript proxies).
+Write `<Module>/<Feature>/<Slice>/<Slice>.cs` with all backend artifacts (declaration order per `general.md`). **Gate:** build clean in **Debug and Release** (zero errors/warnings — Debug validates `#if DEBUG` spec code and regenerates the TypeScript proxies; build Release with `-p:CratisProxiesOutputPath=` to skip re-running proxy generation).
 
 ### Phase 3 — Specs
 Mandatory for every slice type. Use the scenario family: `CommandScenario<T>` (state change), `EventScenario` (constraints), `ReadModelScenario<T>` (projections/reducers), `ReactorScenario<T>` (reactors). Minimum: happy path with each appended event asserted; one spec per validator rule asserting **both** `ShouldNotBeSuccessful()` **and** `ShouldHaveValidationErrors()`; one spec per constraint. **Gate:** tests pass.

@@ -1,28 +1,15 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+// @vitest-environment jsdom
+
+import { expect } from 'chai';
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { Dialog } from '../Dialog';
+import { click, render, unmount, type DialogInTheDom } from './given/a_dialog_in_the_dom';
 
-const { closeDialog } = vi.hoisted(() => ({
-    closeDialog: vi.fn(),
-}));
-
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, props.footer, props.children),
-}));
-
-vi.mock('primereact/button', () => ({
-    Button: (props: { icon?: string; label?: string; onClick?: () => Promise<void> | void; disabled?: boolean }) => {
-        if (props.icon === 'pi pi-check' && props.onClick) {
-            props.onClick();
-        }
-        return React.createElement('button', { disabled: props.disabled }, props.label);
-    },
-}));
+const { closeDialog } = vi.hoisted(() => ({ closeDialog: vi.fn() }));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },
@@ -32,27 +19,28 @@ vi.mock('@cratis/arc.react/dialogs', () => ({
 
 describe('when confirming with close dialog and result', () => {
     const resultPayload = { id: 'project-1', name: 'Project 1' };
+    let dialog: DialogInTheDom;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         closeDialog.mockReset();
-
-        const element = React.createElement(Dialog, {
-            title: 'Add project',
-            visible: true,
-            onConfirm: () => closeDialog(3, resultPayload),
-            onCancel: () => closeDialog(4),
-            buttons: 2,
-            children: React.createElement('p', null, 'Dialog content'),
-        });
-
-        renderToStaticMarkup(element);
+        dialog = await render(
+            React.createElement(Dialog, {
+                title: 'Add project',
+                visible: true,
+                onConfirm: () => closeDialog(3, resultPayload),
+                onCancel: () => closeDialog(4),
+                buttons: 2,
+                children: React.createElement('p', null, 'Dialog content'),
+            }),
+        );
+        await click('Ok');
     });
 
-    it('should_close_once_with_ok_and_the_payload', () => {
-        if (closeDialog.mock.calls.length !== 1) {
-            throw new Error(`Expected one closeDialog call, got ${closeDialog.mock.calls.length}`);
-        }
-        closeDialog.mock.calls[0][0].should.equal(3);
-        closeDialog.mock.calls[0][1].should.deep.equal(resultPayload);
+    afterEach(async () => unmount(dialog));
+
+    it('should close once with ok and the payload', () => {
+        expect(closeDialog.mock.calls).to.have.lengthOf(1);
+        expect(closeDialog.mock.calls[0][0]).to.equal(3);
+        expect(closeDialog.mock.calls[0][1]).to.deep.equal(resultPayload);
     });
 });

@@ -1,6 +1,6 @@
 # RadioGroupField
 
-`RadioGroupField` renders a group of PrimeReact `RadioButton` components from an options array, allowing the user to select a single value.
+`RadioGroupField` renders a Cratis-owned native radio group from an options array.
 
 ## Usage
 
@@ -16,40 +16,42 @@ const sizeOptions = [
 
 <CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
     <RadioGroupField<MyCommand>
-        value={c => c.size}
+        value={(c) => c.size}
         options={sizeOptions}
-        optionLabel="label"
-        optionValue="id"
-        title="Size"
+        optionLabel='label'
+        optionValue='id'
+        title='Size'
     />
-</CommandDialog>
+</CommandDialog>;
 ```
 
 With horizontal layout:
 
 ```tsx
 <RadioGroupField<MyCommand>
-    value={c => c.priority}
+    value={(c) => c.priority}
     options={priorityOptions}
-    optionLabel="label"
-    optionValue="id"
-    title="Priority"
-    layout="horizontal"
+    optionLabel='label'
+    optionValue='id'
+    title='Priority'
+    layout='horizontal'
 />
 ```
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `value` | `(instance: TCommand) => unknown` | — | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
-| `options` | `Array<Record<string, unknown>>` | — | **Required.** Array of option objects. |
-| `optionLabel` | `string` | — | **Required.** Key in each option object to use as the display label. |
-| `optionValue` | `string` | — | **Required.** Key in each option object to use as the submitted value. |
-| `layout` | `'horizontal' \| 'vertical'` | `'vertical'` | Controls whether the radio buttons are stacked vertically or laid out in a horizontal row. |
+| Prop          | Type                              | Default      | Description                                                                                                                                                     |
+| ------------- | --------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `value`       | `(instance: TCommand) => unknown` | —            | **Required.** Accessor function that returns the bound property from the command instance. Pass the command type as the generic parameter for full type safety. |
+| `options`     | `Array<Record<string, unknown>>`  | —            | **Required.** Array of option objects.                                                                                                                          |
+| `optionLabel` | `string`                          | —            | **Required.** Key in each option object to use as the display label.                                                                                            |
+| `optionValue` | `string`                          | —            | **Required.** Key in each option object to use as the submitted value.                                                                                          |
+| `layout`      | `'horizontal' \| 'vertical'`      | `'vertical'` | Controls whether the radio buttons are stacked vertically or laid out in a horizontal row.                                                                      |
+| `name`        | `string`                          | generated    | Optional native radio-group name. All options in the component always share one name.                                                                           |
 
 ## Behavior
 
 - Default value is an empty string.
 - A radio button is checked when the current field value equals its `optionValue`.
-- Validation state is reflected via the PrimeReact `invalid` flag on all radio buttons.
+- The options share one native name for arrow-key navigation and a single tab stop.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.

@@ -1,0 +1,31 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "allowJs": false,
+        "composite": false,
+        "declaration": false,
+        "declarationMap": false,
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "baseUrl": ".",
+        "rootDir": "..",
+        "paths": {
+            "virtual:cratis-renderer-preview": ["preview/virtual-renderer-preview.tsx"]
+        },
+        "noEmit": true,
+        "skipLibCheck": true,
+        "types": ["node", "vitest/globals"]
+    },
+    "include": [
+        "manager/**/*.ts",
+        "manager/**/*.tsx",
+        "preview/**/*.ts",
+        "preview/**/*.tsx",
+        "for_*/**/*.ts",
+        "scripts/lib/*.d.mts",
+        "vitest.config.ts",
+        "vitest.storybook.config.ts",
+        "../Adapters/*/.storybook/**/*.tsx"
+    ],
+    "exclude": ["../Source/storybook-static", "node_modules"]
+}

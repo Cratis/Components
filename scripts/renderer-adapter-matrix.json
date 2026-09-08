@@ -1,0 +1,132 @@
+{
+    "schemaVersion": 1,
+    "packageManagers": {
+        "pnpm": "10.17.1",
+        "yarn": "4.5.3"
+    },
+    "sharedPeers": {
+        "@cratis/arc": "22.6.2",
+        "@cratis/arc.react": "22.6.2",
+        "@cratis/fundamentals": "7.18.1",
+        "reflect-metadata": "0.2.2",
+        "rxjs": "7.8.2",
+        "tsyringe": "4.10.0"
+    },
+    "boundaryPeers": {
+        "minimum": {
+            "@types/react": "19.0.0",
+            "react": "19.0.0",
+            "react-dom": "19.0.0"
+        },
+        "current": {
+            "@types/react": "19.2.18",
+            "react": "19.2.8",
+            "react-dom": "19.2.8"
+        }
+    },
+    "confirmedYarnPnpManifestOmissions": [
+        {
+            "package": "@cratis/arc.react",
+            "dependency": "rxjs"
+        },
+        {
+            "adapter": "primereact11",
+            "package": "@primereact/headless",
+            "dependency": "react"
+        },
+        {
+            "adapter": "primereact11",
+            "package": "@primereact/styles",
+            "dependency": "@primeuix/motion"
+        },
+        {
+            "adapter": "primereact11",
+            "package": "@primereact/ui",
+            "dependency": "@primereact/core"
+        },
+        {
+            "adapter": "primereact11",
+            "package": "@primereact/ui",
+            "dependency": "@primeuix/utils"
+        },
+        {
+            "adapter": "primereact11",
+            "package": "@primereact/ui",
+            "dependency": "react-dom"
+        }
+    ],
+    "adapters": {
+        "mui": {
+            "workspace": "@cratis/components.mui",
+            "directory": "Adapters/Mui",
+            "manifestExport": "muiUiLibrary",
+            "rendererId": "cratis-mui",
+            "boundaries": {
+                "minimum": {
+                    "@emotion/react": "11.5.0",
+                    "@emotion/styled": "11.11.0",
+                    "@mui/material": "9.0.0"
+                },
+                "current": {
+                    "@emotion/react": "11.14.0",
+                    "@emotion/styled": "11.14.1",
+                    "@mui/material": "9.4.0"
+                }
+            }
+        },
+        "primereact11": {
+            "workspace": "@cratis/components.primereact",
+            "directory": "Adapters/PrimeReact",
+            "manifestExport": "primeReactUiLibrary",
+            "rendererId": "cratis-primereact",
+            "versionProbeSpecifiers": {
+                "@primereact/core": "@primereact/core/component",
+                "@primereact/ui": "@primereact/ui/button",
+                "primereact": "primereact/button"
+            },
+            "alignedPackages": [
+                "@primereact/core",
+                "@primereact/headless",
+                "@primereact/styles",
+                "@primereact/ui",
+                "primereact"
+            ],
+            "boundaries": {
+                "minimum": {
+                    "@primereact/core": "11.0.0",
+                    "@primereact/headless": "11.0.0",
+                    "@primereact/styles": "11.0.0",
+                    "@primereact/ui": "11.0.0",
+                    "@primeuix/motion": "1.0.0",
+                    "@primeuix/themes": "3.0.0",
+                    "@primeuix/utils": "0.8.0",
+                    "primereact": "11.0.0"
+                },
+                "current": {
+                    "@primereact/core": "11.1.0",
+                    "@primereact/headless": "11.1.0",
+                    "@primereact/styles": "11.1.0",
+                    "@primereact/ui": "11.1.0",
+                    "@primeuix/motion": "1.0.0",
+                    "@primeuix/themes": "3.0.0",
+                    "@primeuix/utils": "0.8.1",
+                    "primereact": "11.1.0"
+                }
+            }
+        },
+        "primereact10": {
+            "workspace": "@cratis/components.primereact10",
+            "directory": "Adapters/PrimeReact10",
+            "manifestExport": "primeReact10UiLibrary",
+            "rendererId": "cratis-primereact10",
+            "boundaries": {
+                "minimum": {
+                    "primereact": "10.9.9"
+                },
+                "current": {
+                    "primereact": "10.9.9"
+                }
+            }
+        }
+    }
+}

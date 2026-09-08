@@ -5,26 +5,17 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { StepperCommandDialog } from '../StepperCommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '../StepperPanel';
 
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'dialog' }, props.footer, props.children),
+// Render the Cratis Dialog wrapper's custom footer and body.
+vi.mock('../../Dialogs/Dialog', () => ({
+    Dialog: (props: { buttons?: React.ReactNode; children?: React.ReactNode }) =>
+        React.createElement('div', { 'data-testid': 'dialog' }, props.buttons, props.children),
 }));
 
-vi.mock('primereact/stepper', () => ({
-    Stepper: (props: { children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'stepper' }, props.children),
-}));
-
-vi.mock('primereact/stepperpanel', () => ({
-    StepperPanel: (props: { header?: string; children?: React.ReactNode }) =>
-        React.createElement('div', { 'data-testid': 'stepper-panel', 'data-header': props.header }, props.children),
-}));
-
-vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean; loading?: boolean; icon?: string }) =>
-        React.createElement('button', { disabled: props.disabled, 'data-loading': props.loading }, props.label),
+vi.mock('../../Common/Button', () => ({
+    Button: (props: { children?: React.ReactNode; disabled?: boolean }) =>
+        React.createElement('button', { disabled: props.disabled }, props.children),
 }));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
@@ -59,6 +50,7 @@ describe('when StepperCommandDialog is in its initial state', () => {
         const element = React.createElement(
             StepperCommandDialog<TestCommand>,
             {
+                // SAFETY: The test command implements the runtime command constructor contract.
                 command: TestCommand as unknown as new () => object,
                 visible: true,
                 title: 'Test Stepper Dialog',
@@ -69,8 +61,8 @@ describe('when StepperCommandDialog is in its initial state', () => {
         html = renderToStaticMarkup(element);
     });
 
-    it('should_not_have_buttons_disabled_due_to_busy', () => {
-        html.should.not.include('data-loading="true"');
+    it('should_not_have_buttons_in_a_busy_state', () => {
+        html.should.not.include('cratis-dialog__spinner');
     });
 
     it('should_not_show_previous_button_on_first_step', () => {

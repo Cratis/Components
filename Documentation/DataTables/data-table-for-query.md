@@ -19,7 +19,7 @@ DataTableForQuery provides a data table specifically designed for `IQueryFor` qu
 
 ```typescript
 import { DataTableForQuery } from '@cratis/components/DataTables';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataTables';
 import { MyQuery } from './queries';
 
 function MyTable() {
@@ -50,38 +50,29 @@ function MyTable() {
 - `dataKey`: Unique identifier field
 - `selection`: Currently selected row
 - `onSelectionChange`: Callback when selection changes
-- `globalFilterFields`: Fields to search in global filter
-- `defaultFilters`: Initial filter configuration
-- `clientFiltering`: Enable client-side filtering (default: false)
+- `globalFilterFields`: Fields searched on the loaded page
+- `globalSearchPlaceholder`: Search-input placeholder. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.dataTable.search`, then `'Search…'`
+- `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder. Falls back to the provider's `messages.dataTable.searchAriaLabel`, then `'Search table'`
+- `selectionAriaLabel`: Accessible name for a single-selection row control. Falls back to the provider's `messages.dataTable.selectRow`, then `'Select row'`
+- `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
+- `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
+- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
 - `children`: Column definitions
+
+While the first query result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
 
 ## Pagination
 
 DataTableForQuery automatically handles pagination with a default page size of 20 items. Pagination controls are displayed at the bottom of the table.
 
-## Server-Side Filtering
+## Filtering
 
-Default mode - filters are applied on the server:
+Add `filter` to a `<Column>` for a per-column filter menu, and/or `globalFilterFields` for a global search box. Filtering is applied client-side to the loaded page; seed the initial state with `defaultFilters`:
 
 ```typescript
 <DataTableForQuery
     query={MyQuery}
     globalFilterFields={['name', 'email']}
-    emptyMessage="No results"
->
-    <Column field="name" header="Name" />
-    <Column field="email" header="Email" />
-</DataTableForQuery>
-```
-
-## Client-Side Filtering
-
-Enable client-side filtering for smaller datasets:
-
-```typescript
-<DataTableForQuery
-    query={MyQuery}
-    clientFiltering={true}
     defaultFilters={{
         name: { value: '', matchMode: 'contains' }
     }}
@@ -91,6 +82,16 @@ Enable client-side filtering for smaller datasets:
     <Column field="status" header="Status" filter />
 </DataTableForQuery>
 ```
+
+Each filtered `Column` can localize its overlay through `filterLabels` or replace the built-in value editor through `filterElement`. See [Column Configuration](column-configuration.md#column-filters) for the callback contract and draft/apply behavior.
+
+Filtering affects the currently loaded page while the paginator continues to report the server's total result set.
+
+### Filtering scope and server pagination
+
+`clientFiltering` remains accepted so existing applications continue to compile, but it is deprecated and does not toggle behavior. A browser cannot correctly filter the complete result set when the query has supplied only one server page. Replacing the server total with the number of matches on that page would make later pages unreachable, while caching visited pages would still produce an incomplete result.
+
+For complete-result filtering, put the filter values in `queryArguments`, apply them to the server query before paging, and return the filtered total from the server. For a genuinely small dataset that is intentionally loaded in full, use a non-paged query and render that complete collection locally. Do not use `clientFiltering` in new code.
 
 ## Selection
 
@@ -130,7 +131,7 @@ Integrates with:
 
 - `@cratis/arc/queries` for data fetching
 - `@cratis/arc.react/queries` for React hooks
-- PrimeReact DataTable and Paginator
+- semantic Cratis table and Arc-backed paginator
 
 ## See Also
 

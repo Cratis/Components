@@ -1,0 +1,189 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-text-input,
+.cratis-text-area {
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--cratis-control-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-control-background);
+    color: var(--cratis-text-color);
+    font: inherit;
+    box-shadow: var(--cratis-shadow-subtle);
+}
+.cratis-text-area {
+    resize: vertical;
+}
+.cratis-text-input::placeholder,
+.cratis-text-area::placeholder {
+    color: var(--cratis-text-color-secondary);
+}
+.cratis-text-input:focus-visible,
+.cratis-text-area:focus-visible {
+    outline: none;
+    border-color: var(--cratis-primary-color);
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-text-input:is(:disabled, [data-readonly='true']),
+.cratis-text-area:is(:disabled, [data-readonly='true']) {
+    background: var(--cratis-surface-100);
+}
+.cratis-text-input:disabled,
+.cratis-text-area:disabled {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-text-input[data-invalid='true'],
+.cratis-text-area[data-invalid='true'] {
+    border-color: var(--cratis-red-500);
+}
+
+.cratis-choice {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--cratis-text-color);
+    cursor: pointer;
+}
+.cratis-choice[data-disabled='true'] {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-choice[data-readonly='true']:not([data-disabled='true']) {
+    cursor: default;
+}
+.cratis-choice__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+.cratis-checkbox__box,
+.cratis-radio__box,
+.cratis-switch__control {
+    display: inline-flex;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    align-items: center;
+    border: 1px solid var(--cratis-control-border);
+    background: var(--cratis-control-background);
+}
+.cratis-checkbox__box,
+.cratis-radio__box {
+    width: 1.25rem;
+    height: 1.25rem;
+    justify-content: center;
+}
+.cratis-checkbox__box {
+    border-radius: var(--cratis-border-radius);
+}
+.cratis-checkbox__indicator {
+    color: var(--cratis-primary-color-text);
+    font-size: 0.85rem;
+    line-height: 1;
+    opacity: 0;
+}
+.cratis-radio__box {
+    border-radius: 50%;
+}
+.cratis-radio__indicator {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: var(--cratis-primary-color);
+    opacity: 0;
+}
+.cratis-switch__control {
+    width: 2.5rem;
+    height: 1.4rem;
+    padding: 0.15rem;
+    border-radius: 999px;
+    background: var(--cratis-surface-100);
+    transition: background-color 140ms ease;
+}
+.cratis-switch__handle {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--cratis-control-background);
+    box-shadow: var(--cratis-shadow-subtle);
+    transition: transform 140ms ease;
+}
+.cratis-choice__input:focus-visible
+    + :is(.cratis-checkbox__box, .cratis-radio__box, .cratis-switch__control) {
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-choice__input:checked + .cratis-checkbox__box,
+.cratis-choice__input:checked + .cratis-switch__control {
+    border-color: var(--cratis-primary-color);
+    background: var(--cratis-primary-color);
+}
+.cratis-choice__input:checked + .cratis-checkbox__box .cratis-checkbox__indicator,
+.cratis-choice__input:checked + .cratis-radio__box .cratis-radio__indicator {
+    opacity: 1;
+}
+.cratis-choice__input:checked + .cratis-radio__box {
+    border-color: var(--cratis-primary-color);
+}
+.cratis-choice__input:checked + .cratis-switch__control .cratis-switch__handle {
+    transform: translateX(1.05rem);
+}
+.cratis-choice:dir(rtl)
+    .cratis-choice__input:checked
+    + .cratis-switch__control
+    .cratis-switch__handle {
+    transform: translateX(-1.05rem);
+}
+.cratis-choice[data-invalid='true']
+    :is(.cratis-checkbox__box, .cratis-radio__box, .cratis-switch__control) {
+    border-color: var(--cratis-red-500);
+}
+
+.cratis-surface {
+    box-sizing: border-box;
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-surface-card);
+    color: var(--cratis-text-color);
+    box-shadow: var(--cratis-shadow-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cratis-switch__control,
+    .cratis-switch__handle {
+        transition: none;
+    }
+}
+
+@media (forced-colors: active) {
+    .cratis-text-input,
+    .cratis-text-area,
+    .cratis-checkbox__box,
+    .cratis-radio__box,
+    .cratis-switch__control,
+    .cratis-surface {
+        border-color: CanvasText;
+    }
+    .cratis-choice__input:checked
+        + :is(.cratis-checkbox__box, .cratis-switch__control) {
+        background: Highlight;
+    }
+    .cratis-choice__input:checked + .cratis-radio__box .cratis-radio__indicator {
+        background: Highlight;
+    }
+    .cratis-choice__input:focus-visible
+        + :is(.cratis-checkbox__box, .cratis-radio__box, .cratis-switch__control),
+    .cratis-text-input:focus-visible,
+    .cratis-text-area:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+}

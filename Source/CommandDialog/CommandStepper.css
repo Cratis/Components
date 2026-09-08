@@ -1,24 +1,133 @@
 /* Copyright (c) Cratis. All rights reserved. */
 /* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
 
-.p-stepper [data-pc-section="header"][data-p-active="false"] {
-    opacity: 0.5;
-}
-
-/* Make stepper and its panels fill available width */
 .cratis-command-stepper {
     display: flex;
+    width: 100%;
     flex-direction: column;
     gap: 0.75rem;
-    width: 100%;
 }
-
-.cratis-command-stepper .p-stepper {
-    width: 100%;
-}
-
-.cratis-command-stepper .p-stepperpanel-content {
+.cratis-command-stepper__root,
+.cratis-command-stepper__panels,
+.cratis-command-stepper__panel {
     width: 100%;
     box-sizing: border-box;
 }
+.cratis-command-stepper__list {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.cratis-command-stepper__step {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    flex: 1;
+}
+.cratis-command-stepper__header {
+    display: inline-flex;
+    min-width: 0;
+    padding: 0.4rem;
+    align-items: center;
+    gap: 0.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--cratis-text-color);
+    font: inherit;
+    cursor: pointer;
+}
+.cratis-command-stepper__header:disabled {
+    cursor: default;
+}
+.cratis-command-stepper__header:focus-visible {
+    outline: none;
+    border-radius: var(--cratis-border-radius);
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-command-stepper__step:not([data-active]) .cratis-command-stepper__header {
+    opacity: 0.55;
+}
+.cratis-command-stepper__number {
+    display: inline-flex;
+    width: 1.8rem;
+    height: 1.8rem;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: 50%;
+    background: var(--cratis-surface-card);
+}
+.cratis-command-stepper__step[data-active='true'] .cratis-command-stepper__number {
+    border-color: var(--cratis-primary-color);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
+}
+.cratis-command-stepper__step[data-visited='true']:not([data-invalid='true'])
+    .cratis-command-stepper__number {
+    border-color: var(--cratis-green-500);
+    color: var(--cratis-green-500);
+}
+.cratis-command-stepper__step[data-invalid='true'] .cratis-command-stepper__number {
+    border-color: var(--cratis-red-500);
+    background: var(--cratis-surface-card);
+    color: var(--cratis-red-500);
+}
+.cratis-command-stepper__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cratis-command-stepper__separator {
+    height: 2px;
+    min-width: 1rem;
+    margin-inline: 0.25rem;
+    flex: 1;
+    background: var(--cratis-surface-border);
+}
+.cratis-command-stepper__panel {
+    padding-block: 0.5rem;
+}
 
+.cratis-command-stepper--horizontal .cratis-command-stepper__list {
+    flex-direction: row;
+    align-items: center;
+}
+.cratis-command-stepper--vertical .cratis-command-stepper__root {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+.cratis-command-stepper--vertical .cratis-command-stepper__list {
+    width: max-content;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+.cratis-command-stepper--vertical .cratis-command-stepper__step {
+    flex-direction: column;
+    align-items: flex-start;
+}
+.cratis-command-stepper--vertical .cratis-command-stepper__separator {
+    width: 2px;
+    min-width: 2px;
+    min-height: 1.25rem;
+    margin-inline-start: 1.3rem;
+}
+.cratis-command-stepper--vertical .cratis-command-stepper__panels {
+    min-width: 0;
+    flex: 1;
+}
+
+@media (forced-colors: active) {
+    .cratis-command-stepper__number,
+    .cratis-command-stepper__separator {
+        border-color: CanvasText;
+    }
+    .cratis-command-stepper__step[data-active='true'] .cratis-command-stepper__number {
+        background: Highlight;
+        color: HighlightText;
+    }
+}

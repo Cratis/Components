@@ -1,0 +1,87 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Every color comes from the --cratis-* token seam, so the compose row follows whatever theme the
+   host runs. */
+.chat-composer {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 8px 10px 10px;
+    border-top: 1px solid var(--cratis-surface-border);
+    flex-shrink: 0;
+}
+
+.chat-composer__input {
+    flex: 1;
+    background: var(--cratis-surface-0);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: 8px;
+    color: var(--cratis-text-color);
+    font-size: 12px;
+    padding: 6px 8px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.4;
+    transition: border-color 0.12s;
+}
+
+.chat-composer__input::placeholder {
+    color: var(--cratis-text-color-secondary);
+}
+
+.chat-composer__input:focus {
+    border-color: var(--cratis-primary-color);
+}
+
+.chat-composer__emoji-toggle {
+    background: var(--cratis-surface-100);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--cratis-text-color-secondary);
+    font-size: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition:
+        background 0.12s,
+        color 0.12s;
+}
+
+.chat-composer__emoji-toggle:hover {
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
+}
+
+.chat-composer__send {
+    background: var(--cratis-primary-color);
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--cratis-primary-color-text);
+    flex-shrink: 0;
+    transition:
+        background 0.12s,
+        opacity 0.12s;
+}
+
+.chat-composer__send:hover:not(:disabled) {
+    background: var(--cratis-primary-600);
+}
+
+.chat-composer__send:disabled {
+    opacity: 0.35;
+    cursor: default;
+}

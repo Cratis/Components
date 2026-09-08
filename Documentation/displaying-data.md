@@ -13,7 +13,7 @@ If your query is observable, `DataTableForObservableQuery` subscribes for you an
 
 ```tsx
 import { DataTableForObservableQuery } from '@cratis/components/DataTables';
-import { Column } from 'primereact/column';
+import { Column } from '@cratis/components/DataTables';
 import { AllAuthors } from './Author';   // generated observable query proxy
 
 export const Authors = () => (

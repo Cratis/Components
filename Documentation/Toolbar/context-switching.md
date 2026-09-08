@@ -8,19 +8,19 @@ function ContextualToolbar() {
 
     return (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
             <ToolbarSection activeContext={mode}>
                 <ToolbarContext name='drawing'>
-                    <ToolbarButton icon='pi pi-pencil' title='Draw' />
-                    <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                    <ToolbarButton icon='pi pi-circle' title='Circle' />
+                    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Draw' />
+                    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Rectangle' />
+                    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Circle' />
                 </ToolbarContext>
                 <ToolbarContext name='text'>
-                    <ToolbarButton icon='pi pi-align-left' title='Align Left' />
-                    <ToolbarButton icon='pi pi-align-center' title='Align Center' />
+                    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Align Left' />
+                    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Align Center' />
                 </ToolbarContext>
             </ToolbarSection>
-            <ToolbarButton icon='pi pi-undo' title='Undo' />
+            <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Undo' />
         </Toolbar>
     );
 }

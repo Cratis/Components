@@ -5,7 +5,7 @@
 .toolbar {
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
 }
 
 /* ── Toolbar button ──────────────────────────────────────────────────────── */
@@ -13,7 +13,9 @@
     color: var(--cratis-text-color-secondary);
     background: transparent;
     border: none;
-    transition: background 0.15s, color 0.15s;
+    transition:
+        background 0.15s,
+        color 0.15s;
 }
 
 .toolbar-button:hover {
@@ -22,13 +24,13 @@
 }
 
 .toolbar-button--active {
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background);
+    color: var(--cratis-action-text);
 }
 
 .toolbar-button--active:hover {
-    background: var(--cratis-primary-color);
-    color: var(--cratis-primary-color-text);
+    background: var(--cratis-action-background-hover);
+    color: var(--cratis-action-text);
 }
 
 .toolbar-button--draggable {
@@ -144,7 +146,7 @@
     padding: 0.5rem;
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
     border-radius: 1rem;
     white-space: nowrap;
     z-index: 10;
@@ -187,6 +189,22 @@
     pointer-events: auto;
 }
 
+/*
+ * Reveal complete. The clip-path did its job — the wipe cannot run without it,
+ * because `clip-path: none` is a discrete value that snaps instead of
+ * interpolating. But clip-path also clips every descendant, so leaving a zero
+ * inset in place slices off the hover tooltips of the outermost buttons, which
+ * paint outside the panel by design.
+ *
+ * ToolbarFanOutItem therefore adds this class once the reveal transition ends,
+ * and takes it off again (restoring an interpolable inset) before the close
+ * transition starts — so both wipes keep their exact timing and a settled panel
+ * clips nothing.
+ */
+.toolbar-fanout-panel--settled {
+    clip-path: none;
+}
+
 /* ── Toolbar folder ──────────────────────────────────────────────────────── */
 
 .toolbar-folder-item {
@@ -209,7 +227,7 @@
     padding: 0.5rem;
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
     border-radius: 1rem;
     z-index: 10;
     pointer-events: none;
@@ -266,7 +284,7 @@
  * When a Toolbar contains ToolbarGroup children it becomes a transparent
  * layout wrapper — each group renders as its own pill.
  */
-.toolbar:has(.toolbar-group) {
+.toolbar:has(> .toolbar-group) {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -281,33 +299,47 @@
 .toolbar-group {
     background: var(--cratis-surface-card);
     border: 1px solid var(--cratis-surface-border);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--cratis-shadow-overlay);
 }
-
 
 /* ── Toolbar slot transition (ToolbarGroup slot content) ─────────────────── */
 
 /*
- * Size-morphing container for slot content inside a ToolbarGroup.
+ * Size-morphing container for slot content inside a ToolbarGroup or ToolbarLayout.
  * Mirrors the .toolbar-section transition parameters for visual consistency —
  * the container resizes smoothly while content cross-fades.
+ * Overflow stays visible in the settled state so absolutely-positioned children
+ * (fan-out and folder panels, and the hover tooltips inside them) can escape the
+ * section's bounds; it is only clipped while outgoing content is fading out, so
+ * that content does not bleed past the container mid-transition.
  */
 .toolbar-slot-section {
     position: relative;
-    overflow: hidden;
     transition:
         width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
         height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.toolbar-slot-section--transitioning {
+    overflow: hidden;
+}
+
 @keyframes toolbar-slot-fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes toolbar-slot-fade-out {
-    from { opacity: 1; }
-    to   { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 
 /*
@@ -331,4 +363,23 @@
     left: 0;
     animation: toolbar-slot-fade-out 0.2s ease forwards;
     pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toolbar,
+    .toolbar-button,
+    .toolbar-section,
+    .toolbar-context,
+    .toolbar-fanout-panel,
+    .toolbar-folder-panel,
+    .toolbar-slot-section,
+    .toolbar-slot-incoming,
+    .toolbar-slot-outgoing {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .toolbar-fanout-panel--visible {
+        clip-path: none !important;
+    }
 }

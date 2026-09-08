@@ -1,0 +1,53 @@
+{
+    "kind": "ui-adapter",
+    "id": "plain-dom-falsification-fixture",
+    "displayName": "Plain DOM falsification fixture",
+    "abi": "^1",
+    "level": "primitive",
+    "profile": "stable-presentation/v1",
+    "category": "test-fixture",
+    "entry": "./for_plain_dom_renderer/given/plainDomPresentationRenderer.tsx",
+    "export": "plainDomPresentationRenderer",
+    "slots": [
+        "common.button",
+        "common.iconButton",
+        "common.textInput",
+        "common.textArea",
+        "common.checkbox",
+        "common.radio",
+        "common.switch",
+        "common.progress",
+        "common.surface"
+    ],
+    "modes": {
+        "common.button": "presentation",
+        "common.iconButton": "presentation",
+        "common.textInput": "presentation",
+        "common.textArea": "presentation",
+        "common.checkbox": "presentation",
+        "common.radio": "presentation",
+        "common.switch": "presentation",
+        "common.progress": "presentation",
+        "common.surface": "presentation"
+    },
+    "capabilities": [
+        "slot.render",
+        "parts.passthrough",
+        "ssr.staticRender",
+        "rtl",
+        "forcedColors",
+        "motion.reduced"
+    ],
+    "ssr": "safe",
+    "a11y": {
+        "axeProfile": "wcag22aa",
+        "evidence": "./CONFORMANCE.md"
+    },
+    "license": {
+        "spdx": "MIT",
+        "requiresKey": false
+    },
+    "upstream": {
+        "react": "^19.0.0"
+    }
+}

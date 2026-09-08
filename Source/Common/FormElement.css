@@ -14,7 +14,7 @@
     padding: 0 0.75rem;
     color: var(--cratis-text-color-secondary);
     background: var(--cratis-surface-100);
-    border: 1px solid var(--cratis-surface-border);
+    border: 1px solid var(--cratis-control-border);
     border-right: 0;
     border-top-left-radius: var(--cratis-border-radius);
     border-bottom-left-radius: var(--cratis-border-radius);

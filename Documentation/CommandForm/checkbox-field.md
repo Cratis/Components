@@ -1,6 +1,6 @@
 # CheckboxField
 
-`CheckboxField` provides a boolean toggle backed by the PrimeReact `Checkbox` component.
+`CheckboxField` provides a Cratis-owned native boolean checkbox.
 
 ## Usage
 
@@ -24,5 +24,5 @@ import { CheckboxField } from '@cratis/components/CommandForm';
 ## Behavior
 
 - Default value is `false`.
-- Validation state is reflected via the PrimeReact `invalid` flag on the checkbox.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.
 

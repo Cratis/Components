@@ -8,7 +8,7 @@ All advanced features described here apply to every step in the wizard, because 
 
 ```typescript
 import { StepperCommandDialog } from '@cratis/components/CommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '@cratis/components/CommandDialog';
 import { ValidationResult } from '@cratis/arc/validation';
 
 type CreateProjectResponse = {

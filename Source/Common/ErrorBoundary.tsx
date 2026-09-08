@@ -67,11 +67,17 @@ export class ErrorBoundary extends Component<Props, State> {
         console.error('Uncaught error:', error, errorInfo);
     }
 
+    /**
+     * Renders the protected children until an error is captured, then renders the scoped
+     * diagnostic fallback.
+     *
+     * @returns The protected subtree or the fallback error content.
+     */
     public render() {
         if (this.state.hasError) {
             return (
-                <div className='p-4'>
-                    <h1 className='text-3xl m-3'>Error</h1>
+                <div className='cratis:p-4'>
+                    <h1 className='cratis:text-3xl cratis:m-3'>Error</h1>
                     <p>{this.state.error.message}</p>
                     <p>{this.state.error.stack}</p>
                 </div>

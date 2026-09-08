@@ -104,7 +104,8 @@ function MyComponent() {
 - `cancelLabel`: Custom text for cancel button (default: "Cancel")
 - `yesLabel`, `noLabel`: Labels for `YesNo` and `YesNoCancel` button modes
 - `buttons`: `DialogButtons` value or custom footer content
-- `resizable`: Whether dialog can be resized
+- `initialFocus`: Where keyboard focus lands when the dialog opens — forwarded to `Dialog` (see below)
+- `resizable`: Accepted for source compatibility; the viewport-bounded Cratis dialog has no resize handle
 - `isValid`: Additional validity gate combined with command form validity
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
@@ -112,6 +113,11 @@ function MyComponent() {
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `width`: Dialog width
+- `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts
+- `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
+
+> [!NOTE]
+> `dismissable` and `closeAriaLabel` are forwarded to the underlying `Dialog`. `isBusy` is managed internally while the command executes, so consumers should not set it directly.
 
 ## Callback Behavior
 
@@ -135,13 +141,42 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 - `onCancel` follows the same behavior as `Dialog` (`true` closes).
 - `onClose` closes unless it returns `false`.
 
+## Destructive Commands and Initial Focus
+
+The confirm button is focused when the dialog opens, and a focused native button
+fires `click` from the `keydown` of `Enter`. A command whose form has required
+fields is protected from a held or double-tapped `Enter` for free, because the
+form's validity keeps confirm disabled until something is filled in. A command
+that takes **no** input — the typical "delete this, permanently" command — has
+no such gate, so its confirm button is armed the instant the dialog appears.
+
+Pass `initialFocus` for those. It is forwarded straight to
+[`Dialog`](../Dialogs/dialog.md#initial-focus) and changes nothing else — the
+footer, the close (X), `Escape`, and the confirm wiring that runs the command
+all stay intact.
+
+```tsx
+import { DialogInitialFocus } from '@cratis/components/Dialogs';
+
+<CommandDialog<DeletePersonalData>
+    command={DeletePersonalData}
+    title='Delete personal data?'
+    okLabel='Delete'
+    initialFocus={DialogInitialFocus.Cancel}
+    onSuccess={() => closeDialog(DialogResult.Ok)}
+>
+    This cannot be undone.
+</CommandDialog>;
+```
+
 ## Busy State
 
-`CommandDialog` automatically manages a busy state during command execution:
+`CommandDialog` automatically manages a busy state from the start of `onBeforeExecute` until command execution settles:
 
-- When the Ok/Yes button is clicked and command execution begins, all buttons are disabled and the primary button shows a loading spinner.
+- All buttons, including header close, are disabled and the primary button shows a loading spinner.
+- Escape and backdrop dismissal are ignored while work is in flight.
 - Once execution completes (success or failure), the buttons return to their normal state.
-- This prevents duplicate submissions and gives users clear visual feedback.
+- This prevents duplicate submissions and accidental dismissal while giving users clear visual feedback.
 
 ## Context
 
@@ -155,7 +190,7 @@ CommandDialog integrates with:
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- PrimeReact Dialog component for UI
+- React Aria modal/focus behavior behind Cratis-owned markup
 
 ## See Also
 

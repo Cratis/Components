@@ -5,7 +5,7 @@ import { getValueAtPath } from '../objectHelpers';
 import type { Json } from '../../types/JsonSchema';
 
 describe('when getting a top-level value', () => {
-    const data: Json = { name: 'Alice', age: 30 };
+    const data: Json = { name: 'Sample User 01', age: 30 };
     let result: Json | null;
 
     beforeEach(() => {
@@ -13,6 +13,6 @@ describe('when getting a top-level value', () => {
     });
 
     it('should return the value at that key', () => {
-        result.should.equal('Alice');
+        result.should.equal('Sample User 01');
     });
 });

@@ -247,7 +247,7 @@ public class and_there_are_no_authors(context context) : Given<context>(context)
         public CommandResult<Guid>? Result;
         async Task Because() =>
             Result = await Client.ExecuteCommand<RegisterAuthor, Guid>(
-                "/api/authors/register", new RegisterAuthor("John Doe"));
+                "/api/authors/register", new RegisterAuthor("Sample Author"));
     }
 
     [Fact] void should_be_successful() => Context.Result.IsSuccess.ShouldBeTrue();

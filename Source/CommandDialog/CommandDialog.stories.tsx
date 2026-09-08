@@ -2,13 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState } from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { CommandDialog } from './CommandDialog';
 import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { InputTextField, NumberField, TextAreaField } from '../CommandForm/fields';
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
+import { DialogInitialFocus } from '../Dialogs/DialogInitialFocus';
 import '@cratis/arc/validation';
+import { expect, userEvent, within } from 'storybook/test';
 
 const meta: Meta<typeof CommandDialog> = {
     title: 'CommandDialog/CommandDialog',
@@ -18,7 +20,16 @@ const meta: Meta<typeof CommandDialog> = {
 export default meta;
 type Story = StoryObj<typeof CommandDialog>;
 
-class UpdateUserCommandValidator extends CommandValidator {
+const openCommandDialog = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement);
+    const dialog = within(document.body).queryByRole('dialog');
+    if (!dialog) {
+        await userEvent.click(canvas.getAllByRole('button')[0]);
+    }
+    await expect(await within(document.body).findByRole('dialog')).toBeTruthy();
+};
+
+class UpdateUserCommandValidator extends CommandValidator<UpdateUserCommand> {
     constructor() {
         super();
         this.ruleFor((c: UpdateUserCommand) => c.name).notEmpty().minLength(2).maxLength(50);
@@ -129,6 +140,7 @@ class UpdateUserCommandWithServer extends Command<object> {
 }
 
 export const Default: Story = {
+    play: openCommandDialog,
     render: () => {
         const [result, setResult] = useState<string>('');
 
@@ -156,20 +168,17 @@ export const Default: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={async () => {
-                        const [dialogResult, commandResult] = await showUpdateUserDialog();
-                        if (dialogResult === DialogResult.Ok && commandResult) {
-                            setResult(JSON.stringify(commandResult));
-                        }
-                    }}
-                >
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={async () => {
+                    const [dialogResult, commandResult] = await showUpdateUserDialog();
+                    if (dialogResult === DialogResult.Ok && commandResult) {
+                        setResult(JSON.stringify(commandResult));
+                    }
+                }}>
                     Open Dialog
                 </button>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Command executed:</strong> {result}
                     </div>
                 )}
@@ -181,6 +190,7 @@ export const Default: Story = {
 };
 
 export const WithServerValidation: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
@@ -188,21 +198,18 @@ export const WithServerValidation: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setVisible(true);
-                        setValidationErrors([]);
-                        setResult('');
-                    }}
-                >
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
+                    setVisible(true);
+                    setValidationErrors([]);
+                    setResult('');
+                }}>
                     Open Dialog
                 </button>
 
                 {validationErrors.length > 0 && (
-                    <div className="p-3 mt-3 bg-red-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-red-100 border-round">
                         <strong>Validation Errors:</strong>
-                        <ul className="mt-2 mb-0">
+                        <ul className="cratis:mt-2 cratis:mb-0">
                             {validationErrors.map((error, index) => (
                                 <li key={index}>{error}</li>
                             ))}
@@ -211,7 +218,7 @@ export const WithServerValidation: Story = {
                 )}
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Command executed:</strong> {result}
                     </div>
                 )}
@@ -229,10 +236,12 @@ export const WithServerValidation: Story = {
                     onCancel={() => setVisible(false)}
                     onFieldChange={async (command) => {
                         const validationResult = await command.validate();
-                        if (!validationResult.isValid) {
-                            setValidationErrors(validationResult.validationResults.map(v => v.message));
-                        } else {
+                        if (validationResult.isValid) {
                             setValidationErrors([]);
+                        } else {
+                            setValidationErrors(
+                                validationResult.validationResults.map((v) => v.message),
+                            );
                         }
                     }}
                 >
@@ -246,14 +255,15 @@ export const WithServerValidation: Story = {
 };
 
 export const WithInitialValues: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(false);
         const [selectedUser, setSelectedUser] = useState<{ name: string; email: string; age: number } | undefined>(undefined);
         const [result, setResult] = useState<string>('');
 
         const users = [
-            { name: 'Jane Doe', email: 'jane@example.com', age: 30 },
-            { name: 'John Smith', email: 'john@example.com', age: 45 },
+            { name: 'Sample User', email: 'sample.user@example.invalid', age: 30 },
+            { name: 'Example Participant', email: 'example.participant@example.invalid', age: 45 },
         ];
 
         const handleEdit = (user: typeof users[0]) => {
@@ -266,18 +276,13 @@ export const WithInitialValues: Story = {
             <div className="storybook-wrapper">
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                     {users.map(user => (
-                        <button
-                            key={user.email}
-                            className="p-button p-component"
-                            onClick={() => handleEdit(user)}
-                        >
-                            Edit {user.name}
-                        </button>
+                        <button key={user.email} className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => handleEdit(user)}>
+                            Edit {user.name}</button>
                     ))}
                 </div>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Saved:</strong> {result}
                     </div>
                 )}
@@ -307,24 +312,22 @@ export const WithInitialValues: Story = {
 };
 
 export const WithCustomValidation: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setResult('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
+                    setResult('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Saved:</strong> {result}
                     </div>
                 )}
@@ -361,7 +364,7 @@ export const WithCustomValidation: Story = {
                     }}
                 >
                     <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder='Try "test123" or numbers' />
-                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder='Try user@example.com' type="email" />
+                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder='Try sample.user@example.invalid' type="email" />
                     <NumberField value={(c: UpdateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
                 </CommandDialog>
             </div>
@@ -370,12 +373,13 @@ export const WithCustomValidation: Story = {
 };
 
 export const ValidationOnBlur: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -399,12 +403,13 @@ export const ValidationOnBlur: Story = {
 };
 
 export const ValidationOnChange: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -428,12 +433,13 @@ export const ValidationOnChange: Story = {
 };
 
 export const ValidateOnInit: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -458,12 +464,13 @@ export const ValidateOnInit: Story = {
 };
 
 export const ValidateAllFieldsOnChange: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -488,18 +495,19 @@ export const ValidateAllFieldsOnChange: Story = {
 };
 
 export const BeforeExecute: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [preprocessedData, setPreprocessedData] = useState<string>('');
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => { setVisible(true); setPreprocessedData(''); }}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => { setVisible(true); setPreprocessedData(''); }}>
                     Open Dialog
                 </button>
 
                 {preprocessedData && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Preprocessed before submit:</strong>
                         <pre style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>{preprocessedData}</pre>
                     </div>
@@ -523,7 +531,7 @@ export const BeforeExecute: Story = {
                     onCancel={() => setVisible(false)}
                 >
                     <InputTextField value={(c: UpdateUserCommand) => c.name} title="Name" placeholder='Try "  Extra   Spaces  "' />
-                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder="Try UPPERCASE@EMAIL.COM" type="email" />
+                    <InputTextField value={(c: UpdateUserCommand) => c.email} title="Email" placeholder="Try SAMPLE.USER@EXAMPLE.INVALID" type="email" />
                     <NumberField value={(c: UpdateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
                 </CommandDialog>
             </div>
@@ -532,12 +540,13 @@ export const BeforeExecute: Story = {
 };
 
 export const WithIcons: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateUserCommand>
@@ -575,7 +584,7 @@ export const WithIcons: Story = {
     },
 };
 
-class UpdateProfileCommandValidator extends CommandValidator {
+class UpdateProfileCommandValidator extends CommandValidator<UpdateProfileCommand> {
     constructor() {
         super();
         this.ruleFor((c: UpdateProfileCommand) => c.firstName).notEmpty().minLength(2);
@@ -625,12 +634,13 @@ class UpdateProfileCommand extends Command<object> {
 }
 
 export const MultiColumnLayout: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateProfileCommand>
@@ -662,12 +672,13 @@ export const MultiColumnLayout: Story = {
 };
 
 export const MixedChildren: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
 
         return (
             <div className="storybook-wrapper">
-                <button className="p-button p-component mb-3" onClick={() => setVisible(true)}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setVisible(true)}>
                     Open Dialog
                 </button>
                 <CommandDialog<UpdateProfileCommand>
@@ -697,24 +708,22 @@ export const MixedChildren: Story = {
 };
 
 export const WithBusyState: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setResult('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
+                    setResult('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Saved:</strong> {result}
                     </div>
                 )}
@@ -743,6 +752,7 @@ export const WithBusyState: Story = {
 
 /** Demonstrates typed response handling with success and failure callbacks. */
 export const WithResponseTypeAndCallbacks: Story = {
+    play: openCommandDialog,
     render: () => {
         const [visible, setVisible] = useState(true);
         const [result, setResult] = useState<string>('');
@@ -797,25 +807,22 @@ export const WithResponseTypeAndCallbacks: Story = {
 
         return (
             <div className="storybook-wrapper">
-                <button
-                    className="p-button p-component mb-3"
-                    onClick={() => {
-                        setResult('');
-                        setError('');
-                        setVisible(true);
-                    }}
-                >
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => {
+                    setResult('');
+                    setError('');
+                    setVisible(true);
+                }}>
                     Open Dialog
                 </button>
 
                 {result && (
-                    <div className="p-3 mt-3 bg-green-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
                         <strong>Success:</strong> {result}
                     </div>
                 )}
 
                 {error && (
-                    <div className="p-3 mt-3 bg-red-100 border-round">
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-red-100 border-round">
                         <strong>Error:</strong> {error}
                     </div>
                 )}
@@ -845,6 +852,98 @@ export const WithResponseTypeAndCallbacks: Story = {
                     <InputTextField value={(c: CreateUserCommand) => c.email} title="Email" placeholder="Enter email" type="email" />
                     <NumberField value={(c: CreateUserCommand) => c.age} title="Age" placeholder="Enter age (18-120)" />
                 </CommandDialog>
+            </div>
+        );
+    },
+};
+
+/**
+ * A destructive command that needs **no** input. Every other story here is
+ * protected from a held or double-tapped `Enter` for free, because
+ * `isCommandFormValid` keeps the confirm button disabled until its fields are
+ * filled in — but a command with no fields is valid the moment it appears, so
+ * its confirm button is armed on mount.
+ *
+ * `initialFocus` moves the keyboard off it without giving up the footer, the
+ * close (X), `Escape`, or the confirm wiring that runs the command.
+ */
+export const DestructiveCommandFocusesDismiss: Story = {
+    play: openCommandDialog,
+    render: () => {
+        const [result, setResult] = useState<string>('');
+
+        class NothingToValidate extends CommandValidator {
+        }
+
+        class DeletePersonalDataCommand extends Command<object> {
+            readonly route: string = '/api/people/delete';
+            readonly validation: CommandValidator = new NothingToValidate();
+            readonly propertyDescriptors: PropertyDescriptor[] = [
+                new PropertyDescriptor('personId', String),
+            ];
+
+            personId = '';
+
+            constructor() {
+                super(Object, false);
+            }
+
+            get requestParameters(): string[] {
+                return [];
+            }
+
+            get properties(): string[] {
+                return ['personId'];
+            }
+
+            override async validate(): Promise<CommandResult<object>> {
+                return CommandResult.empty;
+            }
+
+            override async execute(): Promise<CommandResult<object>> {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                return CommandResult.empty;
+            }
+        }
+
+        const DeletePersonalDataDialog = () => {
+            const { closeDialog } = useDialogContext<CommandResult<object>>();
+
+            return (
+                <CommandDialog<DeletePersonalDataCommand>
+                    command={DeletePersonalDataCommand}
+                    title="Delete personal data?"
+                    okLabel="Delete"
+                    cancelLabel="Keep"
+                    autoServerValidate={false}
+                    initialFocus={DialogInitialFocus.Cancel}
+                    initialValues={{ personId: '8f1b9c1e-0000-4000-8000-000000000000' }}
+                    onSuccess={() => closeDialog(DialogResult.Ok)}
+                    onCancel={() => closeDialog(DialogResult.Cancelled)}
+                >
+                    <p>This permanently removes the person and every record about them. It cannot be undone.</p>
+                </CommandDialog>
+            );
+        };
+
+        const [DeletePersonalDataDialogComponent, showDeletePersonalDataDialog] = useDialog<CommandResult<object>>(DeletePersonalDataDialog);
+
+        return (
+            <div className="storybook-wrapper">
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={async () => {
+                    const [dialogResult] = await showDeletePersonalDataDialog();
+                    setResult(dialogResult === DialogResult.Ok ? 'Deleted' : 'Kept');
+                }}>
+                    Delete
+                </button>
+
+                {result && (
+                    <div className="cratis:p-3 cratis:mt-3 cratis:bg-green-100 border-round">
+                        <strong>Outcome:</strong> {result}
+                    </div>
+                )}
+
+                <DeletePersonalDataDialogComponent />
             </div>
         );
     },

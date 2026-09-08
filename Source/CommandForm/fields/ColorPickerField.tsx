@@ -1,70 +1,99 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
-import { ColorPicker, type ColorPickerProps } from 'primereact/colorpicker';
-import React from 'react';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
-/**
- * Component-level props for {@link ColorPickerField}.
- */
-interface ColorPickerFieldComponentProps extends WrappedFieldProps<string> {
-    /** When true, renders the color picker inline rather than as a popover. */
+/** Stable part attributes for {@link ColorPickerField}. */
+export interface ColorPickerParts {
+    /** Field wrapper. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Native color input. */
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Selected hexadecimal value output. */
+    value?: HTMLAttributes<HTMLOutputElement>;
+}
+
+const colorPickerPartsMatchManifest: ExactPartKeys<ColorPickerParts, PartsOf<'ColorPickerField'>> = true;
+void colorPickerPartsMatchManifest;
+
+interface ColorPickerFieldComponentProps
+    extends WrappedFieldProps<string>,
+        FieldAccessibilityProps {
     inline?: boolean;
-
-    /** Initial color shown when the bound property is empty. Defaults to `'000000'`. */
     defaultColor?: string;
-
-    /** Extra CSS class name forwarded to the underlying ColorPicker. */
     className?: string;
-
-    /** PrimeReact pass-through configuration applied to the underlying ColorPicker. */
-    pt?: ColorPickerProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying ColorPicker. */
-    ptOptions?: ColorPickerProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying ColorPicker. */
+    pt?: ColorPickerParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A color picker field bound to a `string` property on a Cratis Arc command,
- * holding a hex color value without the leading `#` (e.g. `"60a5fa"`). Set
- * `inline` to render the picker inline rather than as a popover. See
- * {@link InputTextField} for the full `value={c => c.prop}` binding model.
- *
- * ```tsx
- * <ColorPickerField value={c => c.accentColor} title="Accent" inline />
- * ```
- */
+const normalizeHex = (value: string, fallback: string) =>
+    /^[0-9a-f]{6}$/i.test(value) ? value : fallback;
+
+/** A native color picker bound to a bare six-digit hex string on an Arc command. */
 export const ColorPickerField = asCommandFormField<ColorPickerFieldComponentProps>(
     (props) => {
-        const defaultColor = props.defaultColor ?? '000000';
-        const value = typeof props.value === 'string' && props.value.length > 0 ? props.value : defaultColor;
-        // PrimeReact's ColorPicker is the one form component that exposes no `invalid` prop,
-        // so we apply the `p-invalid` state class directly. This is the exact class the
-        // `invalid` prop emits on the other fields, so the rendered DOM stays consistent —
-        // it picks up a theme's invalid styling and harmlessly no-ops in unstyled mode.
-        const invalidClass = props.invalid ? 'p-invalid' : undefined;
-        const className = [invalidClass, props.className].filter(Boolean).join(' ') || undefined;
-
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'],
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        const value = normalizeHex(
+            props.value,
+            normalizeHex(props.defaultColor ?? '000000', '000000'),
+        );
         return (
-            <ColorPicker
-                value={value}
-                onChange={(e: { value: unknown }) => props.onChange(typeof e.value === 'string' ? e.value : '')}
+            <div
+                {...props.pt?.root}
+                className={[
+                    'cratis-color-field',
+                    props.pt?.root?.className,
+                    props.className,
+                ]
+                    .filter(Boolean)
+                    .join(' ')}
                 onBlur={props.onBlur}
-                inline={props.inline}
-                defaultColor={defaultColor}
-                className={className}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
-            />
+                data-cratis-part='root'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-inline={props.inline || undefined}
+            >
+                <input
+                    {...props.pt?.input}
+                    id={accessibility.controlId}
+                    aria-label={accessibility.ariaLabel}
+                    aria-describedby={accessibility.ariaDescribedBy}
+                    type='color'
+                    value={`#${value}`}
+                    onChange={(event) => props.onChange(event.currentTarget.value.replace('#', ''))}
+                    aria-invalid={props.invalid || undefined}
+                    data-disabled={props.pt?.input?.disabled || undefined}
+                    data-invalid={props.invalid || undefined}
+                    className={['cratis-color-field__input', props.pt?.input?.className]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='input'
+                />
+                <output
+                    {...props.pt?.value}
+                    className={['cratis-color-field__value', props.pt?.value?.className]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='value'
+                    data-invalid={props.invalid || undefined}
+                >
+                    #{value}
+                </output>
+                {accessibility.hiddenError}
+            </div>
         );
     },
-    {
-        defaultValue: '',
-        extractValue: (e: unknown) => typeof e === 'string' ? e : ''
-    }
+    { defaultValue: '' },
 );

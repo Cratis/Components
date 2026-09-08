@@ -24,8 +24,8 @@ const sampleEvents: Event[] = [
         occurred: new Date('2024-02-10T09:00:00'),
         content: {
             userId: 'user-001',
-            email: 'john.doe@example.com',
-            username: 'john.doe',
+            email: 'sample.user@example.invalid',
+            username: 'sample.user',
             role: 'user'
         }
     },
@@ -35,8 +35,8 @@ const sampleEvents: Event[] = [
         occurred: new Date('2024-02-10T10:15:00'),
         content: {
             userId: 'user-001',
-            firstName: 'John',
-            lastName: 'Doe',
+            firstName: 'Sample',
+            lastName: 'User',
             bio: 'Software developer'
         }
     },
@@ -65,7 +65,7 @@ const sampleEvents: Event[] = [
         occurred: new Date('2024-02-10T13:00:00'),
         content: {
             userId: 'user-001',
-            email: 'john.doe@example.com',
+            email: 'sample.user@example.invalid',
             verifiedAt: new Date('2024-02-10T13:00:00')
         }
     }
@@ -76,7 +76,7 @@ export const Default: Story = {
         events: sampleEvents,
     },
     render: (args) => (
-        <div style={{ height: '600px', background: '#1a1a1a' }}>
+        <div className='time-machine' style={{ height: '600px' }}>
             <EventsView {...args} />
         </div>
     )
@@ -87,7 +87,7 @@ export const SingleEvent: Story = {
         events: [sampleEvents[0]],
     },
     render: (args) => (
-        <div style={{ height: '600px', background: '#1a1a1a' }}>
+        <div className='time-machine' style={{ height: '600px' }}>
             <EventsView {...args} />
         </div>
     )
@@ -98,7 +98,7 @@ export const EmptyEvents: Story = {
         events: [],
     },
     render: (args) => (
-        <div style={{ height: '600px', background: '#1a1a1a' }}>
+        <div className='time-machine' style={{ height: '600px' }}>
             <EventsView {...args} />
         </div>
     )

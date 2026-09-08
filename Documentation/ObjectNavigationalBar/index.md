@@ -2,6 +2,8 @@
 
 The `ObjectNavigationalBar` component provides breadcrumb navigation for hierarchical data structures.
 
+ObjectNavigationalBar belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install. It is a fully controlled component: `navigationPath` and `onNavigate` are its entire state contract, so the host application owns navigation state, persistence, and the data at each path segment.
+
 ## Purpose
 
 ObjectNavigationalBar displays the current navigation path and allows users to jump to any level in the hierarchy with clickable breadcrumbs.
@@ -44,13 +46,8 @@ function MyNavigator() {
 
 ### Required Props
 
-- `navigationPath`: Array of strings representing the current path
-  - Empty array `[]` represents root level
-  - `['profile']` represents one level deep
-  - `['profile', 'address', 'city']` represents three levels deep
-
-- `onNavigate`: Callback function called when user clicks breadcrumb or back button
-  - Receives `index` parameter (0 = root, 1 = first level, etc.)
+- `navigationPath`: Array of strings representing the current path. `[]` is the root, `['profile']` is one level deep, and `['profile', 'address', 'city']` is three levels deep.
+- `onNavigate`: Callback invoked for a breadcrumb or back-button activation. It receives the destination index (`0` means root).
 
 ## Visual Display
 
@@ -115,7 +112,7 @@ interface DataNode {
 
 function FileSystemNavigator() {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
-    
+
     const data: DataNode = {
         documents: {
             work: {
@@ -154,7 +151,7 @@ function FileSystemNavigator() {
                 navigationPath={navigationPath}
                 onNavigate={handleNavigate}
             />
-            
+
             <div>
                 <h3>Current Location Contents:</h3>
                 {Object.keys(currentData).map(key => (
@@ -182,7 +179,7 @@ onNavigate(0);
 
 ```typescript
 // From: Root > profile > address > city
-onNavigate(2);  // Click on "address"
+onNavigate(2); // Click on "address"
 // Result: Root > profile > address (path = ['profile', 'address'])
 ```
 
@@ -190,13 +187,13 @@ onNavigate(2);  // Click on "address"
 
 ```typescript
 // From: Root > profile > address > city
-onNavigate(navigationPath.length - 1);  // Back button
+onNavigate(navigationPath.length - 1); // Back button
 // Result: Root > profile > address (path = ['profile', 'address'])
 ```
 
 ## Styling
 
-The component uses PrimeReact styling:
+The component uses Cratis tokens and stable parts:
 
 - Border at bottom
 - Surface border color
@@ -236,22 +233,16 @@ Commonly used with:
 3. **Show current data**: Display relevant content for current path
 4. **Handle edge cases**: Empty paths, invalid navigation
 5. **Provide visual feedback**: Highlight current location
-6. **Enable keyboard navigation**: Support arrow keys if applicable
-7. **Persist state**: Remember navigation path across sessions
+6. **Add product shortcuts explicitly**: If the product needs arrow-key or escape navigation, implement and document it in the host
+7. **Persist state**: Remember navigation path across sessions when the product requires it
 
 ## Keyboard Support
 
-(If implemented):
-
-- `Escape`: Navigate to root
-- `Backspace`: Go back one level
-- `Left Arrow`: Go back one level
-- `Right Arrow`: Into first child (if available)
+`ObjectNavigationalBar` renders the back control and every breadcrumb as native buttons. Keyboard users reach them with `Tab` / `Shift+Tab` and activate them with `Enter` or `Space`. The component does not install global `Escape`, `Backspace`, or arrow-key shortcuts; a host that adds those shortcuts owns their scope and conflict handling.
 
 ## Accessibility
 
-- Buttons have proper tooltips
-- Click targets are adequately sized
-- Keyboard navigation supported
-- Screen reader friendly
-- Proper ARIA labels
+- The back button has a localizable `backLabel` used as its tooltip and accessible name
+- The back button is disabled at the root
+- Breadcrumbs render as buttons and mark the current location with `aria-current='location'`
+- Native button keyboard behavior provides activation without component-specific shortcuts

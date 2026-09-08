@@ -1,0 +1,67 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-filter-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    border: none;
+    background: transparent;
+    color: var(--cratis-text-color-secondary);
+    cursor: pointer;
+    border-radius: 0.25rem;
+}
+
+.cratis-filter-trigger:hover {
+    background: var(--cratis-surface-hover);
+    color: var(--cratis-text-color);
+}
+
+.cratis-filter-trigger[data-active='true'] {
+    color: var(--cratis-primary-color);
+}
+
+.cratis-filter-trigger:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+
+.cratis-filter-popover {
+    z-index: var(--cratis-z-index-filter);
+}
+
+.cratis-filter-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 14rem;
+    padding: 0.5rem;
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius);
+    box-shadow: var(--cratis-shadow-overlay);
+}
+
+.cratis-filter-menu__input {
+    box-sizing: border-box;
+    min-height: var(--cratis-control-height);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--cratis-control-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-control-background);
+    color: var(--cratis-text-color);
+    font: inherit;
+}
+
+.cratis-filter-menu__input:focus-visible {
+    outline: none;
+    border-color: var(--cratis-primary-color);
+    box-shadow: var(--cratis-focus-ring);
+}
+
+.cratis-filter-menu-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+}

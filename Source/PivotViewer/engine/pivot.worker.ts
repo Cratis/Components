@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type {
-  PivotStore,
-  PivotIndexes,
-  WorkerInMessage,
-  WorkerOutMessage,
-  Field,
+    PivotStore,
+    PivotIndexes,
+    WorkerInMessage,
+    WorkerOutMessage,
+    Field,
 } from './types';
 import { buildIndexes, applyFilters, computeGrouping, sortIds } from './store';
 
@@ -14,83 +14,88 @@ let store: PivotStore | null = null;
 let indexes: PivotIndexes | null = null;
 
 self.onmessage = (e: MessageEvent<WorkerInMessage>) => {
-  const message = e.data;
+    const message = e.data;
 
-  switch (message.type) {
-    case 'buildIndexes': {
-      // Convert fields array back to Map
-      const fieldsArray = message.store.fields as unknown as [string, Field][];
-      const fieldsMap = new Map<string, Field>(fieldsArray);
-      
-      store = {
-        ...message.store,
-        fields: fieldsMap,
-      };
-      if (store) {
-        indexes = buildIndexes(store, message.fields);
+    switch (message.type) {
+        case 'buildIndexes': {
+            // Convert fields array back to Map
+            // SAFETY: usePivotEngine serializes store.fields as Map.entries() before posting the
+            // message (structured-clone can't carry a Map), so it always arrives here as this tuple array.
+            const fieldsArray = message.store.fields as unknown as [string, Field][];
+            const fieldsMap = new Map<string, Field>(fieldsArray);
 
-        const response: WorkerOutMessage = {
-          type: 'indexesReady',
-          indexes,
-        };
-        self.postMessage(response);
-      }
-      break;
+            store = {
+                ...message.store,
+                fields: fieldsMap,
+            };
+            if (store) {
+                indexes = buildIndexes(store, message.fields);
+
+                const response: WorkerOutMessage = {
+                    type: 'indexesReady',
+                    indexes,
+                };
+                self.postMessage(response);
+            }
+            break;
+        }
+
+        case 'applyFilters': {
+            if (!store || !indexes) {
+                console.error('Store or indexes not initialized');
+                return;
+            }
+
+            const result = applyFilters(store, indexes, message.filters);
+
+            const response: WorkerOutMessage = {
+                type: 'filterResult',
+                requestId: message.requestId,
+                result,
+            };
+            self.postMessage(response);
+            break;
+        }
+
+        case 'computeGrouping': {
+            if (!store || !indexes) {
+                console.error('[Worker] Store or indexes not initialized');
+                return;
+            }
+
+            const result = computeGrouping(
+                store,
+                indexes,
+                message.visibleIds,
+                message.groupBy,
+            );
+
+            const response: WorkerOutMessage = {
+                type: 'groupingResult',
+                requestId: message.requestId,
+                result,
+            };
+            self.postMessage(response);
+            break;
+        }
+
+        case 'sort': {
+            if (!store) {
+                console.error('Store not initialized');
+                return;
+            }
+
+            const result = sortIds(store, message.ids, message.sortBy);
+
+            const response: WorkerOutMessage = {
+                type: 'sortResult',
+                requestId: message.requestId,
+                result,
+            };
+            self.postMessage(response);
+            break;
+        }
     }
-
-    case 'applyFilters': {
-      if (!store || !indexes) {
-        console.error('Store or indexes not initialized');
-        return;
-      }
-
-      const result = applyFilters(store, indexes, message.filters);
-
-      const response: WorkerOutMessage = {
-        type: 'filterResult',
-        result,
-      };
-      self.postMessage(response);
-      break;
-    }
-
-    case 'computeGrouping': {
-      if (!store || !indexes) {
-        console.error('[Worker] Store or indexes not initialized');
-        return;
-      }
-
-      const result = computeGrouping(
-        store,
-        indexes,
-        message.visibleIds,
-        message.groupBy
-      );
-
-      const response: WorkerOutMessage = {
-        type: 'groupingResult',
-        result,
-      };
-      self.postMessage(response);
-      break;
-    }
-
-    case 'sort': {
-      if (!store) {
-        console.error('Store not initialized');
-        return;
-      }
-
-      const result = sortIds(store, message.ids, message.sortBy);
-
-      const response: WorkerOutMessage = {
-        type: 'sortResult',
-        result,
-      };
-      self.postMessage(response);
-      break;
-    }
-  }
 };
 
 export {};

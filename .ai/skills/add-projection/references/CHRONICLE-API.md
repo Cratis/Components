@@ -113,10 +113,10 @@ public class MyProjection : IProjectionFor<MyReadModel>
 
 ---
 
-### `.AutoMap()`
+### Automatic property mapping
 
-Maps all event properties to read model properties with matching names automatically.
-**AutoMap is on by default — you only need to call it explicitly if you previously used `.NoAutoMap()`.**
+Matching event and read-model property names map automatically for every `.From<T>()`.
+Call `.From<T>()` directly; call `.AutoMap()` only to re-enable mapping after `.NoAutoMap()`.
 
 ---
 

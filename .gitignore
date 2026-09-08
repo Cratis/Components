@@ -240,6 +240,9 @@ node_modules/
 typings/
 *.d.ts
 !*.scss.d.ts
+!Adapters/**/src/upstream-*-shim.d.ts
+!Source/schemas/ui-adapter.schema.d.ts
+!Storybook/**/*.d.ts
 
 # Visual Studio 6 build log
 *.plg
@@ -297,8 +300,8 @@ out
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-yarn.lock
 coverage
+.pi/
 
 .DS_Store
 
@@ -307,3 +310,12 @@ vite*.map
 
 .rollup.cache
 storybook-static
+# Local AI work artifacts (plans, handovers, session notes) — never tracked
+.ai-work/
+
+# Version managed Pi adapter provenance; keep other local Pi state ignored.
+!/.pi/
+/.pi/*
+!/.pi/agents/
+/.pi/agents/*
+!/.pi/agents/.generated.json

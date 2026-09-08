@@ -9,16 +9,22 @@ import { computeLayout } from './engine/layout';
 import { useFilterState } from './hooks/useFilterState';
 import { useDimensionState } from './hooks/useDimensionState';
 import { useZoomState } from './hooks/useZoomState';
-import { BASE_CARD_WIDTH, BASE_CARD_HEIGHT, CARDS_PER_COLUMN, GROUP_SPACING } from './constants';
-import './PivotViewer.css';
+import {
+    BASE_CARD_WIDTH,
+    BASE_CARD_HEIGHT,
+    CARDS_PER_COLUMN,
+    GROUP_SPACING,
+} from './constants';
 import { PivotViewerMain } from './components/PivotViewerMain';
 import { FilterPanelContainer } from './components/FilterPanelContainer';
 import { ToolbarContainer } from './components/ToolbarContainer';
-import { usePanning, useWheelZoom, useFilterOptions } from './hooks';
+import { usePanning, useWheelZoom, useZoomScrollAnchor, useFilterOptions } from './hooks';
 import { useContainerDimensions } from './hooks/useContainerDimensions';
 import type { ViewMode } from './components/Toolbar';
 import { useFieldExtractors } from './hooks/useFieldExtractors';
 import { useCurrentFilters, useCurrentGroupBy } from './hooks/useCurrentFilters';
+import { filterVisibleIdsBySearch } from './utils/search';
+import { resolveInternalItemIndex } from './utils/idResolution';
 import { useCardSelection } from './hooks/useCardSelection';
 import { useDetailPanelClose } from './hooks/useDetailPanelClose';
 import { useScrollSync } from './hooks/useScrollSync';
@@ -53,6 +59,7 @@ export function PivotViewer<TItem extends object>({
     detailRenderer,
     getItemId,
     searchFields,
+    title,
     className,
     emptyContent,
     isLoading = false,
@@ -73,7 +80,11 @@ export function PivotViewer<TItem extends object>({
     const [visibleIds, setVisibleIds] = useState<Uint32Array>(new Uint32Array(0));
     const [grouping, setGrouping] = useState<GroupingResult>({ groups: [] });
     const [hoveredGroupIndex, setHoveredGroupIndex] = useState<number | null>(null);
-    const [preSelectionState, setPreSelectionState] = useState<{ zoom: number; scrollLeft: number; scrollTop: number } | null>(null);
+    const [preSelectionState, setPreSelectionState] = useState<{
+        zoom: number;
+        scrollLeft: number;
+        scrollTop: number;
+    } | null>(null);
     const [, setAnimationMode] = useState<'layout' | 'filter'>('layout');
     const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
 
@@ -108,14 +119,14 @@ export function PivotViewer<TItem extends object>({
         handleZoomChange,
     } = useZoomState(1);
 
-    const {
-        isPanning,
-        handlePanStart,
-        handlePanMove,
-        handlePanEnd,
-    } = usePanning(containerRef, undefined, setScrollPosition);
+    const { isPanning, handlePanStart, handlePanMove, handlePanEnd } = usePanning(
+        containerRef,
+        undefined,
+        setScrollPosition,
+    );
 
     useWheelZoom(containerRef, zoomLevel, setZoomLevel);
+    useZoomScrollAnchor(containerRef, spacerRef, viewMode);
 
     // Track container dimensions for responsive layout
     const containerDimensions = useContainerDimensions(containerRef, isLoading);
@@ -139,7 +150,12 @@ export function PivotViewer<TItem extends object>({
     const { fieldExtractors, indexFields } = useFieldExtractors(dimensions, filters);
 
     // Initialize the Web Worker engine
-    const { ready, applyFilters: engineApplyFilters, computeGrouping, sortIds } = usePivotEngine({
+    const {
+        ready,
+        applyFilters: engineApplyFilters,
+        computeGrouping,
+        sortIds,
+    } = usePivotEngine({
         data,
         fieldExtractors,
         indexFields,
@@ -150,91 +166,97 @@ export function PivotViewer<TItem extends object>({
         filters,
         filterState,
         rangeFilterState,
-        search,
-        searchFields,
         dimensionFilter,
         activeDimension,
     );
 
     const currentGroupBy = useCurrentGroupBy(activeDimensionKey, dimensions);
 
-    // Apply filters
+    // Apply filters, then narrow the result by search - a post-filter step over the visible
+    // Uint32 ids so it applies identically whether the engine result came from the worker or
+    // its synchronous fallback.
     useEffect(() => {
         if (!ready) return;
 
-        engineApplyFilters(currentFilters).then((result) => {
+        let cancelled = false;
+        void engineApplyFilters(currentFilters).then((result) => {
+            if (cancelled) return;
+            let ids = result.visibleIds;
+
             // If the engine failed to return any IDs while no filters are active,
             // fall back to showing the full dataset so the canvas never renders empty.
-            if (result.visibleIds.length === 0 && currentFilters.length === 0 && data.length > 0) {
+            if (ids.length === 0 && currentFilters.length === 0 && data.length > 0) {
                 const fallbackIds = new Uint32Array(data.length);
                 for (let i = 0; i < data.length; i++) {
                     fallbackIds[i] = i;
                 }
-                setVisibleIds(fallbackIds);
-                return;
+                ids = fallbackIds;
             }
 
-            setVisibleIds(result.visibleIds);
+            setVisibleIds(filterVisibleIdsBySearch(data, ids, search, searchFields));
         });
-    }, [ready, currentFilters, engineApplyFilters, data.length]);
+        return () => {
+            cancelled = true;
+        };
+    }, [ready, currentFilters, engineApplyFilters, data, search, searchFields]);
 
-    // Compute grouping
-    const lastGroupingRequest = useRef<{ viewMode: ViewMode; groupBy: unknown; visibleIds: Uint32Array } | null>(null);
-    
+    // Compute grouping. Every async branch ignores a result after its dependencies change, so an
+    // older worker response can never overwrite a newer filter/search/view selection.
     useEffect(() => {
         if (!ready || visibleIds.length === 0) {
             setGrouping({ groups: [] });
-            lastGroupingRequest.current = null;
             return;
         }
 
+        let cancelled = false;
         if (viewMode === 'collection') {
-            // In collection mode, create a single group with all items
-            // Sort items if activeDimensionKey is set
+            // In collection mode, create a single group with all items.
             if (activeDimensionKey) {
-                sortIds(visibleIds, activeDimensionKey).then((sortedIds) => {
+                void sortIds(visibleIds, activeDimensionKey).then((sortedIds) => {
+                    if (cancelled) return;
                     setGrouping({
-                        groups: [{
-                            key: 'all',
-                            label: 'All Items',
-                            value: 'all',
-                            ids: sortedIds,
-                            count: sortedIds.length
-                        }]
+                        groups: [
+                            {
+                                key: 'all',
+                                label: 'All Items',
+                                value: 'all',
+                                ids: sortedIds,
+                                count: sortedIds.length,
+                            },
+                        ],
                     });
                 });
             } else {
                 setGrouping({
-                    groups: [{
-                        key: 'all',
-                        label: 'All Items',
-                        value: 'all',
-                        ids: visibleIds,
-                        count: visibleIds.length
-                    }]
+                    groups: [
+                        {
+                            key: 'all',
+                            label: 'All Items',
+                            value: 'all',
+                            ids: visibleIds,
+                            count: visibleIds.length,
+                        },
+                    ],
                 });
             }
-            lastGroupingRequest.current = null;
-            return;
+        } else {
+            void computeGrouping(visibleIds, currentGroupBy).then((result) => {
+                if (!cancelled) setGrouping(result);
+            });
         }
 
-        // Check if this is the same request as last time to prevent duplicate computations
-        const lastRequest = lastGroupingRequest.current;
-        if (
-            lastRequest &&
-            lastRequest.viewMode === viewMode &&
-            (lastRequest.groupBy as unknown as typeof currentGroupBy)?.field === currentGroupBy.field &&
-            lastRequest.visibleIds === visibleIds
-        ) {
-            return;
-        }
-
-        lastGroupingRequest.current = { viewMode, groupBy: currentGroupBy, visibleIds };
-        
-        computeGrouping(visibleIds, currentGroupBy).then((result) => {
-            setGrouping(result);
-        });
-    }, [ready, visibleIds, currentGroupBy, viewMode, computeGrouping, sortIds, activeDimensionKey]);
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        ready,
+        visibleIds,
+        currentGroupBy,
+        viewMode,
+        computeGrouping,
+        sortIds,
+        activeDimensionKey,
+    ]);
 
     // Compute layout
     const layout = useMemo(() => {
@@ -243,9 +265,10 @@ export function PivotViewer<TItem extends object>({
         const cardHeight = BASE_CARD_HEIGHT;
         const containerWidth = containerDimensions.width / zoomLevel;
         // For grouped mode, use fixed container height to ensure stable layout during zoom
-        const containerHeight = viewMode === 'collection'
-            ? containerDimensions.height / zoomLevel
-            : containerDimensions.height;
+        const containerHeight =
+            viewMode === 'collection'
+                ? containerDimensions.height / zoomLevel
+                : containerDimensions.height;
 
         const result = computeLayout(grouping, {
             viewMode,
@@ -258,19 +281,28 @@ export function PivotViewer<TItem extends object>({
         });
 
         return result;
-    }, [grouping, viewMode, zoomLevel, containerDimensions.width, containerDimensions.height]);
+    }, [
+        grouping,
+        viewMode,
+        zoomLevel,
+        containerDimensions.width,
+        containerDimensions.height,
+    ]);
 
-    const resolveId = useCallback((item: TItem, index: number) => {
-        if (getItemId) {
-            const id = getItemId(item, index);
-            return typeof id === 'number' ? id : index;
-        }
-        const id = (item as Record<string, unknown>)['id'];
-        return typeof id === 'number' ? id : index;
-    }, [getItemId]);
+    const resolveId = useCallback(
+        (item: TItem) => resolveInternalItemIndex(data, item, getItemId),
+        [data, getItemId],
+    );
 
     // Track animation mode changes
-    useAnimationModeTracking(filterState, rangeFilterState, search, activeDimensionKey, viewMode, setAnimationMode);
+    useAnimationModeTracking(
+        filterState,
+        rangeFilterState,
+        search,
+        activeDimensionKey,
+        viewMode,
+        setAnimationMode,
+    );
 
     // Sync axis labels scroll with container scroll
     useScrollSync(containerRef, axisLabelsRef, viewMode);
@@ -336,8 +368,11 @@ export function PivotViewer<TItem extends object>({
     const filterOptions = useFilterOptions(data, filters, filterState, rangeFilterState);
 
     const hasFilters = Boolean(filters && filters.length > 0);
-    const activeFilterCount = Object.values(filterState).reduce((sum: number, vals) => sum + (vals as Set<string>).size, 0) +
-        Object.values(rangeFilterState).filter(r => r !== null).length;
+    const activeFilterCount =
+        Object.values(filterState).reduce(
+            (sum: number, vals) => sum + (vals as Set<string>).size,
+            0,
+        ) + Object.values(rangeFilterState).filter((r) => r !== null).length;
 
     const viewerClassName = [
         'pivot-viewer',
@@ -357,19 +392,23 @@ export function PivotViewer<TItem extends object>({
     const cssVariables = useMemo(() => {
         const vars: Record<string, string> = {};
         if (!colors) return vars;
-        if (colors.primaryColor) vars['--primary-color'] = colors.primaryColor;
-        if (colors.primaryColorText) vars['--primary-color-text'] = colors.primaryColorText;
-        if (colors.primary500) vars['--primary-500'] = colors.primary500;
-        if (colors.surfaceGround) vars['--surface-ground'] = colors.surfaceGround;
-        if (colors.surfaceCard) vars['--surface-card'] = colors.surfaceCard;
-        if (colors.surfaceSection) vars['--surface-section'] = colors.surfaceSection;
-        if (colors.surfaceOverlay) vars['--surface-overlay'] = colors.surfaceOverlay;
-        if (colors.surfaceBorder) vars['--surface-border'] = colors.surfaceBorder;
-        if (colors.textColor) vars['--text-color'] = colors.textColor;
-        if (colors.textColorSecondary) vars['--text-color-secondary'] = colors.textColorSecondary;
-        if (colors.highlightBg) vars['--highlight-bg'] = colors.highlightBg;
-        if (colors.maskbg) vars['--maskbg'] = colors.maskbg;
-        if (colors.focusRing) vars['--focus-ring'] = colors.focusRing;
+        if (colors.primaryColor) vars['--cratis-primary-color'] = colors.primaryColor;
+        if (colors.primaryColorText)
+            vars['--cratis-primary-color-text'] = colors.primaryColorText;
+        if (colors.primary500) vars['--cratis-primary-500'] = colors.primary500;
+        if (colors.surfaceGround) vars['--cratis-surface-ground'] = colors.surfaceGround;
+        if (colors.surfaceCard) vars['--cratis-surface-card'] = colors.surfaceCard;
+        if (colors.surfaceSection)
+            vars['--cratis-surface-section'] = colors.surfaceSection;
+        if (colors.surfaceOverlay)
+            vars['--cratis-surface-overlay'] = colors.surfaceOverlay;
+        if (colors.surfaceBorder) vars['--cratis-surface-border'] = colors.surfaceBorder;
+        if (colors.textColor) vars['--cratis-text-color'] = colors.textColor;
+        if (colors.textColorSecondary)
+            vars['--cratis-text-color-secondary'] = colors.textColorSecondary;
+        if (colors.highlightBg) vars['--cratis-highlight-bg'] = colors.highlightBg;
+        if (colors.maskbg) vars['--cratis-maskbg'] = colors.maskbg;
+        if (colors.focusRing) vars['--cratis-focus-ring'] = colors.focusRing;
         return vars;
     }, [colors]);
 
@@ -391,7 +430,7 @@ export function PivotViewer<TItem extends object>({
                 onExpandedFilterChange={setExpandedFilterKey}
             />
 
-            <main className="pv-main">
+            <main className='pv-main'>
                 <ToolbarContainer
                     hasFilters={hasFilters}
                     filtersOpen={filtersOpen}
@@ -401,6 +440,7 @@ export function PivotViewer<TItem extends object>({
                     activeDimensionKey={activeDimensionKey}
                     dimensions={dimensions}
                     activeFilterCount={activeFilterCount}
+                    title={title}
                     onFiltersToggle={() => setFiltersOpen((prev) => !prev)}
                     onViewModeChange={setViewMode}
                     onZoomIn={handleZoomIn}
@@ -429,6 +469,7 @@ export function PivotViewer<TItem extends object>({
                     isZooming={isZooming}
                     viewMode={viewMode}
                     cardRenderer={cardRenderer}
+                    colorOverrides={colors}
                     detailRenderer={detailRenderer}
                     resolveId={resolveId}
                     emptyContent={emptyContent}

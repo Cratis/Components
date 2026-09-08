@@ -2,9 +2,21 @@
 
 The `PivotViewer` component provides an interactive, high-performance visualization for exploring large datasets with dynamic grouping, filtering, and zooming capabilities.
 
+PivotViewer belongs to the [Spatial capability profile](../ui-foundation.md#capability-profiles) alongside [`Canvas`](../Canvas/index.md) — the only two subpaths that install the optional `pixi.js` peer. Spatial is not a lesser-supported tier: it ships at the same version, behind the same release gates, as every Foundation and Advanced React subpath.
+
 ## Purpose
 
 PivotViewer enables users to explore and analyze collections of data items through an intuitive, visual interface with pivot-style grouping and filtering.
+
+## Install the optional Pixi peer
+
+PivotViewer renders cards with `pixi.js`, an optional peer rather than a nested Components dependency:
+
+```bash
+npm install pixi.js@^8.20.0
+```
+
+Keep exactly one compatible Pixi resolution across the application and Components — see [Canvas: Single Pixi peer](../Canvas/index.md#single-pixi-peer) for why. Unlike `Canvas`, PivotViewer does not expose Pixi types on its own public props, so consuming it does not require writing against `PIXI.*` types directly; the peer is still required at install time because PivotViewer's own rendering depends on it.
 
 ## Key Features
 
@@ -59,6 +71,16 @@ function ProductViewer() {
 - **Filters**: Options to narrow down the dataset
 - **Cards**: Visual representation of items in collection view
 - **Details**: Full information shown when item is selected
+
+## Worker and search architecture
+
+PivotViewer computes indexing, filtering, and grouping off the main thread. A dedicated Web Worker (`pivot.worker.ts`) owns columnar storage and the filter/group/sort computation; the `usePivotEngine` hook posts work to it and resolves promises as results come back, so large datasets do not block interaction while a filter or grouping recomputes.
+
+The worker is optional infrastructure, not a hard requirement: `usePivotEngine` checks `typeof window === 'undefined' || typeof Worker === 'undefined'` before creating it, and separately probes that the worker script actually serves as JavaScript before instantiating it. Either check failing — including during server rendering, where `window` and `Worker` do not exist — falls back to the equivalent synchronous, in-thread computation instead of failing. PivotViewer therefore degrades gracefully rather than crashing in SSR or restrictive environments; it simply loses the off-main-thread benefit there.
+
+`searchFields` drives PivotViewer's free-text search: an array of property-accessor functions (`PropertyAccessor<TItem>[]`, i.e. `(item: TItem) => value`), one per field the search box should match against. A search term matches an item when it matches the value returned by any accessor in the array — there is no default set of searched fields, so search is a no-op until `searchFields` is supplied.
+
+Facet/range filtering and grouping run in the worker when available. Free-text search is then applied on the main thread only to the already-visible item IDs returned by that engine step, with accessor paths resolved once per search pass. This keeps worker/fallback behavior identical while avoiding a second scan of records that filters already excluded.
 
 ## See Also
 

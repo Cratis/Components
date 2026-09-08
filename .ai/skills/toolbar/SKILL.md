@@ -43,9 +43,9 @@ import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
 
 export const DrawingToolbar = () => (
     <Toolbar>
-        <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
-        <ToolbarButton icon='pi pi-pencil' tooltip='Draw' />
-        <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
+        <ToolbarButton text='↖' title='Select' />
+        <ToolbarButton text='✎' title='Draw' />
+        <ToolbarButton text='□' title='Rectangle' />
     </Toolbar>
 );
 ```
@@ -66,20 +66,20 @@ export const DrawingToolbar = () => {
     return (
         <Toolbar>
             <ToolbarButton
-                icon='pi pi-arrow-up-left'
-                tooltip='Select'
+                text='↖'
+                title='Select'
                 active={activeTool === 'select'}
                 onClick={() => setActiveTool('select')}
             />
             <ToolbarButton
-                icon='pi pi-pencil'
-                tooltip='Draw'
+                text='✎'
+                title='Draw'
                 active={activeTool === 'draw'}
                 onClick={() => setActiveTool('draw')}
             />
             <ToolbarButton
-                icon='pi pi-stop'
-                tooltip='Rectangle'
+                text='□'
+                title='Rectangle'
                 active={activeTool === 'rect'}
                 onClick={() => setActiveTool('rect')}
             />
@@ -96,11 +96,11 @@ export const DrawingToolbar = () => {
 
 ```tsx
 <Toolbar>
-    <ToolbarButton icon='pi pi-pencil' tooltip='Draw' />
-    <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
+    <ToolbarButton text='✎' title='Draw' />
+    <ToolbarButton text='□' title='Rectangle' />
     <ToolbarSeparator />
-    <ToolbarButton icon='pi pi-undo' tooltip='Undo' />
-    <ToolbarButton icon='pi pi-refresh' tooltip='Redo' />
+    <ToolbarButton text='↶' title='Undo' />
+    <ToolbarButton text='↷' title='Redo' />
 </Toolbar>
 ```
 
@@ -119,11 +119,11 @@ export const ZoomToolbar = () => {
 
     return (
         <Toolbar orientation='horizontal'>
-            <ToolbarButton icon='pi pi-minus' tooltip='Zoom out' tooltipPosition='bottom' onClick={() => setZoom(z => z - 10)} />
-            <ToolbarButton text={`${zoom}%`} tooltip='Reset zoom' tooltipPosition='bottom' onClick={() => setZoom(100)} />
-            <ToolbarButton icon='pi pi-plus' tooltip='Zoom in' tooltipPosition='bottom' onClick={() => setZoom(z => z + 10)} />
+            <ToolbarButton text='−' title='Zoom out' tooltipPosition='bottom' onClick={() => setZoom(z => z - 10)} />
+            <ToolbarButton text={`${zoom}%`} title='Reset zoom' tooltipPosition='bottom' onClick={() => setZoom(100)} />
+            <ToolbarButton text='+' title='Zoom in' tooltipPosition='bottom' onClick={() => setZoom(z => z + 10)} />
             <ToolbarSeparator orientation='horizontal' />
-            <ToolbarButton icon='pi pi-question-circle' tooltip='Help' tooltipPosition='bottom' />
+            <ToolbarButton text='?' title='Help' tooltipPosition='bottom' />
         </Toolbar>
     );
 };
@@ -146,20 +146,20 @@ export const ContextualToolbar = () => {
 
     return (
         <Toolbar>
-            <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
+            <ToolbarButton text='↖' title='Select' />
             <ToolbarSection activeContext={mode}>
                 <ToolbarContext name='drawing'>
-                    <ToolbarButton icon='pi pi-pencil' tooltip='Draw' />
-                    <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
-                    <ToolbarButton icon='pi pi-circle' tooltip='Circle' />
+                    <ToolbarButton text='✎' title='Draw' />
+                    <ToolbarButton text='□' title='Rectangle' />
+                    <ToolbarButton text='○' title='Circle' />
                 </ToolbarContext>
                 <ToolbarContext name='text'>
-                    <ToolbarButton icon='pi pi-align-left' tooltip='Align Left' />
-                    <ToolbarButton icon='pi pi-align-center' tooltip='Align Center' />
-                    <ToolbarButton icon='pi pi-align-right' tooltip='Align Right' />
+                    <ToolbarButton text='⇤' title='Align Left' />
+                    <ToolbarButton text='↔' title='Align Center' />
+                    <ToolbarButton text='⇥' title='Align Right' />
                 </ToolbarContext>
             </ToolbarSection>
-            <ToolbarButton icon='pi pi-undo' tooltip='Undo' />
+            <ToolbarButton text='↶' title='Undo' />
         </Toolbar>
     );
 };
@@ -178,11 +178,11 @@ import { Toolbar, ToolbarButton, ToolbarFanOutItem } from '@cratis/components/To
 
 export const ShapesToolbar = () => (
     <Toolbar>
-        <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
-        <ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes'>
-            <ToolbarButton icon='pi pi-stop' tooltip='Rectangle' />
-            <ToolbarButton icon='pi pi-circle' tooltip='Circle' />
-            <ToolbarButton icon='pi pi-minus' tooltip='Line' />
+        <ToolbarButton text='↖' title='Select' />
+        <ToolbarFanOutItem icon={<span aria-hidden='true'>▦</span>} tooltip='Shapes'>
+            <ToolbarButton text='□' title='Rectangle' />
+            <ToolbarButton text='○' title='Circle' />
+            <ToolbarButton text='―' title='Line' />
         </ToolbarFanOutItem>
     </Toolbar>
 );
@@ -191,7 +191,7 @@ export const ShapesToolbar = () => (
 When the toolbar is on the **right side** of the screen, fan out to the left:
 
 ```tsx
-<ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes' fanOutDirection='left'>
+<ToolbarFanOutItem icon={<span aria-hidden='true'>▦</span>} tooltip='Shapes' fanOutDirection='left'>
     ...
 </ToolbarFanOutItem>
 ```
@@ -211,9 +211,9 @@ When the toolbar is on the **right side** of the screen, fan out to the left:
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `icon` | `string` | — | PrimeIcons CSS class (e.g. `'pi pi-pencil'`) |
+| `icon` | `Icon` | — | React node or consumer-owned icon class; Components does not install an icon font |
 | `text` | `string` | — | Text shown inside the button (use for values like zoom %) |
-| `tooltip` | `string` | **required** | Tooltip text on hover |
+| `title` | `string` | **required** | Accessible name and hover/focus tooltip |
 | `active` | `boolean` | `false` | Highlights the button as selected |
 | `onClick` | `() => void` | — | Click handler |
 | `tooltipPosition` | `'top' \| 'right' \| 'bottom' \| 'left'` | `'right'` | Tooltip position |
@@ -243,10 +243,10 @@ When the toolbar is on the **right side** of the screen, fan out to the left:
 
 | Prop | Type | Default | Description |
 |---|---|---|---|
-| `icon` | `string` | **required** | PrimeIcons CSS class for the trigger button |
+| `icon` | `Icon` | **required** | React node or consumer-owned icon class for the trigger |
 | `tooltip` | `string` | **required** | Tooltip for the trigger button |
 | `tooltipPosition` | `'top' \| 'right' \| 'bottom' \| 'left'` | `'right'` | Tooltip position |
-| `fanOutDirection` | `'right' \| 'left'` | `'right'` | Direction the sub-panel slides out |
+| `fanOutDirection` | `'right' \| 'left' \| 'up' \| 'down'` | `'right'` | Direction the sub-panel slides out |
 | `children` | `ReactNode` | — | `ToolbarButton` elements inside the fan-out panel |
 
 ---
@@ -258,12 +258,12 @@ Render separate `Toolbar` instances to create distinct groups:
 ```tsx
 <div className='flex flex-column gap-2'>
     <Toolbar>
-        <ToolbarButton icon='pi pi-arrow-up-left' tooltip='Select' />
-        <ToolbarButton icon='pi pi-pencil' tooltip='Draw' />
+        <ToolbarButton text='↖' title='Select' />
+        <ToolbarButton text='✎' title='Draw' />
     </Toolbar>
     <Toolbar>
-        <ToolbarButton icon='pi pi-undo' tooltip='Undo' />
-        <ToolbarButton icon='pi pi-refresh' tooltip='Redo' />
+        <ToolbarButton text='↶' title='Undo' />
+        <ToolbarButton text='↷' title='Redo' />
     </Toolbar>
 </div>
 ```

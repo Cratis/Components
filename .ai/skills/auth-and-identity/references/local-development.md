@@ -22,7 +22,7 @@ Azure App Service Easy Auth injects identity via the `X-MS-CLIENT-PRINCIPAL` hea
     "auth_typ": "aad",
     "claims": [
         { "typ": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", "val": "user-unique-id" },
-        { "typ": "name", "val": "Jane Developer" },
+        { "typ": "name", "val": "Sample Developer" },
         { "typ": "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "val": "Admin" },
         { "typ": "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", "val": "Manager" }
     ],
@@ -36,7 +36,7 @@ Azure App Service Easy Auth injects identity via the `X-MS-CLIENT-PRINCIPAL` hea
 **macOS / Linux terminal:**
 
 ```bash
-echo -n '{"auth_typ":"aad","claims":[{"typ":"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier","val":"user-unique-id"},{"typ":"name","val":"Jane Developer"},{"typ":"http://schemas.microsoft.com/ws/2008/06/identity/claims/role","val":"Admin"}],"name_typ":"name","role_typ":"http://schemas.microsoft.com/ws/2008/06/identity/claims/role"}' | base64
+echo -n '{"auth_typ":"aad","claims":[{"typ":"http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier","val":"user-unique-id"},{"typ":"name","val":"Sample Developer"},{"typ":"http://schemas.microsoft.com/ws/2008/06/identity/claims/role","val":"Admin"}],"name_typ":"name","role_typ":"http://schemas.microsoft.com/ws/2008/06/identity/claims/role"}' | base64
 ```
 
 **Browser console:**
@@ -46,7 +46,7 @@ btoa(JSON.stringify({
     auth_typ: "aad",
     claims: [
         { typ: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", val: "user-unique-id" },
-        { typ: "name", val: "Jane Developer" },
+        { typ: "name", val: "Sample Developer" },
         { typ: "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", val: "Admin" }
     ],
     name_typ: "name",
@@ -94,7 +94,7 @@ If you prefer not to install a browser extension, you can also set the cookie di
 ```javascript
 document.cookie = '.cratis-identity=' + btoa(JSON.stringify({
     id: 'user-id',
-    name: 'Jane Developer',
+    name: 'Sample Developer',
     roles: ['Admin'],
     details: { department: 'Engineering' }
 })) + '; path=/';

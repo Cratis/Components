@@ -25,7 +25,7 @@ public class and_there_are_no_authors(context context) : Given<context>(context)
         async Task Because() =>
             Result = await Client.ExecuteCommand<RegisterAuthor, AuthorId>(
                 "/api/authors/register",
-                new RegisterAuthor(new AuthorName("John Doe")));
+                new RegisterAuthor(new AuthorName("Sample Author")));
     }
 
     [Fact] void should_be_successful() => Context.Result!.IsSuccess.ShouldBeTrue();
@@ -34,7 +34,7 @@ public class and_there_are_no_authors(context context) : Given<context>(context)
     [Fact] void should_append_author_registered_event() =>
         Context.ShouldHaveAppendedEvent<AuthorRegistered>(
             EventSequenceNumber.First, Context.Result!.Response,
-            evt => evt.Name.Value.ShouldEqual("John Doe"));
+            evt => evt.Name.Value.ShouldEqual("Sample Author"));
 }
 ```
 
@@ -47,7 +47,7 @@ Use `async Task Establish()` to append events before `Because()`:
 ```csharp
 public class context(ChronicleOutOfProcessFixture fixture) : given.an_http_client(fixture)
 {
-    public const string ExistingName = "John Doe";
+    public const string ExistingName = "Sample Author";
     public CommandResult<object>? Result;
 
     async Task Establish() =>

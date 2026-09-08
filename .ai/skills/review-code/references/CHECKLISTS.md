@@ -78,7 +78,7 @@
 
 ## TypeScript Styling
 
-- [ ] No hard-coded hex/rgb values — PrimeReact CSS variables (`var(--...)`) only
+- [ ] No hard-coded hex/rgb values — Cratis semantic CSS variables (`var(--cratis-...)`) only
 - [ ] CSS co-located with component (`.css` file in same folder)
 - [ ] No `!important` unless justified with a comment
 

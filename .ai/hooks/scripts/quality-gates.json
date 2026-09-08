@@ -1,0 +1,99 @@
+{
+    "$comment": [
+        "Components framework repository quality gates run by cratis-quality-gate.sh.",
+        "This file is the repository-specific override; Components has no .NET solution and no Planner frontend.",
+        "Gates run only when a changed file matches their changed globs and every required path exists.",
+        "The complete release-candidate package, archive, public-type, Storybook, and browser matrices remain CI gates."
+    ],
+    "enabled": true,
+    "failFast": true,
+    "maxOutputLines": 60,
+    "gates": [
+        {
+            "id": "components-ci",
+            "description": "immutable install + public workspace CI + private Storybook preflight",
+            "changed": [
+                "Source/**",
+                "Migrator/**",
+                "ESLint/**",
+                "Conformance/**",
+                "Adapters/**",
+                "Storybook/**",
+                "scripts/**",
+                ".ai/hooks/**",
+                "package.json",
+                "yarn.lock",
+                "run-task-on-workspaces.js",
+                "rollup.config.mjs",
+                "tsconfig.json",
+                "eslint.config.mjs",
+                ".prettierrc",
+                ".yarnrc.yml"
+            ],
+            "excludeChanged": [
+                "**/node_modules/**",
+                "**/dist/**",
+                "**/storybook-static/**",
+                "**/.eslintcache"
+            ],
+            "requires": {
+                "commands": ["bash", "yarn"],
+                "paths": [
+                    ".ai/hooks/scripts/run-components-ci.sh",
+                    "package.json",
+                    "Source/package.json",
+                    "Migrator/package.json",
+                    "ESLint/package.json",
+                    "Conformance/package.json",
+                    "Adapters/Mui/package.json",
+                    "Adapters/PrimeReact/package.json",
+                    "Adapters/PrimeReact10/package.json",
+                    "Storybook/package.json"
+                ]
+            },
+            "workingDirectory": ".",
+            "command": ["bash", ".ai/hooks/scripts/run-components-ci.sh"]
+        },
+        {
+            "id": "documentation",
+            "description": "Documentation markdown lint and deterministic local-link verification",
+            "changed": [
+                "README.md",
+                "Documentation/**",
+                "Source/*.md",
+                "Migrator/*.md",
+                "ESLint/*.md",
+                ".markdownlint.json"
+            ],
+            "excludeChanged": [],
+            "requires": {
+                "commands": ["bash", "node", "npx"],
+                "paths": [
+                    "Documentation/verify-markdown.sh",
+                    "Documentation/verify-local-links.mjs"
+                ]
+            },
+            "workingDirectory": ".",
+            "command": ["bash", "Documentation/verify-markdown.sh"]
+        },
+        {
+            "id": "ai-corpus",
+            "description": "validate-ai-setup.sh — adapters, frontmatter, and cross-links healthy",
+            "changed": [
+                ".ai/**",
+                ".claude/**",
+                ".github/**",
+                ".agents/**",
+                ".pi/**",
+                "AGENTS.md"
+            ],
+            "excludeChanged": ["**/*.local.json"],
+            "requires": {
+                "commands": ["bash"],
+                "paths": [".ai/hooks/scripts/validate-ai-setup.sh"]
+            },
+            "workingDirectory": ".",
+            "command": ["bash", ".ai/hooks/scripts/validate-ai-setup.sh"]
+        }
+    ]
+}

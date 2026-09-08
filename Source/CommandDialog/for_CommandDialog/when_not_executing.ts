@@ -6,15 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { vi } from 'vitest';
 import { CommandDialog } from '../CommandDialog';
 
-vi.mock('primereact/dialog', () => ({
-    Dialog: (props: { footer?: React.ReactNode; children?: React.ReactNode }) =>
-        React.createElement('div', null, props.footer, props.children),
-}));
 
-vi.mock('primereact/button', () => ({
-    Button: (props: { label?: string; disabled?: boolean; loading?: boolean }) =>
-        React.createElement('button', { disabled: props.disabled, 'data-loading': props.loading }, props.label),
-}));
 
 vi.mock('@cratis/arc.react/dialogs', () => ({
     DialogButtons: { Ok: 1, OkCancel: 2, YesNo: 3, YesNoCancel: 4 },
@@ -44,6 +36,7 @@ describe('when CommandDialog is in its initial state', () => {
 
     beforeEach(() => {
         const element = React.createElement(CommandDialog, {
+            // SAFETY: The test command implements the runtime command constructor contract.
             command: TestCommand as unknown as new () => object,
             visible: true,
             title: 'Test Dialog',
@@ -52,6 +45,6 @@ describe('when CommandDialog is in its initial state', () => {
     });
 
     it('should_not_have_buttons_disabled_due_to_busy', () => {
-        html.should.not.include('data-loading="true"');
+        html.should.not.include('cratis-dialog__spinner');
     });
 });

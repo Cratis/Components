@@ -69,7 +69,7 @@ import { given } from '../../given';   // import from package root
 
 describe('when registering with valid name', given(an_author_service, context => {
     beforeEach(async () => {
-        await context.service.register('John Doe');
+        await context.service.register('Sample Author');
     });
 
     it('should append an event', () => {
@@ -78,7 +78,7 @@ describe('when registering with valid name', given(an_author_service, context =>
 
     it('should pass the author name', () => {
         const call = context.eventLog.append.firstCall;
-        call.args[1].name.should.equal('John Doe');
+        call.args[1].name.should.equal('Sample Author');
     });
 }));
 ```

@@ -1,66 +1,114 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { Stepper as PrimeStepper, type StepperProps } from 'primereact/stepper';
-import { Button } from 'primereact/button';
-import { ICommandResult } from '@cratis/arc/commands';
+import React, { useState, type ButtonHTMLAttributes, type HTMLAttributes } from 'react';
+import type { ICommandResult } from '@cratis/arc/commands';
 import {
     CommandForm,
-    CommandFormFieldWrapper,
     useCommandFormContext,
     useCommandInstance,
-    type CommandFormProps
+    type CommandFormProps,
 } from '@cratis/arc.react/commands';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
-import './CommandStepper.css';
+import {
+    CommandStepperContent,
+    type CommandStepperContentProps,
+} from './CommandStepperContent';
+import type { ExactPartKeys } from '../types/ExactPartKeys';
+import type { PartsOf } from '../types/parts';
 
 /**
- * Stepper-specific customization props forwarded directly to PrimeReact Stepper.
- * `activeStep` and `children` are managed by the component.
+ * Event passed to {@link StepperCustomizationProps.onChangeStep} when the user
+ * navigates to a different step.
  */
-export type StepperCustomizationProps = Pick<StepperProps,
-    'orientation' | 'headerPosition' | 'linear' | 'onChangeStep' | 'start' | 'end' | 'pt' | 'ptOptions' | 'unstyled'
->;
-
-export interface CommandStepperContentProps extends StepperCustomizationProps {
-    /** The active step index. */
-    activeStep: number;
-    /** The indices that have been visited. */
-    visitedSteps: Set<number>;
-    /** StepperPanel children defining each wizard step. */
-    children?: React.ReactNode;
-    /** Callback for active step changes. */
-    onActiveStepChange?: (stepIndex: number) => void;
-    /** Callback for visited step changes. */
-    onVisitedStepsChange?: (visitedSteps: Set<number>) => void;
-    /** Callback that receives validation state for each step. */
-    onStepErrorsChange?: (stepErrors: boolean[]) => void;
-    /** Provides validation errors for individual fields. */
-    getFieldError?: (fieldName: string) => unknown;
-    /** Whether to show built-in previous and next buttons. Defaults to `true`. */
-    showNavigation?: boolean;
-    /** Whether to show built-in submit on the last step. Defaults to `true`. */
-    showSubmit?: boolean;
-    /** Label for the next step button. Defaults to `'Next'`. */
-    nextLabel?: string;
-    /** Label for the previous step button. Defaults to `'Previous'`. */
-    previousLabel?: string;
-    /** Label for the submit button. Defaults to `'Submit'`. */
-    okLabel?: string;
-    /** Whether navigation controls are busy. */
-    isBusy?: boolean;
-    /** Whether submit is currently executing. */
-    isSubmitting?: boolean;
-    /** Disables submit regardless of current step state. */
-    isSubmitDisabled?: boolean;
-    /** Submit callback invoked on the last step. */
-    onSubmit?: () => void | Promise<void>;
+export interface StepperChangeEvent {
+    /** Zero-based index of the step being navigated to. */
+    index: number;
 }
 
+/** Orientation of a {@link CommandStepper} / {@link StepperCommandDialog}. */
+export type StepperOrientation = 'horizontal' | 'vertical';
+
+/** Where the step headers sit relative to the panels. */
+export type StepperHeaderPosition = 'top' | 'bottom';
+
+/**
+ * Stepper-specific customization surface exposed by {@link CommandStepper} and
+ * {@link StepperCommandDialog}. This is a Cratis-owned type — it no longer
+ * leaks renderer-specific stepper props — so the Cratis-owned Stepper
+ * can evolve underneath without changing the public API. Orientation, start/end
+ * content, and header position are implemented over stable Cratis parts.
+ */
+export interface StepperParts {
+    /** Stepper composition root. */
+    root?: HTMLAttributes<HTMLDivElement>;
+    /** Ordered step-header list. */
+    list?: HTMLAttributes<HTMLOListElement>;
+    /** One step list item and its state attributes. */
+    step?: HTMLAttributes<HTMLLIElement>;
+    /** Interactive step-header button. */
+    header?: ButtonHTMLAttributes<HTMLButtonElement>;
+    /** Step number/status indicator. */
+    number?: HTMLAttributes<HTMLSpanElement>;
+    /** Step title. */
+    title?: HTMLAttributes<HTMLSpanElement>;
+    /** Visual separator between steps. */
+    separator?: HTMLAttributes<HTMLSpanElement>;
+    /** Panels wrapper. */
+    panels?: HTMLAttributes<HTMLDivElement>;
+    /** Active step panel. */
+    panel?: HTMLAttributes<HTMLElement>;
+}
+
+const stepperPartsMatchManifest: ExactPartKeys<StepperParts, PartsOf<'CommandStepper'>> = true;
+void stepperPartsMatchManifest;
+
+/** Public layout, navigation, and stable-part customization shared by both steppers. */
+export interface StepperCustomizationProps {
+    /**
+     * Whether the wizard is linear. In linear mode the step headers are not
+     * directly clickable — the user advances through the Previous / Next
+     * buttons. Set to `false` to let the user jump between steps by clicking
+     * their headers. Defaults to `true`.
+     */
+    linear?: boolean;
+    /** Lays the steps out horizontally (default) or stacked vertically. */
+    orientation?: StepperOrientation;
+    /** Places the step-header row above (default) or below the panels. */
+    headerPosition?: StepperHeaderPosition;
+    /** Content rendered before the stepper (e.g. a logo or title). */
+    start?: React.ReactNode;
+    /** Content rendered after the stepper. */
+    end?: React.ReactNode;
+    /** Invoked when the active step changes (via navigation or a header click). */
+    onChangeStep?: (event: StepperChangeEvent) => void;
+    /** Cratis-owned per-part attributes for the stepper. */
+    pt?: StepperParts;
+    /**
+     * @deprecated Cratis parts always merge. Remove this renderer-era option.
+     */
+    ptOptions?: object;
+    /**
+     * @deprecated Components always uses consumer-owned CSS. Customize through `pt` and CSS instead.
+     */
+    unstyled?: boolean;
+}
+
+/** Props for a standalone stepper bound to one Arc command form. */
 export interface CommandStepperProps<TCommand extends object, TResponse = object>
-    extends Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
-        Omit<CommandStepperContentProps, 'activeStep' | 'visitedSteps' | 'onActiveStepChange' | 'onVisitedStepsChange' | 'getFieldError' | 'isSubmitting' | 'isSubmitDisabled' | 'onSubmit'> {
+    extends
+        Omit<CommandFormProps<TCommand, TResponse>, 'children' | 'onBeforeExecute'>,
+        Omit<
+            CommandStepperContentProps,
+            | 'activeStep'
+            | 'visitedSteps'
+            | 'onActiveStepChange'
+            | 'onVisitedStepsChange'
+            | 'getFieldError'
+            | 'isSubmitting'
+            | 'isSubmitDisabled'
+            | 'onSubmit'
+        > {
     /**
      * A transformer invoked with the current command values immediately before
      * the command executes on submit. It **must return** the values to run with
@@ -78,243 +126,23 @@ export interface CommandStepperProps<TCommand extends object, TResponse = object
     children?: React.ReactNode;
 }
 
-/** Extracts the property name from an accessor function like `c => c.name`. */
-const getPropertyName = (accessor: ((obj: unknown) => unknown) | unknown): string => {
-    if (typeof accessor !== 'function') return '';
-    const fnStr = accessor.toString();
-    const match = fnStr.match(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)/);
-    return match ? match[1] : '';
+type CommandStepperWrapperProps<TCommand extends object, TResponse = object> = Omit<
+    CommandStepperContentProps,
+    | 'activeStep'
+    | 'visitedSteps'
+    | 'onActiveStepChange'
+    | 'onVisitedStepsChange'
+    | 'getFieldError'
+    | 'isSubmitting'
+    | 'isSubmitDisabled'
+    | 'onSubmit'
+> & {
+    children?: React.ReactNode;
+    onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
+    onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
+    onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
+    onBeforeExecute?: BeforeExecuteCallback<TCommand>;
 };
-
-/** Recursively collects all CommandFormField property names from a React node tree. */
-const extractFieldNamesFromNode = (nodes: React.ReactNode): string[] => {
-    const names: string[] = [];
-    React.Children.forEach(nodes, (child) => {
-        if (!React.isValidElement(child)) return;
-        const component = child.type as React.ComponentType<unknown>;
-        if ((component as { displayName?: string }).displayName === 'CommandFormField') {
-            const fieldProps = child.props as { value?: (obj: unknown) => unknown };
-            const name = getPropertyName(fieldProps.value);
-            if (name) names.push(name);
-        }
-
-        const childProps = child.props as Record<string, unknown>;
-        if (childProps.children != null) {
-            names.push(...extractFieldNamesFromNode(childProps.children as React.ReactNode));
-        }
-    });
-    return names;
-};
-
-const processChildren = (nodes: React.ReactNode): React.ReactNode => {
-    return React.Children.map(nodes, (child) => {
-        if (!React.isValidElement(child)) return child;
-
-        const component = child.type as React.ComponentType<unknown>;
-        if ((component as { displayName?: string }).displayName === 'CommandFormField') {
-            type FieldElement = Parameters<typeof CommandFormFieldWrapper>[0]['field'];
-            return <CommandFormFieldWrapper field={child as unknown as FieldElement} />;
-        }
-
-        const childProps = child.props as Record<string, unknown>;
-        if (childProps.children != null) {
-            return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
-                children: processChildren(childProps.children as React.ReactNode)
-            });
-        }
-
-        return child;
-    });
-};
-
-export const CommandStepperContent = ({
-    activeStep,
-    visitedSteps,
-    children,
-    onActiveStepChange,
-    onVisitedStepsChange,
-    onStepErrorsChange,
-    getFieldError,
-    showNavigation = true,
-    showSubmit = true,
-    nextLabel = 'Next',
-    previousLabel = 'Previous',
-    okLabel = 'Submit',
-    isBusy = false,
-    isSubmitting = false,
-    isSubmitDisabled = false,
-    onSubmit,
-    orientation = 'horizontal',
-    headerPosition,
-    linear = true,
-    onChangeStep,
-    start,
-    end,
-    pt,
-    ptOptions,
-    unstyled,
-}: CommandStepperContentProps) => {
-    const stepCount = React.Children.count(children);
-    const isLastStep = activeStep >= stepCount - 1;
-    const isFirstStep = activeStep <= 0;
-
-    const stepFieldNames = useMemo(
-        () => React.Children.toArray(children).map((step) => {
-            if (!React.isValidElement(step)) return [] as string[];
-            const stepProps = step.props as Record<string, unknown>;
-            return extractFieldNamesFromNode(stepProps.children as React.ReactNode);
-        }),
-        [children]
-    );
-
-    const stepErrors = useMemo(
-        () => stepFieldNames.map(fields => fields.some(fieldName => !!getFieldError?.(fieldName))),
-        [stepFieldNames, getFieldError]
-    );
-
-    useEffect(() => {
-        onStepErrorsChange?.(stepErrors);
-    }, [onStepErrorsChange, stepErrors]);
-
-    const isCurrentStepInvalid = stepErrors[activeStep] ?? false;
-    const hasAnyStepErrors = stepErrors.some(hasError => hasError);
-
-    const stepperPt = useMemo(() => {
-        type StepContext = { context: { index: number } };
-        type NumberPtFn = (opts: StepContext) => Record<string, unknown>;
-
-        const userPt = pt as Record<string, unknown> | undefined;
-        const userStepperPanelPt = userPt?.stepperpanel as Record<string, unknown> | undefined;
-        const userNumberPt = userStepperPanelPt?.number;
-
-        return {
-            ...userPt,
-            stepperpanel: {
-                ...userStepperPanelPt,
-                number: (opts: StepContext) => {
-                    const existing: Record<string, unknown> =
-                        typeof userNumberPt === 'function'
-                            ? (userNumberPt as NumberPtFn)(opts)
-                            : (userNumberPt as Record<string, unknown> | undefined) ?? {};
-                    const idx = opts.context.index;
-                    const hasError = stepErrors[idx] ?? false;
-                    const isVisited = visitedSteps.has(idx);
-
-                    // Use straightforward color names here so unit tests that
-                    // inspect the computed `backgroundColor` can assert reliably.
-                    const bgColor = hasError
-                        ? 'red'
-                        : isVisited
-                            ? 'green'
-                            : null;
-
-                    if (!bgColor) return existing;
-                    const existingStyle = existing.style as Record<string, unknown> | undefined;
-                    return {
-                        ...existing,
-                        style: { ...existingStyle, backgroundColor: bgColor, color: 'var(--cratis-primary-color-text)' }
-                    };
-                }
-            }
-        };
-    }, [pt, stepErrors, visitedSteps]);
-
-    const handleChangeStep: StepperProps['onChangeStep'] = event => {
-        onChangeStep?.(event);
-        const index = (event as { index?: number }).index;
-        if (typeof index === 'number') {
-            if (index > activeStep && isCurrentStepInvalid) {
-                return;
-            }
-
-            if (index > activeStep) {
-                onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
-            }
-            onActiveStepChange?.(index);
-        }
-    };
-
-    const handlePrevious = () => {
-        onActiveStepChange?.(Math.max(0, activeStep - 1));
-    };
-
-    const handleNext = () => {
-        if (isCurrentStepInvalid) {
-            return;
-        }
-
-        onVisitedStepsChange?.(new Set(visitedSteps).add(activeStep));
-        onActiveStepChange?.(Math.min(stepCount - 1, activeStep + 1));
-    };
-
-    return (
-        <div className="cratis-command-stepper">
-            <PrimeStepper
-                activeStep={activeStep}
-                linear={linear}
-                orientation={orientation}
-                headerPosition={headerPosition}
-                onChangeStep={handleChangeStep}
-                start={start}
-                end={end}
-                pt={stepperPt as StepperProps['pt']}
-                ptOptions={ptOptions}
-                unstyled={unstyled}
-            >
-                {processChildren(children)}
-            </PrimeStepper>
-
-            {showNavigation && (
-                <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '0.75rem' }}>
-                    {!isFirstStep && (
-                        <Button
-                            label={previousLabel}
-                            icon="pi pi-arrow-left"
-                            onClick={handlePrevious}
-                            disabled={isBusy}
-                            outlined
-                            style={{ width: 'auto' }}
-                        />
-                    )}
-                    <div style={{ flex: 1 }} />
-                    {!isLastStep && (
-                        <Button
-                            label={nextLabel}
-                            icon="pi pi-arrow-right"
-                            iconPos="right"
-                            onClick={handleNext}
-                            disabled={isBusy || isSubmitting || isCurrentStepInvalid}
-                            style={{ width: 'auto' }}
-                        />
-                    )}
-                    {isLastStep && showSubmit && (
-                        <Button
-                            label={okLabel}
-                            icon="pi pi-check"
-                            onClick={() => void onSubmit?.()}
-                            loading={isSubmitting}
-                            disabled={isBusy || isSubmitting || isSubmitDisabled || hasAnyStepErrors}
-                            autoFocus
-                            style={{ width: 'auto' }}
-                        />
-                    )}
-                </div>
-            )}
-        </div>
-    );
-};
-
-type CommandStepperWrapperProps<TCommand extends object, TResponse = object> =
-    Omit<
-        CommandStepperContentProps,
-        'activeStep' | 'visitedSteps' | 'onActiveStepChange' | 'onVisitedStepsChange' | 'getFieldError' | 'isSubmitting' | 'isSubmitDisabled' | 'onSubmit'
-    > & {
-        children?: React.ReactNode;
-        onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
-        onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
-        onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
-        onBeforeExecute?: BeforeExecuteCallback<TCommand>;
-    };
 
 const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     children,
@@ -325,12 +153,12 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     previousLabel,
     okLabel,
     isBusy,
+    linear,
     orientation,
     headerPosition,
-    linear,
-    onChangeStep,
     start,
     end,
+    onChangeStep,
     pt,
     ptOptions,
     unstyled,
@@ -339,7 +167,12 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     onFailed,
     onBeforeExecute,
 }: CommandStepperWrapperProps<TCommand, TResponse>) => {
-    const { getFieldError, isValid: isCommandFormValid, setCommandValues, setCommandResult } = useCommandFormContext<TCommand>();
+    const {
+        getFieldError,
+        isValid: isCommandFormValid,
+        setCommandValues,
+        setCommandResult,
+    } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
     const [activeStep, setActiveStep] = useState(0);
     const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
@@ -355,7 +188,12 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
         let result: ICommandResult<TResponse>;
 
         try {
-            result = await (commandInstance as unknown as { execute: () => Promise<ICommandResult<TResponse>> }).execute();
+            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
+            result = await (
+                commandInstance as unknown as {
+                    execute: () => Promise<ICommandResult<TResponse>>;
+                }
+            ).execute();
         } finally {
             setIsSubmitting(false);
         }
@@ -390,12 +228,12 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             isSubmitting={isSubmitting}
             isSubmitDisabled={!isCommandFormValid}
             onSubmit={handleSubmit}
+            linear={linear}
             orientation={orientation}
             headerPosition={headerPosition}
-            linear={linear}
-            onChangeStep={onChangeStep}
             start={start}
             end={end}
+            onChangeStep={onChangeStep}
             pt={pt}
             ptOptions={ptOptions}
             unstyled={unstyled}
@@ -415,7 +253,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
  *
  * ## Mechanics
  *
- * - Wraps PrimeReact's `Stepper` inside an Arc `CommandForm` so each
+ * - Wraps the Cratis-owned Stepper inside an Arc `CommandForm` so each
  *   `<StepperPanel>` becomes a logical grouping of fields that all bind to
  *   the same single command.
  * - Provides a built-in Previous / Next / Submit footer. The Submit button
@@ -444,8 +282,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
  * Stepper directly.
  *
  * ```tsx
- * import { CommandStepper } from '@cratis/components/CommandStepper';
- * import { StepperPanel } from 'primereact/stepperpanel';
+ * import { CommandStepper, StepperPanel } from '@cratis/components/CommandDialog';
  * import { RegisterAuthor } from './RegisterAuthor';   // proxy from C#
  *
  * export const RegisterAuthorPage = () => (
@@ -466,7 +303,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
  * @param props - {@link CommandStepperProps}.
  */
 export const CommandStepper = <TCommand extends object = object, TResponse = object>(
-    props: CommandStepperProps<TCommand, TResponse>
+    props: CommandStepperProps<TCommand, TResponse>,
 ) => {
     const {
         children,
@@ -477,12 +314,12 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
         previousLabel,
         okLabel,
         isBusy,
+        linear,
         orientation,
         headerPosition,
-        linear,
-        onChangeStep,
         start,
         end,
+        onChangeStep,
         pt,
         ptOptions,
         unstyled,
@@ -500,12 +337,12 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
                 previousLabel={previousLabel}
                 okLabel={okLabel}
                 isBusy={isBusy}
+                linear={linear}
                 orientation={orientation}
                 headerPosition={headerPosition}
-                linear={linear}
-                onChangeStep={onChangeStep}
                 start={start}
                 end={end}
+                onChangeStep={onChangeStep}
                 pt={pt}
                 ptOptions={ptOptions}
                 unstyled={unstyled}

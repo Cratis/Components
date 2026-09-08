@@ -8,6 +8,7 @@ import { Command, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { StoryContainer, StorySection, StoryDivider } from '@cratis/arc.react/stories';
 import '@cratis/arc/validation';
+import { Button } from '../../Common/Button';
 import {
     InputTextField,
     NumberField,
@@ -20,11 +21,11 @@ import {
     MultiSelectField,
     ChipsField,
     RadioButtonField,
-    RadioGroupField
+    RadioGroupField,
 } from './index';
 
 const meta: Meta = {
-    title: 'CommandForm/PrimeReact Fields',
+    title: 'CommandForm/Fields',
     parameters: {
         layout: 'centered',
     },
@@ -92,7 +93,7 @@ class FormFieldsCommand extends Command {
             'multiSelect',
             'chips',
             'radioButton',
-            'radioGroup'
+            'radioGroup',
         ];
     }
 }
@@ -100,11 +101,19 @@ class FormFieldsCommand extends Command {
 class FormFieldsCommandValidator extends CommandValidator<FormFieldsCommand> {
     constructor() {
         super();
-        this.ruleFor(c => c.textInput).notEmpty().minLength(3);
-        this.ruleFor(c => c.emailInput).notEmpty().emailAddress();
-        this.ruleFor(c => c.passwordInput).notEmpty().minLength(6);
-        this.ruleFor(c => c.numberInput).greaterThanOrEqual(1).lessThanOrEqual(100);
-        this.ruleFor(c => c.dropdown).notEmpty();
+        this.ruleFor((c) => c.textInput)
+            .notEmpty()
+            .minLength(3);
+        this.ruleFor((c) => c.emailInput)
+            .notEmpty()
+            .emailAddress();
+        this.ruleFor((c) => c.passwordInput)
+            .notEmpty()
+            .minLength(6);
+        this.ruleFor((c) => c.numberInput)
+            .greaterThanOrEqual(1)
+            .lessThanOrEqual(100);
+        this.ruleFor((c) => c.dropdown).notEmpty();
     }
 }
 
@@ -112,14 +121,14 @@ const dropdownOptions = [
     { id: 'option1', name: 'Option 1' },
     { id: 'option2', name: 'Option 2' },
     { id: 'option3', name: 'Option 3' },
-    { id: 'option4', name: 'Option 4' }
+    { id: 'option4', name: 'Option 4' },
 ];
 
 const multiSelectOptions = [
     { id: 'feature1', name: 'Feature 1' },
     { id: 'feature2', name: 'Feature 2' },
     { id: 'feature3', name: 'Feature 3' },
-    { id: 'feature4', name: 'Feature 4' }
+    { id: 'feature4', name: 'Feature 4' },
 ];
 
 export const AllFields: Story = {
@@ -130,10 +139,11 @@ export const AllFields: Story = {
         }>({ errors: {}, canSubmit: false });
 
         return (
-            <StoryContainer size="md" asCard>
-                <h1>PrimeReact Form Fields</h1>
+            <StoryContainer size='md' asCard>
+                <h1>Cratis Command Form Fields</h1>
                 <p>
-                    This showcase demonstrates all available PrimeReact-based form fields integrated with CommandForm from @cratis/arc.react.
+                    This showcase demonstrates the Cratis-owned fields integrated with
+                    CommandForm from @cratis/arc.react.
                 </p>
 
                 <StoryDivider />
@@ -161,64 +171,88 @@ export const AllFields: Story = {
                         const result = await command.validate();
 
                         if (!result.isValid) {
-                            const fieldError = result.validationResults.find(
-                                v => v.members.includes(fieldName)
+                            const fieldError = result.validationResults.find((v) =>
+                                v.members.includes(fieldName),
                             );
 
                             if (fieldError) {
-                                setValidationState(prev => ({
-                                    errors: { ...prev.errors, [fieldName]: fieldError.message },
-                                    canSubmit: false
+                                setValidationState((prev) => ({
+                                    errors: {
+                                        ...prev.errors,
+                                        [fieldName]: fieldError.message,
+                                    },
+                                    canSubmit: false,
                                 }));
                             }
                         } else {
-                            setValidationState(prev => {
-                                const { [fieldName]: removed, ...rest } = prev.errors;
+                            setValidationState((prev) => {
+                                const { [fieldName]: _removed, ...rest } = prev.errors;
                                 return {
                                     errors: rest,
-                                    canSubmit: Object.keys(rest).length === 0
+                                    canSubmit: Object.keys(rest).length === 0,
                                 };
                             });
                         }
                     }}
                 >
                     <StorySection>
-                        <h3>Text Inputs</h3>
+                        <h2>Text Inputs</h2>
 
                         <InputTextField<FormFieldsCommand>
-                            value={c => c.textInput}
-                            title="Text Input"
-                            placeholder="Enter at least 3 characters"
-                            description="Standard text input field with validation"
+                            value={(c) => c.textInput}
+                            title='Text Input'
+                            placeholder='Enter at least 3 characters'
+                            description='Standard text input field with validation'
                         />
                         {validationState.errors.textInput && (
-                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div
+                                style={{
+                                    color: 'var(--cratis-red-500)',
+                                    fontSize: '0.875rem',
+                                    marginTop: '0.25rem',
+                                    marginBottom: '1rem',
+                                }}
+                            >
                                 {validationState.errors.textInput}
                             </div>
                         )}
 
                         <InputTextField<FormFieldsCommand>
-                            value={c => c.emailInput}
-                            title="Email Input"
-                            type="email"
-                            placeholder="Enter a valid email address"
-                            description="Email input with email validation"
+                            value={(c) => c.emailInput}
+                            title='Email Input'
+                            type='email'
+                            placeholder='Enter a valid email address'
+                            description='Email input with email validation'
                         />
                         {validationState.errors.emailInput && (
-                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div
+                                style={{
+                                    color: 'var(--cratis-red-500)',
+                                    fontSize: '0.875rem',
+                                    marginTop: '0.25rem',
+                                    marginBottom: '1rem',
+                                }}
+                            >
                                 {validationState.errors.emailInput}
                             </div>
                         )}
 
                         <InputTextField<FormFieldsCommand>
-                            value={c => c.passwordInput}
-                            title="Password Input"
-                            type="password"
-                            placeholder="Enter at least 6 characters"
-                            description="Password input field (min 6 characters)"
+                            value={(c) => c.passwordInput}
+                            title='Password Input'
+                            type='password'
+                            placeholder='Enter at least 6 characters'
+                            description='Password input field (min 6 characters)'
                         />
                         {validationState.errors.passwordInput && (
-                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div
+                                style={{
+                                    color: 'var(--cratis-red-500)',
+                                    fontSize: '0.875rem',
+                                    marginTop: '0.25rem',
+                                    marginBottom: '1rem',
+                                }}
+                            >
                                 {validationState.errors.passwordInput}
                             </div>
                         )}
@@ -227,19 +261,26 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Number Input</h3>
+                        <h2>Number Input</h2>
 
                         <NumberField<FormFieldsCommand>
-                            value={c => c.numberInput}
-                            title="Number Field"
-                            placeholder="Enter a number (1-100)"
-                            description="Number input with min/max boundaries"
+                            value={(c) => c.numberInput}
+                            title='Number Field'
+                            placeholder='Enter a number (1-100)'
+                            description='Number input with min/max boundaries'
                             min={1}
                             max={100}
                             step={1}
                         />
                         {validationState.errors.numberInput && (
-                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div
+                                style={{
+                                    color: 'var(--cratis-red-500)',
+                                    fontSize: '0.875rem',
+                                    marginTop: '0.25rem',
+                                    marginBottom: '1rem',
+                                }}
+                            >
                                 {validationState.errors.numberInput}
                             </div>
                         )}
@@ -248,13 +289,13 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Text Area</h3>
+                        <h2>Text Area</h2>
 
                         <TextAreaField<FormFieldsCommand>
-                            value={c => c.textArea}
-                            title="Text Area Field"
-                            placeholder="Enter a longer text..."
-                            description="Multi-line text input"
+                            value={(c) => c.textArea}
+                            title='Text Area Field'
+                            placeholder='Enter a longer text...'
+                            description='Multi-line text input'
                             rows={5}
                         />
                     </StorySection>
@@ -262,19 +303,26 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Dropdown</h3>
+                        <h2>Dropdown</h2>
 
                         <DropdownField<FormFieldsCommand>
-                            value={c => c.dropdown}
-                            title="Dropdown Field"
-                            placeholder="Select an option"
-                            description="PrimeReact dropdown component"
+                            value={(c) => c.dropdown}
+                            title='Dropdown Field'
+                            placeholder='Select an option'
+                            description='Accessible Cratis dropdown component'
                             options={dropdownOptions}
-                            optionValue="id"
-                            optionLabel="name"
+                            optionValue='id'
+                            optionLabel='name'
                         />
                         {validationState.errors.dropdown && (
-                            <div style={{ color: 'var(--cratis-red-500)', fontSize: '0.875rem', marginTop: '0.25rem', marginBottom: '1rem' }}>
+                            <div
+                                style={{
+                                    color: 'var(--cratis-red-500)',
+                                    fontSize: '0.875rem',
+                                    marginTop: '0.25rem',
+                                    marginBottom: '1rem',
+                                }}
+                            >
                                 {validationState.errors.dropdown}
                             </div>
                         )}
@@ -283,44 +331,42 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Calendar</h3>
+                        <h2>Calendar</h2>
 
                         <CalendarField<FormFieldsCommand>
-                            value={c => c.calendarDate}
-                            title="Calendar Field"
-                            description="PrimeReact Calendar component for selecting dates"
-                            placeholder="Select a date"
+                            value={(c) => c.calendarDate}
+                            title='Calendar Field'
+                            description='Internationalized Cratis date picker'
+                            placeholder='Select a date'
                             showIcon
-                            dateFormat="mm/dd/yy"
                         />
                     </StorySection>
 
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Color Picker</h3>
+                        <h2>Color Picker</h2>
 
                         <ColorPickerField<FormFieldsCommand>
-                            value={c => c.color}
-                            title="Color Picker Field"
-                            description="PrimeReact ColorPicker for selecting hex colors"
+                            value={(c) => c.color}
+                            title='Color Picker Field'
+                            description='Cratis color picker for selecting hex colors'
                         />
                     </StorySection>
 
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>MultiSelect</h3>
+                        <h2>MultiSelect</h2>
 
                         <MultiSelectField<FormFieldsCommand>
-                            value={c => c.multiSelect}
-                            title="MultiSelect Field"
-                            description="PrimeReact MultiSelect for selecting multiple options"
-                            placeholder="Choose one or more features"
+                            value={(c) => c.multiSelect}
+                            title='MultiSelect Field'
+                            description='Filterable Cratis multi-select'
+                            placeholder='Choose one or more features'
                             options={multiSelectOptions}
-                            optionValue="id"
-                            optionLabel="name"
-                            display="chip"
+                            optionValue='id'
+                            optionLabel='name'
                             filter
                             showClear
                         />
@@ -329,26 +375,26 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Chips</h3>
+                        <h2>Chips</h2>
 
                         <ChipsField<FormFieldsCommand>
-                            value={c => c.chips}
-                            title="Chips Field"
-                            description="PrimeReact Chips for entering multiple text values"
-                            placeholder="Add tags and press Enter"
-                            separator=","
+                            value={(c) => c.chips}
+                            title='Chips Field'
+                            description='Cratis chips field for entering multiple text values'
+                            placeholder='Add tags and press Enter'
+                            separator=','
                         />
                     </StorySection>
 
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Slider</h3>
+                        <h2>Slider</h2>
 
                         <SliderField<FormFieldsCommand>
-                            value={c => c.slider}
-                            title="Slider Field"
-                            description="Slider for numeric values"
+                            value={(c) => c.slider}
+                            title='Slider Field'
+                            description='Slider for numeric values'
                             min={0}
                             max={100}
                             step={5}
@@ -358,124 +404,138 @@ export const AllFields: Story = {
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Checkbox</h3>
+                        <h2>Checkbox</h2>
 
                         <CheckboxField<FormFieldsCommand>
-                            value={c => c.checkbox}
-                            label="I agree to the terms and conditions"
+                            value={(c) => c.checkbox}
+                            label='I agree to the terms and conditions'
                         />
                     </StorySection>
 
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Radio Button</h3>
+                        <h2>Radio Button</h2>
 
                         <RadioButtonField<FormFieldsCommand>
-                            value={c => c.radioButton}
-                            buttonValue="option1"
-                            label="Option 1"
+                            name='radio-button-options'
+                            value={(c) => c.radioButton}
+                            buttonValue='option1'
+                            label='Option 1'
                         />
                         <RadioButtonField<FormFieldsCommand>
-                            value={c => c.radioButton}
-                            buttonValue="option2"
-                            label="Option 2"
+                            name='radio-button-options'
+                            value={(c) => c.radioButton}
+                            buttonValue='option2'
+                            label='Option 2'
                         />
                         <RadioButtonField<FormFieldsCommand>
-                            value={c => c.radioButton}
-                            buttonValue="option3"
-                            label="Option 3"
+                            name='radio-button-options'
+                            value={(c) => c.radioButton}
+                            buttonValue='option3'
+                            label='Option 3'
                         />
                     </StorySection>
 
                     <StoryDivider />
 
                     <StorySection>
-                        <h3>Radio Group</h3>
+                        <h2>Radio Group</h2>
 
                         <RadioGroupField<FormFieldsCommand>
-                            value={c => c.radioGroup}
-                            title="Radio Group Field"
-                            description="Radio buttons from an options array"
+                            value={(c) => c.radioGroup}
+                            title='Radio Group Field'
+                            description='Radio buttons from an options array'
                             options={dropdownOptions}
-                            optionValue="id"
-                            optionLabel="name"
+                            optionValue='id'
+                            optionLabel='name'
                         />
                     </StorySection>
 
                     <StoryDivider />
 
-                    <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <button
-                            type="submit"
+                    <div
+                        style={{
+                            marginTop: '1.5rem',
+                            display: 'flex',
+                            gap: '0.5rem',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Button
+                            type='submit'
                             disabled={!validationState.canSubmit}
-                            className="p-button p-component"
-                        >
-                            Submit Form
-                        </button>
-                        {!validationState.canSubmit && Object.keys(validationState.errors).length > 0 && (
-                            <span style={{ color: 'var(--cratis-orange-500)', fontSize: '0.875rem' }}>
-                                Please fix validation errors
-                            </span>
-                        )}
+                            label='Submit Form'
+                        />
+                        {!validationState.canSubmit &&
+                            Object.keys(validationState.errors).length > 0 && (
+                                <span
+                                    style={{
+                                        color: 'var(--cratis-orange-500)',
+                                        fontSize: '0.875rem',
+                                    }}
+                                >
+                                    Please fix validation errors
+                                </span>
+                            )}
                     </div>
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const InputTextFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>InputTextField</h2>
-                <p>PrimeReact InputText component wrapped for CommandForm.</p>
+                <p>Cratis text inputs wrapped for CommandForm.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ textInput: '', emailInput: '', passwordInput: '' }}
                 >
                     <InputTextField<FormFieldsCommand>
-                        value={c => c.textInput}
-                        title="Standard Text"
-                        placeholder="Type here..."
+                        value={(c) => c.textInput}
+                        title='Standard Text'
+                        placeholder='Type here...'
                     />
 
                     <InputTextField<FormFieldsCommand>
-                        value={c => c.emailInput}
-                        title="Email"
-                        type="email"
-                        placeholder="your@email.com"
+                        value={(c) => c.emailInput}
+                        title='Email'
+                        type='email'
+                        placeholder='sample.user@example.invalid'
                     />
 
                     <InputTextField<FormFieldsCommand>
-                        value={c => c.passwordInput}
-                        title="Password"
-                        type="password"
-                        placeholder="••••••••"
+                        value={(c) => c.passwordInput}
+                        title='Password'
+                        type='password'
+                        placeholder='••••••••'
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const NumberFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>NumberField</h2>
-                <p>PrimeReact InputNumber component with spinners and constraints.</p>
+                <p>Cratis number input with native constraints.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ numberInput: 42 }}
                 >
                     <NumberField<FormFieldsCommand>
-                        value={c => c.numberInput}
-                        title="Quantity"
-                        placeholder="Enter a number"
+                        value={(c) => c.numberInput}
+                        title='Quantity'
+                        placeholder='Enter a number'
                         min={0}
                         max={100}
                         step={1}
@@ -483,71 +543,71 @@ export const NumberFieldExample: Story = {
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const TextAreaFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>TextAreaField</h2>
-                <p>PrimeReact InputTextarea for multi-line text input.</p>
+                <p>Cratis textarea for multi-line text input.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ textArea: '' }}
                 >
                     <TextAreaField<FormFieldsCommand>
-                        value={c => c.textArea}
-                        title="Description"
-                        placeholder="Enter a detailed description..."
+                        value={(c) => c.textArea}
+                        title='Description'
+                        placeholder='Enter a detailed description...'
                         rows={6}
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const DropdownFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>DropdownField</h2>
-                <p>PrimeReact Dropdown for selecting from a list of options.</p>
+                <p>Cratis Dropdown for selecting from a list of options.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ dropdown: '' }}
                 >
                     <DropdownField<FormFieldsCommand>
-                        value={c => c.dropdown}
-                        title="Select Option"
-                        placeholder="Choose..."
+                        value={(c) => c.dropdown}
+                        title='Select Option'
+                        placeholder='Choose...'
                         options={dropdownOptions}
-                        optionValue="id"
-                        optionLabel="name"
+                        optionValue='id'
+                        optionLabel='name'
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const SliderFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>SliderField</h2>
-                <p>PrimeReact Slider for selecting numeric values visually.</p>
+                <p>Cratis Slider for selecting numeric values visually.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ slider: 75 }}
                 >
                     <SliderField<FormFieldsCommand>
-                        value={c => c.slider}
-                        title="Volume"
+                        value={(c) => c.slider}
+                        title='Volume'
                         min={0}
                         max={100}
                         step={5}
@@ -555,159 +615,164 @@ export const SliderFieldExample: Story = {
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const CheckboxFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>CheckboxField</h2>
-                <p>PrimeReact Checkbox for boolean values.</p>
+                <p>Cratis Checkbox for boolean values.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ checkbox: false }}
                 >
                     <CheckboxField<FormFieldsCommand>
-                        value={c => c.checkbox}
-                        label="Enable notifications"
+                        value={(c) => c.checkbox}
+                        label='Enable notifications'
                     />
 
                     <CheckboxField<FormFieldsCommand>
-                        value={c => c.checkbox}
-                        label="I have read and agree to the terms"
+                        value={(c) => c.checkbox}
+                        label='I have read and agree to the terms'
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const CalendarFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>CalendarField</h2>
-                <p>PrimeReact Calendar for selecting date values.</p>
+                <p>Cratis internationalized date picker for selecting date values.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ calendarDate: null }}
                 >
                     <CalendarField<FormFieldsCommand>
-                        value={c => c.calendarDate}
-                        title="Start Date"
-                        placeholder="Pick a date"
+                        value={(c) => c.calendarDate}
+                        title='Start Date'
+                        placeholder='Pick a date'
                         showIcon
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const ColorPickerFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>ColorPickerField</h2>
-                <p>PrimeReact ColorPicker for selecting hex colors.</p>
+                <p>Cratis ColorPicker for selecting hex colors.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ color: '0ea5e9' }}
                 >
                     <ColorPickerField<FormFieldsCommand>
-                        value={c => c.color}
-                        title="Brand Color"
+                        value={(c) => c.color}
+                        title='Brand Color'
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const MultiSelectFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>MultiSelectField</h2>
-                <p>PrimeReact MultiSelect for selecting multiple options from a list.</p>
+                <p>Cratis filterable multi-select for selecting several options.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ multiSelect: ['feature2'] }}
                 >
                     <MultiSelectField<FormFieldsCommand>
-                        value={c => c.multiSelect}
-                        title="Features"
-                        placeholder="Select features"
+                        value={(c) => c.multiSelect}
+                        title='Features'
+                        placeholder='Select features'
                         options={multiSelectOptions}
-                        optionValue="id"
-                        optionLabel="name"
-                        display="chip"
+                        optionValue='id'
+                        optionLabel='name'
                         filter
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const ChipsFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>ChipsField</h2>
-                <p>PrimeReact Chips for entering and managing multiple text values.</p>
+                <p>Cratis Chips field for entering and managing multiple text values.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ chips: ['urgent'] }}
                 >
                     <ChipsField<FormFieldsCommand>
-                        value={c => c.chips}
-                        title="Tags"
-                        placeholder="Type a tag and press Enter"
+                        value={(c) => c.chips}
+                        title='Tags'
+                        placeholder='Type a tag and press Enter'
                         addOnBlur
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const RadioButtonFieldExample: Story = {
     render: () => {
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>RadioButtonField</h2>
-                <p>PrimeReact RadioButton for selecting a single value. Multiple RadioButtonFields bound to the same property form a radio group.</p>
+                <p>
+                    Cratis native radio options form one keyboard-navigable group when
+                    they share a name.
+                </p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ radioButton: 'apple' }}
                 >
                     <RadioButtonField<FormFieldsCommand>
-                        value={c => c.radioButton}
-                        buttonValue="apple"
-                        label="Apple"
+                        name='fruit'
+                        value={(c) => c.radioButton}
+                        buttonValue='apple'
+                        label='Apple'
                     />
                     <RadioButtonField<FormFieldsCommand>
-                        value={c => c.radioButton}
-                        buttonValue="banana"
-                        label="Banana"
+                        name='fruit'
+                        value={(c) => c.radioButton}
+                        buttonValue='banana'
+                        label='Banana'
                     />
                     <RadioButtonField<FormFieldsCommand>
-                        value={c => c.radioButton}
-                        buttonValue="cherry"
-                        label="Cherry"
+                        name='fruit'
+                        value={(c) => c.radioButton}
+                        buttonValue='cherry'
+                        label='Cherry'
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };
 
 export const RadioGroupFieldExample: Story = {
@@ -720,34 +785,34 @@ export const RadioGroupFieldExample: Story = {
         ];
 
         return (
-            <StoryContainer size="sm" asCard>
+            <StoryContainer size='sm' asCard>
                 <h2>RadioGroupField</h2>
-                <p>PrimeReact RadioButton group rendered from an options array.</p>
+                <p>Cratis native radio group rendered from an options array.</p>
 
                 <CommandForm<FormFieldsCommand>
                     command={FormFieldsCommand}
                     initialValues={{ radioGroup: 'medium' }}
                 >
                     <RadioGroupField<FormFieldsCommand>
-                        value={c => c.radioGroup}
-                        title="T-Shirt Size"
-                        description="Select your preferred size"
+                        value={(c) => c.radioGroup}
+                        title='T-Shirt Size'
+                        description='Select your preferred size'
                         options={options}
-                        optionValue="id"
-                        optionLabel="name"
+                        optionValue='id'
+                        optionLabel='name'
                     />
 
                     <RadioGroupField<FormFieldsCommand>
-                        value={c => c.radioGroup}
-                        title="T-Shirt Size (Horizontal)"
-                        description="Same options laid out horizontally"
+                        value={(c) => c.radioGroup}
+                        title='T-Shirt Size (Horizontal)'
+                        description='Same options laid out horizontally'
                         options={options}
-                        optionValue="id"
-                        optionLabel="name"
-                        layout="horizontal"
+                        optionValue='id'
+                        optionLabel='name'
+                        layout='horizontal'
                     />
                 </CommandForm>
             </StoryContainer>
         );
-    }
+    },
 };

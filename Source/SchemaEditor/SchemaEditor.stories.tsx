@@ -3,11 +3,16 @@
 
 import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { fn } from 'storybook/test';
 import { SchemaEditor } from './SchemaEditor';
-import { JsonSchema } from '../types/JsonSchema';
+import type { JsonSchema } from '../types/JsonSchema';
+
+const onSchemaChange = fn();
+const onSave = fn();
+const onCancel = fn();
 
 const meta: Meta<typeof SchemaEditor> = {
-    title: 'Components/SchemaEditor',
+    title: 'SchemaEditor/SchemaEditor',
     component: SchemaEditor,
     tags: ['autodocs'],
     parameters: {
@@ -96,10 +101,10 @@ export const Interactive: Story = {
                     canEdit={true}
                     onChange={(newSchema) => {
                         setSchema(newSchema);
-                        console.log('Schema changed:', newSchema);
+                        onSchemaChange(newSchema);
                     }}
-                    onSave={() => console.log('Save clicked', schema)}
-                    onCancel={() => console.log('Cancel clicked')}
+                    onSave={() => onSave(schema)}
+                    onCancel={onCancel}
                 />
             </div>
         );
@@ -111,9 +116,9 @@ export const ViewMode: Story = {
         schema: sampleSchema,
         eventTypeName: 'User',
         canEdit: true,
-        onChange: () => console.log('Schema changed'),
-        onSave: () => console.log('Save clicked'),
-        onCancel: () => console.log('Cancel clicked'),
+        onChange: onSchemaChange,
+        onSave,
+        onCancel,
     },
 };
 
@@ -123,9 +128,36 @@ export const EditMode: Story = {
         eventTypeName: 'User',
         canEdit: true,
         editMode: true,
-        onChange: () => console.log('Schema changed'),
-        onSave: () => console.log('Save clicked'),
-        onCancel: () => console.log('Cancel clicked'),
+        onChange: onSchemaChange,
+        onSave,
+        onCancel,
+    },
+};
+
+export const LocalizedLabels: Story = {
+    args: {
+        schema: sampleSchema,
+        eventTypeName: 'Bruker',
+        canEdit: true,
+        editMode: true,
+        onChange: onSchemaChange,
+        onSave,
+        onCancel,
+        labels: {
+            edit: 'Rediger',
+            save: 'Lagre',
+            cancel: 'Avbryt',
+            addProperty: 'Legg til egenskap',
+            actions: 'Handlinger',
+            navigateBack: 'Naviger tilbake',
+            emptyMessage: 'Ingen egenskaper',
+            navigateToItemDefinition: 'Åpne elementdefinisjon',
+            navigateToProperties: 'Åpne egenskaper',
+            propertyName: 'Egenskapsnavn',
+            propertyType: 'Egenskapstype',
+            arrayItemType: 'Elementtype',
+            deleteProperty: 'Slett egenskap',
+        },
     },
 };
 
@@ -135,7 +167,7 @@ export const ReadOnly: Story = {
         eventTypeName: 'User',
         canEdit: false,
         canNotEditReason: 'Schema is locked for editing',
-        onChange: () => console.log('Schema changed'),
+        onChange: onSchemaChange,
     },
 };
 
@@ -150,9 +182,9 @@ export const EmptySchema: Story = {
         eventTypeName: 'NewType',
         canEdit: true,
         editMode: true,
-        onChange: () => console.log('Schema changed'),
-        onSave: () => console.log('Save clicked'),
-        onCancel: () => console.log('Cancel clicked'),
+        onChange: onSchemaChange,
+        onSave,
+        onCancel,
     },
 };
 
@@ -179,6 +211,6 @@ export const SimpleSchema: Story = {
         schema: simpleSchema,
         eventTypeName: 'SimpleType',
         canEdit: true,
-        onChange: () => console.log('Schema changed'),
+        onChange: onSchemaChange,
     },
 };

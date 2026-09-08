@@ -1,6 +1,6 @@
 # InputTextField
 
-`InputTextField` wraps the PrimeReact `InputText` component for single-line text input. It supports all standard HTML input types.
+`InputTextField` renders a Cratis-owned native single-line input. It supports all standard HTML input types.
 
 ## Usage
 
@@ -27,5 +27,5 @@ import { InputTextField } from '@cratis/components/CommandForm';
 
 - Default value is an empty string.
 - The field spans full width within its container.
-- Validation state is reflected via the PrimeReact `invalid` flag.
+- Validation state is reflected through `aria-invalid` and `data-invalid`.
 

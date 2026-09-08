@@ -13,7 +13,7 @@ sidebar:
 
 ```tsx
 import { StepperCommandDialog } from '@cratis/components/CommandDialog';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from '@cratis/components/CommandDialog';
 import { InputTextField, DropdownField } from '@cratis/components/CommandForm';
 import { RegisterMember } from './RegisterMember';   // generated proxy
 

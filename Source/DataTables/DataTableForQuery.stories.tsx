@@ -4,9 +4,10 @@
 import React, { useState } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { DataTableForQuery } from './DataTableForQuery';
-import { Column } from 'primereact/column';
+import { Column } from './Column';
+import { Tag } from '../Display/Tag';
 import { QueryFor, QueryResult } from '@cratis/arc/queries';
-import { DataTableSelectionSingleChangeEvent } from 'primereact/datatable';
+import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 
 const meta: Meta<typeof DataTableForQuery> = {
     title: 'DataTables/DataTableForQuery',
@@ -62,17 +63,57 @@ class ProductsQuery extends QueryFor<Product, object> {
     }
 }
 
+const manyProducts: Product[] = Array.from({ length: 24 }, (_, index) => ({
+    id: index + 1,
+    name: `Product ${index + 1}`,
+    category: ['Electronics', 'Office', 'Accessories'][index % 3],
+    price: 9.99 + index,
+    inStock: index % 4 !== 0,
+}));
+
+// Mock query with more records than fit on a page, so the table has to divide a
+// fixed height between a scrolling row region and the paginator below it.
+class ManyProductsQuery extends QueryFor<Product, object> {
+    readonly route = '/api/many-products';
+    readonly defaultValue: Product = [] as unknown as Product;
+    readonly parameterDescriptors = [];
+    get requiredRequestParameters() {
+        return [];
+    }
+    constructor() {
+        super(Object, true);
+    }
+    override perform(): Promise<QueryResult<Product>> {
+        const page = this.paging?.page ?? 0;
+        const size = this.paging?.pageSize ?? 20;
+        const first = page * size;
+
+        return Promise.resolve({
+            data: manyProducts.slice(first, first + size),
+            paging: { totalItems: manyProducts.length, totalPages: Math.ceil(manyProducts.length / size), page, size },
+            isSuccess: true,
+            isAuthorized: true,
+            isValid: true,
+            hasExceptions: false,
+            validationResults: [],
+            exceptionMessages: [],
+            exceptionStackTrace: '',
+        } as unknown as QueryResult<Product>);
+    }
+}
+
 export const Default: Story = {
     render: () => (
-        <div className="p-4">
+        <div className="cratis:p-4">
             <DataTableForQuery<ProductsQuery, Product, object>
                 query={ProductsQuery}
                 emptyMessage="No products found"
                 dataKey="id"
+                globalFilterFields={['name', 'category']}
             >
                 <Column field="id" header="ID" sortable style={{ width: '10%' }} />
-                <Column field="name" header="Product Name" sortable style={{ width: '30%' }} />
-                <Column field="category" header="Category" sortable style={{ width: '20%' }} />
+                <Column field="name" header="Product Name" sortable filter filterPlaceholder="Filter by name" style={{ width: '30%' }} />
+                <Column field="category" header="Category" sortable filter filterPlaceholder="Filter by category" style={{ width: '20%' }} />
                 <Column 
                     field="price" 
                     header="Price" 
@@ -86,12 +127,43 @@ export const Default: Story = {
                     sortable 
                     style={{ width: '20%' }}
                     body={(rowData: Product) => (
-                        <span className={rowData.inStock ? 'text-green-600' : 'text-red-600'}>
-                            {rowData.inStock ? 'Yes' : 'No'}
-                        </span>
+                        <Tag
+                            severity={rowData.inStock ? 'success' : 'danger'}
+                            value={rowData.inStock ? 'In stock' : 'Out of stock'}
+                        />
                     )}
                 />
             </DataTableForQuery>
+        </div>
+    )
+};
+
+/**
+ * The table's own `height: 100%` only means something inside a container that
+ * has a height. Here it gets 560px and 24 records at a page size of 20, so the
+ * rows scroll while the paginator stays pinned to the bottom edge.
+ */
+export const InBoundedHeight: Story = {
+    render: () => (
+        <div className="cratis:p-4">
+            <div style={{ height: '560px' }}>
+                <DataTableForQuery<ManyProductsQuery, Product, object>
+                    query={ManyProductsQuery}
+                    emptyMessage="No products found"
+                    dataKey="id"
+                >
+                    <Column field="id" header="ID" sortable style={{ width: '10%' }} />
+                    <Column field="name" header="Product Name" sortable style={{ width: '40%' }} />
+                    <Column field="category" header="Category" sortable style={{ width: '25%' }} />
+                    <Column
+                        field="price"
+                        header="Price"
+                        sortable
+                        style={{ width: '25%' }}
+                        body={(rowData: Product) => `$${rowData.price.toFixed(2)}`}
+                    />
+                </DataTableForQuery>
+            </div>
         </div>
     )
 };
@@ -101,13 +173,13 @@ export const WithSelection: Story = {
         const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
 
         return (
-            <div className="p-4">
+            <div className="cratis:p-4">
                 <DataTableForQuery<ProductsQuery, Product, object>
                     query={ProductsQuery}
                     emptyMessage="No products found"
                     dataKey="id"
                     selection={selectedProduct}
-                    onSelectionChange={(e: DataTableSelectionSingleChangeEvent<Product[]>) => setSelectedProduct(e.value as Product)}
+                    onSelectionChange={(e: DataTableSelectionChangeEvent<Product>) => setSelectedProduct(e.value ?? undefined)}
                 >
                     <Column selectionMode="single" headerStyle={{ width: '3rem' }} />
                     <Column field="id" header="ID" sortable style={{ width: '10%' }} />
@@ -123,8 +195,8 @@ export const WithSelection: Story = {
                 </DataTableForQuery>
                 
                 {selectedProduct && (
-                    <div className="mt-4 p-4 border rounded">
-                        <h3 className="font-bold mb-2">Selected Product:</h3>
+                    <div className="cratis:mt-4 cratis:p-4 cratis:border cratis:rounded">
+                        <h3 className="cratis:font-bold cratis:mb-2">Selected Product:</h3>
                         <p><strong>Name:</strong> {selectedProduct.name}</p>
                         <p><strong>Category:</strong> {selectedProduct.category}</p>
                         <p><strong>Price:</strong> ${selectedProduct.price.toFixed(2)}</p>

@@ -2,8 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { BusyIndicatorDialogRequest } from '@cratis/arc.react/dialogs';
-import { ProgressSpinner } from 'primereact/progressspinner';
+import { ProgressSpinner } from '../Display/ProgressSpinner';
 import { Dialog } from './Dialog';
+import { DialogInitialFocus } from './DialogInitialFocus';
 
 /**
  * Modal "busy" dialog used by the `@cratis/arc.react` dialog host whenever a
@@ -32,7 +33,7 @@ import { Dialog } from './Dialog';
  *         }
  *     };
  *
- *     return <Button label="Save" onClick={onSave} />;
+ *     return <Button onClick={onSave}>Save</Button>;
  * };
  * ```
  *
@@ -43,12 +44,15 @@ import { Dialog } from './Dialog';
  *
  * - **No interactive buttons.** A busy indicator is a wait-state, not a
  *   confirmation prompt. The dialog has no Ok / Cancel / X — only the host
- *   can dismiss it.
+ *   can dismiss it. Because there is nothing focusable inside it, initial
+ *   focus is put on the dialog's own title, so a keyboard or screen-reader
+ *   user is told what is happening instead of being left on `document.body`
+ *   behind the modal mask.
  * - **No per-instance pass-through.** The request type
  *   ({@link BusyIndicatorDialogRequest}) is owned by `@cratis/arc.react`, so
- *   `pt` / `unstyled` are not exposed on a per-call basis. Restyle the
- *   busy dialog (and every dialog) via the global `pt` preset on
- *   `CratisComponentsProvider`.
+ *   `pt` / `unstyled` are not exposed on a per-call basis. Restyle this
+ *   surface through `.cratis-busy-indicator-dialog` together with the stable
+ *   Dialog `data-cratis-part` values and semantic tokens.
  *
  * @param props - The request from the dialog host, containing `title` and `message`.
  */
@@ -59,12 +63,14 @@ export const BusyIndicatorDialog = (props: BusyIndicatorDialogRequest) => {
             visible={true}
             onCancel={() => undefined}
             buttons={null}
+            initialFocus={DialogInitialFocus.Content}
+            className='cratis-busy-indicator-dialog'
         >
-            <div className="flex flex-col items-center justify-center gap-4 py-4">
-                <ProgressSpinner />
-                <p className="m-0 text-center">
-                    {props.message}
-                </p>
+            <div className='cratis:flex cratis:flex-col cratis:items-center cratis:justify-center cratis:gap-4 cratis:py-4'>
+                {/* The spinner's role="progressbar" needs an accessible name; use the
+                    consumer-supplied message/title (already localized), never a baked-in string. */}
+                <ProgressSpinner aria-label={props.message || props.title || 'Loading'} />
+                <p className='cratis:m-0 cratis:text-center'>{props.message}</p>
             </div>
         </Dialog>
     );

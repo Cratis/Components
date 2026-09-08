@@ -9,7 +9,10 @@ describe('when IconDisplay is given a string icon with an extra className and re
     let html: string;
 
     beforeEach(() => {
-        const element = React.createElement(IconDisplay, { icon: 'pi pi-home', className: 'text-lg' });
+        const element = React.createElement(IconDisplay, {
+            icon: 'product-icons product-home',
+            className: 'text-lg',
+        });
         html = renderToStaticMarkup(element);
     });
 
@@ -18,7 +21,7 @@ describe('when IconDisplay is given a string icon with an extra className and re
     });
 
     it('should_include_the_icon_class', () => {
-        html.should.include('pi pi-home');
+        html.should.include('product-icons product-home');
     });
 
     it('should_include_the_extra_class', () => {

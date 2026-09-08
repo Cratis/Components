@@ -5,26 +5,27 @@ import type { StorybookConfig } from '@storybook/react-vite';
 import type { UserConfig as ViteConfig } from 'vite';
 
 const config: StorybookConfig = {
-  stories: [
-    '../**/*.stories.@(ts|tsx)',
-    '!../node_modules/**',
-    '!../dist/**',
-    '!../storybook-static/**'
-  ],
-  addons: [],
-  framework: {
-    name: '@storybook/react-vite',
-    options: {}
-  },
-  core: { builder: '@storybook/builder-vite' },
-  staticDirs: ['../public'],
-  // Ensure Vite dev server does not open the browser when Storybook starts
-  async viteFinal(existingConfig: ViteConfig) {
-    const cfg: ViteConfig = { ...existingConfig };
-    cfg.server = { ...(cfg.server || {}), open: false } as unknown;
-    cfg.build = { ...(cfg.build || {}), cssMinify: false };
-    return cfg;
-  }
+    stories: ['../!(dist|node_modules|storybook-static)/**/*.stories.@(ts|tsx)'],
+    addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-vitest'],
+    framework: {
+        name: '@storybook/react-vite',
+        options: {},
+    },
+    core: { builder: '@storybook/builder-vite' },
+    staticDirs: ['../public'],
+    // Ensure Vite dev server does not open the browser when Storybook starts
+    viteFinal(existingConfig: ViteConfig) {
+        const config: ViteConfig = { ...existingConfig };
+        config.server = { ...(config.server || {}), open: false };
+        config.build = {
+            ...(config.build || {}),
+            cssMinify: false,
+            // The preview index includes Storybook's manager runtime and every story entry;
+            // it is documentation output rather than a consumer package chunk.
+            chunkSizeWarningLimit: 1200,
+        };
+        return config;
+    },
 };
 
 export default config;

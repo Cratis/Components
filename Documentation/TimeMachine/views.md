@@ -23,6 +23,18 @@ Properties are shown in a table format:
 | status   | active |
 | category | Electronics |
 
+The table itself is rendered by the exported `Properties` component
+(`@cratis/components/TimeMachine`) — a public, composable key-value property
+table also used internally by `EventsView` to display event content. Import it
+directly to render the same property table outside of `ReadModelView`/`EventsView`,
+e.g. inside a custom detail panel:
+
+```tsx
+import { Properties } from '@cratis/components/TimeMachine';
+
+<Properties data={someEntitySnapshot} align='left' />;
+```
+
 ### Change Highlighting
 
 When hovering over a timeline point or transitioning between versions, changed properties are highlighted:

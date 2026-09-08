@@ -13,7 +13,7 @@ Documentation code examples are **copied verbatim** by evaluators. A snippet tha
 
 For each framework type, attribute, method, prop, hook, or import in an example, confirm it exists and has that exact shape in **source**, not in another doc page (the docs themselves had the bugs):
 
-- **C# / backend** — grep real usage in a reference application (e.g. Cratis **Studio**) and the product `Source/` trees of the Cratis repos checked out alongside this one (`Arc/Source`, `Chronicle/Source`). For extension methods, find the `public static … (this <Type> …)` signature and note **which type it extends**.
+- **C# / backend** — grep real usage in a representative application and the `Source/` trees of the relevant Cratis framework repos checked out alongside it (for example, `Arc/Source` and `Chronicle/Source`). For extension methods, find the `public static … (this <Type> …)` signature and note **which type it extends**.
 - **React / Components** — the authoritative prop names are in the compiled type defs of the installed package (`node_modules/@cratis/components/dist/esm/**/*.d.ts`) or the `Components` source `dist`. Real usage: a reference app's `*.tsx`.
 - **Invented *domain* names are fine** (event/concept/command names like `AuthorRegistered`, `BookId`). Only **framework APIs** must be real. Never invent a framework interface, attribute, prop, method, or import path.
 

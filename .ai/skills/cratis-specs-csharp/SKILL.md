@@ -116,7 +116,7 @@ namespace MyApp.Authors.for_AuthorService.when_registering;
 
 public class and_name_is_valid : given.an_author_service
 {
-    void Because() => _service.Register(new AuthorName("John"));
+    void Because() => _service.Register(new AuthorName("Sample Author"));
 
     [Fact] void should_append_event() =>
         _eventLog.Received(1).Append(Arg.Any<AuthorId>(), Arg.Any<AuthorRegistered>());
@@ -142,11 +142,11 @@ public class and_all_information_is_valid : Specification
     readonly AuthorId _id = AuthorId.New();
     CommandResult _result;
 
-    async Task Because() => _result = await _scenario.Execute(new RegisterAuthor(_id, new AuthorName("Jane Austen")));
+    async Task Because() => _result = await _scenario.Execute(new RegisterAuthor(_id, new AuthorName("Sample Author")));
 
     [Fact] void should_succeed() => _result.ShouldBeSuccessful();
     [Fact] async Task should_have_appended_registered_event() =>
-        await _scenario.ShouldHaveAppendedEvent<RegisterAuthor, AuthorRegistered>(_id, e => e.Name == "Jane Austen");
+        await _scenario.ShouldHaveAppendedEvent<RegisterAuthor, AuthorRegistered>(_id, e => e.Name == "Sample Author");
 }
 #endif
 ```
@@ -173,7 +173,7 @@ public class and_there_are_no_authors(context context) : Given<context>(context)
         async Task Because() =>
             Result = await Client.ExecuteCommand<RegisterAuthor, AuthorId>(
                 "/api/authors/register",
-                new RegisterAuthor(new AuthorName("John Doe")));
+                new RegisterAuthor(new AuthorName("Sample Author")));
     }
 
     [Fact] void should_be_successful() => Context.Result!.IsSuccess.ShouldBeTrue();
@@ -182,7 +182,7 @@ public class and_there_are_no_authors(context context) : Given<context>(context)
     [Fact] void should_append_author_registered_event() =>
         Context.ShouldHaveAppendedEvent<AuthorRegistered>(
             EventSequenceNumber.First, Context.Result!.Response,
-            evt => evt.Name.Value.ShouldEqual("John Doe"));
+            evt => evt.Name.Value.ShouldEqual("Sample Author"));
 }
 ```
 

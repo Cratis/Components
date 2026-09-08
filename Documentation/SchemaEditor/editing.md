@@ -1,201 +1,118 @@
 # SchemaEditor - Editing Properties
 
-## Adding Properties
+SchemaEditor is controlled: it emits each structural change through `onChange`, and the host decides when and where to persist the resulting schema. Save and Cancel are workflow actions around that controlled value; they do not perform transport themselves.
 
-Click the "Add Property" button or row to create a new property:
+## Enter edit mode
 
-```typescript
+Use the Edit action in the SchemaEditor toolbar. Set `editMode` to choose the initial mode, or set `canEdit={false}` to prevent editing.
+
+When `canEdit` is false, `canNotEditReason` can explain why the Edit action is unavailable.
+
+## Add a property
+
+Choose **Add Property** while editing. SchemaEditor creates a unique sibling name:
+
+- `newProperty`
+- `newProperty1` when `newProperty` already exists
+- then the next available numeric suffix
+
+The property starts as `{ type: 'string' }`. Rename it and choose its type or format in the table. The generated name is valid immediately; Save is disabled only when a later edit makes a name invalid.
+
+```tsx
 <SchemaEditor
     schema={schema}
-    onChange={(newSchema) => {
-        console.log('Property added:', newSchema);
-        setSchema(newSchema);
-    }}
-/>
-```
-
-New properties default to:
-
-- Name: empty (must be filled)
-- Type: `string`
-- Format: none
-- Required: `false`
-
-## Editing Property Name
-
-Click the name cell to edit:
-
-1. Click the cell
-2. Enter the property name
-3. Press Enter or click outside to save
-4. Press Escape to cancel
-
-Property names must:
-
-- Be unique within the schema
-- Follow JavaScript identifier rules (alphanumeric, underscores)
-- Not be empty
-
-Invalid names show an error indicator.
-
-## Changing Property Type
-
-Use the type dropdown to select:
-
-- `string` - Text values
-- `number` - Numeric values (integers and decimals)
-- `integer` - Whole numbers only
-- `boolean` - True/false values
-- `object` - Nested objects
-- `array` - Lists of items
-- `null` - Null values
-
-```typescript
-// Example schema with various types
-{
-    type: 'object',
-    properties: {
-        name: { type: 'string' },
-        age: { type: 'integer' },
-        price: { type: 'number' },
-        active: { type: 'boolean' },
-        tags: { type: 'array', items: { type: 'string' } },
-        metadata: { type: 'object' }
-    }
-}
-```
-
-## Setting Format
-
-For `string` types, select a format to provide hints about expected value patterns:
-
-### Date and Time Formats
-
-- `date` - Full date (2024-01-15)
-- `time` - Time of day (14:30:00)
-- `date-time` - Combined date and time (2024-01-15T14:30:00Z)
-
-### Identifier Formats
-
-- `uuid` - UUID/GUID strings
-- `uri` - URIs and URLs
-- `email` - Email addresses
-- `hostname` - DNS hostnames
-- `ipv4` / `ipv6` - IP addresses
-
-### Other Formats
-
-- `json-pointer` - JSON pointer references
-- `regex` - Regular expression patterns
-
-```typescript
-{
-    type: 'object',
-    properties: {
-        email: { type: 'string', format: 'email' },
-        website: { type: 'string', format: 'uri' },
-        userId: { type: 'string', format: 'uuid' },
-        birthDate: { type: 'string', format: 'date' }
-    }
-}
-```
-
-## Toggling Required
-
-Click the checkbox in the Required column to mark a property as required or optional.
-
-Required properties:
-
-- Must be present in valid data
-- Are listed in the schema's `required` array
-- Show a checkmark in the table
-
-```typescript
-{
-    type: 'object',
-    properties: {
-        name: { type: 'string' },
-        email: { type: 'string' }
-    },
-    required: ['name', 'email']  // Both are required
-}
-```
-
-## Removing Properties
-
-Click the delete button (trash icon) on any row to remove that property.
-
-A confirmation may appear for:
-
-- Properties marked as required
-- Properties with nested schemas
-- Properties used in dependencies
-
-## Inline Validation
-
-The editor validates input as you type:
-
-- **Name conflicts**: Red highlight if name already exists
-- **Invalid characters**: Warning for non-identifier characters
-- **Empty names**: Error indicator
-- **Type mismatches**: Format options only for compatible types
-
-## Keyboard Shortcuts
-
-- `Enter` - Save current cell edit
-- `Escape` - Cancel current cell edit
-- `Tab` - Move to next cell
-- `Shift+Tab` - Move to previous cell
-- `Delete` (on row) - Remove property
-
-## Undo/Redo
-
-(If implemented) Use undo/redo to revert changes:
-
-```typescript
-const [schema, setSchema] = useState(initialSchema);
-const [history, setHistory] = useState([initialSchema]);
-const [historyIndex, setHistoryIndex] = useState(0);
-
-const handleUndo = () => {
-    if (historyIndex > 0) {
-        setHistoryIndex(historyIndex - 1);
-        setSchema(history[historyIndex - 1]);
-    }
-};
-
-const handleRedo = () => {
-    if (historyIndex < history.length - 1) {
-        setHistoryIndex(historyIndex + 1);
-        setSchema(history[historyIndex + 1]);
-    }
-};
-```
-
-## Batch Operations
-
-Select multiple properties for batch operations:
-
-- Change type for all selected
-- Mark all as required/optional
-- Delete multiple properties
-- Apply format to all
-
-## Read-Only Mode
-
-Disable editing to display schema structure without allowing changes:
-
-```typescript
-<SchemaEditor
-    schema={schema}
+    editMode
     onChange={setSchema}
-    canEdit={false}
+    onSave={() => persist(schema)}
 />
 ```
 
-In read-only mode:
+## Rename a property
 
-- No add/delete buttons
-- Cells are not editable
-- Displays current schema structure
-- Useful for schema review or documentation
+The Name input updates the controlled schema as you type. Names must be non-empty, unique among siblings, and match the identifier pattern documented in [Validation](validation.md#property-name-validation).
+
+Invalid names receive an accessible invalid state and keep Save disabled. Renaming a required property also updates the matching entry in that object's `required` array.
+
+## Change type and format
+
+The Type control combines JSON types and configured formats. The maintained defaults include:
+
+- `string`, `guid`, `date-time`, `date`, and `time`
+- `integer`, `int16`, `int32`, and `int64`
+- `number`, `float`, and `double`
+- `boolean`
+- container types `object` and `array`
+
+Pass `typeFormats` to replace the maintained leaf type/format list. `object` and `array` remain available as container types.
+
+Changing type intentionally normalizes the supported structure:
+
+- `array` receives string `items` by default.
+- `object` receives empty `properties`.
+- Moving to a leaf removes stale nested `items`, `properties`, and nested required names.
+- Choosing a type without a format removes the previous format.
+
+For arrays, a second control chooses the item type. Object item schemas can be opened and edited through the same nested navigation.
+
+## Navigate nested schemas
+
+Object properties and object-valued array items expose navigation actions. The breadcrumb shows the current path and lets you return to any ancestor.
+
+Each nested object is edited in its own scope. Its `properties` and `required` array are independent of the parent object's arrays.
+
+## Required properties
+
+SchemaEditor does not currently render a Required column or an interactive required/optional toggle. Set required names in the schema before rendering, or transform the controlled schema in host code.
+
+SchemaEditor keeps existing required names consistent while editing:
+
+- Renaming a required property renames its required entry.
+- Deleting a required property removes its required entry.
+- Replacing nested object structure removes stale nested required names.
+
+```typescript
+const schema = {
+    type: 'object',
+    properties: {
+        name: { type: 'string' },
+        address: {
+            type: 'object',
+            properties: {
+                city: { type: 'string' },
+            },
+            required: ['city'],
+        },
+    },
+    required: ['name'],
+};
+```
+
+## Remove a property
+
+Use the row's delete action. Removal is immediate and emits the updated schema through `onChange`; SchemaEditor does not show a confirmation dialog. A removed required property is also removed from the current object's `required` array.
+
+Add confirmation in the host before allowing edit mode, or wrap persistence in the product's own review workflow when removal needs domain-specific approval.
+
+## Save and Cancel
+
+- **Save** invokes `onSave` and leaves edit mode. It is disabled while property-name or schema-shape errors exist.
+- **Cancel** restores the snapshot captured when edit mode began, emits that restored value through `onChange`, invokes `onCancel`, and leaves edit mode.
+- `saveDisabled` and `cancelDisabled` hide the corresponding actions when the host owns those decisions elsewhere.
+
+Because `onChange` is emitted during editing, keep the latest controlled value in state. If persistence is asynchronous, perform it in `onSave` using that state.
+
+## Host-owned history and batch operations
+
+SchemaEditor does not include undo/redo, row selection, or batch operations. A host can store successive `onChange` values to provide history, or transform the schema before passing a replacement value back.
+
+Do not infer batch or history behavior from the underlying table component; SchemaEditor exposes only the actions documented here.
+
+## Read-only use
+
+Set `canEdit={false}` to keep the schema browsable without exposing editing actions:
+
+```tsx
+<SchemaEditor schema={schema} canEdit={false} />
+```
+
+Nested object/array navigation and descriptions remain available for review. Add, delete, type, format, Save, and Cancel actions are unavailable.

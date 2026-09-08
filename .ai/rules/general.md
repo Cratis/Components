@@ -2,14 +2,14 @@
 
 Cratis repositories come in **two profiles**, and the rules are scoped to them. **Identify your profile first** — it decides which rules apply.
 
-- **Application profile (default)** — you are *building an application on Cratis*: event-sourced CQRS with **Cratis Chronicle** + **Cratis Arc**, vertical slices, read models persisted to MongoDB/EF Core, and a React + Cratis Components (PrimeReact) frontend in MVVM. Most of this corpus targets this profile.
-- **Framework profile** — you are *contributing to a Cratis framework repository itself* (Arc, Chronicle, Fundamentals, Components, …). These are **libraries** — source generators, the Chronicle kernel (Orleans grains + storage), client SDKs, a React component library — **not** vertical-slice event-sourced apps. The application-architecture rules here **do not apply**; follow **[framework.md](./framework.md)**.
+- **Application profile (default)** — you are _building an application on Cratis_: event-sourced CQRS with **Cratis Chronicle** + **Cratis Arc**, vertical slices, read models persisted to MongoDB/EF Core, and a React + Cratis Components frontend in MVVM. Most of this corpus targets this profile.
+- **Framework profile** — you are _contributing to a Cratis framework repository itself_ (Arc, Chronicle, Fundamentals, Components, …). These are **libraries** — source generators, the Chronicle kernel (Orleans grains + storage), client SDKs, a React component library — **not** vertical-slice event-sourced apps. The application-architecture rules here **do not apply**; follow **[framework.md](./framework.md)**.
 
-**How to tell:** if the repo's own package is `Cratis.*` / `@cratis/*` and it *builds* the framework, you are in the framework profile. If it *consumes* Cratis to build a product, you are in the application profile.
+**How to tell:** if the repo's own package is `Cratis.*` / `@cratis/*` and it _builds_ the framework, you are in the framework profile. If it _consumes_ Cratis to build a product, you are in the application profile.
 
-Profile-specific rules declare a **`profile:`** in their frontmatter (`application` or `framework`); a rule **without** one is **universal** and applies everywhere — C#/TypeScript style, code quality, specs (`Cratis.Specifications`), documentation, commits/PRs, American English. In this file, everything from **Project Layout** through the **Implementation Workflow** is *application profile* (skip to the Framework profile section if you're contributing to the framework); Philosophy, Authority, Verification, Quality Gates, and the closing sections are universal.
+Profile-specific rules declare a **`profile:`** in their frontmatter (`application` or `framework`); a rule **without** one is **universal** and applies everywhere — C#/TypeScript style, code quality, specs (`Cratis.Specifications`), documentation, commits/PRs, American English. In this file, everything from **Project Layout** through the **Implementation Workflow** is _application profile_ (skip to the Framework profile section if you're contributing to the framework); Philosophy, Authority, Verification, Quality Gates, and the closing sections are universal.
 
-> **Arc is a standalone CQRS framework — not bound to event sourcing.** Even within the application profile, Arc provides model-bound commands/queries, validation, authorization, and full-stack proxy generation, and works **without** Chronicle (Arc.Core does not depend on Chronicle). A `[Command]` `Handle()` does not *have* to append events — it can return a response, return `void`, or work through injected services. The event-sourcing behavior (a returned event gets appended; `EventForEventSourceId`; "never inject `IEventLog`") comes from the **Arc + Chronicle** integration. This application is event-sourced, so the slice guidance assumes event-sourced commands — read the event-centric rules as the *house default for this app*, not universal Arc laws.
+> **Arc is a standalone CQRS framework — not bound to event sourcing.** Even within the application profile, Arc provides model-bound commands/queries, validation, authorization, and full-stack proxy generation, and works **without** Chronicle (Arc.Core does not depend on Chronicle). A `[Command]` `Handle()` does not _have_ to append events — it can return a response, return `void`, or work through injected services. The event-sourcing behavior (a returned event gets appended; `EventForEventSourceId`; "never inject `IEventLog`") comes from the **Arc + Chronicle** integration. This application is event-sourced, so the slice guidance assumes event-sourced commands — read the event-centric rules as the _house default for this app_, not universal Arc laws.
 
 The framework is convention-over-configuration. **Idiomatic Cratis is the goal — not custom abstractions over it.** When something is unclear, prefer the Cratis convention; do not invent. The rules and skills under `.ai/` are the authoritative answer — if your question is not answered there, ask rather than inferring framework behavior from package internals.
 
@@ -40,11 +40,21 @@ Where a rule is convention rather than contract, this file says so. Do not claim
 
 ## Project-Specific Instructions
 
-This corpus is the shared, generic instruction set common to every Cratis repository. Individual projects need extra context that does not belong here — credentials, HTTP headers, environment endpoints, and other local conventions ("Product policy" above).
+This corpus is the shared, generic instruction set common to every Cratis
+repository. Individual projects need extra context that does not belong here,
+such as product composition, approved environment names, directions for
+obtaining credentials, and other local conventions ("Product policy" above).
 
-- Always look for a `.agents/PROJECT.md` file at the repository root. If it exists, read it and treat its contents as additional, project-specific instructions.
-- `.agents/PROJECT.md` lives in the **consuming project** and is never part of this shared corpus — it is the designated home for anything project-local, such as the HTTP headers or credentials needed to talk to that project's APIs.
-- When its guidance conflicts with these shared instructions, the project-specific file wins for that repository.
+- Read `.cratis/PROJECT.md` as the canonical project-specific context when it
+  exists.
+- Read `.agents/PROJECT.md` only as the documented legacy fallback when
+  `.cratis/PROJECT.md` does not exist; never merge both contexts.
+- Project context may explain which approved secret mechanism or local setup to
+  use, but it must never contain credential values, tokens, keys, passwords, or
+  other secrets.
+- Project-specific guidance wins when it deliberately narrows shared behavior,
+  but it may not weaken organization security, authorization, or required
+  quality gates.
 
 ## Collaboration Default
 
@@ -52,9 +62,9 @@ Default to agentic behavior: inspect local rules, skills, code, tests, and gener
 
 ## Verification Discipline
 
-A claim is only as good as the signal behind it — a build result, a test run, a lint pass, observed app behavior — not the model's own confidence. Internal reasoning *plans* the work; external signals *confirm* it.
+A claim is only as good as the signal behind it — a build result, a test run, a lint pass, observed app behavior — not the model's own confidence. Internal reasoning _plans_ the work; external signals _confirm_ it.
 
-- **Confirm "done"/"fixed"/"correct" against a fresh signal — never self-assessment.** Run the relevant gate and observe it pass *this time*.
+- **Confirm "done"/"fixed"/"correct" against a fresh signal — never self-assessment.** Run the relevant gate and observe it pass _this time_.
 - **After a fix, re-run the gate that failed.** Don't argue yourself to green.
 - **A green build is not behavioral correctness.** Compilation proves it builds, not that the slice does the right thing — that's what specs and exercising the UI are for.
 - **Report with inspectable evidence, and name what you didn't verify.**
@@ -89,14 +99,14 @@ The framework discovers commands and read models by attributes and static method
 
 ## Slice Types
 
-Pick exactly one type per slice folder — determined by what the slice *does*.
+Pick exactly one type per slice folder — determined by what the slice _does_.
 
-| Type | What it does | Contents |
-|---|---|---|
-| **State Change** | Accepts a command, appends events | Command + validator + event(s); optional `[Passive]` read model for command-side decisions |
-| **State View** | Projects events into a queryable read model | `[ReadModel]` + model-bound projection + static query method(s) |
-| **Automation** | Reacts to events, calls external systems / `ICommandPipeline` | Reactor only |
-| **Translation** | Reacts to events and appends follow-up events to another stream | Reactor only |
+| Type             | What it does                                                    | Contents                                                                                   |
+| ---------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| **State Change** | Accepts a command, appends events                               | Command + validator + event(s); optional `[Passive]` read model for command-side decisions |
+| **State View**   | Projects events into a queryable read model                     | `[ReadModel]` + model-bound projection + static query method(s)                            |
+| **Automation**   | Reacts to events, calls external systems / `ICommandPipeline`   | Reactor only                                                                               |
+| **Translation**  | Reacts to events and appends follow-up events to another stream | Reactor only                                                                               |
 
 ## Slice Naming (convention)
 
@@ -121,30 +131,34 @@ Tagged **[contract]** (framework-enforced) or **[convention]** (house default). 
 13. **[convention] Cross-slice access is read-only through Chronicle** — inject another slice's read model or reference its events; never instantiate or DI another slice's command/handler/service.
 14. **[contract] Never inject `IEventLog` into `Handle()`** — express appends through return types (`IEnumerable<object>` with `EventForEventSourceId` wrappers for cross-stream). In application reactors, return side-effect events or use `ICommandPipeline`; don't reach for `IEventLog` directly.
 15. **[contract] Never edit a generated file** — proxies carry a `// @generated by Cratis` header. Fix the C# source and rebuild.
-16. **[convention] Use the Cratis dialog wrappers** — never import `Dialog` from `primereact/dialog`; use `CommandDialog` / `Dialog` from `@cratis/components`. The default frontend stack is Cratis Components on PrimeReact theming/tokens/`pt` — **not** Tailwind (Tailwind is one supported unstyled path, not the generic default).
+16. **[convention] Use the Cratis dialog wrappers** — never import `Dialog` from a renderer package; use `CommandDialog` / `Dialog` from `@cratis/components`. The default frontend stack uses Cratis-owned semantic tokens, structural styles, stable parts, and typed `pt`; React Aria remains internal.
 17. **[convention] One slice is one unit** — creating/renaming/moving/deleting a slice means doing the same to every artifact (the `.cs`, every `when_*/`, every `.tsx`, the composition import/JSX, the route).
 
 ## Implementation Workflow
 
 - **Phase 0 — Model the request.** Confirm Module/Feature, Slice name, slice type, domain rules. For new behavior or unclear event vocabulary, run the **event-modeling** skill before writing code.
-- **Phase 1 — Backend.** Write the slice file. **Gate:** build clean Debug *and* Release (Release regenerates the TypeScript proxies; Debug compiles `#if DEBUG` spec code).
+- **Phase 1 — Backend.** Implement a coherent slice change. **Gate:** incrementally build the affected Debug project to regenerate proxies and compile spec code; add Release verification when required for cross-cutting or merge/release gates (see the proxy-generation note below).
 - **Phase 2 — Specs.** Mandatory for every slice type, in-process scenario family first: `CommandScenario<T>` (commands), `EventScenario` (constraints/append), `ReadModelScenario<T>` (projections/reducers), `ReactorScenario<T>` (reactors). Reserve out-of-process integration specs for host/infra/transport boundaries. **Gate:** tests pass.
 - **Phase 3 — Frontend.** Proxies now exist. Build React components from generated proxies, register in the composition page, wire routing. **Gate:** lint, conditional test, and build all clean.
 
-**Backend before frontend, always** — the frontend depends on proxies that only exist after a successful Release build. After creating each new file, build (C#) or compile (TypeScript) before moving on — fix every error as it appears rather than accumulating it.
+**Backend before frontend, always** — the frontend depends on proxies that only exist after a successful Debug build. After a coherent set of changes, incrementally build/compile the affected project and run targeted regression checks before proceeding; do not build after every file.
+
+**Proxy generation runs on Debug, not Release.** `dotnet build -c Debug` is the canonical trigger for regenerating TypeScript proxies — it carries the fullest, most reliably-emitted PDB debug information the proxy generator relies on to place generated files. Generate proxies with a Debug build first; when you (or an agent) subsequently build Release purely to verify the app compiles in that configuration, skip proxy regeneration so the second build can't re-run the generator against a different compilation and touch already-correct generated files: `dotnet build -c Release -p:CratisProxiesOutputPath=`. The empty override clears the output path property the generator's MSBuild target is conditioned on, so the target no-ops for that invocation — no generated file is read or written.
 
 ## Quality Gates
 
-| Phase | Command (app-pinned) | Pass criteria |
-|---|---|---|
-| Backend | build (Debug) | zero errors, zero warnings — validates `#if DEBUG` spec code |
-| Backend | build (Release) | zero errors, zero warnings — regenerates proxies |
-| Specs | test | zero failures |
-| Frontend | lint | zero errors |
-| Frontend | test | zero failures when frontend specs/behavior changed |
-| Frontend | build | zero errors |
+| Phase    | Command (app-pinned) | Pass criteria                                                                                                         |
+| -------- | -------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Backend  | build (Debug)        | zero errors, zero warnings — validates `#if DEBUG` spec code and regenerates proxies                                  |
+| Backend  | build (Release)      | zero errors, zero warnings — build-only check; pass `-p:CratisProxiesOutputPath=` to skip re-running proxy generation |
+| Specs    | test                 | zero failures                                                                                                         |
+| Frontend | lint                 | zero errors                                                                                                           |
+| Frontend | test                 | zero failures when frontend specs/behavior changed                                                                    |
+| Frontend | build                | zero errors                                                                                                           |
 
-All gates pass before merging, opening a PR, or marking a slice complete. After pushing to a PR, monitor CI with the GitHub MCP tools (`pull_request_read` → `get_check_runs`, `get_job_logs`); investigate and fix any failure, then push again — the task is not done until CI is green or the only remaining failures are confirmed pre-existing flakes unrelated to the change.
+Run affected-project incremental checks after a coherent change, then targeted regression tests for the changed behavior. Re-run a failed gate after a relevant fix. Reserve wider matrices and clean/Release builds for cross-cutting changes, demonstrated stale outputs, or required merge/release gates. Documentation/rule-only edits need relevant Markdown, frontmatter, link, and corpus checks, not an application build. Diagnose unrelated or environmental failures within a bounded attempt; report the evidence and blocker instead of broadening scope or retrying indefinitely. Required gates remain blocking until satisfied; never silently waive red CI.
+
+Documentation-only changes use repository-supported non-release intent, ordinarily `no-release`; confirm the workflow contract rather than assuming a label or API state. Run relevant content, link, frontmatter, and corpus checks instead of unrelated application builds, and satisfy every repository-required check, including release-intent checks where supported. Documentation is never a blanket exemption from red CI. See [pull-requests.md](./pull-requests.md).
 
 ---
 
@@ -164,22 +178,23 @@ All gates pass before merging, opening a PR, or marking a slice complete. After 
 
 ## Where to Look
 
-| For | Location |
-|---|---|
-| **Contributing to a Cratis framework repo** (framework profile) | `framework.md` |
-| Slice anatomy (commands, `Provide()`, validators, events, projections, read models, reactors, constraints, compliance, cross-slice) | `vertical-slices.md` |
-| C# / TypeScript style | `csharp.md`, `typescript.md` |
-| React + Arc + Cratis Components + MVVM + dialogs | `react.md`, `components.md`, `dialogs.md` |
-| Frontend engineering quality & testing | `frontend-quality.md`, `frontend-testing.md`, `storybook.md` |
-| Spec patterns — universal `Specification` base (both profiles) | `specs.md`, `specs.csharp.md`, `specs.typescript.md` |
-| Spec patterns — the four `*Scenario` helpers (application only) | `specs.scenarios.csharp.md` |
-| Strongly-typed values (`ConceptAs<T>`, `EventSourceId<T>`) | `concepts.md` |
-| Shared term definitions (event, projection, reducer, reactor, observer, DCB, …) | `glossary.md` |
-| Diagnosing a misbehaving slice (read model stale, proxy missing, quarantine, …) | the **diagnose-slice** skill |
-| EF Core read models / migrations | `efcore.md`, `efcore.specs.md` |
-| PRs / commits | `pull-requests.md`, `git-commits.md` |
-| Event modeling / schema migration / calling commands from code / paging / cross-cutting metadata / multi-tenancy | the matching skills |
-| Step-by-step recipes | `.ai/skills/` |
+| For                                                                                                                                 | Location                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Contributing to a Cratis framework repo** (framework profile)                                                                     | `framework.md`                                               |
+| Slice anatomy (commands, `Provide()`, validators, events, projections, read models, reactors, constraints, compliance, cross-slice) | `vertical-slices.md`                                         |
+| C# / TypeScript style                                                                                                               | `csharp.md`, `typescript.md`                                 |
+| React + Arc + Cratis Components + MVVM + dialogs                                                                                    | `react.md`, `components.md`, `dialogs.md`                    |
+| Frontend engineering quality & testing                                                                                              | `frontend-quality.md`, `frontend-testing.md`, `storybook.md` |
+| Spec patterns — universal `Specification` base (both profiles)                                                                      | `specs.md`, `specs.csharp.md`, `specs.typescript.md`         |
+| Spec patterns — the four `*Scenario` helpers (application only)                                                                     | `specs.scenarios.csharp.md`                                  |
+| Strongly-typed values (`ConceptAs<T>`, `EventSourceId<T>`)                                                                          | `concepts.md`                                                |
+| Shared term definitions (event, projection, reducer, reactor, observer, DCB, …)                                                     | `glossary.md`                                                |
+| Diagnosing a misbehaving slice (read model stale, proxy missing, quarantine, …)                                                     | the **diagnose-slice** skill                                 |
+| Inspecting or operating a **running** Chronicle store (failed partitions, replays, browsing events) with the `cratis` CLI           | the **inspect-running-chronicle** skill                      |
+| EF Core read models / migrations                                                                                                    | `efcore.md`, `efcore.specs.md`                               |
+| PRs / commits                                                                                                                       | `pull-requests.md`, `git-commits.md`                         |
+| Event modeling / schema migration / calling commands from code / paging / cross-cutting metadata / multi-tenancy                    | the matching skills                                          |
+| Step-by-step recipes                                                                                                                | `.ai/skills/`                                                |
 
 ## Source-of-Truth Discipline
 
@@ -200,3 +215,13 @@ All gates pass before merging, opening a PR, or marking a slice complete. After 
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 ```
+
+## Local AI work artifacts — `.ai-work/` only
+
+AI-assisted sessions produce working artifacts: plans, handover documents, session notes, continuation prompts, status boards, scratch analyses, research dumps. These are **work records, not documentation**:
+
+- Create every such artifact inside **`.ai-work/`** at the repository root — never at the repository root itself, never under documentation folders, never anywhere else.
+- `.ai-work/` is gitignored and must stay untracked. Never commit anything inside it, never `git add -f` anything inside it, and never remove the ignore entry.
+- These artifacts must never enter git history or reach GitHub — not on any branch. If you find an unrelated tracked work record, report its path and obtain explicit authorization before moving it into `.ai-work/`, removing it from tracking, or making a dedicated cleanup commit. Discovery alone does not authorize unrelated changes or a commit.
+- A genuine follow-up that must survive the session is **not** a work record — suggest opening a GitHub issue for it (or open one when asked) so future work is tracked where everyone can see it, instead of leaving a planning file behind.
+- Knowledge that must outlive the session belongs in the repository's documentation structure through normal review, not in a work record.

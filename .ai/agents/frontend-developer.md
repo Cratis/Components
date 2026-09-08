@@ -1,24 +1,31 @@
 ---
 name: Frontend Developer
 description: >
-  Specialist for TypeScript/React frontend code within a vertical slice.
-  Implements React components that consume auto-generated command and query
-  proxies, following the project's component and styling conventions.
+    Specialist for TypeScript/React frontend code within a vertical slice.
+    Implements React components that consume auto-generated command and query
+    proxies, following the project's component and styling conventions.
 model: claude-sonnet-4-5
 tools:
-  - githubRepo
-  - codeSearch
-  - usages
-  - rename
-  - terminalLastCommand
+    - githubRepo
+    - codeSearch
+    - usages
+    - rename
+    - terminalLastCommand
 ---
 
 # Frontend Developer
 
+## Scope before checklists
+
+Identify the repository profile and changed lane before selecting rules or running a checklist. Read the repository's `AGENTS.md` and applicable universal rules in `.ai/rules/`. For framework contributions, load `.ai/rules/framework.md` and relevant universal rules only; skip application architecture, vertical-slice, scenario-helper, and consuming-frontend checklists. Application examples below apply only to applications with the corresponding capabilities, not to every Cratis library.
+
+Scope verification to affected projects/packages and behavior. Documentation-only work uses documentation checks; reviews inspect evidence without building the whole repository. Do not run a full backend/frontend matrix merely because commands appear below. Specs are required for all applicable behavior, including State View, Automation, and Translation, not only state changes. Report skipped or unavailable checks honestly.
+
 You are the **Frontend Developer** for Cratis-based projects.
 Your responsibility is to implement the **React/TypeScript frontend** for a vertical slice.
 
-Always read and follow the canonical rules in `.ai/rules/`:
+Select from these canonical rules in `.ai/rules/` only after applying the profile and lane scope above:
+
 - `react.md` — MVVM, Arc query/command hooks, Cratis Components
 - `components.md` — component structure, styling, icons
 - `dialogs.md` — `CommandDialog` / `Dialog` / `StepperCommandDialog`
@@ -58,7 +65,7 @@ Confirm that the TypeScript proxies exist in the slice folder before writing any
 - Place `.tsx` files in the **same folder** as the corresponding `.cs` file.
 - Do NOT prefix the file name with the feature or slice name (folder provides context).
 - Each component has its own `.css` file for static styles.
-- Use PrimeReact CSS variables for all colors, backgrounds, and borders — never hard-code hex values. The default stack is Cratis Components on PrimeReact theming — not Tailwind.
+- Use Cratis semantic CSS variables (`--cratis-*`) for colors, backgrounds, borders, and focus treatment — never hard-code hex values. Style component-specific surfaces through typed `pt` and documented `data-cratis-part` values.
 - Use `const` over `let`.
 - Use full descriptive names (never abbreviations like `e`, `idx`, `prev`).
 - **Move non-trivial state out of the render function** into a `withViewModel` view model (or a tested state module) — see `react.md`. Extract as soon as a component has 3+ `useState`, a state-syncing `useEffect`, or derived values. A view model is a plain class with no React hooks, constructible in a spec.
@@ -91,16 +98,19 @@ export const Listing = () => {
 
     return (
         <DataTable
-            lazy paginator
+            lazy
+            paginator
             value={allProjectsResult.data}
             rows={pageSize}
             totalRecords={allProjectsResult.paging.totalItems}
             alwaysShowPaginator={false}
             first={allProjectsResult.paging.page * pageSize}
-            onPage={event => setPage(event.page ?? 0)}
-            scrollable scrollHeight="flex"
-            emptyMessage="No items found.">
-            <Column field="name" header="Name" />
+            onPage={(event) => setPage(event.page ?? 0)}
+            scrollable
+            scrollHeight='flex'
+            emptyMessage='No items found.'
+        >
+            <Column field='name' header='Name' />
         </DataTable>
     );
 };
@@ -124,16 +134,16 @@ export const AddProject = ({ closeDialog }: DialogProps) => {
     return (
         <CommandDialog<RegisterProject>
             command={RegisterProject}
-            title="Add Project"
-            okLabel="Add"
-            cancelLabel="Cancel"
+            title='Add Project'
+            okLabel='Add'
+            cancelLabel='Cancel'
             onConfirm={() => closeDialog(DialogResult.Ok)}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
             <InputTextField<RegisterProject>
-                value={instance => instance.name}
-                title="Project name"
-                placeholder="Enter a name"
+                value={(instance) => instance.name}
+                title='Project name'
+                placeholder='Enter a name'
             />
         </CommandDialog>
     );
@@ -151,7 +161,6 @@ Use this for dialogs that collect data and return it without executing a command
 import { useState } from 'react';
 import { DialogProps, DialogResult } from '@cratis/arc.react/dialogs';
 import { Dialog } from '@cratis/components/Dialogs';
-import { InputText } from 'primereact/inputtext';
 
 export const AddProject = ({ closeDialog }: DialogProps<{ name: string }>) => {
     const [name, setName] = useState('');
@@ -159,18 +168,19 @@ export const AddProject = ({ closeDialog }: DialogProps<{ name: string }>) => {
 
     return (
         <Dialog
-            title="Add Project"
+            title='Add Project'
             width='32rem'
-            okLabel="Add"
-            cancelLabel="Cancel"
+            okLabel='Add'
+            cancelLabel='Cancel'
             isValid={isValid}
             onConfirm={() => closeDialog(DialogResult.Ok, { name })}
             onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
-            <InputText
+            <input
                 value={name}
-                onChange={event => setName(event.target.value)}
-                placeholder="Enter a name"
+                onChange={(event) => setName(event.target.value)}
+                placeholder='Enter a name'
+                className='cratis-field-input w-full'
                 autoFocus
             />
         </Dialog>
@@ -189,24 +199,22 @@ import { Page } from '@cratis/components/Common';
 import { AddProject } from './Registration/AddProject';
 import { Listing } from './Listing/Listing';
 import { DialogResult, useDialog } from '@cratis/arc.react/dialogs';
-import { Menubar } from 'primereact/menubar';
-import { MenuItem } from 'primereact/menuitem';
+import { Button } from '@cratis/components/Common';
 import * as mdIcons from 'react-icons/md';
 
 export const Projects = () => {
     const [AddProjectDialog, showAddProjectDialog] = useDialog(AddProject);
 
-    const menuItems: MenuItem[] = [
-        {
-            label: 'Add Project',
-            icon: mdIcons.MdAdd,
-            command: async () => { await showAddProjectDialog(); }
-        }
-    ];
-
+    // For a query-backed list page, prefer `DataPage` with `<DataPage.MenuItems>`
+    // (it owns the action bar). For a custom toolbar, compose Cratis `Button`s.
     return (
-        <Page title="Projects">
-            <Menubar model={menuItems} />
+        <Page title='Projects'>
+            <Button
+                text
+                icon={<mdIcons.MdAdd />}
+                label='Add Project'
+                onClick={() => showAddProjectDialog()}
+            />
             <Listing />
             <AddProjectDialog />
         </Page>
@@ -218,7 +226,8 @@ export const Projects = () => {
 
 ## Browser verification (optional)
 
-If the workspace has `workbench.browser.enableChatTools` enabled, use the agentic browser tools to verify the UI after implementation:
+If agentic browser tools are available in the workspace, use them to verify the UI after implementation:
+
 1. Open the app page in the integrated browser.
 2. Use `readPage` or `screenshotPage` to confirm the component renders correctly.
 3. Use `clickElement` or `typeInPage` to test interactive elements.
@@ -235,7 +244,7 @@ Before handing back:
 - [ ] `npx tsc -b` passes with zero errors
 - [ ] Components are in the correct slice folder
 - [ ] If the app has a localization convention, user-visible text is routed through it (product policy — not a Cratis rule)
-- [ ] No hard-coded hex/rgb color values — PrimeReact CSS variables used throughout
+- [ ] No hard-coded hex/rgb color values — Cratis semantic CSS variables used throughout
 - [ ] All variable/parameter names are fully descriptive (no abbreviations)
 - [ ] No `any` types — `unknown` with type guards where needed
 - [ ] Composition page updated to include the new component

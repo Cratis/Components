@@ -1,9 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { StepperPanel } from 'primereact/stepperpanel';
+import { StepperPanel } from './StepperPanel';
 import { CommandStepper } from './CommandStepper';
 import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
@@ -17,7 +17,7 @@ const meta: Meta<typeof CommandStepper> = {
 export default meta;
 type Story = StoryObj<typeof CommandStepper>;
 
-class CreateProjectValidator extends CommandValidator {
+class CreateProjectValidator extends CommandValidator<CreateProjectCommand> {
     constructor() {
         super();
         this.ruleFor((c: CreateProjectCommand) => c.name).notEmpty().minLength(2).maxLength(100);
@@ -112,7 +112,7 @@ export const Default: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}
@@ -166,14 +166,14 @@ export const InDialogFrame: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                            <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
                     </div>
                     <div className="command-stepper-stories-footer">
-                        <button className="p-button p-button-secondary">Cancel</button>
-                        <button className="p-button p-button-primary">Create</button>
+                        <button className="cratis-button" data-variant="outline" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Cancel</button>
+                        <button  className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Create</button>
                     </div>
                 </div>
             </div>
@@ -229,16 +229,68 @@ export const InDialogFrameWithCenteredHeader: Story = {
                             </StepperPanel>
                         </CommandStepper>
                         {result && (
-                            <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                            <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                                 {result}
                             </div>
                         )}
                     </div>
                     <div className="command-stepper-stories-footer">
-                        <button className="p-button p-button-secondary">Cancel</button>
-                        <button className="p-button p-button-primary">Complete</button>
+                        <button className="cratis-button" data-variant="outline" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Cancel</button>
+                        <button  className="cratis-button" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" >Complete</button>
                     </div>
                 </div>
+            </div>
+        );
+    },
+};
+
+export const Vertical: Story = {
+    render: () => {
+        const [result, setResult] = useState('');
+
+        return (
+            <div style={{ width: '700px', padding: '1.5rem' }}>
+                <CommandStepper<CreateProjectCommand>
+                    command={CreateProjectCommand}
+                    autoServerValidate={false}
+                    validateOn="change"
+                    orientation="vertical"
+                    start={<h3 style={{ margin: '0 0 1rem' }}>Create Project</h3>}
+                    onSuccess={async () => setResult('Command submitted successfully')}
+                >
+                    <StepperPanel header="Basic Info">
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.name}
+                            title="Project Name"
+                            placeholder="Enter project name (min 2 chars)"
+                        />
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.email}
+                            title="Contact Email"
+                            placeholder="Enter contact email"
+                            type="email"
+                        />
+                    </StepperPanel>
+                    <StepperPanel header="Details">
+                        <TextAreaField<CreateProjectCommand>
+                            value={c => c.description}
+                            title="Description"
+                            placeholder="Describe the project (min 10 chars)"
+                            rows={4}
+                        />
+                        <NumberField<CreateProjectCommand>
+                            value={c => c.budget}
+                            title="Budget"
+                            placeholder="Enter budget (must be > 0)"
+                        />
+                    </StepperPanel>
+                </CommandStepper>
+
+                {result && (
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                        {result}
+                    </div>
+                )}
             </div>
         );
     },
@@ -289,7 +341,67 @@ export const WithValidationIndicators: Story = {
                 </CommandStepper>
 
                 {result && (
-                    <div className="p-2 mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
+                        {result}
+                    </div>
+                )}
+            </div>
+        );
+    },
+};
+
+/**
+ * A step rendered as `{condition && <StepperPanel/>}` disappears entirely when the condition
+ * is false. Toggle the optional step off and the wizard must behave as a genuine two-step
+ * wizard: Submit shows on "Details" instead of a Next button that leads nowhere.
+ */
+export const ConditionalSteps: Story = {
+    render: () => {
+        const [includeBudgetStep, setIncludeBudgetStep] = useState(false);
+        const [result, setResult] = useState('');
+
+        return (
+            <div style={{ width: '600px', padding: '1.5rem' }}>
+                <button className="cratis-button cratis:mb-3" data-variant="solid" data-tone="neutral" data-severity="secondary" data-shape="default" data-size="normal" onClick={() => setIncludeBudgetStep(current => !current)}>{includeBudgetStep ? 'Hide the optional Budget step' : 'Show the optional Budget step'}</button>
+                <p className="cratis:mb-3 cratis:text-sm text-color-secondary">
+                    The Budget step is currently <strong>{includeBudgetStep ? 'shown' : 'hidden'}</strong>, so the
+                    wizard has {includeBudgetStep ? 'three' : 'two'} steps.
+                </p>
+
+                <CommandStepper<CreateProjectCommand>
+                    command={CreateProjectCommand}
+                    autoServerValidate={false}
+                    validateOn="change"
+                    onSuccess={async () => setResult('Command submitted successfully')}
+                >
+                    <StepperPanel header="Basic Info">
+                        <InputTextField<CreateProjectCommand>
+                            value={c => c.name}
+                            title="Project Name"
+                            placeholder="Enter project name (min 2 chars)"
+                        />
+                    </StepperPanel>
+                    <StepperPanel header="Details">
+                        <TextAreaField<CreateProjectCommand>
+                            value={c => c.description}
+                            title="Description"
+                            placeholder="Describe the project (min 10 chars)"
+                            rows={4}
+                        />
+                    </StepperPanel>
+                    {includeBudgetStep && (
+                        <StepperPanel header="Budget">
+                            <NumberField<CreateProjectCommand>
+                                value={c => c.budget}
+                                title="Budget"
+                                placeholder="Enter budget (must be > 0)"
+                            />
+                        </StepperPanel>
+                    )}
+                </CommandStepper>
+
+                {result && (
+                    <div className="cratis:p-2 cratis:mt-3 border-round surface-100" style={{ border: '1px solid var(--cratis-surface-border)' }}>
                         {result}
                     </div>
                 )}

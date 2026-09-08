@@ -16,9 +16,9 @@ CommandForm offers a complete set of form field components designed to work seam
 
 ## Available Field Components
 
-The CommandForm module exports specialized field components built on [PrimeReact](https://primereact.org/) primitives. Each field wraps a PrimeReact component using `asCommandFormField`, providing automatic value binding, validation state, and integration with Cratis Arc commands.
+The CommandForm module exports Cratis-owned semantic fields built with native controls and documented keyboard, naming, and validation behavior. Each field uses `asCommandFormField` for automatic value binding, validation state, and Arc command integration.
 
-See the field type pages in this section for documentation on each available field component.
+See the field type pages in this section for documentation on each available field component. To generate a form's fields from a command's own properties instead of writing them out by hand, see [AutoCommandForm](auto-command-form.md).
 
 ## Type-Safe Binding
 
@@ -40,11 +40,61 @@ CommandForm fields are used as children of `CommandDialog`:
 
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
-import { InputTextField, NumberField, CheckboxField } from '@cratis/components/CommandForm';
+import {
+    InputTextField,
+    NumberField,
+    CheckboxField,
+} from '@cratis/components/CommandForm';
 
 <CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
-    <InputTextField<MyCommand> value={c => c.title} />
-    <NumberField<MyCommand> value={c => c.quantity} />
-    <CheckboxField<MyCommand> value={c => c.active} label="Active" />
-</CommandDialog>
+    <InputTextField<MyCommand> value={(c) => c.title} title='Title' />
+    <NumberField<MyCommand> value={(c) => c.quantity} title='Quantity' />
+    <CheckboxField<MyCommand> value={(c) => c.active} label='Active' />
+</CommandDialog>;
 ```
+
+## Accessible names and validation errors
+
+Every Components field associates its primary native control or semantic group with Arc's `title` and validation messages:
+
+- `title` becomes the default accessible name while Arc continues rendering the visible field title.
+- Validation messages are referenced through `aria-describedby` and remain visible through Arc's normal error presentation.
+- `id`, `aria-label`, and `aria-describedby` can override or extend the generated values on every field.
+- Component-specific `pt` attributes remain fallback values; named accessibility props take precedence.
+
+Checkboxes and switches prefer their inline `label`; radio options use their option labels while the `RadioGroupField` / `RatingField` group uses `title`.
+
+## Populating Initial Values from a Query
+
+Every field here is built with `asCommandFormField` from `@cratis/arc.react/commands`, so each one automatically supports `CommandForm`'s `populateFromQuery`/`populateFromObservableQuery` props - the form fetches a single-instance query itself and seeds its fields from the result, matched onto the command by property name:
+
+```tsx
+import { CommandForm } from '@cratis/arc.react/commands';
+import { InputTextField } from '@cratis/components/CommandForm';
+import { GetUserProfile } from './queries';
+import { UpdateProfile } from './commands';
+
+<CommandForm
+    command={UpdateProfile}
+    populateFromQuery={GetUserProfile}
+    populateFromQueryArgs={{ userId }}
+>
+    <InputTextField<UpdateProfile> value={(c) => c.firstName} title='First name' />
+    <InputTextField<UpdateProfile> value={(c) => c.lastName} title='Last name' />
+</CommandForm>;
+```
+
+Two field props refine this per field - both work on every field type in this package, since they come from the shared `asCommandFormField` wrapper:
+
+- `noInitialValue` - skip this field entirely, even if the query result has a same-named property.
+- `initialValue` - override how the field's value is derived from the query result, either a property accessor matched by name or a function composing a value from the whole result.
+
+See Arc's [Populating a Form from a Query](https://www.cratis.io/arc/frontend/react/command-form/data-loading/) for the full behavior, including how the populated data becomes the form's change-tracking baseline.
+
+## How a child is recognized as a field
+
+`CommandForm`, `CommandDialog`, and `CommandStepper` inspect each child's component type. A field carries `isCommandFormField: true`; a column carries `isCommandFormColumn: true`. The legacy `displayName` values remain permanent fallbacks so independently versioned Components and Arc packages interoperate in either upgrade order.
+
+Use `asCommandFormField` from `@cratis/arc.react/commands` for custom fields; it stamps the marker automatically. For a hand-rolled field or column, use `markAsCommandFormField` or `markAsCommandFormColumn` from `@cratis/components/CommandForm`.
+
+The marker is a plain shared property rather than a package-private symbol, so a component marked by Arc is recognized by Components and vice versa. Build transforms may rewrite `displayName` without silently breaking binding.

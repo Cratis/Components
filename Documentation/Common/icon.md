@@ -1,66 +1,57 @@
 # Icon
 
-The `Icon` type and `IconDisplay` component provide a unified way to pass icons throughout the component library. Any component that accepts an icon can receive either a PrimeIcons CSS class string or any React node.
+The `Icon` type and `IconDisplay` component let Cratis controls render either a React icon node or a complete consumer-owned icon-font CSS class. Components does not install an icon font, infer a provider, or add provider-specific base classes.
 
-## Icon Type
+Prefer React nodes for portable component-library code:
 
-```ts
-import type { Icon } from '@cratis/components/Common';
+```tsx
+import { FaHouse } from 'react-icons/fa6';
+import { IconDisplay } from '@cratis/components/Common';
 
-// A PrimeIcons (or other icon-font) CSS class string
-const stringIcon: Icon = 'pi pi-home';
-
-// Any React node — SVG component, third-party icon, emoji wrapper, …
-const nodeIcon: Icon = <MyCustomSvgIcon />;
+<IconDisplay icon={<FaHouse aria-hidden='true' />} />
 ```
 
-## IconDisplay Component
+## Icon type
 
-`IconDisplay` renders an `Icon` value:
+```tsx
+import type { Icon } from '@cratis/components/Common';
+import { FaHouse } from 'react-icons/fa6';
 
-- A non-empty **string** is treated as a CSS class and rendered as `<i className={...} />`.
-- Any other value (**React node**) is rendered as-is.
+const reactIcon: Icon = <FaHouse aria-hidden='true' />;
+const productFontIcon: Icon = 'product-icons product-home';
+```
+
+A string is passed to an `<i>` element unchanged apart from trimming whitespace. The consuming product must load the stylesheet and supply every class required by its icon provider.
+
+## IconDisplay
 
 ```tsx
 import { IconDisplay } from '@cratis/components/Common';
 
-// Renders: <i className="pi pi-home text-2xl" />
-<IconDisplay icon='pi pi-home' className='text-2xl' />
-
-// Renders the SVG element directly
-<IconDisplay icon={<MyHomeIcon />} />
+// The product owns the product-icons stylesheet.
+<IconDisplay icon='product-icons product-home' className='text-2xl' />
 ```
-
-### Props
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
-| `icon` | `Icon` | ✅ | The icon to render — a CSS class string or a React node. |
-| `className` | `string` | — | Extra CSS classes added to the `<i>` wrapper when `icon` is a string. Has no effect for React node icons. |
+| `icon` | `Icon` | ✅ | React node or complete consumer-owned CSS class string. |
+| `className` | `string` | — | Extra classes for the `<i>` element used by string icons. It does not wrap React nodes. |
 
-## Using ReactNode Icons in Toolbar Components
+## Toolbar icons
 
-`ToolbarButton` and `ToolbarFanOutItem` both accept `Icon` for their `icon` prop. String-based usage is unchanged:
+`ToolbarButton`, `ToolbarFanOutItem`, and `ToolbarFolder` accept `Icon` directly:
 
 ```tsx
+import { FaArrowPointer, FaPencil, FaShapes, FaVectorSquare } from 'react-icons/fa6';
 import { Toolbar, ToolbarButton, ToolbarFanOutItem } from '@cratis/components/Toolbar';
-import { FaPencil, FaShapes } from 'react-icons/fa6';
 
-function MyToolbar() {
-    return (
-        <Toolbar>
-            {/* String — existing usage unchanged */}
-            <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-
-            {/* ReactNode — third-party icon component */}
-            <ToolbarButton icon={<FaPencil />} title='Draw' />
-
-            {/* ReactNode — fan-out trigger */}
-            <ToolbarFanOutItem icon={<FaShapes />} tooltip='Shapes'>
-                <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-                <ToolbarButton icon='pi pi-circle' title='Circle' />
-            </ToolbarFanOutItem>
-        </Toolbar>
-    );
-}
+<Toolbar>
+    <ToolbarButton icon={<FaArrowPointer />} title='Select' />
+    <ToolbarButton icon={<FaPencil />} title='Draw' />
+    <ToolbarFanOutItem icon={<FaShapes />} tooltip='Shapes'>
+        <ToolbarButton icon={<FaVectorSquare />} title='Rectangle' />
+    </ToolbarFanOutItem>
+</Toolbar>
 ```
+
+Not every API named `icon` has the same shape. For example, `DataPage.MenuItem.icon` is a React component type because the page instantiates it. Follow the type exported by the specific component rather than assuming every icon-bearing API accepts `Icon`.

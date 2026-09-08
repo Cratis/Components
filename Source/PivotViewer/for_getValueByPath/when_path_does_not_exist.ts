@@ -8,7 +8,7 @@ interface TestItem {
 }
 
 describe('when getting a value by a path that does not exist', () => {
-    const item: TestItem = { name: 'Alice' };
+    const item: TestItem = { name: 'Sample User 01' };
     let result: unknown;
 
     beforeEach(() => {

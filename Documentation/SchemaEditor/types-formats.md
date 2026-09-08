@@ -1,317 +1,139 @@
-# SchemaEditor - Types and Formats
+# SchemaEditor - Types and formats
 
-## JSON Schema Types
+SchemaEditor authors a deliberate JSON Schema subset. It is not a complete JSON Schema validator or a general-purpose editor for every vocabulary keyword. The application remains responsible for validating stored data and any richer schema contract.
 
-### String
+## Supported property types
 
-Text data of any length.
+The built-in editor offers six types:
 
-```typescript
-{
-    type: 'string'
-}
+| Type      | Purpose                                       | Nested definition           |
+| --------- | --------------------------------------------- | --------------------------- |
+| `string`  | Text and formatted temporal/identifier values | —                           |
+| `integer` | Whole numeric values                          | —                           |
+| `number`  | Floating-point or decimal values              | —                           |
+| `boolean` | True/false values                             | —                           |
+| `object`  | Named nested properties                       | `properties` and `required` |
+| `array`   | Repeated values                               | `items`                     |
+
+The editor does not offer `null`, boolean schemas, or type unions such as `type: ['string', 'null']`.
+
+## Built-in formats
+
+The default `TypeFormat` catalog is exported as `DEFAULT_TYPE_FORMATS` from `@cratis/components/types` and contains:
+
+| JSON type | Formats                                          |
+| --------- | ------------------------------------------------ |
+| `string`  | unformatted, `guid`, `date-time`, `date`, `time` |
+| `integer` | unformatted, `int16`, `int32`, `int64`           |
+| `number`  | unformatted, `float`, `double`                   |
+| `boolean` | unformatted                                      |
+
+Example:
+
+```ts
+const schema = {
+    type: 'object',
+    properties: {
+        id: { type: 'string', format: 'guid' },
+        occurred: { type: 'string', format: 'date-time' },
+        count: { type: 'integer', format: 'int32' },
+        score: { type: 'number', format: 'double' },
+        active: { type: 'boolean' },
+    },
+};
 ```
 
-**Use for**: Names, descriptions, text fields, IDs
+`guid`, `int16`, `int32`, `int64`, `float`, and `double` are application/framework format conventions rather than standard JSON Schema validation keywords. A validator that consumes the schema must understand the formats it intends to enforce.
 
-**Common formats**:
+## Custom type-format catalogs
 
-- `date`, `time`, `date-time` - Temporal data
-- `email` - Email addresses
-- `uri` - URLs and URIs
-- `uuid` - Unique identifiers
+Pass `typeFormats` to replace the default primitive catalog:
 
-### Number
+```tsx
+import type { TypeFormat } from '@cratis/components/types';
 
-Numeric values, including decimals.
+const typeFormats: TypeFormat[] = [
+    { jsonType: 'string', format: '' },
+    { jsonType: 'string', format: 'email' },
+    { jsonType: 'string', format: 'uri' },
+    { jsonType: 'integer', format: 'int32' },
+    { jsonType: 'boolean', format: '' },
+];
 
-```typescript
-{
-    type: 'number'
-}
+<SchemaEditor schema={schema} typeFormats={typeFormats} onChange={setSchema} />;
 ```
 
-**Use for**: Prices, measurements, percentages, coordinates
+The selected option stores the `jsonType` in `type` and a non-empty format in `format`. `array` and `object` remain available in addition to the custom primitive catalog.
 
-**Validation options**:
+A custom format changes what SchemaEditor can author. It does not register a validator or define runtime semantics automatically.
 
-- `minimum` / `maximum` - Range constraints
-- `multipleOf` - Must be multiple of value
+## Objects
 
-```typescript
-{
-    type: 'number',
-    minimum: 0,
-    maximum: 100,
-    multipleOf: 0.01  // Two decimal places
-}
-```
+Object properties use recursive `properties` definitions and an optional `required` string array:
 
-### Integer
-
-Whole numbers only, no decimals.
-
-```typescript
-{
-    type: 'integer'
-}
-```
-
-**Use for**: Counts, quantities, IDs, ages, years
-
-**Validation options**: Same as `number`
-
-```typescript
-{
-    type: 'integer',
-    minimum: 0,
-    maximum: 150
-}
-```
-
-### Boolean
-
-True or false values.
-
-```typescript
-{
-    type: 'boolean'
-}
-```
-
-**Use for**: Flags, toggles, yes/no questions
-
-### Object
-
-Nested objects with their own properties.
-
-```typescript
+```ts
 {
     type: 'object',
     properties: {
         street: { type: 'string' },
         city: { type: 'string' },
-        zipCode: { type: 'string' }
     },
-    required: ['street', 'city']
+    required: ['street', 'city'],
 }
 ```
 
-**Use for**: Complex structured data, nested entities
+Use the navigation action in the type cell to edit an object's nested properties.
 
-**Additional options**:
+## Arrays
 
-- `properties` - Define nested properties
-- `required` - List of required property names
-- `additionalProperties` - Allow/disallow extra properties
+Arrays use one recursive `items` schema:
 
-### Array
-
-Lists of items, all of the same type.
-
-```typescript
+```ts
 {
     type: 'array',
-    items: { type: 'string' }
+    items: {
+        type: 'object',
+        properties: {
+            name: { type: 'string' },
+        },
+        required: ['name'],
+    },
 }
 ```
 
-**Use for**: Lists, collections, tags, multiple selections
+SchemaEditor does not author tuple arrays, `minItems`, `maxItems`, or `uniqueItems`.
 
-**Validation options**:
+## Unsupported keywords and round trips
 
-- `items` - Schema for array elements
-- `minItems` / `maxItems` - Length constraints
-- `uniqueItems` - Require unique elements
+Schema objects may arrive with keywords outside the supported subset, such as:
 
-```typescript
-{
-    type: 'array',
-    items: { type: 'string', format: 'email' },
-    minItems: 1,
-    maxItems: 5,
-    uniqueItems: true
-}
-```
+- `oneOf`, `anyOf`, `allOf`, and `not`;
+- `enum` and `const`;
+- `minimum`, `maximum`, and `multipleOf`;
+- `minLength`, `maxLength`, and `pattern`;
+- `additionalProperties` and `patternProperties`;
+- `minItems`, `maxItems`, and `uniqueItems`.
 
-### Null
+SchemaEditor does not display or edit these keywords. Its mutation paths clone and spread the existing schema, so unrelated unknown properties are generally preserved while ignored. They are not validated by the editor.
 
-Explicit null values.
+Do not rely on blind preservation as a complete round-trip guarantee. A targeted type change intentionally rewrites structural fields such as `type`, `format`, `items`, or `properties`, and can make richer external constraints inconsistent with the new type. If an application owns a richer schema dialect, validate the result after every edit or maintain the richer contract in a dedicated schema editor.
 
-```typescript
-{
-    type: 'null'
-}
-```
+## Type changes
 
-**Use for**: Optional fields that can be explicitly null
+Changing a type changes the schema definition, not the application's existing data. SchemaEditor does not convert stored values.
 
-Often combined with other types:
+Applications should decide how to migrate data when changing, for example:
 
-```typescript
-{
-    type: ['string', 'null']  // Can be string or null
-}
-```
+- `string` to `number`;
+- `number` to `integer`;
+- primitive to `array` or `object`;
+- `object` or `array` to a primitive.
 
-## String Formats
+Run application/server validation before persisting a changed schema and before applying it to existing values.
 
-### Date and Time
+## Related documentation
 
-#### date
-
-Full date in ISO 8601 format: `YYYY-MM-DD`
-
-```typescript
-{ type: 'string', format: 'date' }
-// Example: "2024-01-15"
-```
-
-#### time
-
-Time of day: `HH:MM:SS` or `HH:MM:SS.sss`
-
-```typescript
-{ type: 'string', format: 'time' }
-// Example: "14:30:00"
-```
-
-#### date-time
-
-Combined date and time with timezone: ISO 8601
-
-```typescript
-{ type: 'string', format: 'date-time' }
-// Example: "2024-01-15T14:30:00Z"
-```
-
-### Identifiers
-
-#### email
-
-Email address format
-
-```typescript
-{ type: 'string', format: 'email' }
-// Example: "user@example.com"
-```
-
-#### uuid
-
-UUID/GUID identifier
-
-```typescript
-{ type: 'string', format: 'uuid' }
-// Example: "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
-```
-
-#### uri
-
-Uniform Resource Identifier
-
-```typescript
-{ type: 'string', format: 'uri' }
-// Example: "https://example.com/path"
-```
-
-#### hostname
-
-DNS hostname
-
-```typescript
-{ type: 'string', format: 'hostname' }
-// Example: "www.example.com"
-```
-
-### Network
-
-#### ipv4
-
-IPv4 address
-
-```typescript
-{ type: 'string', format: 'ipv4' }
-// Example: "192.168.1.1"
-```
-
-#### ipv6
-
-IPv6 address
-
-```typescript
-{ type: 'string', format: 'ipv6' }
-// Example: "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
-```
-
-### Other
-
-#### json-pointer
-
-JSON Pointer reference
-
-```typescript
-{ type: 'string', format: 'json-pointer' }
-// Example: "/path/to/property"
-```
-
-#### regex
-
-Regular expression pattern
-
-```typescript
-{ type: 'string', format: 'regex' }
-// Example: "^[a-zA-Z0-9]+$"
-```
-
-## Format Selection Logic
-
-In SchemaEditor:
-
-1. **Type = string**: All formats available
-2. **Type = number/integer**: No formats (formats are for strings)
-3. **Type = boolean/null**: No formats
-4. **Type = object/array**: No formats (structure defines validation)
-
-## Custom Formats
-
-Extend with custom format validators:
-
-```typescript
-const customFormats = {
-    'phone': /^\+?[1-9]\d{1,14}$/,
-    'postal-code': /^[A-Z0-9]{3,10}$/,
-    'credit-card': /^\d{13,19}$/
-};
-```
-
-Register custom formats with your JSON schema validator library.
-
-## Type Recommendations
-
-| Data | Recommended Type | Format |
-|------|-----------------|--------|
-| Person name | string | - |
-| Email address | string | email |
-| Birth date | string | date |
-| Created timestamp | string | date-time |
-| User ID | string | uuid |
-| Age | integer | - |
-| Price | number | - |
-| Quantity | integer | - |
-| Is active | boolean | - |
-| Tags | array of string | - |
-| Address | object | - |
-| Settings | object | - |
-| Phone number | string | custom: phone |
-
-## Migration Between Types
-
-When changing a property's type in SchemaEditor:
-
-- **string → number**: Existing string values must be numeric
-- **number → integer**: Decimals will be truncated
-- **any → array**: Wraps value in array
-- **any → object**: Creates object with original value
-- **array/object → primitive**: May lose data
-
-Always validate data after type changes.
+- [SchemaEditor overview](index.md)
+- [Editing properties](editing.md)
+- [Validation](validation.md)
+- [Shared JSON and schema types](../Types/index.md)

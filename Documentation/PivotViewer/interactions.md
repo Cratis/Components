@@ -4,7 +4,7 @@
 
 ### Mouse Wheel
 
-Scroll up to zoom in, scroll down to zoom out.
+Hold `Ctrl` (or `Meta` on macOS) while scrolling to zoom around the pointer. An ordinary wheel event keeps its normal scrolling behavior and does not change zoom.
 
 ### Zoom Controls
 
@@ -16,7 +16,7 @@ Use the zoom slider or buttons in the toolbar:
 
 ### Programmatic Zoom
 
-Access zoom controls through component state if needed.
+`PivotViewer` does not expose a controlled zoom prop, zoom callback, or imperative zoom ref. Zoom is interaction state owned by the component and changed through its toolbar, modified-wheel gesture, or touch pinch. A workflow that needs application-controlled zoom requires an application-owned composition rather than relying on internal state.
 
 ## Pan
 
@@ -97,23 +97,19 @@ Toggle between:
 - **Collection View**: Grid of cards grouped by dimension
 - **Detail View**: Focus on selected item with full details
 
-## Keyboard Shortcuts
+## Keyboard behavior
 
-Common shortcuts (if implemented):
-
-- `Esc`: Close detail panel
-- `Arrow keys`: Navigate between cards
-- `+/-`: Zoom in/out
-- `/`: Focus search box
+The toolbar exposes native buttons, a range input, and a select, so their standard browser keyboard behavior applies. When the editable zoom percentage is open, `Enter` applies the typed percentage and `Escape` cancels editing. `PivotViewer` does not install global shortcuts for closing details, navigating cards, zooming with `+` / `-`, or focusing search. Do not advertise those shortcuts unless the host implements, scopes, and tests them.
 
 ## Touch Gestures
 
 On touch devices:
 
-- **Pinch**: Zoom in/out
-- **Swipe**: Pan around collection
-- **Tap**: Select card
-- **Double-tap**: Quick zoom
+- **Two-finger pinch**: Zoom around the gesture midpoint
+- **Drag the background**: Pan around the collection
+- **Tap a card**: Select it
+
+`PivotViewer` does not define a double-tap gesture.
 
 ## Example: Full Interaction Flow
 
@@ -127,17 +123,9 @@ On touch devices:
 8. **Action**: Edit task from detail panel
 9. **Reset**: Clear filters to see all items again
 
-## State Persistence
+## Mounted interaction state
 
-The component remembers:
-
-- Current zoom level
-- Scroll position
-- Active dimension
-- Applied filters
-- Selected item
-
-This provides a consistent experience as users interact with the data.
+While the same viewer instance remains mounted, it keeps the current zoom, scroll position, active dimension, filters, and selection. It does not persist those choices across unmounts, reloads, or browser sessions. If the product needs durable or route-addressable state, treat that as an application-owned composition requirement; the component does not expose a durable persistence contract.
 
 ## Multi-step Filtering
 
@@ -155,9 +143,9 @@ All filters work together to narrow down the view.
 The component adapts to screen size:
 
 - Adjusts card size for available space
-- Collapses filter panel on mobile
-- Touch-friendly controls on tablets
-- Keyboard-optimized on desktop
+- Reflows the toolbar and filter controls below 900 px
+- Supports pointer/touch panning and two-finger pinch zoom
+- Keeps toolbar buttons, the zoom range, and the dimension selector keyboard-operable through native controls
 
 ## Performance During Interaction
 

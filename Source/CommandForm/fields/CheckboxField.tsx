@@ -1,57 +1,112 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { Checkbox, type CheckboxProps } from 'primereact/checkbox';
-import React from 'react';
-import { asCommandFormField, WrappedFieldProps } from '@cratis/arc.react/commands';
+import type { HTMLAttributes, InputHTMLAttributes } from 'react';
+import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import {
+    useFieldAccessibility,
+    type FieldAccessibilityProps,
+} from './fieldAccessibility';
+import type { ExactPartKeys } from '../../types/ExactPartKeys';
+import type { PartsOf } from '../../types/parts';
 
-/**
- * Component-level props for {@link CheckboxField}.
- */
-interface CheckboxFieldComponentProps extends WrappedFieldProps<boolean> {
-    /** Optional label displayed next to the checkbox. */
+/** Stable part attributes for {@link CheckboxField}. */
+export interface CheckboxParts {
+    /** Wrapping label. */
+    root?: HTMLAttributes<HTMLLabelElement>;
+    /** Native checkbox input. */
+    input?: InputHTMLAttributes<HTMLInputElement>;
+    /** Visual checkbox box. */
+    box?: HTMLAttributes<HTMLSpanElement>;
+    /** Visual checked indicator. */
+    indicator?: HTMLAttributes<HTMLSpanElement>;
+}
+
+const checkboxPartsMatchManifest: ExactPartKeys<CheckboxParts, PartsOf<'CheckboxField'>> = true;
+void checkboxPartsMatchManifest;
+
+interface CheckboxFieldComponentProps
+    extends WrappedFieldProps<boolean>,
+        FieldAccessibilityProps {
     label?: string;
-
-    /** Extra CSS class name forwarded to the underlying Checkbox. */
     className?: string;
-
-    /** PrimeReact pass-through configuration applied to the underlying Checkbox. */
-    pt?: CheckboxProps['pt'];
-
-    /** PrimeReact pass-through options applied to the underlying Checkbox. */
-    ptOptions?: CheckboxProps['ptOptions'];
-
-    /** When true, disables every base PrimeReact style on the underlying Checkbox. */
+    pt?: CheckboxParts;
+    ptOptions?: object;
     unstyled?: boolean;
 }
 
-/**
- * A single boolean checkbox field bound to a `boolean` property on a Cratis
- * Arc command. See {@link InputTextField} for the full `value={c => c.prop}`
- * binding model.
- *
- * ```tsx
- * <CheckboxField value={c => c.acceptedTerms} label="I agree to the terms" />
- * ```
- */
+/** A checkbox field bound to a boolean property on an Arc command. */
 export const CheckboxField = asCommandFormField<CheckboxFieldComponentProps>(
-    (props) => (
-        <div className="flex items-center">
-            <Checkbox
+    (props) => {
+        const accessibility = useFieldAccessibility(props, {
+            id: props.pt?.input?.id,
+            ariaLabel: props.pt?.input?.['aria-label'] ?? props.label,
+            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
+        });
+        return (
+            <>
+        <label
+            {...props.pt?.root}
+            className={['cratis-choice-field', props.pt?.root?.className, props.className]
+                .filter(Boolean)
+                .join(' ')}
+            onBlur={props.onBlur}
+            data-cratis-part='root'
+            data-disabled={props.pt?.input?.disabled || undefined}
+            data-invalid={props.invalid || undefined}
+            data-selected={props.value || undefined}
+        >
+            <input
+                {...props.pt?.input}
+                id={accessibility.controlId}
+                aria-label={accessibility.ariaLabel}
+                aria-describedby={accessibility.ariaDescribedBy}
+                type='checkbox'
                 checked={props.value}
-                onChange={props.onChange}
-                onBlur={props.onBlur}
-                invalid={props.invalid}
-                className={props.className}
-                pt={props.pt}
-                ptOptions={props.ptOptions}
-                unstyled={props.unstyled}
+                onChange={(event) => props.onChange(event.currentTarget.checked)}
+                aria-invalid={props.invalid || undefined}
+                className={['cratis-choice-field__native', props.pt?.input?.className]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='input'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={props.value || undefined}
             />
-            {props.label && <label className="ml-2">{props.label}</label>}
-        </div>
-    ),
-    {
-        defaultValue: false,
-        extractValue: (e: { checked: boolean }) => e.checked
-    }
+            <span
+                {...props.pt?.box}
+                className={['cratis-checkbox__box', props.pt?.box?.className]
+                    .filter(Boolean)
+                    .join(' ')}
+                data-cratis-part='box'
+                data-disabled={props.pt?.input?.disabled || undefined}
+                data-invalid={props.invalid || undefined}
+                data-selected={props.value || undefined}
+                aria-hidden='true'
+            >
+                <span
+                    {...props.pt?.indicator}
+                    className={[
+                        'cratis-checkbox__indicator',
+                        props.pt?.indicator?.className,
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    data-cratis-part='indicator'
+                    data-disabled={props.pt?.input?.disabled || undefined}
+                    data-invalid={props.invalid || undefined}
+                    data-selected={props.value || undefined}
+                >
+                    ✓
+                </span>
+            </span>
+            {props.label && (
+                <span className='cratis-choice-field__label'>{props.label}</span>
+            )}
+        </label>
+                {accessibility.hiddenError}
+            </>
+        );
+    },
+    { defaultValue: false },
 );

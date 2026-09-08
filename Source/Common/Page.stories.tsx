@@ -19,7 +19,7 @@ export const Default: Story = {
     },
     render: (args) => (
         <Page {...args}>
-            <div className="p-4">
+            <div className="cratis:p-4">
                 <p>This is the page content area.</p>
                 <p>The Page component provides a consistent layout with a title and content area.</p>
             </div>
@@ -34,7 +34,7 @@ export const WithPanel: Story = {
     },
     render: (args) => (
         <Page {...args}>
-            <div className="p-4">
+            <div className="cratis:p-4">
                 <p>This page has the panel style applied.</p>
                 <p>The panel prop adds special styling to the content area.</p>
             </div>
@@ -49,7 +49,7 @@ export const WithTitle: Story = {
     },
     render: (args) => (
         <Page {...args}>
-            <div className="p-4">
+            <div className="cratis:p-4">
                 <p>The title is shown above because showTitle is true.</p>
             </div>
         </Page>
@@ -63,7 +63,7 @@ export const WithoutTitle: Story = {
     },
     render: (args) => (
         <Page {...args}>
-            <div className="p-4">
+            <div className="cratis:p-4">
                 <p>The title is hidden because showTitle is false (the default).</p>
             </div>
         </Page>

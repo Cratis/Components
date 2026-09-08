@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) Cratis. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for full license information.
+ */
+
+.canvas-region {
+    position: relative;
+    border: 2px dashed rgba(100, 150, 240, 0.55);
+    border-radius: 4px;
+    background: rgba(100, 150, 240, 0.06);
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: grab;
+    /*
+     * A host typically raises a selected/dragging region above other board items (via CanvasItem's
+     * zIndex) so its title bar stays visible over cards/notes drifting under it — but that means this
+     * backdrop would otherwise sit on top of, and swallow clicks meant for, whatever is positioned
+     * inside or near it. Let presses pass straight through the backdrop to whatever's underneath; only
+     * the title bar and resize handles below opt back into being interactive.
+     */
+    pointer-events: none;
+}
+
+.canvas-region:active {
+    cursor: grabbing;
+}
+
+.canvas-region--selected {
+    border-color: rgba(100, 150, 240, 0.9);
+}
+
+/*
+ * Container for the region's member items. Positioned at the region's top-left (region.x/region.y)
+ * with no border or padding, so member coordinates share the same origin used when converting between
+ * absolute and region-relative positions. Zero-sized; only its absolutely-positioned children are
+ * interactive.
+ */
+.canvas-region__items {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Title bar sits above the region box */
+.canvas-region__title-bar {
+    position: absolute;
+    top: -28px;
+    left: -2px;
+    height: 28px;
+    padding: 0 8px;
+    background: rgba(100, 150, 240, 0.72);
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: center;
+    cursor: grab;
+    white-space: nowrap;
+    pointer-events: auto;
+}
+
+.canvas-region__title-bar:active {
+    cursor: grabbing;
+}
+
+.canvas-region__name {
+    font-size: 12px;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    color: #fff;
+    pointer-events: none;
+}
+
+.canvas-region__name-input {
+    font-size: 12px;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    color: #fff;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    outline: none;
+    padding: 0;
+    min-width: 80px;
+    cursor: text;
+}
+
+.canvas-region__handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border: 1.5px solid rgba(100, 150, 240, 0.8);
+    border-radius: 1px;
+    z-index: 10;
+    box-sizing: border-box;
+    pointer-events: auto;
+}

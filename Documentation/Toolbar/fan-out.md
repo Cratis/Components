@@ -4,11 +4,11 @@
 
 ```tsx
 <Toolbar>
-    <ToolbarButton icon='pi pi-arrow-up-left' title='Select' />
-    <ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes'>
-        <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-        <ToolbarButton icon='pi pi-circle' title='Circle' />
-        <ToolbarButton icon='pi pi-minus' title='Line' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
+    <ToolbarFanOutItem icon={<span aria-hidden='true'>◆</span>} tooltip='Shapes'>
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Rectangle' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Circle' />
+        <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Line' />
     </ToolbarFanOutItem>
 </Toolbar>
 ```
@@ -16,7 +16,7 @@
 By default the panel fans out to the right. Use `fanOutDirection='left'` when the toolbar is positioned on the right side of the screen:
 
 ```tsx
-<ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes' fanOutDirection='left'>
+<ToolbarFanOutItem icon={<span aria-hidden='true'>◆</span>} tooltip='Shapes' fanOutDirection='left'>
     ...
 </ToolbarFanOutItem>
 ```
@@ -24,11 +24,11 @@ By default the panel fans out to the right. Use `fanOutDirection='left'` when th
 You can also fan out vertically:
 
 ```tsx
-<ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes' fanOutDirection='up'>
+<ToolbarFanOutItem icon={<span aria-hidden='true'>◆</span>} tooltip='Shapes' fanOutDirection='up'>
     ...
 </ToolbarFanOutItem>
 
-<ToolbarFanOutItem icon='pi pi-th-large' tooltip='Shapes' fanOutDirection='down'>
+<ToolbarFanOutItem icon={<span aria-hidden='true'>◆</span>} tooltip='Shapes' fanOutDirection='down'>
     ...
 </ToolbarFanOutItem>
 ```
@@ -41,8 +41,8 @@ Like `ToolbarButton`, the `icon` prop accepts a `string | ReactNode`. Pass any R
 import { FaShapes } from 'react-icons/fa6';
 
 <ToolbarFanOutItem icon={<FaShapes />} tooltip='Shapes'>
-    <ToolbarButton icon='pi pi-stop' title='Rectangle' />
-    <ToolbarButton icon='pi pi-circle' title='Circle' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Rectangle' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Circle' />
 </ToolbarFanOutItem>
 ```
 

@@ -1,0 +1,48 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Sits above the compose row inside the chat panel. Every color comes from the --cratis-* token
+   seam, so the list follows whatever theme the host runs. */
+.mention-suggestions {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 8px;
+    right: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 400;
+}
+
+.mention-suggestions__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 5px 8px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--cratis-text-color);
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.mention-suggestions__item--highlighted {
+    background: var(--cratis-highlight-bg);
+    color: var(--cratis-highlight-text-color);
+}
+
+.mention-suggestions__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

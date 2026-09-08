@@ -29,7 +29,7 @@ export function AxisLabels<TItem extends object>({
 }: AxisLabelsProps<TItem>) {
   return (
     <div
-      className={`pv-axis-labels ${visible ? 'visible' : 'hidden'}`}
+      className={`pv-axis-labels ${visible ? 'cratis:visible' : 'cratis:hidden'}`}
       ref={containerRef}
       style={{
         // Align labels start with grouped buckets using canvas padding scaled by zoom

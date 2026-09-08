@@ -9,7 +9,7 @@ describe('when IconDisplay is given a string icon and rendered', () => {
     let html: string;
 
     beforeEach(() => {
-        const element = React.createElement(IconDisplay, { icon: 'pi pi-home' });
+        const element = React.createElement(IconDisplay, { icon: 'product-icons product-home' });
         html = renderToStaticMarkup(element);
     });
 
@@ -18,6 +18,6 @@ describe('when IconDisplay is given a string icon and rendered', () => {
     });
 
     it('should_apply_the_icon_class', () => {
-        html.should.include('pi pi-home');
+        html.should.include('product-icons product-home');
     });
 });

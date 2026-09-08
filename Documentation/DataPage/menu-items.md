@@ -8,20 +8,23 @@ The `MenuItems` component defines the action menu for a DataPage.
 
 ```tsx
 import { DataPage, MenuItem } from '@cratis/components/DataPage';
-import { Column } from 'primereact/column';
-import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa';
+import { Column } from '@cratis/components/DataPage';
+import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa6';
 
-<DataPage title="Products" query={ProductsQuery} emptyMessage="No products">
+<DataPage title='Products' query={ProductsQuery} emptyMessage='No products'>
     <DataPage.MenuItems>
-        <MenuItem label="Create Product" icon={FaPlus} command={handleCreate} />
-        <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={handleEdit} />
-        <MenuItem label="Delete" icon={FaTrash} disableOnUnselected command={handleDelete} />
+        <MenuItem label='Create Product' icon={FaPlus} command={handleCreate} />
+        <MenuItem label='Edit' icon={FaPencil} disableOnUnselected command={handleEdit} />
+        <MenuItem
+            label='Delete'
+            icon={FaTrash}
+            disableOnUnselected
+            command={handleDelete}
+        />
     </DataPage.MenuItems>
 
-    <DataPage.Columns>
-        {/* ... columns */}
-    </DataPage.Columns>
-</DataPage>
+    <DataPage.Columns>{/* ... columns */}</DataPage.Columns>
+</DataPage>;
 ```
 
 ## MenuItem Props
@@ -34,34 +37,36 @@ import { FaPlus, FaPencil, FaTrash } from 'react-icons/fa';
 ### Optional Props
 
 - `icon`: Icon **component type** (e.g. a `react-icons` icon like `FaPlus`) — DataPage renders it as `<Icon />`, so pass the component reference, not a CSS-class string or a JSX element
+- `disabled`: Disable the item unconditionally (default: false)
 - `disableOnUnselected`: Disable when no row is selected (default: false)
-- All PrimeReact MenuItem props are supported
+
+That is the whole surface. `MenuItem` is Cratis-owned; navigation/menu-specific props such as nested `items`, `separator`, `url`, and renderer templates are not accepted.
 
 ## Context-Aware Actions
 
 Use `disableOnUnselected` to disable actions that require a selection:
 
 ```tsx
-import { FaPlus, FaPencil, FaTrash, FaArchive } from 'react-icons/fa';
+import { FaPlus, FaPencil, FaTrash, FaBoxArchive } from 'react-icons/fa6';
 
 <DataPage.MenuItems>
     {/* Always enabled */}
     <MenuItem
-        label="Create New"
+        label='Create New'
         icon={FaPlus}
         command={() => setShowCreateDialog(true)}
     />
 
     {/* Disabled when no selection */}
     <MenuItem
-        label="Edit Selected"
+        label='Edit Selected'
         icon={FaPencil}
         disableOnUnselected={true}
         command={() => setShowEditDialog(true)}
     />
 
     <MenuItem
-        label="Delete Selected"
+        label='Delete Selected'
         icon={FaTrash}
         disableOnUnselected={true}
         command={() => handleDelete()}
@@ -69,12 +74,12 @@ import { FaPlus, FaPencil, FaTrash, FaArchive } from 'react-icons/fa';
 
     {/* Conditional actions */}
     <MenuItem
-        label="Archive"
-        icon={FaArchive}
+        label='Archive'
+        icon={FaBoxArchive}
         disableOnUnselected={true}
         command={() => handleArchive()}
     />
-</DataPage.MenuItems>
+</DataPage.MenuItems>;
 ```
 
 ## Icons
@@ -84,16 +89,16 @@ component reference (for example, an icon from [`react-icons`](https://react-ico
 not a string CSS class and not an already-rendered JSX element.
 
 ```tsx
-import { FaSave, FaDownload, FaUpload } from 'react-icons/fa';
+import { FaFloppyDisk, FaDownload, FaUpload } from 'react-icons/fa6';
 
-<MenuItem label="Save" icon={FaSave} command={handleSave} />
+<MenuItem label="Save" icon={FaFloppyDisk} command={handleSave} />
 <MenuItem label="Download" icon={FaDownload} command={handleDownload} />
 <MenuItem label="Upload" icon={FaUpload} command={handleUpload} />
 ```
 
 :::caution
-Don't pass `icon="pi pi-save"` (a PrimeIcons CSS class) or `icon={<FaSave />}` (a JSX element).
-DataPage instantiates the icon itself, so the prop must be the component type: `icon={FaSave}`.
+Don't pass `icon="pi pi-save"` (a PrimeIcons CSS class) or `icon={<FaFloppyDisk />}` (a JSX element).
+DataPage instantiates the icon itself, so the prop must be the component type: `icon={FaFloppyDisk}`.
 :::
 
 ## Accessing Selected Item
@@ -110,42 +115,24 @@ const handleEdit = () => {
 };
 ```
 
-## Separators and Grouping
+## The menu is flat — no separators, no submenus
 
-Use PrimeReact MenuItem features for separators:
-
-```tsx
-import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa';
-
-<DataPage.MenuItems>
-    <MenuItem label="New" icon={FaPlus} command={handleNew} />
-    <MenuItem separator />
-    <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={handleEdit} />
-    <MenuItem label="Delete" icon={FaTrash} disableOnUnselected command={handleDelete} />
-    <MenuItem separator />
-    <MenuItem label="Export" icon={FaFileExport} command={handleExport} />
-</DataPage.MenuItems>
-```
-
-## Dropdown Menus
-
-Create nested menu structures:
+`DataPage.MenuItems` renders a single row of action buttons, in the order you declare them:
 
 ```tsx
-import { FaFile, FaPlus, FaFolderOpen, FaPencil, FaCopy, FaClipboard } from 'react-icons/fa';
+import { FaPlus, FaPencil, FaTrash, FaFileExport } from 'react-icons/fa6';
 
 <DataPage.MenuItems>
-    <MenuItem label="File" icon={FaFile}>
-        <MenuItem label="New" icon={FaPlus} command={handleNew} />
-        <MenuItem label="Open" icon={FaFolderOpen} command={handleOpen} />
-    </MenuItem>
-
-    <MenuItem label="Edit" icon={FaPencil}>
-        <MenuItem label="Copy" icon={FaCopy} command={handleCopy} />
-        <MenuItem label="Paste" icon={FaClipboard} command={handlePaste} />
-    </MenuItem>
-</DataPage.MenuItems>
+    <MenuItem label='New' icon={FaPlus} command={handleNew} />
+    <MenuItem label='Edit' icon={FaPencil} disableOnUnselected command={handleEdit} />
+    <MenuItem label='Delete' icon={FaTrash} disableOnUnselected command={handleDelete} />
+    <MenuItem label='Export' icon={FaFileExport} command={handleExport} />
+</DataPage.MenuItems>;
 ```
+
+There are no separators and no submenus. A `MenuItem` with `MenuItem` children does not nest — the children are simply ignored, with no error to tell you — and `<MenuItem separator />` is not a thing.
+
+The action bar is a flat Button toolbar because a navigation menubar is not the correct semantic pattern for a row of commands. When a page genuinely needs grouped actions, put the grouping in a dialog opened from one item, or split the page.
 
 ## Action Handlers
 

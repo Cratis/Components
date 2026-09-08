@@ -23,7 +23,7 @@ export function updateGroupBackgrounds(
         // If we shouldn't show anything, hide all existing backgrounds
         // We keep the highlight if it exists
         for (const child of groupsContainer.children) {
-            if ((child as unknown as { name?: string }).name !== 'highlight') {
+            if (child.label !== 'highlight') {
                 child.visible = false;
             }
         }
@@ -44,7 +44,9 @@ export function updateGroupBackgrounds(
     const startY = -bufferWorld * 2;
 
     // Get existing background graphics (excluding highlight)
-    const backgroundGraphics = groupsContainer.children.filter(c => (c as unknown as { name?: string }).name !== 'highlight') as PIXI.Graphics[];
+    const backgroundGraphics = groupsContainer.children.filter(
+        (c) => c.label !== 'highlight',
+    ) as PIXI.Graphics[];
     let bgIndex = 0;
 
     // Instead of re-deriving bucket geometry from constants, compute bucket bounds
@@ -83,7 +85,9 @@ export function updateGroupBackgrounds(
             } else {
                 bg = new PIXI.Graphics();
                 // Insert before highlight if it exists, otherwise at end
-                const highlightIndex = groupsContainer.children.findIndex(c => (c as unknown as { name?: string }).name === 'highlight');
+                const highlightIndex = groupsContainer.children.findIndex(
+                    (c) => c.label === 'highlight',
+                );
                 if (highlightIndex >= 0) {
                     groupsContainer.addChildAt(bg, highlightIndex);
                 } else {
@@ -118,11 +122,13 @@ export function updateHighlight(
 
     const invScale = zoomLevel && zoomLevel !== 0 ? 1 / zoomLevel : 1;
 
-    let highlight = groupsContainer.children.find(child => (child as unknown as { name?: string }).name === 'highlight') as PIXI.Graphics;
+    let highlight = groupsContainer.children.find(
+        (child) => child.label === 'highlight',
+    ) as PIXI.Graphics;
 
     if (!highlight) {
         highlight = new PIXI.Graphics();
-        (highlight as unknown as { name: string }).name = 'highlight';
+        highlight.label = 'highlight';
         groupsContainer.addChild(highlight);
     }
 

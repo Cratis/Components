@@ -1,61 +1,310 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useMemo } from 'react';
-import { PrimeReactProvider } from 'primereact/api';
-import type { APIOptions } from 'primereact/api';
+import { useMemo, type ReactNode } from 'react';
+import { I18nProvider } from 'react-aria-components/I18nProvider';
 import { merge } from 'ts-deepmerge';
+import { Toaster, type ToasterProps } from '../Notifications/Toaster';
+import { unstable_RendererRoot } from '../renderer/RendererContext';
+import type { CratisRendererSetup, unstable_UiLibrary } from '../renderer/manifest';
+import type { CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
+import { CratisComponentsContext } from './CratisComponentsContext';
+import { cratisDefaults } from './CratisComponentsDefaults';
 
-/**
- * Configuration accepted by {@link CratisComponentsProvider}. Mirrors PrimeReact's
- * {@link APIOptions} — the most commonly used members are `unstyled`, `pt`, `ptOptions`,
- * `inputStyle`, `ripple`, `appendTo`, `zIndex` and `locale`.
- */
-export type CratisComponentsConfig = Partial<APIOptions>;
+const RendererRoot = unstable_RendererRoot;
 
-export interface CratisComponentsProviderProps {
+export { cratisDefaults } from './CratisComponentsDefaults';
+export { useCratisComponentsConfig } from './CratisComponentsContext';
+
+/** Localizable labels owned by the Cratis paginator. */
+export interface CratisPaginatorMessages {
+    /** Pagination navigation-region name. */
+    navigation?: string;
+    /** First-page action label. */
+    first?: string;
+    /** Previous-page action label. */
+    previous?: string;
+    /** Next-page action label. */
+    next?: string;
+    /** Last-page action label. */
+    last?: string;
+}
+
+/** Localizable labels owned by the Cratis date picker composition. */
+export interface CratisDatePickerMessages {
+    /** Today action label. */
+    today?: string;
+    /** Clear action label. */
+    clear?: string;
+    /** Calendar-trigger label. */
+    openCalendar?: string;
+    /** Previous-month action label. */
+    previousMonth?: string;
+    /** Next-month action label. */
+    nextMonth?: string;
     /**
-     * Cratis-wide and PrimeReact pass-through configuration. Merged on top of the
-     * library's defaults and made available to every Cratis component below in the tree.
+     * Accessible name for the segmented date input when neither an explicit
+     * `aria-label` nor a `placeholder` is supplied. Previously an orphaned
+     * `'Date'` literal with no override path.
      */
-    value?: CratisComponentsConfig;
+    label?: string;
+}
 
-    children: React.ReactNode;
+/** Localizable labels owned by the Cratis {@link Dropdown} composition. */
+export interface CratisDropdownMessages {
+    /** Accessible name for the options-popover trigger. */
+    showOptions?: string;
+    /** Accessible name for the clear-selection action. */
+    clearSelection?: string;
 }
 
 /**
- * Default configuration applied to every consumer. Intentionally empty today —
- * reserved for Cratis-wide opinions we may want to ship in the future (for example,
- * a default pt preset that complements the --cratis-* token layer). Anything added
- * here is deep-merged with the consumer's `value` so consumer settings always win.
- *
- * Exported so specs can verify the merge contract without re-rendering React.
+ * Localizable action and dismissal labels shared by every Cratis-owned dialog
+ * surface — {@link Dialog}, {@link CommandDialog}, and {@link StepperCommandDialog}.
  */
-export const cratisDefaults: CratisComponentsConfig = {};
+export interface CratisDialogMessages {
+    /** Primary confirmation label (the `Ok` action in `DialogButtons.Ok*`). */
+    ok?: string;
+    /** Cancellation label (the `Cancel` action, and the Stepper footer Cancel). */
+    cancel?: string;
+    /** Affirmative label (the `Yes` action in `DialogButtons.YesNo*`). */
+    yes?: string;
+    /** Negative label (the `No` action in `DialogButtons.YesNo*`). */
+    no?: string;
+    /** Accessible name for the header close (×) action. */
+    close?: string;
+}
 
-/**
- * Pure merge of {@link cratisDefaults} and consumer-supplied config. Exposed for
- * specs; the provider component uses the same logic inside its `useMemo`.
- */
-export const mergeCratisComponentsConfig = (value: CratisComponentsConfig | undefined): CratisComponentsConfig =>
-    merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
+/** Localizable navigation labels owned by {@link CommandStepper} / {@link StepperCommandDialog}. */
+export interface CratisStepperMessages {
+    /** Advance-to-next-step action label. */
+    next?: string;
+    /** Return-to-previous-step action label. */
+    previous?: string;
+    /** Final-step submit action label. */
+    submit?: string;
+}
 
-/**
- * Single setup point for Cratis Components. Wraps {@link PrimeReactProvider} so the
- * library can layer Cratis-wide defaults on top of PrimeReact's pass-through and
- * unstyled mechanisms while still letting the consumer take complete control:
- *
- * - Pass `unstyled: true` to disable every PrimeReact base style. The wrappers in
- *   this package then render structurally only and pick up all visuals from your
- *   own CSS, Tailwind, or pt definitions.
- * - Pass `pt` / `ptOptions` to apply global per-component pass-through.
- *
- * Consumers who want to talk to PrimeReact directly may still mount
- * {@link PrimeReactProvider} themselves — this component is an optional convenience,
- * not a requirement.
- */
-export const CratisComponentsProvider = ({ value, children }: CratisComponentsProviderProps) => {
-    const merged = useMemo<CratisComponentsConfig>(() => mergeCratisComponentsConfig(value), [value]);
+/** Localizable labels owned by the Cratis {@link Toaster}. */
+export interface CratisNotificationsMessages {
+    /** Accessible name for a toast's dismiss action. */
+    dismiss?: string;
+    /** Accessible name for the toast region landmark. */
+    region?: string;
+}
 
-    return <PrimeReactProvider value={merged}>{children}</PrimeReactProvider>;
+/** Localizable labels owned by the Cratis {@link DataTableCore} composition. */
+export interface CratisDataTableMessages {
+    /** Accessible name for a single-selection row control. */
+    selectRow?: string;
+    /** Placeholder for the loaded-page search input. */
+    search?: string;
+    /** Accessible name for the loaded-page search input. */
+    searchAriaLabel?: string;
+}
+
+/** Localizable labels owned by the Cratis column-filter popup. */
+export interface CratisColumnFilterMessages {
+    /** Builds the filter-trigger accessible name from the effective field. */
+    filterTriggerAriaLabel?: (field: string) => string;
+    /** Builds the value-control accessible name from the effective field. */
+    valueAriaLabel?: (field: string) => string;
+    /** Accessible name for the match-mode selector. */
+    matchModeAriaLabel?: string;
+    /** Localizes a match mode while retaining its default label as fallback input. */
+    matchModeLabel?: (mode: string, defaultLabel: string) => string;
+    /** Clear action label. */
+    clear?: string;
+    /** Apply action label. */
+    apply?: string;
+    /** Boolean true option label. */
+    true?: string;
+    /** Boolean false option label. */
+    false?: string;
+}
+
+/** Localizable labels owned by the Cratis {@link Toolbar} composition. */
+export interface CratisToolbarMessages {
+    /** Accessible toolbar name used when neither `aria-label` nor `aria-labelledby` is supplied. */
+    label?: string;
+}
+
+/** Components-owned message groups. */
+export interface CratisComponentsMessages {
+    /** Paginator labels. */
+    paginator?: CratisPaginatorMessages;
+    /** Date-picker labels. */
+    datePicker?: CratisDatePickerMessages;
+    /** Dropdown labels. */
+    dropdown?: CratisDropdownMessages;
+    /** Dialog action/dismissal labels shared by Dialog, CommandDialog, and StepperCommandDialog. */
+    dialog?: CratisDialogMessages;
+    /** Stepper navigation labels shared by CommandStepper and StepperCommandDialog. */
+    stepper?: CratisStepperMessages;
+    /** Toaster labels. */
+    notifications?: CratisNotificationsMessages;
+    /** DataTable search/selection labels. */
+    dataTable?: CratisDataTableMessages;
+    /** Column-filter popup labels and match-mode copy. */
+    columnFilter?: CratisColumnFilterMessages;
+    /** Toolbar accessible-name fallback. */
+    toolbar?: CratisToolbarMessages;
+}
+
+interface LegacyLocaleMessages {
+    today?: string;
+    clear?: string;
+    aria?: {
+        navigation?: string;
+        firstPageLabel?: string;
+        prevPageLabel?: string;
+        nextPageLabel?: string;
+        lastPageLabel?: string;
+    };
+    [message: string]: unknown;
+}
+
+/** Renderer-independent application configuration for Components. */
+export interface CratisComponentsConfig {
+    /** BCP 47 locale used by React Aria for dates, numbers, and interaction announcements. */
+    locale?: string;
+    /** Cratis-owned labels not supplied by the platform's internationalization APIs. */
+    messages?: CratisComponentsMessages;
+    /**
+     * @deprecated Use {@link messages}; React Aria supplies its own locale data.
+     */
+    locales?: Record<string, LegacyLocaleMessages>;
+}
+
+/** Props for the application-root Components provider. */
+export interface CratisComponentsProviderProps {
+    /** Locale and Components-owned messages. */
+    value?: CratisComponentsConfig;
+    /** Mounts the global toaster with defaults or explicit options. */
+    toaster?: boolean | ToasterProps;
+    /**
+     * Selects one stable presentation library. The broader generic manifest and ordered,
+     * last-wins composition form remain experimental.
+     */
+    library?: unstable_UiLibrary | readonly unstable_UiLibrary[];
+    /** Experimental profile-promise behavior. Defaults to strict. */
+    libraryMode?: 'strict' | 'degrade';
+    /** Terminal slot fallback behavior. Defaults to the built-in Core implementation. */
+    rendererFallback?: 'core' | 'throw';
+    /** Host environment for overlay portal containers. */
+    overlayEnvironment?: CratisOverlayEnvironment;
+    /**
+     * Non-secret renderer setup attestations. Values are booleans so credentials and license
+     * tokens never cross the Components provider boundary.
+     */
+    rendererSetup?: CratisRendererSetup;
+    /** Application content. */
+    children: ReactNode;
+}
+
+/** Deep-merges consumer configuration over {@link cratisDefaults}. */
+export const mergeCratisComponentsConfig = (
+    value: CratisComponentsConfig | undefined,
+): CratisComponentsConfig => merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
+
+const withLegacyLocaleMessages = (
+    config: CratisComponentsConfig,
+    explicitMessages: CratisComponentsMessages | undefined,
+): CratisComponentsConfig => {
+    const legacy = config.locale ? config.locales?.[config.locale] : undefined;
+    if (!legacy) return config;
+    return {
+        ...config,
+        messages: {
+            ...config.messages,
+            paginator: {
+                navigation:
+                    explicitMessages?.paginator?.navigation ??
+                    legacy.aria?.navigation ??
+                    config.messages?.paginator?.navigation,
+                first:
+                    explicitMessages?.paginator?.first ??
+                    legacy.aria?.firstPageLabel ??
+                    config.messages?.paginator?.first,
+                previous:
+                    explicitMessages?.paginator?.previous ??
+                    legacy.aria?.prevPageLabel ??
+                    config.messages?.paginator?.previous,
+                next:
+                    explicitMessages?.paginator?.next ??
+                    legacy.aria?.nextPageLabel ??
+                    config.messages?.paginator?.next,
+                last:
+                    explicitMessages?.paginator?.last ??
+                    legacy.aria?.lastPageLabel ??
+                    config.messages?.paginator?.last,
+            },
+            datePicker: {
+                ...config.messages?.datePicker,
+                today:
+                    explicitMessages?.datePicker?.today ??
+                    legacy.today ??
+                    config.messages?.datePicker?.today,
+                clear:
+                    explicitMessages?.datePicker?.clear ??
+                    legacy.clear ??
+                    config.messages?.datePicker?.clear,
+                openCalendar:
+                    explicitMessages?.datePicker?.openCalendar ??
+                    config.messages?.datePicker?.openCalendar,
+                previousMonth:
+                    explicitMessages?.datePicker?.previousMonth ??
+                    config.messages?.datePicker?.previousMonth,
+                nextMonth:
+                    explicitMessages?.datePicker?.nextMonth ??
+                    config.messages?.datePicker?.nextMonth,
+            },
+        },
+    };
+};
+
+const validLocale = (locale: string | undefined) => {
+    if (!locale) return 'en-US';
+    try {
+        return new Intl.Locale(locale).toString();
+    } catch {
+        return 'en-US';
+    }
+};
+
+/** Application root for locale, labels, and the optional app-wide toaster. */
+export const CratisComponentsProvider = ({
+    value,
+    toaster,
+    library,
+    libraryMode,
+    rendererFallback,
+    overlayEnvironment,
+    rendererSetup,
+    children,
+}: CratisComponentsProviderProps) => {
+    const resolved = useMemo(
+        () =>
+            withLegacyLocaleMessages(mergeCratisComponentsConfig(value), value?.messages),
+        [value],
+    );
+
+    return (
+        <RendererRoot
+            library={library}
+            libraryMode={libraryMode}
+            rendererFallback={rendererFallback}
+            overlayEnvironment={overlayEnvironment}
+            rendererSetup={rendererSetup}
+        >
+            <CratisComponentsContext.Provider value={resolved}>
+                <I18nProvider locale={validLocale(resolved.locale)}>
+                    {children}
+                    {toaster && (
+                        <Toaster {...(typeof toaster === 'object' ? toaster : {})} />
+                    )}
+                </I18nProvider>
+            </CratisComponentsContext.Provider>
+        </RendererRoot>
+    );
 };

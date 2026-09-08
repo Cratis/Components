@@ -1,161 +1,111 @@
-# Cratis token reference
+---
+title: Cratis token reference
+description: Stable semantic CSS variables consumed by Components markup and structural styles.
+---
 
-The `--cratis-*` CSS variable layer is the Cratis-scoped tint surface every Cratis wrapper reads from. Each token resolves the **PrimeReact v11 design token first** (`@primeuix/themes`, e.g. `--p-content-border-color`), falling back to the **legacy v10 theme variable** (e.g. `--surface-border`) via `tokens.css`. Loading any PrimeReact theme — v10 *or* v11 — therefore gives every Cratis surface the right color without any further work, and the same build keeps working across a PrimeReact 10 → 11 upgrade.
+The `--cratis-*` variables are the supported theming boundary. The `tokens` entry supplies conservative light defaults so an unthemed surface remains usable. A product design system overrides them directly; the optional `theme` entry adds dark, forced-colors, and scoped-subtree behavior.
 
-This indirection is deliberate: it is the single seam that insulates your code (and your consumers' `--cratis-*` overrides) from PrimeReact's token system changing underneath you.
+## Core colors
 
-You override `--cratis-*` tokens when you want **just** Cratis-scoped surfaces (validation error text, FormElement addon, breadcrumb borders, …) tinted independently of PrimeReact widgets. To repaint PrimeReact widgets themselves, override the PrimeReact variables directly — see [the custom palette setup](custom-palette.md).
+| Token                                                   | Purpose                                                    |
+| ------------------------------------------------------- | ---------------------------------------------------------- |
+| `--cratis-primary-color`                                | Accent, links, selected controls, and non-text indicators. |
+| `--cratis-primary-color-text`                           | Content on the accent color where used.                    |
+| `--cratis-primary-300` … `--cratis-primary-600`         | Accent scale used by specialized surfaces.                 |
+| `--cratis-primary-600-text`                             | Content on the fixed `--cratis-primary-600` tone.          |
+| `--cratis-green-500`                                    | Success state.                                             |
+| `--cratis-orange-500`                                   | Warning state.                                             |
+| `--cratis-red-500`                                      | Error/destructive indicator.                               |
+| `--cratis-action-background` / `-hover` / `-active`     | Primary-action state fills.                                |
+| `--cratis-action-text`                                  | Text/icons on the primary action.                          |
+| `--cratis-info-background` / `--cratis-info-text`       | Info badge/tag background and text pair.                   |
+| `--cratis-success-background` / `--cratis-success-text` | Success background and text pair.                          |
+| `--cratis-warning-background` / `--cratis-warning-text` | Warning background and text pair.                          |
+| `--cratis-danger-background` / `--cratis-danger-text`   | Danger background and text pair.                           |
 
-## Loading the tokens
+## Surfaces
 
-The token layer ships at two import paths:
+| Token                                         | Purpose                                                                      |
+| --------------------------------------------- | ---------------------------------------------------------------------------- |
+| `--cratis-surface-ground`                     | Application/page background.                                                 |
+| `--cratis-surface-section`                    | Grouped section background.                                                  |
+| `--cratis-surface-card`                       | Cards and raised content.                                                    |
+| `--cratis-surface-overlay`                    | Dialogs, dropdowns, popovers, and toasts.                                    |
+| `--cratis-surface-hover`                      | Hovered or quiet selected state.                                             |
+| `--cratis-surface-border`                     | Borders and dividers.                                                        |
+| `--cratis-surface-0` / `--cratis-surface-100` | Small neutral ramp used by display components.                               |
+| `--cratis-control-background`                 | Inputs, Dropdown triggers, and segmented date controls.                      |
+| `--cratis-control-border`                     | Visible control boundary, intentionally stronger than quiet surface borders. |
 
-```ts
-import '@cratis/components/styles';
-```
+## Text and interaction
 
-The recommended one — ships the Tailwind utility classes used inside the package **plus** the `--cratis-*` token declarations as a single stylesheet.
+| Token                                           | Purpose                                                             |
+| ----------------------------------------------- | ------------------------------------------------------------------- |
+| `--cratis-text-color`                           | Primary text.                                                       |
+| `--cratis-text-color-secondary`                 | Supporting text and placeholders.                                   |
+| `--cratis-highlight-bg`                         | Selected/highlighted background.                                    |
+| `--cratis-highlight-text-color`                 | Text on a highlighted background.                                   |
+| `--cratis-focus-ring`                           | Keyboard-visible focus treatment.                                   |
+| `--cratis-maskbg`                               | Modal backdrop.                                                     |
+| `--cratis-border-radius`                        | Default component radius.                                           |
+| `--cratis-control-height` / `-small` / `-large` | Interactive control size floor.                                     |
+| `--cratis-disabled-opacity`                     | Shared disabled-state opacity.                                      |
+| `--cratis-shadow-subtle`                        | Small control elevation.                                            |
+| `--cratis-shadow-overlay`                       | Dropdown, DatePicker, filter, Toolbar panel, and tooltip elevation. |
+| `--cratis-shadow-dialog`                        | Dialog elevation.                                                   |
+| `--cratis-shadow-toast`                         | Toast elevation.                                                    |
 
-```ts
-import '@cratis/components/tokens';
-```
+## Overlay stacking
 
-Just the token declarations, with no Tailwind utilities. Use this if you bring your own utility CSS solution (or use Tailwind with custom classnames that don't match what the package ships).
+| Token                      | Default | Surface                           |
+| -------------------------- | ------: | --------------------------------- |
+| `--cratis-z-index-dialog`  |  `1100` | Dialog backdrop/root.             |
+| `--cratis-z-index-overlay` |  `1200` | Dropdown and DatePicker overlays. |
+| `--cratis-z-index-filter`  |  `1250` | Column filter menus.              |
+| `--cratis-z-index-tooltip` |  `1300` | Tooltips.                         |
+| `--cratis-z-index-toast`   |  `1400` | Toast regions.                    |
 
-## Token catalogue
-
-Each token resolves the PrimeReact v11 design token first, then the v10 legacy variable (e.g. `--cratis-surface-border` → `var(--p-content-border-color, var(--surface-border))`). v11 is not a 1:1 rename of v10 — where v11's vocabulary has no direct equivalent for a v10 concept (`surface-ground`, `surface-section`, `surface-overlay`, the composite `focus-ring`), the closest durable v11 semantic token is used (see the inline notes in `tokens.css`). Set the `--cratis-*` token to override regardless of which PrimeReact version is loaded.
-
-### Surfaces
-
-| Token | Cratis surfaces tinted by it |
-|---|---|
-| `--cratis-surface-0`      | Reserved for any Cratis-scoped surface that maps to PrimeReact's `--surface-0`. |
-| `--cratis-surface-100`    | `FormElement` addon background. |
-| `--cratis-surface-ground` | `PivotViewer` canvas and panel backgrounds. |
-| `--cratis-surface-section` | `PivotViewer` panel section backgrounds. |
-| `--cratis-surface-card`   | Backgrounds of the `ObjectContentEditor` snapshot card and similar panels; `PivotViewer` card gradients. |
-| `--cratis-surface-overlay` | Overlay backgrounds inside Cratis wrappers. |
-| `--cratis-surface-hover`  | Hover state on row alternation inside `ObjectContentEditor`. |
-| `--cratis-surface-border` | `FormElement` addon border, `ObjectNavigationalBar` bottom border, `SchemaEditor` bottom border, table/paginator borders inside `DataTableForQuery` / `DataTableForObservableQuery`. |
-
-### Text
-
-| Token | Cratis surfaces tinted by it |
-|---|---|
-| `--cratis-text-color`           | Default body text inside Cratis wrappers. |
-| `--cratis-text-color-secondary` | `ObjectContentEditor` label column, `ObjectNavigationalBar` breadcrumbs, `SchemaEditor` secondary labels. |
-
-### Brand
-
-| Token | Cratis surfaces tinted by it |
-|---|---|
-| `--cratis-primary-color`      | `ObjectContentEditor` navigation links into nested objects/arrays, default brand accent. |
-| `--cratis-primary-color-text` | Foreground used on top of `--cratis-primary-color` backgrounds (e.g. CommandStepper step number color). |
-| `--cratis-primary-300`        | `PivotViewer` loading spinner ring. |
-| `--cratis-primary-400`        | `PivotViewer` loading spinner ring. |
-| `--cratis-primary-500`        | `PivotViewer` loading spinner ring and card gradient. |
-| `--cratis-primary-600`        | `PivotViewer` loading spinner ring. |
-
-### Selection / highlight
-
-| Token | Cratis surfaces tinted by it |
-|---|---|
-| `--cratis-highlight-bg`         | Background of timestamp/highlight chips inside `ObjectContentEditor`. |
-| `--cratis-highlight-text-color` | Text on top of `--cratis-highlight-bg`. |
-
-### Semantic accents
-
-| Token | Cratis surfaces tinted by it |
-|---|---|
-| `--cratis-green-500`  | `CommandStepper` visited-step indicator. |
-| `--cratis-orange-500` | Reserved for warning accents. |
-| `--cratis-red-500`    | Inline validation error text (replaces PrimeReact's `.p-error` styling), `CommandStepper` error-step indicator, error border tint inside `ObjectContentEditor`. |
-
-### Geometry
-
-| Token | Cratis surfaces tinted by it |
-|---|---|
-| `--cratis-border-radius` | Border radius on `FormElement` addon and any Cratis surface that mirrors PrimeReact's `--border-radius`. |
-
-### Effects
-
-| Token | Cratis surfaces tinted by it |
-|---|---|
-| `--cratis-focus-ring` | Focus-ring box-shadow on interactive `PivotViewer` elements. |
-| `--cratis-maskbg`     | `PivotViewer` modal mask background. |
-
-## Overriding tokens
-
-Apply on `:root` for an app-wide override:
+Keep their relative order when mapping into an application's overlay system. A mixed Prime/product application with overlays around `10000` can move the complete Components range together:
 
 ```css
 :root {
-    --cratis-red-500: #f97316;
-    --cratis-border-radius: 12px;
+    --cratis-z-index-dialog: 11000;
+    --cratis-z-index-overlay: 11100;
+    --cratis-z-index-filter: 11150;
+    --cratis-z-index-tooltip: 11200;
+    --cratis-z-index-toast: 11300;
 }
 ```
 
-…or on an ancestor scope for a region-specific look:
+These tokens coordinate Components only. Configure direct Prime or product overlays independently.
 
-```css
-.brand-region {
-    --cratis-surface-border: theme('colors.violet.500');
-    --cratis-text-color-secondary: theme('colors.violet.300');
-}
-```
-
-```tsx
-<div className="brand-region">
-    <ObjectNavigationalBar navigationPath={path} onNavigate={…} />
-</div>
-```
-
-Cratis tokens cascade like any other CSS variable, so any selector that increases specificity over `:root` wins.
-
-## With TailwindCSS
-
-Tailwind's `@layer base` is the idiomatic spot — declare tokens once and let Tailwind handle cascade and dark mode:
-
-```css
-@import "tailwindcss";
-@import "@cratis/components/tokens";
-
-@layer base {
-    :root {
-        --cratis-surface-border: theme('colors.slate.700');
-        --cratis-text-color:     theme('colors.slate.50');
-        --cratis-red-500:        theme('colors.red.500');
-    }
-
-    .dark {
-        --cratis-surface-border: theme('colors.slate.600');
-        --cratis-text-color:     theme('colors.slate.100');
-    }
-}
-```
-
-## Relationship to PrimeReact variables
-
-The Cratis token layer is **additive** on top of PrimeReact's theme system, not a replacement for it. The cascade in `tokens.css` resolves the v11 token first, then the v10 legacy variable:
+## Map a product system
 
 ```css
 :root {
-    /* v11 (@primeuix/themes) first, v10 legacy fallback */
-    --cratis-surface-card: var(--p-content-background, var(--surface-card));
-    --cratis-text-color:   var(--p-text-color, var(--text-color));
-    /* … */
+    --cratis-primary-color: var(--product-accent-700);
+    --cratis-primary-color-text: var(--product-text-inverse);
+    --cratis-action-background: var(--product-action);
+    --cratis-action-background-hover: var(--product-action-hover);
+    --cratis-action-background-active: var(--product-action-active);
+    --cratis-action-text: var(--product-on-action);
+    --cratis-surface-ground: var(--product-canvas);
+    --cratis-surface-card: var(--product-surface);
+    --cratis-surface-overlay: var(--product-surface-raised);
+    --cratis-surface-hover: var(--product-subtle);
+    --cratis-surface-border: var(--product-border);
+    --cratis-control-background: var(--product-control);
+    --cratis-control-border: var(--product-control-border);
+    --cratis-text-color: var(--product-text-primary);
+    --cratis-text-color-secondary: var(--product-text-secondary);
+    --cratis-focus-ring: var(--product-focus-ring);
 }
 ```
 
-That means:
+The token layer has renderer-independent baseline values and does not read legacy `--surface-*`, `--text-color`, `--primary-color`, or `--p-*` names. Import `@cratis/components/tokens` first, then assign product values to `--cratis-*` directly. This keeps product theming independent of any renderer token vocabulary.
 
-- Repaint PrimeReact itself — on **v11** customize the preset (`definePreset` / `--p-*` tokens), on **v10** override the legacy `--surface-*` / `--text-color` variables — and both PrimeReact widgets *and* Cratis surfaces follow.
-- Override `--cratis-surface-card` (Cratis) → only Cratis surfaces follow; PrimeReact widgets keep their existing color, on either version.
+Test contrast for every overridden foreground/background pair in each appearance mode the
+application supports. Token names and baseline values do not establish accessibility conformance
+for an application theme.
 
-Use the PrimeReact token when you want a whole-UI repaint. Use the Cratis token when you want a Cratis-specific accent that differs from PrimeReact widgets.
-
-## See also
-
-- [Use a custom palette on top of a PrimeReact theme](custom-palette.md) — for whole-UI repainting with PrimeReact variables
-- [Pass-through cheat sheet](pass-through.md) — for per-slot styling beyond what tokens reach
+Use [Stable component parts](pass-through.md) when token changes are not enough for a product-specific component treatment.
