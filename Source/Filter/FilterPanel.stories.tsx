@@ -570,7 +570,14 @@ export const MixedFilters: Story = {
             'Filters',
             'Department',
         );
-        const search = body.getByPlaceholderText('Search filters…');
+        // Department's own option list also has room to show a search box now (five options
+        // is enough to overflow the list's fixed-height box), and it shares this panel's
+        // placeholder text by design (see for_FilterPanel/when_a_filter_group_has_no_own_search_placeholder.tsx)
+        // - so scope to .pv-search, the panel's own top search, rather than matching either box.
+        const panelSearch = within(
+            document.body.querySelector('.pv-search') as HTMLElement,
+        );
+        const search = panelSearch.getByPlaceholderText('Search filters…');
         await userEvent.type(search, 'department');
         await expect(search).toHaveValue('department');
         const engineering = await body.findByRole('checkbox', { name: /^Engineering/ });
