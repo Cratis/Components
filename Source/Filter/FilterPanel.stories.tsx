@@ -687,3 +687,168 @@ export const MixedFilters: Story = {
         );
     },
 };
+
+// ---------------------------------------------------------------------------
+// Story: Option list search grows out of overflow, not a flag
+// ---------------------------------------------------------------------------
+
+const repositories = Array.from({ length: 30 }, (_, index) => ({
+    key: `repo-${index}`,
+    label: `repository-${String(index + 1).padStart(2, '0')}`,
+    value: `repo-${index}`,
+}));
+
+export const AutoSearchWhenOverflowing: Story = {
+    name: 'Search appears only when the list overflows',
+    play: async ({ canvasElement }) => {
+        const { body } = await openFilterGroup(canvasElement, 'Repository', 'Repository');
+
+        // 30 repositories do not fit in the option list's box, so a search box appears on
+        // its own - no `searchable` flag was set on this filter definition.
+        const search = await body.findByPlaceholderText('Search…');
+        await expect(search).toBeTruthy();
+
+        await userEvent.type(search, 'repository-05');
+        const match = await body.findByRole('checkbox', { name: /^repository-05/ });
+        await userEvent.click(match);
+        await expect(match).toBeChecked();
+
+        // Every other repository is filtered out of view while the search text narrows the list.
+        await expect(body.queryByText('repository-01')).toBeNull();
+    },
+    render: () => {
+        const buttonRef = useRef<HTMLButtonElement>(null!);
+        const [isOpen, setIsOpen] = useState(false);
+
+        const filters: FilterDefinition[] = useMemo(() => [
+            {
+                key: 'repository',
+                label: 'Repository',
+                type: 'string',
+                multi: true,
+                options: repositories,
+            },
+        ], []);
+
+        const { filterValues, rangeValues, expandedFilterKey, setExpandedFilterKey, handleToggleFilter, handleClearFilter, handleRangeChange } =
+            useFilterState(filters);
+
+        const activeCount = filterValues['repository']?.size ?? 0;
+
+        return (
+            <div style={pageStyle}>
+                <div>
+                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>
+                        Search Appears Only When Needed
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                        30 options overflow the option list&apos;s box, so a search box grows
+                        out of the list automatically and stays pinned to the top while the
+                        rows beneath it scroll. No <code>searchable</code> flag is set on this
+                        filter — compare with &quot;Search never appears for a short list&quot;.
+                    </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button
+                        ref={buttonRef}
+                        style={isOpen ? activeButtonStyle : buttonStyle}
+                        onClick={() => setIsOpen((v) => !v)}
+                    >
+                        Repository{activeCount > 0 ? ` (${activeCount})` : ''}
+                    </button>
+                </div>
+                <FilterPanel
+                    isOpen={isOpen}
+                    filters={filters}
+                    filterValues={filterValues}
+                    rangeValues={rangeValues}
+                    expandedFilterKey={expandedFilterKey}
+                    anchorRef={buttonRef}
+                    onClose={() => setIsOpen(false)}
+                    onFilterToggle={handleToggleFilter}
+                    onFilterClear={handleClearFilter}
+                    onRangeChange={handleRangeChange}
+                    onExpandedFilterChange={setExpandedFilterKey}
+                />
+            </div>
+        );
+    },
+};
+
+// ---------------------------------------------------------------------------
+// Story: Option list search never appears for a short list
+// ---------------------------------------------------------------------------
+
+export const NoSearchWhenItFits: Story = {
+    name: 'Search never appears for a short list',
+    play: async ({ canvasElement }) => {
+        const { body, canvas } = await openFilterGroup(canvasElement, 'Priority', 'Priority');
+
+        // Three options fit comfortably in the option list's box, so no search box is
+        // rendered at all - not hidden, not empty, simply not there.
+        await expect(body.queryByPlaceholderText('Search…')).toBeNull();
+
+        const high = await body.findByRole('radio', { name: /^High/ });
+        await userEvent.click(high);
+        await expect(high).toBeChecked();
+        await expect(canvas.getByRole('button', { name: 'Priority (1)' })).toBeTruthy();
+    },
+    render: () => {
+        const buttonRef = useRef<HTMLButtonElement>(null!);
+        const [isOpen, setIsOpen] = useState(false);
+
+        const filters: FilterDefinition[] = useMemo(() => [
+            {
+                key: 'priority',
+                label: 'Priority',
+                type: 'string',
+                options: [
+                    { key: 'high', label: 'High', value: 'high', count: 4 },
+                    { key: 'medium', label: 'Medium', value: 'medium', count: 11 },
+                    { key: 'low', label: 'Low', value: 'low', count: 22 },
+                ],
+            },
+        ], []);
+
+        const { filterValues, rangeValues, expandedFilterKey, setExpandedFilterKey, handleToggleFilter, handleClearFilter, handleRangeChange } =
+            useFilterState(filters);
+
+        const activeCount = filterValues['priority']?.size ?? 0;
+
+        return (
+            <div style={pageStyle}>
+                <div>
+                    <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem' }}>
+                        No Search For A Short List
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                        Three options fit without scrolling, so no search box is rendered -
+                        compare with &quot;Search appears only when the list overflows&quot;.
+                    </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <button
+                        ref={buttonRef}
+                        style={isOpen ? activeButtonStyle : buttonStyle}
+                        onClick={() => setIsOpen((v) => !v)}
+                    >
+                        Priority{activeCount > 0 ? ` (${activeCount})` : ''}
+                    </button>
+                </div>
+                <FilterPanel
+                    isOpen={isOpen}
+                    filters={filters}
+                    filterValues={filterValues}
+                    rangeValues={rangeValues}
+                    expandedFilterKey={expandedFilterKey}
+                    anchorRef={buttonRef}
+                    onClose={() => setIsOpen(false)}
+                    onFilterToggle={handleToggleFilter}
+                    onFilterClear={handleClearFilter}
+                    onRangeChange={handleRangeChange}
+                    onExpandedFilterChange={setExpandedFilterKey}
+                />
+            </div>
+        );
+    },
+};
