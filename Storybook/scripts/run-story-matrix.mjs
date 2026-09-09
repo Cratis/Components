@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
@@ -9,6 +10,7 @@ import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(storybookRoot, '..');
 const sourceRoot = path.join(repositoryRoot, 'Source');
+const outputRoot = path.join(sourceRoot, 'storybook-static/renderers');
 const inventory = discoverAdapterPackages(repositoryRoot);
 const requestedAppearance = process.argv[2];
 const appearances = requestedAppearance
@@ -40,6 +42,15 @@ runNode(
     'Pre-matrix Storybook indexes',
     path.join(storybookRoot, 'scripts/verify-storybook-indexes.mjs'),
 );
+
+// Read the story count from the index the previous step just verified, rather than a
+// hardcoded literal, so this log can never silently drift from the ratchet in
+// verify-storybook-indexes.mjs again.
+const builtInAdapter = inventory.adapters.find(adapter => adapter.builtIn) ?? inventory.adapters[0];
+const builtInIndex = JSON.parse(
+    readFileSync(path.join(outputRoot, builtInAdapter.metadata.id, 'index.json'), 'utf8'),
+);
+const storyCount = Object.values(builtInIndex.entries ?? {}).filter(entry => entry.type === 'story').length;
 
 const vitest = path.join(repositoryRoot, 'node_modules/vitest/vitest.mjs');
 for (const adapter of inventory.adapters) {
@@ -73,9 +84,9 @@ for (const adapter of inventory.adapters) {
     }
 }
 
-const matrixCount = inventory.adapters.length * 277 * appearances.length;
+const matrixCount = inventory.adapters.length * storyCount * appearances.length;
 console.log(
-    `\nCompleted ${inventory.adapters.length} isolated previews × 277 stories × ${appearances.length} appearance mode(s) = ${matrixCount} story/appearance/axe cases.`,
+    `\nCompleted ${inventory.adapters.length} isolated previews × ${storyCount} stories × ${appearances.length} appearance mode(s) = ${matrixCount} story/appearance/axe cases.`,
 );
 console.log('Story exclusions: none. No sampling or tag exclusion was applied.');
 console.log(
