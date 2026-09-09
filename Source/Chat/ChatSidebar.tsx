@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
+import { createPortal } from 'react-dom';
 import { Modal, ModalOverlay } from 'react-aria-components';
 import type { ChatConversationLabels, ChatConversationProps } from './ChatConversation';
 import { ChatConversation } from './ChatConversation';
@@ -384,7 +385,7 @@ export const ChatSidebar = <
         </>
     );
 
-    return (
+    return modal ? (
         <ModalOverlay
             {...pt?.backdrop}
             isOpen={open}
@@ -418,5 +419,41 @@ export const ChatSidebar = <
                 {panel}
             </Modal>
         </ModalOverlay>
+    ) : (
+        // Non-modal: a chat lives *next to* the work, so the background must stay visible and
+        // interactive. React Aria's Modal blocks its backdrop by design (its dismissal props only
+        // gate how it closes, never whether it intercepts), so the default is a plain portaled
+        // layer with no dismissal behavior at all — only the close/back affordances dismiss it.
+        open &&
+        createPortal(
+            <div
+                {...pt?.backdrop}
+                className={classNames(
+                    'cratis-chat-sidebar__backdrop',
+                    pt?.backdrop?.className,
+                )}
+                data-cratis-part='backdrop'
+                data-modal={false}
+                data-open
+                data-selected={openTopicId !== undefined || undefined}
+            >
+                <div
+                    {...pt?.root}
+                    className={classNames(
+                        'cratis-chat-sidebar',
+                        pt?.root?.className,
+                        className,
+                    )}
+                    style={{ width, ...pt?.root?.style }}
+                    data-cratis-part='root'
+                    data-position={position}
+                    data-open
+                    data-selected={openTopicId !== undefined || undefined}
+                >
+                    {panel}
+                </div>
+            </div>,
+            document.body,
+        )
     );
 };
