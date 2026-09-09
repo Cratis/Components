@@ -28,4 +28,3 @@ import { InputTextField } from '@cratis/components/CommandForm';
 - Default value is an empty string.
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
-

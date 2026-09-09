@@ -1,8 +1,6 @@
 ---
 title: "Recipe: Displaying data"
 description: Render query results in a data table that updates live, and build list-and-detail screens with DataPage.
-sidebar:
-  order: 4
 ---
 
 **Goal:** show the results of an Arc query in a table — and have it update on its own when the underlying read model changes.

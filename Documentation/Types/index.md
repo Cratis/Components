@@ -1,4 +1,7 @@
-# Types
+---
+title: Types
+description: Reference the shared TypeScript types and constants exported by Components.
+---
 
 The `Types` module exports shared TypeScript types and constants used across the component library. Import from `@cratis/components/types`.
 
@@ -102,4 +105,3 @@ interface NavigationItem {
 ```
 
 Used internally by `ObjectNavigationalBar`.
-

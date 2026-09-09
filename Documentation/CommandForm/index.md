@@ -1,4 +1,7 @@
-# CommandForm
+---
+title: CommandForm
+description: Build type-safe Arc command forms with reusable fields, validation, and automatic value binding.
+---
 
 The `CommandForm` component provides form field components for building command input forms with automatic type handling and validation.
 

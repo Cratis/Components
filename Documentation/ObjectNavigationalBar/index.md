@@ -1,4 +1,7 @@
-# ObjectNavigationalBar
+---
+title: ObjectNavigationalBar
+description: Navigate hierarchical objects with a controlled breadcrumb bar and back action.
+---
 
 The `ObjectNavigationalBar` component provides breadcrumb navigation for hierarchical data structures.
 

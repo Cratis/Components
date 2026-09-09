@@ -1,8 +1,6 @@
 ---
 title: "Recipe: A list screen with actions"
 description: Combine a live table with command dialogs to build the everyday "list things, add/edit/remove them" screen.
-sidebar:
-  order: 6
 ---
 
 **Goal:** the most common screen in any app — a table of things with a toolbar to add, and per-row actions to edit or remove. This recipe wires [displaying data](/components/displaying-data/) and [running commands](/components/building-a-form/) together.

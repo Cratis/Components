@@ -1,4 +1,7 @@
-# StepperCommandDialog
+---
+title: StepperCommandDialog
+description: Execute Arc commands through a multi-step dialog with validation-aware navigation.
+---
 
 The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of the Cratis-owned `CommandStepper`.
 

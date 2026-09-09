@@ -1,4 +1,7 @@
-# TimeMachine
+---
+title: TimeMachine
+description: Explore versions, events, and read-model changes along an interactive timeline.
+---
 
 The `TimeMachine` component provides an interactive timeline visualization for exploring the evolution of data over time through events and state changes.
 

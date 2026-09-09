@@ -1,4 +1,7 @@
-# CommandStepper
+---
+title: CommandStepper
+description: Split an Arc command form into validation-aware steps for wizard-style workflows.
+---
 
 The `CommandStepper` component is a command-scoped stepper foundation for wizard-style flows.
 

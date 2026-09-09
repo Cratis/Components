@@ -1,8 +1,6 @@
 ---
 title: "Recipe: Multi-step form"
 description: Gather a command's input across several named steps with StepperCommandDialog.
-sidebar:
-  order: 5
 ---
 
 **Goal:** one command needs more input than fits comfortably on a single screen. Split it into a wizard — named steps the user moves through — that still executes a single command at the end.

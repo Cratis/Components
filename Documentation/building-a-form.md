@@ -1,8 +1,6 @@
 ---
 title: 'Recipe: Building a form'
 description: Execute a command from a typed form using CommandDialog and CommandForm fields, with validation handled for you.
-sidebar:
-    order: 3
 ---
 
 **Goal:** collect input and run an Arc command — with the confirm button disabled while it executes, validation wired up, and no manual fetch.

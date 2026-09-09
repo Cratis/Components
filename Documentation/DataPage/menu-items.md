@@ -96,7 +96,7 @@ import { FaFloppyDisk, FaDownload, FaUpload } from 'react-icons/fa6';
 <MenuItem label="Upload" icon={FaUpload} command={handleUpload} />
 ```
 
-:::caution
+:::caution[Pass an icon component]
 Don't pass `icon="pi pi-save"` (a PrimeIcons CSS class) or `icon={<FaFloppyDisk />}` (a JSX element).
 DataPage instantiates the icon itself, so the prop must be the component type: `icon={FaFloppyDisk}`.
 :::

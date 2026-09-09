@@ -1,4 +1,7 @@
-# Toolbar
+---
+title: Toolbar
+description: Build canvas-style tool palettes with groups, contexts, slots, folders, and fan-out panels.
+---
 
 The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, fan-out sub-panels, and drag & drop onto surfaces.
 

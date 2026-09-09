@@ -1,4 +1,7 @@
-# Common Components
+---
+title: Common Components
+description: Reference the shared controls, provider, layout, icons, and form utilities used across Components.
+---
 
 The Common module provides reusable UI components and the styling setup primitive that serve as building blocks for applications.
 

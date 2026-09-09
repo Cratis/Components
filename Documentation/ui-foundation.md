@@ -1,8 +1,6 @@
 ---
 title: UI foundation
 description: How Components owns its public React contracts and delegates selected interaction primitives.
-sidebar:
-    order: 2
 ---
 
 Components 4 owns its public React markup, TypeScript types, tokens, documented parts, and component behavior without exposing its internal interaction library as a consumer contract. The public component contract is deliberately coupled to React and the browser DOM: standard HTML attributes, React refs, native element types, form behavior, and DOM event semantics are intentional guarantees. React Aria supplies selected focus, keyboard, overlay, collection, and date interaction primitives internally. These implementation facts do not establish accessibility conformance for every component or application.

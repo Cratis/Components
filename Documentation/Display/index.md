@@ -1,4 +1,7 @@
-# Display
+---
+title: Display
+description: Show statuses, counts, avatars, progress, and loading states with presentational primitives.
+---
 
 The `Display` components are small, presentational primitives for status and feedback — tags, badges, chips, avatars, progress, and loading skeletons. Import them from `@cratis/components/Display`.
 
