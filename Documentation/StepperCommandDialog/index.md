@@ -3,7 +3,7 @@ title: StepperCommandDialog
 description: Execute Arc commands through a multi-step dialog with validation-aware navigation.
 ---
 
-The `StepperCommandDialog` component executes one Arc command through a modal, multi-step form. It and [`CommandStepper`](../CommandStepper/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive.
+The `StepperCommandDialog` component executes one Arc command through a modal, multi-step form. It and [`CommandStepper`](../CommandStepper/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `CommandStepper` when the wizard belongs inline; the dialog additionally owns cancel, busy state, and authorization routing.
 
 ## Purpose
 

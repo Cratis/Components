@@ -9,7 +9,7 @@ The `CommandStepper` component executes one Arc command through an inline, multi
 
 Use `CommandStepper` when the wizard belongs directly in a page region, panel, or route. It establishes a `CommandForm`, renders `StepperPanel` steps with built-in navigation, and executes the command from the final step.
 
-`CommandStepper` and [`StepperCommandDialog`](../StepperCommandDialog/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `StepperCommandDialog` when the wizard should be modal; it also owns dialog dismissal, authorization-result routing, and its execution busy state.
+`CommandStepper` and [`StepperCommandDialog`](../StepperCommandDialog/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `StepperCommandDialog` when the wizard should be modal; the dialog also owns cancel, busy state, and authorization routing.
 
 ## Basic Usage
 
@@ -49,15 +49,15 @@ export const ProjectWizard = () => {
 - `showSubmit`: Show the built-in submit action on the last step (default: `true`)
 - `okLabel`: Submit button label. Falls back to the provider's `messages.stepper.submit`, then `'Submit'`
 - `isBusy`: Disables the navigation controls while something is running
-- `onSuccess`: Callback invoked with the typed response after successful command execution
-- `onValidationFailure`: Callback invoked with validation results when command execution returns validation errors
-- `onFailed`: Callback invoked with the full command result for an unsuccessful, non-validation result
-- Other applicable `CommandForm` props, including `initialValues`, `currentValues`, `validateOnInit`, and field-validation callbacks
+- Other applicable `CommandForm` props, including `initialValues`, `currentValues`, `validateOnInit`, field-validation callbacks, and inherited command execution callbacks:
+  - `onSuccess`: Callback invoked with the typed response after successful command execution
+  - `onValidationFailure`: Callback invoked with validation results when command execution returns validation errors
+  - `onFailed`: Callback invoked with the full command result for an unsuccessful, non-validation result
 - `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with, and it runs only on submit, so it can never satisfy required-field validation (seed those through `initialValues`)
 - `linear` (default `true`), `orientation` (`'horizontal'` default / `'vertical'`), `headerPosition` (`'top'` default / `'bottom'`), `start`, `end`, `onChangeStep`, and `pt`: the active `StepperCustomizationProps` surface. It maps onto stable `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, and `panel` parts.
 - `ptOptions` and `unstyled`: retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned.
 
-There is no outer dialog, so `CommandStepper` has no `dialogPt` or `dialogUnstyled` props. Its `pt` prop targets the stepper directly.
+Because `CommandStepper` has no outer dialog, it has no `dialogPt` or `dialogUnstyled` props; `pt` targets the stepper directly.
 
 Conditional steps written as `{condition && <StepperPanel/>}` are counted correctly — only the panels that actually render are counted, so navigation and the per-step validation state stay in step with what is on screen. A `<>…</>` fragment wrapping several panels still counts as **one** step.
 
