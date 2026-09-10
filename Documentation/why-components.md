@@ -1,8 +1,6 @@
 ---
 title: Why Components
 description: Why Components owns React composition around Arc proxies and selected interaction primitives.
-sidebar:
-    order: 1
 ---
 
 You can connect an Arc-generated command or query to any React UI. Without Components, every application repeatedly builds command execution state, validation display, dialogs, observable subscriptions, paging, selection, empty/pending states, localization, and accessibility behavior.

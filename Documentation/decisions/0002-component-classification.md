@@ -2,7 +2,6 @@
 title: Public component classification
 description: The architecture categories assigned to every component exported by the public package barrels.
 sidebar:
-    order: 2
     badge: { text: Accepted, variant: tip }
 ---
 

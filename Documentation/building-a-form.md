@@ -1,8 +1,6 @@
 ---
 title: 'Recipe: Building a form'
 description: Execute a command from a typed form using CommandDialog and CommandForm fields, with validation handled for you.
-sidebar:
-    order: 3
 ---
 
 **Goal:** collect input and run an Arc command — with the confirm button disabled while it executes, validation wired up, and no manual fetch.
@@ -71,5 +69,6 @@ const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
 
 ## Next
 
-- [Displaying data](/components/displaying-data/) — render the results.
-- The full field set and dialog options are in the Components reference and Storybook.
+- [Displaying data](displaying-data.md) — render the results
+- [CommandDialog](CommandDialog/index.md) — execution callbacks, busy behavior, dialog options, and context
+- [CommandForm](CommandForm/index.md) — form binding, field discovery, and available field components

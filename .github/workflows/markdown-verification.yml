@@ -6,6 +6,8 @@ on:
         branches:
             - main
         paths:
+            - '.github/workflows/markdown-verification.yml'
+            - '.markdownlint.json'
             - 'Documentation/**'
             - 'README.md'
             - 'release.md'
@@ -20,6 +22,8 @@ on:
         branches:
             - '**'
         paths:
+            - '.github/workflows/markdown-verification.yml'
+            - '.markdownlint.json'
             - 'Documentation/**'
             - 'README.md'
             - 'release.md'
@@ -39,32 +43,7 @@ permissions:
     contents: read
 
 jobs:
-    markdown-lint:
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-              with:
-                  persist-credentials: false
-
-            - name: Lint Markdown files
-              uses: DavidAnson/markdownlint-cli2-action@eb5ca3ab411449c66620fe7f1b3c9e10547144b0 # v18
-              with:
-                  globs: |
-                      README.md
-                      release.md
-                      Documentation/**/*.md
-                      Documentation/**/*.mdx
-                      Source/*.md
-                      Migrator/*.md
-                      ESLint/*.md
-                      Conformance/*.md
-                      Adapters/**/*.md
-                      Storybook/*.md
-                      scripts/*.md
-
-    link-verification:
+    markdown-verification:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -78,11 +57,10 @@ jobs:
               with:
                   node-version: 23.x
 
-            - name: Check repository-local Markdown and MDX links
-              run: |
-                  node Documentation/verify-local-links.mjs Documentation
-                  node Documentation/verify-local-links.mjs Adapters
-                  node Documentation/verify-local-links.mjs scripts
+            # Run the same entry point contributors use locally so linting,
+            # authoring validation, and local-link checks cannot drift apart.
+            - name: Check Markdown and MDX authoring
+              run: ./Documentation/verify-markdown.sh
 
             - name: Check external links in consumer documentation
               uses: JustinBeckwith/linkinator-action@7b6b0bc671f6264e1a8daa4488a5bd91ce61dcd4 # v2.4.2

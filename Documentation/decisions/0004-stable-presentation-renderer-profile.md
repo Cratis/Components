@@ -2,7 +2,6 @@
 title: Stable presentation renderer profile
 description: The bounded nine-slot renderer contract promoted after independent conformance proof.
 sidebar:
-    order: 4
     badge: { text: Accepted, variant: tip }
 ---
 

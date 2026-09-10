@@ -1,6 +1,9 @@
-# StepperCommandDialog
+---
+title: StepperCommandDialog
+description: Execute Arc commands through a multi-step dialog with validation-aware navigation.
+---
 
-The `StepperCommandDialog` component provides a multi-step wizard dialog interface for executing commands, built on top of the Cratis-owned `CommandStepper`.
+The `StepperCommandDialog` component executes one Arc command through a modal, multi-step form. It and [`CommandStepper`](../CommandStepper/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `CommandStepper` when the wizard belongs inline; the dialog additionally owns cancel, busy state, and authorization routing.
 
 ## Purpose
 
@@ -277,10 +280,10 @@ The count is not fixed for the lifetime of the dialog either. A late-resolving q
 
 - `@cratis/arc/commands` for command execution
 - `@cratis/arc.react/commands` for form handling
-- the Cratis-owned Stepper and `StepperPanel` for the wizard UI
+- the private `CommandStepperContent` rendering primitive and public `StepperPanel` marker for the wizard UI
 - The Cratis [`Dialog`](../Dialogs/dialog.md) for the modal wrapper
 
 ## See Also
 
 - [Advanced Features](advanced-features.md) - Field validation, transformation, and change tracking across steps
-- [CommandStepper](../CommandStepper/index.md) - Standalone stepper foundation component
+- [CommandStepper](../CommandStepper/index.md) — render an executing command wizard inline without a modal dialog

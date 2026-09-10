@@ -2,7 +2,6 @@
 title: DOM-coupled public component contract
 description: Why Components intentionally exposes React, HTML, native form, ref, and DOM event semantics while keeping renderer vendors private.
 sidebar:
-    order: 1
     badge: { text: Accepted, variant: tip }
 ---
 

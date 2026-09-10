@@ -30,4 +30,3 @@ import { NumberField } from '@cratis/components/CommandForm';
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
 - When the value is cleared, it falls back to `0`.
-

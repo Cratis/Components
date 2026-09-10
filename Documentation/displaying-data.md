@@ -1,8 +1,6 @@
 ---
 title: "Recipe: Displaying data"
 description: Render query results in a data table that updates live, and build list-and-detail screens with DataPage.
-sidebar:
-  order: 4
 ---
 
 **Goal:** show the results of an Arc query in a table — and have it update on its own when the underlying read model changes.
@@ -43,7 +41,7 @@ For the common "table on the left, details on the right" screen, `DataPage` give
 import { DataPage } from '@cratis/components/DataPage';
 ```
 
-See the DataPage reference for menu items, the details panel, and selection wiring.
+See [DataPage](DataPage/index.md) for menu items, the details panel, and selection wiring.
 
 ## Tips
 
@@ -52,5 +50,6 @@ See the DataPage reference for menu items, the details panel, and selection wiri
 
 ## Next
 
-- [Building a form](/components/building-a-form/) — the write side.
-- [Build a full-stack feature](/build-a-full-app/) — the table and the form together against one Arc slice.
+- [Building a form](building-a-form.md) — the write side
+- [DataTables](DataTables/index.md) — choose the Arc query wrapper and configure columns
+- [DataPage](DataPage/index.md) — compose a query-backed list screen with actions and details

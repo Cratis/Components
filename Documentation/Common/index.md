@@ -1,4 +1,7 @@
-# Common Components
+---
+title: Common Components
+description: Reference the shared controls, provider, layout, icons, and form utilities used across Components.
+---
 
 The Common module provides reusable UI components and the styling setup primitive that serve as building blocks for applications.
 
@@ -8,6 +11,7 @@ The Common module provides reusable UI components and the styling setup primitiv
 - **TextInput / TextArea**: Native text controls with semantic string changes and real element refs.
 - **Checkbox / Radio / Switch**: Native form choices with semantic boolean changes and browser-owned submission and reset behavior.
 - **Button / IconButton**: Native actions with semantic variants, tones, loading, and disabled behavior.
+- **ActionMenubar**: Horizontal toolbar of page-level command actions.
 - **Surface**: A bounded `div`, `section`, or `article` container with no invented interaction state.
 - **Icon / IconDisplay**: Unified icon type that accepts a CSS class string or any React node.
 - **Page**: Layout primitive for consistent page structures.
@@ -17,6 +21,7 @@ The Common module provides reusable UI components and the styling setup primitiv
 ## See Also
 
 - [Basic controls](basic-controls.md) — native form, ref, change, part, and state contracts
+- [ActionMenubar](action-menubar.md) — page-level command actions
 - [CratisComponentsProvider](cratis-components-provider.md) — locale, labels, and toaster configuration
 - [Icon](icon.md) - Icon type and IconDisplay component
 - [Page](page.md) - Page layout component

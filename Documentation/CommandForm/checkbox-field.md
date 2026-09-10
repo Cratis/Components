@@ -25,4 +25,3 @@ import { CheckboxField } from '@cratis/components/CommandForm';
 
 - Default value is `false`.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
-

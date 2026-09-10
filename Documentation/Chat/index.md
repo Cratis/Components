@@ -1,4 +1,7 @@
-# Chat
+---
+title: Chat
+description: Build topic-based chat with host-owned data, mentions, emoji, and message actions.
+---
 
 The `Chat` components give an application a topic-based chat that opens in a sidebar next to the view — a topics list, the conversation for the picked topic, `@`-mentions of people and agents, emoji, and per-message actions — without the library holding any opinion about where the data lives or what a backend looks like.
 
