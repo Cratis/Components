@@ -8,10 +8,5 @@ on:
 jobs:
   update:
     uses: Cratis/Workflows/.github/workflows/update-packages.yml@main
-    with:
-      # primereact must stay on the major each adapter targets (PrimeReact10
-      # declares peers >=10 <11; the PrimeReact adapter is bumped manually
-      # alongside its own major).
-      npm-package-exclusions: typescript,primereact
     secrets:
       PAT_WORKFLOWS: ${{ secrets.PAT_WORKFLOWS }}
