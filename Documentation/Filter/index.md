@@ -3,7 +3,7 @@ title: FilterPanel
 description: Build reusable filter panels with option, range, and custom editors.
 ---
 
-The `FilterPanel` component provides a standalone, reusable filter UI that can be placed next to any data view. It renders as a positioned dropdown anchored below a trigger button and supports single-select, multi-select, numeric range (with histogram), and fully custom filter editors declared as children.
+The `FilterPanel` component provides a standalone, reusable filter UI that can be placed next to any data view. It renders as a positioned dropdown anchored below a trigger button and supports single-select, multi-select, numeric range (with histogram), and fully custom filter editors declared as children. If you are choosing between faceted, column, and global filtering, start with [Choosing a component](../choosing-a-component.md#filtering).
 
 ## Key Features
 
