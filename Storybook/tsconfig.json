@@ -7,10 +7,9 @@
         "declarationMap": false,
         "module": "ESNext",
         "moduleResolution": "bundler",
-        "baseUrl": ".",
         "rootDir": "..",
         "paths": {
-            "virtual:cratis-renderer-preview": ["preview/virtual-renderer-preview.tsx"]
+            "virtual:cratis-renderer-preview": ["./preview/virtual-renderer-preview.tsx"]
         },
         "noEmit": true,
         "skipLibCheck": true,
