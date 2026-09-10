@@ -1,6 +1,6 @@
 ---
 title: Choosing a component
-description: A decision guide for the overlapping Components — CommandDialog vs StepperCommandDialog, DataPage vs DataTables, and Dialog vs CommandDialog.
+description: Choose among Components command, data, action, filtering, feedback, structured-data, history, and conversation surfaces.
 ---
 
 Several Components solve similar-looking problems, and it's not always obvious which one to reach for.
@@ -13,11 +13,13 @@ The question is whether confirming the form **runs a command**, and whether it's
 
 | You want to…                                             | Use                                                       | Why                                                                                                   |
 | -------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Collect a few fields and run one command                 | [`CommandDialog`](./CommandDialog/index.md)               | Instantiates, validates, and executes the command; handles the footer and button states. The default. |
-| Run a command, but gather input across **named steps**   | [`StepperCommandDialog`](./StepperCommandDialog/index.md) | A wizard over a single command — validate per step, navigate back and forth, execute at the end.      |
-| Embed command fields **in a page**, not a dialog         | [`CommandForm`](./CommandForm/index.md)                   | The same typed fields `CommandDialog` uses, without the dialog chrome.                                |
-| Collect data and return it **without** running a command | [`Dialog`](./Dialogs/index.md)                            | A confirmation or data-entry dialog that hands values back to the caller. No command involved.        |
-| Edit ordinary local React state                          | [`Common` basic controls](./Common/basic-controls.md)      | Native text and choice controls expose semantic values without binding an Arc command.                 |
+| Collect a few fields and run one command                   | [`CommandDialog`](./CommandDialog/index.md)               | Instantiates, validates, and executes the command; handles the footer and button states. The default. |
+| Run a command through named steps in a modal               | [`StepperCommandDialog`](./StepperCommandDialog/index.md) | A wizard over a single command — validate per step, navigate back and forth, execute at the end.      |
+| Run a command through named steps inline on the page       | [`CommandStepper`](./CommandStepper/index.md)             | The inline command wizard for a panel, route, or page region; it executes on the final step.       |
+| Embed command fields **in a page**, not a dialog           | [`CommandForm`](./CommandForm/index.md)                   | The same typed fields `CommandDialog` uses, without the dialog chrome.                                |
+| Collect data and return it **without** running a command   | [`Dialog`](./Dialogs/dialog.md)                           | A confirmation or data-entry dialog that hands values back to the caller. No command involved.        |
+| Edit ordinary local React state                            | [`Common` basic controls](./Common/basic-controls.md)      | Native text and choice controls expose semantic values without binding an Arc command.                 |
+| Select one or more values in ordinary local React state    | [`Dropdown`](./Dropdown/index.md)                         | Binds a value or array to local options without binding an Arc command.                               |
 
 Rule of thumb: **if confirming the dialog executes a generated command, it's a `CommandDialog`** (or its
 stepper variant). If it just gathers values and returns them, it's a `Dialog`. Never reach for
@@ -40,9 +42,39 @@ If you're building a list-screen-with-actions from scratch, start with the
 [list screen recipe](./list-screen-with-actions.md), which composes `DataPage` with `CommandDialog`
 actions.
 
+## Selection, status, and feedback
+
+| You want to…                                      | Use                                            | Why                                                                                         |
+| ------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Select one or more values from local options      | [`Dropdown`](./Dropdown/index.md)              | Supports single, filtered, and multiple selection through a controlled value.               |
+| Show status, counts, people, progress, or loading | [`Display`](./Display/index.md)                | Provides tags, badges, chips, avatars, messages, progress indicators, and skeletons.        |
+| Send an app-wide transient notification           | [`Notifications`](./Notifications/index.md)    | Provides one shared toast queue, an imperative API, and an optional app-wide toaster.        |
+
+### Filtering
+
+Choose the filtering surface by where its state belongs:
+
+| You want to…                                          | Use                                                                 | Why                                                                                                    |
+| ----------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Filter individual table columns                      | [`Column` filters](./DataTables/index.md#columnfiltermenu)          | A column can use the built-in `ColumnFilterMenu`; the menu keeps draft changes until Apply.            |
+| Search configured fields in a `DataPage`             | [`DataPage.globalFilterFields`](./DataPage/index.md#filtering-scope) | Adds global search over the rows in the currently loaded query page.                                   |
+| Present option, numeric-range, or custom filter groups | [`FilterPanel`](./Filter/index.md)                                  | Supplies a standalone faceted panel while the host owns how its filter state applies to the data view. |
+
+Table column and `DataPage` global filters operate on the currently loaded query page. Filtering the complete result set belongs in query arguments and server logic before paging; see [`DataPage` filtering scope](./DataPage/index.md#filtering-scope).
+
 ## Actions and tool palettes
 
 Use [`ActionMenubar`](./Common/action-menubar.md) or an ordinary product action row for flat page commands. `DataPage`'s built-in toolbar already renders `ActionMenubar`, not `Toolbar` — that is the default action row for a page, not a canvas tool palette. Use [`Toolbar`](./Toolbar/index.md) only for a genuine canvas/tool-palette interaction with active tools, groups, slots, folders, and fan-out panels. It is not a one-for-one replacement for a generic Prime Toolbar, and it is not a page-level action row wearing a different name.
+
+## Structured data, history, and conversation
+
+| You want to…                                           | Use                                                               | Why                                                                                              |
+| ------------------------------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Explore or edit an object through a JSON Schema        | [`ObjectContentEditor`](./ObjectContentEditor/index.md)           | Renders schema-aware properties and navigation through nested objects and arrays.                |
+| Create or edit a supported JSON Schema                 | [`SchemaEditor`](./SchemaEditor/index.md)                         | Edits properties, supported types, and formats in a validated table interface.                   |
+| Add controlled breadcrumbs to hierarchical data       | [`ObjectNavigationalBar`](./ObjectNavigationalBar/index.md)       | Renders a host-owned navigation path with breadcrumb and back actions.                           |
+| Explore supplied versions, events, and state changes   | [`TimeMachine`](./TimeMachine/index.md)                           | Provides an interactive timeline while the host supplies the version data.                       |
+| Build topic-based conversations from host-owned data   | [`Chat`](./Chat/index.md)                                        | Provides topic, conversation, mention, emoji, and message-action surfaces with callback outputs. |
 
 ## Spatial workspaces
 
@@ -56,6 +88,6 @@ A typical CRUD screen combines these: a `DataPage` lists the rows, a toolbar but
 `CommandDialog` to add one, and selecting a row opens another `CommandDialog` to edit it. That whole
 screen is the [list screen with actions](./list-screen-with-actions.md) recipe.
 
-Components does not attempt to replace every toolkit widget. Tabs, sidebars, timelines, knobs, select-button groups, general popovers, and specialized locale-aware inputs may remain product-owned or in a separately configured UI toolkit until an intentional Components API exists.
+Components does not ship every toolkit widget. Tabs, general-purpose sidebars, knobs, select-button groups, general popovers, grouped or expandable tables, controlled lazy/server table sorting, and specialized locale-aware inputs remain product-owned or in a separately configured UI toolkit. See [Coming from PrimeReact](./coming-from-primereact.md) for the current replacement boundaries.
 
 Still deciding how to style any of this? See [Styling](./Styling/index.md).
