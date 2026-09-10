@@ -53,7 +53,6 @@ You never write the glue between the write and the read: the "add" command appen
 
 ## Next
 
-- [Building a form](building-a-form.md) and [Displaying data](displaying-data.md) — the two halves in detail.
-- [DataPage reference](DataPage/index.md) — configure the action row, columns, selection, and details panel.
-- [CommandDialog reference](CommandDialog/index.md) — execute the add, edit, and remove commands.
-- [Build a full-stack feature](/build-a-full-app/) — the backend slice this screen sits on.
+- [Building a form](building-a-form.md) and [Displaying data](displaying-data.md) — the two halves in detail
+- [DataPage](DataPage/index.md) — configure the action row, columns, selection, and details panel
+- [CommandDialog](CommandDialog/index.md) — execute the add, edit, and remove commands

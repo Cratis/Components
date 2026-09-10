@@ -69,6 +69,6 @@ const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
 
 ## Next
 
-- [Displaying data](displaying-data.md) — render the results.
-- [CommandDialog reference](CommandDialog/index.md) — execution callbacks, busy behavior, dialog options, and context.
-- [CommandForm reference](CommandForm/index.md) — form binding, field discovery, and available field components.
+- [Displaying data](displaying-data.md) — render the results
+- [CommandDialog](CommandDialog/index.md) — execution callbacks, busy behavior, dialog options, and context
+- [CommandForm](CommandForm/index.md) — form binding, field discovery, and available field components

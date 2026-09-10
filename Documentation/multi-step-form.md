@@ -40,6 +40,6 @@ Reach for a wizard when the input is genuinely staged or long enough that one sc
 
 ## Next
 
-- [Building a form](building-a-form.md) — the single-step recipe and the field set.
-- [StepperCommandDialog reference](StepperCommandDialog/index.md) — modal navigation, validation, callbacks, cancellation, and busy state.
-- [CommandStepper reference](CommandStepper/index.md) — execute the same kind of multi-step command inline.
+- [Building a form](building-a-form.md) — the single-step recipe and the field set
+- [StepperCommandDialog](StepperCommandDialog/index.md) — modal navigation, validation, callbacks, cancellation, and busy state
+- [CommandStepper](CommandStepper/index.md) — execute the same kind of multi-step command inline
