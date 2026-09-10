@@ -217,7 +217,8 @@ The Components 4 major candidate uses these repository release checks:
 - The setup root and every non-spatial subpath load without Pixi, while Canvas and PivotViewer fail specifically on the missing optional peer until it is installed.
 - Declared Arc peer versions are exercised against the packed artifact.
 - Representative custom-theme and pass-through consumers compile after following the guide.
-- Specs, Storybook, package exports, SSR, keyboard/focus behavior, responsive layouts, dark mode, forced colors, and reduced motion pass.
+- Specs, package exports, SSR, keyboard/focus behavior, responsive layouts, dark mode, forced colors, and reduced motion pass.
+- Storybook builds and runs under baseline light and dark modes for the built-in renderer and every metadata-discovered public adapter; private ui-adapter workspaces are excluded, and the Plain DOM renderer is a conformance fixture, not an adapter workspace.
 - The migration guide works without repository-specific knowledge.
 - Every packed public JavaScript subpath passes strict TypeScript 6 validation or matches a bounded machine-readable upstream exception with exact installed versions and an unmet removal condition. Components-owned cascades additionally require their matching upstream TS2834/TS2835 root cause in the same compiler run.
 
