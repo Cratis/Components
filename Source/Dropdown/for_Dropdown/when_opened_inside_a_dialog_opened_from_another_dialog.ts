@@ -13,18 +13,17 @@ import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider'
 import { resolveZIndex } from '../../renderer/for_dialog_stack/resolveZIndex';
 
 /**
- * The dropdown popup must leave the dialog's clipping and stacking context. This is a
- * Cratis behavior contract rather than a renderer-specific DOM contract: the popup is
- * portaled to the document overlay container and carries the stable Cratis popover part.
+ * A compound case beyond a dropdown in a single dialog: a dropdown opened inside a dialog that
+ * was itself opened while another dialog was still open. The dropdown's popover must stack above
+ * both dialogs, not just the elevated one it is nested in - it cannot fall back to the plain
+ * overlay token, which sits above only a single, non-elevated dialog tier.
  */
-describe('when a dropdown is opened inside a dialog', () => {
+describe('when a dropdown is opened inside a dialog opened from another dialog', () => {
     let root: Root;
     let container: HTMLDivElement;
-    let dialogPositionerZIndex: number;
+    let firstDialogZIndex: number;
+    let secondDialogZIndex: number;
     let panelZIndex: number;
-    let panelIsInsideTheDialog: boolean;
-    let panelIsPortaledToTheBody: boolean;
-    let panelUsesTheLegacyClassName: boolean;
 
     beforeEach(async () => {
         // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
@@ -38,6 +37,8 @@ describe('when a dropdown is opened inside a dialog', () => {
             disconnect() {}
         };
 
+        // Dialog tiers resolve relative to these tokens rather than to hardcoded numbers, so they
+        // have to be defined for the stacking order to be measurable at all.
         document.documentElement.style.setProperty('--cratis-z-index-dialog', '1100');
         document.documentElement.style.setProperty('--cratis-z-index-overlay', '1200');
         container = document.createElement('div');
@@ -46,9 +47,16 @@ describe('when a dropdown is opened inside a dialog', () => {
 
         await act(async () => {
             root.render(
-                React.createElement(CratisComponentsProvider, {
-                    children: React.createElement(Dialog, {
-                        title: 'Pick something',
+                React.createElement(
+                    CratisComponentsProvider,
+                    null,
+                    React.createElement(Dialog, {
+                        title: 'First dialog',
+                        visible: true,
+                        buttons: null,
+                    }),
+                    React.createElement(Dialog, {
+                        title: 'Second dialog',
                         visible: true,
                         buttons: null,
                         children: React.createElement(Dropdown, {
@@ -59,14 +67,9 @@ describe('when a dropdown is opened inside a dialog', () => {
                             optionLabel: 'name',
                             optionValue: 'id',
                             'aria-label': 'Pick value',
-                            panelClassName: 'product-dropdown-panel',
-                            pt: {
-                                listbox: { id: 'product-options' },
-                                option: { 'aria-label': 'Product option' },
-                            },
                         }),
                     }),
-                }),
+                ),
             );
         });
         await act(async () => {
@@ -83,22 +86,16 @@ describe('when a dropdown is opened inside a dialog', () => {
             await new Promise((resolve) => setTimeout(resolve, 300));
         });
 
-        const dialogPositioner = document.querySelector(
+        const backdrops = document.querySelectorAll(
             '.cratis-dialog__backdrop[data-cratis-part="backdrop"]',
-        ) as HTMLElement;
-        const dialogPopup = document.querySelector(
-            '.cratis-dialog[data-cratis-part="root"]',
-        ) as HTMLElement;
+        );
+        const [firstBackdrop, secondBackdrop] = Array.from(backdrops) as HTMLElement[];
+        firstDialogZIndex = resolveZIndex(firstBackdrop);
+        secondDialogZIndex = resolveZIndex(secondBackdrop);
         const panel = document.querySelector(
             '[data-cratis-part="popover"]',
         ) as HTMLElement;
-
-        dialogPositionerZIndex = resolveZIndex(dialogPositioner);
         panelZIndex = resolveZIndex(panel);
-        panelIsInsideTheDialog = dialogPopup.contains(panel);
-        panelIsPortaledToTheBody =
-            document.body.contains(panel) && !container.contains(panel);
-        panelUsesTheLegacyClassName = panel.classList.contains('product-dropdown-panel');
     });
 
     afterEach(async () => {
@@ -110,28 +107,15 @@ describe('when a dropdown is opened inside a dialog', () => {
         document.documentElement.style.removeProperty('--cratis-z-index-overlay');
     });
 
-    it('should render the panel outside the dialog rather than inside its stacking context', () => {
-        expect(panelIsInsideTheDialog).to.equal(false);
+    it('should stack the second dialog above the first', () => {
+        expect(secondDialogZIndex).to.be.greaterThan(firstDialogZIndex);
     });
 
-    it('should portal the panel to the document body', () => {
-        expect(panelIsPortaledToTheBody).to.equal(true);
+    it("should stack the dropdown panel above the dialog it was opened from", () => {
+        expect(panelZIndex).to.be.greaterThan(secondDialogZIndex);
     });
 
-    it('should stack the panel above the dialog it was opened from', () => {
-        expect(panelZIndex).to.be.greaterThan(dialogPositionerZIndex);
-    });
-
-    it('should map the legacy panel class to the Cratis popover', () => {
-        expect(panelUsesTheLegacyClassName).to.equal(true);
-    });
-
-    it('should apply ordinary attributes to listbox and option parts', () => {
-        expect(document.querySelector('#product-options')).not.to.equal(null);
-        expect(
-            document
-                .querySelector('[data-cratis-part="option"]')
-                ?.getAttribute('aria-label'),
-        ).to.equal('Product option');
+    it('should stack the dropdown panel above the first dialog too', () => {
+        expect(panelZIndex).to.be.greaterThan(firstDialogZIndex);
     });
 });

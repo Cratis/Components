@@ -22,6 +22,8 @@ import { Heading } from 'react-aria-components/Heading';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from './CratisComponentsProvider';
+import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
+import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import { asReactAriaButtonProps } from './reactAriaProps';
 import {
     fromDate,
@@ -76,6 +78,11 @@ export const DatePickerInputImplementation = ({
 }: DatePickerInputProps) => {
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const overlayEnvironment = unstable_useOverlayEnvironment();
+    const nearestDialogZIndex = useNearestDialogZIndex();
+    const resolvedPopoverZIndex =
+        nearestDialogZIndex === null
+            ? 'var(--cratis-z-index-overlay)'
+            : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
     const { messages } = useCratisComponentsConfig();
     const datePickerMessages = messages?.datePicker;
     const resolvedTodayLabel = todayLabel ?? datePickerMessages?.today ?? 'Today';
@@ -284,6 +291,10 @@ export const DatePickerInputImplementation = ({
                                     'cratis-date-picker__popover',
                                     pt?.popover?.className,
                                 )}
+                                style={{
+                                    zIndex: resolvedPopoverZIndex,
+                                    ...pt?.popover?.style,
+                                }}
                                 data-cratis-part='popover'
                                 data-open
                                 placement='bottom start'

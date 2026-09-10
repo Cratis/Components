@@ -23,6 +23,7 @@ import { resolveDropdownPosition, type DropdownPosition } from './utils';
 import type { FilterEditorProps } from './FilterEditorProps';
 import { FilterEditor } from './FilterEditor';
 import { RangeHistogramFilter } from './RangeHistogramFilter';
+import { CheckboxListFilter } from './CheckboxListFilter';
 
 /**
  * Props for {@link FilterPanel}.
@@ -113,8 +114,11 @@ function buildEditorMap(
  *
  * ## Filter types
  *
- * - **String/option filters** render as a list of checkboxes or radio buttons.
- *   Controlled through `filterValues`.
+ * - **String/option filters** render as a {@link CheckboxListFilter} - a bounded,
+ *   scrollable list of checkboxes or radio buttons. Controlled through `filterValues`.
+ *   A search box grows out of the list automatically once it has more options than
+ *   fit in its box; see {@link FilterDefinition.searchable} to force it always on
+ *   or always off instead.
  * - **Numeric/date range filters** render as a {@link RangeHistogramFilter}
  *   with a draggable range selector over a histogram. Controlled through
  *   `rangeValues`.
@@ -148,10 +152,6 @@ function buildEditorMap(
  *
  * @param props - {@link FilterPanelProps}.
  */
-function renderOptionCount(count: number | undefined): string | number {
-    return typeof count === 'number' ? count : '';
-}
-
 interface OptionListProps {
     filter: FilterDefinition;
     selections: Set<string>;
@@ -160,64 +160,25 @@ interface OptionListProps {
     searchPlaceholder?: string;
 }
 
+/** Adapts a `FilterDefinition`'s string/option shape onto the reusable {@link CheckboxListFilter}. */
 function OptionList({
     filter,
     selections,
     onFilterToggle,
     searchPlaceholder,
 }: Omit<OptionListProps, 'onFilterClear'>) {
-    const [groupSearch, setGroupSearch] = useState('');
-    const allOptions = filter.options ?? [];
-    const normalized = groupSearch.trim().toLowerCase();
-    const visibleOptions =
-        filter.searchable && normalized.length > 0
-            ? allOptions.filter((option) =>
-                  option.label.toLowerCase().includes(normalized),
-              )
-            : allOptions;
-
     return (
-        <>
-            {filter.searchable && (
-                <div className='pv-filter-group-search'>
-                    <input
-                        type='search'
-                        placeholder={filter.searchPlaceholder ?? searchPlaceholder}
-                        value={groupSearch}
-                        onChange={(event) => setGroupSearch(event.target.value)}
-                    />
-                </div>
-            )}
-            <ul>
-                {visibleOptions.map((option) => {
-                    const optionKey = option.key;
-                    const checked = selections.has(optionKey);
-                    return (
-                        <li key={option.key} data-selected={checked || undefined}>
-                            <label data-selected={checked || undefined}>
-                                <input
-                                    type={filter.multi ? 'checkbox' : 'radio'}
-                                    data-selected={checked || undefined}
-                                    name={`filter-${filter.key}`}
-                                    checked={checked}
-                                    onChange={() =>
-                                        onFilterToggle(
-                                            filter.key,
-                                            optionKey,
-                                            filter.multi ?? false,
-                                        )
-                                    }
-                                />
-                                <span>{option.label}</span>
-                                <span className='pv-option-count'>
-                                    {renderOptionCount(option.count)}
-                                </span>
-                            </label>
-                        </li>
-                    );
-                })}
-            </ul>
-        </>
+        <CheckboxListFilter
+            options={filter.options ?? []}
+            selected={selections}
+            multi={filter.multi}
+            searchable={filter.searchable}
+            searchPlaceholder={filter.searchPlaceholder ?? searchPlaceholder}
+            name={`filter-${filter.key}`}
+            onToggle={(optionKey) =>
+                onFilterToggle(filter.key, optionKey, filter.multi ?? false)
+            }
+        />
     );
 }
 

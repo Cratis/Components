@@ -9,5 +9,4 @@ jobs:
     uses: Cratis/Workflows/.github/workflows/cleanup-pr-artifacts.yml@main
     with:
       pull_request: ${{ github.event.pull_request.number }}
-    secrets:
-      PAT_WORKFLOWS: ${{ secrets.PAT_WORKFLOWS }}
+    secrets: inherit
