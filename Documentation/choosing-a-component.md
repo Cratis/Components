@@ -42,7 +42,7 @@ actions.
 
 ## Actions and tool palettes
 
-Use `ActionMenubar` or an ordinary product action row for flat page commands. `DataPage`'s built-in toolbar already renders `ActionMenubar`, not `Toolbar` — that is the default action row for a page, not a canvas tool palette. Use [`Toolbar`](./Toolbar/index.md) only for a genuine canvas/tool-palette interaction with active tools, groups, slots, folders, and fan-out panels. It is not a one-for-one replacement for a generic Prime Toolbar, and it is not a page-level action row wearing a different name.
+Use [`ActionMenubar`](./Common/action-menubar.md) or an ordinary product action row for flat page commands. `DataPage`'s built-in toolbar already renders `ActionMenubar`, not `Toolbar` — that is the default action row for a page, not a canvas tool palette. Use [`Toolbar`](./Toolbar/index.md) only for a genuine canvas/tool-palette interaction with active tools, groups, slots, folders, and fan-out panels. It is not a one-for-one replacement for a generic Prime Toolbar, and it is not a page-level action row wearing a different name.
 
 ## Spatial workspaces
 
