@@ -44,4 +44,4 @@ React Aria is internal. Never style React Aria class names or undocumented DOM s
 
 ## See also
 
-- [Troubleshoot product CSS precedence](../troubleshooting.md#product-css-does-not-win-over-components-styles)
+- [Troubleshooting](../troubleshooting.md) — installation, styling, rendering, and form symptoms, including product CSS precedence
