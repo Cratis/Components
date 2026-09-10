@@ -69,5 +69,6 @@ const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
 
 ## Next
 
-- [Displaying data](/components/displaying-data/) — render the results.
-- The full field set and dialog options are in the Components reference and Storybook.
+- [Displaying data](displaying-data.md) — render the results.
+- [CommandDialog reference](CommandDialog/index.md) — execution callbacks, busy behavior, dialog options, and context.
+- [CommandForm reference](CommandForm/index.md) — form binding, field discovery, and available field components.

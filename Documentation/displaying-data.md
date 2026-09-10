@@ -41,7 +41,7 @@ For the common "table on the left, details on the right" screen, `DataPage` give
 import { DataPage } from '@cratis/components/DataPage';
 ```
 
-See the DataPage reference for menu items, the details panel, and selection wiring.
+See the [DataPage reference](DataPage/index.md) for menu items, the details panel, and selection wiring.
 
 ## Tips
 
@@ -50,5 +50,7 @@ See the DataPage reference for menu items, the details panel, and selection wiri
 
 ## Next
 
-- [Building a form](/components/building-a-form/) — the write side.
+- [Building a form](building-a-form.md) — the write side.
+- [DataTables reference](DataTables/index.md) — choose the Arc query wrapper and configure columns.
+- [DataPage reference](DataPage/index.md) — compose a query-backed list screen with actions and details.
 - [Build a full-stack feature](/build-a-full-app/) — the table and the form together against one Arc slice.

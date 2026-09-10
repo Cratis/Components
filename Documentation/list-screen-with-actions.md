@@ -49,9 +49,11 @@ You never write the glue between the write and the read: the "add" command appen
 
 - **Edit and remove are just more commands.** Model them as commands (`RenameAuthor`, `RemoveAuthor`) and open them in dialogs the same way; the table updates itself.
 - **Keep the table's read model specialized.** The list query and a detail query can read different, purpose-built read models — don't force one model to serve every screen.
-- For a plain table without the detail panel, use [`DataTableForObservableQuery`](/components/displaying-data/) directly.
+- For a plain table without the detail panel, use [`DataTableForObservableQuery`](DataTables/data-table-for-observable-query.md) directly.
 
 ## Next
 
-- [Building a form](/components/building-a-form/) and [Displaying data](/components/displaying-data/) — the two halves in detail.
+- [Building a form](building-a-form.md) and [Displaying data](displaying-data.md) — the two halves in detail.
+- [DataPage reference](DataPage/index.md) — configure the action row, columns, selection, and details panel.
+- [CommandDialog reference](CommandDialog/index.md) — execute the add, edit, and remove commands.
 - [Build a full-stack feature](/build-a-full-app/) — the backend slice this screen sits on.
