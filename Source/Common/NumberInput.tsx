@@ -5,9 +5,6 @@ import type { CSSProperties, HTMLAttributes, InputHTMLAttributes } from 'react';
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
-import { unstable_useSlot } from '../renderer/RendererContext';
-import { renderSlot } from '../renderer/renderSlot';
-import type { unstable_SlotDeclaration } from '../renderer/slots';
 import { NumberInputImplementation } from './NumberInputImplementation';
 
 /** Stable Cratis-owned parts for styling a {@link NumberInput}. */
@@ -74,22 +71,16 @@ export interface NumberInputProps {
     pt?: NumberInputParts;
 }
 
-const coreNumberInputDeclaration = Object.freeze({
-    mode: 'atomic',
-    fidelity: 'native',
-    render: NumberInputImplementation,
-}) satisfies unstable_SlotDeclaration<'common.numberInput'>;
-
 /**
  * A locale-aware numeric input with grouping separators, decimal formatting,
  * inline prefix/suffix decorations, and accessible spinbutton semantics.
  *
  * Uses React Aria internally. The public boundary remains `number | null`.
+ *
+ * This is a plain component rather than a renderer slot: the ABI v1 slot table is a
+ * frozen fourteen-slot surface that third-party renderers implement, and it does not
+ * grow for an additive component.
  */
-export const NumberInput = (props: NumberInputProps) => {
-    const declaration = unstable_useSlot(
-        'common.numberInput',
-        coreNumberInputDeclaration,
-    );
-    return renderSlot(declaration, props);
-};
+export const NumberInput = (props: NumberInputProps) => (
+    <NumberInputImplementation {...props} />
+);

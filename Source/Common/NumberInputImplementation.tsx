@@ -48,8 +48,6 @@ export const NumberInputImplementation = ({
     // react-aria uses NaN to represent an empty field; Components uses null.
     const ariaValue = value === null ? NaN : value;
 
-    const effectiveReadOnly = readOnly || undefined;
-
     const numberField = (
         <NumberField
             value={ariaValue}
@@ -103,7 +101,7 @@ export const NumberInputImplementation = ({
                     id={id}
                     placeholder={placeholder}
                     data-cratis-part='input'
-                    data-readonly={effectiveReadOnly}
+                    data-readonly={readOnly || undefined}
                     className={classNames(
                         'cratis-number-input-field',
                         pt?.input?.className,

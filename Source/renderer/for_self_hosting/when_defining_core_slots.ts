@@ -8,7 +8,6 @@ import { TooltipImplementation } from '../../Common/TooltipImplementation';
 import { TablePaginatorImplementation } from '../../DataTables/TablePaginatorImplementation';
 import { DialogImplementation } from '../../Dialogs/DialogImplementation';
 import { DropdownImplementation } from '../../Dropdown/DropdownImplementation';
-import { NumberInputImplementation } from '../../Common/NumberInputImplementation';
 import { unstable_coreSlots } from '../coreSlots';
 
 const presentationSlots = [
@@ -28,7 +27,6 @@ const atomicSlots = [
     'dropdown.select',
     'dialogs.dialog',
     'display.datePicker',
-    'common.numberInput',
     'datatables.paginator',
 ] as const;
 
@@ -71,9 +69,6 @@ describe('when defining the private Core slot inventory', () => {
         );
         expect(unstable_coreSlots['datatables.paginator']?.render).to.equal(
             TablePaginatorImplementation,
-        );
-        expect(unstable_coreSlots['common.numberInput']?.render).to.equal(
-            NumberInputImplementation,
         );
     });
 });

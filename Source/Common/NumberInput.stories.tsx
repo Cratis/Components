@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { NumberInput } from './NumberInput';
 
 const meta = {
@@ -11,6 +11,7 @@ const meta = {
     component: NumberInput,
     parameters: { layout: 'centered' },
     tags: ['autodocs'],
+    args: { value: 1234.5, onChange: fn(), locale: 'en-US' },
 } satisfies Meta<typeof NumberInput>;
 
 export default meta;
@@ -33,13 +34,13 @@ const ControlledNumberInput = ({
     );
 };
 
-/** Currency input with inline prefix, two decimal places, and Norwegian locale. */
+/** Currency input with inline prefix decoration and two fixed decimal places. */
 export const Currency: Story = {
     render: () => (
         <ControlledNumberInput
             initialValue={12500.5}
-            locale='nb-NO'
-            prefix='kr'
+            locale='en-US'
+            prefix='$'
             minimumFractionDigits={2}
             maximumFractionDigits={2}
             aria-label='Price'
@@ -64,12 +65,12 @@ export const Percentage: Story = {
     ),
 };
 
-/** Plain integer with US formatting and no decorations. */
+/** Plain integer showing locale-specific grouping separators. */
 export const PlainInteger: Story = {
     render: () => (
         <ControlledNumberInput
             initialValue={1234567}
-            locale='en-US'
+            locale='de-DE'
             aria-label='Population'
             style={{ width: '14rem' }}
         />
@@ -82,12 +83,12 @@ export const Showcase: Story = {
         <div style={{ display: 'grid', gap: '1.5rem', maxWidth: '18rem' }}>
             <div>
                 <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem' }}>
-                    Currency (nb-NO)
+                    Currency (en-US)
                 </label>
                 <ControlledNumberInput
                     initialValue={9999.99}
-                    locale='nb-NO'
-                    prefix='kr'
+                    locale='en-US'
+                    prefix='$'
                     minimumFractionDigits={2}
                     maximumFractionDigits={2}
                     aria-label='Currency amount'
@@ -108,13 +109,13 @@ export const Showcase: Story = {
             </div>
             <div>
                 <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem' }}>
-                    Rate with unit (nb-NO)
+                    Rate with unit (fr-FR)
                 </label>
                 <ControlledNumberInput
                     initialValue={850}
-                    locale='nb-NO'
-                    prefix='kr'
-                    suffix='/t'
+                    locale='fr-FR'
+                    prefix='€'
+                    suffix='/hr'
                     aria-label='Hourly rate'
                 />
             </div>
