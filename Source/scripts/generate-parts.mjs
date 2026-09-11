@@ -54,6 +54,16 @@ export const partDefinitions = {
         sources: ['CommandForm/fields/NumberField.tsx'],
         ptKeys: ['root', 'input'],
     },
+    NumberInput: {
+        parts: ['root', 'input', 'prefix', 'suffix'],
+        sources: ['Common/NumberInputImplementation.tsx'],
+        ptFiles: ['Common/NumberInput.tsx'],
+        ptKeys: ['root', 'input', 'prefix', 'suffix'],
+    },
+    NumberInputField: {
+        aliasOf: 'NumberInput',
+        sources: ['CommandForm/fields/NumberInputField.tsx'],
+    },
     ColorPickerField: {
         parts: ['root', 'input', 'value'],
         sources: ['CommandForm/fields/ColorPickerField.tsx'],
@@ -519,6 +529,12 @@ export const partStateDefinitions = {
         root: ['disabled', 'invalid', 'readonly'],
         input: ['disabled', 'invalid', 'readonly'],
     },
+    NumberInput: {
+        root: ['disabled', 'invalid', 'readonly'],
+        input: ['disabled', 'invalid', 'readonly'],
+        prefix: [],
+        suffix: [],
+    },
     ColorPickerField: {
         root: ['disabled', 'invalid'],
         input: ['disabled', 'invalid'],
@@ -814,6 +830,20 @@ export const implicitPartStateAllowlist = [
         reason: 'React Aria CalendarCell emits data-selected for the selected date.',
     },
     {
+        component: 'NumberInput',
+        file: 'Common/NumberInputImplementation.tsx',
+        part: 'root',
+        states: ['disabled', 'invalid', 'readonly'],
+        reason: 'RAC Group emits data-disabled, data-invalid, and data-readonly from its isDisabled/isInvalid/isReadOnly props.',
+    },
+    {
+        component: 'NumberInput',
+        file: 'Common/NumberInputImplementation.tsx',
+        part: 'input',
+        states: ['disabled', 'invalid'],
+        reason: 'RAC Input emits data-disabled and data-invalid from NumberField context.',
+    },
+    {
         component: 'ColumnFilterMenu',
         file: 'DataTables/ColumnFilterMenu.tsx',
         part: 'filter-trigger',
@@ -839,6 +869,11 @@ export const dynamicPartExpressions = [
 
 /** Exact dynamic test selectors and the concrete values supplied by their fixtures. */
 export const dynamicTestSelectors = [
+    {
+        file: 'Common/for_NumberInput/when_rendering_authoritative_states.tsx',
+        expression: '[data-cratis-part="${name}"]',
+        parts: ['root', 'input'],
+    },
     {
         file: 'Toolbar/for_ToolbarComposition/when_rendering_stable_parts.tsx',
         expression: 'data-cratis-part="${part}"',

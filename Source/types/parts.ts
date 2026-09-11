@@ -13,6 +13,8 @@ export const cratisParts = {
     ToggleSwitchField: ['root', 'input', 'control', 'handle'],
     SliderField: ['root', 'input', 'value'],
     NumberField: ['root', 'input'],
+    NumberInput: ['root', 'input', 'prefix', 'suffix'],
+    NumberInputField: ['root', 'input', 'prefix', 'suffix'],
     ColorPickerField: ['root', 'input', 'value'],
     PasswordField: ['root', 'input', 'toggle'],
     InputTextField: ['input'],
@@ -123,6 +125,18 @@ export const cratisPartStates = {
     NumberField: {
         'root': ['disabled', 'invalid', 'readonly'],
         'input': ['disabled', 'invalid', 'readonly'],
+    },
+    NumberInput: {
+        'root': ['disabled', 'invalid', 'readonly'],
+        'input': ['disabled', 'invalid', 'readonly'],
+        'prefix': [],
+        'suffix': [],
+    },
+    NumberInputField: {
+        'root': ['disabled', 'invalid', 'readonly'],
+        'input': ['disabled', 'invalid', 'readonly'],
+        'prefix': [],
+        'suffix': [],
     },
     ColorPickerField: {
         'root': ['disabled', 'invalid'],
