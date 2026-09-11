@@ -1,10 +1,13 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useRef } from 'react';
-import { useNumberField } from 'react-aria';
-import { useNumberFieldState } from 'react-stately';
-import { useLocale } from 'react-aria-components/I18nProvider';
+import type { ReactElement } from 'react';
+import {
+    NumberField,
+    Group,
+    Input,
+} from 'react-aria-components/NumberField';
+import { I18nProvider } from 'react-aria-components/I18nProvider';
 import type { NumberInputProps } from './NumberInput';
 
 const classNames = (...values: Array<string | undefined>) =>
@@ -12,7 +15,7 @@ const classNames = (...values: Array<string | undefined>) =>
 
 /**
  * Core implementation for the locale-aware number input slot.
- * Uses React Aria's `useNumberField` internally; never exposes React Aria types publicly.
+ * Uses React Aria Components internally; never exposes React Aria types publicly.
  */
 export const NumberInputImplementation = ({
     value,
@@ -37,11 +40,6 @@ export const NumberInputImplementation = ({
     style,
     pt,
 }: NumberInputProps) => {
-    const { locale: providerLocale } = useLocale();
-    const locale = localeProp ?? providerLocale;
-
-    const inputRef = useRef<HTMLInputElement>(null);
-
     const formatOptions: Intl.NumberFormatOptions = {
         ...(minimumFractionDigits != null ? { minimumFractionDigits } : undefined),
         ...(maximumFractionDigits != null ? { maximumFractionDigits } : undefined),
@@ -50,92 +48,93 @@ export const NumberInputImplementation = ({
     // react-aria uses NaN to represent an empty field; Components uses null.
     const ariaValue = value === null ? NaN : value;
 
-    const ariaProps = {
-        locale,
-        value: ariaValue,
-        minValue: min,
-        maxValue: max,
-        step,
-        formatOptions,
-        onChange: (newValue: number) => {
-            onChange(Number.isNaN(newValue) ? null : newValue, { source: 'user' });
-        },
-        isDisabled: disabled,
-        isReadOnly: readOnly,
-        isInvalid: invalid,
-        'aria-label': ariaLabel,
-        'aria-labelledby': ariaLabelledBy,
-        'aria-describedby': ariaDescribedBy,
-        id,
-    };
-
-    const state = useNumberFieldState(ariaProps);
-
-    const { inputProps, groupProps } = useNumberField(
-        ariaProps,
-        state,
-        inputRef,
-    );
-
-    const effectiveDisabled = disabled || undefined;
-    const effectiveInvalid = invalid || undefined;
     const effectiveReadOnly = readOnly || undefined;
 
-    return (
-        <div
-            {...groupProps}
-            {...pt?.root}
-            data-cratis-part='root'
-            data-disabled={effectiveDisabled}
-            data-invalid={effectiveInvalid}
-            data-readonly={effectiveReadOnly}
-            className={classNames(
-                'cratis-number-input',
-                pt?.root?.className,
-                className,
-            )}
-            style={{ ...pt?.root?.style, ...style }}
+    const numberField = (
+        <NumberField
+            value={ariaValue}
+            minValue={min}
+            maxValue={max}
+            step={step}
+            formatOptions={formatOptions}
+            onChange={(newValue: number) => {
+                onChange(Number.isNaN(newValue) ? null : newValue, { source: 'user' });
+            }}
+            isDisabled={disabled}
+            isReadOnly={readOnly}
+            isInvalid={invalid}
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabelledBy}
+            aria-describedby={ariaDescribedBy}
         >
-            {prefixText && (
-                <span
-                    {...pt?.prefix}
-                    data-cratis-part='prefix'
-                    aria-hidden='true'
-                    className={classNames(
-                        'cratis-number-input-prefix',
-                        pt?.prefix?.className,
-                    )}
-                >
-                    {prefixText}
-                </span>
-            )}
-            <input
-                {...inputProps}
-                {...pt?.input}
-                ref={inputRef}
-                placeholder={placeholder}
-                data-cratis-part='input'
-                data-disabled={effectiveDisabled}
-                data-invalid={effectiveInvalid}
-                data-readonly={effectiveReadOnly}
+            {/*
+              RAC Group receives isDisabled/isInvalid from NumberField context via
+              groupProps, but isReadOnly is not part of groupProps. Pass it explicitly
+              so the Group emits the correct data-readonly attribute.
+            */}
+            <Group
+                isReadOnly={readOnly}
+                {...(pt?.root as Record<string, unknown>)}
+                data-cratis-part='root'
                 className={classNames(
-                    'cratis-number-input-field',
-                    pt?.input?.className,
+                    'cratis-number-input',
+                    pt?.root?.className,
+                    className,
                 )}
-            />
-            {suffixText && (
-                <span
-                    {...pt?.suffix}
-                    data-cratis-part='suffix'
-                    aria-hidden='true'
+                style={{ ...pt?.root?.style, ...style }}
+            >
+                {prefixText && (
+                    <span
+                        {...pt?.prefix}
+                        data-cratis-part='prefix'
+                        aria-hidden='true'
+                        className={classNames(
+                            'cratis-number-input-prefix',
+                            pt?.prefix?.className,
+                        )}
+                    >
+                        {prefixText}
+                    </span>
+                )}
+                {/* RAC Input sets data-disabled and data-invalid from NumberField context.
+                    It does not set data-readonly, so we add it explicitly. */}
+                <Input
+                    {...pt?.input}
+                    id={id}
+                    placeholder={placeholder}
+                    data-cratis-part='input'
+                    data-readonly={effectiveReadOnly}
                     className={classNames(
-                        'cratis-number-input-suffix',
-                        pt?.suffix?.className,
+                        'cratis-number-input-field',
+                        pt?.input?.className,
                     )}
-                >
-                    {suffixText}
-                </span>
-            )}
-        </div>
+                />
+                {suffixText && (
+                    <span
+                        {...pt?.suffix}
+                        data-cratis-part='suffix'
+                        aria-hidden='true'
+                        className={classNames(
+                            'cratis-number-input-suffix',
+                            pt?.suffix?.className,
+                        )}
+                    >
+                        {suffixText}
+                    </span>
+                )}
+            </Group>
+        </NumberField>
     );
+
+    // Wrap in a scoped I18nProvider when an explicit locale is supplied,
+    // overriding the app-wide CratisComponentsProvider locale for this input only.
+    if (localeProp) {
+        return (
+            <I18nProvider locale={localeProp}>
+                {numberField}
+            </I18nProvider>
+        ) as ReactElement;
+    }
+
+    return numberField;
 };

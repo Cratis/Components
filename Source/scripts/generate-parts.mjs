@@ -815,18 +815,6 @@ export const splitPartStateAllowlist = [
         part: 'trigger',
         states: ['open'],
     },
-    {
-        file: 'Common/NumberInputImplementation.tsx',
-        spread: 'groupProps',
-        part: 'root',
-        states: ['disabled', 'invalid', 'readonly'],
-    },
-    {
-        file: 'Common/NumberInputImplementation.tsx',
-        spread: 'inputProps',
-        part: 'input',
-        states: ['disabled', 'invalid', 'readonly'],
-    },
 ];
 
 /**
