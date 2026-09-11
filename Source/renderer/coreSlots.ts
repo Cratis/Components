@@ -5,6 +5,7 @@ import type { ComponentType } from 'react';
 import { ButtonImplementation } from '../Common/ButtonImplementation';
 import { CheckboxImplementation } from '../Common/CheckboxImplementation';
 import { DatePickerInputImplementation } from '../Common/DatePickerInputImplementation';
+import { NumberInputImplementation } from '../Common/NumberInputImplementation';
 import { IconButtonImplementation } from '../Common/IconButtonImplementation';
 import { RadioImplementation } from '../Common/RadioImplementation';
 import { SurfaceImplementation } from '../Common/SurfaceImplementation';
@@ -49,5 +50,6 @@ export const unstable_coreSlots = Object.freeze({
     'dropdown.select': nativeDeclaration('atomic', DropdownImplementation),
     'dialogs.dialog': nativeDeclaration('atomic', DialogImplementation),
     'display.datePicker': nativeDeclaration('atomic', DatePickerInputImplementation),
+    'common.numberInput': nativeDeclaration('atomic', NumberInputImplementation),
     'datatables.paginator': nativeDeclaration('atomic', TablePaginatorImplementation),
 }) satisfies unstable_SlotMap;

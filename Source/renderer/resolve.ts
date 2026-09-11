@@ -28,6 +28,7 @@ const knownSlots = new Set<unstable_SlotId>([
     'dropdown.select',
     'dialogs.dialog',
     'display.datePicker',
+    'common.numberInput',
     'datatables.paginator',
 ]);
 

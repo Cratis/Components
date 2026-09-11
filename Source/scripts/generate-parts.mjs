@@ -54,6 +54,16 @@ export const partDefinitions = {
         sources: ['CommandForm/fields/NumberField.tsx'],
         ptKeys: ['root', 'input'],
     },
+    NumberInput: {
+        parts: ['root', 'input', 'prefix', 'suffix'],
+        sources: ['Common/NumberInputImplementation.tsx'],
+        ptFiles: ['Common/NumberInput.tsx'],
+        ptKeys: ['root', 'input', 'prefix', 'suffix'],
+    },
+    NumberInputField: {
+        aliasOf: 'NumberInput',
+        sources: ['CommandForm/fields/NumberInputField.tsx'],
+    },
     ColorPickerField: {
         parts: ['root', 'input', 'value'],
         sources: ['CommandForm/fields/ColorPickerField.tsx'],
@@ -519,6 +529,12 @@ export const partStateDefinitions = {
         root: ['disabled', 'invalid', 'readonly'],
         input: ['disabled', 'invalid', 'readonly'],
     },
+    NumberInput: {
+        root: ['disabled', 'invalid', 'readonly'],
+        input: ['disabled', 'invalid', 'readonly'],
+        prefix: [],
+        suffix: [],
+    },
     ColorPickerField: {
         root: ['disabled', 'invalid'],
         input: ['disabled', 'invalid'],
@@ -798,6 +814,18 @@ export const splitPartStateAllowlist = [
         spread: 'props',
         part: 'trigger',
         states: ['open'],
+    },
+    {
+        file: 'Common/NumberInputImplementation.tsx',
+        spread: 'groupProps',
+        part: 'root',
+        states: ['disabled', 'invalid', 'readonly'],
+    },
+    {
+        file: 'Common/NumberInputImplementation.tsx',
+        spread: 'inputProps',
+        part: 'input',
+        states: ['disabled', 'invalid', 'readonly'],
     },
 ];
 

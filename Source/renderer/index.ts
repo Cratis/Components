@@ -15,6 +15,7 @@ import type { TablePaginatorProps } from '../DataTables/TablePaginator';
 import type { ProgressBarProps } from '../Display/ProgressBar';
 import type { DialogProps } from '../Dialogs/Dialog';
 import type { DropdownProps } from '../Dropdown/Dropdown';
+import type { NumberInputProps } from '../Common/NumberInput';
 
 /** Core-owned slot contracts loaded only by the renderer subpath. */
 declare module './slots.js' {
@@ -45,6 +46,8 @@ declare module './slots.js' {
         'dialogs.dialog': DialogProps;
         /** Interaction-heavy date-picker contract. */
         'display.datePicker': DatePickerInputProps;
+        /** Locale-aware number-input contract. */
+        'common.numberInput': NumberInputProps;
         /** Interaction-heavy, composite-adjacent table paginator contract. */
         'datatables.paginator': TablePaginatorProps;
     }
