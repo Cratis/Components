@@ -56,8 +56,7 @@ export const partDefinitions = {
     },
     NumberInput: {
         parts: ['root', 'input', 'prefix', 'suffix'],
-        sources: ['Common/NumberInputImplementation.tsx'],
-        ptFiles: ['Common/NumberInput.tsx'],
+        sources: ['Common/NumberInput.tsx'],
         ptKeys: ['root', 'input', 'prefix', 'suffix'],
     },
     NumberInputField: {
@@ -831,14 +830,14 @@ export const implicitPartStateAllowlist = [
     },
     {
         component: 'NumberInput',
-        file: 'Common/NumberInputImplementation.tsx',
+        file: 'Common/NumberInput.tsx',
         part: 'root',
         states: ['disabled', 'invalid', 'readonly'],
         reason: 'RAC Group emits data-disabled, data-invalid, and data-readonly from its isDisabled/isInvalid/isReadOnly props.',
     },
     {
         component: 'NumberInput',
-        file: 'Common/NumberInputImplementation.tsx',
+        file: 'Common/NumberInput.tsx',
         part: 'input',
         states: ['disabled', 'invalid'],
         reason: 'RAC Input emits data-disabled and data-invalid from NumberField context.',
