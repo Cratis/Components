@@ -82,6 +82,29 @@ describe('when formatting locale values in NumberInput', () => {
         expect(input?.value).to.equal('3.14');
     });
 
+    it('should omit the grouping separator when useGrouping is false', async () => {
+        await renderNumberInput({ value: 2026, locale: 'nb-NO', useGrouping: false });
+        const input = inputElement();
+        expect(input?.value).to.equal('2026');
+    });
+
+    it('should keep the decimal separator when grouping is off', async () => {
+        await renderNumberInput({
+            value: 1234.5,
+            locale: 'nb-NO',
+            useGrouping: false,
+            minimumFractionDigits: 1,
+        });
+        const input = inputElement();
+        expect(input?.value).to.equal('1234,5');
+    });
+
+    it('should group by default when useGrouping is not supplied', async () => {
+        await renderNumberInput({ value: 2026, locale: 'en-US' });
+        const input = inputElement();
+        expect(input?.value).to.equal('2,026');
+    });
+
     it('should use Norwegian decimal comma with fraction digits', async () => {
         await renderNumberInput({
             value: 1234.5,
