@@ -17,6 +17,8 @@ interface NumberInputFieldComponentProps
     minimumFractionDigits?: number;
     /** Maximum allowed fraction digits in the formatted display. */
     maximumFractionDigits?: number;
+    /** Whether the locale's grouping separator is applied. Defaults to `true`. */
+    useGrouping?: boolean;
     /** Minimum allowed value. */
     min?: number;
     /** Maximum allowed value. */
@@ -51,6 +53,7 @@ export const NumberInputField = asCommandFormField<NumberInputFieldComponentProp
                 locale={props.locale}
                 minimumFractionDigits={props.minimumFractionDigits}
                 maximumFractionDigits={props.maximumFractionDigits}
+                useGrouping={props.useGrouping}
                 min={props.min}
                 max={props.max}
                 step={props.step}

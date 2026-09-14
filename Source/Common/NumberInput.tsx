@@ -38,6 +38,12 @@ export interface NumberInputProps {
     minimumFractionDigits?: number;
     /** Maximum allowed fraction digits in the formatted display. */
     maximumFractionDigits?: number;
+    /**
+     * Whether the locale's grouping separator is applied. Defaults to `true`.
+     * Set to `false` for a number read as an identifier rather than a quantity,
+     * such as a year or an order number, where `2026` must not render as `2 026`.
+     */
+    useGrouping?: boolean;
     /** Minimum allowed value. */
     min?: number;
     /** Maximum allowed value. */
@@ -89,6 +95,7 @@ export const NumberInput = ({
     locale: localeProp,
     minimumFractionDigits,
     maximumFractionDigits,
+    useGrouping,
     min,
     max,
     step,
@@ -109,6 +116,7 @@ export const NumberInput = ({
     const formatOptions: Intl.NumberFormatOptions = {
         ...(minimumFractionDigits != null ? { minimumFractionDigits } : undefined),
         ...(maximumFractionDigits != null ? { maximumFractionDigits } : undefined),
+        ...(useGrouping != null ? { useGrouping } : undefined),
     };
 
     // react-aria uses NaN to represent an empty field; Components uses null.

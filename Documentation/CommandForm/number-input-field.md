@@ -42,6 +42,7 @@ is unchanged and keeps its current behavior.
 | `locale` | `string` | provider locale | BCP 47 locale used for grouping and decimal separators. |
 | `minimumFractionDigits` | `number` | — | Minimum fraction digits in the formatted display. |
 | `maximumFractionDigits` | `number` | — | Maximum fraction digits in the formatted display. |
+| `useGrouping` | `boolean` | `true` | Whether the locale's grouping separator is applied. Set `false` for a year or other identifier. |
 | `min` | `number` | — | Minimum allowed value, clamped on commit. |
 | `max` | `number` | — | Maximum allowed value, clamped on commit. |
 | `step` | `number` | — | Increment for keyboard and stepper interaction. |

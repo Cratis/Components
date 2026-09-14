@@ -27,6 +27,16 @@ const [price, setPrice] = useState<number | null>(12500.5);
 The same value renders as `12.500,50` in `de-DE`, `12,500.50` in `en-US`, and `12 500,50` in `fr-FR`.
 Formatting is presentation only: `onChange` always reports the numeric value, never the formatted text.
 
+## Numbers that are identifiers, not quantities
+
+A year, an order number or a postal code is read as a label rather than a quantity, and a grouping
+separator makes it wrong — `2026` should not render as `2 026`. Set `useGrouping={false}` to drop the
+separator while keeping the locale's decimal handling.
+
+```tsx
+<NumberInput value={year} onChange={setYear} useGrouping={false} aria-label='Year' />
+```
+
 ## Empty is not zero
 
 `null` is the empty field, and it stays distinct from `0` in both directions. A cleared field reports
@@ -62,6 +72,7 @@ digit is not fought while it is still being entered.
 | `locale` | `string` | provider locale | BCP 47 locale used for grouping and decimal separators. |
 | `minimumFractionDigits` | `number` | — | Minimum fraction digits in the formatted display. |
 | `maximumFractionDigits` | `number` | — | Maximum fraction digits in the formatted display. |
+| `useGrouping` | `boolean` | `true` | Whether the locale's grouping separator is applied. |
 | `min` | `number` | — | Minimum allowed value, clamped on commit. |
 | `max` | `number` | — | Maximum allowed value, clamped on commit. |
 | `step` | `number` | — | Increment for keyboard and stepper interaction. |
