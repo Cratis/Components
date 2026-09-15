@@ -137,6 +137,43 @@ jobs:
                   yarn build
                   yarn publish-version "$RELEASE_VERSION"
 
+            # npm prints its success line per workspace, but that is not evidence the registry received
+            # the package. On v4.5.0 two of four workspaces were missing for over an hour while this run
+            # stayed green, and the published adapters referenced a core version nobody could install.
+            # Ask the registry itself, in the job that published, so the answer cannot be skipped.
+            - name: Verify every published package reached the registry
+              env:
+                  RELEASE_VERSION: ${{ needs.release.outputs.version || github.event.inputs.version }}
+              run: |
+                  missing=()
+                  for manifest in Source/package.json ESLint/package.json Migrator/package.json Adapters/*/package.json; do
+                    if [[ ! -f "$manifest" ]]; then
+                      continue
+                    fi
+                    name=$(jq -r '.name' "$manifest")
+                    if [[ "$(jq -r '.private // false' "$manifest")" == 'true' ]]; then
+                      continue
+                    fi
+                    encoded=${name/\//%2f}
+                    published=false
+                    for attempt in 1 2 3 4 5 6; do
+                      if curl -sf "https://registry.npmjs.org/${encoded}/${RELEASE_VERSION}" > /dev/null; then
+                        published=true
+                        break
+                      fi
+                      sleep 20
+                    done
+                    if [[ "$published" == 'true' ]]; then
+                      echo "${name}@${RELEASE_VERSION} is on the registry."
+                    else
+                      missing+=("${name}@${RELEASE_VERSION}")
+                    fi
+                  done
+                  if [[ ${#missing[@]} -gt 0 ]]; then
+                    echo "::error::The registry has no ${missing[*]}. The release tag exists but consumers cannot install it; re-run this job."
+                    exit 1
+                  fi
+
             - name: Trigger Documentation Build
               uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3
               with:
@@ -150,48 +187,6 @@ jobs:
                   token: ${{ secrets.PAT_DOCUMENTATION }}
                   repository: cratis/samples
                   event-type: update-dependencies
-
-    verify-npm-publication:
-        # A publish job can report success while the registry never receives the package: npm prints its
-        # success line, the workspace loop moves on, and only some of the workspaces actually land. That
-        # happened on v4.5.0, where two of four packages were missing while the run stayed green. Ask the
-        # registry itself, because the publish log is not evidence that anything was published.
-        if: needs.release.outputs.publish == 'true' && needs.publish-npm-packages.result == 'success'
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        needs: [release, publish-npm-packages]
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-            - name: Verify every published workspace reached the registry
-              env:
-                  RELEASE_VERSION: ${{ needs.release.outputs.version }}
-              run: |
-                  set -euo pipefail
-                  missing=()
-                  for manifest in Source/package.json ESLint/package.json Migrator/package.json Adapters/*/package.json; do
-                    [[ -f "$manifest" ]] || continue
-                    name=$(jq -r '.name' "$manifest")
-                    private=$(jq -r '.private // false' "$manifest")
-                    if [[ "$private" == 'true' ]]; then
-                      continue
-                    fi
-                    encoded=${name/\//%2f}
-                    for attempt in 1 2 3 4 5 6; do
-                      if curl -sf "https://registry.npmjs.org/${encoded}/${RELEASE_VERSION}" > /dev/null; then
-                        echo "${name}@${RELEASE_VERSION} is on the registry."
-                        continue 2
-                      fi
-                      sleep 20
-                    done
-                    missing+=("${name}@${RELEASE_VERSION}")
-                  done
-                  if [[ ${#missing[@]} -gt 0 ]]; then
-                    echo "::error::Published nothing to the registry for: ${missing[*]}. The release tag exists but consumers cannot install it; re-run the publish job."
-                    exit 1
-                  fi
 
     verify-published:
         # A merge that publishes nothing is the failure mode that silently costs a release: the release job
