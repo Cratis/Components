@@ -55,9 +55,9 @@ export const partDefinitions = {
         ptKeys: ['root', 'input'],
     },
     NumberInput: {
-        parts: ['root', 'input', 'prefix', 'suffix'],
+        parts: ['root', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
         sources: ['Common/NumberInput.tsx'],
-        ptKeys: ['root', 'input', 'prefix', 'suffix'],
+        ptKeys: ['root', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
     },
     NumberInputField: {
         aliasOf: 'NumberInput',
@@ -530,9 +530,12 @@ export const partStateDefinitions = {
     },
     NumberInput: {
         root: ['disabled', 'invalid', 'readonly'],
-        input: ['disabled', 'invalid', 'readonly'],
-        prefix: [],
-        suffix: [],
+        input: ['disabled', 'invalid', 'readonly', 'focused'],
+        prefix: ['disabled', 'invalid', 'readonly'],
+        suffix: ['disabled', 'invalid', 'readonly'],
+        step: ['disabled', 'invalid', 'readonly'],
+        description: [],
+        error: ['invalid'],
     },
     ColorPickerField: {
         root: ['disabled', 'invalid'],
@@ -822,25 +825,18 @@ export const splitPartStateAllowlist = [
  */
 export const implicitPartStateAllowlist = [
     {
+        component: 'NumberInput',
+        file: 'Common/NumberInput.tsx',
+        part: 'input',
+        states: ['focused'],
+        reason: 'React Aria Input emits data-focused while the editable input owns focus.',
+    },
+    {
         component: 'DatePickerInput',
         file: 'Common/DatePickerInputImplementation.tsx',
         part: 'cell',
         states: ['selected'],
         reason: 'React Aria CalendarCell emits data-selected for the selected date.',
-    },
-    {
-        component: 'NumberInput',
-        file: 'Common/NumberInput.tsx',
-        part: 'root',
-        states: ['disabled', 'invalid', 'readonly'],
-        reason: 'RAC Group emits data-disabled, data-invalid, and data-readonly from its isDisabled/isInvalid/isReadOnly props.',
-    },
-    {
-        component: 'NumberInput',
-        file: 'Common/NumberInput.tsx',
-        part: 'input',
-        states: ['disabled', 'invalid'],
-        reason: 'RAC Input emits data-disabled and data-invalid from NumberField context.',
     },
     {
         component: 'ColumnFilterMenu',
@@ -868,11 +864,6 @@ export const dynamicPartExpressions = [
 
 /** Exact dynamic test selectors and the concrete values supplied by their fixtures. */
 export const dynamicTestSelectors = [
-    {
-        file: 'Common/for_NumberInput/when_rendering_authoritative_states.tsx',
-        expression: '[data-cratis-part="${name}"]',
-        parts: ['root', 'input'],
-    },
     {
         file: 'Toolbar/for_ToolbarComposition/when_rendering_stable_parts.tsx',
         expression: 'data-cratis-part="${part}"',

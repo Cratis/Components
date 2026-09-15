@@ -1,109 +1,120 @@
 ---
-title: NumberInput
-description: A locale-aware numeric input with grouping, fraction digits, and inline unit decorations.
+title: Locale-aware number input
+description: Enter controlled nullable numbers with locale formatting, explicit commits, adornments, bounds, and stable parts.
 ---
 
-`NumberInput` formats a number the way the reader's locale writes it — grouping separators, decimal
-separator, and a stable number of fraction digits — while the value you bind stays an ordinary
-`number | null`.
+`NumberInput` is the standalone locale-aware numeric control. It keeps transient text separate from the controlled `number | null` value, so clearing or typing an incomplete number never fabricates `0` or exposes `NaN`.
+
+Use the native command [`NumberField`](../CommandForm/number-field.md) when browser-native formatting and a non-null `0` default are sufficient. Use `NumberInput` or [`NumberInputField`](../CommandForm/number-input-field.md) when the interaction needs locale grouping and decimal separators, fraction policy, adornments, nullable edit state, or explicit commit timing.
+
+## Controlled usage
 
 ```tsx
 import { useState } from 'react';
 import { NumberInput } from '@cratis/components/Common';
 
-const [price, setPrice] = useState<number | null>(12500.5);
+export const SampleQuantity = () => {
+    const [quantity, setQuantity] = useState<number | null>(null);
 
-<NumberInput
-    value={price}
-    onChange={setPrice}
-    locale='de-DE'
-    prefix='€'
-    minimumFractionDigits={2}
-    maximumFractionDigits={2}
-    aria-label='Price'
-/>;
+    return (
+        <>
+            <label id='sample-quantity-label' htmlFor='sample-quantity'>
+                Quantity
+            </label>
+            <NumberInput
+                id='sample-quantity'
+                aria-labelledby='sample-quantity-label'
+                name='quantity'
+                value={quantity}
+                onChange={setQuantity}
+                min={0}
+                max={100}
+                step={0.5}
+                suffix='kg'
+                minimumFractionDigits={1}
+                maximumFractionDigits={2}
+                description='Enter a value from zero to one hundred.'
+            />
+        </>
+    );
+};
 ```
 
-The same value renders as `12.500,50` in `de-DE`, `12,500.50` in `en-US`, and `12 500,50` in `fr-FR`.
-Formatting is presentation only: `onChange` always reports the numeric value, never the formatted text.
-
-## Numbers that are identifiers, not quantities
-
-A year, an order number or a postal code is read as a label rather than a quantity, and a grouping
-separator makes it wrong — `2026` should not render as `2 026`. Set `useGrouping={false}` to drop the
-separator while keeping the locale's decimal handling.
+The nearest `CratisComponentsProvider` supplies the BCP 47 locale. The optional `locale` prop overrides it for one control. An invalid override falls back to the provider locale.
 
 ```tsx
-<NumberInput value={year} onChange={setYear} useGrouping={false} aria-label='Year' />
+<CratisComponentsProvider value={{ locale: 'nb-NO' }}>
+    <NumberInput value={1234.5} onChange={setValue} aria-label='Amount' />
+    <NumberInput
+        value={1234.5}
+        onChange={setValue}
+        aria-label='American amount'
+        locale='en-US'
+    />
+</CratisComponentsProvider>
 ```
 
-## Empty is not zero
+`useGrouping` defaults to `true`. When fraction props are omitted, decimal formatting uses the locale defaults: zero minimum fraction digits and up to three maximum fraction digits. Set both to the same number for fixed precision.
 
-`null` is the empty field, and it stays distinct from `0` in both directions. A cleared field reports
-`null` rather than coercing to `0`, so "no answer given" and "the answer is zero" remain different
-facts — which matters when the value drives a calculation or a required-field rule.
+## Change and commit contract
 
-```tsx
-<NumberInput value={null} onChange={setValue} placeholder='Enter a number' aria-label='Quantity' />
-```
+`NumberInput` deliberately separates editable text from semantic callbacks.
 
-## Prefix and suffix are decoration
+| Interaction                                 | `onChange`                                                 | `onCommit`                                     |
+| ------------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------- |
+| Type or clear without leaving the input     | No callback while text is being edited                     | No callback                                    |
+| Press Enter                                 | New finite number or `null`, when it changed               | Then `Enter`                                   |
+| Press Tab or otherwise blur                 | New finite number or `null`, when it changed               | Then `Blur`                                    |
+| Replace the complete input through paste    | New finite number or `null`, when it changed               | Then `Paste`                                   |
+| ArrowUp, ArrowDown, decrement, or increment | Stepped finite number                                      | Then `Step`                                    |
+| Commit text that cannot yet form a number   | No fabricated change; text returns to the controlled value | Current controlled value and the commit reason |
 
-`prefix` and `suffix` render as separate elements beside the input, and are **never folded into the
-value**. A unit label is not part of the number: the user does not have to type or delete it, selecting
-the field's text does not select it, and it never reaches `onChange`.
+A commit clamps to `min`/`max`, snaps to `step`, and rounds through the configured fraction policy. The same policy applies when a controlled prop arrives outside those boundaries: `onChange` receives the normalized value once. Until the owner accepts it, the control keeps the original value visible and withholds the named hidden input, so React state, announced content, and native form data cannot silently disagree. When both callbacks run, `onChange` always runs first. The component remains controlled: accept the value in `onChange` to display and submit it as the new value.
 
-```tsx
-<NumberInput value={rate} onChange={setRate} prefix='€' suffix='/hr' aria-label='Hourly rate' />
-```
+## Adornments and semantics
 
-## Bounds and stepping
+`prefix` and `suffix` render beside the editable text. They never enter the parse buffer, semantic number, or hidden form value. Each rendered adornment receives a stable id and is appended to the input's `aria-describedby` relationship, together with consumer descriptions and an active error message.
 
-`min` and `max` clamp the committed value, and `step` sets the increment used by the `ArrowUp` and
-`ArrowDown` keys. Clamping happens on commit rather than per keystroke, so a value typed digit by
-digit is not fought while it is still being entered.
+Provide an accessible name through `aria-label` or `aria-labelledby`. When a visible external label is used, give it an id, keep `htmlFor` pointed at the input id, and pass that label id through `aria-labelledby`; this also ties the localized increment and decrement action names to the field. `description` and an invalid `errorMessage` are rendered and associated automatically. The editable text control retains React Aria's number-field role description rather than reinstating the spinbutton attributes that its accessibility implementation intentionally removes for focus compatibility. Step buttons are excluded from sequential tab order; ArrowUp and ArrowDown provide the same operation from the input.
+
+`disabled` removes the control from editing and form submission. `readOnly` keeps the value focusable and submittable while disabling edits and steps.
 
 ## Props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `value` | `number \| null` | — | **Required.** The bound value. `null` is empty. |
-| `onChange` | `ChangeHandler<number \| null>` | — | **Required.** Called with the committed value and change-origin metadata. |
-| `locale` | `string` | provider locale | BCP 47 locale used for grouping and decimal separators. |
-| `minimumFractionDigits` | `number` | — | Minimum fraction digits in the formatted display. |
-| `maximumFractionDigits` | `number` | — | Maximum fraction digits in the formatted display. |
-| `useGrouping` | `boolean` | `true` | Whether the locale's grouping separator is applied. |
-| `min` | `number` | — | Minimum allowed value, clamped on commit. |
-| `max` | `number` | — | Maximum allowed value, clamped on commit. |
-| `step` | `number` | — | Increment for keyboard and stepper interaction. |
-| `prefix` | `string` | — | Inline decoration before the value. Never part of the value. |
-| `suffix` | `string` | — | Inline decoration after the value. Never part of the value. |
-| `invalid` | `boolean` | `false` | Marks the input invalid and exposes the canonical invalid state. |
-| `disabled` | `boolean` | `false` | Disables the input. |
-| `readOnly` | `boolean` | `false` | Prevents editing while retaining focus semantics. |
-| `placeholder` | `string` | — | Visible text while the field is empty. |
-| `id` | `string` | — | DOM id for the input element. |
-| `aria-label` | `string` | — | Accessible name when no external label is supplied. |
-| `aria-labelledby` | `string` | — | Id of the element that labels the input. |
-| `aria-describedby` | `string` | — | Id of the element that describes the input. |
-| `className` | `string` | — | Extra class name for the outer wrapper. |
-| `style` | `CSSProperties` | — | Inline style for the outer wrapper. |
-| `pt` | `NumberInputParts` | — | Per-part attributes for `root`, `input`, `prefix`, and `suffix`. |
+| Prop                                | Type                              | Default         | Behavior                                                                     |
+| ----------------------------------- | --------------------------------- | --------------- | ---------------------------------------------------------------------------- |
+| `value`                             | `number \| null`                  | Required        | Controlled finite value; non-finite runtime values render empty.             |
+| `onChange`                          | `(value: number \| null) => void` | Required        | Receives accepted semantic changes only.                                     |
+| `onCommit`                          | `(value, reason) => void`         | —               | Receives `Blur`, `Enter`, `Paste`, or `Step` after the change callback.      |
+| `locale`                            | `string`                          | Provider locale | BCP 47 locale override.                                                      |
+| `useGrouping`                       | `boolean`                         | `true`          | Enables the locale grouping separator.                                       |
+| `minimumFractionDigits`             | `number`                          | Locale default  | Minimum displayed fraction digits.                                           |
+| `maximumFractionDigits`             | `number`                          | Locale default  | Maximum fraction digits retained on commit and shown in the formatted value. |
+| `required`                          | `boolean`                         | `false`         | Requires a non-empty value using native form and accessibility semantics.    |
+| `min` / `max`                       | `number`                          | Unbounded       | Commit boundaries and number-field range.                                    |
+| `step`                              | `number`                          | `1`             | Step and commit-snap interval.                                               |
+| `prefix` / `suffix`                 | `ReactNode`                       | —               | Associated presentation outside the numeric value.                           |
+| `placeholder`                       | `string`                          | —               | Empty edit hint.                                                             |
+| `disabled` / `readOnly` / `invalid` | `boolean`                         | `false`         | Semantic and visual state.                                                   |
+| `id` / `name`                       | `string`                          | Generated / —   | Label association and native form field name.                                |
+| `description` / `errorMessage`      | `ReactNode`                       | —               | Associated help and invalid-state content.                                   |
+| `pt`                                | `NumberInputParts`                | —               | Renderer-independent part classes, styles, titles, and data attributes.      |
 
-## Accessibility
+## Stable parts and tokens
 
-The control renders as `input[type=text]` with `inputmode="numeric"` and an `aria-roledescription`
-naming it a number field. React Aria deliberately does not take the `spinbutton` role, which suppresses
-text editing in several screen readers; the trade-off is that there is no `aria-valuenow`/`aria-valuemin`
-/`aria-valuemax` range announcement. Give the control a name through `aria-label` or `aria-labelledby`.
-The canonical `disabled`, `invalid`, and `readonly` states are exposed on the `root` and `input` parts
-for styling.
+| Typed `pt` key / DOM part | Meaning                                                             | Canonical states                             |
+| ------------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
+| `root`                    | Complete field                                                      | `disabled`, `invalid`, `readonly`            |
+| `input`                   | Editable localized text                                             | `disabled`, `invalid`, `readonly`, `focused` |
+| `prefix` / `suffix`       | Present adornment                                                   | `disabled`, `invalid`, `readonly`            |
+| `step`                    | Both step buttons; inspect `data-step='decrement'` or `'increment'` | `disabled`, `invalid`, `readonly`            |
+| `description`             | Supporting text                                                     | none                                         |
+| `error`                   | Active validation message                                           | `invalid`                                    |
 
-`NumberField` remains the native `input[type=number]` control, which keeps the browser's own spinner
-semantics if a range announcement matters more than locale formatting.
+The component uses the shared control, surface, text, focus, disabled, and error tokens plus these aliases:
 
-## See also
+- `--cratis-number-input-adornment-color`
+- `--cratis-number-input-step-background`
+- `--cratis-number-input-step-background-hover`
 
-- [Basic controls](basic-controls.md) — the native control contracts
-- [NumberInputField](../CommandForm/number-input-field.md) — the same control bound to an Arc command
-- [NumberField](../CommandForm/number-field.md) — the native numeric field without locale formatting
+Use parts and tokens rather than internal element order or implementation-library selectors.

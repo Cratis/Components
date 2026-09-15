@@ -2,72 +2,70 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { asCommandFormField, type WrappedFieldProps } from '@cratis/arc.react/commands';
+import { NumberInput, type NumberInputProps } from '../../Common/NumberInput';
+import { NumberInputCommitReason } from '../../Common/NumberInputCommitReason';
 import {
     useFieldAccessibility,
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
-import { NumberInput, type NumberInputParts } from '../../Common/NumberInput';
 
-interface NumberInputFieldComponentProps
-    extends WrappedFieldProps<number>,
-        FieldAccessibilityProps {
-    /** BCP 47 locale override. Falls back to the provider locale. */
-    locale?: string;
-    /** Minimum allowed fraction digits in the formatted display. */
-    minimumFractionDigits?: number;
-    /** Maximum allowed fraction digits in the formatted display. */
-    maximumFractionDigits?: number;
-    /** Whether the locale's grouping separator is applied. Defaults to `true`. */
-    useGrouping?: boolean;
-    /** Minimum allowed value. */
-    min?: number;
-    /** Maximum allowed value. */
-    max?: number;
-    /** Increment/decrement step for keyboard and stepper interactions. */
-    step?: number;
-    /** Inline prefix decoration (e.g. `kr`). Never folded into the value. */
-    prefix?: string;
-    /** Inline suffix decoration (e.g. `%`). Never folded into the value. */
-    suffix?: string;
-    /** Visible text while the field is empty. */
-    placeholder?: string;
-    className?: string;
-    pt?: NumberInputParts;
-    ptOptions?: object;
-    unstyled?: boolean;
-}
+type NumberInputFieldComponentProps = WrappedFieldProps<number> &
+    FieldAccessibilityProps &
+    Omit<
+        NumberInputProps,
+        'value' | 'onChange' | 'onCommit' | 'invalid' | 'errorMessage'
+    >;
 
-/** A locale-aware numeric field bound to a number property on an Arc command. */
-export const NumberInputField = asCommandFormField<NumberInputFieldComponentProps>(
-    (props) => {
-        const accessibility = useFieldAccessibility(props, {
-            id: props.pt?.input?.id,
-            ariaLabel: props.pt?.input?.['aria-label'],
-            ariaDescribedBy: props.pt?.input?.['aria-describedby'],
-        });
+const NumberInputControl = (props: NumberInputFieldComponentProps) => {
+    const accessibility = useFieldAccessibility(props, {
+        id: props.id,
+        ariaLabel: props['aria-label'],
+        ariaDescribedBy: props['aria-describedby'],
+    });
+    const {
+        value,
+        onChange,
+        onBlur,
+        invalid,
+        required,
+        errors: _errors,
+        title: _title,
+        ...numberInputProps
+    } = props;
 
-        return (
+    return (
+        <>
             <NumberInput
-                value={props.value}
-                onChange={(newValue) => props.onChange(newValue ?? 0)}
-                locale={props.locale}
-                minimumFractionDigits={props.minimumFractionDigits}
-                maximumFractionDigits={props.maximumFractionDigits}
-                useGrouping={props.useGrouping}
-                min={props.min}
-                max={props.max}
-                step={props.step}
-                prefix={props.prefix}
-                suffix={props.suffix}
-                invalid={props.invalid}
-                placeholder={props.placeholder}
+                {...numberInputProps}
                 id={accessibility.controlId}
                 aria-label={accessibility.ariaLabel}
                 aria-describedby={accessibility.ariaDescribedBy}
-                className={props.className}
-                pt={props.pt}
+                value={Number.isFinite(value) ? value : 0}
+                onChange={(nextValue) => onChange(nextValue ?? 0)}
+                required={required}
+                onCommit={(_nextValue, reason) => {
+                    if (reason === NumberInputCommitReason.Blur) onBlur?.();
+                }}
+                invalid={invalid}
             />
-        );
+            {accessibility.hiddenError}
+        </>
+    );
+};
+
+/**
+ * A locale-aware {@link NumberInput} bound to a non-null number property on an Arc command.
+ * Empty or non-finite values map to the explicit command default `0`; the standalone control
+ * remains nullable.
+ */
+export const NumberInputField = asCommandFormField<NumberInputFieldComponentProps>(
+    NumberInputControl,
+    {
+        defaultValue: 0,
+        extractValue: (value: unknown) => {
+            if (value === null || value === undefined) return 0;
+            const numericValue = typeof value === 'number' ? value : Number(value);
+            return Number.isFinite(numericValue) ? numericValue : 0;
+        },
     },
-    { defaultValue: 0 },
 );
