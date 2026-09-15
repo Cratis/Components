@@ -52,6 +52,7 @@
 @import './Common/Button.css';
 @import './Common/DatePickerInput.css';
 @import './Common/FormElement.css';
+@import './Common/NumberInput.css';
 @import './Common/Primitives.css';
 @import './Common/Tooltip.css';
 @import './DataTables/ColumnFilterMenu.css';

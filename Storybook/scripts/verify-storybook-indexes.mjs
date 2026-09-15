@@ -24,7 +24,7 @@ const collectTextFiles = directory => readdirSync(directory, { withFileTypes: tr
     return entry.isFile() && /\.(?:html|js|json)$/u.test(entry.name) ? [entryPath] : [];
 });
 const storyFiles = collectStoryFiles(sourceRoot);
-if (storyFiles.length !== 68) throw new Error(`Expected the existing 68 story modules, found ${storyFiles.length}.`);
+if (storyFiles.length !== 69) throw new Error(`Expected the existing 69 story modules, found ${storyFiles.length}.`);
 
 let canonicalStoryIds;
 let canonicalDocsIds;
@@ -39,8 +39,8 @@ for (const adapter of inventory.adapters) {
     const entries = Object.values(index.entries ?? {});
     const storyIds = entries.filter(entry => entry.type === 'story').map(entry => entry.id).sort();
     const docsIds = entries.filter(entry => entry.type === 'docs').map(entry => entry.id).sort();
-    if (storyIds.length !== 287 || docsIds.length !== 68) {
-        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 287 and 68.`);
+    if (storyIds.length !== 295 || docsIds.length !== 69) {
+        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 295 and 69.`);
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;

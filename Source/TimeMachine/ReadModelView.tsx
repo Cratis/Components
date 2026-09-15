@@ -137,7 +137,12 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                 </button>
                                             </div>
                                         </div>
-                                        <div className="window-content">
+                                        <div
+                                            className="window-content"
+                                            role="group"
+                                            aria-label={labels.readModelSnapshotRegion}
+                                            tabIndex={0}
+                                        >
                                             {version.content}
                                         </div>
                                     </div>
@@ -148,7 +153,7 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                 <span className="control minimize"></span>
                                                 <span className="control maximize"></span>
                                             </div>
-                                            <div className="window-title">Related Events</div>
+                                            <div className="window-title">{labels.relatedEventsRegion}</div>
                                             <div className="window-actions">
                                                 <button
                                                     type="button"
@@ -166,7 +171,12 @@ export const ReadModelView: React.FC<ReadModelViewProps> = ({
                                                 </button>
                                             </div>
                                         </div>
-                                        <div className="window-content window-content--events">
+                                        <div
+                                            className="window-content window-content--events"
+                                            role="group"
+                                            aria-label={labels.relatedEventsRegion}
+                                            tabIndex={0}
+                                        >
                                             <div className="snapshot-event-list">
                                                 {events.map((event, eventIndex) => (
                                                     <div key={`${version.id}-${event.sequenceNumber ?? eventIndex}`} className="snapshot-event">

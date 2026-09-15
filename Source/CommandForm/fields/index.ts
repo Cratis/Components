@@ -3,6 +3,7 @@
 
 export * from './InputTextField';
 export * from './NumberField';
+export * from './NumberInputField';
 export * from './CheckboxField';
 export * from './TextAreaField';
 export * from './DropdownField';
@@ -16,3 +17,4 @@ export * from './RadioGroupField';
 export * from './PasswordField';
 export * from './ToggleSwitchField';
 export * from './RatingField';
+export * from './NumberInputField';

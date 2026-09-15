@@ -10,6 +10,7 @@ import {
     Button,
     Checkbox,
     IconButton,
+    NumberInput,
     Radio,
     Surface,
     Switch,
@@ -25,6 +26,7 @@ import {
         onChange={(value) => console.log(value)}
     />
     <TextArea name='notes' aria-label='Notes' />
+    <NumberInput value={12.5} onChange={(value) => console.log(value)} aria-label='Amount' />
     <Checkbox name='updates' value='email' label='Email updates' />
     <Radio name='frequency' value='daily' label='Daily' />
     <Switch name='notifications' value='enabled' label='Enable notifications' />
@@ -40,6 +42,7 @@ import {
 | `Button` | `button` / `HTMLButtonElement` | Native click and form action | `root`, `spinner`, `icon`, `label` | `disabled`, `loading`, `variant`, `tone`, `shape`, `size` on `root` |
 | `IconButton` | `button` / `HTMLButtonElement` | Uses `Button` click semantics | `root`, `spinner`, `icon`, `label` | `disabled`, `loading` on `root` |
 | `TextInput` | `input` / `HTMLInputElement` | `string` | `root` | `disabled`, `invalid`, `readonly` |
+| `NumberInput` | owned spinbutton composition | `number \| null` | `root`, `input`, `prefix`, `suffix`, `step`, `description`, `error` | `disabled`, `invalid`, `readonly`, `focused` where documented |
 | `TextArea` | `textarea` / `HTMLTextAreaElement` | `string` | `root` | `disabled`, `invalid`, `readonly` |
 | `Checkbox` | `input[type=checkbox]` / `HTMLInputElement` | `boolean` | `root`, `input`, `box`, `indicator`, `label` | `selected`, `disabled`, `invalid`, `readonly` |
 | `Radio` | one `input[type=radio]` / `HTMLInputElement` | `boolean` when checked | `root`, `input`, `box`, `indicator`, `label` | `selected`, `disabled`, `invalid`, `readonly` |
@@ -47,6 +50,8 @@ import {
 | `Surface` | `div`, `section`, or `article` / `HTMLElement` | none | `root` | none |
 
 `IconButton` requires `aria-label` and delegates to `Button`; it does not add another button or interaction layer. It accepts the same semantic `variant`, `tone`, `shape`, `size`, `loading`, and `disabled` props as `Button`.
+
+[`NumberInput`](number-input.md) keeps locale-aware numeric edit text behind a controlled `number | null` boundary. Its public contract does not expose a formatter, renderer, or native event type.
 
 `TextInput` accepts the native text-like types `text`, `email`, `password`, `search`, `tel`, and `url`. `TextInput` and `TextArea` preserve native controlled (`value`) and uncontrolled (`defaultValue`) behavior.
 

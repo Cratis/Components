@@ -13,6 +13,7 @@ import { Checkbox } from '../Common/Checkbox';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import { DatePickerInput } from '../Common/DatePickerInput';
 import { IconButton } from '../Common/IconButton';
+import { NumberInput } from '../Common/NumberInput';
 import { Radio } from '../Common/Radio';
 import { Surface } from '../Common/Surface';
 import { Switch } from '../Common/Switch';
@@ -29,6 +30,7 @@ describe('when scanning representative foundation surfaces', () => {
     let root: Root;
 
     beforeEach(async () => {
+        // SAFETY: React's test flag is an intentional test-runtime global absent from lib.dom types.
         (
             globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
         ).IS_REACT_ACT_ENVIRONMENT = true;
@@ -42,6 +44,14 @@ describe('when scanning representative foundation surfaces', () => {
                         <Surface as='section' aria-label='Basic controls'>
                             <TextInput aria-label='Display name' />
                             <TextArea aria-label='Notes' />
+                            <NumberInput
+                                aria-label='Quantity'
+                                value={2}
+                                onChange={() => undefined}
+                                min={0}
+                                max={10}
+                                description='Choose a quantity from zero to ten.'
+                            />
                             <Checkbox label='Include archived items' />
                             <Radio label='Daily' name='frequency' value='daily' />
                             <Switch label='Enable notifications' />

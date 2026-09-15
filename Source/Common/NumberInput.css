@@ -1,0 +1,153 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-number-input {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    color: var(--cratis-text-color);
+}
+.cratis-number-input__group {
+    display: flex;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: var(--cratis-control-height);
+    align-items: stretch;
+    overflow: hidden;
+    border: 1px solid var(--cratis-control-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-control-background);
+    box-shadow: var(--cratis-shadow-subtle);
+}
+.cratis-number-input__control,
+.cratis-number-input__steps {
+    display: flex;
+    min-width: 0;
+    align-items: stretch;
+}
+.cratis-number-input__control {
+    flex: 1 1 auto;
+}
+.cratis-number-input__steps {
+    flex: 0 0 auto;
+}
+.cratis-number-input__group:focus-within {
+    border-color: var(--cratis-primary-color);
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-number-input[data-invalid='true'] .cratis-number-input__group {
+    border-color: var(--cratis-red-500);
+}
+.cratis-number-input[data-disabled='true'] {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-number-input:is([data-disabled='true'], [data-readonly='true'])
+    .cratis-number-input__group {
+    background: var(--cratis-surface-100);
+}
+.cratis-number-input__input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: var(--cratis-control-height);
+    padding: 0.625rem 0.75rem;
+    flex: 1 1 auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--cratis-text-color);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+}
+.cratis-number-input__input::placeholder {
+    color: var(--cratis-text-color-secondary);
+}
+.cratis-number-input__adornment {
+    display: inline-flex;
+    min-width: 0;
+    padding-inline: 0.75rem;
+    align-items: center;
+    color: var(--cratis-number-input-adornment-color);
+    white-space: nowrap;
+}
+.cratis-number-input__prefix {
+    padding-inline-end: 0;
+}
+.cratis-number-input__suffix {
+    padding-inline-start: 0;
+}
+.cratis-number-input__step {
+    display: inline-flex;
+    box-sizing: border-box;
+    width: var(--cratis-control-height);
+    min-width: 2.75rem;
+    min-height: var(--cratis-control-height);
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-inline-start: 1px solid var(--cratis-control-border);
+    background: var(--cratis-number-input-step-background);
+    color: var(--cratis-text-color);
+    font: inherit;
+    cursor: pointer;
+}
+.cratis-number-input__step:hover:not(:disabled) {
+    background: var(--cratis-number-input-step-background-hover);
+}
+.cratis-number-input__step:focus-visible {
+    outline: 2px solid var(--cratis-primary-color);
+    outline-offset: -3px;
+}
+.cratis-number-input__step:disabled {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-number-input__description,
+.cratis-number-input__error {
+    display: block;
+    margin-block-start: 0.35rem;
+    line-height: 1.4;
+}
+.cratis-number-input__description {
+    color: var(--cratis-text-color-secondary);
+}
+.cratis-number-input__error {
+    color: var(--cratis-red-500);
+}
+
+@media (max-width: 24rem) {
+    .cratis-number-input__group {
+        flex-wrap: wrap;
+    }
+    .cratis-number-input__control,
+    .cratis-number-input__steps {
+        width: 100%;
+        flex-basis: 100%;
+    }
+    .cratis-number-input__steps {
+        border-block-start: 1px solid var(--cratis-control-border);
+    }
+    .cratis-number-input__step {
+        width: 50%;
+        min-width: 0;
+        flex: 1 1 50%;
+    }
+    .cratis-number-input__step:first-child {
+        border-inline-start: 0;
+    }
+}
+
+@media (forced-colors: active) {
+    .cratis-number-input__group,
+    .cratis-number-input__step {
+        border-color: CanvasText;
+    }
+    .cratis-number-input__group:focus-within,
+    .cratis-number-input__step:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+        box-shadow: none;
+    }
+}
