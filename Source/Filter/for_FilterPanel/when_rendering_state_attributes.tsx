@@ -89,7 +89,10 @@ describe('when rendering FilterPanel state attributes', () => {
     });
 
     it('should expose selected state only on the selected option', () => {
-        const options = document.querySelectorAll('.pv-filter li');
+        // Scoped to the real, interactive rows: an option list with no explicit `searchable`
+        // also renders an `aria-hidden` measuring mirror of the same options (used to decide
+        // whether it needs a search box), which `.pv-filter li` would otherwise also match.
+        const options = document.querySelectorAll('.pv-option-list-options li');
         const selected = options[0];
         const unselected = options[1];
 

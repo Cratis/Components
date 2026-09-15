@@ -1,4 +1,7 @@
-# DataPage
+---
+title: DataPage
+description: Combine query-backed tables, actions, selection, and optional details in a complete data page.
+---
 
 The `DataPage` component provides a complete page layout for displaying and managing data from queries, including table view, menu actions, and optional detail panels.
 

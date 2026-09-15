@@ -264,8 +264,8 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
         });
         expect(packageJson.devDependencies).to.include({
             primereact: '10.9.9',
-            react: '19.2.8',
-            'react-dom': '19.2.8',
+            react: '19.3.0',
+            'react-dom': '19.3.0',
         });
         const serialized = JSON.stringify(packageJson);
         expect(serialized).not.to.contain('@primereact/');

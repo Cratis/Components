@@ -70,5 +70,7 @@
   href: Common/toc.yml
 - name: Types
   href: Types/toc.yml
+- name: Troubleshooting
+  href: troubleshooting.md
 - name: Migration
   href: Migration/toc.yml

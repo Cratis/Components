@@ -3,6 +3,8 @@
 
 export { FilterPanel } from './FilterPanel';
 export type { FilterPanelProps } from './FilterPanel';
+export { CheckboxListFilter } from './CheckboxListFilter';
+export type { CheckboxListFilterProps } from './CheckboxListFilter';
 export { FilterEditor } from './FilterEditor';
 export type { FilterEditorSlotProps } from './FilterEditor';
 export type { FilterEditorProps } from './FilterEditorProps';

@@ -1,4 +1,7 @@
-# Dialogs
+---
+title: Dialogs
+description: Present custom content, busy states, and confirmations with the shared dialog components.
+---
 
 The Dialogs module provides common dialog components for user interactions.
 

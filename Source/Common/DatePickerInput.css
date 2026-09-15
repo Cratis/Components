@@ -34,6 +34,7 @@
 .cratis-date-picker__input {
     display: flex;
     flex: 1;
+    flex-wrap: wrap;
     min-width: 0;
     padding: 0.625rem 0.75rem;
 }
@@ -55,6 +56,13 @@
     border-radius: 0.2rem;
     outline: none;
     font-variant-numeric: tabular-nums;
+}
+.cratis-date-picker__segment:not([data-type='literal']) {
+    display: flex;
+    min-width: 24px;
+    min-height: 24px;
+    align-items: center;
+    justify-content: center;
 }
 .cratis-date-picker__segment[data-placeholder] {
     color: var(--cratis-text-color-secondary);

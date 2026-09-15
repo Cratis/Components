@@ -1,8 +1,6 @@
 ---
 title: "Recipe: Multi-step form"
 description: Gather a command's input across several named steps with StepperCommandDialog.
-sidebar:
-  order: 5
 ---
 
 **Goal:** one command needs more input than fits comfortably on a single screen. Split it into a wizard — named steps the user moves through — that still executes a single command at the end.
@@ -38,9 +36,10 @@ export const RegisterMemberWizard = () => (
 
 ## When to use a wizard vs. a plain dialog
 
-Reach for a wizard when the input is genuinely staged or long enough that one screen would overwhelm. For three or four fields, a single [CommandDialog](/components/building-a-form/) is friendlier — don't add steps for their own sake.
+Reach for a wizard when the input is genuinely staged or long enough that one screen would overwhelm. For three or four fields, a single [CommandDialog](CommandDialog/index.md) is friendlier — don't add steps for their own sake.
 
 ## Next
 
-- [Building a form](/components/building-a-form/) — the single-step version and the field set.
-- The full stepper options are in the Components reference and Storybook.
+- [Building a form](building-a-form.md) — the single-step recipe and the field set
+- [StepperCommandDialog](StepperCommandDialog/index.md) — modal navigation, validation, callbacks, cancellation, and busy state
+- [CommandStepper](CommandStepper/index.md) — execute the same kind of multi-step command inline

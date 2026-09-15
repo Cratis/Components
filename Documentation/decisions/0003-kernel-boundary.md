@@ -2,7 +2,6 @@
 title: Repository-owned kernel boundary
 description: The explicit React-free and browser-DOM-free computation kernel enforced in Components source and emitted package graphs.
 sidebar:
-    order: 3
     badge: { text: Accepted, variant: tip }
 ---
 

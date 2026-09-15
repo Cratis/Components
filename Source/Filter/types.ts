@@ -56,7 +56,14 @@ export interface FilterDefinition {
     };
     /** Number of histogram buckets. Defaults to 20. */
     buckets?: number;
-    /** Show an inline search box that filters the displayed options for this group. */
+    /**
+     * Whether to show an inline search box that filters this group's options by label.
+     *
+     * - `true` always shows it.
+     * - `false` never shows it, no matter how long the option list gets.
+     * - `undefined` (the default) shows it only when there are more options than fit inside the
+     *   group's box, pinned to the top of the list while the options beneath it scroll.
+     */
     searchable?: boolean;
     /** Placeholder shown in the inline search box. Defaults to 'Search…'. */
     searchPlaceholder?: string;

@@ -24,6 +24,12 @@ export interface TimeMachineLabels {
     scrollToTop: string;
     /** Accessible name for the "scroll to bottom" control. */
     scrollToBottom: string;
+    /** Accessible name for the scrollable event timeline region. */
+    eventTimelineRegion: string;
+    /** Accessible name for a version's scrollable read-model snapshot region. */
+    readModelSnapshotRegion: string;
+    /** Title and accessible name for a version's scrollable related-events region. */
+    relatedEventsRegion: string;
 }
 
 /** English defaults for {@link TimeMachineLabels}. */
@@ -36,4 +42,7 @@ export const defaultTimeMachineLabels: TimeMachineLabels = {
     showReadModelSnapshot: 'Show read model snapshot',
     scrollToTop: 'Scroll to top',
     scrollToBottom: 'Scroll to bottom',
+    eventTimelineRegion: 'Event timeline',
+    readModelSnapshotRegion: 'Read model snapshot',
+    relatedEventsRegion: 'Related Events',
 };

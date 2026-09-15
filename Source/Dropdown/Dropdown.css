@@ -130,6 +130,7 @@
     padding: 0.75rem 1.25rem;
     align-items: center;
     border-radius: calc(var(--cratis-border-radius) * 0.75);
+    outline: none;
     cursor: default;
 }
 .cratis-dropdown__option[data-focused] {
@@ -138,6 +139,9 @@
 .cratis-dropdown__option[data-selected] {
     background: var(--cratis-highlight-bg);
     color: var(--cratis-highlight-text-color);
+}
+.cratis-dropdown__option[data-focus-visible] {
+    box-shadow: inset var(--cratis-focus-ring);
 }
 .cratis-dropdown__option[data-disabled] {
     opacity: 0.5;

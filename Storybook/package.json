@@ -22,8 +22,8 @@
         "ci": "yarn ci:preflight && yarn build && yarn verify-indexes && yarn test-storybook"
     },
     "devDependencies": {
-        "@types/react": "^19.2.18",
-        "react": "^19.0.0",
-        "react-dom": "^19.0.0"
+        "@types/react": "^19.3.0",
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0"
     }
 }

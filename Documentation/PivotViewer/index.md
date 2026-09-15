@@ -1,4 +1,7 @@
-# PivotViewer
+---
+title: PivotViewer
+description: Explore large datasets through interactive grouping, filtering, zooming, and spatial rendering.
+---
 
 The `PivotViewer` component provides an interactive, high-performance visualization for exploring large datasets with dynamic grouping, filtering, and zooming capabilities.
 
