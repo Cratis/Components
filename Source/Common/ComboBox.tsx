@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import {
+    useEffect,
     useId,
     useMemo,
     useState,
@@ -93,8 +94,8 @@ export type ComboBoxFilter = 'contains' | 'startsWith' | 'none';
 
 /** The footer action of a {@link ComboBox}, offered after the options and reachable by keyboard. */
 export interface ComboBoxAction {
-    /** The row's content. */
-    label: ReactNode;
+    /** The row's text; it is also the row's accessible name. */
+    label: string;
     /** Called with the current input text when the row is chosen. */
     onAction: (inputValue: string) => void | Promise<void>;
 }
@@ -218,9 +219,15 @@ export const ComboBox = ({
     const describedBy =
         [ariaDescribedBy, descriptionId, errorId].filter(Boolean).join(' ') || undefined;
 
-    const [uncontrolledInputValue, setUncontrolledInputValue] = useState(
-        () => options.find((option) => option.key === value)?.label ?? '',
-    );
+    const selectedLabel = options.find((option) => option.key === value)?.label ?? '';
+    const [uncontrolledInputValue, setUncontrolledInputValue] = useState(selectedLabel);
+    const [editing, setEditing] = useState(false);
+    // A value set from outside — a form reset, options that arrive after mount with a preselected key —
+    // must show its label; while the user is editing, the text is theirs.
+    useEffect(() => {
+        if (!editing && controlledInputValue === undefined)
+            setUncontrolledInputValue(selectedLabel);
+    }, [selectedLabel, editing, controlledInputValue]);
     const inputValue = controlledInputValue ?? uncontrolledInputValue;
     const setInputValue = (text: string) => {
         if (controlledInputValue === undefined) setUncontrolledInputValue(text);
@@ -328,6 +335,8 @@ export const ComboBox = ({
             isInvalid={invalid}
             isRequired={required}
             name={name}
+            onOpenChange={setEditing}
+            onFocusChange={setEditing}
             menuTrigger={openOnFocus ? 'focus' : 'input'}
             allowsEmptyCollection
             aria-label={ariaLabel}
@@ -405,11 +414,7 @@ export const ComboBox = ({
                                                 partAttributes(pt?.action),
                                             )}
                                             id={ACTION_KEY}
-                                            textValue={
-                                                typeof action?.label === 'string'
-                                                    ? action.label
-                                                    : 'action'
-                                            }
+                                            textValue={action?.label ?? ''}
                                             className={classNames(
                                                 'cratis-combobox__action',
                                                 pt?.action?.className,

@@ -25,7 +25,7 @@ const [customerId, setCustomerId] = useState<string | null>(null);
 />
 ```
 
-`value` is the selected option's `key` or `null`. Selecting writes the option's label into the input; clearing the text and leaving the field clears the selection.
+`value` is the selected option's `key` or `null`. Selecting writes the option's label into the input; clearing the text and leaving the field clears the selection. A `value` set from outside shows its label; options that arrive after mount with a key already chosen show its label too, unless the user is typing at that moment.
 
 ## Filtering and searching
 
@@ -50,23 +50,23 @@ The input carries `role="combobox"` with `aria-expanded`, `aria-controls` and `a
 
 ## Props
 
-| Prop                                             | Type                                   | Default       | Behavior                                                         |
-| ------------------------------------------------ | -------------------------------------- | ------------- | ---------------------------------------------------------------- |
-| `options`                                        | `ComboBoxOption[]`                     | Required      | `key`, `label`, optional `description` and `disabled`.           |
-| `value` / `onChange`                             | `string \| null`, `(key) => void`      | Required      | Controlled selected key.                                         |
-| `inputValue` / `onInputChange`                   | `string`, `(text) => void`             | Internal      | Controlled or observed input text.                               |
-| `filter`                                         | `'contains' \| 'startsWith' \| 'none'` | `contains`    | How typed text narrows `options`.                                |
-| `openOnFocus`                                    | `boolean`                              | `false`       | Opens the list on focus.                                         |
-| `loading` / `loadingMessage`                     | `boolean`, `ReactNode`                 | `false`       | Busy state instead of options.                                   |
-| `failure`                                        | `ReactNode`                            | —             | Alert content replacing the options.                             |
-| `emptyMessage`                                   | `ReactNode`                            | —             | Shown when nothing matches.                                      |
-| `action`                                         | `{ label, onAction(inputValue) }`      | —             | Footer row after the options.                                    |
-| `optionLayout`                                   | `'inline' \| 'stacked'`                | `inline`      | Description beside or under the label.                           |
-| `placeholder`                                    | `string`                               | —             | Empty edit hint.                                                 |
-| `disabled` / `readOnly` / `invalid` / `required` | `boolean`                              | `false`       | Semantic and visual state.                                       |
-| `id` / `name`                                    | `string`                               | Generated / — | Label association and native form field name (the selected key). |
-| `description` / `errorMessage`                   | `ReactNode`                            | —             | Associated help and invalid-state content.                       |
-| `pt`                                             | `ComboBoxParts`                        | —             | Part classes, styles, titles and data attributes.                |
+| Prop                                             | Type                                      | Default       | Behavior                                                         |
+| ------------------------------------------------ | ----------------------------------------- | ------------- | ---------------------------------------------------------------- |
+| `options`                                        | `ComboBoxOption[]`                        | Required      | `key`, `label`, optional `description` and `disabled`.           |
+| `value` / `onChange`                             | `string \| null`, `(key) => void`         | Required      | Controlled selected key.                                         |
+| `inputValue` / `onInputChange`                   | `string`, `(text) => void`                | Internal      | Controlled or observed input text.                               |
+| `filter`                                         | `'contains' \| 'startsWith' \| 'none'`    | `contains`    | How typed text narrows `options`.                                |
+| `openOnFocus`                                    | `boolean`                                 | `false`       | Opens the list on focus.                                         |
+| `loading` / `loadingMessage`                     | `boolean`, `ReactNode`                    | `false`       | Busy state instead of options.                                   |
+| `failure`                                        | `ReactNode`                               | —             | Alert content replacing the options.                             |
+| `emptyMessage`                                   | `ReactNode`                               | —             | Shown when nothing matches.                                      |
+| `action`                                         | `{ label: string, onAction(inputValue) }` | —             | Footer row after the options; the label is its accessible name.  |
+| `optionLayout`                                   | `'inline' \| 'stacked'`                   | `inline`      | Description beside or under the label.                           |
+| `placeholder`                                    | `string`                                  | —             | Empty edit hint.                                                 |
+| `disabled` / `readOnly` / `invalid` / `required` | `boolean`                                 | `false`       | Semantic and visual state.                                       |
+| `id` / `name`                                    | `string`                                  | Generated / — | Label association and native form field name (the selected key). |
+| `description` / `errorMessage`                   | `ReactNode`                               | —             | Associated help and invalid-state content.                       |
+| `pt`                                             | `ComboBoxParts`                           | —             | Part classes, styles, titles and data attributes.                |
 
 ## Stable parts and tokens
 

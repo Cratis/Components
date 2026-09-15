@@ -86,6 +86,9 @@ describe('when the options are not ready', () => {
         const action = document.querySelector<HTMLElement>('[data-cratis-part="action"]');
         expect(action?.getAttribute('role')).to.equal('option');
         expect(action?.textContent).to.equal('Register a new customer');
+        expect(action?.getAttribute('aria-label') ?? action?.textContent).to.equal(
+            'Register a new customer',
+        );
         expect(listbox()?.lastElementChild).to.equal(action);
 
         await pressComboBoxKey(mounted, 'ArrowDown');
