@@ -530,18 +530,12 @@ export const partStateDefinitions = {
     },
     NumberInput: {
         root: ['disabled', 'invalid', 'readonly'],
-<<<<<<< HEAD
         input: ['disabled', 'invalid', 'readonly', 'focused'],
         prefix: ['disabled', 'invalid', 'readonly'],
         suffix: ['disabled', 'invalid', 'readonly'],
         step: ['disabled', 'invalid', 'readonly'],
         description: [],
         error: ['invalid'],
-=======
-        input: ['disabled', 'invalid', 'readonly'],
-        prefix: [],
-        suffix: [],
->>>>>>> origin/main
     },
     ColorPickerField: {
         root: ['disabled', 'invalid'],
