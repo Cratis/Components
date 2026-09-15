@@ -26,6 +26,6 @@ The adapter does not parse or format a second time. It reuses `NumberInput` and 
 - the command default is `0`;
 - clearing the nullable edit state writes `0` to the command property;
 - extracted `null`, `undefined`, or non-finite values become `0`;
-- all locale, grouping, fraction, range, step, adornment, callback, part, and token behavior belongs to `NumberInput`.
+- all locale, grouping, fraction, range, step, stepper visibility (`showSteppers`), adornment, callback, part (including `group`), and token behavior belongs to `NumberInput`.
 
 Use [`NumberField`](number-field.md) instead when the native `input[type=number]` behavior and its clear-to-zero contract are sufficient. The existing native field remains the smaller surface and does not add locale grouping, adornments, or a separate commit callback.

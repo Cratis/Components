@@ -30,7 +30,16 @@ Read [Use the baseline theme](baseline-theme.md), [Build a product theme](themed
 
 ## Cascade contract
 
-The structural bundle declares low-priority `cratis-theme`, `cratis-components`, and `cratis-utilities` layers. Internal Tailwind-generated utility selectors are prefixed (`cratis:*`) and are not public styling hooks. Product CSS written outside a layer wins over all three without specificity tricks. If the product uses its own cascade layers, declare their order explicitly after the Components imports. Components does not inject Preflight, reset headings/forms/lists, or copy token values into `styles`.
+The structural bundle declares `cratis-theme`, `cratis-components`, and `cratis-utilities` layers. Internal Tailwind-generated utility selectors are prefixed (`cratis:*`) and are not public styling hooks. Product CSS written outside a layer wins over all three without specificity tricks. Components does not inject Preflight, reset headings/forms/lists, or copy token values into `styles`.
+
+The three layers are low-priority only where the product says so. Cascade-layer order is the order of first declaration, so a product that declares its own layers — a Tailwind host, for example, with `@layer properties, theme, base, components, utilities;` parsed before any stylesheet — and then imports `styles` gets the `cratis-*` layers appended *after* its own, which ranks a component stylesheet above every product utility. A `pt` class then loses to the component's own rule. Name the Components layers in that first `@layer` statement, in the position you want them: above the product reset so Preflight cannot strip a component, below the product utilities so a `pt` utility wins.
+
+```css
+/* Parsed before any stylesheet, e.g. an inline <style> in the host document. */
+@layer properties, theme, base, cratis-theme, cratis-components, cratis-utilities, components, utilities;
+```
+
+Declaring the same names again later, as the `styles` bundle does, never changes an order already fixed.
 
 Import product mappings and overrides after Components:
 
