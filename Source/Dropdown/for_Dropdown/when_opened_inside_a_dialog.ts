@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, it } from 'vitest';
 import { Dialog } from '../../Dialogs/Dialog';
 import { Dropdown } from '../Dropdown';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
+import { resolveZIndex } from '../../renderer/for_dialog_stack/resolveZIndex';
 
 /**
  * The dropdown popup must leave the dialog's clipping and stacking context. This is a
@@ -92,16 +93,8 @@ describe('when a dropdown is opened inside a dialog', () => {
             '[data-cratis-part="popover"]',
         ) as HTMLElement;
 
-        const resolvedZIndex = (element: HTMLElement) => {
-            const declaration = element.style.zIndex || getComputedStyle(element).zIndex;
-            const variable = declaration.match(/var\((--[^)]+)\)/u)?.[1];
-            const value = variable
-                ? getComputedStyle(document.documentElement).getPropertyValue(variable)
-                : declaration;
-            return Number.parseInt(value, 10);
-        };
-        dialogPositionerZIndex = resolvedZIndex(dialogPositioner);
-        panelZIndex = resolvedZIndex(panel);
+        dialogPositionerZIndex = resolveZIndex(dialogPositioner);
+        panelZIndex = resolveZIndex(panel);
         panelIsInsideTheDialog = dialogPopup.contains(panel);
         panelIsPortaledToTheBody =
             document.body.contains(panel) && !container.contains(panel);

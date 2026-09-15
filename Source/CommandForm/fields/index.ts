@@ -17,3 +17,4 @@ export * from './RadioGroupField';
 export * from './PasswordField';
 export * from './ToggleSwitchField';
 export * from './RatingField';
+export * from './NumberInputField';

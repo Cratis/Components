@@ -1,4 +1,7 @@
-# DataTables
+---
+title: DataTables
+description: Render local, paged, and observable query data with sorting, filtering, and selection.
+---
 
 The DataTables module provides a semantic local-array table plus specialized Arc query and observable-query wrappers.
 

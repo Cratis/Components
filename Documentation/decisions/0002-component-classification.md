@@ -2,7 +2,6 @@
 title: Public component classification
 description: The architecture categories assigned to every component exported by the public package barrels.
 sidebar:
-    order: 2
     badge: { text: Accepted, variant: tip }
 ---
 
@@ -92,6 +91,7 @@ The inventory follows the setup root and every JavaScript component subpath in `
 | `CommandForm` | `MultiSelectField` | Arc/high-order composite |
 | `Canvas` | `Note` | Arc/high-order composite |
 | `CommandForm` | `NumberField` | Arc/high-order composite |
+| `CommandForm` | `NumberInputField` | Arc/high-order composite |
 | `ObjectContentEditor` | `ObjectContentEditor` | Arc/high-order composite |
 | `ObjectNavigationalBar` | `ObjectNavigationalBar` | Arc/high-order composite |
 | `Common` | `Page` | Arc/high-order composite |

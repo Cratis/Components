@@ -23,6 +23,8 @@ import {
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
+import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import type { DropdownProps } from './Dropdown';
 import {
     asReactAriaButtonProps,
@@ -132,6 +134,11 @@ export const DropdownImplementation = <T = unknown,>({
 }: DropdownProps<T>) => {
     const [isOpen, setIsOpen] = useState(false);
     const overlayEnvironment = unstable_useOverlayEnvironment();
+    const nearestDialogZIndex = useNearestDialogZIndex();
+    const resolvedPopoverZIndex =
+        nearestDialogZIndex === null
+            ? 'var(--cratis-z-index-overlay)'
+            : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
     const { messages } = useCratisComponentsConfig();
     const dropdownMessages = messages?.dropdown;
     const showOptionsLabel =
@@ -310,7 +317,7 @@ export const DropdownImplementation = <T = unknown,>({
                                     panelClassName,
                                 )}
                                 style={{
-                                    zIndex: 'var(--cratis-z-index-overlay)',
+                                    zIndex: resolvedPopoverZIndex,
                                     ...pt?.popover?.style,
                                 }}
                                 data-cratis-part='popover'
@@ -531,7 +538,7 @@ export const DropdownImplementation = <T = unknown,>({
                                 panelClassName,
                             )}
                             style={{
-                                zIndex: 'var(--cratis-z-index-overlay)',
+                                zIndex: resolvedPopoverZIndex,
                                 ...pt?.popover?.style,
                             }}
                             data-cratis-part='popover'
@@ -678,7 +685,7 @@ export const DropdownImplementation = <T = unknown,>({
                             panelClassName,
                         )}
                         style={{
-                            zIndex: 'var(--cratis-z-index-overlay)',
+                            zIndex: resolvedPopoverZIndex,
                             ...pt?.popover?.style,
                         }}
                         data-cratis-part='popover'

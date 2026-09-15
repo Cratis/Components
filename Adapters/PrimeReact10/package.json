@@ -104,15 +104,15 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
-        "@cratis/arc": "22.6.2",
-        "@cratis/arc.react": "22.6.2",
+        "@cratis/arc": "22.13.1",
+        "@cratis/arc.react": "22.13.1",
         "@cratis/components": "workspace:^",
         "@cratis/components.conformance": "workspace:^",
-        "@cratis/fundamentals": "^7.10.3",
-        "@types/react": "19.2.18",
+        "@cratis/fundamentals": "^7.19.2",
+        "@types/react": "19.3.0",
         "primereact": "10.9.9",
-        "react": "19.2.8",
-        "react-dom": "19.2.8",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
         "reflect-metadata": "0.2.2",
         "tsyringe": "4.10.0"
     }

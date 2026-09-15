@@ -1,4 +1,7 @@
-# CommandDialog
+---
+title: CommandDialog
+description: Execute Arc commands in a dialog with automatic form state, validation, and result handling.
+---
 
 The `CommandDialog` component provides a dialog interface for executing commands with built-in form handling and validation.
 

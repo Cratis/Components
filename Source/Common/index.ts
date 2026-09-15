@@ -21,3 +21,4 @@ export * from './Surface';
 export * from './Switch';
 export * from './TextArea';
 export * from './TextInput';
+export * from './NumberInput';

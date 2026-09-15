@@ -116,3 +116,4 @@ Use the schema for editor/build-time manifest validation, then run `@cratis/comp
   presentation.
 - Use [custom composition](custom-composition.md) when the workflow itself must be vendor-native.
 - Check [unsupported renderer claims](unsupported.md) before promising replacement behavior.
+- Use [Troubleshooting](../troubleshooting.md#an-adapter-still-renders-a-built-in-control) when an active adapter falls back to a built-in control.

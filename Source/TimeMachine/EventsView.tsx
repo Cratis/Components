@@ -108,7 +108,13 @@ export const EventsView = ({
     };
 
     return (
-        <div className='events-view-container' ref={containerRef}>
+        <div
+            className='events-view-container'
+            ref={containerRef}
+            role='group'
+            aria-label={labels.eventTimelineRegion}
+            tabIndex={0}
+        >
             {canScrollUp && (
                 <div className='events-view-scroll-button-wrapper events-view-scroll-button-wrapper--top'>
                     <button

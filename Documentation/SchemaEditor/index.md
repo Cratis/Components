@@ -1,4 +1,7 @@
-# SchemaEditor
+---
+title: SchemaEditor
+description: Create and edit supported JSON Schema structures in an interactive table.
+---
 
 The `SchemaEditor` component provides an interactive table-based interface for creating and editing JSON schemas.
 

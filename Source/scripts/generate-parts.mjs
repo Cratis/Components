@@ -530,12 +530,18 @@ export const partStateDefinitions = {
     },
     NumberInput: {
         root: ['disabled', 'invalid', 'readonly'],
+<<<<<<< HEAD
         input: ['disabled', 'invalid', 'readonly', 'focused'],
         prefix: ['disabled', 'invalid', 'readonly'],
         suffix: ['disabled', 'invalid', 'readonly'],
         step: ['disabled', 'invalid', 'readonly'],
         description: [],
         error: ['invalid'],
+=======
+        input: ['disabled', 'invalid', 'readonly'],
+        prefix: [],
+        suffix: [],
+>>>>>>> origin/main
     },
     ColorPickerField: {
         root: ['disabled', 'invalid'],
@@ -839,6 +845,20 @@ export const implicitPartStateAllowlist = [
         reason: 'React Aria CalendarCell emits data-selected for the selected date.',
     },
     {
+        component: 'NumberInput',
+        file: 'Common/NumberInput.tsx',
+        part: 'root',
+        states: ['disabled', 'invalid', 'readonly'],
+        reason: 'RAC Group emits data-disabled, data-invalid, and data-readonly from its isDisabled/isInvalid/isReadOnly props.',
+    },
+    {
+        component: 'NumberInput',
+        file: 'Common/NumberInput.tsx',
+        part: 'input',
+        states: ['disabled', 'invalid'],
+        reason: 'RAC Input emits data-disabled and data-invalid from NumberField context.',
+    },
+    {
         component: 'ColumnFilterMenu',
         file: 'DataTables/ColumnFilterMenu.tsx',
         part: 'filter-trigger',
@@ -864,6 +884,11 @@ export const dynamicPartExpressions = [
 
 /** Exact dynamic test selectors and the concrete values supplied by their fixtures. */
 export const dynamicTestSelectors = [
+    {
+        file: 'Common/for_NumberInput/when_rendering_authoritative_states.tsx',
+        expression: '[data-cratis-part="${name}"]',
+        parts: ['root', 'input'],
+    },
     {
         file: 'Toolbar/for_ToolbarComposition/when_rendering_stable_parts.tsx',
         expression: 'data-cratis-part="${part}"',

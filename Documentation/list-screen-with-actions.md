@@ -1,8 +1,6 @@
 ---
 title: "Recipe: A list screen with actions"
 description: Combine a live table with command dialogs to build the everyday "list things, add/edit/remove them" screen.
-sidebar:
-  order: 6
 ---
 
 **Goal:** the most common screen in any app — a table of things with a toolbar to add, and per-row actions to edit or remove. This recipe wires [displaying data](/components/displaying-data/) and [running commands](/components/building-a-form/) together.
@@ -51,9 +49,10 @@ You never write the glue between the write and the read: the "add" command appen
 
 - **Edit and remove are just more commands.** Model them as commands (`RenameAuthor`, `RemoveAuthor`) and open them in dialogs the same way; the table updates itself.
 - **Keep the table's read model specialized.** The list query and a detail query can read different, purpose-built read models — don't force one model to serve every screen.
-- For a plain table without the detail panel, use [`DataTableForObservableQuery`](/components/displaying-data/) directly.
+- For a plain table without the detail panel, use [`DataTableForObservableQuery`](DataTables/data-table-for-observable-query.md) directly.
 
 ## Next
 
-- [Building a form](/components/building-a-form/) and [Displaying data](/components/displaying-data/) — the two halves in detail.
-- [Build a full-stack feature](/build-a-full-app/) — the backend slice this screen sits on.
+- [Building a form](building-a-form.md) and [Displaying data](displaying-data.md) — the two halves in detail
+- [DataPage](DataPage/index.md) — configure the action row, columns, selection, and details panel
+- [CommandDialog](CommandDialog/index.md) — execute the add, edit, and remove commands

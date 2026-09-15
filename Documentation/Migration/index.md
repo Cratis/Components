@@ -1,4 +1,7 @@
-# Migration
+---
+title: Migration
+description: Move @cratis/components applications between major versions with focused upgrade guides.
+---
 
 Guides for moving `@cratis/components` forward across major versions. Each guide is scoped to one version jump and lists the changes a consuming application can observe: dependencies, imports, styling, licensing, behavior, and verification.
 

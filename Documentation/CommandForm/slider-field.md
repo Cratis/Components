@@ -28,4 +28,3 @@ import { SliderField } from '@cratis/components/CommandForm';
 - Default value is `0`.
 - The slider spans full width within its container.
 - The selected numeric value is rendered centered beneath the slider track.
-

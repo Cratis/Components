@@ -1,4 +1,7 @@
-# ObjectContentEditor
+---
+title: ObjectContentEditor
+description: Explore complex JSON objects with schema-aware rendering and breadcrumb navigation.
+---
 
 The `ObjectContentEditor` component displays and allows exploration of complex JSON objects with schema-aware rendering and navigation.
 
