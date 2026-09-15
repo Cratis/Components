@@ -15,6 +15,7 @@ The Common module provides reusable UI components and the styling setup primitiv
 - **Surface**: A bounded `div`, `section`, or `article` container with no invented interaction state.
 - **Icon / IconDisplay**: Unified icon type that accepts a CSS class string or any React node.
 - **Page**: Layout primitive for consistent page structures.
+- **NumberInput**: Locale-aware numeric input with grouping, fraction digits, and inline unit decorations.
 - **FormElement**: Lightweight wrapper that places an icon addon to the left of a form input.
 - **ErrorBoundary**: Error handling for React component trees.
 
@@ -25,6 +26,7 @@ The Common module provides reusable UI components and the styling setup primitiv
 - [CratisComponentsProvider](cratis-components-provider.md) — locale, labels, and toaster configuration
 - [Icon](icon.md) - Icon type and IconDisplay component
 - [Page](page.md) - Page layout component
+- [NumberInput](number-input.md) — locale-aware numeric input
 - [FormElement](form-element.md) - Form field icon-addon wrapper
 - [ErrorBoundary](error-boundary.md) - Error boundary component
 - [Styling Overview](../Styling/index.md) — the supported styling options and how Common fits in
