@@ -3,6 +3,7 @@
 
 export * from './InputTextField';
 export * from './NumberField';
+export * from './NumberInputField';
 export * from './CheckboxField';
 export * from './TextAreaField';
 export * from './DropdownField';

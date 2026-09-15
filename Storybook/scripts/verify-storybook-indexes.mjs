@@ -39,8 +39,8 @@ for (const adapter of inventory.adapters) {
     const entries = Object.values(index.entries ?? {});
     const storyIds = entries.filter(entry => entry.type === 'story').map(entry => entry.id).sort();
     const docsIds = entries.filter(entry => entry.type === 'docs').map(entry => entry.id).sort();
-    if (storyIds.length !== 292 || docsIds.length !== 69) {
-        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 292 and 69.`);
+    if (storyIds.length !== 295 || docsIds.length !== 69) {
+        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 295 and 69.`);
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;

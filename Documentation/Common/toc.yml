@@ -4,14 +4,12 @@
   href: cratis-components-provider.md
 - name: Basic controls
   href: basic-controls.md
-- name: ActionMenubar
-  href: action-menubar.md
+- name: Locale-aware number input
+  href: number-input.md
 - name: Icon
   href: icon.md
 - name: Page
   href: page.md
-- name: NumberInput
-  href: number-input.md
 - name: FormElement
   href: form-element.md
 - name: ErrorBoundary
