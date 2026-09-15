@@ -125,8 +125,6 @@
     .cratis-number-input__steps {
         width: 100%;
         flex-basis: 100%;
-    }
-    .cratis-number-input__steps {
         border-block-start: 1px solid var(--cratis-control-border);
     }
     .cratis-number-input__step {
