@@ -1,0 +1,95 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-combobox {
+    display: inline-flex;
+    flex-direction: column;
+    min-width: 10rem;
+    color: var(--cratis-text-color);
+}
+.cratis-combobox__control {
+    display: flex;
+    min-height: var(--cratis-control-height);
+    border: 1px solid var(--cratis-control-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-control-background);
+}
+.cratis-combobox__control:focus-within {
+    border-color: var(--cratis-primary-color);
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-combobox[data-invalid='true'] .cratis-combobox__control {
+    border-color: var(--cratis-red-500);
+}
+.cratis-combobox[data-disabled='true'] {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-combobox__input,
+.cratis-combobox__trigger {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+}
+.cratis-combobox__input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.625rem 0.75rem;
+    outline: 0;
+}
+.cratis-combobox__trigger {
+    padding: 0 0.75rem;
+    color: var(--cratis-text-color-secondary);
+}
+.cratis-combobox__popover {
+    width: var(--trigger-width);
+    overflow: auto;
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-surface-overlay);
+    box-shadow: var(--cratis-shadow-overlay);
+}
+.cratis-combobox__listbox {
+    max-height: 18rem;
+    padding: 0.25rem;
+}
+.cratis-combobox__option,
+.cratis-combobox__action,
+.cratis-combobox__message {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--cratis-border-radius);
+}
+.cratis-combobox__listbox[data-option-layout='stacked'] .cratis-combobox__option {
+    flex-direction: column;
+}
+.cratis-combobox__option[data-focused],
+.cratis-combobox__action[data-focused] {
+    background: var(--cratis-surface-hover);
+}
+.cratis-combobox__option[data-selected='true'] {
+    background: var(--cratis-highlight-bg);
+    color: var(--cratis-highlight-text-color);
+}
+.cratis-combobox__option[data-disabled='true'] {
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-combobox__option-description,
+.cratis-combobox__message,
+.cratis-combobox__description {
+    color: var(--cratis-text-color-secondary);
+}
+.cratis-combobox__action {
+    border-top: 1px solid var(--cratis-surface-border);
+    color: var(--cratis-primary-color);
+}
+.cratis-combobox__description,
+.cratis-combobox__error {
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+}
+.cratis-combobox__error {
+    color: var(--cratis-red-500);
+}

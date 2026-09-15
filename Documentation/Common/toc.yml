@@ -6,6 +6,8 @@
   href: basic-controls.md
 - name: Locale-aware number input
   href: number-input.md
+- name: ComboBox
+  href: combobox.md
 - name: Icon
   href: icon.md
 - name: Page

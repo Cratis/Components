@@ -7,6 +7,7 @@ export * from './DatePickerInput';
 export * from './ErrorBoundary';
 export * from './Icon';
 export * from './normalizeIconClass';
+export * from './ComboBox';
 export * from './NumberInput';
 export * from './NumberInputCommitReason';
 export * from './NumberInputPartAttributes';
