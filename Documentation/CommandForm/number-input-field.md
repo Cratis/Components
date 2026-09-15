@@ -56,5 +56,6 @@ is unchanged and keeps its current behavior.
 - Default value is `0`, and a cleared field commits `0` so the command always carries a number.
 - Formatting is presentation only — the command receives the numeric value, never the formatted text.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
-- The control exposes `role="spinbutton"` with a formatted `aria-valuetext`, so it renders as
-  `input[type=text]` rather than a native numeric spinner.
+- The control renders as `input[type=text]` with `inputmode="numeric"` and an `aria-roledescription`
+  naming it a number field, rather than taking the `spinbutton` role. See
+  [NumberInput](../Common/number-input.md) for the reasoning and the trade-off.

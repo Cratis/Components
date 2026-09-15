@@ -92,13 +92,15 @@ digit is not fought while it is still being entered.
 
 ## Accessibility
 
-The control exposes `role="spinbutton"` with `aria-valuenow` and a formatted `aria-valuetext`, so a
-screen reader announces the value as it is written rather than as raw digits. Give it a name through
-`aria-label` or `aria-labelledby`. The canonical `disabled`, `invalid`, and `readonly` states are
-exposed on the `root` and `input` parts for styling.
+The control renders as `input[type=text]` with `inputmode="numeric"` and an `aria-roledescription`
+naming it a number field. React Aria deliberately does not take the `spinbutton` role, which suppresses
+text editing in several screen readers; the trade-off is that there is no `aria-valuenow`/`aria-valuemin`
+/`aria-valuemax` range announcement. Give the control a name through `aria-label` or `aria-labelledby`.
+The canonical `disabled`, `invalid`, and `readonly` states are exposed on the `root` and `input` parts
+for styling.
 
-Because the input is formatted text rather than a native numeric spinner, it renders as
-`input[type=text]`. `NumberField` remains the native `input[type=number]` control.
+`NumberField` remains the native `input[type=number]` control, which keeps the browser's own spinner
+semantics if a range announcement matters more than locale formatting.
 
 ## See also
 
