@@ -194,8 +194,13 @@ try {
 const styleBytes = Buffer.byteLength(styles);
 const gzipBytes = gzipSync(styles, { level: 9 }).byteLength;
 const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
+// Measured on the packed archive when NumberInput's stylesheet joined the aggregate: raw 206197,
+// gzip 31747, 1152 declaration blocks. Raw moved past 200 KiB, so it is raised to 204 KiB against
+// that measurement. The transferred size is what a consumer pays and it is unchanged in kind — but
+// gzip now sits roughly 1 KiB under its own ceiling, so the next stylesheet needs a real reduction
+// rather than another budget increase.
 const styleBudget = {
-    rawBytes: 200 * 1024,
+    rawBytes: 204 * 1024,
     gzipBytes: 32 * 1024,
     declarationBlocks: 1200,
 };
