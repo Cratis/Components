@@ -137,6 +137,43 @@ jobs:
                   yarn build
                   yarn publish-version "$RELEASE_VERSION"
 
+            # npm prints its success line per workspace, but that is not evidence the registry received
+            # the package. On v4.5.0 two of four workspaces were missing for over an hour while this run
+            # stayed green, and the published adapters referenced a core version nobody could install.
+            # Ask the registry itself, in the job that published, so the answer cannot be skipped.
+            - name: Verify every published package reached the registry
+              env:
+                  RELEASE_VERSION: ${{ needs.release.outputs.version || github.event.inputs.version }}
+              run: |
+                  missing=()
+                  for manifest in Source/package.json ESLint/package.json Migrator/package.json Adapters/*/package.json; do
+                    if [[ ! -f "$manifest" ]]; then
+                      continue
+                    fi
+                    name=$(jq -r '.name' "$manifest")
+                    if [[ "$(jq -r '.private // false' "$manifest")" == 'true' ]]; then
+                      continue
+                    fi
+                    encoded=${name/\//%2f}
+                    published=false
+                    for attempt in 1 2 3 4 5 6; do
+                      if curl -sf "https://registry.npmjs.org/${encoded}/${RELEASE_VERSION}" > /dev/null; then
+                        published=true
+                        break
+                      fi
+                      sleep 20
+                    done
+                    if [[ "$published" == 'true' ]]; then
+                      echo "${name}@${RELEASE_VERSION} is on the registry."
+                    else
+                      missing+=("${name}@${RELEASE_VERSION}")
+                    fi
+                  done
+                  if [[ ${#missing[@]} -gt 0 ]]; then
+                    echo "::error::The registry has no ${missing[*]}. The release tag exists but consumers cannot install it; re-run this job."
+                    exit 1
+                  fi
+
             - name: Trigger Documentation Build
               uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3
               with:
