@@ -47,6 +47,7 @@ const numberInput = (
                 input: { 'data-contract': 'input' },
                 prefix: { 'data-contract': 'prefix' },
                 suffix: { 'data-contract': 'suffix' },
+                group: { 'data-contract': 'group' },
                 step: { 'data-contract': 'step' },
                 description: { 'data-contract': 'description' },
                 error: { 'data-contract': 'error' },
@@ -162,6 +163,7 @@ describe('when rendering number input semantics', () => {
 
         expect(parts.map((part) => part.dataset.cratisPart)).to.deep.equal([
             'root',
+            'group',
             'prefix',
             'input',
             'suffix',
@@ -170,6 +172,9 @@ describe('when rendering number input semantics', () => {
             'description',
             'error',
         ]);
+        expect(parts[1].classList.contains('cratis-number-input__group')).to.equal(true);
+        expect(parts[1].getAttribute('data-invalid')).to.equal('true');
+        expect(parts[1].contains(parts[3])).to.equal(true);
         expect(
             parts
                 .filter((part) => part.dataset.cratisPart === 'step')
@@ -178,6 +183,30 @@ describe('when rendering number input semantics', () => {
         expect(parts[0].getAttribute('data-invalid')).to.equal('true');
         expect(parts.at(-1)?.getAttribute('data-invalid')).to.equal('true');
         expect(parts.every((part) => part.dataset.contract)).to.equal(true);
+    });
+
+    it('should render no steppers when they are hidden while keyboard stepping still commits', async () => {
+        mounted = await mountNumberInput({
+            initialValue: 4,
+            'aria-label': 'Quantity',
+            step: 2,
+            showSteppers: false,
+        });
+
+        expect(mounted.field.querySelector('[data-cratis-part="step"]')).to.equal(null);
+        expect(mounted.field.querySelector('.cratis-number-input__steps')).to.equal(null);
+        expect(mounted.field.querySelector('[data-cratis-part="group"]')).to.not.equal(
+            null,
+        );
+
+        await pressNumberInputKey(mounted, 'ArrowUp');
+
+        expect(mounted.input.value).to.equal('6');
+        expect(mounted.events.at(-1)).to.deep.equal({
+            kind: 'commit',
+            value: 6,
+            reason: NumberInputCommitReason.Step,
+        });
     });
 
     it('should block native form submission while a required value is empty', async () => {

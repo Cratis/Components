@@ -147,6 +147,43 @@ export const AdornmentsAndSteps: Story = {
     ),
 };
 
+/**
+ * A product that draws its own box on `root` removes the built-in one through the `group` part and hides
+ * the steppers; keyboard stepping (ArrowUp/ArrowDown) keeps working.
+ */
+export const ProductOwnedBox: Story = {
+    render: () => (
+        <StoryContainer size='sm' asCard>
+            <StorySection>
+                <h3>Product-owned box, no steppers</h3>
+                <div className='cratis:flex cratis:flex-col cratis:gap-3 cratis:w-80'>
+                    <NumberInput
+                        value={1450}
+                        onChange={fn()}
+                        aria-label='Hourly rate'
+                        suffix='kr/t'
+                        min={0}
+                        showSteppers={false}
+                        pt={{
+                            root: {
+                                style: {
+                                    border: '1px solid var(--cratis-control-border)',
+                                    borderRadius: '999px',
+                                    padding: '0 1rem',
+                                },
+                            },
+                            group: {
+                                style: { border: 0, boxShadow: 'none', minHeight: 0 },
+                            },
+                            input: { style: { padding: '0.5rem 0', minHeight: 0 } },
+                        }}
+                    />
+                </div>
+            </StorySection>
+        </StoryContainer>
+    ),
+};
+
 /** Empty, invalid, read-only, and disabled states use the same semantic surface. */
 export const States: Story = {
     render: () => (
