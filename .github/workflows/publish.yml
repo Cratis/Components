@@ -156,7 +156,12 @@ jobs:
                     fi
                     encoded=${name/\//%2f}
                     published=false
-                    for attempt in 1 2 3 4 5 6; do
+                    # npm's own read path can trail a successful publish by minutes for the larger
+                    # packages: on 4.5.1 five workspaces answered at once and @cratis/components arrived
+                    # after this loop had given up. Wait out ordinary propagation — the failure this
+                    # guards against left a package missing for over an hour, so ten minutes still
+                    # separates a slow registry from one that never received the publish.
+                    for attempt in $(seq 1 30); do
                       if curl -sf "https://registry.npmjs.org/${encoded}/${RELEASE_VERSION}" > /dev/null; then
                         published=true
                         break
