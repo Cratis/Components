@@ -55,9 +55,27 @@ export const partDefinitions = {
         ptKeys: ['root', 'input'],
     },
     NumberInput: {
-        parts: ['root', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
+        parts: [
+            'root',
+            'group',
+            'input',
+            'prefix',
+            'suffix',
+            'step',
+            'description',
+            'error',
+        ],
         sources: ['Common/NumberInput.tsx'],
-        ptKeys: ['root', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
+        ptKeys: [
+            'root',
+            'group',
+            'input',
+            'prefix',
+            'suffix',
+            'step',
+            'description',
+            'error',
+        ],
     },
     NumberInputField: {
         aliasOf: 'NumberInput',
@@ -530,6 +548,7 @@ export const partStateDefinitions = {
     },
     NumberInput: {
         root: ['disabled', 'invalid', 'readonly'],
+        group: ['disabled', 'invalid', 'readonly'],
         input: ['disabled', 'invalid', 'readonly', 'focused'],
         prefix: ['disabled', 'invalid', 'readonly'],
         suffix: ['disabled', 'invalid', 'readonly'],

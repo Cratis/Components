@@ -93,6 +93,7 @@ Provide an accessible name through `aria-label` or `aria-labelledby`. When a vis
 | `required`                          | `boolean`                         | `false`         | Requires a non-empty value using native form and accessibility semantics.    |
 | `min` / `max`                       | `number`                          | Unbounded       | Commit boundaries and number-field range.                                    |
 | `step`                              | `number`                          | `1`             | Step and commit-snap interval.                                               |
+| `showSteppers`                      | `boolean`                         | `true`          | Renders the decrement/increment buttons; keyboard stepping works either way. |
 | `prefix` / `suffix`                 | `ReactNode`                       | —               | Associated presentation outside the numeric value.                           |
 | `placeholder`                       | `string`                          | —               | Empty edit hint.                                                             |
 | `disabled` / `readOnly` / `invalid` | `boolean`                         | `false`         | Semantic and visual state.                                                   |
@@ -105,6 +106,7 @@ Provide an accessible name through `aria-label` or `aria-labelledby`. When a vis
 | Typed `pt` key / DOM part | Meaning                                                             | Canonical states                             |
 | ------------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
 | `root`                    | Complete field                                                      | `disabled`, `invalid`, `readonly`            |
+| `group`                   | The bordered box holding adornments, input and steppers             | `disabled`, `invalid`, `readonly`            |
 | `input`                   | Editable localized text                                             | `disabled`, `invalid`, `readonly`, `focused` |
 | `prefix` / `suffix`       | Present adornment                                                   | `disabled`, `invalid`, `readonly`            |
 | `step`                    | Both step buttons; inspect `data-step='decrement'` or `'increment'` | `disabled`, `invalid`, `readonly`            |
@@ -118,3 +120,10 @@ The component uses the shared control, surface, text, focus, disabled, and error
 - `--cratis-number-input-step-background-hover`
 
 Use parts and tokens rather than internal element order or implementation-library selectors.
+
+The built-in box — border, radius, background, shadow, focus ring and minimum height — is drawn on `group`,
+not on `root`. A product that draws its own box on `root` removes the built-in one through `pt.group`
+(and hides the buttons with `showSteppers={false}` when its field has no stepper affordance) instead of
+targeting `.cratis-number-input__group`. For a Tailwind consumer to override a component rule with a `pt`
+utility, the host's `@layer` prelude must rank the `cratis-*` layers below its own utilities; see the
+[cascade contract](../Styling/index.md#cascade-contract).

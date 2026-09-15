@@ -13,8 +13,8 @@ export const cratisParts = {
     ToggleSwitchField: ['root', 'input', 'control', 'handle'],
     SliderField: ['root', 'input', 'value'],
     NumberField: ['root', 'input'],
-    NumberInput: ['root', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
-    NumberInputField: ['root', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
+    NumberInput: ['root', 'group', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
+    NumberInputField: ['root', 'group', 'input', 'prefix', 'suffix', 'step', 'description', 'error'],
     ColorPickerField: ['root', 'input', 'value'],
     PasswordField: ['root', 'input', 'toggle'],
     InputTextField: ['input'],
@@ -128,6 +128,7 @@ export const cratisPartStates = {
     },
     NumberInput: {
         'root': ['disabled', 'invalid', 'readonly'],
+        'group': ['disabled', 'invalid', 'readonly'],
         'input': ['disabled', 'invalid', 'readonly', 'focused'],
         'prefix': ['disabled', 'invalid', 'readonly'],
         'suffix': ['disabled', 'invalid', 'readonly'],
@@ -137,6 +138,7 @@ export const cratisPartStates = {
     },
     NumberInputField: {
         'root': ['disabled', 'invalid', 'readonly'],
+        'group': ['disabled', 'invalid', 'readonly'],
         'input': ['disabled', 'invalid', 'readonly', 'focused'],
         'prefix': ['disabled', 'invalid', 'readonly'],
         'suffix': ['disabled', 'invalid', 'readonly'],

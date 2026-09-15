@@ -8,7 +8,9 @@ import { expect } from 'chai';
 import { describe, it } from 'vitest';
 import { cratisPartStates, cratisParts } from '../../types/parts';
 
-const commonDirectory = path.dirname(fileURLToPath(new URL('../NumberInput.tsx', import.meta.url)));
+const commonDirectory = path.dirname(
+    fileURLToPath(new URL('../NumberInput.tsx', import.meta.url)),
+);
 const sourceDirectory = path.dirname(commonDirectory);
 const styles = readFileSync(path.join(commonDirectory, 'NumberInput.css'), 'utf8');
 const tokens = readFileSync(path.join(sourceDirectory, 'tokens.css'), 'utf8');
@@ -17,6 +19,7 @@ describe('when guarding NumberInput parts and tokens', () => {
     it('should keep the exact public part inventory for standalone and command surfaces', () => {
         expect(cratisParts.NumberInput).to.deep.equal([
             'root',
+            'group',
             'input',
             'prefix',
             'suffix',
@@ -30,6 +33,11 @@ describe('when guarding NumberInput parts and tokens', () => {
             'invalid',
             'readonly',
             'focused',
+        ]);
+        expect(cratisPartStates.NumberInput.group).to.deep.equal([
+            'disabled',
+            'invalid',
+            'readonly',
         ]);
     });
 

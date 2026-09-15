@@ -25,6 +25,8 @@ import type { NumberInputPartAttributes } from './NumberInputPartAttributes';
 export interface NumberInputParts {
     /** Complete number-field wrapper. */
     root?: NumberInputPartAttributes;
+    /** The bordered box holding the adornments, the input and the steppers. */
+    group?: NumberInputPartAttributes;
     /** Editable localized input. */
     input?: NumberInputPartAttributes;
     /** Prefix adornment, when supplied. */
@@ -82,6 +84,8 @@ export interface NumberInputProps {
     disabled?: boolean;
     /** Prevents editing while retaining the value and focus semantics. */
     readOnly?: boolean;
+    /** Renders the decrement/increment buttons. Keyboard stepping stays available when they are hidden. */
+    showSteppers?: boolean;
     /** Marks the control invalid. */
     invalid?: boolean;
     /** Stable id for the editable input and external label association. */
@@ -190,6 +194,7 @@ export const NumberInput = ({
     placeholder,
     disabled = false,
     readOnly = false,
+    showSteppers = true,
     invalid = false,
     id,
     name,
@@ -335,7 +340,18 @@ export const NumberInput = ({
                 latestValue.current = parsedValue;
                 return (
                     <>
-                        <Group className='cratis-number-input__group'>
+                        <Group
+                            {...partAttributes(pt?.group)}
+                            className={classNames(
+                                'cratis-number-input__group',
+                                pt?.group?.className,
+                            )}
+                            style={pt?.group?.style as CSSProperties | undefined}
+                            data-cratis-part='group'
+                            data-disabled={disabled || undefined}
+                            data-invalid={invalid || undefined}
+                            data-readonly={readOnly || undefined}
+                        >
                             <div className='cratis-number-input__control'>
                                 {prefixId && (
                                     <span
@@ -416,74 +432,80 @@ export const NumberInput = ({
                                     </span>
                                 )}
                             </div>
-                            <div className='cratis-number-input__steps'>
-                                <Button
-                                    {...partAttributes(pt?.step)}
-                                    slot='decrement'
-                                    className={classNames(
-                                        'cratis-number-input__step',
-                                        pt?.step?.className,
-                                    )}
-                                    style={pt?.step?.style as CSSProperties | undefined}
-                                    onPress={() =>
-                                        scheduleCommit(NumberInputCommitReason.Step)
-                                    }
-                                    render={(buttonProps) => (
-                                        <button
-                                            {...buttonProps}
-                                            aria-labelledby={
-                                                ariaLabelledBy
-                                                    ? [buttonProps.id, ariaLabelledBy]
-                                                          .filter(Boolean)
-                                                          .join(' ')
-                                                    : buttonProps['aria-labelledby']
-                                            }
-                                            data-cratis-part='step'
-                                            data-step='decrement'
-                                            data-disabled={
-                                                buttonProps.disabled || undefined
-                                            }
-                                            data-invalid={invalid || undefined}
-                                            data-readonly={readOnly || undefined}
-                                        />
-                                    )}
-                                >
-                                    <span aria-hidden='true'>−</span>
-                                </Button>
-                                <Button
-                                    {...partAttributes(pt?.step)}
-                                    slot='increment'
-                                    className={classNames(
-                                        'cratis-number-input__step',
-                                        pt?.step?.className,
-                                    )}
-                                    style={pt?.step?.style as CSSProperties | undefined}
-                                    onPress={() =>
-                                        scheduleCommit(NumberInputCommitReason.Step)
-                                    }
-                                    render={(buttonProps) => (
-                                        <button
-                                            {...buttonProps}
-                                            aria-labelledby={
-                                                ariaLabelledBy
-                                                    ? [buttonProps.id, ariaLabelledBy]
-                                                          .filter(Boolean)
-                                                          .join(' ')
-                                                    : buttonProps['aria-labelledby']
-                                            }
-                                            data-cratis-part='step'
-                                            data-step='increment'
-                                            data-disabled={
-                                                buttonProps.disabled || undefined
-                                            }
-                                            data-invalid={invalid || undefined}
-                                            data-readonly={readOnly || undefined}
-                                        />
-                                    )}
-                                >
-                                    <span aria-hidden='true'>+</span>
-                                </Button>
-                            </div>
+                            {showSteppers && (
+                                <div className='cratis-number-input__steps'>
+                                    <Button
+                                        {...partAttributes(pt?.step)}
+                                        slot='decrement'
+                                        className={classNames(
+                                            'cratis-number-input__step',
+                                            pt?.step?.className,
+                                        )}
+                                        style={
+                                            pt?.step?.style as CSSProperties | undefined
+                                        }
+                                        onPress={() =>
+                                            scheduleCommit(NumberInputCommitReason.Step)
+                                        }
+                                        render={(buttonProps) => (
+                                            <button
+                                                {...buttonProps}
+                                                aria-labelledby={
+                                                    ariaLabelledBy
+                                                        ? [buttonProps.id, ariaLabelledBy]
+                                                              .filter(Boolean)
+                                                              .join(' ')
+                                                        : buttonProps['aria-labelledby']
+                                                }
+                                                data-cratis-part='step'
+                                                data-step='decrement'
+                                                data-disabled={
+                                                    buttonProps.disabled || undefined
+                                                }
+                                                data-invalid={invalid || undefined}
+                                                data-readonly={readOnly || undefined}
+                                            />
+                                        )}
+                                    >
+                                        <span aria-hidden='true'>−</span>
+                                    </Button>
+                                    <Button
+                                        {...partAttributes(pt?.step)}
+                                        slot='increment'
+                                        className={classNames(
+                                            'cratis-number-input__step',
+                                            pt?.step?.className,
+                                        )}
+                                        style={
+                                            pt?.step?.style as CSSProperties | undefined
+                                        }
+                                        onPress={() =>
+                                            scheduleCommit(NumberInputCommitReason.Step)
+                                        }
+                                        render={(buttonProps) => (
+                                            <button
+                                                {...buttonProps}
+                                                aria-labelledby={
+                                                    ariaLabelledBy
+                                                        ? [buttonProps.id, ariaLabelledBy]
+                                                              .filter(Boolean)
+                                                              .join(' ')
+                                                        : buttonProps['aria-labelledby']
+                                                }
+                                                data-cratis-part='step'
+                                                data-step='increment'
+                                                data-disabled={
+                                                    buttonProps.disabled || undefined
+                                                }
+                                                data-invalid={invalid || undefined}
+                                                data-readonly={readOnly || undefined}
+                                            />
+                                        )}
+                                    >
+                                        <span aria-hidden='true'>+</span>
+                                    </Button>
+                                </div>
+                            )}
                         </Group>
                         {descriptionId && (
                             <span
