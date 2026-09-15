@@ -529,8 +529,7 @@ export const partStateDefinitions = {
         input: ['disabled', 'invalid', 'readonly'],
     },
     NumberInput: {
-        root: ['disabled', 'invalid', 'readonly'],
-        input: ['disabled', 'invalid', 'readonly', 'focused'],
+        input: ['readonly'],
         prefix: ['disabled', 'invalid', 'readonly'],
         suffix: ['disabled', 'invalid', 'readonly'],
         step: ['disabled', 'invalid', 'readonly'],
