@@ -33,6 +33,12 @@ type DialogButtonAttributes = Omit<
     'onClick' | 'value'
 >;
 
+/**
+ * Where a {@link Dialog} sits in the viewport. `center` is the classic modal; `start` and `end`
+ * make it a full-height side sheet against the inline-start or inline-end edge.
+ */
+export type DialogPlacement = 'center' | 'start' | 'end';
+
 /** Stable Cratis-owned parts for styling a {@link Dialog}. */
 export interface DialogParts {
     /** Viewport backdrop and dismissal surface. */
@@ -45,6 +51,8 @@ export interface DialogParts {
     header?: DialogPartAttributes<HTMLElement>;
     /** Dialog heading. */
     title?: DialogPartAttributes<HTMLHeadingElement>;
+    /** Secondary line under the heading, rendered only when `subtitle` is set. */
+    subtitle?: DialogPartAttributes<HTMLParagraphElement>;
     /** Header close button. */
     close?: DialogButtonAttributes;
     /** Dialog content region. */
@@ -61,6 +69,19 @@ export interface DialogParts {
 export interface DialogProps {
     /** Dialog heading. */
     title: string;
+    /**
+     * Secondary line under the heading — a reference, a status, a short summary. Announced as the
+     * dialog's description.
+     */
+    subtitle?: ReactNode;
+    /**
+     * Viewport placement. `center` (default) is a modal; `start` and `end` render a full-height
+     * side sheet against that inline edge, sliding in from it. Dismissal, focus and busy behavior
+     * are identical across placements.
+     */
+    placement?: DialogPlacement;
+    /** Glyph for the header close button. Defaults to a multiplication sign. */
+    closeIcon?: ReactNode;
     /** Controlled open state. Defaults to `true`. */
     visible?: boolean;
     /** Combined result callback used when a dedicated confirm/cancel callback is absent. */

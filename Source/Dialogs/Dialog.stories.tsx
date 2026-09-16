@@ -310,3 +310,103 @@ export const CustomButtons: Story = {
         );
     },
 };
+
+const SideSheet = ({
+    placement,
+    title,
+}: {
+    placement: 'start' | 'end';
+    title: string;
+}) => {
+    const SheetDialog = () => {
+        const { closeDialog } = useDialogContext();
+
+        return (
+            <Dialog
+                title={title}
+                subtitle='FRP-1284 · Equinor ASA'
+                placement={placement}
+                width='420px'
+                dismissable
+                initialFocus={DialogInitialFocus.Content}
+                closeAriaLabel='Close sheet'
+                onCancel={() => closeDialog(DialogResult.Cancelled)}
+                buttons={
+                    <Button tone='neutral' onClick={() => closeDialog(DialogResult.Cancelled)}>
+                        Close
+                    </Button>
+                }
+            >
+                <p>
+                    A side sheet keeps the page in view while a detail pane, a note or a
+                    navigation list slides in from the {placement} edge. Escape, the backdrop
+                    and the close action dismiss it; focus stays inside until it closes.
+                </p>
+            </Dialog>
+        );
+    };
+
+    const [SheetComponent, showSheet] = useDialog(SheetDialog);
+
+    return (
+        <>
+            <Button onClick={async () => await showSheet()}>Open {placement} sheet</Button>
+            <SheetComponent />
+        </>
+    );
+};
+
+/** A full-height sheet against the inline-end edge — detail panes and notes. */
+export const PlacementEnd: Story = {
+    play: openDialog,
+    render: () => <SideSheet placement='end' title='Activity' />,
+};
+
+/** A full-height sheet against the inline-start edge — navigation on small screens. */
+export const PlacementStart: Story = {
+    play: openDialog,
+    render: () => <SideSheet placement='start' title='Navigation' />,
+};
+
+/** A subtitle under the heading, announced as the dialog's description, and a consumer-supplied close glyph. */
+export const WithSubtitleAndCloseIcon: Story = {
+    play: openDialog,
+    render: () => {
+        const DescribedDialog = () => {
+            const { closeDialog } = useDialogContext();
+
+            return (
+                <Dialog
+                    title='Internal note'
+                    subtitle='FRP-1284 · Equinor ASA'
+                    closeIcon={
+                        <svg
+                            aria-hidden='true'
+                            width='16'
+                            height='16'
+                            viewBox='0 0 16 16'
+                            fill='none'
+                            stroke='currentColor'
+                            strokeWidth='1.5'
+                        >
+                            <path d='M4 4l8 8M12 4l-8 8' />
+                        </svg>
+                    }
+                    onConfirm={() => closeDialog(DialogResult.Ok)}
+                    onCancel={() => closeDialog(DialogResult.Cancelled)}
+                >
+                    <p>The subtitle is the dialog's accessible description.</p>
+                </Dialog>
+            );
+        };
+
+        const [DescribedDialogComponent, showDescribedDialog] = useDialog(DescribedDialog);
+
+        return (
+            <>
+                <Button onClick={async () => await showDescribedDialog()}>Open described dialog</Button>
+                <DescribedDialogComponent />
+            </>
+        );
+    },
+};
