@@ -35,7 +35,7 @@ on:
             - 'rollup.config.mjs'
             - 'yarn.lock'
             - '.yarnrc.yml'
-            - '.yarn/releases/yarn-4.5.3.cjs'
+            - '.yarn/releases/yarn-4.17.1.cjs'
             - '.github/workflows/javascript-build.yml'
             - '.github/workflows/publish.yml'
     pull_request:
@@ -57,7 +57,7 @@ on:
             - 'rollup.config.mjs'
             - 'yarn.lock'
             - '.yarnrc.yml'
-            - '.yarn/releases/yarn-4.5.3.cjs'
+            - '.yarn/releases/yarn-4.17.1.cjs'
             - '.github/workflows/javascript-build.yml'
             - '.github/workflows/publish.yml'
 
@@ -86,7 +86,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -160,7 +160,7 @@ jobs:
                   path: |
                       .yarn/cache
                       **/node_modules
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -221,7 +221,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -240,13 +240,17 @@ jobs:
               working-directory: Source
               run: node scripts/verify-exports.mjs
 
-    # Verifies every public JS subpath's declarations against a strict external TypeScript 6
+    # Verifies every public JS subpath's declarations against strict external TypeScript 6 and 7
     # consumer of the packed artifact. Bounded upstream exceptions live in
     # Source/scripts/verify-public-types.exceptions.json; any Components-owned or otherwise
     # unlisted diagnostic fails this job, as does an exception that stops reproducing.
     verify-public-types:
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                typescript: ['6', '7']
 
         steps:
             - name: Checkout code
@@ -265,7 +269,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -278,13 +282,15 @@ jobs:
 
             - name: Verify public types
               working-directory: Source
+              env:
+                  CRATIS_TYPESCRIPT_VERSION: ${{ matrix.typescript }}
               run: node scripts/verify-public-types.mjs --report "${{ runner.temp }}/verify-public-types-report.json"
 
             - name: Upload verify-public-types report
               if: always()
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
-                  name: verify-public-types-report
+                  name: verify-public-types-report-ts${{ matrix.typescript }}
                   path: ${{ runner.temp }}/verify-public-types-report.json
                   if-no-files-found: ignore
 
@@ -315,7 +321,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -363,7 +369,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -403,7 +409,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -444,7 +450,7 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.5.3.cjs') }}
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -465,7 +471,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                arc-version: ['20.3.1', '21.19.4', '22.6.2']
+                arc-version: ['20.3.1', '21.19.4', '22.6.2', '22.16.0']
 
         steps:
             - name: Checkout code
@@ -578,8 +584,8 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   npm install --ignore-scripts --no-audit --no-fund \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.6.2 @cratis/arc.react@22.6.2 \
-                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    @cratis/arc@22.16.0 @cratis/arc.react@22.16.0 \
+                    @cratis/fundamentals@7.19.2 @types/react@19.2.18 \
                     react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
                   node verify.mjs "${{ matrix.pixi }}"
@@ -593,8 +599,8 @@ jobs:
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   pnpm add --ignore-scripts --strict-peer-dependencies \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.6.2 @cratis/arc.react@22.6.2 \
-                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    @cratis/arc@22.16.0 @cratis/arc.react@22.16.0 \
+                    @cratis/fundamentals@7.19.2 @types/react@19.2.18 \
                     react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
                   pnpm exec node verify.mjs "${{ matrix.pixi }}"
@@ -606,19 +612,13 @@ jobs:
                   corepack prepare yarn@4.5.3 --activate
                   cat > .yarnrc.yml <<'YAML'
                   nodeLinker: pnp
-                  # Arc React 22 imports rxjs without declaring it. Keep that upstream
-                  # manifest issue explicit so this fixture can still isolate Components.
-                  packageExtensions:
-                    "@cratis/arc.react@*":
-                      dependencies:
-                        rxjs: "*"
                   YAML
                   PIXI=()
                   if [ "${{ matrix.pixi }}" = 'present' ]; then PIXI+=(pixi.js@8.20.0); fi
                   yarn add \
                     /tmp/cratis-components.tgz \
-                    @cratis/arc@22.6.2 @cratis/arc.react@22.6.2 \
-                    @cratis/fundamentals@7.18.1 @types/react@19.2.18 \
+                    @cratis/arc@22.16.0 @cratis/arc.react@22.16.0 \
+                    @cratis/fundamentals@7.19.2 @types/react@19.2.18 \
                     react@19.2.8 react-dom@19.2.8 \
                     reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2 "${PIXI[@]}"
                   yarn node verify.mjs "${{ matrix.pixi }}"

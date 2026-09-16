@@ -31,13 +31,13 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
     React Aria, the internationalized date implementation, and React Icons are internal dependencies. The current package manifest does not declare a separate UI kit or theme runtime, and consumers do not configure an icon-package peer.
 
-    The package declares React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe` peer ranges. Its Arc range is `>=20.3.1 <23`; keep `@cratis/arc` and `@cratis/arc.react` on the same version used by the application's generated proxies. A strict installer can use this explicit form (replace the example Arc version when needed):
+    The package declares React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe` peer ranges. Its Arc range is `>=20.3.1 <23`. Use Arc 22.16.0 or newer for `AutoCommandForm`'s explicit field binding. Keep `@cratis/arc` and `@cratis/arc.react` on the same version used by the application's generated proxies. A strict installer can use this explicit form (replace the example Arc version when needed):
 
     ```bash title="Install explicit peers"
-    ARC_VERSION=22.6.2
+    ARC_VERSION=22.16.0
     npm install @cratis/components@^4 \
       "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
-      @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
+      @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
       reflect-metadata@0.2.2 tsyringe@4.10.0
     ```
 
@@ -76,7 +76,7 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
 ### Yarn PnP with Arc React 22.6.2
 
-The current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. A strict Yarn PnP consumer must install `rxjs@7.8.2` and temporarily add this package extension until Arc publishes corrected metadata:
+If you retain `@cratis/arc.react@22.6.2`, that version imports `rxjs` without declaring it. A strict Yarn PnP consumer needs `rxjs@7.8.2` and this version-specific package extension:
 
 ```yaml title=".yarnrc.yml"
 packageExtensions:
@@ -84,6 +84,8 @@ packageExtensions:
         dependencies:
             rxjs: '7.8.2'
 ```
+
+This workaround is not needed with Arc React 22.16.0. Remove the old extension when upgrading; do not apply it to every Arc version.
 
 ## What the provider sets up
 

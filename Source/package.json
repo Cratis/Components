@@ -232,8 +232,8 @@
         "verify-parts-manifest": "node ./scripts/verify-parts-manifest.mjs",
         "prepare": "yarn generate-parts && yarn clean && yarn g:build",
         "clean": "rm -rf dist && yarn g:clean",
-        "build": "yarn generate-parts && tsc -p tsconfig.json",
-        "compile": "yarn generate-parts && tsc -p tsconfig.json -noEmit && yarn g:lint",
+        "build": "yarn generate-parts && node ../scripts/run-typescript.mjs -p tsconfig.json",
+        "compile": "yarn generate-parts && node ../scripts/run-typescript.mjs -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
@@ -246,7 +246,7 @@
         "verify-spatial-consumer": "node ./scripts/verify-spatial-consumer.mjs",
         "verify-provider-context-identity": "node ./scripts/verify-provider-context-identity.mjs",
         "verify-renderer-contracts": "node ./scripts/verify-renderer-contracts.mjs",
-        "typecheck-stories": "node ../node_modules/typescript/bin/tsc -p tsconfig.stories.json && yarn workspace @cratis/components.storybook typecheck",
+        "typecheck-stories": "node ../scripts/run-typescript.mjs -p tsconfig.stories.json && yarn workspace @cratis/components.storybook typecheck",
         "test-storybook": "yarn workspace @cratis/components.storybook test-storybook",
         "test-storybook:light": "yarn workspace @cratis/components.storybook test-storybook:light",
         "test-storybook:dark": "yarn workspace @cratis/components.storybook test-storybook:dark",
@@ -269,7 +269,7 @@
         "ts-deepmerge": "8.0.0"
     },
     "devDependencies": {
-        "@cratis/arc.vite": "22.13.1",
+        "@cratis/arc.vite": "22.16.0",
         "pixi.js": "^8.20.1",
         "react": "19.3.0",
         "react-dom": "19.3.0"

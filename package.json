@@ -23,8 +23,8 @@
         "node": ">=23.0.0"
     },
     "scripts": {
-        "g:clean": "cd $INIT_CWD && tsc -b --clean",
-        "g:build": "cd $INIT_CWD && tsc -b && rollup -c ./rollup.config.mjs && yarn copy-css",
+        "g:clean": "cd $INIT_CWD && node ../scripts/run-typescript.mjs -b --clean",
+        "g:build": "cd $INIT_CWD && node ../scripts/run-typescript.mjs -b && rollup -c ./rollup.config.mjs && yarn copy-css",
         "g:lint": "cd $INIT_CWD && eslint --cache --quiet --fix",
         "g:lint:ci": "cd $INIT_CWD && eslint --cache --quiet",
         "g:test": "cd $INIT_CWD && vitest run",
@@ -43,16 +43,18 @@
         "test-renderer-adapter-matrix": "node --test ./scripts/verify-renderer-adapter-matrix.test.mjs",
         "verify-renderer-adapters": "node ./scripts/verify-renderer-adapters.mjs",
         "publish-version": "node ./run-task-on-workspaces.js publish-version",
-        "ci": "yarn verify-compat-manifest && yarn test-release-policy && yarn test-release-evidence && yarn test-renderer-adapter-matrix && node ./run-task-on-workspaces.js ci",
+        "test-tooling": "node --test scripts/parse-npm-pack-result.test.mjs scripts/typescript-compiler.test.mjs scripts/typescript-diagnostics.test.mjs",
+        "verify-typescript-consumers": "node scripts/verify-typescript-consumers.mjs",
+        "ci": "yarn test-tooling && yarn verify-compat-manifest && yarn test-release-policy && yarn test-release-evidence && yarn test-renderer-adapter-matrix && node ./run-task-on-workspaces.js ci && yarn verify-typescript-consumers",
         "up": "node ./run-task-on-workspaces.js up"
     },
     "license": "MIT",
     "version": "0.0.0",
-    "packageManager": "yarn@4.5.3",
+    "packageManager": "yarn@4.17.1",
     "devDependencies": {
-        "@cratis/arc": "22.13.1",
-        "@cratis/arc.react": "22.13.1",
-        "@cratis/arc.vite": "22.13.1",
+        "@cratis/arc": "22.16.0",
+        "@cratis/arc.react": "22.16.0",
+        "@cratis/arc.vite": "22.16.0",
         "@cyclonedx/yarn-plugin-cyclonedx": "3.4.0",
         "@eslint-react/eslint-plugin": "5.19.0",
         "@eslint/js": "^10.0.1",
@@ -76,9 +78,10 @@
         "@types/sinon-chai": "^4.0.0",
         "@typescript-eslint/eslint-plugin": "^8.70.0",
         "@typescript-eslint/parser": "^8.70.0",
+        "@typescript/native": "npm:typescript@7.0.2",
         "@vitejs/plugin-react": "^6.1.1",
-        "@vitest/browser-playwright": "5.0.0",
-        "@vitest/coverage-v8": "^5.0.0",
+        "@vitest/browser-playwright": "4.1.11",
+        "@vitest/coverage-v8": "4.1.11",
         "autoprefixer": "^10.5.5",
         "axe-core": "^4.13.0",
         "chai": "^6.2.2",
@@ -108,11 +111,19 @@
         "tailwindcss": "^4.3.3",
         "ts-node": "^10.9.2",
         "tsyringe": "4.10.0",
-        "typescript": "^6.0.3",
+        "typescript": "6.0.3",
         "typescript-eslint": "^8.70.0",
         "vite": "^8.3.0",
         "vite-plugin-commonjs": "^0.10.4",
         "vite-tsconfig-paths": "^6.1.1",
-        "vitest": "^5.0.0"
+        "vitest": "4.1.11"
+    },
+    "dependenciesMeta": {
+        "@swc/core@1.16.2": {
+            "built": true
+        },
+        "esbuild@0.28.2": {
+            "built": true
+        }
     }
 }

@@ -5,7 +5,7 @@ import { DialogResult, DialogButtons, useDialogContext } from '@cratis/arc.react
 import { Dialog as AriaDialog, Heading } from 'react-aria-components/Dialog';
 import { Modal, ModalOverlay } from 'react-aria-components/Modal';
 import { UNSAFE_PortalProvider } from 'react-aria';
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
@@ -35,6 +35,9 @@ const useIsBrowser = () =>
  */
 export const DialogImplementation = ({
     title,
+    subtitle,
+    placement = 'center',
+    closeIcon = '×',
     visible = true,
     onClose,
     onConfirm,
@@ -73,6 +76,8 @@ export const DialogImplementation = ({
     }
 
     const isBrowser = useIsBrowser();
+    const subtitleId = useId();
+    const hasSubtitle = subtitle !== undefined && subtitle !== null && subtitle !== false;
     const titleRef = useRef<HTMLHeadingElement>(null);
     const confirmRef = useRef<HTMLButtonElement>(null);
     const cancelRef = useRef<HTMLButtonElement>(null);
@@ -241,7 +246,10 @@ export const DialogImplementation = ({
 
     const dialogDocument = (
         <DialogStackContext.Provider value={resolvedZIndex ?? DIALOG_ZINDEX_TOKEN}>
-        <AriaDialog className='cratis-dialog__document'>
+        <AriaDialog
+            className='cratis-dialog__document'
+            aria-describedby={hasSubtitle ? subtitleId : undefined}
+        >
             <>
                 <header
                     {...pt?.header}
@@ -263,6 +271,20 @@ export const DialogImplementation = ({
                     >
                         {title}
                     </Heading>
+                    {hasSubtitle && (
+                        <p
+                            {...pt?.subtitle}
+                            id={subtitleId}
+                            className={classNames(
+                                'cratis-dialog__subtitle',
+                                pt?.subtitle?.className,
+                            )}
+                            style={pt?.subtitle?.style}
+                            data-cratis-part='subtitle'
+                        >
+                            {subtitle}
+                        </p>
+                    )}
                     {allowsDismissal && (
                         <button
                             {...pt?.close}
@@ -278,7 +300,7 @@ export const DialogImplementation = ({
                             aria-label={resolvedCloseAriaLabel}
                             onClick={() => void handleClose(DialogResult.Cancelled)}
                         >
-                            <span aria-hidden='true'>×</span>
+                            <span aria-hidden='true'>{closeIcon}</span>
                         </button>
                     )}
                 </header>
@@ -347,6 +369,7 @@ export const DialogImplementation = ({
                     ...pt?.backdrop?.style,
                 }}
                 data-cratis-part='backdrop'
+                data-placement={placement}
                 data-open={visible || undefined}
                 data-busy={isBusy || undefined}
             >
@@ -358,6 +381,7 @@ export const DialogImplementation = ({
                     )}
                     style={pt?.positioner?.style}
                     data-cratis-part='positioner'
+                    data-placement={placement}
                     data-open={visible || undefined}
                     data-busy={isBusy || undefined}
                 >
@@ -370,6 +394,7 @@ export const DialogImplementation = ({
                         )}
                         style={dialogStyle}
                         data-cratis-part='root'
+                        data-placement={placement}
                         data-open={visible || undefined}
                         data-busy={isBusy || undefined}
                     >
@@ -396,6 +421,7 @@ export const DialogImplementation = ({
                     ...pt?.backdrop?.style,
                 }}
                 data-cratis-part='backdrop'
+                data-placement={placement}
                 data-open={visible || undefined}
                 data-busy={isBusy || undefined}
             >
@@ -407,6 +433,7 @@ export const DialogImplementation = ({
                     )}
                     style={pt?.positioner?.style}
                     data-cratis-part='positioner'
+                    data-placement={placement}
                     data-open={visible || undefined}
                     data-busy={isBusy || undefined}
                 >
@@ -419,6 +446,7 @@ export const DialogImplementation = ({
                         )}
                         style={dialogStyle}
                         data-cratis-part='root'
+                        data-placement={placement}
                         data-open={visible || undefined}
                         data-busy={isBusy || undefined}
                     >

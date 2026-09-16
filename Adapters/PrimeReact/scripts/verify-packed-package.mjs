@@ -13,6 +13,8 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseNpmPackResult } from '../../../scripts/lib/parse-npm-pack-result.mjs';
+import { getTypeScriptCompiler } from '../../../scripts/lib/typescript-compiler.mjs';
 import {
     isOwnedDeclarationDiagnostic,
     matchesExternalIssue,
@@ -46,27 +48,11 @@ const link = (source, target) => {
     symlinkSync(source, target, 'dir');
 };
 
-const parsePackJson = (output) => {
-    for (
-        let index = output.lastIndexOf('[');
-        index >= 0;
-        index = output.lastIndexOf('[', index - 1)
-    ) {
-        try {
-            const parsed = JSON.parse(output.slice(index));
-            if (Array.isArray(parsed) && parsed[0]?.filename) return parsed;
-        } catch {
-            // Continue searching backward through lifecycle output for npm's final JSON array.
-        }
-    }
-    throw new Error('npm pack did not produce a parseable JSON result.');
-};
-
 try {
-    const packedJson = parsePackJson(
+    const packed = parseNpmPackResult(
         run('npm', ['pack', '--json', '--pack-destination', temporary]),
+        '@cratis/components.primereact',
     );
-    const packed = packedJson[0];
     const fileNames = new Set(packed.files.map((file) => file.path));
     for (const required of [
         'dist/index.js',
@@ -98,7 +84,7 @@ try {
     run('tar', ['-xzf', archive, '-C', unpacked]);
     const unpackedPackage = path.join(unpacked, 'package');
 
-    const corePackedJson = parsePackJson(
+    const corePacked = parseNpmPackResult(
         run(
             'npm',
             [
@@ -111,8 +97,9 @@ try {
             ],
             path.join(repositoryDirectory, 'Source'),
         ),
+        '@cratis/components',
     );
-    const coreArchive = path.join(temporary, corePackedJson[0].filename);
+    const coreArchive = path.join(temporary, corePacked.filename);
     const unpackedCore = path.join(temporary, 'unpacked-core');
     mkdirSync(unpackedCore);
     run('tar', ['-xzf', coreArchive, '-C', unpackedCore]);
@@ -290,7 +277,7 @@ try {
         path.join(temporary, 'jsx-shim.d.ts'),
         "import type { ReactElement } from 'react';\ndeclare global { namespace JSX { type Element = ReactElement; } }\nexport {};\n",
     );
-    const typescript = path.join(repositoryDirectory, 'node_modules/typescript/bin/tsc');
+    const { path: typescript, version: compilerVersion } = getTypeScriptCompiler();
     run(
         process.execPath,
         [
@@ -409,7 +396,7 @@ try {
 
     console.log(
         `Verified ${packageJson.name}@${packageJson.version}: archive boundaries, external vendor peers, ` +
-            'packed Core runtime import, one hygienic UiLibrary declaration, and strict Bundler/NodeNext consumers with bounded upstream exceptions.',
+            `packed Core runtime import, one hygienic UiLibrary declaration, and strict TypeScript ${compilerVersion} Bundler/NodeNext consumers with bounded upstream exceptions.`,
     );
 } finally {
     rmSync(temporary, { recursive: true, force: true });

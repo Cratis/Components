@@ -519,6 +519,7 @@ export const createSlotProfiles = (
             'root',
             'header',
             'title',
+            'subtitle',
             'close',
             'content',
             'footer',
@@ -533,6 +534,7 @@ export const createSlotProfiles = (
             let callbacks = 0;
             const props = {
                 title: 'Example dialog',
+                subtitle: 'Example subtitle',
                 children: 'Dialog content',
                 buttons: 2,
                 dismissable: true,
@@ -546,6 +548,7 @@ export const createSlotProfiles = (
         createStateProps: () =>
             recordProps({
                 title: 'Busy dialog',
+                subtitle: 'Busy subtitle',
                 children: 'Dialog content',
                 buttons: 2,
                 isBusy: true,

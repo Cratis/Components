@@ -62,6 +62,11 @@ const MyComponent = () => {
 ## Props
 
 - `title`: Dialog header text
+- `subtitle`: Optional secondary line under the title — a reference, a status, a short summary. It is
+  rendered in the header as the `subtitle` part and announced as the dialog's description
+- `placement`: `'center'` (default), `'start'` or `'end'` — see [Placement](#placement)
+- `closeIcon`: Glyph for the header close (X). Defaults to a multiplication sign; pass your icon set's
+  close icon to match the rest of the product
 - `visible`: Controls visibility (defaults to `true`)
 - `onConfirm`: Callback for confirm actions
 - `onCancel`: Callback for cancel actions
@@ -125,6 +130,38 @@ Set `dismissable` explicitly to override that:
 This is what `StepperCommandDialog` does for its wizard chrome: it renders a
 custom footer and still keeps a header X — and withdraws it again, along with
 `Escape` and the backdrop, for the whole window a command is executing in.
+
+## Placement
+
+`placement` decides where the dialog sits. `center` is the classic modal. `start` and `end` turn the
+same dialog into a full-height **side sheet** against that inline edge of the viewport — a detail pane,
+an internal note, a navigation list on a small screen — sliding in from the edge (and not at all under
+`prefers-reduced-motion`). `width` is the sheet's width; the sheet never exceeds the viewport.
+
+```typescript
+<Dialog
+    title='Activity'
+    subtitle='Example Project - Demo Organization'
+    placement='end'
+    width='440px'
+    buttons={null}
+    dismissable
+    initialFocus={DialogInitialFocus.Content}
+    onCancel={() => closeDialog(DialogResult.Cancelled)}
+>
+    <ActivityTimeline />
+</Dialog>
+```
+
+Nothing else changes with placement: the focus trap, `Escape`, backdrop dismissal, focus restore,
+`isBusy` and `initialFocus` behave identically, and the same parts are there to style. The `backdrop`,
+`positioner` and `root` parts carry `data-placement` so CSS can target one placement:
+
+```css
+.cratis-dialog[data-placement='end'] {
+    box-shadow: var(--product-shadow-sheet);
+}
+```
 
 ## Initial focus
 

@@ -5,9 +5,9 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getTypeScriptCompiler } from '../../../scripts/lib/typescript-compiler.mjs';
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const repositoryDirectory = path.resolve(packageDirectory, '../..');
 const temporary = mkdtempSync(path.join(packageDirectory, '.verify-primereact10-shim-'));
 
 try {
@@ -48,7 +48,7 @@ try {
         fixture,
         "import { PrimeReactProvider } from 'primereact/api';\nvoid PrimeReactProvider;\n",
     );
-    const typescript = path.join(repositoryDirectory, 'node_modules/typescript/bin/tsc');
+    const { path: typescript } = getTypeScriptCompiler();
     const result = spawnSync(
         process.execPath,
         [

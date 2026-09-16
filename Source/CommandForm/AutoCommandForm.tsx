@@ -73,6 +73,9 @@ export function AutoCommandForm<TCommand extends object = object, TResponse = ob
             return (
                 <Field
                     key={descriptor.name}
+                    // The accessor reads the property dynamically, so CommandForm cannot infer the
+                    // property name from its source text; fieldName states it explicitly.
+                    fieldName={descriptor.name}
                     value={(instance: TCommand) => {
                         // SAFETY: Arc descriptors name runtime properties on the same command instance.
                         return (instance as unknown as Record<string, unknown>)[

@@ -1,6 +1,12 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+/** Selects only the diagnostic codes reviewed for this exact compiler version. */
+export const publicTypeIssueForCompiler = (issue, version) => ({
+    ...issue,
+    diagnosticCodes: issue.diagnosticCodesByTypeScriptVersion?.[version] ?? issue.diagnosticCodes,
+});
+
 /** Returns true when a TypeScript diagnostic is anchored in this package's declarations. */
 export const isOwnedDeclarationDiagnostic = (diagnostic, packageName) =>
     diagnostic.file.startsWith(`${packageName}/`);
