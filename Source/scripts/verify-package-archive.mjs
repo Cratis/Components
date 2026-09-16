@@ -168,7 +168,9 @@ const declarationWithDeprecations = readPackedText(
     'package/dist/esm/Common/DatePickerInput.d.ts',
 );
 const runtimeWithoutDocs = readPackedText('package/dist/esm/Common/ErrorBoundary.js');
-const apiDocMarker = 'React error boundary that catches errors thrown by its descendants';
+// One sentence of ErrorBoundary's own TSDoc. Update it with that prose; the assertion exists to
+// prove declaration emit keeps documentation that the runtime bundle strips.
+const apiDocMarker = 'Isolates descendant render/lifecycle errors behind a safe message';
 if (!declarationWithDocs.includes(apiDocMarker)) {
     console.error('Published declarations stripped the ErrorBoundary TSDoc contract.');
     process.exit(1);
