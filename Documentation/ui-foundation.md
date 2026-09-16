@@ -159,15 +159,21 @@ Repository specs compare bounded behaviors needed by the current migration; they
 
 ## Strict public-type validation
 
-Components 4 validates every public JavaScript subpath as a strict external TypeScript 6 consumer of the actual packed artifact. Run `yarn workspace @cratis/components verify-public-types` after building the package. The verifier creates isolated Bundler and NodeNext fixtures with `skipLibCheck: false`, confirms that TypeScript resolved declarations from the fresh archive rather than source or stale output, and emits a machine-readable report when requested.
+Components 4 validates every public JavaScript subpath as a strict external TypeScript 6.0.3 and 7.0.2 consumer of the actual packed artifact. After building the public workspaces, run `yarn verify-typescript-consumers` for both compilers across Core, Conformance, and the renderer adapters. The verifier creates isolated Bundler and NodeNext fixtures with `skipLibCheck: false`, confirms that declarations come from the fresh archive rather than source or stale output, and reports the compiler version used. The separate spatial peer-topology fixture uses `skipLibCheck: true`; it does not replace this strict declaration matrix.
+
+For a focused Core check, run `yarn workspace @cratis/components verify-public-types` (TypeScript 7 by default), or prefix the command with `CRATIS_TYPESCRIPT_VERSION=6` to select TypeScript 6. Invalid compiler selections fail rather than silently falling back. Both versions run in repository CI.
+
+The repository compiles and emits declarations with TypeScript 7.0.2, installed under the `@typescript/native` alias. It retains TypeScript 6.0.3 under `typescript` for the compiler API used by Rollup, ESLint, Storybook, and the migrator; TypeScript 7 does not provide that API. CLI scripts select the compiler explicitly, avoiding ambiguous `tsc` binaries. This tooling split is not an extra runtime dependency for a Components consumer.
 
 Known upstream failures are bounded in `Source/scripts/verify-public-types.exceptions.json`. Each exception names exact installed package versions, diagnostic codes, affected subpaths and resolution modes, and an objective removal condition. Unlisted diagnostics, version/metadata drift, a TypeScript-version mismatch, or an exception that stops reproducing all fail the gate. A diagnostic anchored in a Components declaration is never covered by message matching alone: the same compiler run must also contain the reviewed TS2834/TS2835 root cause under the exact upstream package named by that diagnostic. Synthetic specs prove absent and unrelated root causes remain failures.
 
 The current exceptions are:
 
-- **`@webgpu/types@0.1.72` through `pixi.js@8.20.1`:** its ambient WebGPU declarations conflict with TypeScript 6's built-in DOM declarations for the `Canvas` subpath (`TS2403`, `TS2687`, `TS2717`, `TS6200`). The setup-only root has no Pixi type exception.
-- **`@cratis/arc.react@22.6.2`:** its published global JSX declarations expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
-- **`@cratis/arc@22.6.2`, `@cratis/arc.react@22.6.2`, and `@cratis/fundamentals@7.18.1`:** their published ESM declarations use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
+- **`@webgpu/types@0.1.72` through `pixi.js@8.20.1`:** its ambient WebGPU declarations conflict with the built-in DOM declarations for `Canvas`. TypeScript 6 reports `TS2403`, `TS2687`, `TS2717`, and grouped `TS6200`; TypeScript 7 reports individual `TS2300` duplicates instead of `TS6200`. The metadata scopes this code change to 7.0.2. Native compiler library paths are normalized for matching, with the original paths preserved in reports. The setup-only root has no Pixi type exception.
+- **`@cratis/arc.react@22.16.0`:** its published global JSX declarations still expose unresolved identifiers in strict external Bundler consumers of command/dialog subpaths (`TS2503`).
+- **`@cratis/arc@22.16.0`, `@cratis/arc.react@22.16.0`, and `@cratis/fundamentals@7.19.2`:** their published ESM declarations still use extensionless relative specifiers rejected by NodeNext, with missing-export cascades (`TS2834`, `TS2835`, `TS2305`, `TS2694`). Components' own declaration rewrite emits explicit extensions.
+
+A `PASS_WITH_EXCEPTION` result is not an error-free strict consumer: these upstream diagnostics remain reproducible with the pinned releases. The gate reports them rather than disabling declaration checks, and fails on any additional or Components-owned regression.
 
 ### Why the Canvas Pixi surface remains public
 
@@ -220,7 +226,7 @@ The Components 4 major candidate uses these repository release checks:
 - Specs, package exports, SSR, keyboard/focus behavior, responsive layouts, dark mode, forced colors, and reduced motion pass.
 - Storybook builds and runs under baseline light and dark modes for the built-in renderer and every metadata-discovered public adapter; private ui-adapter workspaces are excluded, and the Plain DOM renderer is a conformance fixture, not an adapter workspace.
 - The migration guide works without repository-specific knowledge.
-- Every packed public JavaScript subpath passes strict TypeScript 6 validation or matches a bounded machine-readable upstream exception with exact installed versions and an unmet removal condition. Components-owned cascades additionally require their matching upstream TS2834/TS2835 root cause in the same compiler run.
+- Every packed public JavaScript subpath passes strict TypeScript 6 and 7 validation or matches a bounded machine-readable upstream exception with exact installed versions and an unmet removal condition. Components-owned cascades additionally require their matching upstream TS2834/TS2835 root cause in the same compiler run.
 
 Generated conformance reports, the checked-in compatibility contract, and `release.md` at the
 repository root own the exact current evidence and publication limitations.

@@ -1,17 +1,20 @@
 {
     "$comment": "Machine-readable, bounded allow-list for Cratis/Components#176. Every entry names exact installed upstream package versions, diagnostic codes, resolution modes, source prefixes, and an objective removal condition. Components-owned diagnostics are covered only as explicitly paired cascades when the same compiler run contains the matching TS2834/TS2835 root cause in that exact upstream package; message similarity alone is insufficient. The verifier fails on unlisted diagnostics, metadata/version drift, unpaired owned diagnostics, and exceptions that stop reproducing.",
-    "typeScriptVersion": "6.0.3",
+    "typeScriptVersions": ["6.0.3", "7.0.2"],
     "trackingIssue": "https://github.com/Cratis/Components/issues/176",
     "upstreamIssues": [
         {
             "id": "pixi-webgpu-types-lib-conflict",
-            "summary": "pixi.js bundles @webgpu/types, whose WebGPU ambient declarations duplicate identifiers TypeScript 6 now ships in lib.dom.d.ts (GPUTextureFormat, GPUDevice, GPUBindGroupDescriptor.entries, ...) with incompatible shapes.",
+            "summary": "pixi.js bundles @webgpu/types, whose WebGPU ambient declarations duplicate identifiers TypeScript 6 and 7 ship in lib.dom.d.ts (GPUTextureFormat, GPUDevice, GPUBindGroupDescriptor.entries, ...) with incompatible shapes. TS7 reports individual TS2300 duplicates instead of TS6's grouped TS6200; its active platform library path is normalized to typescript/lib while the original path remains in the report.",
             "reason": "external - upstream declaration collision between @webgpu/types (a pixi.js dependency) and TypeScript's own built-in DOM lib; not a Components authoring defect.",
             "upstreamPackages": [
                 { "name": "@webgpu/types", "version": "0.1.72", "via": "pixi.js@8.20.1" }
             ],
             "resolutionModes": ["bundler", "nodenext"],
             "diagnosticCodes": ["TS2403", "TS2687", "TS2717", "TS6200"],
+            "diagnosticCodesByTypeScriptVersion": {
+                "7.0.2": ["TS2300", "TS2403", "TS2687", "TS2717"]
+            },
             "filePrefixes": ["@webgpu/types/", "typescript/lib/lib.dom.d.ts"],
             "removalCondition": "pixi.js ships a @webgpu/types release whose WebGPU surface no longer duplicates conflicting global identifiers against the target TypeScript version's lib.dom.d.ts (tracked upstream at https://github.com/pixijs/pixijs and https://github.com/gpuweb/types), OR Components narrows Canvas's public renderItem/CanvasContext contract off raw PIXI.* types without losing the ability to render arbitrary Pixi content (rejected for now - see docs/ui-foundation.md, 'Why the Canvas Pixi surface is not narrowed')."
         },
@@ -19,7 +22,7 @@
             "id": "arc-react-global-jsx-namespace",
             "summary": "@cratis/arc.react ships a global.d.ts that declares `namespace JSX` referencing test-only ambient types (vitest/globals, chai, sinon-chai) as part of its published package instead of scoping that augmentation to its own test build. A strict external consumer that does not also install those test packages cannot resolve the bare `JSX` identifiers arc.react's dialog/command declaration files reference.",
             "reason": "external - @cratis/arc.react's own shipped .d.ts, not a Components declaration; Components has no `namespace JSX` augmentation of its own.",
-            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.13.1" }],
+            "upstreamPackages": [{ "name": "@cratis/arc.react", "version": "22.16.0" }],
             "resolutionModes": ["bundler"],
             "diagnosticCodes": ["TS2503"],
             "filePrefixes": ["@cratis/arc.react/"],
@@ -30,8 +33,8 @@
             "summary": "@cratis/arc, @cratis/arc.react, and @cratis/fundamentals publish ESM declaration files with extensionless relative specifiers (e.g. `export * from './ICommandScope'`). Node16/NodeNext module resolution requires an explicit extension on relative ECMAScript imports, so these upstream barrels fail under --moduleResolution nodenext; downstream symbols that transit through the broken barrel then read as missing (TS2305/TS2694 cascades).",
             "reason": "external - the extensionless specifiers live in @cratis/arc, @cratis/arc.react, and @cratis/fundamentals's own published dist, not in Components' declarations. Cratis/Components' own declaration rewrite (this PR) already eliminated Components' extensionless specifiers.",
             "upstreamPackages": [
-                { "name": "@cratis/arc", "version": "22.13.1" },
-                { "name": "@cratis/arc.react", "version": "22.13.1" },
+                { "name": "@cratis/arc", "version": "22.16.0" },
+                { "name": "@cratis/arc.react", "version": "22.16.0" },
                 { "name": "@cratis/fundamentals", "version": "7.19.2" }
             ],
             "resolutionModes": ["nodenext"],

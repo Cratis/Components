@@ -33,7 +33,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { createRequire } from 'node:module';
+import { getTypeScriptCompiler } from '../../scripts/lib/typescript-compiler.mjs';
 import {
     existsSync,
     mkdirSync,
@@ -227,10 +227,9 @@ for (const { subpath, specifier } of nonSpatialSubpaths) {
 
 // --- 4. Strict TypeScript (Bundler + NodeNext) for the root, with pixi.js absent -----------------
 
-const require = createRequire(import.meta.url);
 let tscBin;
 try {
-    tscBin = require.resolve('typescript/bin/tsc', { paths: [monorepoRoot] });
+    tscBin = getTypeScriptCompiler().path;
 } catch {
     fail('TypeScript compiler not found', 'Run `yarn install` at the repo root.');
     tscBin = undefined;

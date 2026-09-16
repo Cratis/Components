@@ -13,6 +13,8 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseNpmPackResult } from '../../scripts/lib/parse-npm-pack-result.mjs';
+import { getTypeScriptCompiler } from '../../scripts/lib/typescript-compiler.mjs';
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryDirectory = path.resolve(packageDirectory, '..');
@@ -29,10 +31,10 @@ const run = (command, arguments_, cwd = packageDirectory) => {
 };
 
 try {
-    const packedJson = JSON.parse(
+    const packed = parseNpmPackResult(
         run('npm', ['pack', '--json', '--pack-destination', temporary]),
+        '@cratis/components.conformance',
     );
-    const packed = packedJson[0];
     const fileNames = new Set(packed.files.map((file) => file.path));
     for (const required of [
         'dist/index.js',
@@ -139,7 +141,7 @@ try {
         "import type { ReactElement } from 'react';\ndeclare global { namespace JSX { type Element = ReactElement; } }\nexport {};\n",
     );
 
-    const typescript = path.join(repositoryDirectory, 'node_modules/typescript/bin/tsc');
+    const { path: typescript, version: compilerVersion } = getTypeScriptCompiler();
     for (const resolution of ['bundler', 'nodenext']) {
         const moduleKind = resolution === 'bundler' ? 'ESNext' : 'NodeNext';
         run(
@@ -170,7 +172,7 @@ try {
 
     console.log(
         `Verified ${packageJson.name}@${packageJson.version}: archive contents, independent ABI metadata, ` +
-            `${declarationFiles.length} pure declaration files, packed runtime import, and strict Bundler/NodeNext consumers.`,
+            `${declarationFiles.length} pure declaration files, packed runtime import, and strict TypeScript ${compilerVersion} Bundler/NodeNext consumers.`,
     );
 } finally {
     rmSync(temporary, { recursive: true, force: true });

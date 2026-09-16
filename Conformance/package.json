@@ -35,8 +35,8 @@
     "scripts": {
         "clean": "rm -rf dist",
         "prepare-core": "yarn workspace @cratis/components prepare",
-        "build": "yarn prepare-core && node ../node_modules/typescript/bin/tsc -p tsconfig.build.json",
-        "typecheck-specs:prepared": "node ../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "build": "yarn prepare-core && node ../scripts/run-typescript.mjs -p tsconfig.build.json",
+        "typecheck-specs:prepared": "node ../scripts/run-typescript.mjs -p tsconfig.json",
         "typecheck-specs": "yarn prepare-core && yarn typecheck-specs:prepared",
         "lint": "node ../node_modules/eslint/bin/eslint.js . --quiet",
         "test": "node ../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
@@ -52,10 +52,10 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
-        "@cratis/arc": "22.13.1",
-        "@cratis/arc.react": "22.13.1",
+        "@cratis/arc": "22.16.0",
+        "@cratis/arc.react": "22.16.0",
         "@cratis/components": "workspace:^",
-        "@cratis/fundamentals": "^7.19.2",
+        "@cratis/fundamentals": "7.19.2",
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
         "reflect-metadata": "0.2.2",

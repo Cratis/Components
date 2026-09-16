@@ -200,6 +200,9 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // 1169 declaration blocks — gzip, the size a consumer transfers, stays under its ceiling, and the
 // duplicated narrow-width stepper block in NumberInput.css was merged, so only the raw ceiling moves,
 // to 205 KiB. The gzip ceiling is not raised; the next stylesheet has to come with a reduction.
+// That reduction came with Dialog placement: PivotViewer.css shipped 45 rules byte-identical to
+// FilterPanel.css in the same aggregate, and dropping them measured raw 202877, gzip 31794,
+// 1137 declaration blocks. The ceilings stay where they are.
 const styleBudget = {
     rawBytes: 205 * 1024,
     gzipBytes: 32 * 1024,

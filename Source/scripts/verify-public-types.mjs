@@ -3,7 +3,7 @@
 
 /*
  * Verifies that every public JavaScript subpath declared in `exports` of Source/package.json
- * can be consumed by an *external*, strict (`skipLibCheck: false`) TypeScript 6 project - not
+ * can be consumed by an *external*, strict (`skipLibCheck: false`) TypeScript 6 or 7 project - not
  * just by Components' own (`skipLibCheck: true`) internal build. Cratis/Components#176.
  *
  * What "external" means here: this script `yarn pack`s the real publish artifact (the same
@@ -53,13 +53,15 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createRequire } from 'node:module';
+import { getTypeScriptCompiler } from '../../scripts/lib/typescript-compiler.mjs';
+import { normalizeTypeScriptDiagnosticPath } from '../../scripts/lib/typescript-diagnostic-path.mjs';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 import {
     isOwnedDeclarationDiagnostic,
     matchesExternalIssue,
     matchesPairedOwnedCascade,
+    publicTypeIssueForCompiler,
 } from './lib/public-type-exceptions.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -194,22 +196,16 @@ if (!existsSync(esmRoot)) {
     );
 }
 
-const require = createRequire(import.meta.url);
-let tscBin;
-try {
-    tscBin = require.resolve('typescript/bin/tsc', { paths: [monorepoRoot] });
-} catch {
-    fail('TypeScript compiler not found. Run `yarn install` at the repo root.');
-}
+const { path: tscBin } = getTypeScriptCompiler();
 const installedTsVersion = spawnSync(process.execPath, [tscBin, '--version'], {
     encoding: 'utf8',
 })
     .stdout.trim()
     .replace(/^Version\s+/, '');
-if (installedTsVersion !== exceptions.typeScriptVersion) {
+if (!exceptions.typeScriptVersions.includes(installedTsVersion)) {
     fail(
         `Installed TypeScript is ${installedTsVersion}, but exceptions metadata was captured ` +
-            `against ${exceptions.typeScriptVersion}. Regenerate and review the strict matrix ` +
+            `against ${exceptions.typeScriptVersions.join(', ')}. Regenerate and review the strict matrix ` +
             'before changing the pinned validation version.',
     );
 }
@@ -305,6 +301,16 @@ const validateExceptionMetadata = () => {
             (!Array.isArray(issue.messagePatterns) || issue.messagePatterns.length === 0)
         ) {
             fail(`Exception '${issue.id}' must have a file prefix or message pattern.`);
+        }
+        for (const [version, codes] of Object.entries(issue.diagnosticCodesByTypeScriptVersion ?? {})) {
+            if (
+                !exceptions.typeScriptVersions.includes(version) ||
+                !Array.isArray(codes) ||
+                codes.length === 0 ||
+                codes.some((code) => !/^TS\d+$/u.test(code))
+            ) {
+                fail(`Exception '${issue.id}' has invalid compiler-specific diagnostic codes.`);
+            }
         }
         const ownedCascadePatterns = new Set();
         for (const cascade of issue.ownedCascades ?? []) {
@@ -550,7 +556,13 @@ function parseDiagnostics(stdout) {
                       .split(path.sep)
                       .join('/')
                 : path.relative(scratchRoot, absolute).split(path.sep).join('/');
-        diagnostics.push({ code, file, line: Number(lineNo), message });
+        diagnostics.push({
+            code,
+            file: normalizeTypeScriptDiagnosticPath(file, installedTsVersion),
+            reportedFile: file,
+            line: Number(lineNo),
+            message,
+        });
     }
     return diagnostics;
 }
@@ -565,7 +577,7 @@ function allowedIssuesFor(subpath, mode) {
         const issue = exceptions.upstreamIssues.find((candidate) => candidate.id === id);
         if (!issue)
             fail(`exceptions metadata references unknown upstream issue id '${id}'.`);
-        return issue;
+        return publicTypeIssueForCompiler(issue, installedTsVersion);
     });
 }
 
@@ -683,6 +695,7 @@ for (const { subpath, specifier, declarationRelPath } of selected) {
             mode,
             status,
             diagnosticCodes: [...new Set(diagnostics.map((d) => d.code))],
+            diagnostics,
             unexpected,
             ownDeclarationRegressions,
             staleIssues: staleIssues.map((issue) => issue.id),
@@ -783,7 +796,7 @@ if (ownRegressions.length > 0) {
 if (reportPath) {
     writeFileSync(
         reportPath,
-        JSON.stringify({ package: pkg.name, version: pkg.version, results }, null, 4),
+        JSON.stringify({ package: pkg.name, version: pkg.version, typeScriptVersion: installedTsVersion, results }, null, 4),
     );
     console.log(`\nMachine-readable report written to ${reportPath}`);
 }
@@ -802,5 +815,5 @@ if (failures > 0) {
 }
 
 console.log(
-    `\nAll ${selected.length} public JS subpath(s) verified against packed TypeScript 6 declarations.`,
+    `\nAll ${selected.length} public JS subpath(s) verified against packed declarations with TypeScript ${installedTsVersion}.`,
 );

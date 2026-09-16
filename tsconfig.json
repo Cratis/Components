@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
-        "ignoreDeprecations": "6.0",
-        "baseUrl": ".",
+        "stableTypeOrdering": true,
         "outDir": "dist/esm",
         "declaration": true,
         "declarationMap": true,
@@ -23,7 +22,6 @@
         "esModuleInterop": true,
         "strictNullChecks": true,
         "resolveJsonModule": true,
-        "downlevelIteration": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "noImplicitReturns": true,

@@ -14,7 +14,7 @@ Required command values must be visible to client validation before submission. 
 
 ## Yarn PnP cannot resolve `rxjs` from Arc React
 
-The current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. A strict Yarn PnP consumer needs the temporary `packageExtensions` entry and `rxjs` version shown in [Getting started](getting-started.mdx#yarn-pnp-with-arc-react-2262).
+If you use `@cratis/arc.react@22.6.2`, that version imports `rxjs` without declaring it. A strict Yarn PnP consumer needs the version-specific `packageExtensions` entry and `rxjs` version shown in [Getting started](getting-started.mdx#yarn-pnp-with-arc-react-2262). Arc React 22.16.0 no longer needs this workaround.
 
 ## Product CSS does not win over Components styles
 

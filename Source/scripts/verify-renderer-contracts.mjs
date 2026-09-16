@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getTypeScriptCompiler } from '../../scripts/lib/typescript-compiler.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const schemaPath = path.join(packageDir, 'schemas/ui-adapter.schema.json');
@@ -212,7 +213,7 @@ console.log(
     'Renderer metadata schema accepts the built-in/static fixtures and rejects invalid manifests.',
 );
 
-const tsc = path.resolve(packageDir, '../node_modules/typescript/bin/tsc');
+const { path: tsc } = getTypeScriptCompiler();
 const typeCheck = spawnSync(
     process.execPath,
     [

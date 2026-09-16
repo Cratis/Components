@@ -14,8 +14,10 @@ import { describe, it } from 'vitest';
 // `Filter/FilterPanel.css` were updated while the forked PivotViewer copy still described
 // the superseded trigger-as-button element.
 //
-// Identical copies are harmless to the cascade and are tolerated here; divergent copies are
-// not. Every shared selector must resolve to exactly one declaration set.
+// Identical copies are harmless to the cascade but are dead weight in the published
+// stylesheet (7.6 KB of them were shipped twice until they were removed), and every copy is
+// a divergence waiting to happen. A selector FilterPanel.css owns is therefore not redefined
+// by PivotViewer.css at all; PivotViewer styles its own chrome under its own selectors.
 
 const declarationsBySelector = (path: string) => {
     const source = readFileSync(new URL(path, import.meta.url), 'utf8');
@@ -45,14 +47,11 @@ const declarationsBySelector = (path: string) => {
 const filter = declarationsBySelector('../FilterPanel.css');
 const pivotViewer = declarationsBySelector('../../PivotViewer/PivotViewer.css');
 
-const divergent = [...filter.keys()].filter(
-    (selector) =>
-        pivotViewer.has(selector) && filter.get(selector) !== pivotViewer.get(selector),
-);
+const redefined = [...filter.keys()].filter((selector) => pivotViewer.has(selector));
 
 describe('when sharing the pv namespace with PivotViewer', () => {
-    it('should_never_let_the_forked_stylesheets_diverge_on_a_shared_selector', () => {
-        expect(divergent).to.deep.equal([]);
+    it('should_never_let_pivot_viewer_redefine_a_selector_the_filter_panel_owns', () => {
+        expect(redefined).to.deep.equal([]);
     });
 
     it('should_keep_the_extracted_filter_trigger_owned_by_its_own_stylesheet', () => {

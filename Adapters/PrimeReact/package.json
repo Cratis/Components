@@ -93,8 +93,8 @@
     },
     "scripts": {
         "clean": "rm -rf dist",
-        "build": "node ../../node_modules/typescript/bin/tsc -p tsconfig.build.json",
-        "typecheck-specs": "yarn workspace @cratis/components prepare && yarn workspace @cratis/components.conformance build && node ../../node_modules/typescript/bin/tsc -p tsconfig.json",
+        "build": "node ../../scripts/run-typescript.mjs -p tsconfig.build.json",
+        "typecheck-specs": "yarn workspace @cratis/components prepare && yarn workspace @cratis/components.conformance build && node ../../scripts/run-typescript.mjs -p tsconfig.json",
         "lint": "node ../../node_modules/eslint/bin/eslint.js . --quiet",
         "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
         "verify-package": "node ./scripts/verify-packed-package.mjs",
@@ -110,11 +110,11 @@
         "react-dom": "^19.0.0"
     },
     "devDependencies": {
-        "@cratis/arc": "22.13.1",
-        "@cratis/arc.react": "22.13.1",
+        "@cratis/arc": "22.16.0",
+        "@cratis/arc.react": "22.16.0",
         "@cratis/components": "workspace:^",
         "@cratis/components.conformance": "workspace:^",
-        "@cratis/fundamentals": "^7.19.2",
+        "@cratis/fundamentals": "7.19.2",
         "@primereact/core": "11.1.0",
         "@primereact/ui": "11.1.0",
         "@primeuix/themes": "3.0.0",

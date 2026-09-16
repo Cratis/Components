@@ -40,6 +40,7 @@ import {
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getTypeScriptCompiler } from '../../scripts/lib/typescript-compiler.mjs';
 import { buildScratchNodeModules, packArtifact } from './lib/packed-artifact.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -194,10 +195,9 @@ if (consumerIdentityResult.status === 0 && canvasIdentityResult.status === 0) {
 
 // --- 4. Strict TypeScript for both spatial subpaths with pixi.js installed -------------------------
 
-const requireFromMonorepo = (await import('node:module')).createRequire(import.meta.url);
 let tscBin;
 try {
-    tscBin = requireFromMonorepo.resolve('typescript/bin/tsc', { paths: [monorepoRoot] });
+    tscBin = getTypeScriptCompiler().path;
 } catch {
     fail('TypeScript compiler not found', 'Run `yarn install` at the repo root.');
 }
