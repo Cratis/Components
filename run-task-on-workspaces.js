@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* eslint-disable header/header */
+// Copyright (c) Cratis. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 if (process.argv.length < 3) {
     console.log('You have to specify what workspace task to run on all');
@@ -113,15 +114,16 @@ for (const workspaceName in workspaces) {
         );
         const result = spawn('npm', ['publish', '--provenance', '--access', 'public'], {
             cwd: workspaceAbsoluteLocation,
-            encoding: 'utf8',
+            stdio: 'inherit',
         });
-        console.log(result.stdout ?? '');
-        console.log(result.stderr ?? '');
         if (result.status !== 0) {
             console.error(
                 `Error publishing workspace '${workspaceName}'. Publication stopped.`,
             );
-            process.exit(1);
+            if (result.error) console.error(result.error);
+            if (result.signal) console.error(`Terminated by ${result.signal}.`);
+            process.exitCode = 1;
+            break;
         }
         continue;
     }
@@ -134,14 +136,17 @@ for (const workspaceName in workspaces) {
     }
 
     console.log(`Workspace '${workspaceName}' at '${workspaceRelativeLocation}'`);
+    // Stream both outputs while the child runs: buffering truncates large logs and
+    // a forced process.exit can discard the queued failure details in CI pipes.
     const result = spawn('yarn', [task], {
         cwd: workspaceAbsoluteLocation,
-        encoding: 'utf8',
+        stdio: 'inherit',
     });
-    console.log(result.stdout ?? '');
     if (result.status !== 0) {
-        console.log(`Error running task '${task}' on workspace '${workspaceName}'`);
-        console.log(result.stderr ?? '');
-        process.exit(1);
+        console.error(`Error running task '${task}' on workspace '${workspaceName}'`);
+        if (result.error) console.error(result.error);
+        if (result.signal) console.error(`Terminated by ${result.signal}.`);
+        process.exitCode = 1;
+        break;
     }
 }
