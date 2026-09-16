@@ -3,21 +3,51 @@
 
 // @vitest-environment jsdom
 
-import { expect } from 'chai';
-import { act } from 'react';
+import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
+import type {} from 'chai/register-should';
 import sinon, { type SinonStub } from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
-import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
-import { unstable_adapterErrorCodes } from '..';
-import { unstable_useSlot } from '../RendererContext';
-import { buttonSlot, createTestLibrary, FirstButton } from './testLibrary';
+import {
+    CRATIS_PRESENTATION_PROFILE,
+    cratisPresentationSlotIds,
+    definePresentationUiLibrary,
+    unstable_adapterErrorCodes,
+    unstable_RendererScope as RendererScope,
+} from '..';
+import { unstable_RendererRoot as RendererRoot, unstable_useSlot } from '../RendererContext';
+import { buttonSlot, createTestLibrary, FirstButton, FirstTooltip, LastTooltip, tooltipSlot } from './testLibrary';
 
-const DuplicateFallbackProbe = () => {
-    unstable_useSlot('common.tooltip');
-    unstable_useSlot('common.tooltip');
-    return <span>missing</span>;
+const localTooltip = { mode: 'atomic', fidelity: 'native', render: FirstTooltip } as const;
+const LocalFallbackProbe = () => {
+    const Render = unstable_useSlot('common.tooltip', localTooltip).render;
+    return <Render><span>Example trigger</span></Render>;
 };
+const ContextFallbackProbe = () => {
+    const Render = unstable_useSlot('common.tooltip')?.render;
+    return Render ? <Render><span>Example trigger</span></Render> : <span>missing</span>;
+};
+const presentation = { mode: 'presentation', fidelity: 'native', render: () => <span>Example presentation</span> } as const;
+const stableLibrary = definePresentationUiLibrary({
+    id: 'example-presentation',
+    displayName: 'Example presentation',
+    abi: 1,
+    level: 'primitive',
+    profile: CRATIS_PRESENTATION_PROFILE,
+    profileSlots: cratisPresentationSlotIds,
+    capabilities: ['slot.render', 'parts.passthrough', 'ssr.staticRender'],
+    slots: {
+        'common.button': presentation,
+        'common.iconButton': presentation,
+        'common.textInput': presentation,
+        'common.textArea': presentation,
+        'common.checkbox': presentation,
+        'common.radio': presentation,
+        'common.switch': presentation,
+        'common.progress': presentation,
+        'common.surface': presentation,
+    },
+});
 
 describe('when reporting renderer fallback diagnostics', () => {
     let container: HTMLDivElement;
@@ -25,10 +55,7 @@ describe('when reporting renderer fallback diagnostics', () => {
     let consoleError: SinonStub;
 
     beforeEach(() => {
-        // SAFETY: React's test-only act flag is intentionally absent from the DOM global type.
-        (
-            globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
-        ).IS_REACT_ACT_ENVIRONMENT = true;
+        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
         container = document.createElement('div');
         document.body.append(container);
         root = createRoot(container);
@@ -41,46 +68,66 @@ describe('when reporting renderer fallback diagnostics', () => {
         consoleError.restore();
     });
 
-    it('should report one actionable diagnostic after an adapter falls back, never during render', async () => {
-        const library = createTestLibrary('button-only', buttonSlot(FirstButton), {
-            profileSlots: ['common.button'],
-        });
+    const render = async (content: ReactNode) => { await act(async () => root.render(content)); };
 
-        await act(async () => {
-            root.render(
-                <CratisComponentsProvider library={library}>
-                    <DuplicateFallbackProbe />
-                </CratisComponentsProvider>,
-            );
-        });
+    it('should render duplicate local Core fallbacks quietly on mount and rerender', async () => {
+        const library = createTestLibrary('button-only', buttonSlot(FirstButton), { profileSlots: ['common.button'] });
+        const content = () => <RendererRoot library={library}><LocalFallbackProbe /><LocalFallbackProbe /></RendererRoot>;
+        await render(content());
+        await render(content());
+        container.textContent!.should.equal('first-tooltipfirst-tooltip');
+        consoleError.callCount.should.equal(0);
+    });
 
-        expect(container.textContent).to.equal('missing');
-        expect(consoleError.callCount).to.equal(1);
-        expect(String(consoleError.firstCall.firstArg)).to.contain(
-            unstable_adapterErrorCodes.strictProfileFallback,
+    it('should render context Core fallback quietly for a valid nine-slot presentation adapter', async () => {
+        await render(
+            <RendererRoot library={stableLibrary} coreSlots={tooltipSlot(LastTooltip)}>
+                <ContextFallbackProbe />
+            </RendererRoot>,
         );
-
-        await act(async () => {
-            root.render(
-                <CratisComponentsProvider library={library}>
-                    <DuplicateFallbackProbe />
-                </CratisComponentsProvider>,
-            );
-        });
-
-        expect(consoleError.callCount).to.equal(1);
+        container.textContent!.should.equal('last-tooltip');
+        consoleError.callCount.should.equal(0);
     });
 
-    it('should treat the zero-config Core path as the default rather than a fallback warning', async () => {
-        await act(async () => {
-            root.render(
-                <CratisComponentsProvider>
-                    <DuplicateFallbackProbe />
-                </CratisComponentsProvider>,
-            );
-        });
-
-        expect(container.textContent).to.equal('missing');
-        expect(consoleError.callCount).to.equal(0);
+    it('should keep allowed fallback quiet when a scope filters a supported slot out', async () => {
+        const scoped = createTestLibrary('scoped', { ...buttonSlot(FirstButton), ...tooltipSlot(LastTooltip) });
+        await render(
+            <RendererRoot>
+                <RendererScope use={scoped} only={['common.button']}>
+                    <LocalFallbackProbe />
+                </RendererScope>
+            </RendererRoot>,
+        );
+        container.textContent!.should.equal('first-tooltip');
+        consoleError.callCount.should.equal(0);
     });
+
+    it('should keep zero-config Core rendering quiet', async () => {
+        await render(<RendererRoot><LocalFallbackProbe /></RendererRoot>);
+        container.textContent!.should.equal('first-tooltip');
+        consoleError.callCount.should.equal(0);
+    });
+
+    for (const unsupported of [false, true]) {
+        for (const scoped of [false, true]) {
+            it(`should still report an ${unsupported ? 'unsupported' : 'absent'} promised slot in a degrading ${scoped ? 'scope' : 'provider'}`, async () => {
+                const library = createTestLibrary('broken-promise', unsupported ? { 'common.tooltip': { ...localTooltip, fidelity: 'unsupported' } } : {}, {
+                    profileSlots: ['common.tooltip'],
+                });
+                const content = () => scoped ? (
+                    <RendererRoot libraryMode='degrade'>
+                        <RendererScope use={library}><LocalFallbackProbe /></RendererScope>
+                    </RendererRoot>
+                ) : (
+                    <RendererRoot library={library} libraryMode='degrade'><LocalFallbackProbe /></RendererRoot>
+                );
+                await render(content());
+                await render(content());
+                container.textContent!.should.equal('first-tooltip');
+                consoleError.callCount.should.equal(1);
+                String(consoleError.firstCall.firstArg).should.contain(unstable_adapterErrorCodes.missingRequirement);
+                String(consoleError.firstCall.firstArg).should.contain('common.tooltip');
+            });
+        }
+    }
 });

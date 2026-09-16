@@ -154,8 +154,13 @@ reports cover those declared controls, not the five atomic slots or any composit
 ## Fallback
 
 With the default `rendererFallback='core'`, a partial adapter uses the built-in implementation for
-an undeclared slot. The zero-configuration built-in path is the default, not an adapter warning.
-When an active adapter falls back, Components reports the bounded fallback diagnostic after mount.
+an undeclared slot. This is successful resolution, not a warning or error: selecting a nine-slot
+presentation adapter does not promise implementations of Dialog, Dropdown, DatePicker, Tooltip,
+or paginator slots. The zero-configuration built-in path is quiet as well.
+
+Invalid profile promises remain errors. A missing or unsupported slot in `profileSlots` is rejected
+in strict library mode, or reported once with `CRATIS-UI-1002` in degrade mode. Permitting Core
+fallback does not disable that validation.
 
 Set `rendererFallback='throw'` when a host must reject every undeclared slot:
 
@@ -171,7 +176,7 @@ export const StrictRendererBoundary = ({ children }: PropsWithChildren) => (
 );
 ```
 
-This strict boundary rejects built-in fallback; it does not make the adapter implement additional
+This strict boundary rejects built-in fallback with `CRATIS-UI-1003`; it does not make the adapter implement additional
 slots. A screen that renders an undeclared atomic control fails instead of becoming vendor-native.
 
 ## Evidence boundary
