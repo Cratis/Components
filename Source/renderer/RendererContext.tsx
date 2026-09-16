@@ -237,7 +237,6 @@ export function unstable_useSlot<K extends unstable_SlotId>(
     localCoreDeclaration?: unstable_SlotDeclaration<K>,
 ): unstable_SlotDeclaration<K> | undefined {
     const context = useContext(unstable_RendererContext);
-    const localReportedDiagnostics = useRef(new Set<string>());
     const result = unstable_resolveSlot(
         slotId,
         context?.slots ?? unstable_emptyCoreRendererSlots,
@@ -245,28 +244,10 @@ export function unstable_useSlot<K extends unstable_SlotId>(
         context?.coreSlots ?? unstable_emptyCoreRendererSlots,
     );
 
-    const diagnostic =
-        result.usedCoreFallback && (context?.layers.length ?? 0) > 0
-            ? fallbackDiagnostic(context, slotId)
-            : undefined;
-
-    useEffect(() => {
-        if (!diagnostic) return;
-        if (context) {
-            context.reportDiagnostic(diagnostic);
-            return;
-        }
-        const key = unstable_diagnosticKey(diagnostic);
-        if (!localReportedDiagnostics.current.has(key)) {
-            localReportedDiagnostics.current.add(key);
-            unstable_logDiagnostic(diagnostic);
-        }
-    }, [context, diagnostic]);
-
+    // Permitted Core fallback is successful resolution, not a renderer error. Provider/scope
+    // validation still reports invalid profile promises, independently of fallback policy.
     if (result.usedCoreFallback && (context?.rendererFallback ?? 'core') === 'throw') {
-        throw new unstable_AdapterError(
-            diagnostic ?? fallbackDiagnostic(context, slotId),
-        );
+        throw new unstable_AdapterError(fallbackDiagnostic(context, slotId));
     }
 
     return result.declaration;

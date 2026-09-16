@@ -183,6 +183,26 @@ describe('when resolving renderer slots', () => {
         }
     });
 
+    it('should reject an out-of-profile slot when a partial adapter forbids fallback', () => {
+        const library = createTestLibrary('button-only', buttonSlot(FirstButton), {
+            profileSlots: ['common.button'],
+        });
+        let error: unknown;
+        try {
+            renderToStaticMarkup(
+                <RendererRoot library={library} rendererFallback='throw' coreSlots={tooltipSlot(FirstTooltip)}>
+                    <MissingProbe />
+                </RendererRoot>,
+            );
+        } catch (caught: unknown) {
+            error = caught;
+        }
+        if (!(error instanceof unstable_AdapterError)) throw new Error('Expected explicit fallback rejection.');
+        error.code.should.equal(unstable_adapterErrorCodes.strictProfileFallback);
+        error.diagnostic.slotId!.should.equal('common.tooltip');
+        error.diagnostic.adapterId.should.equal('button-only');
+    });
+
     it('should throw CRATIS-UI-1003 for a facade-local Core declaration at a throw fallback terminal', () => {
         const consoleError = sinon.stub(console, 'error');
         let error: unknown;

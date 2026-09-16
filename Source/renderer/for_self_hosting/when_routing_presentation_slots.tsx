@@ -143,7 +143,7 @@ describe('when routing presentation slots', () => {
         }
     });
 
-    it('should use a local Core implementation once and report one partial-adapter fallback', async () => {
+    it('should use a local Core implementation once without reporting a permitted partial-adapter fallback', async () => {
         let adapterRenderCount = 0;
         let coreClassNameReads = 0;
         const AdapterButton = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -174,13 +174,7 @@ describe('when routing presentation slots', () => {
             expect(coreClassNameReads).to.equal(1);
             expect(mounted.container.querySelectorAll('.cratis-text-input')).to.have
                 .lengthOf(1);
-            expect(consoleError.callCount).to.equal(1);
-            expect(String(consoleError.firstCall.firstArg)).to.contain(
-                unstable_adapterErrorCodes.strictProfileFallback,
-            );
-            expect(String(consoleError.firstCall.firstArg)).to.contain(
-                'common.textInput',
-            );
+            expect(consoleError.callCount).to.equal(0);
         } finally {
             await unmountPrimitive(mounted);
             consoleError.restore();

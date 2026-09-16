@@ -6,6 +6,35 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, within } from 'storybook/test';
 import { Dropdown } from './Dropdown';
 
+const DynamicRoleLabels = () => {
+    const [replaced, setReplaced] = useState(false);
+    const [prepended, setPrepended] = useState(false);
+    return (
+        <>
+            {prepended && <label htmlFor='external-role'>Additional role label</label>}
+            <label key={String(replaced)} htmlFor='external-role'>{replaced ? 'Updated project role' : 'Project role'}</label>
+            <button type='button' onClick={() => setReplaced(true)}>Replace role label</button>
+            <button type='button' onClick={() => setPrepended(true)}>Add role label</button>
+        </>
+    );
+};
+
+const ExternalLabelExamples = () => {
+    const [value, setValue] = useState<string | null>('developer');
+    return (
+        <div style={{ display: 'grid', gap: '1rem', maxWidth: '22rem' }}>
+            <DynamicRoleLabels />
+            <Dropdown id='external-role' value={value} options={roles} onChange={setValue} />
+            <label htmlFor='external-filtered-role'>Search role</label>
+            <Dropdown id='external-filtered-role' value='developer' options={roles} filter />
+            <label htmlFor='external-multiple-role'>Selected roles</label>
+            <Dropdown id='external-multiple-role' value={['developer']} options={roles} multiple filter />
+            <label htmlFor='external-native-roles'>Available roles</label>
+            <Dropdown id='external-native-roles' value={['developer']} options={roles} multiple />
+        </div>
+    );
+};
+
 const roles = [
     { label: 'Administrator', value: 'admin' },
     { label: 'Developer', value: 'developer' },
@@ -51,6 +80,30 @@ const ControlledDropdown = ({
             style={{ width: '18rem' }}
         />
     );
+};
+
+export const ExternalLabels: Story = {
+    render: () => <ExternalLabelExamples />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const trigger = canvas.getByRole('button', { name: 'Project role Developer' });
+        await expect(canvas.getByRole('combobox', { name: 'Search role' })).toBeVisible();
+        await expect(canvas.getByRole('combobox', { name: 'Selected roles' })).toBeVisible();
+        await expect(canvas.getByRole('listbox', { name: 'Available roles' })).toBeVisible();
+        // An external native label retains both its click-to-focus behavior and its spoken name.
+        await userEvent.click(canvas.getByText('Project role', { selector: 'label' }));
+        await expect(trigger).toHaveFocus();
+        await userEvent.keyboard('{Enter}');
+        const listboxId = trigger.getAttribute('aria-controls');
+        const listbox = listboxId ? document.getElementById(listboxId) : null;
+        if (!listbox) throw new Error('The trigger did not identify its open listbox.');
+        await userEvent.click(within(listbox).getByRole('option', { name: 'Viewer' }));
+        await expect(canvas.getByRole('button', { name: 'Project role Viewer' })).toBeVisible();
+        await userEvent.click(canvas.getByRole('button', { name: 'Replace role label' }));
+        await expect(await canvas.findByRole('button', { name: 'Updated project role Viewer' })).toBe(trigger);
+        await userEvent.click(canvas.getByRole('button', { name: 'Add role label' }));
+        await expect(await canvas.findByRole('button', { name: 'Additional role label Updated project role Viewer' })).toBe(trigger);
+    },
 };
 
 export const StateMatrix: Story = {

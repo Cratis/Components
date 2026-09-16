@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { JSX, Key } from 'react';
 import {
     Button as AriaButton,
@@ -26,6 +26,7 @@ import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import type { DropdownProps } from './Dropdown';
+import { useExternalLabel } from './useExternalLabel';
 import {
     asReactAriaButtonProps,
     asReactAriaListBoxItemProps,
@@ -133,6 +134,7 @@ export const DropdownImplementation = <T = unknown,>({
     pt,
 }: DropdownProps<T>) => {
     const [isOpen, setIsOpen] = useState(false);
+    const { ref: attachExternalLabel, labelledBy: externalLabelledBy } = useExternalLabel();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const nearestDialogZIndex = useNearestDialogZIndex();
     const resolvedPopoverZIndex =
@@ -155,16 +157,20 @@ export const DropdownImplementation = <T = unknown,>({
         Object.is(option.value, value),
     );
     const selectedKey = selectedOption?.key ?? null;
+    const controlPart = filter ? pt?.filter : multiple ? pt?.multiple : pt?.trigger;
     const effectiveAriaLabel =
         ariaLabel ??
         ariaLabelAlias ??
         pt?.input?.['aria-label'] ??
-        pt?.select?.['aria-label'];
+        pt?.select?.['aria-label'] ??
+        controlPart?.['aria-label'];
     const effectiveAriaLabelledby =
         ariaLabelledby ??
         ariaLabelledBy ??
         pt?.input?.['aria-labelledby'] ??
-        pt?.select?.['aria-labelledby'];
+        pt?.select?.['aria-labelledby'] ??
+        controlPart?.['aria-labelledby'] ??
+        (effectiveAriaLabel ? undefined : externalLabelledBy);
     const effectiveAriaDescribedby =
         ariaDescribedby ??
         ariaDescribedBy ??
@@ -199,12 +205,22 @@ export const DropdownImplementation = <T = unknown,>({
     };
     // React Aria's Select trigger context does not forward aria-invalid from its Button child.
     // Keep the Cratis validation contract on the actual focusable control after context props merge.
-    const applyTriggerState = (element: HTMLButtonElement | null) => {
+    const applyTriggerState = useCallback((element: HTMLButtonElement | null) => {
+        attachExternalLabel(element);
         if (!element) return;
+        // React Aria puts the selected value first. Keep the field label first while
+        // preserving the selected-value reference and all other context-generated ids.
+        if (effectiveAriaLabelledby) {
+            const references = [
+                ...effectiveAriaLabelledby.split(/\s+/u),
+                ...(element.getAttribute('aria-labelledby') ?? '').split(/\s+/u),
+            ].filter(Boolean);
+            element.setAttribute('aria-labelledby', [...new Set(references)].join(' '));
+        }
         if (effectiveInvalid) element.setAttribute('aria-invalid', 'true');
         else element.removeAttribute('aria-invalid');
         if (tabIndex !== undefined) element.tabIndex = tabIndex;
-    };
+    }, [effectiveAriaLabelledby, effectiveInvalid, attachExternalLabel, tabIndex]);
 
     if (multiple) {
         const selectedValues = Array.isArray(value) ? value : [];
@@ -257,6 +273,7 @@ export const DropdownImplementation = <T = unknown,>({
                             />
                             <Input
                                 {...pt?.filter}
+                                ref={attachExternalLabel}
                                 id={triggerId}
                                 placeholder={filterPlaceholder ?? placeholder}
                                 tabIndex={tabIndex}
@@ -378,6 +395,7 @@ export const DropdownImplementation = <T = unknown,>({
             >
                 <select
                     {...pt?.multiple}
+                    ref={attachExternalLabel}
                     id={triggerId ?? pt?.multiple?.id}
                     name={name}
                     multiple
@@ -478,6 +496,7 @@ export const DropdownImplementation = <T = unknown,>({
                     >
                         <Input
                             {...pt?.filter}
+                            ref={attachExternalLabel}
                             id={triggerId}
                             placeholder={filterPlaceholder ?? placeholder}
                             tabIndex={tabIndex}
