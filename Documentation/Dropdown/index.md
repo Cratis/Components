@@ -14,12 +14,36 @@ description: Single, filtered, and multiple selection with documented names, rol
         { label: 'Administrator', value: 'admin' },
         { label: 'Advisor', value: 'advisor' },
     ]}
-    onChange={(event) => setRole(event.value)}
+    onChange={setRole}
     aria-label='Role'
 />
 ```
 
 When option objects contain `label` and `value`, those fields are used automatically. Use `optionLabel` and `optionValue` for another shape.
+
+## Label the control
+
+An external native label associates with the primary button, filter input, or multiple-select control through `htmlFor` and the Dropdown's `id`:
+
+```tsx
+<label htmlFor='project-role'>Project role</label>
+<Dropdown id='project-role' value={role} options={roles} onChange={setRole} />
+```
+
+The single-select button announces the field label before its selected value (for example, “Project role Developer”), rather than announcing only “Developer.” Filter inputs and native multiple selects retain the field label as their accessible name. A label without an `id` receives a stable generated one after mounting; existing label IDs are preserved. Clicking the label still focuses the control. Independently inserted, replaced, or reassociated labels stay synchronized after mounting; generated IDs do not depend on a label's position. A shared observer watches only potential label-association changes and disconnects when the last Dropdown in that DOM root unmounts.
+
+Explicit `aria-labelledby` or `aria-label` props take precedence over automatic native-label discovery. For an accessible name in server-rendered HTML before hydration, provide the label reference explicitly:
+
+```tsx
+<label id='project-role-label' htmlFor='project-role'>Project role</label>
+<Dropdown
+    id='project-role'
+    aria-labelledby='project-role-label'
+    value={role}
+    options={roles}
+    onChange={setRole}
+/>
+```
 
 ## Filtered selection
 
@@ -30,7 +54,7 @@ When option objects contain `label` and `value`, those fields are used automatic
     filter
     placeholder='Select a role'
     filterPlaceholder='Search roles'
-    onChange={(event) => setRole(event.value)}
+    onChange={setRole}
     aria-label='Role'
 />
 ```
