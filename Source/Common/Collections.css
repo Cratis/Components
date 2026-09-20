@@ -1,0 +1,199 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+/* Toggle group, tabs, tag group and breadcrumbs share a token vocabulary and a focus treatment, so
+   they share one stylesheet rather than repeating it four times in the published aggregate. */
+
+.cratis-toggle-group,
+.cratis-tabs__list,
+.cratis-tag-group,
+.cratis-breadcrumbs {
+    display: flex;
+    align-items: center;
+    color: var(--cratis-text-color);
+}
+.cratis-toggle-group__option:focus-visible,
+.cratis-tabs__tab:focus-visible,
+.cratis-tag-group__tag:focus-visible,
+.cratis-tag-group__remove:focus-visible,
+.cratis-tag-group__input:focus-visible,
+.cratis-breadcrumbs__link:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-toggle-group[data-disabled],
+.cratis-tabs[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+/* A disabled tag group keeps its values readable — they are information, not an inactive control,
+   and fading them takes their contrast below the threshold. Only the affordances dim. */
+.cratis-tag-group[data-disabled] {
+    cursor: not-allowed;
+    background: var(--cratis-surface-ground);
+}
+.cratis-tag-group[data-disabled] .cratis-tag-group__tag {
+    border-style: dashed;
+}
+
+/* Toggle group */
+.cratis-toggle-group {
+    gap: 0.125rem;
+    padding: 0.125rem;
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-surface-ground);
+}
+.cratis-toggle-group__option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.75rem;
+    border: 0;
+    border-radius: calc(var(--cratis-border-radius) - 1px);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+.cratis-toggle-group__option[data-selected] {
+    background: var(--cratis-surface-card);
+    box-shadow: var(--cratis-shadow-card, none);
+    font-weight: 600;
+}
+.cratis-toggle-group__option[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-toggle-group__icon {
+    display: inline-flex;
+}
+.cratis-toggle-group[data-invalid] {
+    border-color: var(--cratis-red-500);
+}
+
+/* Tabs */
+.cratis-tabs {
+    display: flex;
+    flex-direction: column;
+}
+.cratis-tabs__list {
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--cratis-surface-border);
+}
+.cratis-tabs__tab {
+    padding: 0.5rem 0.75rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--cratis-text-color-secondary);
+    font: inherit;
+    cursor: pointer;
+}
+.cratis-tabs__tab[data-selected] {
+    border-bottom-color: var(--cratis-primary-color);
+    color: var(--cratis-text-color);
+    font-weight: 600;
+}
+.cratis-tabs__tab[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
+.cratis-tabs__panel {
+    padding: 0.75rem 0;
+    outline: none;
+}
+
+/* Tag group */
+.cratis-tag-group {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    min-height: var(--cratis-control-height);
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--cratis-control-border);
+    border-radius: var(--cratis-border-radius);
+    background: var(--cratis-control-background);
+}
+.cratis-tag-group:focus-within {
+    border-color: var(--cratis-primary-color);
+    box-shadow: var(--cratis-focus-ring);
+}
+.cratis-tag-group[data-invalid] {
+    border-color: var(--cratis-red-500);
+}
+.cratis-tag-group__list {
+    display: contents;
+}
+.cratis-tag-group__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.1rem 0.5rem;
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: 999px;
+    background: var(--cratis-surface-ground);
+    font-size: 0.9em;
+}
+.cratis-tag-group__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--cratis-text-color-secondary);
+    line-height: 1;
+    cursor: pointer;
+}
+.cratis-tag-group__remove:hover {
+    color: var(--cratis-text-color);
+}
+.cratis-tag-group__input {
+    flex: 1 1 6rem;
+    min-width: 4rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    outline: none;
+}
+
+/* Breadcrumbs */
+.cratis-breadcrumbs {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+.cratis-breadcrumbs__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.cratis-breadcrumbs__link {
+    border-radius: var(--cratis-border-radius);
+    color: var(--cratis-text-color-secondary);
+    text-decoration: none;
+    cursor: pointer;
+}
+.cratis-breadcrumbs__link:hover {
+    color: var(--cratis-text-color);
+    text-decoration: underline;
+}
+.cratis-breadcrumbs__item[data-selected] {
+    color: var(--cratis-text-color);
+    font-weight: 600;
+}
+.cratis-breadcrumbs__separator {
+    color: var(--cratis-text-color-secondary);
+}
+
+@media (forced-colors: active) {
+    .cratis-toggle-group__option[data-selected],
+    .cratis-tabs__tab[data-selected] {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+}

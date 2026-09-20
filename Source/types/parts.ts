@@ -35,6 +35,10 @@ export const cratisParts = {
     Switch: ['root', 'input', 'control', 'handle', 'label'],
     Surface: ['root'],
     Tooltip: ['trigger', 'popup'],
+    ToggleGroup: ['root', 'option', 'icon', 'label'],
+    Tabs: ['root', 'list', 'tab', 'panel'],
+    TagGroup: ['root', 'list', 'tag', 'remove', 'input'],
+    Breadcrumbs: ['root', 'item', 'link', 'separator'],
     Dialog: ['backdrop', 'positioner', 'root', 'header', 'title', 'subtitle', 'close', 'content', 'busy-scope', 'footer', 'confirm', 'cancel'],
     CommandDialog: ['backdrop', 'positioner', 'root', 'header', 'title', 'subtitle', 'close', 'content', 'busy-scope', 'footer', 'confirm', 'cancel'],
     CommandStepper: ['root', 'list', 'step', 'header', 'number', 'title', 'separator', 'panels', 'panel'],
@@ -306,6 +310,31 @@ export const cratisPartStates = {
     Tooltip: {
         'trigger': [],
         'popup': ['open'],
+    },
+    ToggleGroup: {
+        'root': ['disabled', 'invalid'],
+        'option': ['selected', 'disabled', 'invalid'],
+        'icon': [],
+        'label': [],
+    },
+    Tabs: {
+        'root': ['disabled'],
+        'list': [],
+        'tab': ['selected', 'disabled'],
+        'panel': ['selected'],
+    },
+    TagGroup: {
+        'root': ['disabled', 'invalid'],
+        'list': [],
+        'tag': ['disabled'],
+        'remove': [],
+        'input': ['invalid'],
+    },
+    Breadcrumbs: {
+        'root': [],
+        'item': ['selected'],
+        'link': ['selected'],
+        'separator': [],
     },
     Dialog: {
         'backdrop': ['open', 'busy'],

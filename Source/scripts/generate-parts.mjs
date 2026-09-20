@@ -277,6 +277,30 @@ export const partDefinitions = {
         parts: ['trigger', 'popup'],
         sources: ['Common/TooltipImplementation.tsx'],
     },
+    ToggleGroup: {
+        parts: ['root', 'option', 'icon', 'label'],
+        sources: ['Common/ToggleGroup.tsx'],
+        ptFiles: ['Common/ToggleGroup.tsx'],
+        ptKeys: ['root', 'option', 'icon', 'label'],
+    },
+    Tabs: {
+        parts: ['root', 'list', 'tab', 'panel'],
+        sources: ['Common/Tabs.tsx'],
+        ptFiles: ['Common/Tabs.tsx'],
+        ptKeys: ['root', 'list', 'tab', 'panel'],
+    },
+    TagGroup: {
+        parts: ['root', 'list', 'tag', 'remove', 'input'],
+        sources: ['Common/TagGroup.tsx'],
+        ptFiles: ['Common/TagGroup.tsx'],
+        ptKeys: ['root', 'list', 'tag', 'remove', 'input'],
+    },
+    Breadcrumbs: {
+        parts: ['root', 'item', 'link', 'separator'],
+        sources: ['Common/Breadcrumbs.tsx'],
+        ptFiles: ['Common/Breadcrumbs.tsx'],
+        ptKeys: ['root', 'item', 'link', 'separator'],
+    },
     Dialog: {
         parts: [
             'backdrop',
@@ -696,6 +720,31 @@ export const partStateDefinitions = {
     Tooltip: {
         trigger: [],
         popup: ['open'],
+    },
+    ToggleGroup: {
+        root: ['disabled', 'invalid'],
+        option: ['selected', 'disabled', 'invalid'],
+        icon: [],
+        label: [],
+    },
+    Tabs: {
+        root: ['disabled'],
+        list: [],
+        tab: ['selected', 'disabled'],
+        panel: ['selected'],
+    },
+    TagGroup: {
+        root: ['disabled', 'invalid'],
+        list: [],
+        tag: ['disabled'],
+        remove: [],
+        input: ['invalid'],
+    },
+    Breadcrumbs: {
+        root: [],
+        item: ['selected'],
+        link: ['selected'],
+        separator: [],
     },
     Dialog: {
         backdrop: ['open', 'busy'],
