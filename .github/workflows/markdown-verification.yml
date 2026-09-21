@@ -83,7 +83,14 @@ jobs:
                   # repository links. Retry 429 responses carrying Retry-After; treat any remaining
                   # 429 as a transient warning rather than a broken-link result.
                   concurrency: 2
+                  # `retry` covers a 429 carrying Retry-After. GitHub also answers a burst with a
+                  # plain 504 or a dropped connection, which no status-code rule can turn into a
+                  # verdict about the link — one failed that way on #294 while every other link to
+                  # the same host answered 200. `retryErrors` retries those instead of reporting a
+                  # live page as broken.
                   retry: true
+                  retryErrors: true
+                  retryErrorsCount: 3
                   statusCodes: '{"429":"warn"}'
                   # Stable Cratis repository anchors repeatedly trigger GitHub's unauthenticated
                   # rate limiting, which arrives as a 404 as often as a 429 — so neither `retry` nor
