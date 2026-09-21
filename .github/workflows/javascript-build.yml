@@ -65,9 +65,19 @@ permissions:
     contents: read
 
 jobs:
-    build:
+    # Cratis/Components#303: the ten-workspace `yarn ci` pipeline used to run as one serial
+    # step (~12.7 min), followed by the Storybook axe matrix as a later step in the same job
+    # (~6 min more). Sharded below into four independent jobs so wall clock falls to roughly
+    # the longest shard instead of their sum. Every command that used to run in `build` still
+    # runs; only which job runs it changed. `source`, `tooling`, and `storybook` each build
+    # `@cratis/components` (and, for `tooling`/`storybook`, the adapters) themselves before the
+    # checks that need the packed/dist output - that mirrors what `run-task-on-workspaces.js ci`
+    # already did per workspace, and what every other job in this file already does in its own
+    # "Build the published artifact" step; sharding does not add new duplicate work, it just lets
+    # the existing duplication happen in parallel instead of in sequence.
+    source:
         runs-on: ubuntu-latest
-        timeout-minutes: 35
+        timeout-minutes: 20
 
         steps:
             - name: Checkout code
@@ -91,10 +101,134 @@ jobs:
             - name: Yarn install
               run: yarn install --immutable
 
-            - name: Build JS/TS
+            - name: Build JS/TS (Source)
               run: |
                   export NODE_OPTIONS="--max-old-space-size=4096"
-                  yarn ci
+                  yarn workspace @cratis/components run ci
+
+            # Every intentionally public declaration/member reachable from a JS `exports`
+            # subpath must carry a TSDoc comment (Cratis/Components#173). Runs against
+            # source, so it needs no build step; its own self-tests run first and fail
+            # the job if the reachability/doc-presence walk itself regresses.
+            - name: Verify public API TSDoc coverage
+              working-directory: Source
+              run: node scripts/verify-api-docs.mjs
+
+    # Matrix over the renderer-adapter workspaces that today run one after another inside
+    # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10. In that
+    # serial pipeline `@cratis/components` (Source) always ran first, so every adapter's `ci`
+    # resolved the package's `exports` map (which points at `Source/dist`, not `src`) against
+    # an already-built package. Only Conformance's own `ci` rebuilds Source itself
+    # (`prepare-core`, ahead of its `build`); MUI's and both PrimeReact legs' `ci` run `build`
+    # before their `typecheck-specs` step's own `prepare-core`, so on an isolated matrix runner
+    # with no prior Source build they fail resolving `@cratis/components/*` subpaths (TS2307).
+    # Each leg here now builds Source first itself, mirroring the already-working
+    # `verify-renderer-adapters` job's `prepareCore()` (`yarn prepare` in Source before any
+    # adapter work) rather than depending on per-workspace `ci` script ordering. This means
+    # Source is rebuilt redundantly by all four legs in parallel (already fully redundant with
+    # Conformance's own internal `prepare-core`) instead of once - a deliberate, bounded cost
+    # matrix isolation requires, not a new build step design.
+    adapters:
+        name: Workspace checks (${{ matrix.name }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: conformance
+                      workspace: '@cratis/components.conformance'
+                    - name: mui
+                      workspace: '@cratis/components.mui'
+                    - name: primereact11
+                      workspace: '@cratis/components.primereact'
+                    - name: primereact10
+                      workspace: '@cratis/components.primereact10'
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
+
+            - name: Yarn install
+              run: yarn install --immutable
+
+            - name: Build Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn workspace @cratis/components run prepare
+
+            - name: Build, lint, and test ${{ matrix.name }}
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn workspace ${{ matrix.workspace }} run ci
+
+            - name: Verify packed renderer conformance package
+              if: matrix.name == 'conformance'
+              working-directory: Conformance
+              run: yarn verify-package
+
+    # Root-level policy/tooling/evidence self-tests, the ESLint and Migrator workspace
+    # pipelines, and the packed-consumer verification under TypeScript 6 and 7
+    # (`verify-typescript-consumers`). The last of these needs the packed/dist output of
+    # `@cratis/components`, Conformance, and all three adapters, so this job builds them
+    # itself first - the `build` script only (no lint/test/clean), which is materially
+    # cheaper than the full `ci` pipelines the `source` and `adapters` jobs already run.
+    tooling:
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
+
+            - name: Yarn install
+              run: yarn install --immutable
+
+            - name: Root tooling, policy, and workspace checks
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn test-tooling
+                  yarn verify-compat-manifest
+                  yarn test-release-policy
+                  yarn test-release-evidence
+                  yarn test-renderer-adapter-matrix
+                  yarn workspace @cratis/eslint-plugin-components run ci
+                  yarn workspace @cratis/components.migrator run ci
+                  yarn workspace @cratis/components.conformance run build
+                  yarn workspace @cratis/components.mui run build
+                  yarn workspace @cratis/components.primereact run build
+                  yarn workspace @cratis/components.primereact10 run build
+                  yarn verify-typescript-consumers
 
             - name: Verify root-import codemod
               working-directory: Migrator
@@ -106,17 +240,45 @@ jobs:
               working-directory: ESLint
               run: yarn verify-package
 
-            - name: Verify packed renderer conformance package
-              working-directory: Conformance
-              run: yarn verify-package
+    # The Storybook workspace is `private`, so `run-task-on-workspaces.js ci` always skipped
+    # it; its checks ran as their own steps at the end of the old `build` job instead, after
+    # that job's single step had already built `@cratis/components` and every adapter. This
+    # job rebuilds those same packages itself (build only, matching the `tooling` job) so the
+    # composed Storybook and its axe matrix - unchanged, still the long pole here - have the
+    # packed output they import.
+    storybook:
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
 
-            # Every intentionally public declaration/member reachable from a JS `exports`
-            # subpath must carry a TSDoc comment (Cratis/Components#173). Runs against
-            # source, so it needs no build step; its own self-tests run first and fail
-            # the job if the reachability/doc-presence walk itself regresses.
-            - name: Verify public API TSDoc coverage
-              working-directory: Source
-              run: node scripts/verify-api-docs.mjs
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+            - name: Setup node
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version: 23.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+              id: yarn-cache
+              with:
+                  path: |
+                      .yarn/cache
+                      **/node_modules
+                      **/.eslintcache
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
+
+            - name: Yarn install
+              run: yarn install --immutable
+
+            - name: Build packages the composed Storybook imports
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn workspace @cratis/components.conformance run build
+                  yarn workspace @cratis/components.mui run build
+                  yarn workspace @cratis/components.primereact run build
+                  yarn workspace @cratis/components.primereact10 run build
 
             - name: Verify renderer Storybook type, inventory, specs, and peer isolation
               working-directory: Storybook
@@ -135,6 +297,26 @@ jobs:
             - name: Test every Storybook story
               working-directory: Source
               run: yarn test-storybook
+
+    # Aggregates the four shards above into the single check this repository's branch
+    # protection historically pointed at (`build`). No branch protection rule or ruleset
+    # exists on `main` as of this change (checked via the GitHub API), so nothing currently
+    # requires this job - it is added defensively so that if/when branch protection is
+    # configured to require one `javascript-build.yml` check, `build` keeps meaning "every
+    # shard passed" rather than needing four rules kept in sync by hand.
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        needs: [source, adapters, tooling, storybook]
+        if: always()
+        steps:
+            - name: Require every shard to have succeeded
+              run: |
+                  if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ] || [ "${{ contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+                    echo "One or more JavaScript Build shards did not succeed:" >&2
+                    echo '${{ toJSON(needs) }}' >&2
+                    exit 1
+                  fi
 
     # Builds and retains exact archives and SBOM evidence. This job is read-only; publication
     # authority remains isolated to the Publish workflow's OIDC-enabled npm job.
