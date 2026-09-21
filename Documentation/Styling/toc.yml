@@ -2,6 +2,8 @@
   href: index.md
 - name: Getting Started
   href: getting-started.md
+- name: Per-area stylesheets
+  href: per-area-stylesheets.md
 - name: Use the Cratis baseline theme
   href: baseline-theme.md
 - name: Build a product theme

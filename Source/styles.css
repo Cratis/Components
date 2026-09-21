@@ -16,6 +16,8 @@
  * Adding a component stylesheet? Add its `@import` here. The build fails if a `.css` file under
  * `Source/` is not reachable from this manifest, so the two cannot drift apart silently.
  *
+ * The per-area entry points are derived from this same list (scripts/lib/area-stylesheets.mjs).
+ *
  * Consumers import this alongside the token layer:
  *
  *     import '@cratis/components/tokens';   // the --cratis-* seam (always)
@@ -26,7 +28,7 @@
 /* Third-party: Allotment lays its split view out entirely from this stylesheet, so a `DataPage`
    with a details pane only sides its panes — and only keeps its paginator in frame — once these
    rules are present. Vendored in here rather than imported from `DataPage.tsx` for the same
-   reason as everything else in this file. */
+   reason as everything else in this file. @cratis-area DataPage */
 @import 'allotment/dist/style.css';
 
 @import './Canvas/Canvas.css';

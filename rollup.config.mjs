@@ -13,8 +13,14 @@ import {
     writeFileSync,
 } from 'fs';
 import { dirname, join, relative, resolve } from 'path';
-import { createRequire } from 'module';
 import ts from 'typescript';
+import {
+    AGGREGATE_STYLES_FILE,
+    areaStylesheetsForExports,
+    BASE_STYLES_FILE,
+    expectedStyleExports,
+    parseStyleManifest,
+} from './Source/scripts/lib/area-stylesheets.mjs';
 
 /** Stylesheets that are entry points or token layers in their own right, not component rules. */
 const STANDALONE_STYLESHEETS = new Set([
@@ -51,6 +57,10 @@ function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) 
     return found;
 }
 
+/** One manifest entry rendered the way it appears inside the published stylesheets. */
+const renderStyleEntry = ({ specifier, file }) =>
+    `/* ── ${specifier} ─────────────────────────────────────── */\n${readFileSync(file, 'utf8')}`;
+
 /**
  * Resolves the `@import` statements in `styles.css` into one flat stylesheet.
  *
@@ -60,35 +70,20 @@ function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) 
  *
  * @returns The concatenated CSS, and the set of relative specifiers that were inlined.
  */
-function inlineStyleImports(manifestFile) {
-    const require = createRequire(manifestFile);
-    const manifest = readFileSync(manifestFile, 'utf8');
-    const parts = [];
-    const inlined = new Set();
-
-    // Keep the manifest's own header comment, then replace each @import with the file it names.
-    const body = manifest.replace(
-        /@import\s+['"]([^'"]+)['"]\s*;/g,
-        (_match, specifier) => {
-            const file = specifier.startsWith('.')
-                ? resolve(dirname(manifestFile), specifier)
-                : require.resolve(specifier);
-            if (specifier.startsWith('.'))
-                inlined.add(resolve(dirname(manifestFile), specifier));
-            parts.push(
-                `/* ── ${specifier} ─────────────────────────────────────── */\n${readFileSync(file, 'utf8')}`,
-            );
-            return `@__CRATIS_STYLE_${parts.length - 1}__@`;
-        },
+function inlineStyleImports(manifest, entries) {
+    const inlined = new Set(
+        entries.filter(({ isRelative }) => isRelative).map(({ file }) => file),
     );
 
-    return {
-        css: body.replace(
-            /@__CRATIS_STYLE_(\d+)__@/g,
-            (_match, index) => parts[Number(index)],
-        ),
-        inlined,
-    };
+    // Keep the manifest's own header comment, then replace each @import with the file it names.
+    let css = '';
+    let cursor = 0;
+    for (const entry of entries) {
+        css += manifest.slice(cursor, entry.index) + renderStyleEntry(entry);
+        cursor = entry.index + entry.statement.length;
+    }
+
+    return { css: css + manifest.slice(cursor), inlined };
 }
 
 /**
@@ -112,8 +107,13 @@ function inlineStyleImports(manifestFile) {
  *
  * The plugin also fails the build when a component stylesheet exists that `styles.css` does not
  * import, so a new component's rules cannot silently go missing from the published package.
+ *
+ * Alongside the aggregate it emits the per-area entry points of Cratis/Components#301 — a shared
+ * `styles.base.css` plus one self-contained `styles.<Subpath>.css` per JavaScript subpath — and
+ * fails the build when `Source/package.json`'s stylesheet exports have drifted from that derived
+ * set. See `Source/scripts/lib/area-stylesheets.mjs` for how the mapping is derived.
  */
-function bundleStyles(sourceDir, esmPath) {
+function bundleStyles(sourceDir, esmPath, pkg) {
     let hasRun = false;
     return {
         name: 'bundle-styles',
@@ -135,7 +135,8 @@ function bundleStyles(sourceDir, esmPath) {
             });
 
             const manifestFile = resolve(sourceDir, 'styles.css');
-            const { css: components, inlined } = inlineStyleImports(manifestFile);
+            const { manifest, entries } = parseStyleManifest(manifestFile);
+            const { css: components, inlined } = inlineStyleImports(manifest, entries);
 
             const missing = findComponentStylesheets(sourceDir)
                 .filter((file) => !inlined.has(file))
@@ -149,7 +150,7 @@ function bundleStyles(sourceDir, esmPath) {
                 );
             }
 
-            const outputFile = resolve(esmPath, 'styles.css');
+            const outputFile = resolve(esmPath, AGGREGATE_STYLES_FILE);
             mkdirSync(dirname(outputFile), { recursive: true });
             writeFileSync(
                 outputFile,
@@ -158,6 +159,55 @@ function bundleStyles(sourceDir, esmPath) {
             console.log(
                 `✓ Bundled Tailwind utilities + ${inlined.size} component stylesheet(s) → dist/esm/styles.css`,
             );
+
+            // The shared base every per-area consumer imports once: the compiled Tailwind theme
+            // and prefixed utility output, which is generated from the whole package's JSX and so
+            // belongs to no single area, plus the statement that fixes cascade-layer order. Byte
+            // for byte the same prefix the aggregate already carries, so the two cannot diverge.
+            writeFileSync(resolve(esmPath, BASE_STYLES_FILE), `${tailwind.css}\n`);
+
+            const sheets = areaStylesheetsForExports(pkg, esmPath, entries);
+            for (const sheet of sheets) {
+                if (sheet.aliasOf) continue;
+                writeFileSync(
+                    resolve(esmPath, sheet.fileName),
+                    `@layer cratis-components {\n` +
+                        `/* ${sheet.stylesSubpath.replace(/^\.\//u, `${pkg.name}/`)} — requires ` +
+                        `${pkg.name}/styles/base. Areas: ${sheet.areas.join(', ')}. */\n` +
+                        `${sheet.entries.map(renderStyleEntry).join('\n')}\n}\n`,
+                );
+            }
+            console.log(
+                `✓ Emitted ${BASE_STYLES_FILE} + ${sheets.filter((sheet) => !sheet.aliasOf).length} per-area stylesheet(s)`,
+            );
+
+            const expected = expectedStyleExports(sheets);
+            const declared = new Map(
+                Object.entries(pkg.exports ?? {}).filter(([, target]) =>
+                    String(target).endsWith('.css'),
+                ),
+            );
+            const drift = [
+                ...[...expected]
+                    .filter(([subpath, target]) => declared.get(subpath) !== target)
+                    .map(
+                        ([subpath, target]) =>
+                            `missing/incorrect '${subpath}': ${target}`,
+                    ),
+                ...[...declared.keys()]
+                    .filter(
+                        (subpath) =>
+                            !expected.has(subpath) &&
+                            subpath !== './tokens' &&
+                            subpath !== './theme',
+                    )
+                    .map((subpath) => `undeclared stylesheet export '${subpath}'`),
+            ];
+            if (drift.length > 0) {
+                this.error(
+                    `Source/package.json's stylesheet exports do not match what the build emits:\n  ${drift.join('\n  ')}`,
+                );
+            }
         },
     };
 }
@@ -403,8 +453,11 @@ export function rollup(esmPath, tsconfigPath, pkg) {
                 },
             }),
             generatePackageJson(esmPath),
-            bundleStyles(sourceDir, esmPath),
+            // After `fix-relative-esm-specifiers`: the per-area stylesheets are derived from the
+            // emitted JavaScript graph, which is only walkable once its directory imports have
+            // been rewritten to real files.
             fixRelativeEsmSpecifiers(esmPath),
+            bundleStyles(sourceDir, esmPath, pkg),
         ],
     };
 }

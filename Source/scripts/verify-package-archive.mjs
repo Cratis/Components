@@ -193,6 +193,24 @@ try {
     process.exit(1);
 }
 
+// Every stylesheet subpath the packed manifest promises must actually be in the archive. Derived
+// from the packed `exports` map rather than a list kept here, so a new per-area entry point cannot
+// be declared without shipping its file - and cannot ship without getting a budget below.
+const packedStyleExports = new Map(
+    Object.entries(packedPackage.exports ?? {})
+        .filter(([, target]) => typeof target === 'string' && target.endsWith('.css'))
+        .map(([subpath, target]) => [subpath, `package/${target.replace(/^\.\//u, '')}`]),
+);
+const missingStyleExports = [...packedStyleExports]
+    .filter(([, entry]) => !entries.has(entry))
+    .map(([subpath, entry]) => `${subpath} -> ${entry}`);
+if (missingStyleExports.length > 0) {
+    console.error(
+        `Package archive declares stylesheet exports it does not ship:\n- ${missingStyleExports.join('\n- ')}`,
+    );
+    process.exit(1);
+}
+
 const styleBytes = Buffer.byteLength(styles);
 const gzipBytes = gzipSync(styles, { level: 9 }).byteLength;
 const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
@@ -205,6 +223,11 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // That reduction came with Dialog placement: PivotViewer.css shipped 45 rules byte-identical to
 // FilterPanel.css in the same aggregate, and dropping them measured raw 202877, gzip 31794,
 // 1137 declaration blocks. The ceilings stay where they are.
+// Measured again when the per-area entry points landed (Cratis/Components#301): raw 208162,
+// gzip 32630, 1168 declaration blocks. The only aggregate change is the manifest header comment
+// that documents the split, so the ceilings stay where they are once more - and the rule they
+// encode is no longer the only lever, because a consumer that does not want every surface can now
+// import the areas it mounts instead of raising this ceiling.
 const styleBudget = {
     rawBytes: 205 * 1024,
     gzipBytes: 32 * 1024,
@@ -226,8 +249,113 @@ if (exceeded.length > 0) {
     process.exit(1);
 }
 
+// Per-area budgets (Cratis/Components#301).
+//
+// The aggregate ceiling above answers "how big may the whole library's CSS be". It cannot answer
+// the question that actually matters to an application - "how much CSS does *this* app download" -
+// and trying to make it do both is what turned a 22 KiB PivotViewer stylesheet into an argument
+// about whether PivotViewer may have rules at all. A per-area ceiling asks the right question per
+// entry point: a consumer that mounts a pivot viewer pays for PivotViewer, and a consumer that
+// mounts a dialog does not.
+//
+// Budgeted in gzip only, deliberately. Every per-area sheet is a subset of the aggregate by
+// construction (same manifest, same files, same order), so the aggregate's raw and
+// declaration-block ceilings already bound each of them; gzip is the one number that describes
+// what a consumer actually transfers, and it is the number that differs per area.
+//
+// Each ceiling is the measured gzip size rounded up to the next 512-byte boundary with at least
+// 512 bytes of headroom, so ordinary authoring inside an area does not trip a gate while a step
+// change does. Every per-area stylesheet in the archive must appear here and vice versa: a new
+// area cannot ship without a reviewed, measured number.
+const areaStyleBudgets = new Map([
+    ['styles.base.css', 2560], // measured 2039
+    ['styles.Canvas.css', 14336], // measured 13702
+    ['styles.Chat.css', 6656], // measured 5864
+    ['styles.CommandDialog.css', 7680], // measured 7013
+    ['styles.CommandForm.css', 7168], // measured 6323
+    ['styles.CommandStepper.css', 7168], // measured 6244
+    ['styles.Common.css', 5632], // measured 4987
+    ['styles.DataPage.css', 8192], // measured 7217
+    ['styles.DataTables.css', 7168], // measured 6283
+    ['styles.Dialogs.css', 7168], // measured 6582
+    ['styles.Display.css', 6144], // measured 5398
+    ['styles.Dropdown.css', 6144], // measured 5481
+    ['styles.Filter.css', 3584], // measured 2742
+    ['styles.Notifications.css', 5632], // measured 4988
+    ['styles.ObjectContentEditor.css', 5632], // measured 5049
+    ['styles.ObjectNavigationalBar.css', 5120], // measured 4576
+    ['styles.PivotViewer.css', 7680], // measured 6840
+    ['styles.renderer.builtin.css', 8704], // measured 7987
+    ['styles.SchemaEditor.css', 8192], // measured 7417
+    ['styles.TimeMachine.css', 5120], // measured 4440
+    ['styles.Toolbar.css', 8192], // measured 7307
+]);
+
+// Self-contained sheets repeat the areas they share, so the emitted set is larger than the sum of
+// the component stylesheets. That repetition is the price of "one import per subpath, no hidden
+// prerequisites", and this ceiling is what keeps it from growing unreviewed. Measured 885940 raw
+// bytes across 21 sheets when the split landed; the archive itself compresses the repetition away.
+const areaStyleTotalRawBudget = 960 * 1024;
+
+const packedAreaStyles = [...entries]
+    .filter((entry) => /^package\/dist\/esm\/styles\..+\.css$/u.test(entry))
+    .sort();
+const areaProblems = [];
+let areaRawTotal = 0;
+const measuredAreaStyles = [];
+
+for (const entry of packedAreaStyles) {
+    const name = entry.slice('package/dist/esm/'.length);
+    const content = readPackedText(entry);
+    const budget = areaStyleBudgets.get(name);
+    const measuredGzip = gzipSync(content, { level: 9 }).byteLength;
+    areaRawTotal += Buffer.byteLength(content);
+    measuredAreaStyles.push({ name, measuredGzip });
+
+    if (budget === undefined) {
+        areaProblems.push(
+            `${name} ships without a reviewed budget (measured ${measuredGzip} gzip bytes)`,
+        );
+        continue;
+    }
+    if (measuredGzip > budget) {
+        areaProblems.push(`${name} gzip size ${measuredGzip} > ${budget} bytes`);
+    }
+    // The split only pays for itself while an area is meaningfully smaller than taking everything.
+    if (name !== 'styles.base.css' && measuredGzip >= gzipBytes) {
+        areaProblems.push(
+            `${name} gzip size ${measuredGzip} is not smaller than the aggregate's ${gzipBytes}`,
+        );
+    }
+}
+
+for (const name of areaStyleBudgets.keys()) {
+    if (!entries.has(`package/dist/esm/${name}`)) {
+        areaProblems.push(`${name} has a budget but is not in the archive`);
+    }
+}
+if (areaRawTotal > areaStyleTotalRawBudget) {
+    areaProblems.push(
+        `per-area stylesheets total ${areaRawTotal} raw bytes > ${areaStyleTotalRawBudget}`,
+    );
+}
+if (areaProblems.length > 0) {
+    console.error(
+        `Published per-area CSS does not match its reviewed budgets:\n- ${areaProblems.join('\n- ')}\n` +
+            'Reduce the payload or update the budget with measured consumer evidence.',
+    );
+    process.exit(1);
+}
+
 console.log(
     `Package archive notices/assets are complete and aggregate CSS is within budget ` +
         `(${styleBytes} raw bytes, ${gzipBytes} gzip bytes, ${declarationBlocks} blocks): ` +
         normalizedArchive,
+);
+console.log(
+    `${measuredAreaStyles.length} per-area stylesheet(s) within budget ` +
+        `(${areaRawTotal} raw bytes total): ` +
+        measuredAreaStyles
+            .map(({ name, measuredGzip }) => `${name} ${measuredGzip}`)
+            .join(', '),
 );
