@@ -34,8 +34,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const Picker = (props: Partial<ComponentProps<typeof ComboBox>>) => {
-    const [value, setValue] = useState<string | null>(null);
+const Picker = ({
+    initialValue = null,
+    ...props
+}: Partial<ComponentProps<typeof ComboBox>> & { initialValue?: string | null }) => {
+    const [value, setValue] = useState<string | null>(initialValue);
     return (
         <StoryContainer size='sm' asCard>
             <StorySection>
@@ -71,6 +74,31 @@ export const OpenOnFocusStacked: Story = {
         await expect(input).toHaveAttribute('aria-expanded', 'true');
         await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}');
         await expect(input).toHaveValue('Birk Consulting');
+    },
+};
+
+const plainCustomers: ComboBoxOption[] = customers.map(({ key, label, disabled }) => ({
+    key,
+    label,
+    disabled,
+}));
+
+/** A selection never hides the rest: opening the list again offers every option. */
+export const ReopenedWithASelection: Story = {
+    args: { options: customers, value: null, onChange: () => undefined },
+    render: () => <Picker options={plainCustomers} initialValue='birk' />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const input = canvas.getByRole('combobox', { name: 'Customer' });
+        await expect(input).toHaveValue('Birk Consulting');
+
+        await userEvent.click(canvas.getByRole('button'));
+
+        await expect(input).toHaveAttribute('aria-expanded', 'true');
+        const list = await within(document.body).findByRole('listbox');
+        await expect(within(list).getAllByRole('option')).toHaveLength(
+            plainCustomers.length,
+        );
     },
 };
 
