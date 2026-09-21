@@ -126,8 +126,23 @@ const rendererBuildAttestation = (): Plugin => ({
     },
 });
 
+const defaultStoriesGlob = ['../!(dist|node_modules|storybook-static)/**/*.stories.@(ts|tsx)'];
+
+/**
+ * Non-built-in renderer runs only need to re-prove stories whose component owns, or composes, a
+ * renderer slot; everything else already renders identical DOM on every renderer. `run-story-matrix.mjs`
+ * derives that story subset from the already-built story index (see
+ * `Storybook/scripts/lib/renderer-matrix-scope.mjs`) and passes it here as literal story file paths
+ * so Storybook's own `stories` config — not Vitest's `test.include`, which the Storybook Vitest
+ * plugin overwrites — scopes which stories are indexed for that renderer's test run. Unset (the
+ * built-in renderer, and every build/index step), this falls back to the full glob.
+ */
+const matrixStoriesOverride = process.env.CRATIS_STORYBOOK_MATRIX_STORY_GLOBS
+    ? (JSON.parse(process.env.CRATIS_STORYBOOK_MATRIX_STORY_GLOBS) as string[])
+    : undefined;
+
 const config: StorybookConfig = {
-    stories: ['../!(dist|node_modules|storybook-static)/**/*.stories.@(ts|tsx)'],
+    stories: matrixStoriesOverride ?? defaultStoriesGlob,
     addons: ['@storybook/addon-docs', '@storybook/addon-a11y', '@storybook/addon-vitest'],
     framework: { name: '@storybook/react-vite', options: {} },
     core: { builder: '@storybook/builder-vite' },
