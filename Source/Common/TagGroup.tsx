@@ -7,6 +7,7 @@ import {
     type HTMLAttributes,
     type InputHTMLAttributes,
     type Key,
+    type ReactNode,
 } from 'react';
 import {
     Tag as AriaTag,
@@ -76,6 +77,12 @@ export interface TagGroupProps {
     id?: string;
     /** Accessible label for a tag's remove button. Receives the tag's value. */
     removeLabel?: (value: string) => string;
+    /**
+     * Glyph inside a tag's remove button. Defaults to a multiplication sign; pass your icon set's
+     * close icon to match the rest of the product. The button, its accessible name and its keyboard
+     * behaviour are unaffected.
+     */
+    removeIcon?: ReactNode;
     /** Extra class name for the root element. */
     className?: string;
     /** Cratis-owned per-part attributes. */
@@ -108,6 +115,7 @@ export const TagGroup = ({
     invalid = false,
     id,
     removeLabel,
+    removeIcon = '×',
     className,
     pt,
 }: TagGroupProps) => {
@@ -176,7 +184,7 @@ export const TagGroup = ({
                                     )}
                                     data-cratis-part='remove'
                                 >
-                                    <span aria-hidden='true'>×</span>
+                                    <span aria-hidden='true'>{removeIcon}</span>
                                 </AriaButton>
                             )}
                         </AriaTag>
