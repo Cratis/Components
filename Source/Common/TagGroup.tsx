@@ -152,6 +152,11 @@ export const TagGroup = ({
             data-invalid={invalid || undefined}
         >
             <AriaTagGroup
+                // React Aria renders a wrapper here. It generates a block box, which would trap the
+                // tags in their own formatting context — the root's flex layout, and therefore the
+                // gap between tags, would never reach them. It has no part on purpose: it is not a
+                // styling surface, it just has to disappear from layout.
+                className='cratis-tag-group__group'
                 selectionMode='none'
                 onRemove={remove}
                 aria-label={ariaLabel}
