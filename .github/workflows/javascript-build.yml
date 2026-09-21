@@ -115,9 +115,19 @@ jobs:
               run: node scripts/verify-api-docs.mjs
 
     # Matrix over the renderer-adapter workspaces that today run one after another inside
-    # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10. Each leg's
-    # own `ci` script already rebuilds `@cratis/components` itself (via `prepare-core`/
-    # `typecheck-specs`), so each leg is self-contained on its own runner.
+    # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10. In that
+    # serial pipeline `@cratis/components` (Source) always ran first, so every adapter's `ci`
+    # resolved the package's `exports` map (which points at `Source/dist`, not `src`) against
+    # an already-built package. Only Conformance's own `ci` rebuilds Source itself
+    # (`prepare-core`, ahead of its `build`); MUI's and both PrimeReact legs' `ci` run `build`
+    # before their `typecheck-specs` step's own `prepare-core`, so on an isolated matrix runner
+    # with no prior Source build they fail resolving `@cratis/components/*` subpaths (TS2307).
+    # Each leg here now builds Source first itself, mirroring the already-working
+    # `verify-renderer-adapters` job's `prepareCore()` (`yarn prepare` in Source before any
+    # adapter work) rather than depending on per-workspace `ci` script ordering. This means
+    # Source is rebuilt redundantly by all four legs in parallel (already fully redundant with
+    # Conformance's own internal `prepare-core`) instead of once - a deliberate, bounded cost
+    # matrix isolation requires, not a new build step design.
     adapters:
         name: Workspace checks (${{ matrix.name }})
         runs-on: ubuntu-latest
@@ -156,6 +166,11 @@ jobs:
 
             - name: Yarn install
               run: yarn install --immutable
+
+            - name: Build Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn workspace @cratis/components run prepare
 
             - name: Build, lint, and test ${{ matrix.name }}
               run: |
