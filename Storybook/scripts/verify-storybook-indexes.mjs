@@ -5,6 +5,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
+import { computeRendererMatrixScope } from './lib/renderer-matrix-scope.mjs';
 
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(storybookRoot, '..');
@@ -28,6 +29,7 @@ if (storyFiles.length !== 74) throw new Error(`Expected the existing 74 story mo
 
 let canonicalStoryIds;
 let canonicalDocsIds;
+let canonicalStoryEntries;
 for (const adapter of inventory.adapters) {
     const previewRoot = path.join(outputRoot, adapter.metadata.id);
     const indexFile = path.join(previewRoot, 'index.json');
@@ -44,6 +46,7 @@ for (const adapter of inventory.adapters) {
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;
+    canonicalStoryEntries ??= entries.filter(entry => entry.type === 'story');
     if (JSON.stringify(storyIds) !== JSON.stringify(canonicalStoryIds)
         || JSON.stringify(docsIds) !== JSON.stringify(canonicalDocsIds)) {
         throw new Error(`${adapter.metadata.id} does not expose the same stable story ids as the built-in preview.`);
@@ -68,8 +71,32 @@ for (const adapter of inventory.adapters) {
     console.log(`${adapter.metadata.id}: ${storyIds.length} stories, ${docsIds.length} autodocs pages, primereact [${expectedVersions.join(', ') || 'none'}].`);
 }
 
+const { slotOwningModules, matrixStoryIds } = computeRendererMatrixScope({
+    storyEntries: canonicalStoryEntries,
+    repositoryRoot,
+    sourceRoot,
+});
+
+// Attested against the derivation, not hand-maintained: a slotted component (or one that composes
+// a slotted primitive, such as `CommandDialog` or `DataPage`) is picked up automatically by
+// `computeRendererMatrixScope`. These counts are still pinned so that a change in what the
+// registry or the derivation reaches — a newly slotted component, a new composite, or a
+// regression in the reachability walk itself — fails this check loudly instead of silently
+// shrinking (or inflating) what the renderer matrix actually covers.
+if (slotOwningModules.size !== 14) {
+    throw new Error(`Expected 14 slot-owning modules (the stable nine-slot presentation profile plus experimental slots), found ${slotOwningModules.size}.`);
+}
+if (matrixStoryIds.size !== 175) {
+    throw new Error(`Expected 175 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
+}
+
 const appearances = 2;
-const matrixCount = inventory.adapters.length * canonicalStoryIds.length * appearances;
-console.log(`Storybook indexes verified: ${inventory.adapters.length} previews × ${canonicalStoryIds.length} stable stories × ${appearances} appearances = ${matrixCount} story/appearance cases.`);
-console.log('Story exclusions: none. Every indexed story is included in light, dark, and axe execution.');
+const builtInOnlyStoryCount = canonicalStoryIds.length - matrixStoryIds.size;
+const nonBuiltInAdapterCount = inventory.adapters.length - 1;
+const matrixCount =
+    canonicalStoryIds.length * appearances +
+    nonBuiltInAdapterCount * matrixStoryIds.size * appearances;
+console.log(`Renderer matrix scope: ${matrixStoryIds.size} of ${canonicalStoryIds.length} stories own or compose a renderer slot (${slotOwningModules.size} slot-owning modules); ${builtInOnlyStoryCount} run once, on the built-in renderer only.`);
+console.log(`Storybook indexes verified: 1 built-in preview × ${canonicalStoryIds.length} stable stories + ${nonBuiltInAdapterCount} renderer-distinguishing preview(s) × ${matrixStoryIds.size} matrix stories, × ${appearances} appearances = ${matrixCount} story/appearance cases.`);
+console.log('Story exclusions: none. Every indexed story is included in light, dark, and axe execution on at least the built-in renderer.');
 console.log(`Renderer exclusions: ${inventory.exclusions.map(item => `${item.id} (${item.reason})`).join(', ') || 'none'}; private adapters such as Plain are never composed.`);
