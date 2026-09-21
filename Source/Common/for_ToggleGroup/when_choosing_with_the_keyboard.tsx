@@ -89,6 +89,17 @@ describe('when choosing with the keyboard', () => {
     // React Aria moves focus with the arrows and commits with Space or Enter, rather than selecting
     // on focus. Both are permitted for a radio group, and focus-then-activate is the safer one here:
     // a segmented control often drives a query, so arrowing past an option must not run it.
+    it('should be a single tab stop carried by the selected option', () => {
+        const options = Array.from(
+            mounted.container.querySelectorAll<HTMLElement>('[data-cratis-part="option"]'),
+        );
+        expect(options.map((option) => option.getAttribute('tabindex'))).to.deep.equal([
+            '0',
+            '-1',
+            '-1',
+        ]);
+    });
+
     it('should move focus with the arrow keys without selecting', async () => {
         const [first] = Array.from(
             mounted.container.querySelectorAll<HTMLElement>('[data-cratis-part="option"]'),
