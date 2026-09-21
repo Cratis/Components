@@ -173,6 +173,7 @@ export const TagGroup = ({
                             {...pt?.tag}
                             id={item.id}
                             textValue={item.id}
+                            isDisabled={disabled}
                             className={classNames('cratis-tag-group__tag', pt?.tag?.className)}
                             data-cratis-part='tag'
                             data-disabled={disabled || undefined}
