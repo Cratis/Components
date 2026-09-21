@@ -86,6 +86,11 @@ jobs:
                   retry: true
                   statusCodes: '{"429":"warn"}'
                   # Stable Cratis repository anchors repeatedly trigger GitHub's unauthenticated
-                  # 429 limit; current-tree links are verified locally above, so skip only exact
-                  # current/immutable documentation paths and organization guidance here.
-                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/, ^https:\/\/github\.com\/Cratis\/Components\/blob\/[0-9a-f]{40}\/Documentation\/, ^https:\/\/github\.com\/Cratis\/Components\/tree\/main\/Documentation\/, ^https:\/\/github\.com\/Cratis\/\.github\/blob\/main\/contributing\.md$'
+                  # rate limiting, which arrives as a 404 as often as a 429 — so neither `retry` nor
+                  # the 429 rule above catches it, and a link that returned 200 minutes earlier fails
+                  # the build. Every link back into THIS repository is skipped here, on any ref: the
+                  # local checker above already resolves those paths against the working tree, which
+                  # is the stronger check anyway, since it sees the branch's own content rather than
+                  # whatever GitHub has published. Scoping the skip to `tree/main` (as it was) left
+                  # every pull request checking a `tree/<branch>` URL that only exists to be throttled.
+                  linksToSkip: '^http:\/\/(localhost|127\.0\.0\.1):\d+\/(arc|components|chronicle|event-modeling|build-a-full-app)(\/|$), ^https:\/\/www\.npmjs\.com\/, ^https:\/\/github\.com\/Cratis\/Components\/(blob|tree)\/, ^https:\/\/github\.com\/Cratis\/\.github\/blob\/main\/contributing\.md$'
