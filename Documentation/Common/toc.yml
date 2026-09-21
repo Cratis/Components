@@ -8,6 +8,8 @@
   href: number-input.md
 - name: ComboBox
   href: combobox.md
+- name: Collection controls
+  href: collection-controls.md
 - name: Icon
   href: icon.md
 - name: Page

@@ -28,8 +28,11 @@ export default defineConfig({
         // Isolated, because several spec files mock the same module (@cratis/arc.react/dialogs) with
         // their own spies. With a shared module graph whichever file loaded first wins and the others
         // observe zero calls, which showed up as an intermittent "expected one closeDialog call, got 0".
+        // This is what prevents that, and it holds however many files run at once: every file gets its
+        // own module registry. Serializing the run on top of it — `fileParallelism: false`, removed here
+        // — added no isolation and cost three minutes a run, because a third of the time is building a
+        // fresh jsdom per file and that was happening one core at a time.
         isolate: true,
-        fileParallelism: false,
         pool: 'threads',
         // Stylesheets are stubbed out by default, which is right for the ones this package writes:
         // every layout declaration those specs assert on is an inline style, and processing CSS is
