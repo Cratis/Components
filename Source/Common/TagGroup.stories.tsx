@@ -79,6 +79,29 @@ export const Invalid: Story = {
     ),
 };
 
+/** The remove glyph is a slot, so a product keeps its own close icon. */
+export const CustomRemoveIcon: Story = {
+    args: { value: [], onChange: () => undefined },
+    render: () => (
+        <Controlled
+            removeIcon={
+                <svg
+                    aria-hidden='true'
+                    width='8'
+                    height='8'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2.5'
+                    strokeLinecap='round'
+                >
+                    <path d='M18 6 6 18M6 6l12 12' />
+                </svg>
+            }
+        />
+    ),
+};
+
 /** Adding with Enter and removing the last with Backspace. */
 export const AddsAndRemoves: Story = {
     args: { value: [], onChange: () => undefined },

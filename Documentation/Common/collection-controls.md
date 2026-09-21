@@ -80,7 +80,8 @@ A group of removable values with an optional text entry — the control behind a
 
 Duplicates are refused unless `allowDuplicates` is set. `editable={false}` drops the entry and leaves
 a read-only set of removable tags. Give `removeLabel` a localized builder — the remove buttons are
-the one place this control needs words of its own.
+the one place this control needs words of its own — and `removeIcon` your icon set's close icon,
+which replaces the default `×` without touching the button or its accessible name.
 
 ## Showing where you are: `Breadcrumbs`
 

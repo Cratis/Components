@@ -62,6 +62,20 @@ describe('when adding and removing values', () => {
         expect(tags().every((tag) => tag.hasAttribute('tabindex'))).to.equal(true);
     });
 
+    it('should render the supplied remove glyph', async () => {
+        const custom = await mountPrimitive(
+            <TagGroup
+                value={['react']}
+                onChange={() => undefined}
+                aria-label='Skills'
+                removeIcon={<svg data-glyph='close' aria-hidden='true' />}
+            />,
+        );
+        const remove = custom.container.querySelector('[data-cratis-part="remove"]');
+        expect(remove?.querySelector('[data-glyph="close"]')).to.not.equal(null);
+        await unmountPrimitive(custom);
+    });
+
     it('should name each remove action with its value', () => {
         const removes = Array.from(
             mounted.container.querySelectorAll('[data-cratis-part="remove"]'),
