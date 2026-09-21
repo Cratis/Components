@@ -121,6 +121,7 @@
 .cratis-tag-group[data-invalid] {
     border-color: var(--cratis-red-500);
 }
+.cratis-tag-group__group,
 .cratis-tag-group__list {
     display: contents;
 }
