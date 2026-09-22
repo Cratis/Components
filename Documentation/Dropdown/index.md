@@ -21,6 +21,8 @@ description: Single, filtered, and multiple selection with documented names, rol
 
 When option objects contain `label` and `value`, those fields are used automatically. Use `optionLabel` and `optionValue` for another shape.
 
+Choosing an option — with Enter on the keyboard-active option, or with a click — reports it through `onChange` once, closes the list, and shows that option. The Dropdown completes the selection itself, so a `value` that is not fed straight back, or that resolves to none of the options, never leaves the list hanging open over stale filter text. A `value` supplied afterwards still decides what is selected.
+
 ## Label the control
 
 An external native label associates with the primary button, filter input, or multiple-select control through `htmlFor` and the Dropdown's `id`:
