@@ -13,7 +13,7 @@ import {
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCratisIcon } from '../Common/useCratisIcon';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import type {
     FilterDefinition,
     FilterValues,

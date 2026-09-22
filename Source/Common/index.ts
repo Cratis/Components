@@ -3,7 +3,6 @@
 
 export * from './ActionMenubar';
 export * from './CratisComponentsProvider';
-export * from './useCratisIcon';
 export * from './DatePickerInput';
 export * from './ErrorBoundary';
 export * from './Icon';

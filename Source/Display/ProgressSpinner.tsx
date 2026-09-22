@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { CSSProperties } from 'react';
-import { useCratisIcon } from '../Common/useCratisIcon';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 
 /** Props for {@link ProgressSpinner}. */
 export interface ProgressSpinnerProps {

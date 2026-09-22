@@ -3,7 +3,7 @@
 
 import { Button } from '../Common/Button';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
-import { useCratisIcon } from '../Common/useCratisIcon';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { TablePaginatorProps } from './TablePaginator';
 import { paginatorRange } from './paginatorRange';
 

@@ -3,7 +3,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import type { ReactNode } from 'react';
-import { useCratisIcon } from '../../Common/useCratisIcon';
+import { useCratisIcon } from '../../configuration/useCratisIcon';
 
 type WithRecord<TItem> = TItem extends Record<string, unknown> ? TItem : never;
 

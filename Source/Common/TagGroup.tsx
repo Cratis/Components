@@ -15,7 +15,7 @@ import {
     TagList as AriaTagList,
 } from 'react-aria-components/TagGroup';
 import { Button as AriaButton } from 'react-aria-components/Button';
-import { useCratisIcon } from './useCratisIcon';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 

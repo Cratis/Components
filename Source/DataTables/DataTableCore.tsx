@@ -13,7 +13,7 @@ import React, {
     type ThHTMLAttributes,
 } from 'react';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
-import { useCratisIcon } from '../Common/useCratisIcon';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';

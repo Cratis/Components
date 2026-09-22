@@ -8,13 +8,13 @@ import { Toaster, type ToasterProps } from '../Notifications/Toaster';
 import { unstable_RendererRoot } from '../renderer/RendererContext';
 import type { CratisRendererSetup, unstable_UiLibrary } from '../renderer/manifest';
 import type { CratisOverlayEnvironment } from '../renderer/overlayEnvironment';
-import { CratisComponentsContext } from './CratisComponentsContext';
-import { cratisDefaults } from './CratisComponentsDefaults';
+import { CratisComponentsContext } from '../configuration/CratisComponentsContext';
+import { cratisDefaults } from '../configuration/CratisComponentsDefaults';
 
 const RendererRoot = unstable_RendererRoot;
 
-export { cratisDefaults } from './CratisComponentsDefaults';
-export { useCratisComponentsConfig } from './CratisComponentsContext';
+export { cratisDefaults } from '../configuration/CratisComponentsDefaults';
+export { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
 
 /** Localizable labels owned by the Cratis paginator. */
 export interface CratisPaginatorMessages {

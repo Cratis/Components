@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { createContext, useContext } from 'react';
-import type { CratisComponentsConfig } from './CratisComponentsProvider';
+import type { CratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { cratisDefaults } from './CratisComponentsDefaults';
 
 export const CratisComponentsContext = createContext<CratisComponentsConfig>(cratisDefaults);

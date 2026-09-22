@@ -3,7 +3,7 @@
 
 import { useCallback, type ReactNode } from 'react';
 import { useCratisComponentsConfig } from './CratisComponentsContext';
-import type { CratisComponentsIcons } from './CratisComponentsProvider';
+import type { CratisComponentsIcons } from '../Common/CratisComponentsProvider';
 
 /**
  * Resolves one icon site.

@@ -8,7 +8,7 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { appendChipCandidates } from './chipValues';
-import { useCratisIcon } from '../../Common/useCratisIcon';
+import { useCratisIcon } from '../../configuration/useCratisIcon';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 

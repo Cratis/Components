@@ -10,7 +10,7 @@ import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
-import { useCratisIcon } from '../Common/useCratisIcon';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import {
     DIALOG_ZINDEX_TOKEN,
     closeDialogTier,

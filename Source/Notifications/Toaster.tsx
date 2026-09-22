@@ -9,8 +9,8 @@ import {
     type HTMLAttributes,
 } from 'react';
 import { createPortal } from 'react-dom';
-import { useCratisComponentsConfig } from '../Common/CratisComponentsContext';
-import { useCratisIcon } from '../Common/useCratisIcon';
+import { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import {
     getToastSnapshot,
     subscribeToToasts,

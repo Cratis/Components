@@ -39,4 +39,4 @@ export {
 export {
     useCratisIcon,
     type CratisIconResolver,
-} from './Common/useCratisIcon';
+} from './configuration/useCratisIcon';

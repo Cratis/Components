@@ -15,7 +15,7 @@ import type { ChatTopicListLabels } from './ChatTopicList';
 import { ChatTopicList } from './ChatTopicList';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { shouldRequestTopicName } from './shouldRequestTopicName';
-import { useCratisIcon } from '../Common/useCratisIcon';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 
