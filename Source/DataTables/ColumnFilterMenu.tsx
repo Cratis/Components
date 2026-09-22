@@ -3,6 +3,7 @@
 
 import {
     useEffect,
+    useRef,
     useState,
     type ButtonHTMLAttributes,
     type CSSProperties,
@@ -200,11 +201,24 @@ export const ColumnFilterMenu = ({
         constraint?.matchMode ?? defaultModeFor(dataType),
     );
     const [isOpen, setIsOpen] = useState(false);
+    const triggerRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         setDraftValue(constraint?.value ?? null);
         setDraftMode(constraint?.matchMode ?? defaultModeFor(dataType));
     }, [constraint, dataType]);
+
+    // React Aria's own focus-trap teardown runs as a layout effect, before this passive effect's
+    // cleanup fires, so the trigger is free to receive focus again by the time we call it here.
+    // This is what makes it safe to call synchronously instead of waiting on React Aria's own
+    // requestAnimationFrame-deferred "focus fell to body" recovery, which only catches a dismissal
+    // that already lost focus to the document and does not fire in time for every dismissal route.
+    useEffect(() => {
+        if (!isOpen) return;
+        return () => {
+            triggerRef.current?.focus();
+        };
+    }, [isOpen]);
 
     const { messages } = useCratisComponentsConfig();
     const columnFilterMessages = messages?.columnFilter;
@@ -337,6 +351,7 @@ export const ColumnFilterMenu = ({
         <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
             <AriaButton
                 {...asReactAriaButtonProps(pt?.trigger)}
+                ref={triggerRef}
                 aria-label={resolvedLabels.filterTriggerAriaLabel(field)}
                 className={classNames(
                     'cratis-filter-trigger',
