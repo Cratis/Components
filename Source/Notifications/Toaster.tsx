@@ -173,7 +173,7 @@ const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) =>
                 aria-hidden='true'
             >
                 {item.loading
-                    ? icon('busy', '◌')
+                    ? '◌'
                     : (item.icon ?? severitySymbol[severity])}
             </span>
             <div

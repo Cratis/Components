@@ -182,8 +182,6 @@ export interface CratisComponentsIcons {
     next?: ReactNode;
     /** Clear-the-current-value mark. Drawn by `Dropdown`'s clear-selection action and the PivotViewer filter panel's clear action. Defaults to `×`. */
     clear?: ReactNode;
-    /** Busy/loading mark. Drawn by `ProgressSpinner` and by a loading toast. Defaults to the spinner's built-in ring (`◌` in a toast). */
-    busy?: ReactNode;
 }
 
 interface LegacyLocaleMessages {

@@ -149,10 +149,4 @@ describe('when no icons are registered', () => {
         expect(buttons).to.contain('›');
     });
 
-    it('should keep the built-in busy marks', () => {
-        expect(container.querySelector('.cratis-progress-spinner__svg')).not.to.equal(
-            null,
-        );
-        expect(document.querySelector('.cratis-toast__icon')?.textContent).to.equal('◌');
-    });
 });

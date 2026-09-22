@@ -238,7 +238,6 @@ const componentsConfig = {
         close: <CloseIcon />,
         remove: <CloseIcon />,
         expand: <ChevronDownIcon />,
-        busy: <SpinnerIcon />,
     },
 };
 
@@ -248,7 +247,7 @@ const componentsConfig = {
 ```
 
 The map is partial by design: an unregistered name keeps its built-in glyph, so the example above
-re-icons dismissal, removal, expansion and busy state and leaves sorting and pagination alone.
+re-icons dismissal, removal and expansion and leaves sorting and pagination alone.
 Registering nothing at all renders exactly what Components has always rendered — the built-in glyph
 lives at its call site and is deliberately *not* part of `cratisDefaults`.
 
@@ -264,7 +263,6 @@ lives at its call site and is deliberately *not* part of `cratisDefaults`.
 | `previous`      | Step backwards                 | `‹`     | `TablePaginator` previous page, `DatePickerInput` previous month                                                   |
 | `next`          | Step forwards                  | `›`     | `TablePaginator` next page, `DatePickerInput` next month                                                           |
 | `clear`         | Clear the current value        | `×`     | `Dropdown` clear-selection (all four render branches), PivotViewer's filter panel clear                            |
-| `busy`          | Busy/loading mark              | the spinner's ring (`◌` in a toast) | `ProgressSpinner`, a loading toast                                                    |
 
 Every name is a concept more than one component draws. Names are public contract and hard to
 withdraw, so the vocabulary starts here and grows as products ask for a concept by name rather than
@@ -310,6 +308,17 @@ export const RemoveButton = ({ icon, onRemove }: RemoveButtonProps) => {
     );
 };
 ```
+
+
+The vocabulary replaces a **glyph**, never an element that publishes a part. `ProgressSpinner` is the
+example that draws the line: its ring looks like an icon, but it is an `svg` carrying the `svg`,
+`track` and `range` parts, and a registered icon that replaced it would silently delete three parts a
+product may already be styling. Sites like that keep their own markup, and a product restyles them
+through the parts they publish.
+
+`expand` has two built-in glyphs today — `⌄` on a `Dropdown` trigger and `▾` on a `ComboBox`
+trigger. Registering `expand` makes both consistent; registering nothing leaves each as it is, so no
+existing rendering changes.
 
 ## Mount the toaster
 

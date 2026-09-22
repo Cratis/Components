@@ -39,10 +39,12 @@ describe('when every first-cut icon is overridden through the provider', () => {
         previous: 'SENTINEL-previous',
         next: 'SENTINEL-next',
         clear: 'SENTINEL-clear',
-        busy: 'SENTINEL-busy',
     };
 
-    const replacedGlyphs = ['×', '⌄', '▾', '▲', '▼', '‹', '›', '◌'];
+    // No '◌': a loading toast's busy mark is deliberately outside the vocabulary, because the
+    // concept's other site is ProgressSpinner's ring, and that is an svg publishing three parts
+    // rather than a glyph — a registered icon there would delete parts a product may be styling.
+    const replacedGlyphs = ['×', '⌄', '▾', '▲', '▼', '‹', '›'];
 
     beforeEach(async () => {
         // SAFETY: React's jsdom act-environment flag is runtime-only and absent from the
@@ -183,14 +185,6 @@ describe('when every first-cut icon is overridden through the provider', () => {
         expect(buttons).to.contain('SENTINEL-next');
     });
 
-    it('should draw the registered busy icon in the spinner and in a loading toast', () => {
-        expect(container.querySelector('.cratis-progress-spinner')?.textContent).to.equal(
-            'SENTINEL-busy',
-        );
-        expect(document.querySelector('.cratis-toast__icon')?.textContent).to.equal(
-            'SENTINEL-busy',
-        );
-    });
 
     it('should draw the registered close icon on a toast dismiss action', () => {
         expect(
