@@ -25,6 +25,8 @@ const rows: Row[] = [
 
 export interface FilterableTableOptions {
     column?: ColumnProps<Row>;
+    /** Extra filterable columns rendered after `column`, each with its own filter trigger. */
+    additionalColumns?: ColumnProps<Row>[];
     defaultFilters?: DataTableFilterMeta;
     onFilter?: (filters: DataTableFilterMeta) => void;
     /** Overrides the `CratisComponentsProvider` value the table renders under. */
@@ -35,6 +37,8 @@ export interface FilterableTableInTheDom {
     container: HTMLDivElement;
     root: Root;
     trigger: HTMLButtonElement;
+    /** Every rendered filter trigger, in column order; `trigger` is the first of these. */
+    triggers: HTMLButtonElement[];
 }
 
 export const renderFilterableTable = async (
@@ -79,21 +83,30 @@ export const renderFilterableTable = async (
                     onFilter={options.onFilter}
                 >
                     <Column<Row> {...column} />
+                    {(options.additionalColumns ?? []).map((additional) => (
+                        <Column<Row> key={String(additional.field)} {...additional} />
+                    ))}
                 </DataTableCore>
             </CratisComponentsProvider>,
         );
     });
 
-    const trigger = container.querySelector<HTMLButtonElement>('.cratis-filter-trigger');
+    const triggers = [
+        ...container.querySelectorAll<HTMLButtonElement>('.cratis-filter-trigger'),
+    ];
+    const trigger = triggers[0];
     if (!trigger) {
         throw new Error('ColumnFilterMenu did not render its trigger.');
     }
 
-    return { container, root, trigger };
+    return { container, root, trigger, triggers };
 };
 
-export const openFilterMenu = async (table: FilterableTableInTheDom) => {
-    await act(async () => table.trigger.click());
+export const openFilterMenu = async (
+    table: FilterableTableInTheDom,
+    trigger: HTMLButtonElement = table.trigger,
+) => {
+    await act(async () => trigger.click());
 
     const menu = document.querySelector<HTMLElement>('.cratis-filter-menu');
     if (!menu) {
