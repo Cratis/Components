@@ -35,6 +35,8 @@ const [customerId, setCustomerId] = useState<string | null>(null);
 | `startsWith` | Options whose label starts with the typed text.                           |
 | `none`       | `options` shown as given — for a consumer that filters or queries itself. |
 
+Typing is what searches. A list opened by the trigger, by ArrowDown or by focus offers every option, even while a selection's label sits in the input — a selection narrows nothing until the text is edited, so the alternatives to the current choice stay reachable. The first keystroke turns the text into a search again; reopening the list shows everything once more.
+
 `onInputChange` receives the text as it is typed, so a consumer can drive a server-side search and feed the result back through `options` with `filter='none'`. `openOnFocus` opens the list when the input receives focus, so a short roster is visible before anything is typed.
 
 ## Not-ready states and the action row

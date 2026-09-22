@@ -222,6 +222,11 @@ export const ComboBox = ({
     const selectedLabel = options.find((option) => option.key === value)?.label ?? '';
     const [uncontrolledInputValue, setUncontrolledInputValue] = useState(selectedLabel);
     const [editing, setEditing] = useState(false);
+    // A list opened by the trigger, by ArrowDown or by focus is not a search: the text in the input is
+    // the selected option's label, and filtering by it would offer only the option already chosen.
+    // React Aria draws the same distinction internally with `showAllItems`; because the options are
+    // filtered here, before `react-aria-components` sees them, that state is mirrored here too.
+    const [showAllOptions, setShowAllOptions] = useState(false);
     // A value set from outside — a form reset, options that arrive after mount with a preselected key —
     // must show its label; while the user is editing, the text is theirs.
     useEffect(() => {
@@ -230,8 +235,16 @@ export const ComboBox = ({
     }, [selectedLabel, editing, controlledInputValue]);
     const inputValue = controlledInputValue ?? uncontrolledInputValue;
     const setInputValue = (text: string) => {
+        // Text that changes is a search again, whatever opened the list.
+        if (text !== inputValue) setShowAllOptions(false);
         if (controlledInputValue === undefined) setUncontrolledInputValue(text);
         onInputChange?.(text);
+    };
+    const openChanged = (isOpen: boolean, trigger?: 'focus' | 'input' | 'manual') => {
+        setEditing(isOpen);
+        setShowAllOptions(
+            isOpen && (trigger === 'manual' || (trigger === 'focus' && openOnFocus)),
+        );
     };
 
     const overlayEnvironment = unstable_useOverlayEnvironment();
@@ -246,8 +259,10 @@ export const ComboBox = ({
         () =>
             showsMessage
                 ? []
-                : options.filter((option) => matches(option, inputValue, filter)),
-        [options, inputValue, filter, showsMessage],
+                : showAllOptions
+                  ? options
+                  : options.filter((option) => matches(option, inputValue, filter)),
+        [options, inputValue, filter, showsMessage, showAllOptions],
     );
     const items = useMemo(
         () =>
@@ -335,7 +350,7 @@ export const ComboBox = ({
             isInvalid={invalid}
             isRequired={required}
             name={name}
-            onOpenChange={setEditing}
+            onOpenChange={openChanged}
             onFocusChange={setEditing}
             menuTrigger={openOnFocus ? 'focus' : 'input'}
             allowsEmptyCollection

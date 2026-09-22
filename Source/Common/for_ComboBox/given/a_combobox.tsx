@@ -117,6 +117,25 @@ export const pressComboBoxKey = async (mounted: MountedComboBox, key: string) =>
     });
 };
 
+export const pressComboBoxTrigger = async (mounted: MountedComboBox) => {
+    await act(async () => {
+        const pointer = { bubbles: true, cancelable: true, button: 0, detail: 1 };
+        if (typeof PointerEvent === 'function') {
+            mounted.trigger.dispatchEvent(
+                new PointerEvent('pointerdown', { ...pointer, pointerType: 'mouse' }),
+            );
+            mounted.trigger.dispatchEvent(
+                new PointerEvent('pointerup', { ...pointer, pointerType: 'mouse' }),
+            );
+        } else {
+            mounted.trigger.dispatchEvent(new MouseEvent('mousedown', pointer));
+            mounted.trigger.dispatchEvent(new MouseEvent('mouseup', pointer));
+        }
+        mounted.trigger.dispatchEvent(new MouseEvent('click', pointer));
+        await Promise.resolve();
+    });
+};
+
 export const focusComboBox = async (mounted: MountedComboBox) => {
     await act(async () => {
         mounted.input.focus();
