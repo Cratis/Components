@@ -34,4 +34,9 @@ export {
     type CratisNotificationsMessages,
     type CratisDataTableMessages,
     type CratisColumnFilterMessages,
+    type CratisComponentsIcons,
 } from './Common/CratisComponentsProvider';
+export {
+    useCratisIcon,
+    type CratisIconResolver,
+} from './configuration/useCratisIcon';

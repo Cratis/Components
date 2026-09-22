@@ -80,7 +80,10 @@ export interface DialogProps {
      * are identical across placements.
      */
     placement?: DialogPlacement;
-    /** Glyph for the header close button. Defaults to a multiplication sign. */
+    /**
+     * Glyph for the header close button. Names this one dialog and wins over the provider's
+     * `icons.close`; defaults to a multiplication sign when neither is set.
+     */
     closeIcon?: ReactNode;
     /** Controlled open state. Defaults to `true`. */
     visible?: boolean;

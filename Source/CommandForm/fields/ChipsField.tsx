@@ -8,6 +8,7 @@ import {
     type FieldAccessibilityProps,
 } from './fieldAccessibility';
 import { appendChipCandidates } from './chipValues';
+import { useCratisIcon } from '../../configuration/useCratisIcon';
 import type { ExactPartKeys } from '../../types/ExactPartKeys';
 import type { PartsOf } from '../../types/parts';
 
@@ -43,6 +44,7 @@ interface ChipsFieldComponentProps
 
 const ChipsControl = (props: ChipsFieldComponentProps) => {
     const [draft, setDraft] = useState('');
+    const icon = useCratisIcon();
     const accessibility = useFieldAccessibility(props, {
         id: props.pt?.input?.id,
         ariaLabel: props.pt?.input?.['aria-label'],
@@ -120,7 +122,7 @@ const ChipsControl = (props: ChipsFieldComponentProps) => {
                             )
                         }
                     >
-                        ×
+                        {icon('remove', '×')}
                     </button>
                 </span>
             ))}

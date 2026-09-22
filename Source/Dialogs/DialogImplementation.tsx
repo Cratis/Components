@@ -10,6 +10,7 @@ import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { DialogInitialFocus } from './DialogInitialFocus';
 import type { DialogProps } from './Dialog';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import {
     DIALOG_ZINDEX_TOKEN,
     closeDialogTier,
@@ -37,7 +38,7 @@ export const DialogImplementation = ({
     title,
     subtitle,
     placement = 'center',
-    closeIcon = '×',
+    closeIcon,
     visible = true,
     onClose,
     onConfirm,
@@ -67,6 +68,8 @@ export const DialogImplementation = ({
     const resolvedYesLabel = yesLabel ?? dialogMessages?.yes ?? 'Yes';
     const resolvedNoLabel = noLabel ?? dialogMessages?.no ?? 'No';
     const resolvedCloseAriaLabel = closeAriaLabel ?? dialogMessages?.close ?? 'Close';
+    const icon = useCratisIcon();
+    const resolvedCloseIcon = icon('close', '×', closeIcon);
     let contextCloseDialog: ((result: DialogResult) => void) | undefined;
     try {
         const context = useDialogContext();
@@ -300,7 +303,7 @@ export const DialogImplementation = ({
                             aria-label={resolvedCloseAriaLabel}
                             onClick={() => void handleClose(DialogResult.Cancelled)}
                         >
-                            <span aria-hidden='true'>{closeIcon}</span>
+                            <span aria-hidden='true'>{resolvedCloseIcon}</span>
                         </button>
                     )}
                 </header>

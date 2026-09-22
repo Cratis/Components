@@ -5,6 +5,7 @@ import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Guid } from '@cratis/fundamentals';
 import { useOptionalMessenger } from '../../Common/messaging/useOptionalMessenger';
+import { useCratisIcon } from '../../configuration/useCratisIcon';
 import type { BuildAvatarUrlParams } from './Avatar';
 import { ChatMessageAdded } from './ChatMessageAdded';
 import {
@@ -220,6 +221,7 @@ export const Chat: React.FC<ChatProps> = ({
     buildReportUrl,
     labels,
 }) => {
+    const icon = useCratisIcon();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const composerRef = useRef<ChatComposerHandle>(null);
     const renderInfo = useMemo(() => computeRenderInfo(messages), [messages]);
@@ -259,7 +261,7 @@ export const Chat: React.FC<ChatProps> = ({
                         title={labels?.close ?? 'Close'}
                         aria-label={labels?.closePanel ?? 'Close panel'}
                     >
-                        ×
+                        {icon('close', '×')}
                     </button>
                 </div>
             )}

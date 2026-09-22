@@ -277,11 +277,11 @@ const areaStyleBudgets = new Map([
     ['styles.Common.css', 5632], // measured 4987
     ['styles.DataPage.css', 8192], // measured 7217
     ['styles.DataTables.css', 7168], // measured 6283
-    ['styles.Dialogs.css', 7168], // measured 6582
+    ['styles.Dialogs.css', 7168], // measured 2972 (6582 before the configuration seam left Common/)
     ['styles.Display.css', 6144], // measured 5398
     ['styles.Dropdown.css', 6144], // measured 5481
     ['styles.Filter.css', 3584], // measured 2742
-    ['styles.Notifications.css', 5632], // measured 4988
+    ['styles.Notifications.css', 5632], // measured 1099 (4988 before the configuration seam left Common/)
     ['styles.ObjectContentEditor.css', 5632], // measured 5049
     ['styles.ObjectNavigationalBar.css', 5120], // measured 4576
     ['styles.PivotViewer.css', 7680], // measured 6840

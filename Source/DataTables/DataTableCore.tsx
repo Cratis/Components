@@ -13,6 +13,7 @@ import React, {
     type ThHTMLAttributes,
 } from 'react';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
@@ -280,6 +281,9 @@ export const DataTableCore = <TData extends object>({
         globalSearchPlaceholder ?? dataTableMessages?.search ?? 'Search…';
     const resolvedGlobalSearchAriaLabel =
         globalSearchAriaLabel ?? dataTableMessages?.searchAriaLabel ?? 'Search table';
+    const icon = useCratisIcon();
+    const sortAscendingIcon = icon('sortAscending', '▲');
+    const sortDescendingIcon = icon('sortDescending', '▼');
     const columns = useColumns(children);
     const selectionGroupName = useId();
     const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters ?? {});
@@ -513,8 +517,8 @@ export const DataTableCore = <TData extends object>({
                                                     {ariaSort && (
                                                         <span aria-hidden='true'>
                                                             {ariaSort === 'ascending'
-                                                                ? '▲'
-                                                                : '▼'}
+                                                                ? sortAscendingIcon
+                                                                : sortDescendingIcon}
                                                         </span>
                                                     )}
                                                 </button>
