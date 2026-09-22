@@ -1,6 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { Guid } from '@cratis/fundamentals';
+import { GuidField } from '../fields/GuidField';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { clearFieldTypeProviders, resolveFieldTypeProvider } from '../fieldTypeProviderRegistry';
 import { registerDefaultFieldTypeProviders } from '../defaultFieldTypeProviders';
@@ -13,6 +15,14 @@ describe('when resolving the default providers', () => {
     beforeEach(() => {
         clearFieldTypeProviders();
         registerDefaultFieldTypeProviders();
+    });
+
+    it('should resolve a scalar Guid property to GuidField', () => {
+        resolveFieldTypeProvider(new PropertyDescriptor('sampleId', Guid, true))!.component.should.equal(GuidField);
+    });
+
+    it('should not resolve an array property to GuidField', () => {
+        (resolveFieldTypeProvider(new PropertyDescriptor('sampleIds', Array, true)) === undefined).should.equal(true);
     });
 
     it('should resolve a string property to InputTextField', () => {

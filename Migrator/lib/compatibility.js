@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import semver from 'semver';
+import { validateReleasePolicy } from './releasePolicy.js';
 
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const bundledManifestPath = path.join(packageDirectory, 'compat-manifest.json');
@@ -108,35 +109,7 @@ export function validateBundledManifest(manifest, migratorVersion) {
         );
     }
 
-    const windows = Object.values(manifest.supportWindows ?? {});
-    const sourceWindows = windows.filter(
-        ({ migrationRole }) => migrationRole === 'source',
-    );
-    const targetWindows = windows.filter(
-        ({ migrationRole }) => migrationRole === 'target',
-    );
-    if (
-        windows.length !== 2 ||
-        sourceWindows.length !== 1 ||
-        targetWindows.length !== 1 ||
-        sourceWindows[0].components !== '>=3 <4' ||
-        sourceWindows[0].migrationTarget !== '>=4 <5' ||
-        targetWindows[0].components !== '>=4 <5' ||
-        manifest.toolingCompatibility?.componentsCore !== '>=4 <5' ||
-        windows.some((window) => {
-            const toolingRange =
-                typeof window.tooling === 'string'
-                    ? window.tooling
-                    : window.tooling?.migrator;
-            return (
-                !semver.validRange(window.components) || !semver.validRange(toolingRange)
-            );
-        })
-    ) {
-        throw new Error(
-            'Bundled compatibility manifest has invalid migration support windows.',
-        );
-    }
+    validateReleasePolicy(manifest, migratorVersion);
 }
 
 function resolvePackageManifest(packageName, cwd) {
@@ -149,7 +122,7 @@ function resolvePackageManifest(packageName, cwd) {
         const detail = error instanceof Error ? error.message : String(error);
         throw new Error(
             `Could not resolve installed ${packageName} from '${path.resolve(cwd)}'. ` +
-                `Install a supported Components 3 or Components 4 package before running the codemod. ${detail}`,
+                `Install a supported Components 3, 4, or 5 package before running the codemod. ${detail}`,
         );
     }
 }

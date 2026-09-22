@@ -257,7 +257,7 @@ describe('when using the PrimeReact 10 stable presentation profile', () => {
     it('should declare only bounded peer-hosted PrimeReact 10 vendors', () => {
         expect(packageJson).not.to.have.property('dependencies');
         expect(packageJson.peerDependencies).to.deep.equal({
-            '@cratis/components': '>=4 <5',
+            '@cratis/components': '>=5 <6',
             primereact: '>=10.9.9 <11',
             react: '^19.0.0',
             'react-dom': '^19.0.0',

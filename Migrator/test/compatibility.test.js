@@ -38,9 +38,44 @@ const createConsumer = (version) => {
 };
 
 describe('compatibility preflight', () => {
+    it('preserves historical Migrator 4 policy without claiming Components 5 support', () => {
+        const historical = structuredClone(compatibilityManifest);
+        historical.toolingCompatibility = { componentsCore: '>=4 <5', eslint: '>=4 <5', migrator: '>=4 <5' };
+        delete historical.supportWindows.components5;
+        historical.supportWindows.components3.tooling = '>=4 <5';
+        historical.supportWindows.components4.status = 'current';
+        historical.supportWindows.components4.tooling.migrator = '>=4 <5';
+        for (const entry of historical.packages) {
+            entry.version = '4.0.0';
+            entry.releaseMajorRange = '>=4 <5';
+            if (entry.peerDependencies['@cratis/components']) entry.peerDependencies['@cratis/components'] = '>=4 <5';
+            for (const name of ['@cratis/arc', '@cratis/arc.react']) {
+                if (entry.peerDependencies[name]) entry.peerDependencies[name] = '>=20.3.1 <23';
+            }
+        }
+        expect(() => validateBundledManifest(historical, '4.0.0')).not.toThrow();
+        expect(() => validateBundledManifest(historical, '5.0.0')).toThrow('outside bundled range');
+        historical.packages[0].peerDependencies['@cratis/arc'] = '>=22.19.1 <23';
+        expect(() => validateBundledManifest(historical, '4.0.0')).toThrow('peer contract');
+    });
+
+    it('rejects Components 5 metadata claiming the historical Arc floor', () => {
+        const invalid = structuredClone(compatibilityManifest);
+        invalid.packages[0].peerDependencies['@cratis/arc.react'] = '>=20.3.1 <23';
+        expect(() => validateBundledManifest(invalid, '5.0.0')).toThrow('peer contract');
+    });
+
+    it('rejects a mismatched adapter family', () => {
+        const invalid = structuredClone(compatibilityManifest);
+        invalid.packages.find(({ role }) => role === 'renderer-adapter').peerDependencies['@cratis/components'] = '>=4 <5';
+        expect(() => validateBundledManifest(invalid, '5.0.0')).toThrow('matching Components peer family');
+    });
     it.each([
         ['3.6.1', 'source'],
         ['4.0.0', 'target'],
+        ['4.99.0', 'target'],
+        ['5.0.0', 'target'],
+        ['5.99.0', 'target'],
     ])('accepts Components %s as a migration %s', (version, role) => {
         expect(preflightCompatibility({ cwd: createConsumer(version) })).toMatchObject({
             componentsVersion: version,
@@ -48,9 +83,9 @@ describe('compatibility preflight', () => {
         });
     });
 
-    it('rejects an unsupported Components version', () => {
-        expect(() => preflightCompatibility({ cwd: createConsumer('5.0.0') })).toThrow(
-            '@cratis/components@5.0.0 is unsupported',
+    it.each(['2.99.0', '6.0.0', '5.0.0-rc.1'])('rejects unsupported Components %s', (version) => {
+        expect(() => preflightCompatibility({ cwd: createConsumer(version) })).toThrow(
+            `@cratis/components@${version} is unsupported`,
         );
     });
 
@@ -66,8 +101,8 @@ describe('compatibility preflight', () => {
         const stale = structuredClone(compatibilityManifest);
         stale.packages.find(
             ({ name }) => name === '@cratis/components.migrator',
-        ).version = '4.0.1';
-        expect(() => validateBundledManifest(stale, '4.0.0')).toThrow(
+        ).version = '5.0.1';
+        expect(() => validateBundledManifest(stale, '5.0.0')).toThrow(
             'stale migrator package metadata',
         );
     });
@@ -76,7 +111,7 @@ describe('compatibility preflight', () => {
         const invalid = structuredClone(compatibilityManifest);
         invalid.supportWindows.components3.tooling = 'not-a-range';
 
-        expect(() => validateBundledManifest(invalid, '4.0.0')).toThrow(
+        expect(() => validateBundledManifest(invalid, '5.0.0')).toThrow(
             'invalid migration support windows',
         );
     });
@@ -85,7 +120,7 @@ describe('compatibility preflight', () => {
         const invalid = structuredClone(compatibilityManifest);
         invalid.supportWindows.components3.components = '>=2 <4';
 
-        expect(() => validateBundledManifest(invalid, '4.0.0')).toThrow(
+        expect(() => validateBundledManifest(invalid, '5.0.0')).toThrow(
             'invalid migration support windows',
         );
     });
@@ -94,7 +129,7 @@ describe('compatibility preflight', () => {
         const invalid = structuredClone(compatibilityManifest);
         delete invalid.supportWindows.components4;
 
-        expect(() => validateBundledManifest(invalid, '4.0.0')).toThrow(
+        expect(() => validateBundledManifest(invalid, '5.0.0')).toThrow(
             'invalid migration support windows',
         );
     });

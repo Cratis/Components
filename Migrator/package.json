@@ -1,6 +1,6 @@
 {
     "name": "@cratis/components.migrator",
-    "version": "4.0.0",
+    "version": "5.0.0",
     "description": "Migration tooling for updating @cratis/components consumers from Components 3 to Components 4.",
     "author": "Cratis",
     "license": "MIT",

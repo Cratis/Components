@@ -66,28 +66,17 @@ if (
     process.exit(1);
 }
 const releaseVersion = isPublishing ? args[0] : undefined;
-const workspaceNames = new Set(Object.keys(workspaces));
-
-const saveJson = (file, value) =>
-    fs.writeFileSync(file, `${JSON.stringify(value, null, 4)}\n`, 'utf8');
-
-const preparePackageForRelease = (packageJson, version) => {
-    const releasePackage = structuredClone(packageJson);
-    releasePackage.version = version;
-    for (const field of [
-        'dependencies',
-        'devDependencies',
-        'peerDependencies',
-        'optionalDependencies',
-    ]) {
-        for (const dependencyName of Object.keys(releasePackage[field] ?? {})) {
-            if (workspaceNames.has(dependencyName)) {
-                releasePackage[field][dependencyName] = version;
-            }
-        }
+if (isPublishing) {
+    const prepared = spawn(process.execPath, ['scripts/prepare-release.mjs', releaseVersion], {
+        cwd: process.cwd(),
+        stdio: 'inherit',
+    });
+    if (prepared.status !== 0) {
+        console.error('Release policy validation/preparation failed. Nothing was published.');
+        if (prepared.error) console.error(prepared.error);
+        process.exit(1);
     }
-    return releasePackage;
-};
+}
 
 console.log(`Performing '${task}' on workspaces`);
 if (args.length > 0) console.log(`  Using args : ${args}`);
@@ -107,8 +96,6 @@ for (const workspaceName in workspaces) {
         continue;
     }
     if (isPublishing) {
-        const releasePackage = preparePackageForRelease(packageJson, releaseVersion);
-        saveJson(packageJsonFile, releasePackage);
         console.log(
             `Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}' as ${releaseVersion}`,
         );

@@ -12,11 +12,14 @@ const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.
 const output = path.join(repository, '.ai-work/workspace-runner-tests');
 mkdirSync(output, { recursive: true });
 
-const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missingExecutable = false, signal = undefined } = {}) => {
+const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missingExecutable = false, signal = undefined, preparationFails = false } = {}) => {
     const directory = mkdtempSync(path.join(output, 'case-'));
     try {
         copyFileSync(path.join(repository, 'run-task-on-workspaces.js'), path.join(directory, 'run-task-on-workspaces.js'));
         writeFileSync(path.join(directory, 'package.json'), JSON.stringify({ private: true, workspaces: ['first', 'second'] }));
+        mkdirSync(path.join(directory, 'scripts'));
+        // Release-policy integration is covered by prepare-release.test.mjs; this fixture tests orchestration only.
+        writeFileSync(path.join(directory, 'scripts/prepare-release.mjs'), `process.exitCode = ${preparationFails ? 1 : 0};`);
         for (const name of ['first', 'second']) {
             mkdirSync(path.join(directory, name));
             writeFileSync(path.join(directory, name, 'package.json'), JSON.stringify({ name, version: '1.0.0', scripts: { ci: 'synthetic fixture' } }));
@@ -36,7 +39,7 @@ const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missi
             for (const name of ['yarn', 'npm']) writeFileSync(path.join(binaries, name), executable, { mode: 0o755 });
         }
         const result = await new Promise((resolve, reject) => {
-            const child = spawn(process.execPath, ['run-task-on-workspaces.js', command, ...(command === 'publish-version' ? ['4.7.0'] : [])], {
+            const child = spawn(process.execPath, ['run-task-on-workspaces.js', command, ...(command === 'publish-version' ? ['5.0.0'] : [])], {
                 cwd: directory,
                 env: { ...process.env, PATH: binaries },
                 stdio: ['ignore', 'pipe', 'pipe'],
@@ -54,6 +57,14 @@ const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missi
         rmSync(directory, { recursive: true, force: true });
     }
 };
+
+test('a failed release policy prevents every publication', async () => {
+    const result = await runFixture({ command: 'publish-version', preparationFails: true });
+    assert.notEqual(result.code, 0);
+    assert.match(result.stderr, /Nothing was published/);
+    assert.ok(!result.stdout.includes('first: stdout complete'));
+    assert.ok(!result.stdout.includes('second: stdout complete'));
+});
 
 for (const command of ['ci', 'publish-version']) {
     test(`${command} streams output larger than the default spawnSync buffer without truncation`, { timeout: 20000 }, async () => {

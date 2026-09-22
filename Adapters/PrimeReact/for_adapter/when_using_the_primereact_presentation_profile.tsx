@@ -266,7 +266,7 @@ describe('when using the PrimeReact stable presentation profile', () => {
     it('should declare only bounded peer-hosted PrimeReact 11 vendors', () => {
         expect(packageJson).not.to.have.property('dependencies');
         expect(packageJson.peerDependencies).to.deep.equal({
-            '@cratis/components': '>=4 <5',
+            '@cratis/components': '>=5 <6',
             '@primereact/core': '>=11 <12',
             '@primereact/ui': '>=11 <12',
             '@primeuix/themes': '>=3 <4',

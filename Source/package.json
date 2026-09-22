@@ -1,6 +1,6 @@
 {
     "name": "@cratis/components",
-    "version": "4.0.0",
+    "version": "5.0.0",
     "description": "React components for CQRS and event-sourced apps — command dialogs, typed forms, and query-backed data tables for Cratis Arc",
     "keywords": [
         "react",
@@ -297,8 +297,8 @@
         "react-dom": "19.3.0"
     },
     "peerDependencies": {
-        "@cratis/arc": ">=20.3.1 <23",
-        "@cratis/arc.react": ">=20.3.1 <23",
+        "@cratis/arc": ">=22.19.1 <23",
+        "@cratis/arc.react": ">=22.19.1 <23",
         "@cratis/fundamentals": "^7.10.3",
         "pixi.js": "^8.20.0",
         "react": "^19.0.0",

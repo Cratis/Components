@@ -19,7 +19,7 @@ CommandForm offers a complete set of form field components designed to work seam
 
 ## Available Field Components
 
-The CommandForm module exports Cratis-owned semantic fields built with native controls and documented keyboard, naming, and validation behavior. Each field uses `asCommandFormField` for automatic value binding, validation state, and Arc command integration.
+The CommandForm module exports Cratis-owned semantic fields built with native controls and documented keyboard, naming, and validation behavior. Each field uses Arc's native field-binding helpers for automatic value binding, validation state, and command integration. [GuidField](guid-field.md) adds an editable text draft while keeping the command value a scalar Fundamentals `Guid`.
 
 See the field type pages in this section for documentation on each available field component. To generate a form's fields from a command's own properties instead of writing them out by hand, see [AutoCommandForm](auto-command-form.md).
 
@@ -69,7 +69,7 @@ Checkboxes and switches prefer their inline `label`; radio options use their opt
 
 ## Populating Initial Values from a Query
 
-Every field here is built with `asCommandFormField` from `@cratis/arc.react/commands`, so each one automatically supports `CommandForm`'s `populateFromQuery`/`populateFromObservableQuery` props - the form fetches a single-instance query itself and seeds its fields from the result, matched onto the command by property name:
+Every field here uses native field binding from `@cratis/arc.react/commands`, so each one automatically supports `CommandForm`'s `populateFromQuery`/`populateFromObservableQuery` props - the form fetches a single-instance query itself and seeds its fields from the result, matched onto the command by property name:
 
 ```tsx
 import { CommandForm } from '@cratis/arc.react/commands';
@@ -87,7 +87,7 @@ import { UpdateProfile } from './commands';
 </CommandForm>;
 ```
 
-Two field props refine this per field - both work on every field type in this package, since they come from the shared `asCommandFormField` wrapper:
+Two field props refine this per field - both work on every field type in this package, since they come from Arc's shared field registration:
 
 - `noInitialValue` - skip this field entirely, even if the query result has a same-named property.
 - `initialValue` - override how the field's value is derived from the query result, either a property accessor matched by name or a function composing a value from the whole result.

@@ -4,6 +4,7 @@
 import type React from 'react';
 import { useMemo } from 'react';
 import type { Command } from '@cratis/arc/commands';
+import { Guid } from '@cratis/fundamentals';
 import { CommandForm, type CommandFormProps } from '@cratis/arc.react/commands';
 import { registerDefaultFieldTypeProviders } from './defaultFieldTypeProviders';
 import { resolveFieldTypeProvider } from './fieldTypeProviderRegistry';
@@ -23,6 +24,12 @@ export interface AutoCommandFormProps<
      * be user-editable, or one a custom field placed elsewhere on the page already covers.
      */
     exclude?: (keyof TCommand)[];
+
+    /**
+     * Optional content rendered after the generated fields, inside the native Arc form and
+     * command context. Supply a submit control here when needed; no action is added by default.
+     */
+    footer?: React.ReactNode;
 }
 
 function formatTitle(propertyName: string): string {
@@ -36,7 +43,7 @@ function formatTitle(propertyName: string): string {
  * A `CommandForm` that generates its field list from the command's own properties, choosing each
  * field's component by the property's type through the {@link FieldTypeProvider} registry -
  * `registerFieldTypeProvider` for a type the built-in defaults (`string`, `number`, `boolean`,
- * `Date`) don't cover, or to override one of them.
+ * `Date`, `Guid`) don't cover, or to override one of them.
  *
  * A property whose type no registered provider handles is left out of the generated list -
  * `exclude` it explicitly for clarity, or add a `CommandForm` child by hand alongside this
@@ -50,7 +57,7 @@ function formatTitle(propertyName: string): string {
 export function AutoCommandForm<TCommand extends object = object, TResponse = object>(
     props: AutoCommandFormProps<TCommand, TResponse>,
 ): React.ReactElement {
-    const { exclude, ...commandFormProps } = props;
+    const { exclude, footer, ...commandFormProps } = props;
     // SAFETY: Arc command constructors expose the Command property-descriptor contract at runtime.
     const propertyDescriptors = useMemo(
         () => (new props.command() as unknown as Command).propertyDescriptors,
@@ -70,9 +77,16 @@ export function AutoCommandForm<TCommand extends object = object, TResponse = ob
             }
 
             const Field = provider.component;
+            // Invalid Guid drafts deliberately leave the command value undefined. A changed external
+            // overlay must still clear that draft, even when the native value is already empty.
+            const currentValue = props.currentValues?.[descriptor.name as keyof TCommand];
+            const guidResetProps = descriptor.type === Guid
+                ? { resetKey: currentValue instanceof Guid ? currentValue.toString() : currentValue }
+                : {};
             return (
                 <Field
                     key={descriptor.name}
+                    {...guidResetProps}
                     // The accessor reads the property dynamically, so CommandForm cannot infer the
                     // property name from its source text; fieldName states it explicitly.
                     fieldName={descriptor.name}
@@ -88,5 +102,10 @@ export function AutoCommandForm<TCommand extends object = object, TResponse = ob
         })
         .filter((field): field is React.ReactElement => field !== null);
 
-    return <CommandForm {...commandFormProps}>{fields}</CommandForm>;
+    return (
+        <CommandForm {...commandFormProps}>
+            {fields}
+            {footer}
+        </CommandForm>
+    );
 }

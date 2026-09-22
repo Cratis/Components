@@ -1,4 +1,28 @@
-# Migrate from Components 3 to 4
+# Migrate from Components 4 to 5
+
+Components 5.0 narrows the Arc and Arc React peer contract from `>=20.3.1 <23` to
+`>=22.19.1 <23`. Upgrade `@cratis/arc` and `@cratis/arc.react` together to matching
+versions, at least 22.19.1 and below 23, and keep generated proxies aligned. Older Arc
+hosts are not supported; there is no runtime version-detection fallback.
+
+Upgrade every installed Components-family package to the same 5.x release: Core,
+ESLint, Migrator, Conformance, MUI, PrimeReact 11, and PrimeReact 10 adapters. Optional
+packages remain optional. Adapter and Conformance peers are `@cratis/components >=5 <6`.
+Preserve the manifest and lockfile first, then run type checks, command/form tests,
+and the production build. Roll back the family and Arc changes together if necessary.
+
+Existing form APIs remain compatible. The additions are `GuidField`, generated Guid
+field selection, and composed `AutoCommandForm` footer children. Invalid Guid drafts
+use native Arc custom-field-error execution guards. There is no automatic identifier
+generation, authentication/authorization change, additional API removal, or renderer
+ABI change: ABI 1, `core/v1`, and `stable-presentation/v1` remain unchanged.
+
+No 4-to-5 source codemod is needed. Migrator 5 retains the existing 3-to-4 transforms
+and supports Components 3 source and Components 4/5 recovery targets. Migrator 4 keeps
+its original Components 3/4 boundary. Follow the historical staged migration below
+when starting from Components 3.
+
+# Historical migration: Components 3 to 4
 
 Components 4 replaces the PrimeReact-backed Components 3 foundation with Components-owned markup, styling contracts, and public types. React Aria supplies selected interaction primitives internally. The current Components 4 manifest does not declare PrimeReact, PrimeIcons, PrimeUI, or PrimeUI themes as dependencies or peers; applications retaining direct imports keep their own package and license boundaries.
 

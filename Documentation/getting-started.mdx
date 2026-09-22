@@ -18,24 +18,26 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
 1. **Install Components.**
 
-    ```bash title="Install Components 4"
-    npm install @cratis/components@^4
+    ```bash title="Install Components 5"
+    npm install @cratis/components@^5
     ```
 
     <Aside type='caution' title='Source candidate versus published release'>
-        This guide describes Components 4. Before the owner-authorized 4.0.0 release
+        This guide describes Components 5. Before the owner-authorized 5.0.0 release
         exists on npm, a repository checkout is a source candidate, not an installable
-        release. Verify availability with `npm view @cratis/components@4.0.0 version`;
+        release. Verify availability with `npm view @cratis/components@5.0.0 version`;
         repository contributors use the workspace.
     </Aside>
 
+    Upgrade installed adapters, Conformance, ESLint, and Migrator with Core to the matching 5.x package family. See [Migrate from 4 to 5](/components/migration/4-to-5/).
+
     React Aria, the internationalized date implementation, and React Icons are internal dependencies. The current package manifest does not declare a separate UI kit or theme runtime, and consumers do not configure an icon-package peer.
 
-    The package declares React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe` peer ranges. Its Arc range is `>=20.3.1 <23`. Use Arc 22.16.0 or newer for `AutoCommandForm`'s explicit field binding. Keep `@cratis/arc` and `@cratis/arc.react` on the same version used by the application's generated proxies. A strict installer can use this explicit form (replace the example Arc version when needed):
+    The package declares React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe` peer ranges. Its Arc range is `>=22.19.1 <23`, required for generated-field binding and native custom-field-error execution guards. Keep `@cratis/arc` and `@cratis/arc.react` on the same version used by the application's generated proxies. A strict installer can use this explicit form (replace the example Arc version when needed):
 
     ```bash title="Install explicit peers"
-    ARC_VERSION=22.16.0
-    npm install @cratis/components@^4 \
+    ARC_VERSION=22.19.1
+    npm install @cratis/components@^5 \
       "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
       @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
       reflect-metadata@0.2.2 tsyringe@4.10.0
@@ -78,7 +80,7 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
 ### Yarn PnP with Arc React 22.6.2
 
-If you retain `@cratis/arc.react@22.6.2`, that version imports `rxjs` without declaring it. A strict Yarn PnP consumer needs `rxjs@7.8.2` and this version-specific package extension:
+For older Components releases that allowed `@cratis/arc.react@22.6.2`, that Arc version imports `rxjs` without declaring it. A strict Yarn PnP consumer needs `rxjs@7.8.2` and this version-specific package extension:
 
 ```yaml title=".yarnrc.yml"
 packageExtensions:
@@ -87,7 +89,7 @@ packageExtensions:
             rxjs: '7.8.2'
 ```
 
-This workaround is not needed with Arc React 22.16.0. Remove the old extension when upgrading; do not apply it to every Arc version.
+Current Components requires Arc React 22.19.1 or later, which does not need this workaround. Remove the old extension when upgrading; do not apply it to every Arc version.
 
 ## What the provider sets up
 

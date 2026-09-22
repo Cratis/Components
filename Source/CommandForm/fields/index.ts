@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export * from './InputTextField';
+export * from './GuidField';
 export * from './NumberField';
 export * from './NumberInputField';
 export * from './CheckboxField';

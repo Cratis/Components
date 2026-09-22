@@ -4,6 +4,24 @@ Components follows the standard Cratis label-driven release flow. A pull request
 with exactly one `patch`, `minor`, or `major` label triggers `.github/workflows/publish.yml`. A
 `no-release` label explicitly suppresses publication for maintenance changes.
 
+## Next release: 5.0.0
+
+The next release requires a **major** label and version **5.0.0**, not a 4.x minor.
+The breaking change is dependency support: Core requires matching Arc and Arc React
+versions in `>=22.19.1 <23`, replacing the 4.x declared `>=20.3.1 <23` contract.
+All seven packages move together to 5.x; adapters and Conformance require Core `>=5 <6`.
+Renderer ABI 1 and the existing profiles remain unchanged. Existing forms remain
+compatible, with Guid fields and footer composition added; there is no automatic ID
+generation or authentication/authorization change. See [4-to-5 migration](Documentation/Migration/4-to-5.md).
+
+Release validation accepts only explicitly reviewed families (historical 4 and current 5),
+checks each family's truthful Arc floor and matching Core peers, and rejects publishing
+this source as 4.x or 6.x. The publish runner prepares all seven versions and regenerates
+the three compatibility-manifest copies **before** the first publication, preserving
+bounded peer contracts. Migrator 5 retains the 3-to-4 transforms and accepts Components
+3/4/5 preflight windows; historical Migrator 4 retains its original 3/4 windows.
+No source metadata or this document is evidence of an actual publication.
+
 ## Published packages
 
 One release publishes these seven public packages at the same version:
@@ -29,7 +47,7 @@ whether publication is required. The npm job:
 1. checks out the exact merged commit;
 2. installs the committed lockfile with `yarn install --immutable`;
 3. builds all public workspaces;
-4. updates every public workspace and local workspace dependency to the release version;
+4. validates the reviewed release family, updates every public workspace and local non-peer workspace dependency to the release version, preserves bounded family peers, and regenerates bundled compatibility metadata;
 5. publishes each package publicly with npm provenance; and
 6. triggers documentation and sample dependency updates.
 

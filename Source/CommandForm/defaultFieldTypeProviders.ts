@@ -1,6 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { Guid } from '@cratis/fundamentals';
+import { GuidField } from './fields/GuidField';
 import { registerFieldTypeProvider } from './fieldTypeProviderRegistry';
 import { InputTextField } from './fields/InputTextField';
 import { NumberField } from './fields/NumberField';
@@ -13,6 +15,10 @@ import { CalendarField } from './fields/CalendarField';
  * explicitly when its module loads so production tree shaking cannot discard the registration.
  */
 export function registerDefaultFieldTypeProviders(): void {
+    registerFieldTypeProvider({
+        canHandle: (descriptor) => descriptor.type === Guid,
+        component: GuidField,
+    });
     registerFieldTypeProvider({
         canHandle: (descriptor) => descriptor.type === String,
         component: InputTextField,
