@@ -1,8 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useCallback, useState } from 'react';
-import type { JSX, Key } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import type { JSX, Key, MouseEvent, RefObject } from 'react';
 import {
     Button as AriaButton,
     ListBox,
@@ -14,6 +14,7 @@ import {
 import {
     Button as ComboBoxButton,
     ComboBox,
+    ComboBoxStateContext,
     ComboBoxValue,
     Input,
     ListBox as ComboBoxListBox,
@@ -92,6 +93,30 @@ const resolveOptions = (
 const classNames = (...values: Array<string | undefined>) =>
     values.filter(Boolean).join(' ');
 
+/** The part of the ComboBox lifecycle a commit has to reach, from outside the ComboBox subtree. */
+interface CommittableComboBox {
+    close: () => void;
+}
+
+/**
+ * Publishes the ComboBox state to the commit handler, which is declared outside the ComboBox and so
+ * cannot read the context itself. Renders nothing.
+ */
+const ComboBoxCommitBridge = ({
+    handle,
+}: {
+    handle: RefObject<CommittableComboBox | null>;
+}) => {
+    const state = useContext(ComboBoxStateContext);
+    useEffect(() => {
+        handle.current = state;
+        return () => {
+            handle.current = null;
+        };
+    });
+    return null;
+};
+
 const renderTriggerWithOpenState = (props: JSX.IntrinsicElements['button']) => (
     <button
         {...props}
@@ -135,6 +160,7 @@ export const DropdownImplementation = <T = unknown,>({
     pt,
 }: DropdownProps<T>) => {
     const [isOpen, setIsOpen] = useState(false);
+    const comboBox = useRef<CommittableComboBox | null>(null);
     const { ref: attachExternalLabel, labelledBy: externalLabelledBy } = useExternalLabel();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const nearestDialogZIndex = useNearestDialogZIndex();
@@ -157,9 +183,26 @@ export const DropdownImplementation = <T = unknown,>({
     const expandIcon = icon('expand', '⌄');
     const clearIcon = icon('clear', '×');
     const resolvedOptions = resolveOptions(options, optionLabel, optionValue);
-    const selectedOption = resolvedOptions.find((option) =>
-        Object.is(option.value, value),
-    );
+    // React Aria decides that a selection happened - and only then closes the overlay and syncs the
+    // filter text - by watching the key handed to it change. Deriving that key from `value` alone
+    // means a consumer that does not feed the emitted value straight back gets a committed selection
+    // the Dropdown never acts on: the popup stays open over an unchanged filter. Remembering what the
+    // user just committed keeps the commit whole on its own, while an incoming `value` still wins and
+    // still drops the memory the moment the consumer answers.
+    const [committed, setCommitted] = useState<{
+        key: string | null;
+        observedValue: unknown;
+    } | null>(null);
+    const remembered =
+        committed !== null && Object.is(committed.observedValue, value)
+            ? committed
+            : null;
+    const remember = (key: string | null) => setCommitted({ key, observedValue: value });
+    const selectedOption =
+        resolvedOptions.find((option) => Object.is(option.value, value)) ??
+        (remembered?.key == null
+            ? undefined
+            : resolvedOptions.find((option) => option.key === remembered.key));
     const selectedKey = selectedOption?.key ?? null;
     const controlPart = filter ? pt?.filter : multiple ? pt?.multiple : pt?.trigger;
     const effectiveAriaLabel =
@@ -198,7 +241,17 @@ export const DropdownImplementation = <T = unknown,>({
 
     const selectOption = (key: Key | null) => {
         const option = resolvedOptions.find((candidate) => candidate.key === String(key));
+        remember(option?.key ?? null);
         onChange?.((option?.value ?? null) as T, { source: 'user' });
+        // React Aria hands the closing of a filtered overlay to whoever owns the value, and stands
+        // down when that value does not come back as one of the options. Nothing about a committed
+        // option is the consumer's to close, so close it here and let the filter text follow the
+        // selection the Dropdown ends up showing.
+        comboBox.current?.close();
+    };
+    const clearSelection = (event: MouseEvent<HTMLButtonElement>) => {
+        remember(null);
+        onChange?.(null as T, { source: 'user', nativeEvent: event.nativeEvent });
     };
     const selectOptions = (keys: readonly Key[]) => {
         const selectedKeys = new Set(keys.map(String));
@@ -498,6 +551,7 @@ export const DropdownImplementation = <T = unknown,>({
                         allowsEmptyCollection
                         className='cratis-dropdown__combobox'
                     >
+                        <ComboBoxCommitBridge handle={comboBox} />
                         <Input
                             {...pt?.filter}
                             ref={attachExternalLabel}
@@ -543,12 +597,7 @@ export const DropdownImplementation = <T = unknown,>({
                                 data-cratis-part='clear'
                                 data-disabled={disabled || undefined}
                                 aria-label={clearSelectionLabel}
-                                onClick={(event) =>
-                                    onChange?.(null as T, {
-                                        source: 'user',
-                                        nativeEvent: event.nativeEvent,
-                                    })
-                                }
+                                onClick={clearSelection}
                             >
                                 <span aria-hidden='true'>{clearIcon}</span>
                             </button>
@@ -690,12 +739,7 @@ export const DropdownImplementation = <T = unknown,>({
                             data-cratis-part='clear'
                             data-disabled={disabled || undefined}
                             aria-label={clearSelectionLabel}
-                            onClick={(event) =>
-                                onChange?.(null as T, {
-                                    source: 'user',
-                                    nativeEvent: event.nativeEvent,
-                                })
-                            }
+                            onClick={clearSelection}
                         >
                             <span aria-hidden='true'>{clearIcon}</span>
                         </button>

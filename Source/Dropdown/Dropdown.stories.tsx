@@ -117,6 +117,49 @@ export const StateMatrix: Story = {
     ),
 };
 
+// Deliberately hands the Dropdown no `value`: the keyboard has to finish its own commit - close the
+// overlay and settle the filter text on the chosen option - without an application feeding the
+// emitted value back in.
+const UnboundFilteredDropdown = () => {
+    const [committed, setCommitted] = useState<string | null>(null);
+    return (
+        <div style={{ display: 'grid', gap: '0.5rem', maxWidth: '18rem' }}>
+            <Dropdown<string | null>
+                aria-label='Role'
+                options={roles}
+                optionLabel='label'
+                optionValue='value'
+                placeholder='Select a role'
+                filter
+                filterPlaceholder='Find a role'
+                onChange={setCommitted}
+            />
+            <span>Committed: {committed ?? 'none'}</span>
+        </div>
+    );
+};
+
+export const FilteredKeyboardCommit: Story = {
+    render: () => <UnboundFilteredDropdown />,
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const filter = canvas.getByRole('combobox', { name: 'Role' });
+        await userEvent.click(filter);
+        await userEvent.keyboard('dev');
+        const listbox = await within(document.body).findByRole('listbox');
+        await expect(within(listbox).getAllByRole('option')).toHaveLength(1);
+        await userEvent.keyboard('{ArrowDown}');
+        await expect(filter.getAttribute('aria-activedescendant')).toBe(
+            within(listbox).getByRole('option').id,
+        );
+        await userEvent.keyboard('{Enter}');
+        await expect(canvas.getByText('Committed: developer')).toBeVisible();
+        await expect(filter).toHaveValue('Developer');
+        await expect(filter).toHaveAttribute('aria-expanded', 'false');
+        await expect(within(document.body).queryByRole('listbox')).toBeNull();
+    },
+};
+
 export const FilteredAndOpen: Story = {
     render: () => <ControlledDropdown filter />,
     play: async ({ canvasElement }) => {
