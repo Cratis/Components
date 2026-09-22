@@ -22,6 +22,7 @@ import { Heading } from 'react-aria-components/Heading';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from './CratisComponentsProvider';
+import { useCratisIcon } from './useCratisIcon';
 import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import { asReactAriaButtonProps } from './reactAriaProps';
@@ -85,6 +86,7 @@ export const DatePickerInputImplementation = ({
             : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
     const { messages } = useCratisComponentsConfig();
     const datePickerMessages = messages?.datePicker;
+    const icon = useCratisIcon();
     const resolvedTodayLabel = todayLabel ?? datePickerMessages?.today ?? 'Today';
     const resolvedClearLabel = clearLabel ?? datePickerMessages?.clear ?? 'Clear';
     const timeZone = getLocalTimeZone();
@@ -339,7 +341,9 @@ export const DatePickerInputImplementation = ({
                                                     'Previous month'
                                                 }
                                             >
-                                                <span aria-hidden='true'>‹</span>
+                                                <span aria-hidden='true'>
+                                                    {icon('previous', '‹')}
+                                                </span>
                                             </Button>
                                             <Heading
                                                 {...pt?.heading}
@@ -363,7 +367,9 @@ export const DatePickerInputImplementation = ({
                                                     'Next month'
                                                 }
                                             >
-                                                <span aria-hidden='true'>›</span>
+                                                <span aria-hidden='true'>
+                                                    {icon('next', '›')}
+                                                </span>
                                             </Button>
                                         </header>
                                         <CalendarGrid

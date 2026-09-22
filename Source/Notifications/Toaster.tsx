@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsContext';
+import { useCratisIcon } from '../Common/useCratisIcon';
 import {
     getToastSnapshot,
     subscribeToToasts,
@@ -94,6 +95,7 @@ interface ToastFrameProps {
 
 const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) => {
     const [paused, setPaused] = useState(false);
+    const icon = useCratisIcon();
 
     useEffect(() => {
         if (paused || item.loading || item.duration === 0) return;
@@ -170,7 +172,9 @@ const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) =>
                 data-cratis-part='icon'
                 aria-hidden='true'
             >
-                {item.loading ? '◌' : (item.icon ?? severitySymbol[severity])}
+                {item.loading
+                    ? icon('busy', '◌')
+                    : (item.icon ?? severitySymbol[severity])}
             </span>
             <div
                 {...pt?.content}
@@ -190,7 +194,7 @@ const ToastFrame = ({ item, timeout, dismissAriaLabel, pt }: ToastFrameProps) =>
                     aria-label={pt?.close?.['aria-label'] ?? dismissAriaLabel}
                     onClick={() => toast.dismiss(item.id)}
                 >
-                    <span aria-hidden='true'>×</span>
+                    <span aria-hidden='true'>{icon('close', '×')}</span>
                 </button>
             )}
         </article>

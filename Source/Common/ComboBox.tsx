@@ -23,6 +23,7 @@ import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
+import { useCratisIcon } from './useCratisIcon';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import {
@@ -212,6 +213,8 @@ export const ComboBox = ({
     className,
     pt,
 }: ComboBoxProps) => {
+    const icon = useCratisIcon();
+    const expandIcon = icon('expand', '▾');
     const generatedId = useId();
     const inputId = id ?? `cratis-combobox-${generatedId}`;
     const descriptionId = description ? `${inputId}-description` : undefined;
@@ -392,7 +395,7 @@ export const ComboBox = ({
                             data-disabled={disabled || undefined}
                             data-open={isOpen || undefined}
                         >
-                            <span aria-hidden='true'>▾</span>
+                            <span aria-hidden='true'>{expandIcon}</span>
                         </AriaButton>
                     </div>
                     <UNSAFE_PortalProvider getContainer={overlayEnvironment.getContainer}>

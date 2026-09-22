@@ -15,6 +15,7 @@ import type { ChatTopicListLabels } from './ChatTopicList';
 import { ChatTopicList } from './ChatTopicList';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { shouldRequestTopicName } from './shouldRequestTopicName';
+import { useCratisIcon } from '../Common/useCratisIcon';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 
@@ -230,6 +231,7 @@ export const ChatSidebar = <
     pt,
     ...conversation
 }: ChatSidebarProps<TMessage, TTopic>) => {
+    const icon = useCratisIcon();
     const [internalSelectedId, setInternalSelectedId] = useState<
         ChatIdentifier | undefined
     >();
@@ -342,7 +344,7 @@ export const ChatSidebar = <
                     aria-label={labels?.close ?? 'Close chat'}
                     onClick={onClose}
                 >
-                    <span aria-hidden='true'>×</span>
+                    <span aria-hidden='true'>{icon('close', '×')}</span>
                 </button>
             </header>
             <div

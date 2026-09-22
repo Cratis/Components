@@ -13,6 +13,7 @@ import {
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useCratisIcon } from '../Common/useCratisIcon';
 import type {
     FilterDefinition,
     FilterValues,
@@ -220,6 +221,7 @@ export function FilterPanel({
         browserSnapshot,
         serverSnapshot,
     );
+    const icon = useCratisIcon();
     const panelRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState<DropdownPosition>({
         top: 0,
@@ -405,7 +407,7 @@ export function FilterPanel({
                                                     aria-label={clearLabel}
                                                     onClick={clearValue}
                                                 >
-                                                    ×
+                                                    {icon('clear', '×')}
                                                 </button>
                                             )}
                                         </div>

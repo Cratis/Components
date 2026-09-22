@@ -151,6 +151,41 @@ export interface CratisComponentsMessages {
     toolbar?: CratisToolbarMessages;
 }
 
+/**
+ * Components-owned icon vocabulary. Every name is a concept the library draws in more than one
+ * place; registering one replaces that concept's built-in glyph everywhere it is drawn, without
+ * touching the surrounding element, its part, or its accessible name.
+ *
+ * Resolution per site is `per-component prop → provider icon → built-in glyph`: a named prop such
+ * as `Dialog`'s `closeIcon` means "this one call site" and keeps winning, while the provider
+ * replaces the built-in default for the whole product. Registering nothing renders exactly what the
+ * library renders today, because the built-in glyph stays at its call site and is never part of
+ * {@link cratisDefaults}.
+ *
+ * A name registered as `null` draws no glyph while the button, its part, and its accessible name
+ * remain — the same meaning `closeIcon={null}` already has.
+ */
+export interface CratisComponentsIcons {
+    /** Dismissal mark. Drawn by `Dialog`'s header close, `Toaster`'s dismiss, `ChatSidebar`, the `Chat` panel, and the PivotViewer detail panel. Defaults to `×`. */
+    close?: ReactNode;
+    /** Remove-this-value mark. Drawn by `TagGroup`'s tag remove, `Chip`'s remove control, and `CommandForm`'s chips field. Defaults to `×`. */
+    remove?: ReactNode;
+    /** Expand/collapse chevron on a closed-by-default surface. Drawn by `Dropdown`'s trigger and `ComboBox`'s trigger. Defaults to `⌄` (`▾` in `ComboBox`). */
+    expand?: ReactNode;
+    /** Ascending sort indicator. Drawn by `DataTableCore`'s sortable column header. Defaults to `▲`. */
+    sortAscending?: ReactNode;
+    /** Descending sort indicator. Drawn by `DataTableCore`'s sortable column header. Defaults to `▼`. */
+    sortDescending?: ReactNode;
+    /** Step-backwards mark. Drawn by `TablePaginator`'s previous page and the date picker's previous month. Defaults to `‹`. */
+    previous?: ReactNode;
+    /** Step-forwards mark. Drawn by `TablePaginator`'s next page and the date picker's next month. Defaults to `›`. */
+    next?: ReactNode;
+    /** Clear-the-current-value mark. Drawn by `Dropdown`'s clear-selection action and the PivotViewer filter panel's clear action. Defaults to `×`. */
+    clear?: ReactNode;
+    /** Busy/loading mark. Drawn by `ProgressSpinner` and by a loading toast. Defaults to the spinner's built-in ring (`◌` in a toast). */
+    busy?: ReactNode;
+}
+
 interface LegacyLocaleMessages {
     today?: string;
     clear?: string;
@@ -170,6 +205,8 @@ export interface CratisComponentsConfig {
     locale?: string;
     /** Cratis-owned labels not supplied by the platform's internationalization APIs. */
     messages?: CratisComponentsMessages;
+    /** Cratis-owned icon vocabulary replacing the built-in glyphs the library draws. */
+    icons?: CratisComponentsIcons;
     /**
      * @deprecated Use {@link messages}; React Aria supplies its own locale data.
      */
@@ -202,10 +239,20 @@ export interface CratisComponentsProviderProps {
     children: ReactNode;
 }
 
-/** Deep-merges consumer configuration over {@link cratisDefaults}. */
+/**
+ * Deep-merges consumer configuration over {@link cratisDefaults}.
+ *
+ * `icons` merges by name only. An icon value is an opaque node — often a React element — so it is
+ * carried over by identity instead of being deep-merged into, while a partial map still leaves every
+ * unregistered name to its built-in glyph.
+ */
 export const mergeCratisComponentsConfig = (
     value: CratisComponentsConfig | undefined,
-): CratisComponentsConfig => merge(cratisDefaults, value ?? {}) as CratisComponentsConfig;
+): CratisComponentsConfig => {
+    const { icons, ...rest } = value ?? {};
+    const merged = merge(cratisDefaults, rest) as CratisComponentsConfig;
+    return icons ? { ...merged, icons: { ...cratisDefaults.icons, ...icons } } : merged;
+};
 
 const withLegacyLocaleMessages = (
     config: CratisComponentsConfig,

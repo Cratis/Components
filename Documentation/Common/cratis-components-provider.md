@@ -1,6 +1,6 @@
 ---
 title: CratisComponentsProvider
-description: Configure locale, Components-owned labels, and the app-wide toast region.
+description: Configure locale, Components-owned labels and icons, and the app-wide toast region.
 ---
 
 `CratisComponentsProvider` is the application root for Components-owned locale/messages and optional renderer selection. Its `value` remains renderer-independent and it does not configure an application's direct third-party component usage; a selected adapter may mount its own provider boundary. Styling remains owned by CSS or by the explicitly selected adapter.
@@ -45,6 +45,7 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | `messages.notifications` | `Toaster`'s dismiss-action and region-landmark labels.                                                                          |
 | `messages.dataTable`     | `DataTableCore`'s loaded-page search and single-row-selection labels.                                                           |
 | `messages.columnFilter`  | The built-in column filter popup's clear/apply/boolean/match-mode labels.                                                       |
+| `icons`                  | Components-owned icon vocabulary replacing the built-in glyphs the library draws. See [Register an icon set](#register-an-icon-set). |
 | `locales`                | Temporary Components 3 compatibility map; migrate to `messages`.                                                                |
 
 Unknown Components 3 renderer options are intentionally a type error. Remove `license`, `theme`, `defaults`, global `pt`, `ptOptions`, `ripple`, `unstyled`, and renderer z-index settings rather than compiling a provider whose visual configuration does nothing. Configure any remaining direct Prime provider independently.
@@ -221,6 +222,95 @@ The same shape in Norwegian Bokmål:
 
 React Aria supplies locale data for its interaction patterns — calendar month/weekday names, number formatting, and similar platform locale data. Components asks you only for the product labels it owns; do not copy React Aria's own locale strings into `messages`.
 
+## Register an icon set
+
+Components draws its own glyphs — a `×` to dismiss, a `⌄` to expand, `▲`/`▼` for sort direction.
+A product with its own iconography registers `icons` once at the root and every component that draws
+that concept follows, without passing a prop at each call site:
+
+```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+import { CloseIcon, ChevronDownIcon, SpinnerIcon } from './icons';
+
+const componentsConfig = {
+    locale: 'en-US',
+    icons: {
+        close: <CloseIcon />,
+        remove: <CloseIcon />,
+        expand: <ChevronDownIcon />,
+        busy: <SpinnerIcon />,
+    },
+};
+
+<CratisComponentsProvider value={componentsConfig}>
+    <Application />
+</CratisComponentsProvider>;
+```
+
+The map is partial by design: an unregistered name keeps its built-in glyph, so the example above
+re-icons dismissal, removal, expansion and busy state and leaves sorting and pagination alone.
+Registering nothing at all renders exactly what Components has always rendered — the built-in glyph
+lives at its call site and is deliberately *not* part of `cratisDefaults`.
+
+### The vocabulary
+
+| Name            | Draws                          | Default | Used by                                                                                                          |
+| --------------- | ------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------- |
+| `close`         | Dismiss this surface           | `×`     | `Dialog` header close, `Toaster` toast dismiss, `ChatSidebar`, the `Chat` panel, PivotViewer's detail panel        |
+| `remove`        | Remove this value              | `×`     | `TagGroup` tag remove, `Chip` remove control, `CommandForm`'s chips field                                          |
+| `expand`        | Open a closed surface          | `⌄` (`▾` in `ComboBox`) | `Dropdown` trigger (all three render branches), `ComboBox` trigger                            |
+| `sortAscending` | Ascending sort indicator       | `▲`     | `DataTableCore` sortable column header                                                                            |
+| `sortDescending`| Descending sort indicator      | `▼`     | `DataTableCore` sortable column header                                                                            |
+| `previous`      | Step backwards                 | `‹`     | `TablePaginator` previous page, `DatePickerInput` previous month                                                   |
+| `next`          | Step forwards                  | `›`     | `TablePaginator` next page, `DatePickerInput` next month                                                           |
+| `clear`         | Clear the current value        | `×`     | `Dropdown` clear-selection (all four render branches), PivotViewer's filter panel clear                            |
+| `busy`          | Busy/loading mark              | the spinner's ring (`◌` in a toast) | `ProgressSpinner`, a loading toast                                                    |
+
+Every name is a concept more than one component draws. Names are public contract and hard to
+withdraw, so the vocabulary starts here and grows as products ask for a concept by name rather than
+covering every glyph in the library at once. Icons a call site supplies — `Button`'s `icon`,
+`Toolbar` items, `Message`'s and a toast's own `icon` — are yours already and are not part of it.
+
+### Precedence
+
+Icons resolve per site as **per-component prop → provider icon → built-in glyph**, the same order
+`messages` uses for strings. A prop such as `Dialog.closeIcon` or `TagGroup.removeIcon` names one
+call site — "this one dialog", "this one tag group" — so it keeps winning; the provider speaks for
+the product and replaces the built-in default everywhere else. Both props keep working unchanged.
+
+```tsx
+<CratisComponentsProvider value={{ icons: { close: <CloseIcon /> } }}>
+    <Dialog title='Product-wide' />                  {/* draws <CloseIcon /> */}
+    <Dialog title='This one' closeIcon={<Back />} /> {/* draws <Back /> */}
+</CratisComponentsProvider>
+```
+
+A name registered as `null` draws no glyph while the button, its stable part and its accessible name
+stay — the same meaning `closeIcon={null}` already has. Icons never touch an element's part,
+className, `aria-label` or keyboard behaviour; only the mark inside changes.
+
+`icons` merges by name. Like `messages`, a partial map leaves everything it omits alone; unlike
+`messages`, an icon value is an opaque node and is carried over by identity rather than deep-merged
+into, so registering a React element hands that exact element to the component.
+
+### Reading an icon in your own component
+
+`useCratisIcon()` returns the same resolver Components uses internally, for a product component that
+wants to follow the registered vocabulary:
+
+```tsx
+import { useCratisIcon } from '@cratis/components';
+
+export const RemoveButton = ({ icon, onRemove }: RemoveButtonProps) => {
+    const resolveIcon = useCratisIcon();
+    return (
+        <button type='button' aria-label='Remove' onClick={onRemove}>
+            <span aria-hidden='true'>{resolveIcon('remove', '×', icon)}</span>
+        </button>
+    );
+};
+```
+
 ## Mount the toaster
 
 Pass `toaster` to mount the app-wide notification region:
@@ -289,6 +379,9 @@ For custom products, see [Cratis tokens](../Styling/cratis-tokens.md) and [Stabl
 | ------------------------------- | ---------------------------------------------------- |
 | `CratisComponentsConfig`        | Renderer-independent provider configuration.         |
 | `CratisComponentsMessages`      | Components-owned message groups.                     |
+| `CratisComponentsIcons`         | Components-owned icon vocabulary.                    |
+| `useCratisIcon()`               | Resolver for one icon site: prop, then provider, then built-in glyph. |
+| `CratisIconResolver`            | Type of the resolver `useCratisIcon()` returns.      |
 | `cratisDefaults`                | Default locale and English labels.                   |
 | `mergeCratisComponentsConfig()` | Pure configuration merge helper.                     |
 | `useCratisComponentsConfig()`   | Reads the resolved configuration inside a component. |

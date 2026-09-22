@@ -3,6 +3,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import type { ReactNode } from 'react';
+import { useCratisIcon } from '../../Common/useCratisIcon';
 
 type WithRecord<TItem> = TItem extends Record<string, unknown> ? TItem : never;
 
@@ -18,6 +19,7 @@ export function DetailPanel<TItem extends object>({
   onClose,
   contentRenderer,
 }: DetailPanelProps<TItem>) {
+  const icon = useCratisIcon();
   const selectedRecord = selectedItem as WithRecord<TItem> | null;
 
   const selectedContent = selectedRecord
@@ -112,7 +114,7 @@ export function DetailPanel<TItem extends object>({
               {selectedRecord['type'] ? <p>{String(selectedRecord['type'])}</p> : null}
             </div>
             <button type="button" onClick={onClose} title="Close">
-              ×
+              {icon('close', '×')}
             </button>
           </header>
           <div className="pv-detail-panel-content">

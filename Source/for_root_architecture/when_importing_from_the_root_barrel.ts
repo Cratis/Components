@@ -21,6 +21,7 @@ describe('when importing from the root barrel', () => {
     const allowedRootExports = [
         'CratisComponentsProvider',
         'useCratisComponentsConfig',
+        'useCratisIcon',
         'cratisDefaults',
         'mergeCratisComponentsConfig',
     ];
@@ -37,6 +38,10 @@ describe('when importing from the root barrel', () => {
 
     it('should export useCratisComponentsConfig as a hook function', () => {
         expect(RootBarrel.useCratisComponentsConfig).to.be.a('function');
+    });
+
+    it('should export useCratisIcon as a hook function', () => {
+        expect(RootBarrel.useCratisIcon).to.be.a('function');
     });
 
     it('should export mergeCratisComponentsConfig as a function', () => {

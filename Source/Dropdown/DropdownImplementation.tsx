@@ -23,6 +23,7 @@ import {
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import { useCratisIcon } from '../Common/useCratisIcon';
 import { OVERLAY_OFFSET, zIndexAboveDialog } from '../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../renderer/DialogStackContext';
 import type { DropdownProps } from './Dropdown';
@@ -152,6 +153,9 @@ export const DropdownImplementation = <T = unknown,>({
         pt?.clear?.['aria-label'] ??
         dropdownMessages?.clearSelection ??
         'Clear selection';
+    const icon = useCratisIcon();
+    const expandIcon = icon('expand', '⌄');
+    const clearIcon = icon('clear', '×');
     const resolvedOptions = resolveOptions(options, optionLabel, optionValue);
     const selectedOption = resolvedOptions.find((option) =>
         Object.is(option.value, value),
@@ -302,7 +306,7 @@ export const DropdownImplementation = <T = unknown,>({
                                 render={renderTriggerWithOpenState}
                                 aria-label={showOptionsLabel}
                             >
-                                <span aria-hidden='true'>⌄</span>
+                                <span aria-hidden='true'>{expandIcon}</span>
                             </ComboBoxButton>
                             {showClear && selectedKeys.length > 0 && (
                                 <button
@@ -323,7 +327,7 @@ export const DropdownImplementation = <T = unknown,>({
                                         })
                                     }
                                 >
-                                    <span aria-hidden='true'>×</span>
+                                    <span aria-hidden='true'>{clearIcon}</span>
                                 </button>
                             )}
                             <ComboBoxPopover
@@ -460,7 +464,7 @@ export const DropdownImplementation = <T = unknown,>({
                             })
                         }
                     >
-                        <span aria-hidden='true'>×</span>
+                        <span aria-hidden='true'>{clearIcon}</span>
                     </button>
                 )}
             </span>
@@ -525,7 +529,7 @@ export const DropdownImplementation = <T = unknown,>({
                             render={renderTriggerWithOpenState}
                             aria-label={showOptionsLabel}
                         >
-                            <span aria-hidden='true'>⌄</span>
+                            <span aria-hidden='true'>{expandIcon}</span>
                         </ComboBoxButton>
                         {showClear && selectedKey !== null && (
                             <button
@@ -546,7 +550,7 @@ export const DropdownImplementation = <T = unknown,>({
                                     })
                                 }
                             >
-                                <span aria-hidden='true'>×</span>
+                                <span aria-hidden='true'>{clearIcon}</span>
                             </button>
                         )}
                         <ComboBoxPopover
@@ -671,7 +675,7 @@ export const DropdownImplementation = <T = unknown,>({
                             data-open={isOpen || undefined}
                             aria-hidden='true'
                         >
-                            ⌄
+                            {expandIcon}
                         </span>
                     </AriaButton>
                     {showClear && selectedKey !== null && (
@@ -693,7 +697,7 @@ export const DropdownImplementation = <T = unknown,>({
                                 })
                             }
                         >
-                            <span aria-hidden='true'>×</span>
+                            <span aria-hidden='true'>{clearIcon}</span>
                         </button>
                     )}
                     <Popover

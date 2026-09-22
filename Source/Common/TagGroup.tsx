@@ -15,6 +15,7 @@ import {
     TagList as AriaTagList,
 } from 'react-aria-components/TagGroup';
 import { Button as AriaButton } from 'react-aria-components/Button';
+import { useCratisIcon } from './useCratisIcon';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 
@@ -78,9 +79,9 @@ export interface TagGroupProps {
     /** Accessible label for a tag's remove button. Receives the tag's value. */
     removeLabel?: (value: string) => string;
     /**
-     * Glyph inside a tag's remove button. Defaults to a multiplication sign; pass your icon set's
-     * close icon to match the rest of the product. The button, its accessible name and its keyboard
-     * behaviour are unaffected.
+     * Glyph inside a tag's remove button. Names this one tag group and wins over the provider's
+     * `icons.remove`; defaults to a multiplication sign when neither is set. The button, its
+     * accessible name and its keyboard behaviour are unaffected.
      */
     removeIcon?: ReactNode;
     /** Extra class name for the root element. */
@@ -115,10 +116,12 @@ export const TagGroup = ({
     invalid = false,
     id,
     removeLabel,
-    removeIcon = '×',
+    removeIcon,
     className,
     pt,
 }: TagGroupProps) => {
+    const icon = useCratisIcon();
+    const resolvedRemoveIcon = icon('remove', '×', removeIcon);
     const generatedId = useId();
     const inputId = id ?? `cratis-tag-group-${generatedId}`;
     const [draft, setDraft] = useState('');
@@ -190,7 +193,7 @@ export const TagGroup = ({
                                     )}
                                     data-cratis-part='remove'
                                 >
-                                    <span aria-hidden='true'>{removeIcon}</span>
+                                    <span aria-hidden='true'>{resolvedRemoveIcon}</span>
                                 </AriaButton>
                             )}
                         </AriaTag>

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
+import { useCratisIcon } from '../Common/useCratisIcon';
 
 /** Props for {@link Chip}. */
 export interface ChipProps {
@@ -27,29 +28,32 @@ export const Chip = ({
     onRemove,
     removeAriaLabel = 'Remove',
     className,
-}: ChipProps) => (
-    <span
-        className={['cratis-chip', className].filter(Boolean).join(' ')}
-        data-cratis-part='root'
-    >
-        {icon && (
-            <span className='cratis-chip__icon' data-cratis-part='icon'>
-                {icon}
+}: ChipProps) => {
+    const resolveIcon = useCratisIcon();
+    return (
+        <span
+            className={['cratis-chip', className].filter(Boolean).join(' ')}
+            data-cratis-part='root'
+        >
+            {icon && (
+                <span className='cratis-chip__icon' data-cratis-part='icon'>
+                    {icon}
+                </span>
+            )}
+            <span className='cratis-chip__label' data-cratis-part='label'>
+                {label}
             </span>
-        )}
-        <span className='cratis-chip__label' data-cratis-part='label'>
-            {label}
+            {removable && (
+                <button
+                    type='button'
+                    className='cratis-chip__remove'
+                    data-cratis-part='remove'
+                    onClick={onRemove}
+                    aria-label={removeAriaLabel}
+                >
+                    <span aria-hidden='true'>{resolveIcon('remove', '×')}</span>
+                </button>
+            )}
         </span>
-        {removable && (
-            <button
-                type='button'
-                className='cratis-chip__remove'
-                data-cratis-part='remove'
-                onClick={onRemove}
-                aria-label={removeAriaLabel}
-            >
-                <span aria-hidden='true'>×</span>
-            </button>
-        )}
-    </span>
-);
+    );
+};

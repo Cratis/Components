@@ -3,6 +3,7 @@
 
 import { Button } from '../Common/Button';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
+import { useCratisIcon } from '../Common/useCratisIcon';
 import type { TablePaginatorProps } from './TablePaginator';
 import { paginatorRange } from './paginatorRange';
 
@@ -24,6 +25,7 @@ export const TablePaginatorImplementation = ({
 }: TablePaginatorProps) => {
     const { messages } = useCratisComponentsConfig();
     const paginatorMessages = messages?.paginator;
+    const icon = useCratisIcon();
     const isFirst = page <= 0;
     const isLast = page >= pageCount - 1;
     const rangeReport = paginatorRange(page, pageSize, totalItems);
@@ -73,7 +75,7 @@ export const TablePaginatorImplementation = ({
                 aria-label={labels.previous}
                 pt={pt?.previous}
             >
-                <span aria-hidden='true'>‹</span>
+                <span aria-hidden='true'>{icon('previous', '‹')}</span>
             </Button>
             <span
                 {...pt?.info}
@@ -91,7 +93,7 @@ export const TablePaginatorImplementation = ({
                 aria-label={labels.next}
                 pt={pt?.next}
             >
-                <span aria-hidden='true'>›</span>
+                <span aria-hidden='true'>{icon('next', '›')}</span>
             </Button>
             <Button
                 variant='ghost'
