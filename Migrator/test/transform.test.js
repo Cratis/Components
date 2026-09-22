@@ -176,6 +176,31 @@ describe('root namespace maps', () => {
             './CommandStepper',
             // Nested refinement of the historical CommandForm namespace.
             './CommandForm/fields',
+            // Per-area CSS entry points (feat/per-area-stylesheets): side-effect stylesheet
+            // imports, not symbol imports, so the codemod has nothing to rewrite for them —
+            // same as the pre-existing aggregate './styles' above.
+            './Canvas/styles',
+            './Chat/styles',
+            './CommandDialog/styles',
+            './CommandStepper/styles',
+            './CommandForm/styles',
+            './CommandForm/fields/styles',
+            './Common/styles',
+            './DataPage/styles',
+            './DataTables/styles',
+            './Dialogs/styles',
+            './Display/styles',
+            './Dropdown/styles',
+            './Filter/styles',
+            './Notifications/styles',
+            './ObjectContentEditor/styles',
+            './ObjectNavigationalBar/styles',
+            './PivotViewer/styles',
+            './renderer/builtin/styles',
+            './SchemaEditor/styles',
+            './TimeMachine/styles',
+            './Toolbar/styles',
+            './styles/base',
         ]);
         const unaccounted = Object.keys(pkg.exports ?? {}).filter(
             (subpath) =>

@@ -80,6 +80,17 @@ import '@cratis/components/theme'; // optional baseline appearance
 
 A custom product design omits `theme`, imports product CSS after `tokens` and `styles`, and maps its canonical values directly to `--cratis-*`.
 
+`styles` is every component's CSS in one file. To pay only for the surfaces the application mounts, import the shared base plus one entry point per subpath instead:
+
+```ts
+import '@cratis/components/tokens';
+import '@cratis/components/styles/base';
+import '@cratis/components/Dialogs/styles';
+import '@cratis/components/DataTables/styles';
+```
+
+Every JavaScript subpath publishes a matching `<subpath>/styles`, self-contained for that subpath. `styles/base` carries the internal utilities and the cascade-layer order, and is required exactly once; the aggregate already contains it.
+
 ## Provider
 
 ```tsx

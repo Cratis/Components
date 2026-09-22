@@ -80,6 +80,10 @@ The package root is setup-only: import the provider and configuration helpers th
 every component from its explicit subpath. The built-in renderer needs no additional package or
 configuration.
 
+`@cratis/components/styles` is every component's CSS in one file. An application that mounts only a
+few surfaces can import `@cratis/components/styles/base` plus one `<subpath>/styles` entry point per
+surface instead, and download nothing else.
+
 The current package manifest defines the exact React, Arc, Fundamentals, and
 optional Pixi peer ranges. Verify those ranges before installing the package.
 

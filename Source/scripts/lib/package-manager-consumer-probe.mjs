@@ -6,8 +6,9 @@
  * mandatory peers have been installed. Argument 1 is `absent` or `present` for the Pixi topology.
  */
 
-import { realpathSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const pixiTopology = process.argv[2];
 if (pixiTopology !== 'absent' && pixiTopology !== 'present') {
@@ -46,6 +47,42 @@ for (const forbidden of ['primereact', '@primereact/core', '@primeuix/themes']) 
     } catch (error) {
         if (error instanceof Error && error.message.startsWith('Unexpected')) throw error;
     }
+}
+
+// Per-area stylesheets (Cratis/Components#301). A CSS subpath is not something Node can `import`,
+// so "a consumer can use it" means: the package manager resolves it through the real `exports` map
+// to a file that is actually in the installed package and actually contains that area's rules.
+// The aggregate is checked the same way, because the split must not have broken it.
+const readStylesheet = (specifier) => {
+    const resolved = import.meta.resolve(specifier);
+    const contents = readFileSync(fileURLToPath(resolved), 'utf8');
+    if (contents.length === 0) throw new Error(`${specifier} resolved to an empty file.`);
+    return contents;
+};
+
+const base = readStylesheet('@cratis/components/styles/base');
+if (!base.includes('@layer cratis-theme, cratis-components, cratis-utilities')) {
+    throw new Error(
+        'The shared style base does not establish the Cratis cascade-layer order.',
+    );
+}
+if (base.includes('.cratis-dialog')) {
+    throw new Error('The shared style base leaked component rules into every area.');
+}
+
+const aggregate = readStylesheet('@cratis/components/styles');
+const dialogArea = readStylesheet('@cratis/components/Dialogs/styles');
+if (!dialogArea.includes('.cratis-dialog') || !aggregate.includes('.cratis-dialog')) {
+    throw new Error('The Dialogs stylesheet is missing its own rules.');
+}
+if (dialogArea.includes('.pivot-viewer')) {
+    throw new Error('The Dialogs stylesheet pulled in an unrelated area.');
+}
+if (!aggregate.includes('.pivot-viewer')) {
+    throw new Error('The aggregate stylesheet stopped being the whole library.');
+}
+if (dialogArea.length >= aggregate.length) {
+    throw new Error('A per-area stylesheet is no smaller than the aggregate.');
 }
 
 const consumerRequire = createRequire(import.meta.url);
@@ -107,9 +144,23 @@ if (pixiTopology === 'absent') {
     }
 }
 
+if (pixiTopology === 'present') {
+    const pivotArea = readStylesheet('@cratis/components/PivotViewer/styles');
+    // PivotViewer renders a FilterPanel, so its derived area closure has to carry Filter's rules.
+    if (
+        !pivotArea.includes('.pivot-viewer') ||
+        !pivotArea.includes('.pv-filter-clear-header')
+    ) {
+        throw new Error(
+            'The PivotViewer stylesheet is missing its derived area closure.',
+        );
+    }
+}
+
 await new Promise((resolve, reject) => {
     process.stdout.write(
-        `Packed package-manager consumer verified with Pixi ${pixiTopology}.\n`,
+        `Packed package-manager consumer verified with Pixi ${pixiTopology}, ` +
+            'including the aggregate and per-area stylesheets.\n',
         (error) => (error ? reject(error) : resolve()),
     );
 });

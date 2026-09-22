@@ -17,6 +17,8 @@ import '@cratis/components/theme';
 
 A product design system omits `theme`, maps its canonical values directly onto `--cratis-*`, and uses stable parts for component-specific treatment.
 
+`styles` is the whole library's CSS. An application that mounts only a few surfaces can instead import `@cratis/components/styles/base` plus one `<subpath>/styles` entry point per surface it uses, and pay for nothing else — see [Per-area stylesheets](per-area-stylesheets.md). Everything below applies unchanged either way.
+
 ## Choose a path
 
 | Situation                                           | Imports                                                                     | Product responsibility                                                                                                                        |
@@ -26,7 +28,7 @@ A product design system omits `theme`, maps its canonical values directly onto `
 | Existing app migrating gradually from PrimeReact    | `tokens`, `styles`, optional `theme`, plus the product's existing Prime CSS | Mount Components and Prime providers independently. Keep Prime styling and licensing only for direct Prime surfaces until they are removed.   |
 | Independently themed embedded surface               | `tokens`, `styles`, `theme`                                                 | Put `cratis-theme` on the subtree and add `cratis-dark` or `cratis-light` there.                                                              |
 
-Read [Use the baseline theme](baseline-theme.md), [Build a product theme](themed.md), [Own all styling](unstyled.md), and [Stable component parts](pass-through.md) for the corresponding implementation.
+Read [Use the baseline theme](baseline-theme.md), [Build a product theme](themed.md), [Own all styling](unstyled.md), and [Stable component parts](pass-through.md) for the corresponding implementation. Any row may substitute [per-area stylesheets](per-area-stylesheets.md) for `styles`.
 
 ## Cascade contract
 
@@ -39,7 +41,7 @@ The three layers are low-priority only where the product says so. Cascade-layer 
 @layer properties, theme, base, cratis-theme, cratis-components, cratis-utilities, components, utilities;
 ```
 
-Declaring the same names again later, as the `styles` bundle does, never changes an order already fixed.
+Declaring the same names again later, as the `styles` bundle does, never changes an order already fixed. The per-area entry points declare no order at all: only `@cratis/components/styles/base` establishes it, and every area sheet just reopens `cratis-components`.
 
 Import product mappings and overrides after Components:
 

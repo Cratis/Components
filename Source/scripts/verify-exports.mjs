@@ -33,7 +33,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { assertExpectedCascadeLayerOrder } from './lib/release-package-guards.mjs';
+import {
+    assertExpectedCascadeLayerOrder,
+    cascadeLayerEstablishmentOrder,
+} from './lib/release-package-guards.mjs';
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const packageJsonPath = path.join(packageDir, 'package.json');
@@ -222,6 +225,41 @@ if (
 console.log(
     'Published styles contain prefixed, isolated Cratis layers without Preflight or token duplication.',
 );
+
+// Per-area stylesheets (Cratis/Components#301). The shared base is the only sheet allowed to fix
+// cascade-layer order; every area sheet may do nothing but reopen `cratis-components`, so importing
+// any combination of them - in any order, with or without the aggregate - cannot reshuffle the
+// cascade a product already reasons about.
+const layerProblems = [];
+for (const file of readdirSync(esmRoot).filter((name) =>
+    /^styles\..+\.css$/u.test(name),
+)) {
+    const contents = readFileSync(path.join(esmRoot, file), 'utf8');
+    const layers = cascadeLayerEstablishmentOrder(contents);
+    if (file === 'styles.base.css') {
+        try {
+            assertExpectedCascadeLayerOrder(contents, file);
+        } catch (error) {
+            layerProblems.push(error instanceof Error ? error.message : String(error));
+        }
+        continue;
+    }
+    if (layers.length !== 1 || layers[0] !== 'cratis-components') {
+        layerProblems.push(
+            `${file} establishes '${layers.join(', ') || '(none)'}' instead of only 'cratis-components'.`,
+        );
+    }
+    if (contents.includes('.cratis\\:flex')) {
+        layerProblems.push(`${file} duplicates the shared base's utility output.`);
+    }
+}
+if (layerProblems.length > 0) {
+    console.error(
+        `Per-area stylesheet verification failed:\n- ${layerProblems.join('\n- ')}`,
+    );
+    process.exit(1);
+}
+console.log('Per-area stylesheets reopen only the cratis-components layer.');
 
 const requiredPackageAssets = [
     'PatrickHand-OFL.txt',

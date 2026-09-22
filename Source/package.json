@@ -61,70 +61,87 @@
             "types": "./dist/esm/Canvas/index.d.ts",
             "import": "./dist/esm/Canvas/index.js"
         },
+        "./Canvas/styles": "./dist/esm/styles.Canvas.css",
         "./Chat": {
             "types": "./dist/esm/Chat/index.d.ts",
             "import": "./dist/esm/Chat/index.js"
         },
+        "./Chat/styles": "./dist/esm/styles.Chat.css",
         "./CommandDialog": {
             "types": "./dist/esm/CommandDialog/index.d.ts",
             "import": "./dist/esm/CommandDialog/index.js"
         },
+        "./CommandDialog/styles": "./dist/esm/styles.CommandDialog.css",
         "./CommandStepper": {
             "types": "./dist/esm/CommandDialog/CommandStepper.d.ts",
             "import": "./dist/esm/CommandDialog/CommandStepper.js"
         },
+        "./CommandStepper/styles": "./dist/esm/styles.CommandStepper.css",
         "./CommandForm": {
             "types": "./dist/esm/CommandForm/index.d.ts",
             "import": "./dist/esm/CommandForm/index.js"
         },
+        "./CommandForm/styles": "./dist/esm/styles.CommandForm.css",
         "./CommandForm/fields": {
             "types": "./dist/esm/CommandForm/index.d.ts",
             "import": "./dist/esm/CommandForm/index.js"
         },
+        "./CommandForm/fields/styles": "./dist/esm/styles.CommandForm.css",
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
             "import": "./dist/esm/Common/index.js"
         },
+        "./Common/styles": "./dist/esm/styles.Common.css",
         "./DataPage": {
             "types": "./dist/esm/DataPage/index.d.ts",
             "import": "./dist/esm/DataPage/index.js"
         },
+        "./DataPage/styles": "./dist/esm/styles.DataPage.css",
         "./DataTables": {
             "types": "./dist/esm/DataTables/index.d.ts",
             "import": "./dist/esm/DataTables/index.js"
         },
+        "./DataTables/styles": "./dist/esm/styles.DataTables.css",
         "./Dialogs": {
             "types": "./dist/esm/Dialogs/index.d.ts",
             "import": "./dist/esm/Dialogs/index.js"
         },
+        "./Dialogs/styles": "./dist/esm/styles.Dialogs.css",
         "./Display": {
             "types": "./dist/esm/Display/index.d.ts",
             "import": "./dist/esm/Display/index.js"
         },
+        "./Display/styles": "./dist/esm/styles.Display.css",
         "./Dropdown": {
             "types": "./dist/esm/Dropdown/index.d.ts",
             "import": "./dist/esm/Dropdown/index.js"
         },
+        "./Dropdown/styles": "./dist/esm/styles.Dropdown.css",
         "./Filter": {
             "types": "./dist/esm/Filter/index.d.ts",
             "import": "./dist/esm/Filter/index.js"
         },
+        "./Filter/styles": "./dist/esm/styles.Filter.css",
         "./Notifications": {
             "types": "./dist/esm/Notifications/index.d.ts",
             "import": "./dist/esm/Notifications/index.js"
         },
+        "./Notifications/styles": "./dist/esm/styles.Notifications.css",
         "./ObjectContentEditor": {
             "types": "./dist/esm/ObjectContentEditor/index.d.ts",
             "import": "./dist/esm/ObjectContentEditor/index.js"
         },
+        "./ObjectContentEditor/styles": "./dist/esm/styles.ObjectContentEditor.css",
         "./ObjectNavigationalBar": {
             "types": "./dist/esm/ObjectNavigationalBar/index.d.ts",
             "import": "./dist/esm/ObjectNavigationalBar/index.js"
         },
+        "./ObjectNavigationalBar/styles": "./dist/esm/styles.ObjectNavigationalBar.css",
         "./PivotViewer": {
             "types": "./dist/esm/PivotViewer/index.d.ts",
             "import": "./dist/esm/PivotViewer/index.js"
         },
+        "./PivotViewer/styles": "./dist/esm/styles.PivotViewer.css",
         "./renderer": {
             "types": "./dist/esm/renderer/index.d.ts",
             "import": "./dist/esm/renderer/index.js"
@@ -133,6 +150,7 @@
             "types": "./dist/esm/renderer/builtin/index.d.ts",
             "import": "./dist/esm/renderer/builtin/index.js"
         },
+        "./renderer/builtin/styles": "./dist/esm/styles.renderer.builtin.css",
         "./schemas/ui-adapter.schema.json": {
             "types": "./dist/esm/schemas/ui-adapter.schema.d.ts",
             "import": "./dist/esm/schemas/ui-adapter.schema.json"
@@ -141,19 +159,23 @@
             "types": "./dist/esm/SchemaEditor/index.d.ts",
             "import": "./dist/esm/SchemaEditor/index.js"
         },
+        "./SchemaEditor/styles": "./dist/esm/styles.SchemaEditor.css",
         "./TimeMachine": {
             "types": "./dist/esm/TimeMachine/index.d.ts",
             "import": "./dist/esm/TimeMachine/index.js"
         },
+        "./TimeMachine/styles": "./dist/esm/styles.TimeMachine.css",
         "./Toolbar": {
             "types": "./dist/esm/Toolbar/index.d.ts",
             "import": "./dist/esm/Toolbar/index.js"
         },
+        "./Toolbar/styles": "./dist/esm/styles.Toolbar.css",
         "./types": {
             "types": "./dist/esm/types/index.d.ts",
             "import": "./dist/esm/types/index.js"
         },
         "./styles": "./dist/esm/styles.css",
+        "./styles/base": "./dist/esm/styles.base.css",
         "./tokens": "./dist/esm/tokens.css",
         "./theme": "./dist/esm/theme.css"
     },

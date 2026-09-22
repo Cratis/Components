@@ -141,7 +141,7 @@ DataPage uses Allotment for the resizable split when a `detailsComponent` is pro
 3. Data table
 4. Optional details panel (when item is selected)
 
-Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. From 3.0 it is **vendored into `@cratis/components/styles`**, so importing that one file at your app entry point is all it takes — you do not need `allotment/dist/style.css` yourself, and if you were importing it you can drop it. Without `@cratis/components/styles` the details pane grows to its content and clips the paginator. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
+Allotment positions its panes from a stylesheet rather than from inline styles, so the split view only works once that stylesheet is on the page. From 3.0 it is **vendored into `@cratis/components/styles`**, so importing that one file at your app entry point is all it takes — you do not need `allotment/dist/style.css` yourself, and if you were importing it you can drop it. Without `@cratis/components/styles` the details pane grows to its content and clips the paginator. If you import [per-area stylesheets](../Styling/per-area-stylesheets.md) instead of the aggregate, `@cratis/components/DataPage/styles` carries those vendored Allotment rules. When no `detailsComponent` is supplied there is nothing to split, so no split view is mounted at all.
 
 Inside the page, the menu bar and the data table share one vertical column. The menu bar keeps the height it needs; the table region takes everything that is left and scrolls its rows internally. Given an ancestor with a real height — the condition described next — the paginator therefore sits at the bottom of the page rather than below its edge, however many rows the query returns, and whether or not the page is split.
 
@@ -183,7 +183,7 @@ DataPage integrates with:
 - `@cratis/arc/queries` for data fetching
 - `DataTableForQuery` and `DataTableForObservableQuery` components
 - the semantic Cratis data table plus a Cratis action toolbar of Buttons
-- Allotment for split view layout — its stylesheet is vendored into `@cratis/components/styles`, so the split view lays out as long as you import that
+- Allotment for split view layout — its stylesheet is vendored into `@cratis/components/styles` (and into `@cratis/components/DataPage/styles`), so the split view lays out as long as you import one of them
 
 ## See Also
 

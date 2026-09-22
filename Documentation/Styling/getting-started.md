@@ -20,4 +20,17 @@ For a custom product, omit `theme` and define the semantic `--cratis-*` variable
 
 `styles` contains named, low-priority Cratis layers and no Tailwind Preflight, consumer reset, or token duplication. Components no longer imports or requires PrimeReact, PrimeIcons, PrimeUI themes, or a renderer provider.
 
+## Import only the surfaces you mount
+
+`styles` is every component's CSS in one file, which is the simplest thing to start with. When the payload matters, replace it with the shared base plus one entry point per surface the application actually mounts:
+
+```ts
+import '@cratis/components/tokens';
+import '@cratis/components/styles/base';
+import '@cratis/components/Dialogs/styles';
+import '@cratis/components/DataTables/styles';
+```
+
+Each `<subpath>/styles` is self-contained for that subpath, so there is never a second import to remember. See [Per-area stylesheets](per-area-stylesheets.md).
+
 See [Build a product theme](themed.md) and [Stable component parts](pass-through.md).

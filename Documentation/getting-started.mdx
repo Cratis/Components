@@ -55,6 +55,8 @@ You've built an Arc backend—a `RegisterAuthor` command and an `AllAuthors` que
 
     A product with its own design system can omit `theme`, map its own variables onto `--cratis-*`, and customize stable `data-cratis-part` elements or `pt` attributes.
 
+    `styles` is every component's CSS in one file. To download only the surfaces you mount, import `@cratis/components/styles/base` plus one `<subpath>/styles` entry point per surface instead — see [Per-area stylesheets](/components/styling/per-area-stylesheets/).
+
     <Aside type='caution' title='Order matters'>
         Import `tokens` before `styles` and `theme` so every component resolves the same
         semantic variables.
