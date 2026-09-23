@@ -275,13 +275,7 @@ try {
         );
     }
 
-    for (const version of ['4.0.0', '5.0.0']) {
-        installSyntheticComponents(version);
-        assertRun(`packed Migrator accepts Components ${version} recovery`,
-            run(binary, ['--check', source], { cwd: consumer }));
-    }
-
-    installSyntheticComponents('6.0.0');
+    installSyntheticComponents('5.0.0');
     const unsupportedInput = "import { Canvas } from '@cratis/components';\n";
     for (const command of commands) {
         const unsupportedSource = path.join(consumer, `${command}-unsupported.tsx`);
@@ -290,7 +284,7 @@ try {
             cwd: consumer,
         });
         assertRun(`packed ${command} rejects unsupported Components`, unsupported, 1);
-        if (!unsupported.stderr.includes('@cratis/components@6.0.0 is unsupported')) {
+        if (!unsupported.stderr.includes('@cratis/components@5.0.0 is unsupported')) {
             throw new Error(
                 `Unexpected unsupported-version output:\n${unsupported.stderr}`,
             );
@@ -303,7 +297,7 @@ try {
     }
 
     console.log(
-        'Packed @cratis/components.migrator manifest and CLIs verified with Components 3, 4, 5, and unsupported versions.',
+        'Packed @cratis/components.migrator manifest and CLIs verified with Components 3, 4, and unsupported versions.',
     );
 } finally {
     rmSync(scratch, { recursive: true, force: true });

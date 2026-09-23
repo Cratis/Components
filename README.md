@@ -53,12 +53,12 @@ Verify those properties for the exact application and component profile shipped.
 Install the package:
 
 ```bash
-npm install @cratis/components@^5
+npm install @cratis/components@^4
 ```
 
-> **Publication status:** This example targets the owner-authorized 5.0.0 npm release. When reading
+> **Publication status:** This example targets the owner-authorized 4.0.0 npm release. When reading
 > it from repository source before that release, verify availability with
-> `npm view @cratis/components@5.0.0 version`; source contributors use the repository workspace.
+> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace.
 
 Import the semantic tokens and component structure. The baseline theme is
 optional:
@@ -83,10 +83,6 @@ configuration.
 `@cratis/components/styles` is every component's CSS in one file. An application that mounts only a
 few surfaces can import `@cratis/components/styles/base` plus one `<subpath>/styles` entry point per
 surface instead, and download nothing else.
-
-Components 5 requires matching Arc and Arc React versions in `>=22.19.1 <23`.
-Upgrade installed Components-family packages together to the same 5.x release;
-see the [4-to-5 migration guide](Documentation/Migration/4-to-5.md).
 
 The current package manifest defines the exact React, Arc, Fundamentals, and
 optional Pixi peer ranges. Verify those ranges before installing the package.

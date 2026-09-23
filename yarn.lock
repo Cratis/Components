@@ -273,16 +273,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc.react@npm:22.19.1":
-  version: 22.19.1
-  resolution: "@cratis/arc.react@npm:22.19.1"
+"@cratis/arc.react@npm:22.16.0":
+  version: 22.16.0
+  resolution: "@cratis/arc.react@npm:22.16.0"
   dependencies:
-    "@cratis/arc": "npm:22.19.1"
-    "@cratis/fundamentals": "npm:^7.19.3"
+    "@cratis/arc": "npm:22.16.0"
+    "@cratis/fundamentals": "npm:^7.19.2"
     tsyringe: "npm:^4.10.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
-  checksum: 10/b63264aa5c402bbf9e9b75ea27e5ab0d27058076d2b03dd4a033c155433a51f8bf1375d18f17770c319eebb7a39c2750cf0256a1bbafd351d17d0ca831caaeec
+  checksum: 10/dee24b72d3eba83500cdd801d6f577b512ef9a6aeb5ca01387fb3ae65f0a7ac5c48995d62d5f314f4e653cc58f279426647bf019c9821d0871a025cfd75e93a5
   languageName: node
   linkType: hard
 
@@ -308,22 +308,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cratis/arc@npm:22.19.1":
-  version: 22.19.1
-  resolution: "@cratis/arc@npm:22.19.1"
-  dependencies:
-    "@cratis/fundamentals": "npm:^7.19.3"
-    rxjs: "npm:^7.8.2"
-  checksum: 10/75f0d1b29e1d2be24ab6a733c1b1d594fca0b8f72a5d478dc3f38696dd8d3fcd6aadd6e76070615d8f85f4c54a50e565c6b36fd10ae7af0026e43d16a0146572
-  languageName: node
-  linkType: hard
-
 "@cratis/components.conformance@workspace:Conformance, @cratis/components.conformance@workspace:^":
   version: 0.0.0-use.local
   resolution: "@cratis/components.conformance@workspace:Conformance"
   dependencies:
-    "@cratis/arc": "npm:22.19.1"
-    "@cratis/arc.react": "npm:22.19.1"
+    "@cratis/arc": "npm:22.16.0"
+    "@cratis/arc.react": "npm:22.16.0"
     "@cratis/components": "workspace:^"
     "@cratis/fundamentals": "npm:7.19.2"
     axe-core: "npm:^4.13.0"
@@ -332,7 +322,7 @@ __metadata:
     reflect-metadata: "npm:0.2.2"
     tsyringe: "npm:4.10.0"
   peerDependencies:
-    "@cratis/components": ">=5 <6"
+    "@cratis/components": ">=4 <5"
     react: ^19.0.0
     react-dom: ^19.0.0
   languageName: unknown
@@ -355,8 +345,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.mui@workspace:Adapters/Mui"
   dependencies:
-    "@cratis/arc": "npm:22.19.1"
-    "@cratis/arc.react": "npm:22.19.1"
+    "@cratis/arc": "npm:22.16.0"
+    "@cratis/arc.react": "npm:22.16.0"
     "@cratis/components": "workspace:^"
     "@cratis/components.conformance": "workspace:^"
     "@cratis/fundamentals": "npm:7.19.2"
@@ -369,7 +359,7 @@ __metadata:
     reflect-metadata: "npm:0.2.2"
     tsyringe: "npm:4.10.0"
   peerDependencies:
-    "@cratis/components": ">=5 <6"
+    "@cratis/components": ">=4 <5"
     "@emotion/react": ">=11.5 <12"
     "@emotion/styled": ">=11.11 <12"
     "@mui/material": ">=9 <10"
@@ -382,8 +372,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.primereact10@workspace:Adapters/PrimeReact10"
   dependencies:
-    "@cratis/arc": "npm:22.19.1"
-    "@cratis/arc.react": "npm:22.19.1"
+    "@cratis/arc": "npm:22.16.0"
+    "@cratis/arc.react": "npm:22.16.0"
     "@cratis/components": "workspace:^"
     "@cratis/components.conformance": "workspace:^"
     "@cratis/fundamentals": "npm:7.19.2"
@@ -394,7 +384,7 @@ __metadata:
     reflect-metadata: "npm:0.2.2"
     tsyringe: "npm:4.10.0"
   peerDependencies:
-    "@cratis/components": ">=5 <6"
+    "@cratis/components": ">=4 <5"
     primereact: ">=10.9.9 <11"
     react: ^19.0.0
     react-dom: ^19.0.0
@@ -405,8 +395,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@cratis/components.primereact@workspace:Adapters/PrimeReact"
   dependencies:
-    "@cratis/arc": "npm:22.19.1"
-    "@cratis/arc.react": "npm:22.19.1"
+    "@cratis/arc": "npm:22.16.0"
+    "@cratis/arc.react": "npm:22.16.0"
     "@cratis/components": "workspace:^"
     "@cratis/components.conformance": "workspace:^"
     "@cratis/fundamentals": "npm:7.19.2"
@@ -420,7 +410,7 @@ __metadata:
     reflect-metadata: "npm:0.2.2"
     tsyringe: "npm:4.10.0"
   peerDependencies:
-    "@cratis/components": ">=5 <6"
+    "@cratis/components": ">=4 <5"
     "@primereact/core": ">=11 <12"
     "@primereact/ui": ">=11 <12"
     "@primeuix/themes": ">=3 <4"
@@ -456,8 +446,8 @@ __metadata:
     react-icons: "npm:5.7.0"
     ts-deepmerge: "npm:8.0.0"
   peerDependencies:
-    "@cratis/arc": ">=22.19.1 <23"
-    "@cratis/arc.react": ">=22.19.1 <23"
+    "@cratis/arc": ">=20.3.1 <23"
+    "@cratis/arc.react": ">=20.3.1 <23"
     "@cratis/fundamentals": ^7.10.3
     pixi.js: ^8.20.0
     react: ^19.0.0
@@ -482,13 +472,6 @@ __metadata:
   version: 7.19.2
   resolution: "@cratis/fundamentals@npm:7.19.2"
   checksum: 10/215a5010863b697195b15e0530d551461d4a20d9689c6cee89056126879850a531004323a10463393d79d49188a90b807e9110d2860d5c0c4ac9e8d36a682b84
-  languageName: node
-  linkType: hard
-
-"@cratis/fundamentals@npm:^7.19.3":
-  version: 7.19.3
-  resolution: "@cratis/fundamentals@npm:7.19.3"
-  checksum: 10/417769b0db8c88ca633b98d1264e96529e55111c889cf970be8fa37e8465946b9ec1fb3be6712f6315fba8a2c64f6679d7c8238b696360715ca1c85fdfbd5321
   languageName: node
   linkType: hard
 
@@ -6915,8 +6898,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
-    "@cratis/arc": "npm:22.19.1"
-    "@cratis/arc.react": "npm:22.19.1"
+    "@cratis/arc": "npm:22.16.0"
+    "@cratis/arc.react": "npm:22.16.0"
     "@cratis/arc.vite": "npm:22.16.0"
     "@cyclonedx/yarn-plugin-cyclonedx": "npm:3.4.0"
     "@eslint-react/eslint-plugin": "npm:5.19.0"

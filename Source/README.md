@@ -17,17 +17,17 @@ interaction primitives internally; consumers do not import or style React Aria.
 ## Install
 
 ```bash
-npm install @cratis/components@^5
+npm install @cratis/components@^4
 ```
 
-> **Publication status:** This install example targets the owner-authorized 5.0.0 npm release. When
+> **Publication status:** This install example targets the owner-authorized 4.0.0 npm release. When
 > reading this README from repository source before that release, verify availability with
-> `npm view @cratis/components@5.0.0 version`; source contributors use the repository workspace
+> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace
 > instead.
 
 The current package manifest declares these peer dependencies:
 
-- `@cratis/arc` and `@cratis/arc.react` `>=22.19.1 <23` (matching versions)
+- `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`
 - `@cratis/fundamentals` `^7.10.3`
 - optional `pixi.js` `^8.20.0`
 - `react` and `react-dom` `^19.0.0`
@@ -37,8 +37,8 @@ The current package manifest declares these peer dependencies:
 Strict installers can declare them explicitly; keep both Arc packages on the same application version:
 
 ```bash
-ARC_VERSION=22.19.1
-npm install @cratis/components@^5 \
+ARC_VERSION=22.6.2
+npm install @cratis/components@^4 \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
   reflect-metadata@0.2.2 tsyringe@4.10.0
@@ -58,7 +58,7 @@ object; runtime behavior still requires `@cratis/components.conformance`. See th
 [renderer-adapter documentation](https://github.com/Cratis/Components/blob/16dd95b7c894f3275b03714ffdc676d2d3505fd8/Documentation/renderers/index.md#adapter-package-metadata-schema)
 for the boundary and limitations.
 
-**Historical Yarn PnP note:** older Components releases allowed `@cratis/arc.react@22.6.2`, which imported `rxjs` without declaring it. That version required a temporary, version-specific `packageExtensions` entry. Components 5 requires Arc React 22.19.1 or later and does not need that workaround; remove the old extension when upgrading. The canonical [getting-started guide](https://cratis.io/components/getting-started/) retains the historical YAML.
+**Yarn PnP note:** the current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.6.2`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
 `pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
 
@@ -109,10 +109,10 @@ stable, nine-slot `stable-presentation/v1` primitive profile; they never replace
 catalog. They share the Components repository release version and are selected with the provider's
 `library` prop:
 
-- `@cratis/components.mui@5.0.0` — MUI 9.x / Emotion 11.x stable presentation slots;
-- `@cratis/components.primereact@5.0.0` — PrimeReact 11.x stable presentation slots, with an
+- `@cratis/components.mui@4.0.0` — MUI 9.x / Emotion 11.x stable presentation slots;
+- `@cratis/components.primereact@4.0.0` — PrimeReact 11.x stable presentation slots, with an
   application-owned outer provider and license key;
-- `@cratis/components.primereact10@5.0.0` — PrimeReact 10.9.9+ stable presentation slots, with its
+- `@cratis/components.primereact10@4.0.0` — PrimeReact 10.9.9+ stable presentation slots, with its
   separate MIT-era provider, global theme, and upstream-major boundary.
 
 Adapter-specific themes, providers, SSR setup, peers, and license boundaries remain documented by
@@ -277,14 +277,6 @@ Components 4 removes component-family namespaces from the root. The root is
 setup-only so importing the provider does not traverse optional or unrelated
 component graphs. [MIGRATION.md](./MIGRATION.md) contains the current
 namespace-to-subpath mapping and migration command for existing root imports.
-
-## Components 4 to 5 migration
-
-Components 5 narrows the Arc/Arc React minimum to 22.19.1. Upgrade matching Arc
-versions and every installed Components-family package together to the same 5.x
-release. Existing form APIs remain compatible, with Guid fields and composed footers
-added; there is no automatic ID generation, authentication change, or renderer ABI
-change. See [MIGRATION.md](./MIGRATION.md) for the upgrade and rollback steps.
 
 ## Components 3 migration
 

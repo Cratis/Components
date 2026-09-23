@@ -12,8 +12,6 @@
   href: color-picker-field.md
 - name: DropdownField
   href: dropdown-field.md
-- name: GuidField
-  href: guid-field.md
 - name: InputTextField
   href: input-text-field.md
 - name: MultiSelectField

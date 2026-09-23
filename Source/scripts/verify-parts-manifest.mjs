@@ -638,9 +638,9 @@ function verifyPublicPtContracts() {
             `Public pt file inventory differs: source=[${actualFiles.join(', ')}], manifest=[${expectedFiles.join(', ')}].`,
         );
     }
-    if (actualFiles.length !== 52 || declarationCount !== 55) {
+    if (actualFiles.length !== 51 || declarationCount !== 54) {
         problems.push(
-            `Expected the authoritative 52 pt files / 55 declarations, found ${actualFiles.length} files / ${declarationCount} declarations.`,
+            `Expected the authoritative 51 pt files / 54 declarations, found ${actualFiles.length} files / ${declarationCount} declarations.`,
         );
     }
     return problems;
@@ -874,7 +874,7 @@ function main() {
         0,
     );
     console.log(
-        `Parts manifest verified: ${componentCount} components, ${partCount} component parts, ${stateCount} component/part states, 52 pt files, and 55 pt declarations.`,
+        `Parts manifest verified: ${componentCount} components, ${partCount} component parts, ${stateCount} component/part states, 51 pt files, and 54 pt declarations.`,
     );
 }
 

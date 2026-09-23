@@ -126,11 +126,6 @@ export const partDefinitions = {
         sources: ['CommandForm/fields/PasswordField.tsx'],
         ptKeys: ['root', 'input', 'toggle'],
     },
-    GuidField: {
-        parts: ['input'],
-        sources: ['CommandForm/fields/GuidField.tsx'],
-        ptKeys: ['root'],
-    },
     InputTextField: {
         parts: ['input'],
         sources: ['CommandForm/fields/InputTextField.tsx'],
@@ -647,9 +642,6 @@ export const partStateDefinitions = {
         root: ['disabled', 'invalid', 'readonly'],
         input: ['disabled', 'invalid', 'readonly'],
         toggle: ['disabled'],
-    },
-    GuidField: {
-        input: ['disabled', 'invalid', 'readonly'],
     },
     InputTextField: {
         input: ['disabled', 'invalid', 'readonly'],

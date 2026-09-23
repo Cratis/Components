@@ -1,28 +1,4 @@
-# Migrate from Components 4 to 5
-
-Components 5.0 narrows the Arc and Arc React peer contract from `>=20.3.1 <23` to
-`>=22.19.1 <23`. Upgrade `@cratis/arc` and `@cratis/arc.react` together to matching
-versions, at least 22.19.1 and below 23, and keep generated proxies aligned. Older Arc
-hosts are not supported; there is no runtime version-detection fallback.
-
-Upgrade every installed Components-family package to the same 5.x release: Core,
-ESLint, Migrator, Conformance, MUI, PrimeReact 11, and PrimeReact 10 adapters. Optional
-packages remain optional. Adapter and Conformance peers are `@cratis/components >=5 <6`.
-Preserve the manifest and lockfile first, then run type checks, command/form tests,
-and the production build. Roll back the family and Arc changes together if necessary.
-
-Existing form APIs remain compatible. The additions are `GuidField`, generated Guid
-field selection, and composed `AutoCommandForm` footer children. Invalid Guid drafts
-use native Arc custom-field-error execution guards. There is no automatic identifier
-generation, authentication/authorization change, additional API removal, or renderer
-ABI change: ABI 1, `core/v1`, and `stable-presentation/v1` remain unchanged.
-
-No 4-to-5 source codemod is needed. Migrator 5 retains the existing 3-to-4 transforms
-and supports Components 3 source and Components 4/5 recovery targets. Migrator 4 keeps
-its original Components 3/4 boundary. Follow the historical staged migration below
-when starting from Components 3.
-
-## Historical migration: Components 3 to 4
+# Migrate from Components 3 to 4
 
 Components 4 replaces the PrimeReact-backed Components 3 foundation with Components-owned markup, styling contracts, and public types. React Aria supplies selected interaction primitives internally. The current Components 4 manifest does not declare PrimeReact, PrimeIcons, PrimeUI, or PrimeUI themes as dependencies or peers; applications retaining direct imports keep their own package and license boundaries.
 
@@ -34,7 +10,7 @@ An application that has not migrated remains on its Components 3 package profile
 
 The adapters do not replace complete Components widgets. Core continues to own Dialog, Dropdown, DatePicker, paginator, table, focus, overlay, selection, and keyboard behavior; an adapter only presents button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface slots. Installing an adapter neither restores PrimeReact public APIs nor transfers key handling to the adapter.
 
-### Recommended order, stop points, and rollback
+## Recommended order, stop points, and rollback
 
 1. Preserve the current source, package manifest, and lockfile as the rollback point, then run the existing Components 3 gates.
 2. With installed Core still in the Components 3 **source** window (`>=3 <4`), preview and apply the root-namespace transform. Its subpath output works on Components 3 and 4. Re-run the Components 3 gates and checkpoint that import-only change.
@@ -43,7 +19,7 @@ The adapters do not replace complete Components widgets. Core continues to own D
 
 The bounded Components 4 Migrator package accepts the supported source or target window at preflight, but the order above avoids introducing Components 4-only props before Core is upgraded. A failed compatibility preflight scans and writes nothing. A transform refusal may annotate or migrate other independently safe syntax, so inspect the diff; restore the preceding checkpoint before retrying if an all-or-nothing rollback is required.
 
-### Update dependencies
+## Update dependencies
 
 Use the commands for the application's package manager. Remove only Prime packages that were installed for Components and are no longer owned by a retained direct Prime island.
 
@@ -73,7 +49,7 @@ The package declares an Arc peer range of `>=20.3.1 <23`. Conformance and all th
 adapters declare the final `@cratis/components >=4 <5` peer range, so each remains bounded to the
 Components major whose renderer ABI and stable presentation profile it implements.
 
-### Import from explicit subpaths
+## Import from explicit subpaths
 
 The canonical rule going forward: **the package root is setup-only; every component ships from its own subpath.**
 
@@ -158,7 +134,7 @@ Quote real paths containing spaces. Do not type angle-bracket placeholders in a 
 
 The codemod scans JavaScript/JSX and TypeScript/TSX (including `.mjs`, `.cjs`, `.mts`, and `.cts`), preserves aliases and type-only imports, splits mixed setup/namespace imports, and rewrites a named `export { X } from '@cratis/components'` re-export the same way as the matching import. It reports unsupported cases without guessing: default or whole-package namespace imports, TypeScript `import = require(...)` assignments, dynamic imports, CommonJS `require(...)`, wildcard or whole-package re-exports (`export * from '@cratis/components'` / `export * as X from '@cratis/components'`), side-effect imports, and unknown symbols. Review its diagnostics, then run the consuming project's lint, build, and tests.
 
-#### Migrate Button appearance and change callbacks
+### Migrate Button appearance and change callbacks
 
 Run the root-import codemod above first. The Button and callback codemods resolve Components-owned identifiers from explicit subpaths, so the authoritative order is:
 
@@ -234,7 +210,7 @@ npm install --save-dev "@cratis/eslint-plugin-components@$TOOLING_RANGE"
 
 See the `@cratis/eslint-plugin-components` README included with that package for the flat-config example and the other Components consumer rules.
 
-### Keep the stylesheet entry points
+## Keep the stylesheet entry points
 
 The three Cratis-owned stylesheet entries remain:
 
@@ -250,7 +226,7 @@ import '@cratis/components/theme'; // optional baseline appearance
 
 A custom product design can omit `theme`, define the `--cratis-*` variables itself, and style stable component parts through classes or `pt`.
 
-### Simplify the provider
+## Simplify the provider
 
 The provider now owns locale and Components-specific labels. Unknown renderer keys are a type error so a migrated app cannot silently lose its theme, license, global pass-through, ripple, or z-index behavior. Remove those keys from `CratisComponentsProvider` and configure any remaining direct Prime provider independently.
 
@@ -290,7 +266,7 @@ export const ApplicationRoot = ({ children }: { children: React.ReactNode }) => 
 
 `locales` remains temporarily accepted and maps the old paginator/date labels, but new code should use `messages`. Renderer keys such as `license`, `theme`, `defaults`, `pt`, `ripple`, `unstyled`, and z-index settings are not part of this provider.
 
-### Replace renderer presets with tokens
+## Replace renderer presets with tokens
 
 Remove `styledMode()`, `CratisPreset`, and `primeReactStyles` before upgrading. Components 4 removes three renderer-specific subpaths:
 
@@ -302,7 +278,7 @@ Remove `styledMode()`, `CratisPreset`, and `primeReactStyles` before upgrading. 
 
 There is no compatibility-package replacement in Components 4. Stay on Components 3 while renderer-specific types or selectors remain.
 
-#### Removed symbol mapping
+### Removed symbol mapping
 
 | Removed Components 3 export                                                         | Components 4 action                                                                                   |
 | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -347,7 +323,7 @@ Map product tokens directly in CSS:
 
 This removes the old product-token → Prime preset → Prime variable → Cratis variable translation chain.
 
-### Removed accidental package exports
+## Removed accidental package exports
 
 An audit of the package `exports` map ([#173](https://github.com/Cratis/Components/issues/173)) found implementation-only symbols that were unintentionally reachable from a public subpath — each was exported only because the owning module's barrel used a blanket `export *`, not because it was a supported contract. Components 4 stops re-exporting them from their public barrel; the underlying files keep the symbol for their own internal cross-file use, so this is a package-export change only, not a behavior change.
 
@@ -366,7 +342,7 @@ None of these had a documented contract, and none is required by any other publi
 
 The surfaces this audit confirmed as intentional and kept public — `ToastRecord`, `getToastSnapshot`, `subscribeToToasts`, `ToastDispatch`, `EmojiMemory`, `ChatAuthorKind`, `DEFAULT_TYPE_FORMATS`, `NavigationItem`, `Json`, and `TimeMachine`'s `Properties` — are unchanged and now carry TSDoc explaining their contract and, where relevant, their extension-point role.
 
-### Migrate pass-through configuration
+## Migrate pass-through configuration
 
 The `pt` prop remains the per-part customization surface, but its values are now ordinary HTML attributes and its keys are stable Cratis names. `ptOptions` and `unstyled` remain accepted temporarily but have no effect: part attributes always merge, and Components always uses consumer-owned CSS.
 
@@ -389,7 +365,7 @@ The `pt` prop remains the per-part customization surface, but its values are now
 
 Every meaningful element also carries `data-cratis-part`. Interactive states use attributes such as `data-selected`, `data-invalid`, `data-disabled`, `data-active`, and `data-position`. Do not target React Aria class names or internal DOM structure.
 
-#### Common part mappings
+### Common part mappings
 
 | Components 3 renderer slot     | Components 4 Cratis part                       |
 | ------------------------------ | ---------------------------------------------- |
@@ -408,7 +384,7 @@ Every meaningful element also carries `data-cratis-part`. Interactive states use
 
 See the published [Stable component parts](https://cratis.io/components/styling/pass-through/) reference for the documented foundation surfaces.
 
-#### Migrate a deeply customized product
+### Migrate a deeply customized product
 
 Keep the product's own tokens, Tailwind utilities, dark/high-contrast selectors, and accessibility preferences. Remove the renderer preset that translated those values into a third-party token system, then map the product values directly onto `--cratis-*`.
 
@@ -453,7 +429,7 @@ For an existing nested Prime stepper preset, map the slots by rendered responsib
 
 The old `stepperpanel.header` wrapper has no one-to-one element. Put list-item layout on `step`, and interactive-header styling on `header`. Replace `data-p-active` selectors with `[data-cratis-part='step'][data-active='true']`.
 
-#### Representative migration archetypes
+### Representative migration archetypes
 
 For a product-owned design system, remove `styledMode`, `ProductPreset`, Prime locale types, and the PrimeUI license from the Components provider. Keep `--product-*` as the canonical tokens and map them directly to `--cratis-*`. If the product still imports Prime directly, retain a separate Prime provider, preset, dependencies, and license until those imports are removed. PrimeReact 11 receives its license directly — `<PrimeReactProvider license={primeUiLicense}>` — not through the `value={{ license }}` shape used by `CratisComponentsProvider`. The provider scopes runtime context, not CSS: a Prime theme imported from JavaScript remains document-global, so keep it in the smallest host entry point that owns the island and track every retained island's owner, licensing/theme dependencies, and removal condition. Migrate custom filters from `registerMatcher` to `registerDataTableFilterMatcher`, use the returned `matchMode` in each constraint, and use `resolveDataTableFilterMatcher` when a test or application-owned adapter must verify the live registered predicate.
 
@@ -496,7 +472,7 @@ Pass the parts to either query-backed table:
 
 `Dropdown.inputId` and `Dropdown.panelClassName` remain migration aliases for `id` and `pt.popover.className`, but new code should use the current names.
 
-### Update DatePicker integration
+## Update DatePicker integration
 
 `DatePickerInput` still accepts and emits `Date | null`, but its internal value uses `@internationalized/date`. Formatting now follows the active locale and calendar rather than a PrimeReact mask.
 
@@ -507,7 +483,7 @@ Pass the parts to either query-backed table:
 - `todayLabel` and `clearLabel` override the provider messages for one picker.
 - `showTime` and `hourFormat` remain in the current API.
 
-### Update Dropdown styling and semantics
+## Update Dropdown styling and semantics
 
 `Dropdown` preserves the `value`, `options`, `optionLabel`, `optionValue`, filtering, clear, and change-event model. Single selects now follow the WAI-ARIA button/listbox pattern; filtered selects use a combobox.
 
@@ -515,11 +491,11 @@ Do not assume every Dropdown trigger has `role="combobox"`. Query it by its acce
 
 Multiple selection uses a native multiple-select when filtering is off and an accessible multi-value combobox when `filter` is enabled. Prefer a dedicated collection picker for a large or highly customized multi-select experience.
 
-### Update Tooltip triggers
+## Update Tooltip triggers
 
 `Tooltip` now enhances one actual React-element trigger so focus, hover, and `aria-describedby` stay together. Wrap text, fragments, multiple siblings, or conditional content in one appropriate native control. `className` is merged onto that trigger instead of an extra wrapper.
 
-### Update tables
+## Update tables
 
 `DataTableCore` now renders semantic HTML. Query-backed paging remains owned by Arc.
 
@@ -535,13 +511,13 @@ Common built-in Prime match-mode string values remain compatible because Compone
 
 Separate `RadioButtonField` options bound to one property now require the same explicit `name` prop so native arrow-key radio-group navigation works. `RadioGroupField` and `RatingField` generate a shared internal name automatically.
 
-### Update dialogs and steppers
+## Update dialogs and steppers
 
 Dialog callback, busy, validity, dismissal, and initial-focus contracts remain. The modal/focus implementation is now React Aria-based.
 
 Stepper parts are Cratis-owned: `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, and `panel`. Custom CSS that targeted Prime stepper classes or roles must move to those parts.
 
-### Update notifications
+## Update notifications
 
 The imperative API remains:
 
@@ -556,7 +532,7 @@ toast.success({
 
 The queue, promise lifecycle, dispatch substitution, timeout pause, focus behavior, frames, and region are Cratis-owned. Toast part keys are `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, and `close`.
 
-### Replace direct Prime imports
+## Replace direct Prime imports
 
 Components cannot remove PrimeUI licensing from an application that still imports Prime directly. Replace those imports with Components, native HTML, or application-owned primitives.
 
@@ -574,7 +550,7 @@ Typical replacements:
 
 Complete PrimeIcons class strings remain usable where a component accepts `Icon`, but Components no longer installs the font or adds a missing base class. Consumers that retain it must load its stylesheet and pass the complete class string. Prefer a React icon component or product-owned SVG. `DataPage.MenuItem.icon` remains a React component type rather than `Icon`.
 
-### Verify the migration
+## Verify the migration
 
 1. Remove unused Prime dependencies and the PrimeUI license/provider configuration.
 2. Import `tokens` and `styles`; choose the baseline `theme` or map product tokens.

@@ -7,7 +7,6 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import semver from 'semver';
 import { createFixture, validateMatrix } from './lib/renderer-adapter-matrix.mjs';
-import { releasePolicy, supportWindows, validateReleasePolicy } from '../Migrator/lib/releasePolicy.js';
 
 const repositoryDirectory = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -19,13 +18,13 @@ const outputPaths = [
     'Migrator/compat-manifest.json',
 ];
 const packagePolicies = new Map([
-    ['@cratis/components', { role: 'core' }],
-    ['@cratis/eslint-plugin-components', { role: 'eslint' }],
-    ['@cratis/components.migrator', { role: 'migrator' }],
-    ['@cratis/components.conformance', { role: 'conformance' }],
-    ['@cratis/components.mui', { role: 'renderer-adapter' }],
-    ['@cratis/components.primereact', { role: 'renderer-adapter' }],
-    ['@cratis/components.primereact10', { role: 'renderer-adapter' }],
+    ['@cratis/components', { role: 'core', range: '>=4 <5' }],
+    ['@cratis/eslint-plugin-components', { role: 'eslint', range: '>=4 <5' }],
+    ['@cratis/components.migrator', { role: 'migrator', range: '>=4 <5' }],
+    ['@cratis/components.conformance', { role: 'conformance', range: '>=4 <5' }],
+    ['@cratis/components.mui', { role: 'renderer-adapter', range: '>=4 <5' }],
+    ['@cratis/components.primereact', { role: 'renderer-adapter', range: '>=4 <5' }],
+    ['@cratis/components.primereact10', { role: 'renderer-adapter', range: '>=4 <5' }],
 ]);
 const packageOrder = [...packagePolicies.keys()];
 const privateEvidence = [
@@ -85,8 +84,6 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
         };
     }
 
-    const version = publicPackages[0].version;
-    const { range } = releasePolicy(version);
     const manifest = {
         schemaVersion: 2,
         releaseStatus: 'publication-authorized',
@@ -102,11 +99,41 @@ export function createCompatibilityManifest(rootDirectory = repositoryDirectory)
             })),
         },
         toolingCompatibility: {
-            componentsCore: range,
-            eslint: range,
-            migrator: range,
+            componentsCore: '>=4 <5',
+            eslint: '>=4 <5',
+            migrator: '>=4 <5',
         },
-        supportWindows: supportWindows(version),
+        supportWindows: {
+            components3: {
+                components: '>=3 <4',
+                status: 'maintenance-security-critical',
+                migrationRole: 'source',
+                migrationTarget: '>=4 <5',
+                tooling: '>=4 <5',
+                eolAt: null,
+                eolApprovedByOwners: false,
+                ownerDecisionPolicy:
+                    'Set and approve EOL no later than 12 months after Components 4 GA.',
+            },
+            components4: {
+                components: '>=4 <5',
+                status: 'current',
+                migrationRole: 'target',
+                rendererAbi: 1,
+                coreProfile: 'core/v1',
+                adapterProfile: 'stable-presentation/v1',
+                tooling: {
+                    eslint: '>=4 <5',
+                    migrator: '>=4 <5',
+                },
+                adapters: {
+                    '@cratis/components.conformance': '>=4 <5',
+                    '@cratis/components.mui': '>=4 <5',
+                    '@cratis/components.primereact': '>=4 <5',
+                    '@cratis/components.primereact10': '>=4 <5',
+                },
+            },
+        },
         packages: publicPackages,
     };
 
@@ -142,20 +169,19 @@ export function validateCompatibilityManifest(
         ({ name }) => name === '@cratis/components',
     )?.version;
     if (!repositoryVersion) fail('Core package version is missing.');
-    const { range } = releasePolicy(repositoryVersion);
 
     for (const entry of manifest.packages ?? []) {
         const policy = packagePolicies.get(entry.name);
         if (!policy) fail(`Unexpected public package '${entry.name}'.`);
-        if (entry.role !== policy.role || entry.releaseMajorRange !== range) {
+        if (entry.role !== policy.role || entry.releaseMajorRange !== policy.range) {
             fail(`${entry.name} has invalid role or release-major policy metadata.`);
         }
         if (semver.valid(entry.version) !== entry.version) {
             fail(`${entry.name} must declare a valid exact current version.`);
         }
-        if (!semver.satisfies(entry.version, range)) {
+        if (!semver.satisfies(entry.version, policy.range)) {
             fail(
-                `${entry.name}@${entry.version} is outside supported release range '${range}'.`,
+                `${entry.name}@${entry.version} is outside supported release range '${policy.range}'.`,
             );
         }
         if (entry.private || entry.packageAccess !== 'public') {
@@ -182,7 +208,49 @@ export function validateCompatibilityManifest(
         }
     }
 
-    validateReleasePolicy(manifest, repositoryVersion);
+    const tooling = manifest.toolingCompatibility ?? {};
+    if (
+        tooling.componentsCore !== '>=4 <5' ||
+        tooling.eslint !== '>=4 <5' ||
+        tooling.migrator !== '>=4 <5'
+    ) {
+        fail('Core 4 tooling compatibility must remain bounded to >=4 <5.');
+    }
+
+    const components3 = manifest.supportWindows?.components3;
+    const components4 = manifest.supportWindows?.components4;
+    if (
+        components3?.components !== '>=3 <4' ||
+        components3?.status !== 'maintenance-security-critical' ||
+        components3?.migrationTarget !== '>=4 <5' ||
+        components3?.tooling !== '>=4 <5' ||
+        !components3.ownerDecisionPolicy?.includes('12 months after Components 4 GA')
+    ) {
+        fail('The Components 3 maintenance and migration support window is incomplete.');
+    }
+    if (
+        components4?.components !== '>=4 <5' ||
+        components4?.status !== 'current' ||
+        components4?.rendererAbi !== 1 ||
+        components4?.coreProfile !== 'core/v1' ||
+        components4?.adapterProfile !== 'stable-presentation/v1' ||
+        components4?.tooling?.eslint !== '>=4 <5' ||
+        components4?.tooling?.migrator !== '>=4 <5'
+    ) {
+        fail('The Components 4 compatibility window is incomplete.');
+    }
+    const expectedAdapterRanges = Object.fromEntries(
+        packageOrder
+            .filter((name) =>
+                ['conformance', 'renderer-adapter'].includes(
+                    packagePolicies.get(name).role,
+                ),
+            )
+            .map((name) => [name, packagePolicies.get(name).range]),
+    );
+    if (JSON.stringify(components4?.adapters) !== JSON.stringify(expectedAdapterRanges)) {
+        fail('Components 4 must list the exact Conformance and adapter release ranges.');
+    }
 
     const evidence = manifest.gaScope?.privateEvidence ?? [];
     if (
@@ -252,7 +320,7 @@ function packageEntry(packageJson) {
         name: packageJson.name,
         role: policy.role,
         version: packageJson.version,
-        releaseMajorRange: releasePolicy(packageJson.version).range,
+        releaseMajorRange: policy.range,
         independentRelease: packageJson.cratisIndependentVersion === true,
         private: packageJson.private === true,
         packageAccess: packageJson.publishConfig?.access ?? null,
