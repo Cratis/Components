@@ -23,6 +23,12 @@ export interface AutoCommandFormProps<
      * be user-editable, or one a custom field placed elsewhere on the page already covers.
      */
     exclude?: (keyof TCommand)[];
+
+    /**
+     * Optional content rendered after the generated fields, inside the native Arc form and
+     * command context. Supply a submit control here when needed; no action is added by default.
+     */
+    footer?: React.ReactNode;
 }
 
 function formatTitle(propertyName: string): string {
@@ -50,7 +56,7 @@ function formatTitle(propertyName: string): string {
 export function AutoCommandForm<TCommand extends object = object, TResponse = object>(
     props: AutoCommandFormProps<TCommand, TResponse>,
 ): React.ReactElement {
-    const { exclude, ...commandFormProps } = props;
+    const { exclude, footer, ...commandFormProps } = props;
     // SAFETY: Arc command constructors expose the Command property-descriptor contract at runtime.
     const propertyDescriptors = useMemo(
         () => (new props.command() as unknown as Command).propertyDescriptors,
@@ -88,5 +94,10 @@ export function AutoCommandForm<TCommand extends object = object, TResponse = ob
         })
         .filter((field): field is React.ReactElement => field !== null);
 
-    return <CommandForm {...commandFormProps}>{fields}</CommandForm>;
+    return (
+        <CommandForm {...commandFormProps}>
+            {fields}
+            {footer}
+        </CommandForm>
+    );
 }

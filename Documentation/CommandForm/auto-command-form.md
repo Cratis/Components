@@ -25,8 +25,28 @@ A property whose type has no registered provider - a nested object, an array, an
 |------|------|---------|-------------|
 | `command` | `Constructor<TCommand>` | — | **Required.** The command type to generate fields for. |
 | `exclude` | `(keyof TCommand)[]` | — | Property names to leave out of the generated field list. |
+| `footer` | `React.ReactNode` | — | Optional content after the generated fields, inside the native Arc form and command context. |
 
 `AutoCommandForm` also accepts every other `CommandForm` prop (`initialValues`, `populateFromQuery`, `onSuccess`, `validateOn`, and so on) except `children`, which it generates itself.
+
+## Adding an action inside the form
+
+The default remains fields-only. Supply `footer` to add content or a native submit control:
+
+```tsx
+import { AutoCommandForm } from '@cratis/components/CommandForm';
+import { SampleCommand } from './SampleCommand';
+
+<AutoCommandForm
+    command={SampleCommand}
+    footer={<button type='submit'>Submit</button>}
+/>
+```
+
+The button submits Arc's existing form; it does not create a second command or executor.
+A component placed in `footer` can use Arc's `useCommandFormContext` for execution and
+authorization state. `footer` takes React content, not a render callback, and adds no wrapper
+or DOM-prop forwarding. Authorization and validation behavior remain Arc's responsibility.
 
 ## Registering a field type provider
 
