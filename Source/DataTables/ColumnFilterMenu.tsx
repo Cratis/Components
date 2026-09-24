@@ -31,6 +31,14 @@ import {
 /** Value editor used by a built-in column filter. */
 export type ColumnFilterDataType = 'text' | 'numeric' | 'date' | 'boolean';
 
+/** One selectable value offered by a column filter that filters over a known set. */
+export interface ColumnFilterOption {
+    /** The text shown for this value in the filter menu. */
+    label: string;
+    /** The value written into the filter constraint when this option is picked. */
+    value: unknown;
+}
+
 /** Localizable labels owned by the column filter popup. */
 export interface ColumnFilterMenuLabels {
     /** Builds the filter-trigger accessible name from the effective field. */
@@ -126,6 +134,8 @@ export interface ColumnFilterMenuProps {
     showMatchModes?: boolean;
     /** Custom value editor replacing the built-in control. */
     filterElement?: ColumnFilterElement;
+    /** The values this column can be filtered by, offered as a list instead of a free-form input. */
+    filterOptions?: ColumnFilterOption[];
     /** Partial localization overrides. */
     labels?: Partial<ColumnFilterMenuLabels>;
     /** Stable part attributes. */
@@ -142,6 +152,13 @@ interface MatchModeOption {
     label: string;
     value: FilterMatchMode;
 }
+
+// A column that filters over a known set of values has only two questions worth asking of it - is it
+// this one, or is it not - so the free-text and numeric comparisons are not offered for it.
+const valueMatchModeOptions: MatchModeOption[] = [
+    { label: 'Equals', value: DataTableFilterMatchMode.Equals },
+    { label: 'Not equals', value: DataTableFilterMatchMode.NotEquals },
+];
 
 const optionsFor = (dataType: ColumnFilterDataType): MatchModeOption[] => {
     switch (dataType) {
@@ -191,6 +208,7 @@ export const ColumnFilterMenu = ({
     placeholder,
     showMatchModes = true,
     filterElement,
+    filterOptions,
     labels,
     pt,
     constraint,
@@ -272,10 +290,12 @@ export const ColumnFilterMenu = ({
         true: labels?.true ?? columnFilterMessages?.true ?? defaultColumnFilterMenuLabels.true,
         false: labels?.false ?? columnFilterMessages?.false ?? defaultColumnFilterMenuLabels.false,
     };
-    const modeOptions = optionsFor(dataType).map((option) => ({
-        ...option,
-        label: resolvedLabels.matchModeLabel(option.value, option.label),
-    }));
+    const modeOptions = (filterOptions ? valueMatchModeOptions : optionsFor(dataType)).map(
+        (option) => ({
+            ...option,
+            label: resolvedLabels.matchModeLabel(option.value, option.label),
+        }),
+    );
     if (!modeOptions.some((option) => option.value === draftMode)) {
         modeOptions.push({
             label: resolvedLabels.matchModeLabel(draftMode, String(draftMode)),
@@ -298,7 +318,22 @@ export const ColumnFilterMenu = ({
         event?.preventDefault();
     };
 
-    const valueInput = filterElement
+    const valueInput = filterOptions
+        ? (
+              <Dropdown
+                  value={draftValue}
+                  options={filterOptions}
+                  optionLabel='label'
+                  optionValue='value'
+                  placeholder={placeholder}
+                  showClear
+                  onChange={(value) => setDraftValue(() => value)}
+                  aria-label={resolvedLabels.valueAriaLabel(field)}
+                  className={pt?.input?.className}
+                  style={pt?.input?.style}
+              />
+          )
+        : filterElement
         ? filterElement({
               field,
               value: draftValue,
@@ -390,7 +425,15 @@ export const ColumnFilterMenu = ({
                 data-open={isOpen || undefined}
                 data-cratis-part='filter-trigger'
             >
-                <span aria-hidden='true'>⌕</span>
+                <svg
+                    className='cratis-filter-trigger__icon'
+                    viewBox='0 0 16 16'
+                    fill='currentColor'
+                    aria-hidden='true'
+                    focusable='false'
+                >
+                    <path d='M1.5 2.5A.5.5 0 0 1 2 2h12a.5.5 0 0 1 .38.82L10 8.1v4.52a.5.5 0 0 1-.24.43l-3 1.8A.5.5 0 0 1 6 14.42V8.1L1.62 2.82a.5.5 0 0 1-.12-.32Z' />
+                </svg>
             </AriaButton>
             <Popover
                 {...pt?.popover}

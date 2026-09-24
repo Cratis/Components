@@ -97,6 +97,8 @@ export interface CratisNotificationsMessages {
 export interface CratisDataTableMessages {
     /** Accessible name for a single-selection row control. */
     selectRow?: string;
+    /** Accessible name for the select-all control in a multiple-selection header. */
+    selectAllRows?: string;
     /** Placeholder for the loaded-page search input. */
     search?: string;
     /** Accessible name for the loaded-page search input. */

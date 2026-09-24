@@ -7,6 +7,7 @@ import type {
     ColumnFilterElement,
     ColumnFilterMenuLabels,
     ColumnFilterMenuParts,
+    ColumnFilterOption,
 } from './ColumnFilterMenu';
 
 /**
@@ -35,12 +36,22 @@ export interface ColumnProps<TData = unknown> {
     showFilterMatchModes?: boolean;
     /** Custom value editor rendered instead of the built-in column filter editor. */
     filterElement?: ColumnFilterElement;
+    /**
+     * The values this column can be filtered by. Supply this for a column whose values come from a
+     * known set - a status, a kind, an enum rendered as text - so the filter offers those values
+     * instead of asking the user to type one. Takes precedence over {@link filterElement}, and
+     * narrows the match modes to equals/not equals.
+     */
+    filterOptions?: ColumnFilterOption[];
     /** Overrides the column filter menu's default English labels. */
     filterLabels?: Partial<ColumnFilterMenuLabels>;
     /** Stable part attributes for this column's filter popup. */
     filterPt?: ColumnFilterMenuParts;
-    /** Renders a single-row selection radio instead of a data column. */
-    selectionMode?: 'single';
+    /**
+     * Renders a selection control instead of a data column - a radio for `'single'`, or a checkbox
+     * plus a select-all checkbox in the header for `'multiple'`.
+     */
+    selectionMode?: 'single' | 'multiple';
     /** Inline style for every body cell in the column. */
     style?: React.CSSProperties;
     /** Class name for every body cell in the column. */

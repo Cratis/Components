@@ -13,6 +13,14 @@
     border-radius: 0.25rem;
 }
 
+/* Sized against the header row rather than the ambient font, so the affordance stays legible and
+   clickable whatever type scale the surrounding table is rendered at. */
+.cratis-filter-trigger__icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    display: block;
+}
+
 .cratis-filter-trigger:hover {
     background: var(--cratis-surface-hover);
     color: var(--cratis-text-color);
