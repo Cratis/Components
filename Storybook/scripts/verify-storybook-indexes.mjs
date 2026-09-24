@@ -86,8 +86,8 @@ const { slotOwningModules, matrixStoryIds } = computeRendererMatrixScope({
 if (slotOwningModules.size !== 14) {
     throw new Error(`Expected 14 slot-owning modules (the stable nine-slot presentation profile plus experimental slots), found ${slotOwningModules.size}.`);
 }
-if (matrixStoryIds.size !== 176) {
-    throw new Error(`Expected 176 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
+if (matrixStoryIds.size !== 178) {
+    throw new Error(`Expected 178 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
 }
 
 const appearances = 2;
