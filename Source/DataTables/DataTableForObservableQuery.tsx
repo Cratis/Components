@@ -65,6 +65,21 @@ export interface DataTableForObservableQueryProps<
     onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
 
     /**
+     * The row selection mode. Defaults to `'single'`.
+     */
+    selectionMode?: 'single' | 'multiple';
+
+    /**
+     * The currently selected rows, for `selectionMode='multiple'`.
+     */
+    selectedItems?: TDataType[];
+
+    /**
+     * Callback for when a multiple selection changes, with the full selected set.
+     */
+    onSelectedItemsChange?(items: TDataType[]): void;
+
+    /**
      * Fields to use for global filtering
      */
     globalFilterFields?: string[] | undefined;
@@ -250,9 +265,11 @@ export const DataTableForObservableQuery = <
                     data={rows}
                     dataKey={props.dataKey}
                     emptyMessage={emptyMessage}
-                    selectionMode='single'
+                    selectionMode={props.selectionMode ?? 'single'}
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
+                    selectedItems={props.selectedItems}
+                    onSelectedItemsChange={props.onSelectedItemsChange}
                     globalFilterFields={props.globalFilterFields}
                     globalSearchPlaceholder={props.globalSearchPlaceholder}
                     globalSearchAriaLabel={props.globalSearchAriaLabel}

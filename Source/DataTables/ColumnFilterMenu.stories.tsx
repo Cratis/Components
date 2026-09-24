@@ -41,6 +41,19 @@ export const Boolean: Story = {
     play: openMenu,
 };
 
+/** A column whose values come from a known set offers those values instead of a free-form input. */
+export const KnownValues: Story = {
+    args: {
+        field: 'runningState',
+        filterOptions: [
+            { label: 'Active', value: 1 },
+            { label: 'Disconnected', value: 4 },
+            { label: 'Quarantined', value: 5 },
+        ],
+    },
+    play: openMenu,
+};
+
 export const LocalizedAndCustomized: Story = {
     args: {
         labels: {

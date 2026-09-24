@@ -54,6 +54,39 @@ export const LoadedArray: Story = {
     render: () => <LocalTable />,
 };
 
+const MultipleSelectionTable = () => {
+    const [selected, setSelected] = useState<Person[]>([people[1]]);
+    return (
+        <DataTableCore<Person>
+            data={people}
+            dataKey='id'
+            emptyMessage='No people'
+            selectionMode='multiple'
+            selectedItems={selected}
+            onSelectedItemsChange={setSelected}
+            globalFilterFields={['name', 'role']}
+        >
+            <Column<Person> selectionMode='multiple' />
+            <Column<Person> field='name' header='Name' sortable />
+            <Column<Person>
+                field='role'
+                header='Role'
+                filter
+                filterOptions={[
+                    { label: 'Administrator', value: 'Administrator' },
+                    { label: 'Developer', value: 'Developer' },
+                    { label: 'Viewer', value: 'Viewer' },
+                ]}
+            />
+        </DataTableCore>
+    );
+};
+
+/** Bulk selection: a checkbox per row, and a select-all that covers the rows the filter leaves visible. */
+export const MultipleSelection: Story = {
+    render: () => <MultipleSelectionTable />,
+};
+
 export const Empty: Story = {
     render: () => (
         <DataTableCore<Person> data={[]} emptyMessage='No people'>

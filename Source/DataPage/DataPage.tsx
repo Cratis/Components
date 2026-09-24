@@ -106,7 +106,10 @@ const pageStyle: CSSProperties = { minHeight: '20rem' };
  */
 export const MenuItems = ({ children }: MenuItemsProps) => {
     const context = useDataPageContext();
-    const isDisabled = !context.selectedItem;
+    const isDisabled =
+        context.selectionMode === 'multiple'
+            ? context.selectedItems.length === 0
+            : !context.selectedItem;
 
     const items = useMemo(() => {
         const menuItems: ActionMenuItem[] = [];
@@ -223,6 +226,8 @@ interface IDataPageContext extends DataPageProps<
 > {
     selectedItem: object | null | undefined;
     onSelectionChanged: (event: DataTableSelectionChangeEvent<object>) => void;
+    selectedItems: object[];
+    onSelectedItemsChange: (items: object[]) => void;
 }
 
 const DataPageContext = React.createContext<IDataPageContext | null>(null);
@@ -295,6 +300,24 @@ export interface DataPageProps<
      * Callback for when the selection changes
      */
     onSelectionChange?(event: DataTableSelectionChangeEvent<TDataType>): void;
+
+    /**
+     * The row selection mode. Defaults to `'single'`. Use `'multiple'` for a page whose actions
+     * operate on a set of rows - it adds per-row checkboxes and a select-all header checkbox, and
+     * reports through {@link onSelectedItemsChange}.
+     */
+    selectionMode?: 'single' | 'multiple';
+
+    /**
+     * The currently selected rows, for `selectionMode='multiple'`. Leave undefined to let the page
+     * own the selection.
+     */
+    selectedItems?: TDataType[];
+
+    /**
+     * Callback for when a multiple selection changes, with the full selected set.
+     */
+    onSelectedItemsChange?(items: TDataType[]): void;
 
     /**
      * Fields to use for global filtering
@@ -511,6 +534,16 @@ const DataPage = <
         props.onSelectionChange?.(event);
     };
 
+    const [internalSelectedItems, setInternalSelectedItems] = React.useState<TDataType[]>(
+        props.selectedItems ?? [],
+    );
+    const selectedItems = props.selectedItems ?? internalSelectedItems;
+
+    const selectedItemsChanged = (items: TDataType[]) => {
+        if (props.selectedItems === undefined) setInternalSelectedItems(items);
+        props.onSelectedItemsChange?.(items);
+    };
+
     // SAFETY: React context cannot retain this component's generic parameters. The
     // provider and every consumer are nested in the same DataPage invocation, so the
     // erased object-level context never crosses between differently typed pages.
@@ -518,6 +551,8 @@ const DataPage = <
         ...props,
         selectedItem,
         onSelectionChanged: selectionChanged,
+        selectedItems,
+        onSelectedItemsChange: selectedItemsChanged,
     } as unknown as IDataPageContext;
 
     return (

@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, {
+    useEffect,
     useId,
     useMemo,
+    useRef,
     useState,
     type CSSProperties,
     type HTMLAttributes,
@@ -75,14 +77,24 @@ export interface DataTableCoreProps<TData extends object> {
     dataKey?: string;
     /** Content shown when the loaded page has no matching rows. */
     emptyMessage: ReactNode;
-    /** Enables single-row selection. */
-    selectionMode?: 'single';
+    /**
+     * Enables row selection. `'single'` selects one row at a time through row activation;
+     * `'multiple'` adds per-row checkboxes and a select-all header checkbox, and reports through
+     * {@link onSelectedItemsChange} rather than {@link onSelectionChange}.
+     */
+    selectionMode?: 'single' | 'multiple';
     /** Accessible name for row selection controls. Falls back to the provider's `dataTable.selectRow` message, then `'Select row'`. */
     selectionAriaLabel?: string;
-    /** Controlled selected row. */
+    /** Accessible name for the select-all control. Falls back to the provider's `dataTable.selectAllRows` message, then `'Select all rows'`. */
+    selectAllAriaLabel?: string;
+    /** Controlled selected row. Applies to `selectionMode='single'`. */
     selection?: TData | null;
-    /** Invoked when row selection changes. */
+    /** Invoked when the single-row selection changes. */
     onSelectionChange?: (event: DataTableSelectionChangeEvent<TData>) => void;
+    /** Controlled selected rows. Applies to `selectionMode='multiple'`. */
+    selectedItems?: TData[];
+    /** Invoked with the full set of selected rows when a multiple selection changes. */
+    onSelectedItemsChange?: (items: TData[]) => void;
     /** Invoked when a row is clicked or keyboard activated. */
     onRowClick?: (event: DataTableRowClickEvent<TData>) => void;
     /** Builds an extra class name for one row. */
@@ -258,8 +270,11 @@ export const DataTableCore = <TData extends object>({
     emptyMessage,
     selectionMode,
     selectionAriaLabel,
+    selectAllAriaLabel,
     selection,
     onSelectionChange,
+    selectedItems,
+    onSelectedItemsChange,
     onRowClick,
     rowClassName,
     globalFilterFields,
@@ -277,6 +292,8 @@ export const DataTableCore = <TData extends object>({
     const dataTableMessages = messages?.dataTable;
     const resolvedSelectionAriaLabel =
         selectionAriaLabel ?? dataTableMessages?.selectRow ?? 'Select row';
+    const resolvedSelectAllAriaLabel =
+        selectAllAriaLabel ?? dataTableMessages?.selectAllRows ?? 'Select all rows';
     const resolvedGlobalSearchPlaceholder =
         globalSearchPlaceholder ?? dataTableMessages?.search ?? 'Search…';
     const resolvedGlobalSearchAriaLabel =
@@ -341,6 +358,9 @@ export const DataTableCore = <TData extends object>({
         if (selectionMode === 'single') {
             onSelectionChange?.({ value: row, originalEvent });
         }
+        if (selectionMode === 'multiple') {
+            toggleRowSelection(row);
+        }
     };
 
     const dataKeyIdentity = (row: TData) =>
@@ -375,6 +395,61 @@ export const DataTableCore = <TData extends object>({
         if (selectedLoadedIndex >= 0) return loadedIndex === selectedLoadedIndex;
         return loadedIndex === firstLoadedIndexByDataKey.get(identity);
     };
+
+    // Membership is by dataKey when there is one, and by object identity otherwise. A table whose
+    // rows are replaced wholesale on every refresh - which is every observable query - keeps its
+    // selection only in the first case, which is why dataKey matters here as much as it does for
+    // single selection.
+    const selectedItemsList = useMemo(() => selectedItems ?? [], [selectedItems]);
+    const isRowSelected = (row: TData) =>
+        dataKey
+            ? selectedItemsList.some(
+                  (selected) => dataKeyIdentity(selected) === dataKeyIdentity(row),
+              )
+            : selectedItemsList.includes(row);
+
+    const toggleRowSelection = (row: TData) => {
+        const next = isRowSelected(row)
+            ? selectedItemsList.filter((selected) =>
+                  dataKey
+                      ? dataKeyIdentity(selected) !== dataKeyIdentity(row)
+                      : selected !== row,
+              )
+            : [...selectedItemsList, row];
+        onSelectedItemsChange?.(next);
+    };
+
+    // Select-all means the rows the user can currently see. A filtered table that silently selected
+    // rows hidden behind the filter would act on more than it showed, which is the whole hazard of a
+    // bulk action.
+    const visibleRows = filteredRows.map(({ row }) => row);
+    const isVisibleRow = (row: TData) =>
+        dataKey
+            ? visibleRows.some((visible) => dataKeyIdentity(visible) === dataKeyIdentity(row))
+            : visibleRows.includes(row);
+    const selectedVisibleCount = visibleRows.filter((row) => isRowSelected(row)).length;
+    const allFilteredRowsSelected =
+        visibleRows.length > 0 && selectedVisibleCount === visibleRows.length;
+    const someFilteredRowsSelected =
+        selectedVisibleCount > 0 && !allFilteredRowsSelected;
+    const selectAllRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (selectAllRef.current) {
+            selectAllRef.current.indeterminate = someFilteredRowsSelected;
+        }
+    }, [someFilteredRowsSelected]);
+
+    const toggleSelectAll = () => {
+        if (allFilteredRowsSelected) {
+            onSelectedItemsChange?.(
+                selectedItemsList.filter((selected) => !isVisibleRow(selected)),
+            );
+            return;
+        }
+        const additions = visibleRows.filter((row) => !isRowSelected(row));
+        onSelectedItemsChange?.([...selectedItemsList, ...additions]);
+    };
+
 
     return (
         <div
@@ -485,10 +560,24 @@ export const DataTableCore = <TData extends object>({
                                             data-cratis-part='header-content'
                                             data-selected={Boolean(ariaSort) || undefined}
                                         >
-                                            {column.props.selectionMode && (
-                                                <span className='cratis-datatable__sr-only'>
-                                                    {resolvedSelectionAriaLabel}
-                                                </span>
+                                            {column.props.selectionMode ===
+                                            'multiple' ? (
+                                                <input
+                                                    type='checkbox'
+                                                    aria-label={
+                                                        resolvedSelectAllAriaLabel
+                                                    }
+                                                    data-cratis-part='select-all'
+                                                    checked={allFilteredRowsSelected}
+                                                    ref={selectAllRef}
+                                                    onChange={toggleSelectAll}
+                                                />
+                                            ) : (
+                                                column.props.selectionMode && (
+                                                    <span className='cratis-datatable__sr-only'>
+                                                        {resolvedSelectionAriaLabel}
+                                                    </span>
+                                                )
                                             )}
                                             {column.props.sortable &&
                                             column.props.field ? (
@@ -537,6 +626,9 @@ export const DataTableCore = <TData extends object>({
                                                     }
                                                     filterElement={
                                                         column.props.filterElement
+                                                    }
+                                                    filterOptions={
+                                                        column.props.filterOptions
                                                     }
                                                     labels={column.props.filterLabels}
                                                     pt={column.props.filterPt}
@@ -596,7 +688,9 @@ export const DataTableCore = <TData extends object>({
                                     selectionMode === 'single' &&
                                     isSelectedRow(row, loadedIndex);
                                 const isInteractive =
-                                    Boolean(onRowClick) || selectionMode === 'single';
+                                    Boolean(onRowClick) ||
+                                    selectionMode === 'single' ||
+                                    selectionMode === 'multiple';
                                 return (
                                     <tr
                                         key={rowKey}
@@ -648,7 +742,22 @@ export const DataTableCore = <TData extends object>({
                                                 data-cratis-part='cell'
                                                 data-selected={isSelected || undefined}
                                             >
-                                                {column.props.selectionMode ? (
+                                                {column.props.selectionMode ===
+                                                'multiple' ? (
+                                                    <input
+                                                        type='checkbox'
+                                                        aria-label={
+                                                            resolvedSelectionAriaLabel
+                                                        }
+                                                        checked={isRowSelected(row)}
+                                                        onClick={(event) =>
+                                                            event.stopPropagation()
+                                                        }
+                                                        onChange={() =>
+                                                            toggleRowSelection(row)
+                                                        }
+                                                    />
+                                                ) : column.props.selectionMode ? (
                                                     <input
                                                         type='radio'
                                                         name={selectionGroupName}

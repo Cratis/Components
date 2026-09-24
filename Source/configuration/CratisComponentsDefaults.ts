@@ -44,6 +44,7 @@ export const cratisDefaults: CratisComponentsConfig = {
         },
         dataTable: {
             selectRow: 'Select row',
+            selectAllRows: 'Select all rows',
             search: 'Search…',
             searchAriaLabel: 'Search table',
         },
