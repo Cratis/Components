@@ -30,8 +30,10 @@ whether publication is required. The npm job:
 2. installs the committed lockfile with `yarn install --immutable`;
 3. builds all public workspaces;
 4. updates every public workspace and local workspace dependency to the release version;
-5. publishes each package publicly with npm provenance; and
-6. triggers documentation and sample dependency updates.
+5. publishes each package publicly with npm provenance;
+6. polls the npm registry until every public package answers at the release version, failing the
+   job if one is still missing after about ten minutes; and
+7. triggers documentation and sample dependency updates.
 
 Publishing stops on the first package failure. The workflow fails explicitly when a release-bearing
 merge cannot be associated with a valid version label.

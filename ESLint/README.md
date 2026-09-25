@@ -14,15 +14,10 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 
 Both import rules cover static `import` and re-`export … from` forms. The root-barrel rule also reports TypeScript `import = require(...)`, dynamic `import(...)`, and CommonJS `require(...)` of the package root; ambiguous forms are never autofixed.
 
-> **Publication status:** The install examples target the owner-authorized 4.0.0 npm release. When
-> reading this README from repository source before that release, verify availability with
-> `npm view @cratis/eslint-plugin-components@4.0.0 version`; source contributors use the workspace
-> commands in this checkout instead.
-
 ## Install
 
-Use the independently released Components 4 tooling train bounded to `>=4 <5`. Never use
-`latest`; plugin patches can release independently from Components Core:
+The plugin is released at the same version as `@cratis/components`. Install the Components 4
+tooling train bounded to `>=4 <5` so a future major cannot arrive unannounced. Never use `latest`:
 
 ```sh
 TOOLING_RANGE='^4.0.0' # Shell-safe equivalent of >=4 <5.
@@ -100,7 +95,8 @@ Components 4 removes every component-family namespace from the package root. The
 
 - `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig`;
 - `CratisComponentsConfig`, `CratisComponentsProviderProps`, and `CratisComponentsMessages`;
-- `CratisPaginatorMessages`, `CratisDatePickerMessages`, `CratisDropdownMessages`, `CratisDialogMessages`, `CratisStepperMessages`, `CratisNotificationsMessages`, `CratisDataTableMessages`, and `CratisColumnFilterMessages`.
+- `CratisPaginatorMessages`, `CratisDatePickerMessages`, `CratisDropdownMessages`, `CratisDialogMessages`, `CratisStepperMessages`, `CratisNotificationsMessages`, `CratisDataTableMessages`, and `CratisColumnFilterMessages`;
+- `CratisComponentsIcons`, `CratisIconResolver`, and `useCratisIcon`.
 
 ```ts
 // ✅ approved setup symbols stay at the root
@@ -142,8 +138,10 @@ The rule never guesses. Each of these is flagged with guidance but **not** autof
 - The Components 3.6 `Compatibility` namespace and direct pass-through exports — reported
   as known removals with typed-parts guidance and never autofixed because Components 4 has
   no compatibility subpath.
-- Any `export … from '@cratis/components'` re-export form — flagged with the same subpath
-  guidance, but re-exports are never autofixed.
+- Any `export … from '@cratis/components'` re-export of a namespace, removed compatibility
+  export, or unknown symbol, and any wildcard re-export — flagged with the same subpath
+  guidance, but re-exports are never autofixed. Re-exporting an approved setup symbol is
+  allowed.
 
 A companion, standalone codemod applies the equivalent rewrite across a whole project in one
 pass, and additionally autofixes a named `export { Canvas } from '@cratis/components'`
@@ -153,10 +151,12 @@ form with guidance but never autofixes any of them; see
 
 ### `onbeforeexecute-must-return`
 
-`onBeforeExecute` (on `CommandDialog`, `StepperCommandDialog`, `CommandScope`, …) is a
-**transformer**: it receives the current command values and must **return** them (mutated or
-not). A callback that returns nothing does not run the command with `undefined` — a runtime
-guard (`applyBeforeExecute`) falls back to the current object and logs a `console.warn`.
+`onBeforeExecute` on `CommandDialog`, `StepperCommandDialog`, `CommandStepper`, and Arc's
+`CommandForm` is a **transformer**: it receives the current command values and must **return** them (mutated or
+not). In the Components wrappers, a callback that returns nothing does not run the command with
+`undefined` — a runtime guard (`applyBeforeExecute`) falls back to the current object and logs a
+`console.warn`. Arc's standalone `CommandForm` (22.16.0) uses the returned value directly, with no
+such fallback.
 In-place mutations may therefore remain, but a replacement object is discarded and the call
 still violates the transformer contract. TypeScript catches this at fully typed call sites;
 this rule is the static backstop for JavaScript and loosely typed consumers, so behavior never
@@ -177,6 +177,11 @@ It flags JSX attribute (`onBeforeExecute={…}`), object property (`{ onBeforeEx
 and variable (`const onBeforeExecute = …`) forms. It is a lint backstop, not a full
 control-flow analysis: a callback that returns a value on some branches but can still fall
 through is not flagged.
+
+The rule matches the `onBeforeExecute` name, not the component. Arc's `CommandScope` also has an
+`onBeforeExecute` prop, but it is typed `(command) => void` and is not a transformer; the rule
+still reports a callback there that returns nothing. Return the command (harmless) or disable the
+rule for that line.
 
 ### `no-hooks-in-view-model`
 

@@ -5,7 +5,7 @@ Components 4 replaces the PrimeReact-backed Components 3 foundation with Compone
 This is a major-version migration. Rendered markup, styling parts, provider configuration, date entry, root imports, and some deprecated props change.
 
 :::note
-An application that has not migrated remains on its Components 3 package profile, including the third-party dependencies declared by that version. Components `>=3 <4` is in maintenance/security-critical support while Components `>=4 <5` is the current candidate and migration target. Owners must decide and approve the Components 3 EOL date no later than 12 months after Components 4 GA. Components 4 does not provide a transparent Prime compatibility package. Its repository-versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters are optional and cover only the nine `common.*` presentation slots.
+An application that has not migrated remains on its Components 3 package profile, including the third-party dependencies declared by that version. Components `>=4 <5` is the current release line and the migration target; Components `>=3 <4` is in maintenance/security-critical support. No Components 3 end-of-life date has been set yet; the support policy requires one to be set no later than 12 months after the Components 4.0.0 release. Components 4 does not provide a transparent Prime compatibility package. Its repository-versioned `@cratis/components.mui`, `@cratis/components.primereact` (PrimeReact 11), and `@cratis/components.primereact10` adapters are optional and cover only the nine `common.*` presentation slots; see the published [Renderer adapters and coexistence](https://cratis.io/components/renderers/) guide.
 :::
 
 The adapters do not replace complete Components widgets. Core continues to own Dialog, Dropdown, DatePicker, paginator, table, focus, overlay, selection, and keyboard behavior; an adapter only presents button, icon-button, text-input, text-area, checkbox, radio, switch, progress, and surface slots. Installing an adapter neither restores PrimeReact public APIs nor transfers key handling to the adapter.
@@ -76,6 +76,8 @@ import { Canvas, CanvasItem } from '@cratis/components/Canvas';
 ```
 
 This is an intentional Components 4 breaking change. The package root now exposes setup APIs only; component namespaces no longer exist there. Every retained namespace maps mechanically: replace `import { X } from '@cratis/components'` with either an equivalent namespace import from the documented subpath, or named imports from that subpath. The removed renderer-only `Compatibility` namespace is the deliberate manual exception.
+
+The `cratis-components-remove-root-namespace-imports` codemod always emits the namespace-preserving form (`import * as Canvas from '@cratis/components/Canvas'`), so existing member access such as `Canvas.Canvas` keeps resolving for every member Components 4 still exports. Switching to named imports, as in the example above, is optional cleanup you do by hand.
 
 | Removed Components 3 root namespace | Components 4 subpath                                      | Namespace-preserving migration                                                      | Named migration                                                                    |
 | ----------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -187,6 +189,8 @@ The callback transform rewrites only structurally-proven single forwarding callb
 <InputTextField onChange={(value) => setName(value)} />
 <CheckboxField onChange={(value) => setEnabled(value)} />
 ```
+
+**CommandForm field `onChange` is not a typed prop.** The transform changes the callback's shape, not its location. With Arc 22.16.0, `CommandForm` calls an `onChange` placed on a field with the new value, so the rewritten callback runs. The Components 4 field types, which are built on Arc's `CommandFormFieldComponentProps`, do not declare `onChange`, so a type-checked TSX file reports TS2322 on a CommandForm field such as `InputTextField`, `CheckboxField`, `DropdownField`, or `MultiSelectField` that keeps it. In typed code, move the side effect to the `onFieldChange` callback on `CommandForm`, which receives the command, the field name, and the old and new values. The standalone `Dropdown` declares `onChange` and is not affected.
 
 Dynamic Button props, JSX spreads, unknown new/legacy conflicts, duplicate props, multi-use callbacks, and native-event-dependent callbacks are not guessed. They stay semantically unchanged, produce a nonzero exit, and receive one syntax-safe `TODO(cratis-codemod)` annotation:
 
@@ -503,7 +507,7 @@ Multiple selection uses a native multiple-select when filtering is off and an ac
 - Complete-result filtering and sorting are not automatic table state. Model them in query arguments and implement them in the server query before paging.
 - `clientFiltering` remains temporarily accepted as a deprecated no-op so staged source migrations compile. Remove it: filtering is always scoped to the loaded page, and complete-result filtering belongs on the server before paging.
 - Legacy `{ operator, constraints }` filter entries remain accepted. `operator: 'or'` matches any constraint; all other values match every constraint.
-- `Column` remains the declarative column marker. Selection columns now type only the implemented `selectionMode='single'`; the removed `'multiple'` value never provided checkbox selection.
+- `Column` remains the declarative column marker. Components 4.0 through 4.13 typed only `selectionMode='single'`, because the Components 3 `'multiple'` value never provided checkbox selection. Components 4.14.0 restores `'multiple'` with working checkboxes and a select-all header, driven by the table's `selectionMode='multiple'`, `selectedItems`, and `onSelectedItemsChange` props.
 - Table styling uses `DataTableParts` and `data-cratis-part`.
 - Server totals remain authoritative for the paginator.
 

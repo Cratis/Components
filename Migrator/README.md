@@ -2,10 +2,10 @@
 
 The Components 4 Migrator updates a Components 3 codebase to the Components 4 public contracts. It moves root namespaces to explicit subpath imports, replaces deprecated Button appearance props, and changes legacy event-wrapper callbacks to semantic value callbacks. The CLI uses syntax-aware codemods internally, but each command is named for the migration it performs, can be run independently, and is idempotent. Components 4 keeps only package-wide provider setup at the root; every component is imported from its explicit subpath (`@cratis/components/Canvas`, for example). The companion `@cratis/eslint-plugin-components` package's `no-root-barrel-import` rule enforces this once a consumer has migrated.
 
-> **Publication status:** The install examples target the owner-authorized 4.0.0 npm release. When
-> reading this README from repository source before that release, verify availability with
-> `npm view @cratis/components.migrator@4.0.0 version`; source contributors run the workspace
-> commands from this checkout instead. The Migrator is never an application runtime dependency.
+The package is published on npm and released at the same version as `@cratis/components`
+(4.0.0 onward). Run it with `npx`, `pnpm dlx`, or `yarn dlx` as shown below; it is never an
+application runtime dependency. Contributors to this repository can run the workspace scripts
+directly instead.
 
 The published package is a **CLI-only** tool. Its public surface is the documented `cratis-components-*` executable names (plus `./package.json` for tooling metadata); `lib/`, `scripts/`, and individual transforms are implementation details and are blocked by the package export map. Do not import them from application code or build custom migration APIs on them.
 
@@ -197,6 +197,12 @@ The transform never guesses through JSX spreads, dynamic legacy values, duplicat
 
 The affected CommandForm fields cover legacy `target`/`currentTarget` `value`, `checked`, and `valueAsNumber` payloads, plus `DropdownField`/`MultiSelectField` `event.value`. Already-semantic callbacks and callback references such as `onChange={setValue}` are unchanged.
 
+The transform changes a callback's shape, not where it lives. With Arc 22.16.0, `CommandForm` calls an
+`onChange` placed on a field with the new value at runtime, but the Components 4 CommandForm field
+types do not declare `onChange`, so type-checked TSX reports TS2322 on a field that keeps one. Move
+those side effects to `CommandForm`'s `onFieldChange` callback. The standalone `Dropdown` declares
+`onChange` and is not affected. The [Components 3 to 4 migration guide](https://cratis.io/components/migration/3-to-4/) covers this case.
+
 Multi-statement, multi-use, wrong-payload, destructuring-with-default/rest, and native-event-dependent callbacks are refused, reported, and annotated once:
 
 ```tsx
@@ -254,7 +260,9 @@ node Migrator/scripts/change-handler.js --check Source
 cd Migrator && yarn test
 ```
 
-Repository fixtures for every supported and unsupported case live under
+Repository fixtures for every supported and unsupported root-import case live under
 `Migrator/test/fixtures`,
 each as an `input.ts`/`expected.ts` pair (`input.ts` and `expected.ts` are identical for an
-unsupported case, since nothing should change).
+unsupported case, since nothing should change). The Button and change-handler transforms use
+`input.tsx`/`expected.tsx` pairs under `Migrator/test/button-fixtures` and
+`Migrator/test/change-handler-fixtures`.
