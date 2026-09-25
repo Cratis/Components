@@ -1,64 +1,72 @@
-# DataTableForObservableQuery
+---
+title: DataTableForObservableQuery
+description: Show a paged Arc observable query in a table that updates when the read model changes on the server.
+---
 
-Displays data from observable queries that automatically refresh when the underlying data changes.
+`DataTableForObservableQuery` displays the result of a generated Arc observable query and updates the rows when the underlying data changes.
 
 ## Purpose
 
-DataTableForObservableQuery displays data from observable queries that automatically update in real-time.
+DataTableForObservableQuery subscribes to an `IObservableQueryFor` query with server-side paging and re-renders the current page whenever the server pushes a new result. Its props are the same as [DataTableForQuery](data-table-for-query.md).
 
 ## Key Features
 
 - Automatic data updates
-- Real-time synchronization
-- Single row selection
-- Global filtering
+- Server-side pagination, 20 rows per page
+- Single or multiple row selection
+- Sorting, column filters, and a global search box, all applied to the loaded page
 - Custom column templates
-- Same API as DataTableForQuery
+- Same props as DataTableForQuery
 
 ## Basic Usage
 
-```typescript
-import { DataTableForObservableQuery } from '@cratis/components/DataTables';
-import { Column } from '@cratis/components/DataTables';
-import { MyObservableQuery } from './queries';
+```tsx
+import { DataTableForObservableQuery, Column } from '@cratis/components/DataTables';
+import { AllAuthors } from './Author'; // generated Arc observable query proxy
 
-function MyTable() {
+export function LiveAuthors() {
     return (
-        <DataTableForObservableQuery
-            query={MyObservableQuery}
-            emptyMessage="No data available"
-            dataKey="id"
-        >
-            <Column field="name" header="Name" sortable />
-            <Column field="lastUpdated" header="Last Updated" />
-        </DataTableForObservableQuery>
+        <div style={{ height: '480px' }}>
+            <DataTableForObservableQuery query={AllAuthors} emptyMessage='No authors yet' dataKey='id'>
+                <Column field='name' header='Name' sortable />
+            </DataTableForObservableQuery>
+        </div>
     );
 }
 ```
 
+When a new author is added to the read model on the server, the row appears without a reload.
+
+Give the table a parent with a definite height. It measures its container and sizes the scrolling row area from that height, with a minimum of 200 pixels.
+
 ## Props
 
-Same as DataTableForQuery, but the query must extend `IObservableQueryFor`.
+Same as DataTableForQuery, but the query must derive from `ObservableQueryFor`.
 
 ### Required Props
 
-- `query`: Observable query constructor (extends IObservableQueryFor)
-- `emptyMessage`: Message when no data is found
+- `query`: Constructor of the generated observable query (derives from `ObservableQueryFor`)
+- `emptyMessage`: Message shown when there are no rows to display
 
 ### Optional Props
 
-- `queryArguments`: Optional arguments for the query
-- `dataKey`: Unique identifier field
-- `selection`: Currently selected row
-- `onSelectionChange`: Callback when selection changes
-- `globalFilterFields`: Fields searched on the loaded page
+- `children`: `Column` elements
+- `queryArguments`: Arguments for the query. The table resubscribes when any argument changes.
+- `dataKey`: Row property used as stable identity for selection
+- `selection`: Currently selected row (controlled)
+- `onSelectionChange`: Called with `{ value, originalEvent }` when the user selects a row
+- `selectionMode`: `'single'` (default) or `'multiple'`. Multiple selection also needs a `Column` with `selectionMode='multiple'`; see [Column Configuration: Selection](column-configuration.md#selection)
+- `selectedItems`: Currently selected rows in multiple mode (controlled)
+- `onSelectedItemsChange`: Called with the full selected set when a multiple selection changes
+- `globalFilterFields`: Row fields searched by a search box above the table. The box is shown only when this is set.
 - `globalSearchPlaceholder`: Search-input placeholder. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.dataTable.search`, then `'Search…'`
 - `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder. Falls back to the provider's `messages.dataTable.searchAriaLabel`, then `'Search table'`
-- `selectionAriaLabel`: Accessible name for a single-selection row control. Falls back to the provider's `messages.dataTable.selectRow`, then `'Select row'`
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
-- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
-- `children`: Column definitions
+- `className` / `pt`: Extra class and stable part attributes for the table
+- `paginatorClassName` / `paginatorPt` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
+
+`ptOptions`, `unstyled`, and `paginatorPtOptions` are deprecated and have no effect.
 
 Filtered columns use the same `filterLabels` localization and `filterElement` custom-editor seams as `DataTableForQuery`. See [Column Configuration](column-configuration.md#column-filters). Filters are applied client-side to the currently loaded observable-query page, while pagination continues to use the server-reported totals.
 
@@ -66,61 +74,67 @@ The deprecated `clientFiltering` prop remains accepted only for source compatibi
 
 While the first observable result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
 
+The table shows no loading indicator and no error state. A failed or unauthorized query shows `emptyMessage`, the same as an empty result. When you must tell them apart, read the result through the generated proxy (`isPerforming`, `hasData`, `isSuccess`, `isAuthorized`, `hasExceptions`) and render `DataTableCore` yourself, as shown in [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries).
+
 ## Observable Behavior
 
-The table automatically subscribes to the observable query and updates the display when:
+The table subscribes to the observable query when it mounts and unsubscribes when it unmounts. It updates the display when the server pushes a new result, for example when:
 
 - New items are added
 - Existing items are modified
 - Items are removed
 
-This makes it ideal for real-time dashboards and live data monitoring.
+Each update replaces the row objects. Set `dataKey` so the selected row stays highlighted across updates. Sorting and filters are kept and applied to the new rows.
 
 ## Real-Time Dashboard Example
 
-```typescript
-function LiveDashboard() {
+Use `body` to render a cell with other components. Type the column with `Column<Row>` so the renderer receives your row type:
+
+```tsx
+import { DataTableForObservableQuery, Column } from '@cratis/components/DataTables';
+import { Tag } from '@cratis/components/Display';
+import { AllAuthors, type Author } from './Author';
+
+export function LiveAuthors() {
     return (
-        <DataTableForObservableQuery
-            query={ActiveOrdersQuery}
-            emptyMessage="No active orders"
-            dataKey="id"
-        >
-            <Column
-                field="orderNumber"
-                header="Order #"
-            />
-            <Column
-                field="status"
-                header="Status"
-                body={(row) => <StatusBadge status={row.status} />}
-            />
-            <Column
-                field="lastUpdated"
-                header="Updated"
-                body={(row) => formatTimeAgo(row.lastUpdated)}
-            />
-        </DataTableForObservableQuery>
+        <div style={{ height: '480px' }}>
+            <DataTableForObservableQuery query={AllAuthors} emptyMessage='No authors yet' dataKey='id'>
+                <Column field='name' header='Name' sortable />
+                <Column<Author>
+                    header='Status'
+                    body={(author) => <Tag severity='success' value={`Registered: ${author.name}`} />}
+                />
+            </DataTableForObservableQuery>
+        </div>
     );
 }
 ```
 
 ## With Selection
 
-```typescript
-const [selectedOrder, setSelectedOrder] = useState(null);
+```tsx
+import { useState } from 'react';
+import { DataTableForObservableQuery, Column } from '@cratis/components/DataTables';
+import { AllAuthors, type Author } from './Author';
 
-<DataTableForObservableQuery
-    query={OrdersQuery}
-    selection={selectedOrder}
-    onSelectionChange={(e) => setSelectedOrder(e.value)}
-    emptyMessage="No orders"
->
-    <Column field="orderNumber" header="Order #" />
-    <Column field="customerName" header="Customer" />
-    <Column field="status" header="Status" />
-</DataTableForObservableQuery>
+export function SelectableAuthors() {
+    const [selected, setSelected] = useState<Author | null>(null);
+
+    return (
+        <DataTableForObservableQuery<AllAuthors, Author, object>
+            query={AllAuthors}
+            emptyMessage='No authors yet'
+            dataKey='id'
+            selection={selected}
+            onSelectionChange={(event) => setSelected(event.value)}
+        >
+            <Column field='name' header='Name' />
+        </DataTableForObservableQuery>
+    );
+}
 ```
+
+The explicit type arguments type `event.value` as `Author | null`; without them TypeScript infers the row as `object`.
 
 ## Performance Considerations
 
@@ -133,16 +147,13 @@ Observable queries continuously listen for updates. Consider:
 
 ## Use Cases
 
-Perfect for:
+Use an observable table when users need to see changes made elsewhere without reloading, such as:
 
-- Real-time dashboards
-- Live monitoring systems
-- Chat applications
-- Notification feeds
-- Collaborative editing tools
-- IoT device status
-- Stock tickers
-- Order tracking systems
+- Operational dashboards and status boards
+- Work queues shared by several users
+- Lists that other parts of the app change while the list is open
+
+Keyboard and accessibility behavior is the same as [DataTableForQuery](data-table-for-query.md#keyboard-and-accessibility).
 
 ## Integration
 

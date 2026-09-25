@@ -18,8 +18,13 @@ The `FilterPanel` component provides a standalone, reusable filter UI that can b
 | `FilterPanel` | Main dropdown panel component |
 | `FilterEditor` | Slot component — declares a custom editor for a specific filter group |
 | `RangeHistogramFilter` | Standalone numeric range slider with histogram bars |
+| `CheckboxListFilter` | Standalone bounded checkbox/radio option list; `FilterPanel` uses it for option groups |
 | `useFilterState` | State management hook — tracks selections, ranges, and custom values |
+| `buildHistogram` | Counts values into histogram buckets, as `RangeHistogramFilter` does |
 | `FilterDefinition` | Type describing a single filter group |
+| `FilterOption` | One selectable option: `key`, `label`, `value`, optional `count` |
+| `FilterValue` | `string \| number \| boolean \| Date \| null \| undefined` |
+| `HistogramBucket` | A pre-counted bar: `start`, `end`, `count` |
 | `FilterEditorProps` | Props passed to a `FilterEditor` render-prop child (`{ value, onChange }`) |
 | `FilterEditorSlotProps` | Props for the `FilterEditor` component itself |
 | `FilterValues` | `Record<string, Set<string>>` — selected option keys per filter |
@@ -29,6 +34,7 @@ The `FilterPanel` component provides a standalone, reusable filter UI that can b
 ## Quick Start
 
 ```tsx
+import { useRef, useState } from 'react';
 import { FilterPanel, useFilterState } from '@cratis/components/Filter';
 import type { FilterDefinition } from '@cratis/components/Filter';
 
@@ -44,7 +50,7 @@ const filters: FilterDefinition[] = [
     },
 ];
 
-function MyView() {
+export function StatusFilter() {
     const buttonRef = useRef<HTMLButtonElement>(null);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -60,7 +66,12 @@ function MyView() {
 
     return (
         <>
-            <button ref={buttonRef} onClick={() => setIsOpen(v => !v)}>
+            <button
+                ref={buttonRef}
+                type='button'
+                aria-expanded={isOpen}
+                onClick={() => setIsOpen((open) => !open)}
+            >
                 Filters
             </button>
             <FilterPanel
@@ -76,10 +87,13 @@ function MyView() {
                 onRangeChange={handleRangeChange}
                 onExpandedFilterChange={setExpandedFilterKey}
             />
+            <p>Selected statuses: {[...(filterValues.status ?? [])].join(', ') || 'all'}</p>
         </>
     );
 }
 ```
+
+Clicking **Filters** opens the panel below the button with the **Status** group expanded. Choosing **Active** updates `filterValues.status` to a `Set` containing `'active'`. The panel only collects selections: apply them to your data or send them as query arguments yourself.
 
 ## Filter Types
 
@@ -133,6 +147,14 @@ Renders a `RangeHistogramFilter` — a range slider overlaid on a histogram of t
 }
 ```
 
+### Date range (`type: 'date'`)
+
+Uses the same range slider and histogram as `type: 'number'`, configured through `numericRange`. Supply the bounds and values as timestamps in milliseconds (for example `date.getTime()`); the endpoint labels are formatted with `toLocaleString()`.
+
+### Searching long option lists
+
+An option group shows a search box when its options do not fit in the group's box. Set `searchable: true` on the `FilterDefinition` to always show it, or `searchable: false` to never show it, and `searchPlaceholder` to change its placeholder.
+
 ### Custom editor (`type: 'custom'`)
 
 Declare `type: 'custom'` in the `FilterDefinition`, then place a matching `<FilterEditor>` child inside `<FilterPanel>`. The value is stored in `customValues` keyed by the filter's `key`.
@@ -158,21 +180,9 @@ const filters: FilterDefinition[] = [
 </FilterPanel>
 ```
 
-Pass `customValues` and `onCustomValueChange` to `FilterPanel` when using custom editors:
+Pass `customValues` and `onCustomValueChange` to `FilterPanel` when using custom editors. The complete wiring, with a number input as the editor, is shown in [`useFilterState` Hook](#usefilterstate-hook).
 
-```tsx
-const { customValues, handleCustomValueChange, ...rest } = useFilterState(filters);
-
-<FilterPanel
-    {...rest}
-    customValues={customValues}
-    onCustomValueChange={handleCustomValueChange}
->
-    <FilterEditor filterKey="rating">
-        {({ value, onChange }) => <MyStarRatingWidget value={value as number} onChange={onChange} />}
-    </FilterEditor>
-</FilterPanel>
-```
+The editor receives `value` as `unknown`; narrow it before use. Call `onChange(undefined)` to leave the filter unset.
 
 ## Clearing Filters
 
@@ -204,7 +214,7 @@ Custom filter editors should not implement their own clear buttons; the header c
 | `clearFilterAriaLabel` | `string` | — | Accessible name and tooltip for a string/custom filter's clear button (default: `'Clear filter'`) |
 | `clearRangeAriaLabel` | `string` | — | Accessible name and tooltip for a numeric/date filter's clear button (default: `'Clear range'`) |
 | `expandedFilterKey` | `string \| null` | — | Which filter group is open |
-| `anchorRef` | `RefObject<HTMLButtonElement>` | ✓ | Button the panel anchors below |
+| `anchorRef` | `RefObject<HTMLButtonElement \| null>` | ✓ | Button the panel anchors below |
 | `onClose` | `() => void` | ✓ | Called when panel should close |
 | `onSearchChange` | `(value: string) => void` | — | If provided, shows a search box |
 | `onFilterToggle` | `(filterKey, optionKey, multi) => void` | ✓ | Called when an option is toggled |
@@ -225,33 +235,61 @@ Custom filter editors should not implement their own clear buttons; the header c
 
 ## `useFilterState` Hook
 
-`useFilterState(filters)` initialises and manages all filter state in one call. Its return value can be spread directly into `FilterPanel`:
+`useFilterState(filters)` initializes and manages all filter state in one call. Its handler names differ from the `FilterPanel` prop names (`handleToggleFilter` versus `onFilterToggle`), so you cannot spread the result into `FilterPanel`; map each value to its prop:
 
 ```tsx
-const state = useFilterState(filters);
+import { useRef, useState } from 'react';
+import { FilterPanel, FilterEditor, useFilterState } from '@cratis/components/Filter';
+import type { FilterDefinition } from '@cratis/components/Filter';
 
-<FilterPanel
-    isOpen={open}
-    filters={filters}
-    anchorRef={buttonRef}
-    filterValues={state.filterValues}
-    rangeValues={state.rangeValues}
-    customValues={state.customValues}
-    expandedFilterKey={state.expandedFilterKey}
-    onClose={() => setOpen(false)}
-    onFilterToggle={state.handleToggleFilter}
-    onFilterClear={state.handleClearFilter}
-    onRangeChange={state.handleRangeChange}
-    onExpandedFilterChange={state.setExpandedFilterKey}
-    onCustomValueChange={state.handleCustomValueChange}
->
-    <FilterEditor filterKey="myCustomFilter">
-        {({ value, onChange }) => <MyEditor value={value} onChange={onChange} />}
-    </FilterEditor>
-</FilterPanel>
+const ratingFilters: FilterDefinition[] = [{ key: 'rating', label: 'Minimum rating', type: 'custom' }];
+
+export function RatingFilter() {
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const state = useFilterState(ratingFilters);
+
+    return (
+        <>
+            <button ref={buttonRef} type='button' onClick={() => setIsOpen((open) => !open)}>
+                Filters
+            </button>
+            <FilterPanel
+                isOpen={isOpen}
+                filters={ratingFilters}
+                anchorRef={buttonRef}
+                onClose={() => setIsOpen(false)}
+                filterValues={state.filterValues}
+                rangeValues={state.rangeValues}
+                customValues={state.customValues}
+                expandedFilterKey={state.expandedFilterKey}
+                onFilterToggle={state.handleToggleFilter}
+                onFilterClear={state.handleClearFilter}
+                onRangeChange={state.handleRangeChange}
+                onExpandedFilterChange={state.setExpandedFilterKey}
+                onCustomValueChange={state.handleCustomValueChange}
+            >
+                <FilterEditor filterKey='rating'>
+                    {({ value, onChange }) => (
+                        <input
+                            type='number'
+                            min={1}
+                            max={5}
+                            aria-label='Minimum rating'
+                            value={typeof value === 'number' ? value : ''}
+                            onChange={(event) =>
+                                onChange(event.target.value === '' ? undefined : Number(event.target.value))
+                            }
+                        />
+                    )}
+                </FilterEditor>
+            </FilterPanel>
+        </>
+    );
+}
 ```
 
-The hook re-syncs state when the `filters` array reference changes — existing selections are preserved for filter keys that are still present.
+The first filter group starts expanded. The hook re-syncs its state when the set of filter keys changes, not on every new `filters` array; existing selections are preserved for filter keys that are still present.
 
 ## `RangeHistogramFilter` Props
 
@@ -270,6 +308,14 @@ The hook re-syncs state when the `filters` array reference changes — existing 
 | `itemsLabel`       | `string`                                    | —        | Unit word shown after a bar tooltip's count, e.g. `'42 items'` (default: `'items'`)        |
 | `minimumAriaLabel` | `string`                                    | —        | Accessible name for the lower-bound slider (default: `'Minimum value'`)                    |
 | `maximumAriaLabel` | `string`                                    | —        | Accessible name for the upper-bound slider (default: `'Maximum value'`)                    |
+
+## Accessibility and keyboard
+
+- The panel is rendered into `document.body` at a fixed position below `anchorRef`, and follows the anchor on scroll and resize.
+- It closes when the user presses the mouse outside both the panel and the anchor. It does not close on Escape, and it does not move focus when it opens; keyboard users open and close it with the trigger button. Set `aria-expanded` on your trigger, as in the Quick Start.
+- Each group header is a button with `aria-expanded`. The clear button is named by `clearFilterAriaLabel` or `clearRangeAriaLabel`.
+- Range sliders are named by `minimumAriaLabel` and `maximumAriaLabel` and respond to Arrow, Home, and End keys.
+- The panel's search box and the option-list search boxes have a placeholder but no accessible name.
 
 ## Importing
 

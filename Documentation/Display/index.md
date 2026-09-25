@@ -88,6 +88,8 @@ import { Avatar } from '@cratis/components/Display';
 
 The fallback order is `image` → `icon` → `label`, so passing both an `icon` and a `label` shows the icon.
 
+`alt` defaults to an empty string, which marks the image as decorative. Pass `alt` when the avatar is the only place the person or entity is identified, for example `<Avatar image='/users/sample-user.png' alt='Sample User' />`.
+
 ## Message
 
 An inline status message with a severity tone and optional leading icon.
@@ -173,3 +175,5 @@ import { Skeleton } from '@cratis/components/Display';
 | `className`    | `string`  | Extra CSS class.                                                                            |
 
 Because `circle` takes its size from `height`, set `height` rather than `width` for a circular skeleton — `<Skeleton circle />` on its own renders at the `1rem` default.
+
+`Skeleton` is hidden from assistive technology (`aria-hidden='true'`), so a screen reader hears nothing while it is shown. When loading takes noticeable time, pair skeletons with a status announcement such as a `ProgressSpinner` with an `aria-label`, or visually hidden `role='status'` text.

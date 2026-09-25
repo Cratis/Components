@@ -8,16 +8,27 @@ description: Single, filtered, and multiple selection with documented names, rol
 ## Basic selection
 
 ```tsx
-<Dropdown
-    value={role}
-    options={[
-        { label: 'Administrator', value: 'admin' },
-        { label: 'Advisor', value: 'advisor' },
-    ]}
-    onChange={setRole}
-    aria-label='Role'
-/>
+import { useState } from 'react';
+import { Dropdown } from '@cratis/components/Dropdown';
+
+export function RolePicker() {
+    const [role, setRole] = useState<string>();
+
+    return (
+        <Dropdown
+            value={role}
+            options={[
+                { label: 'Administrator', value: 'admin' },
+                { label: 'Advisor', value: 'advisor' },
+            ]}
+            onChange={setRole}
+            aria-label='Role'
+        />
+    );
+}
 ```
+
+`onChange` receives the selected option's `value` (here `'admin'` or `'advisor'`), not the option object and not a DOM event, so a state setter can be passed directly. The later examples on this page reuse `role`, `setRole`, and a `roles` array of the same shape.
 
 When option objects contain `label` and `value`, those fields are used automatically. Use `optionLabel` and `optionValue` for another shape.
 
@@ -99,6 +110,7 @@ through `pt`.
 | `multiple`                         | Native multiple-selection mode.                 |
 | `showClear`                        | Clear action for a single selection.            |
 | `invalid` / `disabled`             | Control state.                                  |
+| `className` / `style`              | Class and inline style for the outer wrapper.   |
 | `id`, `name`, `tabIndex`, `aria-*` | Identity, form, and accessibility attributes.   |
 | `onChange` / `onBlur`              | Selection and focus callbacks.                  |
 | `pt`                               | Cratis-owned stable part attributes.            |
