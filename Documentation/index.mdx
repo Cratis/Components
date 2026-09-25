@@ -49,20 +49,26 @@ import TopicHero from '@components/TopicHero.astro';
 
 ## Minimal setup
 
-```tsx
+Components 4 runs on React 19 with `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`; this repository builds and tests against Arc 22.16.0. After `npm install @cratis/components@^4`, import the stylesheets once and mount Components' provider inside Arc's:
+
+```tsx title="Excerpt: application entry"
+import 'reflect-metadata';
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
 import '@cratis/components/theme'; // optional built-in baseline
+import { Arc } from '@cratis/arc.react';
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
-        <YourApp />
-    </CratisComponentsProvider>
+    <Arc>
+        <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+            <YourApp />
+        </CratisComponentsProvider>
+    </Arc>
 );
 ```
 
-The package root is setup-only: import the provider and configuration helpers there, then import
+[Getting started](/components/getting-started/) walks through the peers, the TypeScript setup, and a first command dialog. The package root is setup-only: import the provider and configuration helpers there, then import
 every component from its explicit subpath, such as `@cratis/components/CommandDialog` or
 `@cratis/components/DataTables`. The built-in renderer is zero-configuration. Optional renderer
 packages are selected explicitly; the application retains their provider, peer, SSR, styling, and

@@ -1,6 +1,6 @@
 ---
 title: '1. List the authors'
-description: Put the library's authors on screen with a data table that binds to the AllAuthors query and updates itself when the read model changes.
+description: Put the library's authors on screen with a data table that binds to the AllAuthors query and updates itself when the data changes.
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
@@ -11,14 +11,13 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
 
 1. **Render the table.** `DataTableForObservableQuery` takes the query proxy, subscribes to it, and renders each result as a row. You describe the columns with the Cratis-owned `Column` marker. Its `field` string must match a property on the generated `Author` read model:
 
-    ```tsx title="Authors.tsx"
+    ```tsx title="src/Authors.tsx"
     import { Page } from '@cratis/components/Common';
-    import { DataTableForObservableQuery } from '@cratis/components/DataTables';
-    import { Column } from '@cratis/components/DataTables';
+    import { Column, DataTableForObservableQuery } from '@cratis/components/DataTables';
     import { AllAuthors } from './Authors/Author'; // generated observable query proxy
 
     export const Authors = () => (
-        <Page title='Authors' panel>
+        <Page title='Authors'>
             <DataTableForObservableQuery query={AllAuthors} emptyMessage='No authors yet'>
                 <Column field='name' header='Name' sortable />
             </DataTableForObservableQuery>
@@ -26,19 +25,22 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
     );
     ```
 
+2. **Put it on screen.** Render `<Authors />` inside the providers from [Getting started](/components/getting-started/) — in the Arc tutorial's `src/App.tsx`, that means replacing its plain list with this component. Run the frontend and open the page. You see a table with a **Name** column: one row per author you registered in the Arc tutorial, or _No authors yet_ if there are none.
+
 </Steps>
 
-That's the whole screen. The `Page` wrapper gives you the titled, panelled chrome the rest of the app uses; the table does the rest.
+That's the whole screen. `Page` is the layout root for a routable view: a column that fills its parent. Its `title` is rendered, as a heading, only when you add `showTitle`; it doesn't set the browser tab title. The table does the rest.
 
 ## What you didn't write
 
-Notice everything that's _absent_. There's no `fetch`, no `useEffect`, no loading flag, no `useState` holding the rows, and — the part that matters most — **no subscription code**. `DataTableForObservableQuery` opened the observable for you. The moment something else in the app registers a new author, the backend pushes the new read-model value down, and this table re-renders with the extra row. You'll see that happen for real in the next chapter, when we add the form.
+Notice everything that's _absent_. There's no `fetch`, no `useEffect`, no loading flag, no `useState` holding the rows, and — the part that matters most — **no subscription code**. `DataTableForObservableQuery` opened the observable for you. The moment something else in the app registers a new author, the backend pushes the new query result down, and this table re-renders with the extra row. You'll see that happen for real in the next chapter, when we add the form.
 
 <Aside type='note' title='Live, because the query is observable'>
-    The liveness comes from the query being observable on the C# side (it returns
-    `collection.Observe()`). If you only need the data once — to summarize or render
-    custom markup — use `DataTableForQuery` instead, or call `AllAuthors.use()` to get the
-    values directly. Same proxy, different consumption.
+    The liveness comes from the query being observable on the C# side: `AllAuthors` returns
+    an `ISubject<IEnumerable<Author>>` built with `Observe()`. If you only need the data
+    once, use `DataTableForQuery` with a non-observable query instead. If you want the values
+    rather than a table — to summarize or render custom markup — call `AllAuthors.use()`.
+    Same proxy, different consumption.
 </Aside>
 
 ## Keep field names aligned

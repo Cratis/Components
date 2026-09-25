@@ -12,6 +12,18 @@ Start from the symptom you can observe. Each entry points to the page that owns 
 
 Required command values must be visible to client validation before submission. Put non-input required values in `initialValues`, or keep custom controls synchronized through `currentValues`; a value first created in `onBeforeExecute` arrives too late to satisfy the validity gate. Follow [Building a form](building-a-form.md#tips) for the short rule and [CommandDialog advanced features](CommandDialog/advanced-features.md#custom-inputs) for custom inputs.
 
+## Commands or queries do not reach the backend
+
+Components executes commands and runs queries through the generated proxies, which read their runtime configuration from Arc's `<Arc>` provider (`@cratis/arc.react`). `CratisComponentsProvider` supplies only UI configuration and does not replace it. Check that `<Arc>` wraps the application, that its `origin`, `basePath`, and `apiBasePath` settings match your host, and that the development server forwards the proxy routes (for example `/api` and `/.cratis`) to the backend. Then watch the browser's network panel for the command or query route. See [Getting started](getting-started.mdx#install-and-wire-it-up) and the [Arc frontend guide](/arc/frontend/).
+
+## Components render without styles
+
+Import `@cratis/components/tokens` and `@cratis/components/styles` (or `styles/base` plus the per-area entries) once at the application entry point, with `tokens` first. Without them, components render semantic markup with no Cratis structure or appearance. If TypeScript rejects those side-effect imports with `TS2882`, declare the stylesheet modules as shown in [Getting started](getting-started.mdx#install-and-wire-it-up); do not remove the imports.
+
+## A DataPage collapses or its paginator falls off the screen
+
+`DataPage` fills the height it is given, so an ancestor must have a definite height, such as a sized router outlet, a flex child with `min-height: 0`, or `height: 100vh`. Without one it falls back to a small minimum height. See [DataPage](DataPage/index.md).
+
 ## Yarn PnP cannot resolve `rxjs` from Arc React
 
 If you use `@cratis/arc.react@22.6.2`, that version imports `rxjs` without declaring it. A strict Yarn PnP consumer needs the version-specific `packageExtensions` entry and `rxjs` version shown in [Getting started](getting-started.mdx#yarn-pnp-with-arc-react-2262). Arc React 22.16.0 no longer needs this workaround.

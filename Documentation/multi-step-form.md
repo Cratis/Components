@@ -9,30 +9,51 @@ description: Gather a command's input across several named steps with StepperCom
 
 `StepperCommandDialog` is `CommandDialog` with stages. You group fields into `StepperPanel`s; it handles next/back navigation, per-step validation, and runs the command when the last step is confirmed:
 
-```tsx
-import { StepperCommandDialog } from '@cratis/components/CommandDialog';
-import { StepperPanel } from '@cratis/components/CommandDialog';
-import { InputTextField, DropdownField } from '@cratis/components/CommandForm';
-import { RegisterMember } from './RegisterMember';   // generated proxy
+```tsx title="RegisterMemberWizard.tsx"
+import { useState } from 'react';
+import { Guid } from '@cratis/fundamentals';
+import { StepperCommandDialog, StepperPanel } from '@cratis/components/CommandDialog';
+import { DropdownField, InputTextField } from '@cratis/components/CommandForm';
+import { RegisterMember } from './RegisterMember'; // generated proxy
 
-export const RegisterMemberWizard = () => (
-    <StepperCommandDialog<RegisterMember> command={RegisterMember} title="Register member">
-        <StepperPanel header="Details">
-            <InputTextField<RegisterMember> value={i => i.name} title="Name" />
-            <InputTextField<RegisterMember> value={i => i.email} title="Email" />
-        </StepperPanel>
-        <StepperPanel header="Membership">
-            <DropdownField<RegisterMember> value={i => i.tier} title="Tier" options={tierOptions} />
-        </StepperPanel>
-    </StepperCommandDialog>
-);
+const tiers = [
+    { id: 'standard', name: 'Standard' },
+    { id: 'premium', name: 'Premium' },
+];
+
+export const RegisterMemberWizard = () => {
+    const [memberId] = useState(() => Guid.create());
+    return (
+        <StepperCommandDialog<RegisterMember>
+            command={RegisterMember}
+            title='Register member'
+            initialValues={{ memberId }}
+        >
+            <StepperPanel header='Details'>
+                <InputTextField<RegisterMember> value={(command) => command.name} title='Name' />
+                <InputTextField<RegisterMember> value={(command) => command.email} title='Email' type='email' />
+            </StepperPanel>
+            <StepperPanel header='Membership'>
+                <DropdownField<RegisterMember>
+                    value={(command) => command.tier}
+                    title='Tier'
+                    options={tiers}
+                    optionValue='id'
+                    optionLabel='name'
+                />
+            </StepperPanel>
+        </StepperCommandDialog>
+    );
+};
 ```
+
+The example assumes a `RegisterMember` command with a required `memberId` and `name`, `email`, and `tier` properties. `DropdownField` needs `optionValue` and `optionLabel` to know which option property is stored on the command and which one is shown. Open the wizard with `useDialog`, exactly like a single-step [CommandDialog](building-a-form.md#show-the-dialog).
 
 ## Notes
 
 - **One command, many steps.** Every field across every panel maps to the *same* command — the wizard is just how you collect it. The command still validates and executes once.
-- **Per-step validation.** The user can't advance past a step whose required fields are invalid; use `validateOnInit` if you need a step validated as soon as it's shown.
-- **Required values that aren't inputs** still go through `initialValues` (not `onBeforeExecute`), same as a single-step dialog — see [Building a form](/components/building-a-form/).
+- **Per-step validation.** **Next** is disabled while a field on the current step shows a validation error, and a visited step with an error is marked invalid. A field shows no error until it has been validated (on blur by default), so an untouched required field doesn't block **Next** — but on the last step the submit button is only rendered once the whole command is valid. Set `validateOnInit` to show every error as soon as the wizard opens.
+- **Required values that aren't inputs**, like `memberId` above, still go through `initialValues` (not `onBeforeExecute`), same as a single-step dialog — see [Building a form](building-a-form.md#tips).
 
 ## When to use a wizard vs. a plain dialog
 

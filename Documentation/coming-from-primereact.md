@@ -7,15 +7,17 @@ Components 4 does not render PrimeReact or expose Prime types. The public API us
 
 ## Replace direct imports
 
-| PrimeReact                       | Components                            |
-| -------------------------------- | ------------------------------------- |
-| Button                           | `Common/Button`                       |
-| Dialog                           | `Dialogs/Dialog`                      |
-| Select / Dropdown                | `Dropdown`                            |
-| DataTable / Column               | `DataTables/DataTableCore` / `Column` |
-| Input fields in command forms    | `CommandForm` fields                  |
-| Tag / Badge / Message / Skeleton | `Display`                             |
-| Toast / Toaster                  | `Notifications`                       |
+| PrimeReact                       | Components import                                                     |
+| -------------------------------- | --------------------------------------------------------------------- |
+| Button                           | `Button` from `@cratis/components/Common`                             |
+| Dialog                           | `Dialog` from `@cratis/components/Dialogs`                            |
+| Select / Dropdown                | `Dropdown` from `@cratis/components/Dropdown`                         |
+| DataTable / Column               | `DataTableCore` and `Column` from `@cratis/components/DataTables`     |
+| Input fields in command forms    | Field components from `@cratis/components/CommandForm`                |
+| Tag / Badge / Message / Skeleton | `Tag`, `Badge`, `Message`, `Skeleton` from `@cratis/components/Display` |
+| Toast / Toaster                  | `Toaster` and `toast` from `@cratis/components/Notifications`         |
+
+Import each component from its subpath; the package root exports only `CratisComponentsProvider` and its configuration helpers.
 
 Use native HTML for simple application-owned controls that do not need Components behavior. CommandForm fields are specifically for generated command properties; they are not a general local-state input suite.
 
