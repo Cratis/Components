@@ -1,4 +1,7 @@
-# Messaging
+---
+title: Canvas messaging
+description: Subscribe to region membership, note edit, and chat send messages published by Canvas shapes over the Arc messenger.
+---
 
 The canvas shapes can announce what happens on them over the `@cratis/arc.react` messenger — region membership changes, committed note edits, sent chat messages. This is strictly opt-in and additive: every shape's existing callback contract is unchanged, and a board that ignores all of this behaves exactly as before.
 
@@ -12,14 +15,15 @@ To receive the messages, subscribe on the same messenger anywhere under the same
 import { useOnMessage } from '@cratis/arc.react/messaging';
 import { ItemAddedToRegion, ItemRemovedFromRegion } from '@cratis/components/Canvas';
 
-function Board() {
+export function RegionMembershipListener() {
     useOnMessage(ItemAddedToRegion, (message) => {
-        // message.regionId, message.itemId — persist membership, issue a command, whatever the board means by it
+        // Persist membership, issue a command, or whatever the board means by it.
+        console.log('added', message.regionId, message.itemId);
     });
     useOnMessage(ItemRemovedFromRegion, (message) => {
-        /* ... */
+        console.log('removed', message.regionId, message.itemId);
     });
-    // ... render the Canvas
+    return null;
 }
 ```
 
@@ -48,6 +52,8 @@ Containment is by center point, inclusive of the region's edges, and the pure fu
 ## Defining your own messages for your own shapes
 
 The catalog above is the pattern, not a closed set. A host with its own shapes on the board publishes its own analogous messages the same way: a plain class whose constructor fields carry the ids and payload, published on the messenger at the moment the interaction commits.
+
+This excerpt shows only the publishing parts; `card` and `onFlip` stand for your shape's own props. Without an Arc root, `useMessenger()` resolves Arc's default messenger, which nothing subscribes to. The built-in shapes additionally guard against an `ArcContext.Provider` whose configuration has no `messenger`; a direct `messenger.publish` call does not, so add that check if your host can be in that state.
 
 ```tsx
 // The message: a plain class, ids and payload as readonly constructor fields.

@@ -1,13 +1,15 @@
-# Regions
+---
+title: Canvas regions
+description: Render labeled, resizable regions on a Canvas and detect which items they contain.
+---
 
 `Region` is a resizable, draggable, labeled box a host can place other shapes inside of — the generic shell behind a "group" or "area" affordance on a board. Like `Note`, it is presentational and fully controlled: it owns no position, size, or name state of its own, and reads its `region` prop fresh every render.
 
 ```tsx
 import { useState } from 'react';
-import { Canvas, CanvasItem } from '@cratis/components/Canvas';
-import { Region, type RegionData } from '@cratis/components/Canvas';
+import { Canvas, CanvasItem, Region, type RegionData } from '@cratis/components/Canvas';
 
-function Board() {
+export function Board() {
     const [region, setRegion] = useState<RegionData>({
         id: 'planning',
         x: 40,
@@ -19,17 +21,17 @@ function Board() {
     const [selected, setSelected] = useState(false);
 
     return (
-        <Canvas>
-            <CanvasItem x={region.x} y={region.y}>
+        <Canvas style={{ width: '100%', height: 480 }}>
+            <CanvasItem id={region.id} x={region.x} y={region.y}>
                 <Region
                     region={region}
                     selected={selected}
                     onSelect={() => setSelected(true)}
-                    onMove={(id, x, y) => setRegion((current) => ({ ...current, x, y }))}
-                    onResize={(id, x, y, width, height) =>
+                    onMove={(_id, x, y) => setRegion((current) => ({ ...current, x, y }))}
+                    onResize={(_id, x, y, width, height) =>
                         setRegion((current) => ({ ...current, x, y, width, height }))
                     }
-                    onNameChange={(id, name) =>
+                    onNameChange={(_id, name) =>
                         setRegion((current) => ({ ...current, name }))
                     }
                 />
@@ -40,6 +42,8 @@ function Board() {
 ```
 
 Only a drag started on the region's title bar moves it — a press on the region's body deliberately bubbles up to the host instead, so the same background can be swept for a rubber-band selection or clicked to select the region itself, rather than the region swallowing every gesture that lands on it.
+
+Moving, resizing, and starting a rename are pointer gestures; `Region` has no keyboard equivalent for them. Once the rename field is open, it is an ordinary text input.
 
 ## `RegionData`
 
@@ -61,12 +65,12 @@ Only a drag started on the region's title bar moves it — a press on the region
 | `onMoveEnd?(id)`                    | Fired once when a drag ends                                                                            |
 | `onResize(id, x, y, width, height)` | Fired continuously while resizing from any of the eight handles                                        |
 | `onResizeEnd?(id)`                  | Fired once when a resize ends                                                                          |
-| `onNameChange(id, name)`            | Fired when a rename is committed (double-click the title bar to rename)                                |
+| `onNameChange(id, name)`            | Fired when a rename is committed with `Enter` or by leaving the field (double-click the title bar to rename) |
 | `children?`                         | Rendered inside the region's own coordinate space, for visually nesting other shapes inside its bounds |
 
 ## `children` is visual nesting only — membership is detected and _reported_, never owned
 
-`Region` renders its `children` positioned relative to its own top-left corner, so items placed at region-relative coordinates line up correctly inside it:
+`Region` renders its `children` positioned relative to its own top-left corner, so items placed at region-relative coordinates line up correctly inside it. This excerpt assumes a `region: RegionData` and a `noteInsideRegion: NoteData` from host state:
 
 ```tsx
 <CanvasItem id={region.id} x={region.x} y={region.y}>
@@ -95,6 +99,6 @@ Only a drag started on the region's title bar moves it — a press on the region
 
 Rendering something as `children` does not make it a "member" — the two mechanisms are independent. What `Region` does do is detect containment: it watches the Canvas item registry, and whenever a sibling `CanvasItem` that carries an `id` gains or loses containment (its center point entering or leaving the region's bounds — whether the item moved, or the region was moved/resized over it), it publishes `ItemAddedToRegion` / `ItemRemovedFromRegion` over the `@cratis/arc.react` messenger. See [Messaging](messaging.md) for the full catalog and the opt-in rules; without an `ArcContext` above the `Canvas`, or for items without an `id`, this is silently inert.
 
-Note the required convention in the snippet above: the `CanvasItem` wrapping a `Region` is given `id={region.id}`. That is how the region recognizes its own registry entry and excludes itself from its containment reports. Overlapping regions may each claim the same item — both publish an `ItemAddedToRegion` — and that is by design: resolving exclusivity is the host's call.
+Note the required convention in the snippets above: the `CanvasItem` wrapping a `Region` is given `id={region.id}`. That is how the region recognizes its own registry entry and excludes itself from its containment reports. Overlapping regions may each claim the same item — both publish an `ItemAddedToRegion` — and that is by design: resolving exclusivity is the host's call.
 
 Detection is where it ends: `Region` still never moves members, persists nothing, and knows nothing about item types. It does not move contained items along with it when dragged or resized, and it holds no membership state a host could query. Deciding what membership _means_, storing it, rendering members as `children`, and keeping them moving together is board-level orchestration the host owns entirely. This is a deliberate design boundary, not a missing feature: a generic shell that reports what it sees is reusable in ways a shell with its own opinion about membership would not be.

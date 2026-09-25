@@ -1,4 +1,7 @@
-# Notes
+---
+title: Canvas notes
+description: Render controlled, draggable, resizable sticky notes on a Canvas.
+---
 
 `Note` is a draggable, resizable, editable sticky note. Like every shape in this module it is presentational and fully controlled — it owns no position, size, or text of its own. It reads its `note` prop fresh every render and reports every change through callbacks; committing the change back into state is entirely up to the host.
 
@@ -6,10 +9,9 @@
 
 ```tsx
 import { useState } from 'react';
-import { Canvas, CanvasItem } from '@cratis/components/Canvas';
-import { Note, type NoteData } from '@cratis/components/Canvas';
+import { Canvas, CanvasItem, Note, type NoteData } from '@cratis/components/Canvas';
 
-function Board() {
+export function Board() {
     const [notes, setNotes] = useState<NoteData[]>([
         { id: '1', x: 40, y: 40, width: 200, height: 140, text: 'Welcome to the board!' },
     ]);
@@ -21,7 +23,7 @@ function Board() {
         );
 
     return (
-        <Canvas>
+        <Canvas style={{ width: '100%', height: 480 }}>
             {notes.map((note) => (
                 <CanvasItem key={note.id} x={note.x} y={note.y}>
                     <Note
@@ -65,6 +67,8 @@ function Board() {
 | `onExpandedChange?(id, isExpanded)` | Fired when the note grows to show its full text, or shrinks back — see below                                                                |
 
 A host slow to feed an updated `note` back after a callback will see the note spring back to its last known value, the same trade-off `Region` makes for its own drag/resize/rename.
+
+Moving, resizing, and entering edit mode (double-click) are pointer gestures. `Note` has no keyboard equivalent for them, so a board that must be keyboard-operable needs host-owned controls that update the same `NoteData`.
 
 ## Auto-fitting text
 

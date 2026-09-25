@@ -1,6 +1,11 @@
-# PivotViewer - Interactions
+---
+title: PivotViewer interactions
+description: What users can do in PivotViewer with a pointer, touch, and the keyboard, and what state it keeps.
+---
 
 ## Zoom
+
+Zoom ranges from 10% to 300%.
 
 ### Mouse Wheel
 
@@ -8,11 +13,12 @@ Hold `Ctrl` (or `Meta` on macOS) while scrolling to zoom around the pointer. An 
 
 ### Zoom Controls
 
-Use the zoom slider or buttons in the toolbar:
+The toolbar's zoom group contains:
 
-- **Zoom In** button: Increase zoom level
-- **Zoom Out** button: Decrease zoom level
-- **Reset** button: Return to default zoom
+- **−** and **+** buttons: zoom out or in by 20 percentage points
+- A range slider (accessible name "Zoom level") in 5% steps
+- The current percentage: click it to type a value between 10 and 300, then press `Enter` (or leave the field) to apply it or `Escape` to cancel
+- A reset button: return to 100%
 
 ### Programmatic Zoom
 
@@ -20,26 +26,28 @@ Use the zoom slider or buttons in the toolbar:
 
 ## Pan
 
-Click and drag anywhere in the collection view to pan around.
+The card area is a scroll container. Users move around it by:
+
+- dragging anywhere in the card area with the left or middle mouse button (the drag keeps coasting briefly after release);
+- scrolling with the wheel or trackpad;
+- dragging with one finger on a touch screen.
 
 ### Scroll Behavior
 
-- Automatic scrolling when content exceeds viewport
-- Smooth panning for natural feel
-- Momentum scrolling on touch devices
+When the collection fits in the viewport there is nothing to scroll. With `prefers-reduced-motion: reduce`, PivotViewer's stylesheet turns off its CSS transitions, CSS animations, and smooth scrolling. The zoom-to-card animation and the detail drawer's slide-in are driven from JavaScript and still run.
 
 ## Filter
 
 ### Opening Filter Panel
 
-Click the filter icon in the toolbar to open the filter panel.
+Click the filter button at the left of the toolbar to open the filter panel. The button appears only when `filters` has at least one entry, and a badge on it counts active selections. The panel closes when you click the button again or click outside the panel.
 
 ### Categorical Filters
 
-Check or uncheck values to include/exclude them:
+Select values to include them. Without `multi: true` on the filter, a filter holds one value at a time: selecting another value replaces it, and selecting the current value clears it. With `multi: true`, each value toggles independently and an item matches any selected value:
 
 ```text
-Status:
+Status (multi: true):
 ☑ Todo
 ☑ In Progress
 ☐ Done
@@ -47,7 +55,7 @@ Status:
 
 ### Range Filters
 
-Adjust sliders to set minimum and maximum values:
+Numeric filters (`type: 'number'`) show a histogram. Select a minimum and maximum to keep only items in that range:
 
 ```text
 Price: [$0 ━━●━━━━━━━━ $1000]
@@ -55,77 +63,89 @@ Price: [$0 ━━●━━━━━━━━ $1000]
 
 ### Search
 
-Type in the search box to filter by text across specified fields:
+Type in the search box at the top of the filter panel to narrow the visible items to those whose `searchFields` values contain the text, ignoring case:
 
 ```text
 Search: [react components____]
 ```
 
+Search applies together with the active filters. See [Search configuration](configuration.md#search-configuration) for which accessors work.
+
 ### Clearing Filters
 
-- Click individual filter's clear button
-- Use "Clear All Filters" button
+Each filter with an active selection has a clear button (accessible name "Clear filter" or "Clear range") in its header. There is no single "clear all filters" action; clearing the search box and each filter returns to the full collection.
 
 ## Dimension Selection
 
-Click dimension labels (axis labels) at the top to change grouping:
+Use the **Sort by** select in the toolbar to choose the active dimension:
 
 ```text
-[Status] | Priority | Assignee | Date
+Sort by: [Status ▾]
 ```
 
-The selected dimension determines how items are organized into groups.
+In collection view the active dimension sorts the cards. In grouped view it decides the columns. Below the grid in grouped view, each column has a label with its item count; clicking a label of a string-valued dimension shows only that column, and clicking it again shows all columns. See [Dimensions and filters](dimensions-and-filters.md#dimensions).
 
 ## Card Selection
 
-Click any card to view its details:
+Click or tap a card to select it:
 
-1. Card is highlighted
-2. Detail panel slides in from the right
-3. Full information is displayed
+1. The card is highlighted.
+2. In collection view the card area scrolls to center the card; in grouped view it also zooms in to at least 120%.
+3. The detail drawer slides in from the right with your `detailRenderer` content.
 
 ### Closing Details
 
-- Click the close button in detail panel
-- Click outside the detail panel
-- Select a different card
+- Click the close button in the drawer header
+- Click the empty background of the card area
+- Click the selected card again
+- Switch between collection and grouped view
+
+Closing the first selection restores the zoom and scroll position from before it. Clicking a different card while one is selected moves the selection and keeps the drawer open.
 
 ## View Modes
 
-Toggle between:
+Toggle between them with the **Collection** and **Grouped** buttons in the toolbar:
 
-- **Collection View**: Grid of cards grouped by dimension
-- **Detail View**: Focus on selected item with full details
+- **Collection View** (the initial view): one grid of cards sorted by the active dimension
+- **Grouped View**: one column of cards per value of the active dimension, with labels and counts below
+
+Switching views clears the selection.
 
 ## Keyboard behavior
 
-The toolbar exposes native buttons, a range input, and a select, so their standard browser keyboard behavior applies. When the editable zoom percentage is open, `Enter` applies the typed percentage and `Escape` cancels editing. `PivotViewer` does not install global shortcuts for closing details, navigating cards, zooming with `+` / `-`, or focusing search. Do not advertise those shortcuts unless the host implements, scopes, and tests them.
+The toolbar exposes native buttons, a range input, and a select, and the filter panel uses native inputs and buttons, so their standard browser keyboard behavior applies. When the editable zoom percentage is open, `Enter` applies the typed percentage and `Escape` cancels editing. `PivotViewer` does not install global shortcuts for closing details, navigating cards, zooming with `+` / `-`, or focusing search. Do not advertise those shortcuts unless the host implements, scopes, and tests them.
+
+Keyboard limits to plan for:
+
+- Cards are drawn on a Pixi canvas and cannot be focused. Selecting a card, and therefore opening its details, needs a pointer or touch. If keyboard or screen-reader users must reach individual items, offer another view of the same data, such as a data table.
+- The zoom percentage is not focusable, so typing a zoom value needs a pointer. The slider and the zoom buttons work from the keyboard.
+- `Escape` does not close the filter panel or the detail drawer.
 
 ## Touch Gestures
 
 On touch devices:
 
 - **Two-finger pinch**: Zoom around the gesture midpoint
-- **Drag the background**: Pan around the collection
+- **One-finger drag**: Pan the collection
 - **Tap a card**: Select it
 
 `PivotViewer` does not define a double-tap gesture.
 
 ## Example: Full Interaction Flow
 
-1. **Start**: View all items grouped by Status
-2. **Filter**: Open filters, select only "High" priority
-3. **Group**: Click "Assignee" dimension to regroup
-4. **Search**: Type "UI" to find UI-related items
-5. **Zoom**: Zoom in to see more detail
-6. **Pan**: Drag to view different groups
-7. **Select**: Click a card to view details
-8. **Action**: Edit task from detail panel
-9. **Reset**: Clear filters to see all items again
+1. **Start**: View all items in collection view, sorted by the default dimension
+2. **Filter**: Open the filter panel and select "High" priority
+3. **Group**: Choose **Grouped**, then pick "Assignee" in **Sort by**
+4. **Search**: Type "UI" in the filter panel's search box
+5. **Zoom**: Zoom in with the slider or `Ctrl` + wheel
+6. **Pan**: Drag the background to reach other columns
+7. **Select**: Click a card to view its details
+8. **Act**: Use an action your `detailRenderer` provides
+9. **Reset**: Clear the search and each filter to see all items again
 
 ## Mounted interaction state
 
-While the same viewer instance remains mounted, it keeps the current zoom, scroll position, active dimension, filters, and selection. It does not persist those choices across unmounts, reloads, or browser sessions. If the product needs durable or route-addressable state, treat that as an application-owned composition requirement; the component does not expose a durable persistence contract.
+While the same viewer instance remains mounted, it keeps the current zoom, scroll position, view mode, active dimension, filters, search text, and selection. It does not persist those choices across unmounts, reloads, or browser sessions. If the product needs durable or route-addressable state, treat that as an application-owned composition requirement; the component does not expose a durable persistence contract.
 
 ## Multi-step Filtering
 
@@ -136,20 +156,23 @@ Users can combine multiple filters:
 3. Search for: "frontend"
 4. Group by: "Assignee"
 
-All filters work together to narrow down the view.
+An item stays visible only when it matches every active filter and the search.
 
 ## Responsive Behavior
 
-The component adapts to screen size:
+The component adapts to its container:
 
-- Adjusts card size for available space
-- Reflows the toolbar and filter controls below 900 px
-- Supports pointer/touch panning and two-finger pinch zoom
+- Reflows the card grid to the container width, measured with a `ResizeObserver`; cards keep their fixed size
+- Wraps the toolbar onto several rows when the viewport is 900 px wide or less
+- Supports pointer and touch panning, and two-finger pinch zoom
 - Keeps toolbar buttons, the zoom range, and the dimension selector keyboard-operable through native controls
+
+The detail drawer keeps its fixed 380 px width at every size.
 
 ## Performance During Interaction
 
-- Smooth 60fps animations
-- Instant filter updates (Web Worker)
-- Progressive rendering for large datasets
-- Optimized re-renders on state changes
+- Filter, grouping, and sort requests go to the Web Worker when one is available
+- Filter-panel counts and free-text search run on the main thread
+- Only cards near the viewport get a Pixi sprite, and sprites are reused as you scroll
+
+See [Performance](performance.md) for what to measure in your application.

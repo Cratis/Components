@@ -1,10 +1,17 @@
-# Chat Bubble
+---
+title: Canvas chat bubble
+description: Compose a chat thread, composer, reactions, and chat heads from the Canvas chat kit.
+---
 
 The `ChatBubble` kit is a full commenting/chat system — a message thread, a composer with `@`-mentions and emoji, quick reactions, a typing indicator, and a failed-turn affordance. It is a much larger surface than the name "ChatBubble" suggests: `ChatBubble` itself is only the floating avatar "chat head" that opens a conversation; the conversation panel itself is the `Chat` component.
 
 Like `Note` and `Region`, none of these components live inside a `CanvasItem` by requirement — `Chat` is a normal floating/docked panel, most often placed inside a `CanvasItem` so it can sit next to whatever it is commenting on, or rendered outside the `Canvas` entirely for a docked sidebar.
 
-The kit itself is generic and needs no `pixi.js` — it lives in source at `Source/Chat/Kit`, the shared, non-spatial implementation both `@cratis/components/Canvas` (below) and `@cratis/components/Chat` build on. Import it from `@cratis/components/Canvas` as shown here; `@cratis/components/Chat`'s [conversation components](../Chat/index.md) build their own higher-level `ChatConversation`/`ChatSidebar` on top of the same kit.
+The kit's source is generic and does not use Pixi — it lives in source at `Source/Chat/Kit`, the shared, non-spatial implementation both `@cratis/components/Canvas` (below) and `@cratis/components/Chat` build on. Import it from `@cratis/components/Canvas` as shown here; `@cratis/components/Chat`'s [conversation components](../Chat/index.md) build their own higher-level `ChatConversation`/`ChatSidebar` on top of the same kit.
+
+:::caution[Importing the kit from Canvas needs pixi.js]
+`Chat`, `ChatBubble`, `ChatComposer`, and the other kit primitives are exported only from `@cratis/components/Canvas`. That subpath's module imports `pixi.js` when it loads, so the optional `pixi.js` peer must be installed even when you use only the chat kit. If you want a chat without Pixi, use `ChatConversation` or `ChatSidebar` from `@cratis/components/Chat` instead.
+:::
 
 ## `Chat` — the conversation panel
 
@@ -59,14 +66,16 @@ function Conversation() {
 }
 ```
 
+While `messages` is empty, the panel shows "No comments yet. Be the first!"; override that text with `labels.noComments`. `Chat` has no loading or error state of its own: show those around it, and represent a failed turn as a message with `failureDetail` (see [Failed turns](#failed-turns)).
+
 `messages`, `onSend`, and `onClose` are the only required props — everything else is opt-in, and each opt-in feature is gated on its own prop rather than a single "mode" switch:
 
 | Feature                                                               | Enabled by                                                       |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Reactions                                                             | `currentUserId` **and** `onReact` both given                     |
-| Quick reply (prefills the composer with `@name`, followed by a space) | Always available once there is more than one author              |
+| Quick reply (prefills the composer with `@name`, followed by a space) | Always on: every message bubble has a reply button               |
 | "Turn into an action" button                                          | `onAct` given (optionally filtered per-message by `canAct`)      |
-| `@`-mentions in the composer                                          | `mentionCandidates` given                                        |
+| `@`-mentions in the composer                                          | `mentionCandidates` or `resolveMentionCandidates` given          |
 | Typing indicator                                                      | `typingAuthors` given (a list of who's currently typing/working) |
 | Avatar images (instead of initials)                                   | `buildAvatarUrl` given                                           |
 | "Report a bug" link on a failed turn                                  | `buildReportUrl` given                                           |

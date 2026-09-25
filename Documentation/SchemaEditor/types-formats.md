@@ -1,4 +1,7 @@
-# SchemaEditor - Types and formats
+---
+title: SchemaEditor types and formats
+description: The JSON Schema types and formats SchemaEditor offers, custom type-format catalogs, and what it does not author.
+---
 
 SchemaEditor authors a deliberate JSON Schema subset. It is not a complete JSON Schema validator or a general-purpose editor for every vocabulary keyword. The application remains responsible for validating stored data and any richer schema contract.
 
@@ -50,6 +53,7 @@ const schema = {
 Pass `typeFormats` to replace the default primitive catalog:
 
 ```tsx
+import { SchemaEditor } from '@cratis/components/SchemaEditor';
 import type { TypeFormat } from '@cratis/components/types';
 
 const typeFormats: TypeFormat[] = [

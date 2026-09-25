@@ -29,6 +29,8 @@ Canvas exposes and renders real Pixi objects; PivotViewer renders them internall
 npm install pixi.js@^8.20.0
 ```
 
+`pixi.js` is required for the whole `@cratis/components/Canvas` subpath, not only for the `items`/`renderItem` layer: the Canvas module imports `pixi.js` at load time, so importing anything from this subpath (including `Note`, `Region`, or the chat primitives) needs the peer installed.
+
 Keep one compatible Pixi resolution across the application and Components. Two installed copies produce nominal TypeScript incompatibilities for containers and pointer events even when their APIs look structurally similar.
 
 ### Single Pixi peer
@@ -43,6 +45,7 @@ const handleReady = (handle: CanvasHandle) => {
 };
 
 <Canvas
+    style={{ width: '100%', height: 600 }}
     initialZoom={1}
     minZoom={0.25}
     maxZoom={3}
@@ -55,6 +58,8 @@ const handleReady = (handle: CanvasHandle) => {
     </CanvasItem>
 </Canvas>;
 ```
+
+Canvas does not size itself. Its root has no width or height rule, and the Pixi surface follows the root's measured size through a `ResizeObserver` (falling back to 800×600 when the root measures zero at mount). Give the root a size with `style` or `className`, as above, or place it in a sized container and set `height: '100%'`.
 
 ### `CanvasProps<T>`
 
@@ -84,15 +89,15 @@ const handleReady = (handle: CanvasHandle) => {
 | `disableControlsGlass`                     | `boolean`                          | `false`                               | Forces the low-cost CSS frosted pill. The same fallback is used automatically when no `controlsGlassSurface` is supplied.         |
 | `captureAttributes`                        | `CanvasCaptureAttributes`          | —                                     | Product-owned layer/content/transform-host attribute names for a capture or compositor pipeline. Nothing is hardcoded by default. |
 | `onHandleReady`                            | `(handle: CanvasHandle) => void`   | —                                     | Provides imperative camera/item-bound operations.                                                                                 |
-| `readOnly`                                 | `boolean`                          | `false`                               | Keeps pan/zoom but absorbs content interaction.                                                                                   |
+| `readOnly`                                 | `boolean`                          | `false`                               | Keeps pan/zoom but absorbs content interaction: a transparent layer blocks pointers, and the content layer is marked `inert`, so it cannot be reached with the keyboard either. |
 | `backgroundDragPans`                       | `boolean`                          | `true`                                | Set `false` when the product owns empty-background drag selection. Wheel, middle-button, and touch panning remain available.      |
 
 ### `CanvasHandle`
 
 | Method                                           | Meaning                                                     |
 | ------------------------------------------------ | ----------------------------------------------------------- |
-| `smoothPanToWorld(x, y, durationMs?)`            | Centers a world point with an animated pan.                 |
-| `smoothPanZoomToWorld(x, y, zoom?, durationMs?)` | Animates pan and zoom together.                             |
+| `smoothPanToWorld(x, y, durationMs?)`            | Centers a world point with an animated pan (default 600 ms). |
+| `smoothPanZoomToWorld(x, y, zoom?, durationMs?)` | Animates pan and zoom together (default zoom `1`, 600 ms).  |
 | `getContainerRect()`                             | Returns the current viewport rectangle or `null`.           |
 | `getItemBounds()`                                | Returns measured world-space rectangles as `MinimapItem[]`. |
 
@@ -101,7 +106,7 @@ const handleReady = (handle: CanvasHandle) => {
 `Canvas` composes two rendering layers rather than choosing one, and an application can use DOM content alone or mix DOM and Pixi items in the same instance. Canvas always initializes one transparent Pixi `Application` and empty `world` container so `CanvasContext`, `onReady`, and the shared camera have one stable contract; therefore every Canvas consumer still installs the optional Pixi peer. When the world is empty, `Canvas` skips the per-frame GPU render pass.
 
 - **DOM layer** — `children` and `CanvasItem` position arbitrary React/DOM content with ordinary CSS transforms. No Pixi display-object content is created when an application uses only this layer; this is the layer shown by the `WithControlsAndMinimap` Storybook screenshot.
-- **Pixi item layer** — the optional `items`/`renderItem` props hand `Canvas` an array of data and a function that builds one `PIXI.Container` per item in the shared Pixi `world`. This exists for item counts where per-item DOM nodes (and DOM-level pan/zoom repaint cost) become the bottleneck; the Pixi layer amortizes many items on the GPU instead.
+- **Pixi item layer** — the optional `items`/`renderItem` props hand `Canvas` an array of data and a function that builds one `PIXI.Container` per item in the shared Pixi `world`. This exists for item counts where per-item DOM nodes (and DOM-level pan/zoom repaint cost) become the bottleneck; the Pixi layer draws many items on the GPU instead. `renderItem` runs once per new `id`; for an `id` that already has a container, later renders only update its position. See [Basic usage](basic-usage.md) for the data-driven items path.
 
 Both layers share the same camera: panning and zooming transform the DOM layer's CSS and the Pixi `world` container together, so DOM and Pixi content stay registered to the same world coordinates.
 
@@ -126,6 +131,8 @@ Both layers share the same camera: panning and zooming transform the DOM layer's
 `CanvasControls` is exported for products that compose controls separately. Its callbacks are `getZoom`, `onZoomIn`, `onZoomOut`, and `onZoomReset`; optional minimap, placement, help, label, glass-surface, and low-cost fallback props match the integrated Canvas controls. Standalone controls can set `contentCaptureAttribute` when a product compositor needs to mark their non-plain surface.
 
 `CanvasControlsLabels` localizes `toggleMinimap`, `zoomOut`, `resetZoom`, `zoomIn`, and `help`.
+
+The integrated control bar zooms in and out by a factor of 1.2 around the viewport center. Its middle button shows the current zoom percentage and resets zoom to 100% (not to `initialZoom`); pan is unchanged.
 
 `CanvasMinimap` accepts `worldWidth`, `worldHeight`, `items`, and `onRequestPan`. A `MinimapItem` contains `x`, `y`, `width`, `height`, and optional `color`. Its ref exposes `CanvasMinimapHandle.update(pan, zoom, canvasWidth, canvasHeight)`.
 
@@ -174,9 +181,18 @@ The Canvas entry point also exports:
 - `AnchoredOverlay` and its side/alignment types for body-level overlays attached to a control.
 - `canvasGesture`, `canvasTransformActivity`, and `createSelfSuspendingFrameLoop` for advanced canvas integrations.
 
+These are exported from the Canvas subpath, so importing them also loads `pixi.js`. The chat kit source itself does not use Pixi, but `@cratis/components/Chat` does not re-export `Chat`, `ChatBubble`, `ChatComposer`, or the other kit primitives listed above; see [Chat bubble](chat-bubble.md).
+
 These shapes are optional conveniences, not domain models. Applications own persistence, authorization, and collaboration policy. Arc can own commands, queries, validation, authorization, and generated React bindings without Chronicle. Applications that choose Arc plus Chronicle additionally own event streams, projections, and read models. Pass typed data and callbacks into Canvas shapes rather than coupling them to generated proxies.
 
 `Region` additionally detects sibling `CanvasItem` containment and publishes `ItemAddedToRegion`/`ItemRemovedFromRegion`, `Note` publishes `NoteTextChanged`, and `Chat` (given an `id`) publishes `ChatMessageAdded` — all strictly opt-in, over the `@cratis/arc.react` messenger, and silently inert without an `ArcContext` above the `Canvas`. The pure `itemsWithinRegion(regionBounds, items, excludeId?)` containment function (and its `RegionContainmentBounds` parameter type) is also exported for hosts that want the same center-point math outside the messenger flow. See [Messaging](messaging.md) for the full message catalog and the opt-in rules.
+
+## Keyboard and accessibility
+
+- The integrated controls are native buttons with accessible names (`controlsLabels` overrides the English defaults), so they are reachable with `Tab` and activate with `Enter` or `Space`.
+- The canvas surface itself has no keyboard pan or zoom. Panning and zooming the camera without a pointer goes through the zoom buttons or your own controls calling `CanvasHandle`.
+- `Note` and `Region` move, resize, and enter editing through pointer gestures (drag, handles, double-click). They have no keyboard equivalents; a board that must be operable from the keyboard needs host-owned alternatives.
+- Pixi items drawn through `renderItem` are canvas pixels with no accessible representation. Put anything a keyboard or screen-reader user must reach in DOM content (`CanvasItem`).
 
 ## Styling
 

@@ -1,8 +1,15 @@
-# PivotViewer - Renderers
+---
+title: PivotViewer renderers
+description: Control the text on PivotViewer cards and the content of its detail drawer.
+---
+
+The examples on this page use the `Task` type from [Dimensions and filters](dimensions-and-filters.md#complete-example) and the `Product` type from the [overview](index.md#quick-start).
 
 ## Card Renderer
 
 The card renderer determines how each item appears in the collection view. It returns structured text data — `{ title, labels?, values? }` — and `PivotViewer` lays it out into the card. The `labels` and `values` arrays are paired positionally.
+
+Cards are drawn with Pixi, not as DOM elements, so a card can show only this text: no images, icons, per-card colors, or React content. Every card has the same fixed size (each card occupies a 200 × 176 pixel cell at 100% zoom), and a title or value that does not fit is shortened with an ellipsis.
 
 ### Basic Card
 
@@ -10,7 +17,7 @@ The card renderer determines how each item appears in the collection view. It re
 const cardRenderer = (item: Product) => ({
     title: item.name,
     labels: ['Price'],
-    values: [`$${item.price}`]
+    values: [item.price.toFixed(2)],
 });
 ```
 
@@ -20,160 +27,106 @@ const cardRenderer = (item: Product) => ({
 const taskCardRenderer = (item: Task) => ({
     title: item.title,
     labels: ['Priority', 'Status', 'Assignee', 'Estimate'],
-    values: [
-        `P${item.priority}`,
-        item.status,
-        item.assignee,
-        `${item.estimatedHours}h`
-    ]
+    values: [`P${item.priority}`, item.status, item.assignee, `${item.estimatedHours}h`],
 });
 ```
 
 ## Detail Renderer
 
-The detail renderer shows expanded information when an item is selected.
+When a user selects a card, PivotViewer opens a drawer that slides in from the right over the card area. The drawer shell is component-owned: its header, heading, and close button. `detailRenderer` supplies only the content below the header:
+
+```typescript
+detailRenderer?: (item: TItem, onClose: () => void) => ReactNode;
+```
+
+- The header heading is the item's `name` property, then its `type` property, then the text "Event". Give your items a `name` property, or accept that heading.
+- Call `onClose` from your content to close the drawer, for example after a successful save.
+- Without a `detailRenderer`, the drawer shows a built-in fallback that lists the item's `type`, `occurred`, `service`, `environment`, `tenant`, `correlationId`, `causation`, and `content` properties when present. For most item types, supply your own renderer.
 
 ### Basic Details
 
-```typescript
+```tsx
 const detailRenderer = (item: Product) => (
-    <div className="product-details">
-        <h2>{item.name}</h2>
-        <img src={item.imageUrl} alt={item.name} className="detail-image" />
-        <p className="description">{item.description}</p>
-        <div className="specs">
-            <p><strong>SKU:</strong> {item.sku}</p>
-            <p><strong>Price:</strong> ${item.price}</p>
-            <p><strong>Stock:</strong> {item.stock} units</p>
-        </div>
-    </div>
+    <dl>
+        <dt>Category</dt>
+        <dd>{item.category}</dd>
+        <dt>Price</dt>
+        <dd>{item.price.toFixed(2)}</dd>
+    </dl>
 );
 ```
 
 ### Comprehensive Details
 
-```typescript
+```tsx
 const taskDetailRenderer = (item: Task) => (
-    <div className="task-details">
-        <div className="detail-header">
-            <h2>{item.title}</h2>
-            <div className="header-badges">
-                <span className={`priority-badge p-${item.priority}`}>
-                    Priority {item.priority}
-                </span>
-                <span className={`status-badge status-${item.status}`}>
-                    {item.status}
-                </span>
-            </div>
-        </div>
-        
-        <div className="detail-section">
-            <h3>Description</h3>
-            <p>{item.description}</p>
-        </div>
-        
-        <div className="detail-section">
-            <h3>Assignment</h3>
-            <div className="assignee-info">
-                <img src={item.assigneeAvatar} alt={item.assignee} />
-                <div>
-                    <strong>{item.assignee}</strong>
-                    <p>{item.assigneeEmail}</p>
-                </div>
-            </div>
-        </div>
-        
-        <div className="detail-section">
-            <h3>Timeline</h3>
-            <div className="timeline">
-                <p><strong>Created:</strong> {formatDate(item.createdAt)}</p>
-                <p><strong>Due:</strong> {formatDate(item.dueDate)}</p>
-                <p><strong>Estimated:</strong> {item.estimatedHours} hours</p>
-            </div>
-        </div>
-        
-        <div className="detail-section">
-            <h3>Tags</h3>
-            <div className="tags-list">
-                {item.tags.map(tag => (
-                    <span key={tag} className="tag-pill">{tag}</span>
-                ))}
-            </div>
-        </div>
-        
-        {item.attachments && item.attachments.length > 0 && (
-            <div className="detail-section">
-                <h3>Attachments</h3>
-                <ul className="attachments-list">
-                    {item.attachments.map(att => (
-                        <li key={att.id}>
-                            <a href={att.url}>{att.name}</a>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        )}
+    <div className='task-details'>
+        <p>{item.description}</p>
+        <dl>
+            <dt>Status</dt>
+            <dd>{item.status}</dd>
+            <dt>Assignee</dt>
+            <dd>{item.assignee}</dd>
+            <dt>Created</dt>
+            <dd>{item.createdAt.toLocaleDateString()}</dd>
+        </dl>
+        <ul className='task-tags'>
+            {item.tags.map((tag) => (
+                <li key={tag}>{tag}</li>
+            ))}
+        </ul>
     </div>
 );
 ```
 
+`task-details` and `task-tags` are your own classes; Components ships no styles for them.
+
 ## Interactive Details
 
-Add interactive elements to the detail panel:
+`detailRenderer` is called as a plain function, not rendered as a component, so it must not call hooks itself. Put interactive content in a component and return that component. Key it by the item so its state resets when the user selects a different card:
 
-```typescript
-const interactiveDetailRenderer = (item: Task) => {
+```tsx
+import { useState } from 'react';
+
+function TaskDescriptionEditor({ task, onClose }: { task: Task; onClose: () => void }) {
     const [editing, setEditing] = useState(false);
-    const [notes, setNotes] = useState(item.notes);
-    
-    const handleSaveNotes = async () => {
-        await updateTask(item.id, { notes });
+    const [description, setDescription] = useState(task.description);
+
+    const save = async () => {
+        await updateTaskDescription(task.id, description);
         setEditing(false);
     };
-    
+
     return (
-        <div className="task-details-interactive">
-            <h2>{item.title}</h2>
-            
-            {/* ... other sections ... */}
-            
-            <div className="detail-section">
-                <div className="section-header">
-                    <h3>Notes</h3>
-                    <button onClick={() => setEditing(!editing)}>
-                        {editing ? 'Cancel' : 'Edit'}
-                    </button>
-                </div>
-                
-                {editing ? (
-                    <div>
-                        <textarea 
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            rows={5}
-                        />
-                        <button onClick={handleSaveNotes}>Save</button>
-                    </div>
-                ) : (
-                    <p>{notes || 'No notes'}</p>
-                )}
-            </div>
-            
-            <div className="detail-actions">
-                <button onClick={() => handleStatusChange(item.id)}>
-                    Change Status
-                </button>
-                <button onClick={() => handleReassign(item.id)}>
-                    Reassign
-                </button>
-                <button onClick={() => handleDelete(item.id)}>
-                    Delete
-                </button>
-            </div>
-        </div>
+        <section>
+            {editing ? (
+                <>
+                    <textarea
+                        aria-label='Description'
+                        value={description}
+                        onChange={(event) => setDescription(event.target.value)}
+                        rows={5}
+                    />
+                    <button type='button' onClick={save}>Save</button>
+                    <button type='button' onClick={() => setEditing(false)}>Cancel</button>
+                </>
+            ) : (
+                <>
+                    <p>{description || 'No description'}</p>
+                    <button type='button' onClick={() => setEditing(true)}>Edit</button>
+                </>
+            )}
+            <button type='button' onClick={onClose}>Done</button>
+        </section>
     );
-};
+}
+
+const interactiveDetailRenderer = (item: Task, onClose: () => void) => (
+    <TaskDescriptionEditor key={item.id} task={item} onClose={onClose} />
+);
 ```
+
+`updateTaskDescription` stands for your own persistence call, such as an Arc command. The drawer does not reflect the change until `data` contains the updated item.
 
 ## Conditional Rendering
 
@@ -181,17 +134,10 @@ Adapt the structured card data based on item properties:
 
 ```typescript
 const adaptiveCardRenderer = (item: Task) => {
-    const isOverdue = new Date(item.dueDate) < new Date();
-    const isHighPriority = item.priority >= 8;
-
     const labels: string[] = ['Status'];
     const values: string[] = [item.status];
 
-    if (isOverdue) {
-        labels.push('Flag');
-        values.push('Overdue');
-    }
-    if (isHighPriority) {
+    if (item.priority >= 8) {
         labels.push('Priority');
         values.push('High');
     }
@@ -204,21 +150,17 @@ const adaptiveCardRenderer = (item: Task) => {
 
 ### Cards
 
-1. **Keep cards compact**: Display essential info only
-2. **Use visual hierarchy**: Most important info should stand out
-3. **Consistent sizing**: All cards should be similar size
-4. **Show preview**: Give enough context to identify items
-5. **Use icons and colors**: Visual cues help quick scanning
-6. **Limit text**: Truncate long content with ellipsis
-7. **Include imagery**: Photos/icons make cards more scannable
+1. **Keep cards compact**: every card has the same small fixed size, so show a title and a few label/value pairs
+2. **Put the identifying text in `title`**: it is the most prominent line on the card
+3. **Keep `labels` and `values` the same length**: they are paired by position
+4. **Format values yourself**: return display strings such as `'12h'` or `'P3'`
+5. **Keep it cheap**: `cardRenderer` runs for cards as they are drawn, so avoid expensive computation in it
 
 ### Details
 
 1. **Show comprehensive info**: This is the place for all details
 2. **Organize in sections**: Group related information
-3. **Make it actionable**: Include relevant actions/buttons
-4. **Load related data**: Fetch additional details as needed
-5. **Use tabs for complex data**: Don't overwhelm with single view
-6. **Show relationships**: Link to related items
-7. **Include metadata**: Timestamps, IDs, version info
-8. **Consider mobile**: Ensure details work on small screens
+3. **Make it actionable**: Include relevant actions and buttons, and call `onClose` when an action finishes the task
+4. **Load related data**: Fetch additional details in a component when it mounts
+5. **Keep hooks in components**: never call hooks directly inside `detailRenderer`
+6. **Consider narrow screens**: the drawer is a fixed 380 pixels wide and overlays the right edge of the card area

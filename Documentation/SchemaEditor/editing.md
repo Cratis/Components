@@ -1,4 +1,7 @@
-# SchemaEditor - Editing Properties
+---
+title: SchemaEditor editing properties
+description: Add, rename, retype, navigate, and remove properties in SchemaEditor, and save or cancel the edit.
+---
 
 SchemaEditor is controlled: it emits each structural change through `onChange`, and the host decides when and where to persist the resulting schema. Save and Cancel are workflow actions around that controlled value; they do not perform transport themselves.
 
@@ -6,7 +9,7 @@ SchemaEditor is controlled: it emits each structural change through `onChange`, 
 
 Use the Edit action in the SchemaEditor toolbar. Set `editMode` to choose the initial mode, or set `canEdit={false}` to prevent editing.
 
-When `canEdit` is false, `canNotEditReason` can explain why the Edit action is unavailable.
+When `canEdit` is false, the Edit action is still shown but does nothing. Set `canNotEditReason` to render it as a disabled action (`aria-disabled`) with a tooltip that explains why editing is unavailable; without a reason, the action looks enabled.
 
 ## Add a property
 
@@ -26,6 +29,8 @@ The property starts as `{ type: 'string' }`. Rename it and choose its type or fo
     onSave={() => persist(schema)}
 />
 ```
+
+This excerpt assumes `const [schema, setSchema] = useState<JsonSchema>(...)` as in the [overview](index.md#quick-start), and your own `persist` function.
 
 ## Rename a property
 
@@ -96,7 +101,7 @@ Add confirmation in the host before allowing edit mode, or wrap persistence in t
 ## Save and Cancel
 
 - **Save** invokes `onSave` and leaves edit mode. It is disabled while property-name or schema-shape errors exist.
-- **Cancel** restores the snapshot captured when edit mode began, emits that restored value through `onChange`, invokes `onCancel`, and leaves edit mode.
+- **Cancel** restores the snapshot captured when edit mode began, emits that restored value through `onChange` (with `meta.source` set to `'reset'`) when anything changed, invokes `onCancel`, and leaves edit mode.
 - `saveDisabled` and `cancelDisabled` hide the corresponding actions when the host owns those decisions elsewhere.
 
 Because `onChange` is emitted during editing, keep the latest controlled value in state. If persistence is asynchronous, perform it in `onSave` using that state.
@@ -112,7 +117,7 @@ Do not infer batch or history behavior from the underlying table component; Sche
 Set `canEdit={false}` to keep the schema browsable without exposing editing actions:
 
 ```tsx
-<SchemaEditor schema={schema} canEdit={false} />
+<SchemaEditor schema={schema} canEdit={false} canNotEditReason='Published schemas are read-only' />
 ```
 
 Nested object/array navigation and descriptions remain available for review. Add, delete, type, format, Save, and Cancel actions are unavailable.

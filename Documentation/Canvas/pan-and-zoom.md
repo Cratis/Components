@@ -1,4 +1,7 @@
-# Pan & Zoom
+---
+title: Canvas pan and zoom
+description: How Canvas responds to wheel, trackpad, mouse, and touch input, and how to drive the camera from code.
+---
 
 ## Input matrix
 
@@ -12,6 +15,10 @@
 | Two-finger touch pinch | Pans and zooms together around the pinch midpoint |
 
 A left-button drag only pans when it starts on empty background — starting a drag on a `CanvasItem`'s content does not pan the board out from under it. Set `backgroundDragPans={false}` if your board wants to claim a plain left-drag for itself instead (for example, a rubber-band selection box); wheel/trackpad panning, middle-button-drag panning, and one-finger touch panning are unaffected by this and keep working, so a touch device is never left unable to move the board.
+
+A plain wheel or trackpad scroll that lands on scrollable content inside the canvas (a chat's message list, for example) scrolls that content instead of panning the board. A `Ctrl`/`Cmd` zoom gesture always zooms the board.
+
+The canvas surface has no keyboard pan or zoom. Keyboard users zoom through the integrated control buttons; anything else goes through your own controls calling `CanvasHandle`, described below.
 
 Safari/WebKit's non-standard trackpad gesture events are also handled, so pinch-to-zoom works there even though it never fires a `wheel` event with `ctrlKey` set the way Chrome/Firefox do.
 
@@ -41,7 +48,7 @@ Safari/WebKit's non-standard trackpad gesture events are also handled, so pinch-
 />
 ```
 
-- `showControls` (default `true`) — renders the built-in `CanvasControls` zoom pill in the corner. See [Controls Chrome](controls-chrome.md) for its own props.
+- `showControls` (default `true`) — renders the built-in `CanvasControls` zoom pill in the corner. See [Controls chrome](controls-chrome.md) for localizing and restyling it. Its middle button resets zoom to 100%, not to `initialZoom`.
 - `showMinimap` (default `false`) — adds a minimap toggle button to the controls; the minimap panel itself only mounts once opened.
 - `controlsPlacement` (default `'bottom-left'`) — `'bottom-left'` or `'bottom-right'`.
 - `minimapWorldWidth` / `minimapWorldHeight` — the world-space area the minimap represents. `CanvasMinimap` defaults these to `4000`×`3000` when omitted.
@@ -50,19 +57,24 @@ Safari/WebKit's non-standard trackpad gesture events are also handled, so pinch-
 ## `CanvasHandle` — imperative camera control
 
 ```tsx
-import { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { Canvas, type CanvasHandle } from '@cratis/components/Canvas';
 
-function ControlledBoard() {
+export function ControlledBoard({ children }: { children: ReactNode }) {
     const handleRef = useRef<CanvasHandle | null>(null);
 
     return (
         <>
-            <button onClick={() => handleRef.current?.smoothPanToWorld(400, 250)}>
+            <button type='button' onClick={() => handleRef.current?.smoothPanToWorld(400, 250)}>
                 Go to item
             </button>
-            <Canvas onHandleReady={handle => { handleRef.current = handle; }}>
-                {/* ... */}
+            <Canvas
+                style={{ width: '100%', height: 480 }}
+                onHandleReady={(handle) => {
+                    handleRef.current = handle;
+                }}
+            >
+                {children}
             </Canvas>
         </>
     );
