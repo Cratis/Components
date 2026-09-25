@@ -22,7 +22,8 @@ import {
  * Props for {@link CommandDialog}. Combines the props of a `CommandForm`
  * (`command`, `initialValues`, `onSuccess`, `onValidationFailure`, `onFailed`,
  * `onBeforeExecute`, etc.) with the props of a {@link Dialog} (`title`,
- * `buttons`, `width`, `pt`, `unstyled`, …).
+ * `buttons`, `width`, `pt`, `unstyled`, …). Dialog presentation props
+ * such as `subtitle`, `placement`, and `closeIcon` are forwarded to the dialog.
  *
  * @typeParam TCommand - The command record type (must extend `object`).
  * @typeParam TResponse - The response payload type returned by a successful command. Defaults to `object`.
@@ -54,66 +55,29 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
     children?: React.ReactNode;
 }
 
+// Requiring each key here makes a newly added Dialog prop fail compilation until it is routed.
+type ForwardedDialogProps = Omit<DialogProps, 'children' | 'isBusy'> &
+    Record<keyof Omit<DialogProps, 'children' | 'isBusy'>, unknown>;
+
 const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
-    title,
-    visible,
-    width,
-    style,
-    contentStyle,
-    resizable,
-    buttons,
-    initialFocus,
-    okLabel,
-    cancelLabel,
-    yesLabel,
-    noLabel,
-    dismissable,
-    closeAriaLabel,
     isValid,
     onClose,
     onConfirm,
-    onCancel,
     onSuccess,
     onValidationFailure,
     onFailed,
     onException,
     onUnauthorized,
     onBeforeExecute,
-    className,
-    pt,
-    ptOptions,
-    unstyled,
     children,
-}: {
-    title: string;
-    visible?: boolean;
-    width?: string;
-    style?: DialogProps['style'];
-    contentStyle?: DialogProps['contentStyle'];
-    resizable?: boolean;
-    buttons?: DialogProps['buttons'];
-    initialFocus?: DialogProps['initialFocus'];
-    okLabel?: string;
-    cancelLabel?: string;
-    yesLabel?: string;
-    noLabel?: string;
-    dismissable?: DialogProps['dismissable'];
-    closeAriaLabel?: DialogProps['closeAriaLabel'];
-    isValid?: boolean;
-    onClose?: DialogProps['onClose'];
-    onConfirm?: DialogProps['onConfirm'];
-    onCancel?: DialogProps['onCancel'];
+    ...dialogProps
+}: Omit<DialogProps, 'isBusy'> & {
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
     onException?: CommandFormProps<TCommand, TResponse>['onException'];
     onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
-    className?: DialogProps['className'];
-    pt?: DialogProps['pt'];
-    ptOptions?: DialogProps['ptOptions'];
-    unstyled?: DialogProps['unstyled'];
-    children?: React.ReactNode;
 }) => {
     const {
         setCommandValues,
@@ -203,29 +167,11 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
 
     return (
         <Dialog
-            title={title}
-            visible={visible}
-            width={width}
-            style={style}
-            contentStyle={contentStyle}
-            resizable={resizable}
-            buttons={buttons}
-            initialFocus={initialFocus}
+            {...dialogProps}
             onClose={onClose}
             onConfirm={handleConfirm}
-            onCancel={onCancel}
-            okLabel={okLabel}
-            cancelLabel={cancelLabel}
-            yesLabel={yesLabel}
-            noLabel={noLabel}
-            dismissable={dismissable}
-            closeAriaLabel={closeAriaLabel}
             isValid={isDialogValid}
             isBusy={isBusy}
-            className={className}
-            pt={pt}
-            ptOptions={ptOptions}
-            unstyled={unstyled}
         >
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 {processedChildren}
@@ -355,6 +301,9 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
 ) => {
     const {
         title,
+        subtitle,
+        placement,
+        closeIcon,
         visible,
         width,
         style,
@@ -381,37 +330,44 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         ...commandFormProps
     } = props;
 
+    const dialogProps = {
+        title,
+        subtitle,
+        placement,
+        closeIcon,
+        visible,
+        width,
+        style,
+        contentStyle,
+        resizable,
+        buttons,
+        initialFocus,
+        okLabel,
+        cancelLabel,
+        yesLabel,
+        noLabel,
+        dismissable,
+        closeAriaLabel,
+        isValid,
+        onClose,
+        onConfirm,
+        onCancel,
+        className,
+        pt,
+        ptOptions,
+        unstyled,
+    } satisfies ForwardedDialogProps;
+
     return (
         <CommandForm<TCommand, TResponse> {...commandFormProps}>
             <CommandDialogWrapper<TCommand, TResponse>
-                title={title}
-                visible={visible}
-                width={width}
-                style={style}
-                contentStyle={contentStyle}
-                resizable={resizable}
-                buttons={buttons}
-                initialFocus={initialFocus}
-                okLabel={okLabel}
-                cancelLabel={cancelLabel}
-                yesLabel={yesLabel}
-                noLabel={noLabel}
-                dismissable={dismissable}
-                closeAriaLabel={closeAriaLabel}
-                isValid={isValid}
-                onClose={onClose}
-                onConfirm={onConfirm}
-                onCancel={onCancel}
+                {...dialogProps}
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
                 onException={props.onException}
                 onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
-                className={className}
-                pt={pt}
-                ptOptions={ptOptions}
-                unstyled={unstyled}
             >
                 {children}
             </CommandDialogWrapper>
