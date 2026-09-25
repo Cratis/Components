@@ -1,4 +1,7 @@
-# ConfirmationDialog
+---
+title: ConfirmationDialog
+description: Ask the user to confirm an action with a host-rendered dialog and await the button they chose.
+---
 
 Dialog for confirming user actions.
 
@@ -21,7 +24,7 @@ ConfirmationDialog prompts users to confirm or cancel an action.
 
 Register the dialog component near the root of your app:
 
-```typescript
+```tsx
 import { ConfirmationDialog } from '@cratis/components/Dialogs';
 import { DialogComponents } from '@cratis/arc.react/dialogs';
 
@@ -34,7 +37,7 @@ export const App = () => (
 
 Trigger it from a component and await the result:
 
-```typescript
+```tsx
 import { useConfirmationDialog, DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
 
 function MyComponent() {
@@ -51,7 +54,7 @@ function MyComponent() {
         }
     };
 
-    return <button onClick={handleDelete}>Delete</button>;
+    return <button type='button' onClick={handleDelete}>Delete</button>;
 }
 ```
 
@@ -63,13 +66,21 @@ The `ConfirmationDialogRequest` the host threads into the dialog carries:
 - `message`: Confirmation message
 - `buttons`: A `DialogButtons` value (`Ok`, `OkCancel`, `YesNo`, or `YesNoCancel`)
 
-`useConfirmationDialog(title?, message?, buttons?)` returns `[showConfirm]`, where `showConfirm()` returns a `Promise<DialogResult>` resolving to the button the user picked.
+`useConfirmationDialog(title?, message?, buttons?)` returns `[showConfirm]`, where `showConfirm()` returns a `Promise<DialogResult>` resolving to the button the user picked. `buttons` defaults to `DialogButtons.Ok`.
+
+`showConfirm(title?, message?, buttons?)` accepts the same three arguments. A value passed to `showConfirm` wins over the one given to the hook, so one hook can confirm several different actions.
+
+The header close (X), `Escape`, and a backdrop click are always available and resolve to `DialogResult.Cancelled`, including in a `YesNo` dialog. Compare against the answer you act on (`=== DialogResult.Yes`) rather than against `DialogResult.No`.
+
+Without a `DialogComponents` registration above the component, `showConfirm()` shows nothing and resolves to `DialogResult.Cancelled` immediately.
+
+Labels resolve like every [`Dialog`](dialog.md): the provider's `messages.dialog` entries, then the English defaults. Initial focus lands on the confirming button (`Ok` / `Yes`).
 
 ## Examples
 
 ### Delete confirmation
 
-```typescript
+```tsx
 const [showConfirm] = useConfirmationDialog(
     'Delete Item',
     'This action cannot be undone. Are you sure?',
@@ -85,7 +96,7 @@ const onDelete = async () => {
 
 ### Save changes
 
-```typescript
+```tsx
 const [showConfirm] = useConfirmationDialog(
     'Unsaved Changes',
     'You have unsaved changes. Do you want to save them?',
@@ -105,7 +116,7 @@ const onLeave = async () => {
 
 ### Proceed with action
 
-```typescript
+```tsx
 const [showConfirm] = useConfirmationDialog(
     'Confirm Action',
     'This will affect all users. Continue?',

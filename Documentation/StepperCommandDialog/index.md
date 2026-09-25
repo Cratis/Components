@@ -3,11 +3,11 @@ title: StepperCommandDialog
 description: Execute Arc commands through a multi-step dialog with validation-aware navigation.
 ---
 
-The `StepperCommandDialog` component executes one Arc command through a modal, multi-step form. It and [`CommandStepper`](../CommandStepper/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `CommandStepper` when the wizard belongs inline; the dialog additionally owns cancel, busy state, and authorization routing.
+The `StepperCommandDialog` component executes one Arc command through a modal, multi-step form. It and [`CommandStepper`](../CommandStepper/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `CommandStepper` when the wizard belongs inline; the dialog additionally owns dismissal, a busy window that also covers an async `onBeforeExecute`, and the `onException` / `onUnauthorized` callbacks.
 
 ## Purpose
 
-`StepperCommandDialog` organizes a command form across multiple steps, guiding users through a wizard-like workflow. All steps gather into the same underlying command — the Submit button only **appears** when all fields across every step are valid and the user has reached the last step.
+`StepperCommandDialog` organizes a command form across multiple steps, guiding users through a wizard-like workflow. All steps gather into the same underlying command — the Submit button only **appears** when the user has reached the last step and the command passes client validation across every step.
 
 ## Key Features
 
@@ -15,8 +15,8 @@ The `StepperCommandDialog` component executes one Arc command through a modal, m
 - All steps share a single command form — one command is submitted at the end
 - Submit button only appears on the last step when all fields are valid
 - Previous button hidden on the first step; Next button hidden on the last step
-- Cancel via the X button in the dialog header or the Escape key, and — with `showCancel` — a Cancel button in the footer
-- Step number circles change color to indicate validation state (red = errors, green = visited and valid)
+- Cancel via the X button in the dialog header, the Escape key, or a backdrop click, and — with `showCancel` — a Cancel button in the footer
+- Step number circles change color to indicate validation state (red = errors shown, green = visited and valid)
 - Non-active steps are visually dimmed to keep focus on the current step
 - Busy state management during command execution
 - Stepper customization (`orientation`, `headerPosition`, `linear`, `start`, `end`, `pt`, …) available directly on the dialog
@@ -26,57 +26,65 @@ The `StepperCommandDialog` component executes one Arc command through a modal, m
 
 ## Basic Usage
 
-```typescript
-import { StepperCommandDialog } from '@cratis/components/CommandDialog';
-import { StepperPanel } from '@cratis/components/CommandDialog';
-import { InputTextField, TextAreaField, NumberField } from '@cratis/components/CommandForm/fields';
-import { CommandResult } from '@cratis/arc/commands';
+The example assumes `CreateProject` is a generated Arc command proxy whose `Handle()` returns a `CreateProjectResponse`.
+
+```tsx
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
+import { StepperCommandDialog, StepperPanel } from '@cratis/components/CommandDialog';
+import { InputTextField, NumberField, TextAreaField } from '@cratis/components/CommandForm/fields';
+import { CreateProject } from './CreateProject';
 
 type CreateProjectResponse = {
     projectId: string;
 };
 
 const CreateProjectDialog = () => {
-    const { closeDialog } = useDialogContext<CommandResult<CreateProjectResponse>>();
+    const { closeDialog } = useDialogContext<object, CreateProjectResponse>();
 
     return (
         <StepperCommandDialog<CreateProject, CreateProjectResponse>
             command={CreateProject}
-            title="Create New Project"
-            okLabel="Create"
-            onSuccess={(response) => {
-                console.log('Project created:', response.projectId);
-                closeDialog(DialogResult.Ok);
-            }}
-            onValidationFailure={(errors) => {
-                console.error('Validation failed:', errors);
-            }}
-            onCancel={() => closeDialog(DialogResult.Cancelled)}
+            title='Create project'
+            okLabel='Create'
+            onSuccess={(response) => closeDialog(DialogResult.Ok, response)}
         >
-            <StepperPanel header="Basic Info">
-                <InputTextField<CreateProject> value={c => c.name} title="Project Name" />
-                <InputTextField<CreateProject> value={c => c.email} title="Contact Email" type="email" />
+            <StepperPanel header='Basic info'>
+                <InputTextField<CreateProject> value={(c) => c.name} title='Project name' />
+                <InputTextField<CreateProject> value={(c) => c.email} title='Contact email' type='email' />
             </StepperPanel>
-            <StepperPanel header="Details">
-                <TextAreaField<CreateProject> value={c => c.description} title="Description" rows={4} />
-                <NumberField<CreateProject> value={c => c.budget} title="Budget" />
+            <StepperPanel header='Details'>
+                <TextAreaField<CreateProject> value={(c) => c.description} title='Description' rows={4} />
+                <NumberField<CreateProject> value={(c) => c.budget} title='Budget' min={0} />
             </StepperPanel>
         </StepperCommandDialog>
     );
 };
 
-function MyComponent() {
-    const [CreateProjectDialogWrapper, showCreateProjectDialog] = useDialog(CreateProjectDialog);
+export const Projects = () => {
+    const [CreateProjectDialogWrapper, showCreateProjectDialog] =
+        useDialog<CreateProjectResponse>(CreateProjectDialog);
+
+    const createProject = async () => {
+        const [result, response] = await showCreateProjectDialog();
+        if (result === DialogResult.Ok && response) {
+            console.log('Created project', response.projectId);
+        }
+    };
 
     return (
         <>
-            <button onClick={() => showCreateProjectDialog()}>Create Project</button>
+            <button type='button' onClick={createProject}>
+                Create project
+            </button>
             <CreateProjectDialogWrapper />
         </>
     );
-}
+};
 ```
+
+`useDialogContext` takes the request type first and the result type second. `closeDialog(DialogResult.Ok, response)` resolves the caller's `await` with the response; after `onSuccess`, the dialog also closes itself through the dialog context, which changes nothing once the caller has been resolved. The header X, `Escape`, and a backdrop click close the dialog with `DialogResult.Cancelled` without any callback.
+
+Required values that no step shows, such as the id of the item being edited, belong in `initialValues`. See [Initialize command values](../CommandDialog/index.md#initialize-command-values); the same rules apply to every step.
 
 ## Props
 
@@ -97,7 +105,7 @@ function MyComponent() {
 - `onUnauthorized`: Callback invoked when authorization fails
 - `onValidationFailure`: Callback invoked on validation errors with the validation results
 - `onConfirm`: Confirm callback — called only after successful command execution
-- `onCancel`: Cancel callback — invoked for every dismissal that is not a successful submit: the X in the dialog header, the Escape key, and the footer Cancel button when `showCancel` is on
+- `onCancel`: Cancel callback — invoked for every dismissal that is not a successful submit: the X in the dialog header, the Escape key, a backdrop click, and the footer Cancel button when `showCancel` is on. Return `true`, or call `closeDialog` yourself, to close
 - `onClose`: Fallback close callback
 - `okLabel`: Label for the submit button shown on the last step when valid. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.stepper.submit`, then `'Submit'`
 - `nextLabel`: Label for the next step button. Falls back to the provider's `messages.stepper.next`, then `'Next'`
@@ -146,35 +154,41 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 
 ### Dialog Callbacks
 
+"Closes" means that the dialog calls `closeDialog` from the surrounding `useDialog` context. Without that context nothing closes automatically; hide the dialog yourself from `onSuccess` and `onCancel`.
+
 - `onConfirm` is executed only after command execution succeeds.
 - If `onConfirm` returns `true`, the dialog closes; otherwise it stays open.
 - If `onConfirm` is not provided, `onClose(DialogResult.Ok)` is used.
 - `onCancel` follows the same behavior as `Dialog` (`true` closes).
 - `onClose` closes unless it returns `false`.
+- With none of the three, a successful submit closes with `DialogResult.Ok` and every dismissal closes with `DialogResult.Cancelled`.
+- A callback that calls `closeDialog(...)` itself closes the dialog regardless of its return value.
 
 ## Validation Indicators
 
 The step number circles in the wizard navigation bar reflect the validation state of each step:
 
-| Circle color                | Meaning                                                                    |
-| --------------------------- | -------------------------------------------------------------------------- |
-| **Red**                     | The step contains at least one field with a validation error               |
-| **Green**                   | The step has been visited (navigated through) and all its fields are valid |
-| **Default** (theme primary) | The step has not been visited yet                                          |
+| Circle color | Meaning |
+| ------------ | ------- |
+| **Red** | A field in the step currently shows a validation error, whether or not the step was visited |
+| **Green** | The step has been visited (navigated through) and none of its fields shows an error |
+| **Default** | The step has not been visited and none of its fields shows an error |
 
 Steps that are not currently active are dimmed to keep visual focus on the current step.
 
 To show validation indicators immediately on open — before the user has touched any fields — pass the `validateOnInit` prop:
 
 ```tsx
-<StepperCommandDialog
-    command={CreateProject}
-    validateOnInit
-    ...
->
+<StepperCommandDialog<CreateProject> command={CreateProject} title='Create project' validateOnInit>
+    <StepperPanel header='Basic info'>
+        <InputTextField<CreateProject> value={(c) => c.name} title='Project name' />
+    </StepperPanel>
+</StepperCommandDialog>
 ```
 
 This is useful when the dialog opens with pre-populated values that may already be partially invalid.
+
+The indicators, and the Next button, react to errors that are **shown**. With the default `validateOn='blur'`, a required field the user has not touched shows no error yet, so it neither turns the step red nor blocks Next. The Submit button is different: it follows the command's validity, including fields the user never touched.
 
 ## Navigation and Submit
 
@@ -185,13 +199,17 @@ This is useful when the dialog opens with pre-populated values that may already 
 | Last step (invalid) | Previous         | Cancel, Previous                 |
 | Last step (valid)   | Previous, Submit | Cancel, Previous, Submit         |
 
-The Submit button is hidden until the user reaches the last step **and** all command form fields across every step pass validation.
+The Submit button is hidden, not disabled, until the user reaches the last step **and** the command passes validation across every step (and `isValid` is not `false`). Next is disabled while a field on the current step shows an error. Submit receives focus when it appears.
+
+`linear` (the default) only makes the step headers unclickable; users still move with Previous and Next. It does not require a step's fields to be filled before Next is enabled.
 
 ## Cancelling
 
-Dismissal is always reachable from the X button in the dialog header and from the Escape key. Both run `onCancel` and close with `DialogResult.Cancelled`.
+Dismissal is always reachable from the X button in the dialog header, from the Escape key, and from a backdrop click, except while the command runs. Each one runs `onCancel`; the dialog closes with `DialogResult.Cancelled` when `onCancel` returns `true` or calls `closeDialog` itself. Without `onCancel`, `onClose(DialogResult.Cancelled)` decides, and with neither the dialog closes through the dialog context.
 
 Set `showCancel` to add a Cancel button to the footer as well. It leads the footer on every step — on the dismissal side of the divider, opposite Next and Submit — and takes exactly the same path as the header X. Use it for a wizard whose dismissal should be as reachable as its submit: a destructive or long flow, or one presented without a visible header. `cancelLabel` renames it.
+
+The excerpt assumes `closeDialog` comes from `useDialogContext()` and `environments` is an array of `{ id, name }` objects.
 
 ```tsx
 <StepperCommandDialog<DeleteEnvironment>
@@ -207,6 +225,8 @@ Set `showCancel` to add a Cancel button to the footer as well. It leads the foot
             value={(c) => c.environmentId}
             title='Environment'
             options={environments}
+            optionValue='id'
+            optionLabel='name'
         />
     </StepperPanel>
     <StepperPanel header='Confirm'>
@@ -223,7 +243,7 @@ Set `showCancel` to add a Cancel button to the footer as well. It leads the foot
 `StepperCommandDialog` automatically manages a busy state during command execution:
 
 - When Submit is clicked, the Submit button shows a loading spinner and all navigation buttons are disabled.
-- Every route out of the dialog is withdrawn for the same window: the footer Cancel is disabled, the header X is not rendered, and Escape does not dismiss. A dialog can therefore never report cancellation for a command that goes on to execute anyway.
+- Every route out of the dialog is withdrawn for the same window: the footer Cancel is disabled, the header X is not rendered, and neither Escape nor a backdrop click dismisses. A dialog can therefore never report cancellation for a command that goes on to execute anyway.
 - The window opens the moment Submit is pressed — including while an `async` `onBeforeExecute` transform is still resolving, before the command has been sent.
 - Once execution completes (success or failure), the buttons and every dismissal route return to their normal state.
 
@@ -271,8 +291,9 @@ A step that only applies sometimes is written the obvious way, and it is counted
 
 The count is not fixed for the lifetime of the dialog either. A late-resolving query or a `currentValues` overlay can flip the condition _after_ the user has advanced past that step, so the active step is clamped into the set that still renders — an index left stranded above the end resolves to the last surviving step rather than a step that is neither last nor navigable.
 
-> [!WARNING]
-> A `<>…</>` fragment wrapping several panels counts as **one** step. Give each step its own `StepperPanel` child.
+:::caution[A fragment is one step]
+A `<>…</>` fragment wrapping several panels counts as **one** step. Give each step its own `StepperPanel` child.
+:::
 
 ## Integration
 

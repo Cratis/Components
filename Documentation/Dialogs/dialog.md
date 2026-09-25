@@ -1,20 +1,23 @@
-# Dialog
+---
+title: Dialog
+description: Build a modal or side-sheet dialog that the caller can await for a typed result, with controlled dismissal, busy state, and initial focus.
+---
 
 Base dialog component for creating typed dialogs that can be awaited.
 
 ## Recommended Pattern
 
-Use `useDialog<T>()` at the call site and `useDialogContext<T>()` inside the dialog component.
+Use `useDialog<TResult>()` at the call site and `useDialogContext<TRequest, TResult>()` inside the dialog component. Both hooks come from `@cratis/arc.react/dialogs`.
 
 - The caller opens the dialog with `await` and receives `[dialogResult, value]`
-- The dialog closes itself through `closeDialog(...)`
-- The generic `T` is the value returned from the dialog
+- The dialog closes itself through `closeDialog(result, value?)`
+- `TResult` is the value returned from the dialog. `useDialogContext` takes the request (the dialog's input props) type first, so pass `object` there when the dialog has no input
 
 This pattern gives strongly typed dialog results and a simple async flow.
 
 ## Example
 
-```typescript
+```tsx
 import { useState } from 'react';
 import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Dialog } from '@cratis/components/Dialogs';
@@ -25,7 +28,7 @@ type Project = {
 };
 
 const AddProjectDialog = () => {
-    const { closeDialog } = useDialogContext<Project>();
+    const { closeDialog } = useDialogContext<object, Project>();
     const [name, setName] = useState('');
 
     return (
@@ -33,9 +36,11 @@ const AddProjectDialog = () => {
             title='Add project'
             isValid={name.trim().length > 0}
             onConfirm={() => closeDialog(DialogResult.Ok, { id: crypto.randomUUID(), name })}
-            onCancel={() => closeDialog(DialogResult.Cancelled)}
         >
-            {/* Dialog content */}
+            <label>
+                Name
+                <input value={name} onChange={(event) => setName(event.target.value)} />
+            </label>
         </Dialog>
     );
 };
@@ -46,17 +51,49 @@ const MyComponent = () => {
     const handleAddProject = async () => {
         const [result, project] = await showAddProjectDialog();
         if (result === DialogResult.Ok && project) {
-            // Use the typed result
+            console.log('Added', project.name);
         }
     };
 
     return (
         <>
-            <button onClick={handleAddProject}>Add project</button>
+            <button type='button' onClick={handleAddProject}>
+                Add project
+            </button>
             <AddProjectDialogWrapper />
         </>
     );
 };
+```
+
+`onConfirm` calls `closeDialog` with the new project, which resolves the caller's `await`. Cancel, the header close (X), `Escape`, and a backdrop click need no callback: they close the dialog with `DialogResult.Cancelled`. `useDialog` unmounts the dialog when it closes, so it starts with an empty name the next time it opens.
+
+## How the dialog closes
+
+The footer buttons, the header close (X), `Escape`, and a backdrop click all go through the same rules. "Closes" means that the dialog calls `closeDialog(result)` from the surrounding `useDialog` context, without a value.
+
+| User action | Dedicated callback present | Only `onClose` present | No callback |
+| ----------- | -------------------------- | ---------------------- | ----------- |
+| `Ok` / `Yes` | `onConfirm()` runs; closes only if it returns `true` | `onClose(result)` runs; closes unless it returns `false` | Closes with `DialogResult.Ok` / `Yes` |
+| `Cancel` / `No`, X, `Escape`, backdrop | `onCancel()` runs; closes only if it returns `true` | `onClose(result)` runs; closes unless it returns `false` | Closes with `DialogResult.Cancelled` / `No` |
+
+The X, `Escape`, and backdrop report `DialogResult.Cancelled`, even in a `YesNo` dialog. Callbacks may be async; the dialog awaits them before deciding.
+
+A callback that calls `closeDialog(...)` itself has already closed the dialog, whatever it returns. That is how you return a value, as in the example above.
+
+Outside `useDialog` there is no dialog context, so nothing closes automatically. Control `visible` yourself and hide the dialog from the callbacks:
+
+```tsx
+const [visible, setVisible] = useState(false);
+
+<Dialog
+    title='Details'
+    visible={visible}
+    buttons={DialogButtons.Ok}
+    onClose={() => setVisible(false)}
+>
+    Details go here.
+</Dialog>;
 ```
 
 ## Props
@@ -68,9 +105,9 @@ const MyComponent = () => {
 - `closeIcon`: Glyph for the header close (X). Defaults to a multiplication sign; pass your icon set's
   close icon to match the rest of the product
 - `visible`: Controls visibility (defaults to `true`)
-- `onConfirm`: Callback for confirm actions
-- `onCancel`: Callback for cancel actions
-- `onClose`: Fallback close callback
+- `onConfirm`: Callback for confirm actions; return `true` to close. See [How the dialog closes](#how-the-dialog-closes)
+- `onCancel`: Callback for cancel actions, the X, `Escape`, and a backdrop click; return `true` to close
+- `onClose`: Fallback close callback for whichever of `onConfirm` / `onCancel` is absent; closes unless it returns `false`
 - `buttons`: Predefined `DialogButtons` (`Ok`, `OkCancel`, `YesNo`, `YesNoCancel`),
   `null` for no footer, or a custom React node. Defaults to
   `DialogButtons.OkCancel`. Anything other than a `DialogButtons` value also
@@ -96,8 +133,9 @@ const MyComponent = () => {
   (`ok`, `cancel`, `yes`, `no`), then its English default (`'Ok'`, `'Cancel'`, `'Yes'`, `'No'`) — localize every
   dialog at once through the provider, or one dialog through the prop. Footer icons are decorative and hidden
   from accessibility APIs, so each button's accessible name is exactly its configured label. `CommandDialog`
-  and `StepperCommandDialog` forward these same props straight through to `Dialog`, so the same precedence
-  covers every dialog surface.
+  forwards these same props straight through to `Dialog`, so the same precedence covers it.
+  `StepperCommandDialog` uses `okLabel` for its Submit button (falling back to `messages.stepper.submit`) and
+  `cancelLabel` for its optional footer Cancel.
 - `className`, `pt`: Styling hooks for the Cratis-owned dialog root and stable parts — see the [pass-through cheat sheet](../Styling/pass-through.md)
 - `ptOptions`, `unstyled`: Retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned
 
@@ -115,7 +153,7 @@ here", so it declines to invent one.
 
 Set `dismissable` explicitly to override that:
 
-```typescript
+```tsx
 <Dialog
     title="Choose a plan"
     buttons={<MyOwnFooter />}
@@ -138,7 +176,9 @@ same dialog into a full-height **side sheet** against that inline edge of the vi
 an internal note, a navigation list on a small screen — sliding in from the edge (and not at all under
 `prefers-reduced-motion`). `width` is the sheet's width; the sheet never exceeds the viewport.
 
-```typescript
+The excerpt assumes `closeDialog` from `useDialogContext()`, `DialogInitialFocus` from `@cratis/components/Dialogs`, and your own `ActivityTimeline` component.
+
+```tsx
 <Dialog
     title='Activity'
     subtitle='Example Project - Demo Organization'
@@ -171,9 +211,11 @@ the confirm button: browsers fire `click` from the `keydown` of `Enter`, so a
 key still held down from the control that opened the dialog — or the ordinary
 habit of pressing `Enter` twice — confirms it immediately.
 
-A dialog with input is protected from this for free, because `isValid` keeps
-confirm disabled until the form is complete. A dialog that needs **no** input
-is not, which is exactly backwards when the action is destructive. Say where
+A plain `Dialog` does not validate its content: confirm is enabled unless you
+pass `isValid={false}`. Derive `isValid` from your own input state so confirm
+stays disabled until the input is complete. (`CommandDialog` does this for you
+from the command's validation.) A dialog that needs **no** input has no such
+gate, which is exactly backwards when the action is destructive. Say where
 focus should go with `initialFocus`:
 
 | `DialogInitialFocus` | Focuses                                                                |
@@ -182,26 +224,22 @@ focus should go with `initialFocus`:
 | `Cancel`             | The dismissing button — `Cancel`, or `No` when the set has no `Cancel` |
 | `Content`            | The dialog's own title, so nothing is armed                            |
 
-```typescript
+```tsx
 import { Dialog, DialogInitialFocus } from '@cratis/components/Dialogs';
-import { DialogButtons, DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
+import { DialogButtons } from '@cratis/arc.react/dialogs';
 
-const DeletePersonalDataDialog = () => {
-    const { closeDialog } = useDialogContext();
-
-    return (
-        <Dialog
-            title='Delete personal data?'
-            buttons={DialogButtons.YesNo}
-            initialFocus={DialogInitialFocus.Cancel}
-            onConfirm={() => closeDialog(DialogResult.Yes)}
-            onCancel={() => closeDialog(DialogResult.No)}
-        >
-            This permanently removes the person and every record about them.
-        </Dialog>
-    );
-};
+export const DeletePersonalDataDialog = () => (
+    <Dialog
+        title='Delete personal data?'
+        buttons={DialogButtons.YesNo}
+        initialFocus={DialogInitialFocus.Cancel}
+    >
+        This permanently removes the person and every record about them.
+    </Dialog>
+);
 ```
+
+Opened through `useDialog`, the caller receives `DialogResult.Yes` or `DialogResult.No` from the buttons, and `DialogResult.Cancelled` from the X, `Escape`, or a backdrop click.
 
 `Cancel` falls back to `Content` when the button set has nothing to dismiss
 with (`DialogButtons.Ok`, a custom footer, or no footer). Focus never stays on
@@ -217,6 +255,7 @@ node, which silently gives all of those up.
 ## Notes
 
 - Prefer `onConfirm` and `onCancel` over `onClose` for clear intent.
-- `onConfirm` and `onCancel` should return `true` to close when used.
+- `onConfirm` and `onCancel` must return `true`, or call `closeDialog` themselves, to close the dialog.
 - `onClose` closes unless it returns `false`.
-- For typed, awaitable dialogs, let the dialog call `closeDialog(...)` from `useDialogContext<T>()`.
+- For typed, awaitable dialogs, let the dialog call `closeDialog(...)` from `useDialogContext<TRequest, TResult>()`.
+- While `isBusy` is `true`, every button, the X, `Escape`, and the backdrop are disabled, and the content is disabled and inert.

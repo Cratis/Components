@@ -11,15 +11,17 @@ CommandForm offers a complete set of form field components designed to work seam
 
 ## Key Features
 
-- Automatic field type detection
+- Field generation from the command's own properties with [`AutoCommandForm`](auto-command-form.md)
 - Support for various input types (text, number, date, boolean, etc.)
 - Built-in validation
-- Integration with CommandDialog
+- Integration with `CommandForm`, `CommandDialog`, `CommandStepper`, and `StepperCommandDialog`
 - Type-safe field handling
 
 ## Available Field Components
 
 The CommandForm module exports Cratis-owned semantic fields built with native controls and documented keyboard, naming, and validation behavior. Each field uses `asCommandFormField` for automatic value binding, validation state, and Arc command integration.
+
+Import fields from `@cratis/components/CommandForm` or `@cratis/components/CommandForm/fields`; both subpaths resolve to the same module, so pick one and use it consistently.
 
 See the field type pages in this section for documentation on each available field component. To generate a form's fields from a command's own properties instead of writing them out by hand, see [AutoCommandForm](auto-command-form.md).
 
@@ -39,7 +41,7 @@ The `value` prop accepts a function of the form `(instance: TCommand) => unknown
 
 ## Integration
 
-CommandForm fields are used as children of `CommandDialog`:
+CommandForm fields are children of Arc's `CommandForm` or of a Components command surface such as `CommandDialog`. The excerpt assumes `MyCommand` is a generated command proxy and `visible` / `setVisible` is component state:
 
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
@@ -49,12 +51,24 @@ import {
     CheckboxField,
 } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
+<CommandDialog<MyCommand>
+    command={MyCommand}
+    title='Edit item'
+    visible={visible}
+    onSuccess={() => setVisible(false)}
+    onCancel={() => setVisible(false)}
+>
     <InputTextField<MyCommand> value={(c) => c.title} title='Title' />
     <NumberField<MyCommand> value={(c) => c.quantity} title='Quantity' />
     <CheckboxField<MyCommand> value={(c) => c.active} label='Active' />
 </CommandDialog>;
 ```
+
+`title` is required on `CommandDialog`. Outside `useDialog`, close the dialog yourself from `onSuccess` and `onCancel`; see [CommandDialog](../CommandDialog/index.md#controlled-visibility).
+
+## Field defaults and command values
+
+Each field page states what the control shows while the bound property is unset, such as an unchecked box for `CheckboxField` or `0` for `NumberField`. That is only what the control **shows**. It is not written to the command until the user edits the field. A non-optional property that is still unset fails Arc's client validation, so the form stays invalid and a `CommandDialog` keeps confirm disabled. When the displayed default is an acceptable answer, seed it through `initialValues`; see [Initialize command values](../CommandDialog/index.md#initialize-command-values).
 
 ## Accessible names and validation errors
 
