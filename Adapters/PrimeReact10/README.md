@@ -12,10 +12,9 @@ adaptation, never full-catalog replacement.
 PrimeReact 11 uses a different package architecture and license boundary. It is supported separately
 by `@cratis/components.primereact`; the two adapters must use isolated upstream dependency graphs.
 
-> **Publication status:** The install example targets the owner-authorized 4.0.0 npm release. When
-> reading this README from repository source before that release, verify availability with
-> `npm view @cratis/components.primereact10@4.0.0 version`; source contributors use the workspace in
-> this checkout.
+> **Versions:** each release of `@cratis/components.primereact10` is published at the same version as
+> `@cratis/components` and declares a peer on exactly that version. Install and upgrade the two
+> packages together at the same version.
 
 ## Install
 
@@ -68,6 +67,9 @@ export const Application = () => (
 );
 ```
 
+Components that execute commands or run queries also need Arc's `<Arc>` provider from
+`@cratis/arc.react` around this tree; neither the adapter nor `CratisComponentsProvider` replaces it.
+
 The application owns theme imports and any outer provider configuration. Components does not
 configure an application's direct PrimeReact usage.
 
@@ -83,8 +85,10 @@ PrimeReact is a bounded peer and is never bundled. The exact repository proof us
 10.9.9 and React 19. PrimeReact 10 and 11 cannot satisfy one another's peer range and must not share
 one Storybook preview or application dependency resolution.
 
-The adapter requires `@cratis/components >=4 <5`. This range is intentionally bounded to the
-Components major whose renderer ABI and stable presentation profile it implements.
+The source manifest declares `@cratis/components >=4 <5`, the Components major whose renderer ABI
+and stable presentation profile the adapter implements. The release step replaces that range with
+the exact release version, so a published adapter requires the `@cratis/components` release it
+shipped with.
 
 See [CONFORMANCE.md](./CONFORMANCE.md) for bounded evidence and
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licensing.

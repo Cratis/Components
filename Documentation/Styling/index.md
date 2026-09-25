@@ -43,6 +43,8 @@ The three layers are low-priority only where the product says so. Cascade-layer 
 
 Declaring the same names again later, as the `styles` bundle does, never changes an order already fixed. The per-area entry points declare no order at all: only `@cratis/components/styles/base` establishes it, and every area sheet just reopens `cratis-components`.
 
+`tokens` and `theme` are different: they are plain, unlayered custom-property rules. A product value for a `--cratis-*` token therefore wins by specificity and source order, not by layer. A `:root` override placed after `tokens` wins when `theme` is not imported. With `theme` imported, its scheme selectors (`:root.cratis-dark`, `.cratis-theme`, the `prefers-color-scheme: dark` rule, …) are more specific than `:root`, so a plain `:root` override holds only for a light root outside any `.cratis-theme` subtree. [Customize the palette](custom-palette.md) shows the selectors that win in every scheme.
+
 Import product mappings and overrides after Components:
 
 ```ts

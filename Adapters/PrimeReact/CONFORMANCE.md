@@ -35,8 +35,9 @@ undocumented descendant order and sibling selectors are not portable contracts.
 PrimeReact 11.1.0 currently publishes malformed generic declaration aliases. A compile-only,
 non-emitted shim keeps this adapter's own strict build enabled; the packed adapter declaration is
 vendor-free and the package verifier ensures no shim or vendor declaration leaks into it. Its
-strict external fixtures also use the declaration-only React JSX bridge required by the exact Arc
-React 22.5 upstream exception, while Core's stale-exception gate must still reproduce that issue.
+strict external fixtures also use the declaration-only React JSX bridge required by the exact
+`@cratis/arc.react` upstream exception recorded in Core's public-type exception list, while Core's
+stale-exception gate must still reproduce that issue.
 Remove each bridge when its allowed upstream release fixes the corresponding declarations.
 
 This is automated jsdom/axe and package evidence, not universal browser, visual, RTL, forced-colors,

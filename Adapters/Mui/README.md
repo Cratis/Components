@@ -8,10 +8,9 @@ The package shares the Components repository release version while the renderer 
 versioned separately. It exports one stable `CratisPresentationUiLibrary` manifest, `muiUiLibrary`. This certifies nine-slot primitive
 adaptation, never full-catalog replacement.
 
-> **Publication status:** The install example targets the owner-authorized 4.0.0 npm release. When
-> reading this README from repository source before that release, verify availability with
-> `npm view @cratis/components.mui@4.0.0 version`; source contributors use the workspace in this
-> checkout.
+> **Versions:** each release of `@cratis/components.mui` is published at the same version as
+> `@cratis/components` and declares a peer on exactly that version. Install and upgrade the two
+> packages together at the same version.
 
 ## Install
 
@@ -35,6 +34,9 @@ export const Application = () => (
 );
 ```
 
+Components that execute commands or run queries also need Arc's `<Arc>` provider from
+`@cratis/arc.react` around this tree; neither the adapter nor `CratisComponentsProvider` replaces it.
+
 The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch,
 ProgressBar, and Surface. It deliberately excludes MUI X and does not implement the five atomic
 interaction slots.
@@ -46,7 +48,8 @@ An outer non-variable theme is converted to an equivalent CSS-variable theme so 
 other values remain in force. Without an outer provider, MUI's default theme becomes a sane
 CSS-variable-enabled theme. The conversion is memoized and deterministic during server rendering.
 
-Put application customization outside `CratisComponentsProvider`:
+Put application customization in an MUI `ThemeProvider` (from `@mui/material/styles`) outside
+`CratisComponentsProvider`. In this excerpt, `applicationTheme` is the application's `createTheme` result:
 
 ```tsx
 <ThemeProvider theme={applicationTheme}>
@@ -71,8 +74,10 @@ MUI Core is bounded to `>=9 <10`, `@emotion/react` to `>=11.5 <12`,
 The repository's packed-consumer matrix proves both these effective lower boundaries and the
 current-highest compatible boundary; exact current versions remain dev dependencies only.
 
-The adapter requires `@cratis/components >=4 <5`. This range is intentionally bounded to the
-Components major whose renderer ABI and stable presentation profile it implements.
+The source manifest declares `@cratis/components >=4 <5`, the Components major whose renderer ABI
+and stable presentation profile the adapter implements. The release step replaces that range with
+the exact release version, so a published adapter requires the `@cratis/components` release it
+shipped with.
 
 See [CONFORMANCE.md](./CONFORMANCE.md) for the bounded evidence and
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licenses.

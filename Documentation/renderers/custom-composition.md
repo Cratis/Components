@@ -50,26 +50,31 @@ Components `ChangeHandler<T>` or cast incompatible callback types together.
 Mount every provider for the scope it actually owns:
 
 ```tsx
+import { Arc } from '@cratis/arc.react';
 import { CratisComponentsProvider } from '@cratis/components';
 import { ApplicationVendorProvider } from './vendor/ApplicationVendorProvider';
 import { Accounts } from './Accounts';
 
 export const Application = () => (
-    <ApplicationVendorProvider>
-        <CratisComponentsProvider value={{ locale: 'en-US' }}>
-            <Accounts />
-        </CratisComponentsProvider>
-    </ApplicationVendorProvider>
+    <Arc>
+        <ApplicationVendorProvider>
+            <CratisComponentsProvider value={{ locale: 'en-US' }}>
+                <Accounts />
+            </CratisComponentsProvider>
+        </ApplicationVendorProvider>
+    </Arc>
 );
 ```
 
-The vendor provider owns the vendor-native `AccountGrid`. The Components provider remains available
-for other Components surfaces in the application. Neither provider receives the other's theme,
+`<Arc>` supplies the generated query and command proxies with their origin, API base path, and
+query cache; `AllAccounts.use()` needs it whether or not Components is involved. The vendor provider
+owns the vendor-native `AccountGrid`. The Components provider remains available for other
+Components surfaces in the application. Neither provider receives the other's theme,
 portal registry, cache, or license unless that vendor's own documented API requires the application
 to supply it directly.
 
 If this workflow uses no Components surface, it does not need `CratisComponentsProvider`. Arc can be
-used without Components.
+used without Components; it still needs `<Arc>`.
 
 ## Reuse portable Components contracts selectively
 
