@@ -14,4 +14,6 @@ import { FormElement } from '@cratis/components/Common';
 </FormElement>
 ```
 
+`icon` and `children` are both required. The `cratis-field-input` class on the input comes from the CommandForm field stylesheet, which is part of `@cratis/components/styles`; with per-area stylesheets, import `@cratis/components/CommandForm/fields/styles` as well, or style the input yourself. The wrapper does not name the input: give it a `<label>`, `aria-label` or `aria-labelledby`, and keep the icon `aria-hidden`.
+
 The wrapper is renderer-independent. It works with native controls, product-owned controls, and Components fields that accept child composition.

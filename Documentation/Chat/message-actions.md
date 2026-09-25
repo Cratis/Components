@@ -1,4 +1,7 @@
-# Message actions
+---
+title: Message actions
+description: Offer your own actions on chat messages and control the built-in quick reply.
+---
 
 The library ships no actions of its own — whatever a message can be turned into (a task, an issue, a document, a link somewhere) is the application's business, expressed as action descriptors on the conversation.
 
@@ -14,13 +17,15 @@ interface ChatMessageAction<TMessage extends ChatMessage = ChatMessage> {
 }
 ```
 
-Actions appear as a small button row over a message's corner while it is hovered (or while one of the buttons holds keyboard focus). `onInvoke` receives the full message — with the components generic over your extended message type, everything your action needs rides along on the message itself.
+Actions appear as a small button row over a message's corner while it is hovered (or while one of the buttons holds keyboard focus). The buttons are hidden with opacity rather than removed, so they stay in the Tab order: a keyboard user reaches them with Tab, and the row appears as soon as one of them has focus. `label` is each button's tooltip and accessible name. `onInvoke` receives the full message — with the components generic over your extended message type, everything your action needs rides along on the message itself.
 
 ## Offering actions
 
+In the excerpts below, `sidebarProps` stands for the required `ChatSidebar` props (`open`, `onClose`, `topics`, `messages`, `onSendMessage`) shown in the [basic usage](./index.md#basic-usage).
+
 ```tsx
 <ChatSidebar<ProjectMessage>
-    ...
+    {...sidebarProps}
     actions={[
         {
             id: 'create-issue',

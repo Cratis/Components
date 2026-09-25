@@ -17,6 +17,31 @@ export const App = () => (
 );
 ```
 
+`value` and `toaster` are optional; `children` is the only required prop. With no `value`, the provider uses `en-US` and the English labels in `cratisDefaults`. An invalid `locale` string also falls back to `en-US`.
+
+The package root exports only the provider and its configuration helpers. Import every component from its subpath, such as `@cratis/components/Common` or `@cratis/components/Toolbar`.
+
+## Use it with Arc
+
+`CratisComponentsProvider` does not replace Arc's provider. Command and query components, such as `CommandDialog`, `DataPage` and `ChatSidebarForObservableQueries`, get their origin, API base path, microservice, and shared query cache from `<Arc>` in `@cratis/arc.react`. Render `<Arc>` around the Components provider:
+
+```tsx
+import { Arc } from '@cratis/arc.react';
+import { CratisComponentsProvider } from '@cratis/components';
+
+export const App = () => (
+    <Arc>
+        <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+            <Application />
+        </CratisComponentsProvider>
+    </Arc>
+);
+```
+
+Pass Arc's own props, such as `microservice` or `apiBasePath`, to `<Arc>`. The Components provider reads no Arc configuration. An application that uses no Arc-bound components can leave `<Arc>` out.
+
+## Stable configuration
+
 The provider memoizes its resolved configuration by the `value` object identity. For an application root that re-renders frequently, keep a configured object stable rather than constructing a large message catalog inline on every render:
 
 ```tsx
@@ -43,8 +68,9 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | `messages.dialog`        | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
 | `messages.stepper`       | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`.                         |
 | `messages.notifications` | `Toaster`'s dismiss-action and region-landmark labels.                                                                          |
-| `messages.dataTable`     | `DataTableCore`'s loaded-page search and single-row-selection labels.                                                           |
+| `messages.dataTable`     | `DataTableCore`'s loaded-page search, row-selection (`selectRow`), and multiple-selection select-all (`selectAllRows`) labels.   |
 | `messages.columnFilter`  | The built-in column filter popup's clear/apply/boolean/match-mode labels.                                                       |
+| `messages.toolbar`       | `Toolbar`'s accessible-name fallback (`label`, default `Tools`) when neither `aria-label` nor `aria-labelledby` is passed.        |
 | `icons`                  | Components-owned icon vocabulary replacing the built-in glyphs the library draws. See [Register an icon set](#register-an-icon-set). |
 | `locales`                | Temporary Components 3 compatibility map; migrate to `messages`.                                                                |
 
@@ -132,6 +158,7 @@ English, spelled out explicitly (this is also what every group defaults to with 
             },
             dataTable: {
                 selectRow: 'Select row',
+                selectAllRows: 'Select all rows',
                 search: 'Search…',
                 searchAriaLabel: 'Search table',
             },
@@ -198,6 +225,7 @@ The same shape in Norwegian Bokmål:
             },
             dataTable: {
                 selectRow: 'Velg rad',
+                selectAllRows: 'Velg alle rader',
                 search: 'Søk…',
                 searchAriaLabel: 'Søk i tabellen',
             },
@@ -230,7 +258,7 @@ that concept follows, without passing a prop at each call site:
 
 ```tsx
 import { CratisComponentsProvider } from '@cratis/components';
-import { CloseIcon, ChevronDownIcon, SpinnerIcon } from './icons';
+import { CloseIcon, ChevronDownIcon } from './icons'; // your product's icon components
 
 const componentsConfig = {
     locale: 'en-US',
@@ -262,7 +290,7 @@ lives at its call site and is deliberately *not* part of `cratisDefaults`.
 | `sortDescending`| Descending sort indicator      | `▼`     | `DataTableCore` sortable column header                                                                            |
 | `previous`      | Step backwards                 | `‹`     | `TablePaginator` previous page, `DatePickerInput` previous month                                                   |
 | `next`          | Step forwards                  | `›`     | `TablePaginator` next page, `DatePickerInput` next month                                                           |
-| `clear`         | Clear the current value        | `×`     | `Dropdown` clear-selection (all four render branches), PivotViewer's filter panel clear                            |
+| `clear`         | Clear the current value        | `×`     | `Dropdown` clear-selection (all four render branches), the `Filter` subpath's `FilterPanel` clear (also used by PivotViewer) |
 
 Every name is a concept more than one component draws. Names are public contract and hard to
 withdraw, so the vocabulary starts here and grows as products ask for a concept by name rather than
@@ -277,15 +305,23 @@ call site — "this one dialog", "this one tag group" — so it keeps winning; t
 the product and replaces the built-in default everywhere else. Both props keep working unchanged.
 
 ```tsx
+import { Dialog } from '@cratis/components/Dialogs';
+
 <CratisComponentsProvider value={{ icons: { close: <CloseIcon /> } }}>
-    <Dialog title='Product-wide' />                  {/* draws <CloseIcon /> */}
-    <Dialog title='This one' closeIcon={<Back />} /> {/* draws <Back /> */}
+    {/* draws <CloseIcon /> */}
+    <Dialog title='Product-wide'>
+        <p>Uses the registered close icon.</p>
+    </Dialog>
+    {/* draws <Back /> */}
+    <Dialog title='This one' closeIcon={<Back />}>
+        <p>Uses its own close icon.</p>
+    </Dialog>
 </CratisComponentsProvider>
 ```
 
 A name registered as `null` draws no glyph while the button, its stable part and its accessible name
 stay — the same meaning `closeIcon={null}` already has. Icons never touch an element's part,
-className, `aria-label` or keyboard behaviour; only the mark inside changes.
+className, `aria-label` or keyboard behavior; only the mark inside changes.
 
 `icons` merges by name. Like `messages`, a partial map leaves everything it omits alone; unlike
 `messages`, an icon value is an opaque node and is carried over by identity rather than deep-merged
@@ -297,7 +333,13 @@ into, so registering a React element hands that exact element to the component.
 wants to follow the registered vocabulary:
 
 ```tsx
+import type { ReactNode } from 'react';
 import { useCratisIcon } from '@cratis/components';
+
+interface RemoveButtonProps {
+    icon?: ReactNode;
+    onRemove: () => void;
+}
 
 export const RemoveButton = ({ icon, onRemove }: RemoveButtonProps) => {
     const resolveIcon = useCratisIcon();
@@ -333,7 +375,7 @@ Pass `toaster` to mount the app-wide notification region:
 </CratisComponentsProvider>
 ```
 
-You may instead mount `<Toaster />` yourself when its placement belongs elsewhere in the application tree.
+`toaster={true}` mounts the toaster with its defaults; an object is passed to it as `ToasterProps` (`position`, `limit`, `timeout`, `dismissAriaLabel`, `regionAriaLabel`, `pt`). You may instead mount `<Toaster />` from `@cratis/components/Notifications` yourself when its placement belongs elsewhere in the application tree. Mount only one of the two: every toaster renders the same global toast queue, so two toasters show each toast twice.
 
 ## Choose an overlay container
 
@@ -366,7 +408,7 @@ export const App = () => (
 );
 ```
 
-Returning `null` defers the overlay; Components does not silently retarget it to `document.body`.
+Returning `null` defers the overlay; Components does not silently retarget it to `document.body`. One exception: `ChatSidebar` in its default non-modal mode portals straight to `document.body` and does not consult `overlayEnvironment`.
 Direct vendor overlays keep their own portal and z-index configuration. Verify layer order and focus
 behavior in the real application shell when both systems can open together.
 

@@ -1,4 +1,7 @@
-# Drag & Drop
+---
+title: Drag and drop
+description: Let people drag toolbar tools onto a canvas or other drop surface.
+---
 
 Toolbar buttons can be dragged onto a canvas or other surface. This enables canvas-based applications to let users select tools by dragging them from the toolbar directly onto the work surface. Use the `draggable` prop either on individual `ToolbarButton` elements or on the `Toolbar` container itself to make every button draggable at once.
 
@@ -43,7 +46,9 @@ Set `draggable` and an optional `onDragStart` callback directly on a `ToolbarBut
 Use the `data` prop to attach any value to a button. This data is:
 
 - Passed to `onDragStart` and `onItemDragStart` callbacks.
-- Serialised as `application/json` onto the HTML5 `DataTransfer` object so the drop target can read it.
+- Serialized with `JSON.stringify` as `application/json` onto the HTML5 `DataTransfer` object so the drop target can read it. A draggable button without `data` transfers the string `null`.
+
+Dragging also sets `effectAllowed` to `copy`. The data must be JSON-serializable: functions and class instances do not survive the transfer.
 
 ## Handling the Drop on a Surface
 
@@ -54,6 +59,7 @@ function Canvas() {
     const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         const raw = event.dataTransfer.getData('application/json');
+        if (!raw) return; // not a toolbar item, for example a dropped file
         const data = JSON.parse(raw) as { tool: string } | null;
         if (data) {
             console.log('Tool dropped:', data.tool);
@@ -71,3 +77,7 @@ function Canvas() {
     );
 }
 ```
+
+## Keyboard and pointer alternatives
+
+Drag and drop uses native HTML5 dragging. Keyboard users cannot drag a tool, and touch support for HTML5 dragging varies by browser. Keep an `onClick` on every draggable button that does the same job, such as selecting the tool or placing it at a default position, so dragging is a shortcut rather than the only way in.

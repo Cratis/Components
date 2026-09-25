@@ -1,10 +1,17 @@
-# Expandable Folder
+---
+title: Expandable folder
+description: Reveal a grid or list of extra tools from a ToolbarFolder trigger.
+---
 
-`ToolbarFolder` replaces a regular button with one that reveals a dynamically sized grid of buttons when clicked. The folder animates open to reveal its contents and closes when clicking the button again or anywhere outside the panel.
+`ToolbarFolder` replaces a regular button with one that reveals a dynamically sized grid of buttons when clicked. The folder animates open to reveal its contents and closes when you click the trigger again, press anywhere outside the panel, or press Escape; Escape also returns focus to the trigger.
+
+`icon`, `title`, and `children` are required. `title` is the trigger's accessible name and tooltip, and also names the panel, which renders as a `role='group'`. The trigger exposes `aria-expanded` and `aria-controls`, and the collapsed panel is `inert`.
 
 The grid automatically balances rows and columns based on item count, keeping the folder compact for small sets while naturally expanding for larger collections.
 
 ```tsx
+import { Toolbar, ToolbarButton, ToolbarFolder } from '@cratis/components/Toolbar';
+
 <Toolbar>
     <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
     <ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='More tools'>
@@ -20,26 +27,32 @@ By default the folder opens to the right. Use `folderDirection='left'` when the 
 
 ```tsx
 <ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='More tools' folderDirection='left'>
-    ...
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Settings' />
+    <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Open' />
 </ToolbarFolder>
 ```
 
 ## Grid Layout
 
-The folder automatically computes the number of columns based on the item count:
+The folder uses the square root of the item count, rounded up, as the column count, capped by `maxColumns`:
 
 - **1 item:** 1 column × 1 row
-- **4 items:** 2 columns × 2 rows
-- **9 items:** 3 columns × 3 rows
-- **16+ items:** Up to 5 columns (default limit) with multiple rows
+- **2–4 items:** 2 columns
+- **5–9 items:** 3 columns
+- **10–16 items:** 4 columns
+- **17 or more items:** 5 columns (the default `maxColumns`), with as many rows as needed
 
 Use `maxColumns` to customize the maximum column count:
 
 ```tsx
 <ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='More tools' maxColumns={4}>
-    ...
+    {tools.map((tool) => (
+        <ToolbarButton key={tool.id} icon={tool.icon} title={tool.name} />
+    ))}
 </ToolbarFolder>
 ```
+
+Here `tools` is your own array of tool descriptors.
 
 ## ReactNode Icons
 
@@ -58,7 +71,7 @@ See [Icon](../Common/icon.md) for the shared `Icon` type and `IconDisplay` compo
 
 ## List Mode
 
-Set `mode='list'` to change the folder's panel layout from a grid into a vertical list. In list mode, each button renders its icon and tooltip text side by side as a labeled row — no tooltip hover needed.
+Set `mode='list'` to change the folder's panel layout from a grid into a vertical list. In list mode, each button renders its icon and `title` side by side as a labeled row, without a floating tooltip.
 
 ```tsx
 <ToolbarFolder icon={<span aria-hidden='true'>◆</span>} title='Tools' mode='list'>

@@ -42,7 +42,7 @@ import {
 | `Button` | `button` / `HTMLButtonElement` | Native click and form action | `root`, `spinner`, `icon`, `label` | `disabled`, `loading`, `variant`, `tone`, `shape`, `size` on `root` |
 | `IconButton` | `button` / `HTMLButtonElement` | Uses `Button` click semantics | `root`, `spinner`, `icon`, `label` | `disabled`, `loading` on `root` |
 | `TextInput` | `input` / `HTMLInputElement` | `string` | `root` | `disabled`, `invalid`, `readonly` |
-| `NumberInput` | owned spinbutton composition | `number \| null` | `root`, `input`, `prefix`, `suffix`, `step`, `description`, `error` | `disabled`, `invalid`, `readonly`, `focused` where documented |
+| `NumberInput` | owned spinbutton composition | `number \| null` | `root`, `group`, `input`, `prefix`, `suffix`, `step`, `description`, `error` | `disabled`, `invalid`, `readonly`, `focused` where documented |
 | `TextArea` | `textarea` / `HTMLTextAreaElement` | `string` | `root` | `disabled`, `invalid`, `readonly` |
 | `Checkbox` | `input[type=checkbox]` / `HTMLInputElement` | `boolean` | `root`, `input`, `box`, `indicator`, `label` | `selected`, `disabled`, `invalid`, `readonly` |
 | `Radio` | one `input[type=radio]` / `HTMLInputElement` | `boolean` when checked | `root`, `input`, `box`, `indicator`, `label` | `selected`, `disabled`, `invalid`, `readonly` |
@@ -69,7 +69,7 @@ A user change supplies `{ source: 'user', nativeEvent }`, where `nativeEvent` is
 
 ## Native forms and read-only choices
 
-The controls preserve `name`, `value`, `form`, `checked`, `defaultChecked`, `value`, and `defaultValue` on the real native element. Uncontrolled controls therefore submit and reset through browser form behavior.
+The controls preserve `name`, `value`, `form`, `checked`, `defaultChecked`, and `defaultValue` on the real native element. Uncontrolled controls therefore submit and reset through browser form behavior.
 
 HTML does not define native read-only behavior for checkboxes and radios. `Checkbox`, `Radio`, and `Switch` keep a read-only selected control enabled so its `name` and `value` still submit, expose the canonical `data-readonly` state, and prevent user toggling. `Checkbox` and `Switch` additionally expose supported `aria-readonly` semantics; native radio does not allow that ARIA attribute. Use `disabled` instead when the control must be excluded from submission.
 

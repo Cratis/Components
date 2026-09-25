@@ -1,4 +1,7 @@
-# Icon
+---
+title: Icon
+description: Pass icons to Components as React nodes or consumer-owned icon-font class strings, and render them with IconDisplay.
+---
 
 The `Icon` type and `IconDisplay` component let Cratis controls render either a React icon node or a complete consumer-owned icon-font CSS class. Components does not install an icon font, infer a provider, or add provider-specific base classes.
 
@@ -28,14 +31,16 @@ A string is passed to an `<i>` element unchanged apart from trimming whitespace.
 ```tsx
 import { IconDisplay } from '@cratis/components/Common';
 
-// The product owns the product-icons stylesheet.
-<IconDisplay icon='product-icons product-home' className='text-2xl' />
+// The product owns the product-icons stylesheet and the product-icon-large class.
+<IconDisplay icon='product-icons product-home' className='product-icon-large' />
 ```
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `icon` | `Icon` | ✅ | React node or complete consumer-owned CSS class string. |
 | `className` | `string` | — | Extra classes for the `<i>` element used by string icons. It does not wrap React nodes. |
+
+`IconDisplay` adds no accessibility attributes. An icon-font `<i>` or a React icon is decorative unless you name it: put `aria-hidden='true'` on a React icon, and give the surrounding button or link its accessible name. An empty or whitespace-only string renders nothing.
 
 ## Toolbar icons
 
