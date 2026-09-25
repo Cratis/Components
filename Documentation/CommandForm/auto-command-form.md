@@ -1,23 +1,41 @@
-# AutoCommandForm
+---
+title: AutoCommandForm
+description: Generate a command form's fields from the command's property descriptors instead of writing one field per property.
+---
 
 `AutoCommandForm` generates its field list from the command's own properties instead of you writing one field per property by hand. Each property's type picks its field component through a registry - `string` gets `InputTextField`, `number` gets `NumberField`, `boolean` gets `CheckboxField`, `Date` gets `CalendarField` - the same components you would otherwise use directly.
 
 ## Requirements
 
-Use `@cratis/arc` and `@cratis/arc.react` version 22.16.0 or later within the supported 22.x range. Each generated field declares its property name explicitly because its accessor reads a descriptor dynamically. Older Arc versions overwrite that binding, which can send a date or number edit to another property.
+Use `@cratis/arc` and `@cratis/arc.react` version 22.16.0 or later within the supported 22.x range. Each generated field names its property explicitly through `fieldName`, because its accessor reads the property dynamically. Arc versions before 22.16.0 ignore that name and infer the property from the accessor's source text instead, so every generated field resolves to the same property and an edit can land on the wrong one. The package's peer range still admits those older versions, so check the installed Arc version yourself.
+
+The command must be a generated Arc command proxy: `AutoCommandForm` creates an instance of it and reads its `propertyDescriptors`.
 
 ## Usage
 
-```tsx
-import { CommandDialog } from '@cratis/components/CommandDialog';
-import { AutoCommandForm } from '@cratis/components/CommandForm';
+`AutoCommandForm` renders its own Arc `CommandForm`, so use it on its own and supply the submit control through `footer`:
 
-<CommandDialog command={RegisterProject} visible={visible} onCancel={() => setVisible(false)}>
-    <AutoCommandForm command={RegisterProject} exclude={['projectId']} />
-</CommandDialog>
+```tsx
+import { AutoCommandForm } from '@cratis/components/CommandForm';
+import { RegisterProject } from './RegisterProject';
+
+<AutoCommandForm
+    command={RegisterProject}
+    exclude={['projectId']}
+    footer={<button type='submit'>Register</button>}
+    onSuccess={() => console.log('Registered')}
+/>;
 ```
 
-A property whose type has no registered provider - a nested object, an array, an enum - is left out of the generated list. Add it as a hand-written `CommandForm` field alongside `AutoCommandForm`, or register a provider for it (see below).
+The button submits Arc's form, which executes the command and runs the result callbacks. Because the fields are inside a native `<form>`, pressing `Enter` in a text field submits it too.
+
+:::caution[Do not nest AutoCommandForm in a CommandDialog]
+`CommandDialog`, `CommandStepper`, and `StepperCommandDialog` each create their own command instance. An `AutoCommandForm` placed inside them binds its fields to a second instance, so the values the user types never reach the command the dialog executes. Write the fields by hand inside those components.
+:::
+
+A property whose type has no registered provider - a nested object, an array, an enum - is left out of the generated list. Write the form by hand when that property needs a field, or register a provider for its type (see below).
+
+A property you exclude, or one that has no provider, is still part of the command. If it is non-optional, seed it through `initialValues`, or the form stays invalid and the command's validation rejects the submit.
 
 ## Props
 
@@ -50,24 +68,24 @@ or DOM-prop forwarding. Authorization and validation behavior remain Arc's respo
 
 ## Registering a field type provider
 
-The built-in providers cover `string`, `number`, `boolean` and `Date`. Register your own for any other property type - a Cratis concept, an enum, a custom value object - with `registerFieldTypeProvider`:
+The built-in providers cover `string`, `number`, `boolean` and `Date`. Register your own for any other property type, or to override a default, with `registerFieldTypeProvider`. This one renders every `string` property as a multi-line `TextAreaField`:
 
 ```tsx
-import { registerFieldTypeProvider } from '@cratis/components/CommandForm';
-import { DropdownField } from '@cratis/components/CommandForm';
-import { Status } from './Status';
+import { registerFieldTypeProvider, TextAreaField } from '@cratis/components/CommandForm';
 
 registerFieldTypeProvider({
-    canHandle: propertyDescriptor => propertyDescriptor.type === Status,
-    component: DropdownField
+    canHandle: (propertyDescriptor) => propertyDescriptor.type === String,
+    component: TextAreaField,
 });
 ```
 
-Register once, at module load, before any `AutoCommandForm` renders. Providers are consulted most-recently-registered first, so registering a provider for a type the built-in defaults already cover - `string`, say - overrides that default.
+Register once, in module code that runs before any `AutoCommandForm` renders. Providers are consulted most-recently-registered first, so registering a provider for a type the built-in defaults already cover overrides that default.
+
+`canHandle` receives the property's Arc `PropertyDescriptor` (`name`, `type`, `isOptional`, …). `AutoCommandForm` passes the provider's `component` only `fieldName`, `value`, and `title`. A field that needs more props, such as `DropdownField` with its required `options`, `optionValue`, and `optionLabel`, cannot be registered directly; write that property's field by hand instead.
 
 ## Behavior
 
 - Field titles are generated from the property name by splitting on capitals and uppercasing the first letter (`dueDate` becomes "Due Date"); there is no way to override an individual generated field's title other than excluding it and writing that one field by hand.
-- `required` is **not** derived from the property descriptor's `isOptional` — every generated field is rendered without it. Write the field by hand when you need `required` on it.
+- `AutoCommandForm` does not set `required` on the fields it generates. Whether a value is required is enforced by the command's own validation (every non-optional property must have a value), not by a field prop.
 - Each generated field binds to its descriptor's property name; editing one property leaves the other properties unchanged.
 - Every generated field participates in `CommandForm`'s validation, change tracking and initial-value population exactly as a hand-written field does - `AutoCommandForm` only decides *which* fields to render, not how they behave once rendered.

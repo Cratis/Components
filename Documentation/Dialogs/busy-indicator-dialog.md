@@ -1,4 +1,7 @@
-# BusyIndicatorDialog
+---
+title: BusyIndicatorDialog
+description: Block the screen with a host-rendered spinner dialog while a long-running operation completes.
+---
 
 Dialog with a loading spinner for long-running operations.
 
@@ -10,7 +13,7 @@ BusyIndicatorDialog displays a loading indicator while performing asynchronous o
 
 - Animated progress spinner
 - Customizable message
-- Non-dismissible (no close button)
+- Non-dismissible: no buttons, no close (X), and `Escape` or a backdrop click does nothing
 - Centered layout
 
 ## Host-rendered
@@ -21,7 +24,7 @@ BusyIndicatorDialog displays a loading indicator while performing asynchronous o
 
 Register the dialog component near the root of your app:
 
-```typescript
+```tsx
 import { BusyIndicatorDialog } from '@cratis/components/Dialogs';
 import { DialogComponents } from '@cratis/arc.react/dialogs';
 
@@ -34,7 +37,7 @@ export const App = () => (
 
 Show the indicator around a long-running operation and close it when done:
 
-```typescript
+```tsx
 import { useBusyIndicator } from '@cratis/arc.react/dialogs';
 
 function MyComponent() {
@@ -44,7 +47,7 @@ function MyComponent() {
     );
 
     const handleAsyncOperation = async () => {
-        showBusy();
+        void showBusy();
         try {
             await performOperation();
         } finally {
@@ -52,7 +55,7 @@ function MyComponent() {
         }
     };
 
-    return <button onClick={handleAsyncOperation}>Start Operation</button>;
+    return <button type='button' onClick={handleAsyncOperation}>Start Operation</button>;
 }
 ```
 
@@ -63,7 +66,14 @@ The `BusyIndicatorDialogRequest` the host threads into the dialog carries:
 - `title`: Dialog header text
 - `message`: Message to display below the spinner
 
-`useBusyIndicator(title?, message?)` returns `[showBusy, closeBusy]` — call `showBusy()` to display the indicator and `closeBusy()` to dismiss it.
+`useBusyIndicator(title?, message?)` returns `[showBusy, closeBusy]` — call `showBusy()` to display the indicator and `closeBusy()` to dismiss it. `showBusy(title?, message?)` accepts per-call overrides.
+
+`showBusy()` returns a promise that resolves only when `closeBusy()` runs, so do not `await` it before your operation; start it, run the work, and close it in `finally` as shown above. Always close it: the user has no way to dismiss it.
+
+## Accessibility
+
+- Focus moves to the dialog title when it opens, so screen readers announce the title and keyboard users are not left behind the modal.
+- The spinner is exposed as a progress indicator whose accessible name is the `message`, or the `title` when there is no message. Keep the message meaningful and localized.
 
 ## Use Cases
 

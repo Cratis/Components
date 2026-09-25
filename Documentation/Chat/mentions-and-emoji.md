@@ -1,23 +1,26 @@
-# Mentions and emoji
+---
+title: Mentions and emoji
+description: Offer @-mentions of people and agents and an emoji picker in the chat composer.
+---
 
 The composer offers `@`-mentions of people and agents and an emoji picker. This page covers where mention candidates come from, how mentions travel with a message, and how they render.
 
 ## Where candidates come from
 
-Typing `@` opens the candidate list. Feed it one of two ways — or both:
+Typing `@` opens the candidate list. Feed it one of two ways — or both. In the excerpts below, `sidebarProps` stands for the required `ChatSidebar` props (`open`, `onClose`, `topics`, `messages`, `onSendMessage`) shown in the [basic usage](./index.md#basic-usage). `searchTeam` stands for your own lookup.
 
 ```tsx
 // A list the application already holds:
-<ChatSidebar ... mentionCandidates={[
+<ChatSidebar {...sidebarProps} mentionCandidates={[
     { id: 'person-1', name: 'Sample User', hasAvatar: true, kind: ChatAuthorKind.User },
     { id: 'agent-1', name: 'Review Agent', hasAvatar: false, kind: ChatAuthorKind.Agent },
 ]} />
 
 // A provider resolved as the person types — sync or async; stale answers are dropped:
-<ChatSidebar ... resolveMentionCandidates={async query => await searchTeam(query)} />
+<ChatSidebar {...sidebarProps} resolveMentionCandidates={async query => await searchTeam(query)} />
 ```
 
-People and agents are offered side by side — a candidate's `kind` (`ChatAuthorKind.User` | `ChatAuthorKind.Agent`) decides its avatar and how the mention is marked when rendered. Omit both props to turn mentions off.
+A `MentionCandidate` has a string `id`, `name`, `hasAvatar`, `kind`, and an optional `avatarVersion`. People and agents are offered side by side — a candidate's `kind` (`ChatAuthorKind.User` | `ChatAuthorKind.Agent`) decides its avatar and how the mention is marked when rendered. Omit both props to turn mentions off.
 
 ## How mentions travel
 

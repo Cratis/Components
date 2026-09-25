@@ -19,55 +19,75 @@ This means TimeMachine is transport-neutral by construction: a host application 
 
 ## Key Features
 
-- Timeline-based navigation
-- Read model state visualization
-- Event history view
-- Interactive version selection
-- Trackpad gesture support
-- Smooth transitions between versions
-- Property comparison between versions
-- Hover preview functionality
+- A timeline of versions, with a magnifying effect around the hovered entry
+- A stack of version cards showing your rendered state for each version
+- A card flip that lists the events behind a version
+- An events view listing every event across all versions
+- Selection through the timeline, previous/next buttons, clicking a card, or wheel and trackpad scrolling
+- Hover or focus preview of a version without selecting it
+- Localizable accessible names through `labels`
 
 ## Quick Start
 
-```typescript
-import { TimeMachine } from '@cratis/components/TimeMachine';
+```tsx
+import { useState } from 'react';
+import { Properties, TimeMachine, type Version } from '@cratis/components/TimeMachine';
 
-interface Version {
-    id: string;
-    timestamp: Date;
-    label: string;
-    content: React.ReactNode;
-    events?: Array<{
-        sequenceNumber: number;
-        type: string;
-        occurred: Date;
-        content: Record<string, unknown>;
-    }>;
-}
+const versions: Version[] = [
+    {
+        id: 'v1',
+        timestamp: new Date('2024-01-01T10:00:00'),
+        label: 'Created',
+        content: <Properties data={{ name: 'Product A', price: 99.99, status: 'draft' }} />,
+        events: [
+            {
+                sequenceNumber: 0,
+                type: 'ProductCreated',
+                occurred: new Date('2024-01-01T10:00:00'),
+                content: { name: 'Product A', price: 99.99 },
+            },
+        ],
+    },
+    {
+        id: 'v2',
+        timestamp: new Date('2024-01-05T14:30:00'),
+        label: 'Price updated',
+        content: <Properties data={{ name: 'Product A', price: 89.99, status: 'draft' }} />,
+        events: [
+            {
+                sequenceNumber: 1,
+                type: 'PriceUpdated',
+                occurred: new Date('2024-01-05T14:30:00'),
+                content: { oldPrice: 99.99, newPrice: 89.99 },
+            },
+        ],
+    },
+];
 
-function MyTimeMachine() {
-    const versions: Version[] = [
-        {
-            id: 'v1',
-            timestamp: new Date('2024-01-01'),
-            label: 'Initial',
-            content: <div>Name: Initial — Status: draft</div>,
-            events: [
-                { sequenceNumber: 0, type: 'Created', occurred: new Date('2024-01-01'), content: {} }
-            ]
-        }
-    ];
+export function ProductHistory() {
+    const [versionIndex, setVersionIndex] = useState(versions.length - 1);
 
     return (
         <TimeMachine
             versions={versions}
-            currentVersionIndex={0}
-            onVersionChange={(index) => console.log('Version:', index)}
+            currentVersionIndex={versionIndex}
+            onVersionChange={setVersionIndex}
         />
     );
 }
 ```
+
+TimeMachine opens on the latest version, with its card in front and a vertical timeline along the right edge. Click the other timeline entry, press the previous button at the bottom, or scroll over the background to move between versions. The list icon in the switcher at the top opens the events view.
+
+`content` is whatever you render for that version. The exported `Properties` component renders a plain key/value table and is the usual choice; see [Views](views.md).
+
+## Size and appearance
+
+The `.time-machine` root is `100vh` tall and `100%` wide, with its own dark theme set through `--tm-*` custom properties on that root. To fit it into part of a page, give it a height in your own CSS (for example `.my-history .time-machine { height: 480px; }` with the component inside `.my-history`), and override the `--tm-*` properties there to change its colors. Import `@cratis/components/TimeMachine/styles` or the aggregate `@cratis/components/styles` for its CSS.
+
+## Empty, loading, and error states
+
+TimeMachine has none of its own. It renders whatever `versions` contains and never fetches. Show your own loading and error UI while you build `versions`, and render a message instead of TimeMachine until there is at least one version.
 
 ## See Also
 

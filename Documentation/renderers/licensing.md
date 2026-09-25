@@ -95,9 +95,12 @@ metadata cannot grant those rights.
 
 ## Release evidence
 
-The repository compatibility manifest records package names, current versions, peer ranges,
-upstream ranges, renderer ABI major, and private/non-published evidence artifacts. It does not enable
-publication. The final package-version and Core peer-range sweep is a separate atomic release step.
+The repository compatibility manifest records package names, source versions, peer ranges,
+upstream ranges, renderer ABI major, private/non-published evidence artifacts, and the release
+status. The manifest is a record; the release workflow does the publishing. That publish step sets
+every package to the release version and replaces each adapter's source peer range on
+`@cratis/components` (`>=4 <5`) with that exact version, so a published adapter requires the
+`@cratis/components` release it shipped with.
 
 Read [renderer coexistence](index.md) for provider/portal ownership and [unsupported renderer claims](unsupported.md)
 before approving a renderer architecture.

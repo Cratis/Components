@@ -1,4 +1,7 @@
-# Separators
+---
+title: Separators
+description: Divide toolbar tools with ToolbarSeparator.
+---
 
 `ToolbarSeparator` renders a thin visual divider between groups of buttons. Unlike `ToolbarSection`, it has no behavioral logic — it simply draws a line perpendicular to the toolbar orientation. In a horizontal toolbar the separator is a vertical rule; in a vertical toolbar it is a horizontal rule.
 
@@ -19,7 +22,7 @@ function ZoomToolbar() {
 }
 ```
 
-Pass the same `orientation` value to `ToolbarSeparator` as you pass to the enclosing `Toolbar` so the line is drawn perpendicular to the toolbar direction.
+Pass the same `orientation` value to `ToolbarSeparator` as you pass to the enclosing `Toolbar` so the line is drawn perpendicular to the toolbar direction. The separator renders `role='separator'` with the perpendicular `aria-orientation`, and is not focusable.
 
 ## Vertical toolbar
 

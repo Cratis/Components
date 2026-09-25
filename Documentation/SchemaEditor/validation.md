@@ -1,4 +1,7 @@
-# SchemaEditor - Validation
+---
+title: SchemaEditor validation
+description: What SchemaEditor validates while editing, and what an application must still validate itself.
+---
 
 SchemaEditor validates the subset it actively edits. It prevents malformed schema structure and invalid property names from being saved, but it is not a general-purpose JSON Schema validator.
 
@@ -21,8 +24,8 @@ Boolean schemas (`true` or `false` in place of a schema object), tuple-valued `i
 Property names must:
 
 1. Not be empty or whitespace-only.
-2. Start with a letter or underscore.
-3. Contain only letters, numbers, and underscores.
+2. Start with an ASCII letter (`a`–`z`, `A`–`Z`) or an underscore.
+3. Contain only ASCII letters, digits, and underscores (`^[a-zA-Z_][a-zA-Z0-9_]*$`).
 4. Not be the reserved prototype keys `__proto__`, `constructor`, or `prototype`.
 5. Be unique among siblings in the current object schema.
 

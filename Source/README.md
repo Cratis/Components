@@ -20,11 +20,6 @@ interaction primitives internally; consumers do not import or style React Aria.
 npm install @cratis/components@^4
 ```
 
-> **Publication status:** This install example targets the owner-authorized 4.0.0 npm release. When
-> reading this README from repository source before that release, verify availability with
-> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace
-> instead.
-
 The current package manifest declares these peer dependencies:
 
 - `@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`
@@ -34,13 +29,13 @@ The current package manifest declares these peer dependencies:
 - `reflect-metadata` `0.2.2`
 - `tsyringe` `4.10.0`
 
-Strict installers can declare them explicitly; keep both Arc packages on the same application version:
+Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This repository builds and tests against Arc 22.16.0:
 
 ```bash
-ARC_VERSION=22.6.2
+ARC_VERSION=22.16.0
 npm install @cratis/components@^4 \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
-  @cratis/fundamentals@^7.10.3 react@^19 react-dom@^19 \
+  @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
   reflect-metadata@0.2.2 tsyringe@4.10.0
 ```
 
@@ -58,7 +53,7 @@ object; runtime behavior still requires `@cratis/components.conformance`. See th
 [renderer-adapter documentation](https://github.com/Cratis/Components/blob/16dd95b7c894f3275b03714ffdc676d2d3505fd8/Documentation/renderers/index.md#adapter-package-metadata-schema)
 for the boundary and limitations.
 
-**Yarn PnP note:** the current `@cratis/arc.react@22.6.2` package imports `rxjs` without declaring it. Strict PnP consumers install `rxjs@7.8.2` and add a temporary `packageExtensions` entry for `@cratis/arc.react@22.6.2`; remove it when Arc publishes corrected metadata. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
+**Yarn PnP note:** `@cratis/arc.react@22.6.2` imports `rxjs` without declaring it. Strict PnP consumers that stay on that version install `rxjs@7.8.2` and add a `packageExtensions` entry for `@cratis/arc.react@22.6.2`; Arc React 22.16.0 does not need it. The canonical [getting-started guide](https://cratis.io/components/getting-started/) contains the exact YAML.
 
 `pixi.js@^8.20.0` is an additional **optional** peer, required only by `Canvas` and `PivotViewer` (the Spatial capability profile — see [Import from explicit subpaths](#import-from-explicit-subpaths) below). Every other subpath needs nothing beyond the peers above:
 
@@ -93,13 +88,19 @@ Every JavaScript subpath publishes a matching `<subpath>/styles`, self-contained
 
 ## Provider
 
+Import `reflect-metadata` once at the entry point, before the styles, and mount the Components provider inside Arc's `<Arc>` provider. `<Arc>` supplies the command and query runtime used by the generated proxies; `CratisComponentsProvider` does not replace it:
+
 ```tsx
+import 'reflect-metadata';
+import { Arc } from '@cratis/arc.react';
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
-        <Application />
-    </CratisComponentsProvider>
+    <Arc>
+        <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+            <Application />
+        </CratisComponentsProvider>
+    </Arc>
 );
 ```
 
@@ -109,10 +110,10 @@ stable, nine-slot `stable-presentation/v1` primitive profile; they never replace
 catalog. They share the Components repository release version and are selected with the provider's
 `library` prop:
 
-- `@cratis/components.mui@4.0.0` — MUI 9.x / Emotion 11.x stable presentation slots;
-- `@cratis/components.primereact@4.0.0` — PrimeReact 11.x stable presentation slots, with an
+- `@cratis/components.mui` — MUI 9.x / Emotion 11.x stable presentation slots;
+- `@cratis/components.primereact` — PrimeReact 11.x stable presentation slots, with an
   application-owned outer provider and license key;
-- `@cratis/components.primereact10@4.0.0` — PrimeReact 10.9.9+ stable presentation slots, with its
+- `@cratis/components.primereact10` — PrimeReact 10.9.9+ stable presentation slots, with its
   separate MIT-era provider, global theme, and upstream-major boundary.
 
 Adapter-specific themes, providers, SSR setup, peers, and license boundaries remain documented by
@@ -164,7 +165,7 @@ export const RegisterAuthorDialog = () => (
 );
 ```
 
-Fields bind directly to generated command properties and surface server validation through the Arc command-form context.
+Fields bind directly to generated command properties and surface server validation through the Arc command-form context. Required command values the user does not type, such as a generated id, belong in `initialValues`; `onBeforeExecute` runs only after validation and cannot enable the confirm button.
 
 ## Query-backed tables
 

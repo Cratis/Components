@@ -1,4 +1,7 @@
-# NumberInputField
+---
+title: NumberInputField
+description: Bind a number property on an Arc command to the locale-aware NumberInput.
+---
 
 `NumberInputField` binds the standalone locale-aware [`NumberInput`](../Common/number-input.md) to a non-null number property in an Arc `CommandForm`.
 

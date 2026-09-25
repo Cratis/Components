@@ -1,81 +1,156 @@
 ---
 title: "3. List and detail"
-description: Swap the plain table for DataPage to get selection, menu actions, and a resizable detail panel that shows the selected author's books — then look back at the screen you built.
+description: Swap the plain table for DataPage to get selection, menu actions, and a resizable detail panel that shows the selected author's books — then add a book to that author.
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Our screen lists authors and acts on them, but the actions hang off a lone button, and there's nowhere to *see* an author — their books, in particular. The everyday shape for this is a table on the left, details on the right, with a toolbar that knows whether a row is selected. That layout has enough moving pieces to deserve a component; `DataPage` hands it to you whole.
+Our screen lists authors and adds them, but the action hangs off a lone button, and there's nowhere to *see* an author — their books, in particular. The everyday shape for this is a table on the left, details on the right, with an action bar that knows whether a row is selected. That layout has enough moving pieces to deserve a component; `DataPage` hands it to you whole.
 
-We'll point it at `AllAuthorsWithBooks` — the read model from the [Arc tutorial](/arc/tutorial/books-and-relationships/) where each author already carries their books — so the detail panel has something to show.
+The detail panel shows the selected author's books with `BooksForAuthor`, the filtered observable query from [the Arc tutorial's chapter 3](/arc/tutorial/books-and-relationships/), and the action bar adds a book to that author with `AddBook`.
 
 <Steps>
 
-1. **Describe the detail panel.** It's an ordinary component that receives the selected `item`. Because each `AuthorWithBooks` carries its `books`, listing them is a `map` — no second query:
+1. **Describe the detail panel.** It's an ordinary component that receives the selected row as `item`. Type it with `IDetailsComponentProps<Author>` so `item` is the generated `Author`, then read that author's books with the `BooksForAuthor` proxy:
 
-   ```tsx title="AuthorDetails.tsx"
-   export const AuthorDetails = ({ item }) => (
-       <div className="p-4">
-           <h2>{item.name}</h2>
-           <h3>Books</h3>
-           <ul>
-               {item.books.map(book => <li key={String(book.id)}>{book.title}</li>)}
-           </ul>
-       </div>
-   );
-   ```
+    ```tsx title="src/AuthorDetails.tsx"
+    import type { Guid } from '@cratis/fundamentals';
+    import type { IDetailsComponentProps } from '@cratis/components/DataPage';
+    import type { Author } from './Authors/Author';
+    import { BooksForAuthor } from './Books/Book'; // generated observable query proxy
 
-2. **Assemble the page.** `DataPage` takes the query, the columns, the menu actions, and the detail component. Selection, the resizable split, and hiding the panel when nothing is selected all come built in:
+    const Books = ({ authorId }: { authorId: Guid }) => {
+        const [books] = BooksForAuthor.use({ authorId });
+        if (books.isPerforming && !books.hasData) return <p>Loading books…</p>;
+        if (books.data.length === 0) return <p>No books yet.</p>;
+        return (
+            <ul>
+                {books.data.map((book) => (
+                    <li key={String(book.id)}>{book.title}</li>
+                ))}
+            </ul>
+        );
+    };
 
-   ```tsx title="Authors.tsx"
-   import { DataPage, MenuItem } from '@cratis/components/DataPage';
-   import { Column } from '@cratis/components/DataPage';
-   import { useDialog } from '@cratis/arc.react/dialogs';
-   import { FaPencil, FaPlus } from 'react-icons/fa6';
-   import { AllAuthorsWithBooks } from './Authors/AuthorWithBooks';   // generated proxy
-   import { AddAuthor } from './AddAuthor';
-   import { AuthorDetails } from './AuthorDetails';
+    export const AuthorDetails = ({ item }: IDetailsComponentProps<Author>) => (
+        <section aria-label={`Books by ${item.name}`}>
+            <h2>{item.name}</h2>
+            <Books key={String(item.id)} authorId={item.id} />
+        </section>
+    );
+    ```
 
-   export const Authors = () => {
-       const [AddAuthorDialog, showAddAuthor] = useDialog(AddAuthor);
-       return (
-           <>
-               <DataPage
-                   title="Authors"
-                   query={AllAuthorsWithBooks}
-                   emptyMessage="No authors yet"
-                   detailsComponent={AuthorDetails}>
-                   <DataPage.MenuItems>
-                       <MenuItem label="Add author" icon={FaPlus} command={() => showAddAuthor()} />
-                       <MenuItem label="Edit" icon={FaPencil} disableOnUnselected command={() => {/* open RenameAuthor */}} />
-                   </DataPage.MenuItems>
-                   <DataPage.Columns>
-                       <Column field="name" header="Name" sortable />
-                   </DataPage.Columns>
-               </DataPage>
-               <AddAuthorDialog />
-           </>
-       );
-   };
-   ```
+    The query is scoped to one author and observable, so the list stays current while the panel is open. The panel owns its own loading and empty states because it runs its own query.
+
+    The `key` matters. `DataPage` keeps the details component mounted when the selection moves to another row, and a query hook keeps its last result when its arguments change until the new result arrives. Without the key, selecting another author briefly shows the previous author's books under the new name. Keying the child by author id mounts a fresh query per author, so the panel shows *Loading books…* instead.
+
+2. **Add the book dialog.** It is the same shape as `AddAuthor`, with two required values the user doesn't type: the author the book belongs to and a new book id. Both go in `initialValues`:
+
+    ```tsx title="src/AddBook.tsx"
+    import { useState } from 'react';
+    import { Guid } from '@cratis/fundamentals';
+    import { CommandDialog } from '@cratis/components/CommandDialog';
+    import { InputTextField } from '@cratis/components/CommandForm';
+    import { AddBook } from './Books/AddBook'; // generated proxy
+
+    export const AddBookDialog = ({ authorId }: { authorId: Guid }) => {
+        const [bookId] = useState(() => Guid.create());
+        return (
+            <CommandDialog<AddBook>
+                command={AddBook}
+                title='Add book'
+                okLabel='Add'
+                initialValues={{ authorId, bookId }}
+            >
+                <InputTextField<AddBook> value={(command) => command.title} title='Title' />
+            </CommandDialog>
+        );
+    };
+    ```
+
+    If the Arc tutorial's `src/AddBook.tsx` already exports this component, reuse it.
+
+3. **Assemble the page.** `DataPage` takes the query, the columns, the menu actions, and the detail component. Selection, the resizable split, and hiding the panel when nothing is selected come built in. Menu item commands take no arguments, so the page records the selected author through `onSelectionChange` and reads it when **Add book** runs:
+
+    ```tsx title="src/Authors.tsx"
+    import { useState } from 'react';
+    import { useDialog } from '@cratis/arc.react/dialogs';
+    import { Column, DataPage, MenuItem } from '@cratis/components/DataPage';
+    import { FaBook, FaPlus } from 'react-icons/fa6';
+    import { AllAuthors, type Author } from './Authors/Author'; // generated proxy
+    import { AddAuthor } from './AddAuthor';
+    import { AddBookDialog } from './AddBook';
+    import { AuthorDetails } from './AuthorDetails';
+
+    export const Authors = () => {
+        const [selected, setSelected] = useState<Author | null>(null);
+        const [AddAuthorWrapper, showAddAuthor] = useDialog(AddAuthor);
+        const [AddBookWrapper, showAddBook] = useDialog(AddBookDialog);
+
+        return (
+            <div style={{ height: '100vh' }}>
+                <DataPage
+                    title='Authors'
+                    query={AllAuthors}
+                    emptyMessage='No authors yet'
+                    detailsComponent={AuthorDetails}
+                    onSelectionChange={(event) => setSelected(event.value)}
+                >
+                    <DataPage.MenuItems>
+                        <MenuItem
+                            label='Add author'
+                            icon={FaPlus}
+                            command={() => void showAddAuthor()}
+                        />
+                        <MenuItem
+                            label='Add book'
+                            icon={FaBook}
+                            disableOnUnselected
+                            command={() => {
+                                if (selected) {
+                                    void showAddBook({ authorId: selected.id });
+                                }
+                            }}
+                        />
+                    </DataPage.MenuItems>
+                    <DataPage.Columns>
+                        <Column field='name' header='Name' sortable />
+                    </DataPage.Columns>
+                </DataPage>
+                <AddAuthorWrapper />
+                <AddBookWrapper />
+            </div>
+        );
+    };
+    ```
+
+    The icons come from `react-icons`. Components depends on it internally, but add `react-icons` to your own `package.json` when your code imports it, so strict package managers resolve it.
+
+4. **Try it.** Select an author and their books appear on the right. Drag the divider to resize. **Add book** is disabled until a row is selected — `disableOnUnselected` wires that to selection for you. With a row selected, add a book: the dialog closes on success and the new title appears in the detail panel without a refresh.
 
 </Steps>
 
-Select an author and their books appear on the right. Drag the divider to resize. The **Edit** item is disabled until a row is selected — `disableOnUnselected` wires that to selection for you.
+<Aside type='caution' title='Give DataPage a height'>
+    `DataPage` fills the height it is given and splits it between the action bar and the
+    table, so some ancestor needs a definite height. The wrapper above uses
+    `height: '100vh'`; inside an application shell, a sized router outlet or a flex child
+    with `min-height: 0` works too. Without one, the page falls back to a small minimum
+    height. `DataPage` does not render its `title` prop, so add your own heading if the screen needs one.
+</Aside>
 
 <Aside type="tip" title="One read model per screen">
-The detail panel reads `books` straight off the row because `AllAuthorsWithBooks` was *built for this screen* — author plus books, in one shape. Resist the urge to make one giant read model serve every view. A list query, a detail query, and a dashboard query can each read their own purpose-built model; they're cheap to add and they never fight each other. See [Read Models](/chronicle/read-models/).
+The detail panel reads books through `BooksForAuthor`, a query *built for this job*: one author's books, filtered on the server. Resist the urge to make one giant read model serve every view. A list query, a detail query, and a dashboard query can each read their own purpose-built model; they're cheap to add and they never fight each other. With Chronicle, see [Read Models](/chronicle/read-models/).
 </Aside>
 
 ## Look back at what you built
 
-Three chapters ago we had a generated query and no screen. Now we have a real library back office:
+Three chapters ago we had generated proxies and no screen. Now we have a real library back office:
 
 - **Chapter 1** — a live table from `AllAuthors`, bound to an observable query with no fetch or subscription code.
-- **Chapter 2** — add, rename, and remove through `CommandDialog` + `useDialog`, with the table updating itself the instant a command lands.
-- **Chapter 3** — a `DataPage` list-and-detail layout: selection, menu actions, and a resizable panel showing each author's books.
+- **Chapter 2** — add authors through `CommandDialog` + `useDialog`, with required values in `initialValues` and the table updating itself the instant a command lands.
+- **Chapter 3** — a `DataPage` list-and-detail layout: selection, menu actions, a resizable panel showing each author's books, and a selection-aware **Add book** action.
 
-The pattern under all of it is the same one Components exists to give you: **point a component at a generated proxy, and the wiring is already done.** A query becomes a live table; a command becomes a validated form; a read model becomes a detail panel — and every one of them stays type-checked against the C# it came from.
+The pattern under all of it is the same one Components exists to give you: **point a component at a generated proxy, and the wiring is already done.** A query becomes a live table; a command becomes a validated form; a selected row becomes a detail panel — and every one of them stays type-checked against the C# it came from.
 
 ## Where to go next
 

@@ -1,4 +1,7 @@
-# Basic Usage
+---
+title: Basic usage
+description: Place ToolbarButton elements inside a Toolbar with icons or text-first content.
+---
 
 Place `ToolbarButton` elements inside a `Toolbar`:
 
@@ -17,7 +20,9 @@ function MyToolbar() {
 }
 ```
 
-`ToolbarButton` renders `text` when that prop is non-empty; otherwise it renders `icon`. Use `text` for text-first controls such as zoom indicators rather than expecting icon and text to appear together:
+`title` is required. It becomes the button's `aria-label` and the tooltip shown on hover and keyboard focus, so write it as the tool's name. Name the toolbar itself with `aria-label` when a page has more than one.
+
+`ToolbarButton` renders `text` when that prop is non-empty; otherwise it renders `icon`. Use `text` for text-first controls such as zoom indicators rather than expecting icon and text to appear together. The accessible name is still `title`, not the visible `text`, so a screen reader announces the button below as "Reset zoom" rather than the percentage:
 
 ```tsx
 import { useState } from 'react';

@@ -10,10 +10,9 @@ versioned separately. It exports one stable `CratisPresentationUiLibrary` manife
 adaptation, never full-catalog replacement. PrimeReact 10 is supported separately by
 `@cratis/components.primereact10`.
 
-> **Publication status:** The install example targets the owner-authorized 4.0.0 npm release. When
-> reading this README from repository source before that release, verify availability with
-> `npm view @cratis/components.primereact@4.0.0 version`; source contributors use the workspace in
-> this checkout.
+> **Versions:** each release of `@cratis/components.primereact` is published at the same version as
+> `@cratis/components` and declares a peer on exactly that version. Install and upgrade the two
+> packages together at the same version.
 
 ## Install
 
@@ -59,6 +58,9 @@ export const Application = () => (
 );
 ```
 
+Components that execute commands or run queries also need Arc's `<Arc>` provider from
+`@cratis/arc.react` around this tree; neither the adapter nor `CratisComponentsProvider` replaces it.
+
 The adapter throws `CRATIS-UI-1005` synchronously when either the outer provider or the attestation
 is absent. Setting the attestation to `true` is an application assertion that the key was actually
 supplied; it is not a substitute for doing so. This prevents Components from creating a second
@@ -85,8 +87,10 @@ PrimeReact packages are bounded to `>=11 <12`, PrimeUX themes to `>=3 <4`, and R
 React 19. Vendor packages are peers and are never bundled. Exact repository proof uses 11.1.0 and
 `@primeuix/themes` 3.0.0.
 
-The adapter requires `@cratis/components >=4 <5`. This range is intentionally bounded to the
-Components major whose renderer ABI and stable presentation profile it implements.
+The source manifest declares `@cratis/components >=4 <5`, the Components major whose renderer ABI
+and stable presentation profile the adapter implements. The release step replaces that range with
+the exact release version, so a published adapter requires the `@cratis/components` release it
+shipped with.
 
 See [CONFORMANCE.md](./CONFORMANCE.md) for bounded evidence and
 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for upstream licensing.

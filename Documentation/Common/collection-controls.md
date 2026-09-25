@@ -1,9 +1,17 @@
-# Collection controls
+---
+title: Collection controls
+description: Choose a value, switch a view, edit a set of values, and show a breadcrumb trail with ToggleGroup, Tabs, TagGroup and Breadcrumbs.
+---
 
 Four controls for choosing among a set, moving through a set, editing a set, and showing where you
 are in one: `ToggleGroup`, `Tabs`, `TagGroup` and `Breadcrumbs`. Each is a thin Cratis surface over
-its React Aria equivalent, so the keyboard behaviour and the roles come from the foundation and the
-appearance is entirely yours through parts.
+its React Aria equivalent, so the keyboard behavior and the roles come from the foundation and the
+appearance is entirely yours through parts. All four are controlled and import from the `Common`
+subpath:
+
+```tsx
+import { Breadcrumbs, Tabs, TagGroup, ToggleGroup } from '@cratis/components/Common';
+```
 
 ## Choosing one: `ToggleGroup` or `Tabs`
 
@@ -22,7 +30,7 @@ control built out of `tablist` announces a panel switcher that switches nothing.
 `ToggleGroup`'s arrow keys move focus rather than selecting, because a segmented control often drives
 a query: arrowing from `Day` to `Month` must not run the month query on the way past.
 
-```typescript
+```tsx
 <ToggleGroup
     options={[
         { value: 'day', label: 'Day' },
@@ -39,7 +47,7 @@ A group has no single labelable element, so an external `<label>` associates wit
 `aria-labelledby` rather than `htmlFor`. `invalid` and `aria-describedby` wire it to a field's error
 text.
 
-```typescript
+```tsx
 <Tabs
     tabs={[
         { id: 'open', label: 'Open', content: <OpenRequests /> },
@@ -60,7 +68,7 @@ there. When the choice drives a view rendered elsewhere it is a **value**, not a
 
 A group of removable values with an optional text entry — the control behind a tag or chips field.
 
-```typescript
+```tsx
 <TagGroup
     value={skills}
     onChange={setSkills}
@@ -72,7 +80,7 @@ A group of removable values with an optional text entry — the control behind a
 
 | Key | Does |
 |---|---|
-| `Enter`, or any configured `separators` character | commits the typed value |
+| `Enter`, or any `separators` character (default `,`) | commits the typed value |
 | `Backspace` on an empty entry | removes the last value |
 | Arrow keys on a tag | moves between tags |
 | `Backspace` or `Delete` on a tag | removes that tag |
@@ -85,13 +93,13 @@ which replaces the default `×` without touching the button or its accessible na
 
 ## Showing where you are: `Breadcrumbs`
 
-```typescript
+```tsx
 <Breadcrumbs
     aria-label='Breadcrumb'
     items={[
         { label: 'Requests', href: '/requests' },
-        { label: 'Equinor ASA', href: '/requests/equinor' },
-        { label: 'FRP-1284' },
+        { label: 'Example Project', href: '/requests/example-project' },
+        { label: 'REQ-0001' },
     ]}
 />
 ```

@@ -35,7 +35,7 @@ to drop into one**.
 | ---------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | A full screen: a list, a toolbar of actions, detail panels | [`DataPage`](./DataPage/index.md)     | A resizable page composition with toolbar and detail areas wired to the query.                    |
 | A table over an Arc query or observable query              | [`DataTables`](./DataTables/index.md) | Query wrappers with server paging and loaded-page rendering.                                      |
-| A semantic table over an already-loaded array              | `DataTableCore`                       | Local rows, single selection, loaded-page filtering/sorting, scrolling, and stable parts.         |
+| A semantic table over an already-loaded array              | [`DataTableCore`](./DataTables/index.md) | Local rows, single or multiple selection, loaded-page filtering/sorting, scrolling, and stable parts.         |
 | Grouping, row expansion, or controlled lazy/server sorting | Product-owned/retained table adapter  | Components does not claim these advanced state contracts; keep the existing adapter deliberately. |
 
 If you're building a list-screen-with-actions from scratch, start with the
@@ -84,8 +84,9 @@ Canvas and PivotViewer own interaction and rendering primitives; the application
 
 ## Putting it together
 
-A typical CRUD screen combines these: a `DataPage` lists the rows, a toolbar button opens a
-`CommandDialog` to add one, and selecting a row opens another `CommandDialog` to edit it. That whole
+A typical CRUD screen combines these: a `DataPage` lists the rows, an action-bar item opens a
+`CommandDialog` to add one, and a selection-aware action opens another `CommandDialog` for the
+selected row. That whole
 screen is the [list screen with actions](./list-screen-with-actions.md) recipe.
 
 Components does not ship every toolkit widget. Tabs, general-purpose sidebars, knobs, select-button groups, general popovers, grouped or expandable tables, controlled lazy/server table sorting, and specialized locale-aware inputs remain product-owned or in a separately configured UI toolkit. See [Coming from PrimeReact](./coming-from-primereact.md) for the current replacement boundaries.

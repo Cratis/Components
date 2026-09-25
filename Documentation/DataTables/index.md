@@ -18,8 +18,9 @@ The DataTables module provides a semantic local-array table plus specialized Arc
 Use DataTableCore when:
 
 - Rows are already loaded locally
-- Single selection and semantic table rendering are sufficient
+- Single or multiple selection and semantic table rendering are sufficient
 - Filtering and sorting should apply only to that loaded array
+- You run the query yourself, for example to show loading and error states the query-backed tables do not render (see [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries))
 
 Use DataTableForQuery when:
 
@@ -37,10 +38,11 @@ Use DataTableForObservableQuery when:
 
 All three table components share:
 
-- Single row selection
+- Single-row selection by default, or multiple selection with row checkboxes and a select-all header (`selectionMode='multiple'`)
 - Global filtering
 - Custom column templates
-- Empty state messages
+- Empty state messages (no built-in loading indicator or error state)
+- Keyboard selection: each row is a tab stop, and Enter or Space selects it; in multiple mode it toggles the row (on `DataTableCore`, only when `selectionMode` or `onRowClick` is set)
 - Cratis-owned semantic Column markers and stable table parts
 
 Keep an application-owned or direct toolkit table when the surface requires grouping, row expansion, or controlled lazy/server sorting. Components does not silently emulate those behaviors over one loaded page.
@@ -56,15 +58,19 @@ import {
     type DataTableFilterConstraint,
 } from '@cratis/components/DataTables';
 
-const [constraint, setConstraint] = useState<DataTableFilterConstraint>();
+export function TotalFilter() {
+    const [constraint, setConstraint] = useState<DataTableFilterConstraint>();
 
-<ColumnFilterMenu
-    field='total'
-    dataType='numeric'
-    constraint={constraint}
-    onApply={setConstraint}
-    onClear={() => setConstraint(undefined)}
-/>;
+    return (
+        <ColumnFilterMenu
+            field='total'
+            dataType='numeric'
+            constraint={constraint}
+            onApply={setConstraint}
+            onClear={() => setConstraint(undefined)}
+        />
+    );
+}
 ```
 
 | Prop             | Type                                              | Description                                                                                         |
@@ -73,6 +79,7 @@ const [constraint, setConstraint] = useState<DataTableFilterConstraint>();
 | `dataType`       | `'text' \| 'numeric' \| 'date' \| 'boolean'`      | Selects the built-in editor and match-mode family. Defaults to `'text'`.                            |
 | `placeholder`    | `string`                                          | Placeholder for the built-in value editor.                                                          |
 | `showMatchModes` | `boolean`                                         | Shows the match-mode selector. Defaults to `true`.                                                  |
+| `filterOptions`  | `ColumnFilterOption[]`                            | Offers a known set of `{ label, value }` choices in a dropdown instead of a typed value, and narrows the match modes to Equals and Not equals. Takes precedence over `filterElement`. |
 | `filterElement`  | `ColumnFilterElement`                             | Replaces the built-in editor. Its options expose draft value/mode updates and apply/clear actions.  |
 | `labels`         | `Partial<ColumnFilterMenuLabels>`                 | Localizes trigger, editor, match mode, and action labels. Provider-level defaults are also honored. |
 | `pt`             | `ColumnFilterMenuParts`                           | Stable part attributes for the trigger, popover, menu, editor, actions, and action buttons.         |

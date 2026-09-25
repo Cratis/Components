@@ -1,8 +1,15 @@
-# Toolbar Groups
+---
+title: Toolbar groups
+description: Cluster related tools into ToolbarGroup pills, with optional slot injection.
+---
 
-`ToolbarGroup` is a formal logical sub-group of toolbar items. Where a plain sequence of buttons is a flat list, a group gives a cluster of related buttons a shared boundary. Adjacent groups receive an automatic visual separator so the structure is clear without needing explicit `ToolbarSeparator` elements.
+`ToolbarGroup` is a formal logical sub-group of toolbar items. Where a plain sequence of buttons is a flat list, a group gives a cluster of related buttons a shared boundary. Each group renders as its own pill, and a `Toolbar` with a `ToolbarGroup` as a direct child drops its own background, border, and padding and spaces the pills apart. The gap between pills shows the structure without explicit `ToolbarSeparator` elements.
+
+Because the toolbar's own pill disappears as soon as it has a group child, put every tool of such a toolbar inside a group; a button placed directly beside the groups has no background of its own.
 
 ```tsx
+import { Toolbar, ToolbarButton, ToolbarGroup } from '@cratis/components/Toolbar';
+
 <Toolbar>
     <ToolbarGroup>
         <ToolbarButton icon={<span aria-hidden='true'>◆</span>} title='Select' />
@@ -56,7 +63,7 @@ A group can act as a **slot host**: other components anywhere in the React tree 
 </ToolbarSlotProvider>
 ```
 
-Injected items appear after the group's own children, sorted by their `order` value. See [Slots](./slots.md) for the full slot API.
+Injected items appear after the group's own children, sorted by their `order` value. `ToolbarGroup` adds no ARIA grouping role; it is a styled `div` inside the toolbar. See [Slots](./slots.md) for the full slot API.
 
 ## Props
 

@@ -1,6 +1,9 @@
-# Toolbar Slots
+---
+title: Toolbar slots
+description: Inject toolbar items from anywhere in the React tree with ToolbarSlotProvider and ToolbarSlot.
+---
 
-The slot system lets any component in the React tree inject toolbar items into a named slot without prop drilling. The slot host (a `ToolbarGroup` or a `ToolbarContext`) declares the slot name; any number of independent contributors can register items into it. The registry is managed by a `ToolbarSlotProvider` that must wrap both the toolbar and the contributors.
+The slot system lets any component in the React tree inject toolbar items into a named slot without prop drilling. The slot host (a `ToolbarGroup` or `ToolbarContext` with `slotName`, or a [`ToolbarLayout`](toolbar-layout.md) with `name`) declares the slot name; any number of independent contributors can register items into it. The registry is managed by a `ToolbarSlotProvider` that must wrap both the toolbar and the contributors.
 
 ## Quick Start
 
@@ -10,9 +13,7 @@ Wrap the relevant part of the tree in a `ToolbarSlotProvider`, give a `ToolbarGr
 import {
     Toolbar,
     ToolbarButton,
-    ToolbarContext,
     ToolbarGroup,
-    ToolbarSection,
     ToolbarSlot,
     ToolbarSlotProvider,
 } from '@cratis/components/Toolbar';
@@ -59,6 +60,10 @@ Renders nothing in the DOM — its only purpose is to register its `children` in
 ```
 
 The component registers on mount and unregisters on unmount, so conditional rendering works naturally.
+
+`ToolbarSlot` needs a `ToolbarSlotProvider` above it. Without one, its content is dropped without an error and hosts render only their own children. Each provider is an isolated registry, so a slot inside a nested provider does not reach a host outside it.
+
+The slot re-registers after every render and notifies hosts when its `children` reference changes. Children written inline create a new reference on each render of the contributing component, so hosts re-render with it. Wrap larger slot content in `useMemo`, as the [Toolbar layout](toolbar-layout.md) example does, when the contributor re-renders often.
 
 ## Props
 

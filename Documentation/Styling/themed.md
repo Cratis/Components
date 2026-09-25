@@ -41,6 +41,8 @@ Switch schemes by redefining the product values under the product's own selector
 }
 ```
 
+Put that attribute on the document element. The browser resolves `var(--brand-…)` where the `--cratis-*` mapping is declared (`:root`), and descendants inherit the resolved value, so redefining a brand variable on a nested element does not change the Cratis token. To theme a subtree differently, repeat the `--cratis-*` mapping on the subtree's selector as well.
+
 ## Add component-specific treatment
 
 Tokens provide shared semantics. Use stable parts for a distinctive product component:
@@ -51,5 +53,7 @@ Tokens provide shared semantics. Use stable parts for a distinctive product comp
     border-radius: 1rem;
 }
 ```
+
+The `product-dialog` class reaches the dialog root through `pt={{ root: { className: 'product-dialog' } }}` on the `Dialog`.
 
 This is the supported path for deeply customized products. No renderer preset, internal selector, or commercial theme package sits between product tokens and the rendered component.

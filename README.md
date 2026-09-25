@@ -56,23 +56,31 @@ Install the package:
 npm install @cratis/components@^4
 ```
 
-> **Publication status:** This example targets the owner-authorized 4.0.0 npm release. When reading
-> it from repository source before that release, verify availability with
-> `npm view @cratis/components@4.0.0 version`; source contributors use the repository workspace.
+Components 4 needs React 19 and Arc. Its peers are `react` and `react-dom` `^19.0.0`,
+`@cratis/arc` and `@cratis/arc.react` `>=20.3.1 <23`, `@cratis/fundamentals` `^7.10.3`,
+`reflect-metadata` `0.2.2`, and `tsyringe` `4.10.0`; `pixi.js` `^8.20.0` is an optional peer
+needed only by `Canvas` and `PivotViewer`. This repository builds and tests against Arc 22.16.0.
+The package does not depend on PrimeReact; the optional MUI and PrimeReact renderer adapters are
+separate packages.
 
-Import the semantic tokens and component structure. The baseline theme is
-optional:
+Import `reflect-metadata`, the semantic tokens, and the component structure once at the application
+entry point. The baseline theme is optional. Mount Components' provider inside Arc's `<Arc>`
+provider, which supplies the command and query runtime the generated proxies use:
 
 ```tsx
+import 'reflect-metadata';
 import '@cratis/components/tokens';
 import '@cratis/components/styles';
 import '@cratis/components/theme'; // optional baseline appearance
+import { Arc } from '@cratis/arc.react';
 import { CratisComponentsProvider } from '@cratis/components';
 
 export const App = () => (
-    <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
-        <YourApp />
-    </CratisComponentsProvider>
+    <Arc>
+        <CratisComponentsProvider value={{ locale: 'en-US' }} toaster>
+            <YourApp />
+        </CratisComponentsProvider>
+    </Arc>
 );
 ```
 
@@ -84,8 +92,9 @@ configuration.
 few surfaces can import `@cratis/components/styles/base` plus one `<subpath>/styles` entry point per
 surface instead, and download nothing else.
 
-The current package manifest defines the exact React, Arc, Fundamentals, and
-optional Pixi peer ranges. Verify those ranges before installing the package.
+[`Source/package.json`](./Source/package.json) is the authority for the peer ranges above. The
+[getting-started guide](https://cratis.io/components/getting-started/) walks through installation,
+TypeScript setup, and a first command dialog.
 
 ## Current boundaries
 

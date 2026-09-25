@@ -11,15 +11,15 @@ The package shares the Components repository release version while renderer ABI 
 separate protocol version. It is neither an application runtime dependency nor an adapter discovery
 mechanism.
 
-> **Publication status:** The install example targets the owner-authorized 4.0.0 npm release. When
-> reading this README from repository source before that release, verify availability with
-> `npm view @cratis/components.conformance@4.0.0 version`; source contributors use the workspace
-> commands below.
+> **Versions:** each release of `@cratis/components.conformance` is published at the same version as
+> `@cratis/components` and declares a peer on exactly that version. Install it at the version of
+> `@cratis/components` the adapter is tested against.
 
 ## Requirements
 
 - Node.js 23 or newer.
-- `@cratis/components >=4 <5`.
+- `@cratis/components` at the same version as this package (the source manifest declares `>=4 <5`;
+  the release step pins the published peer to the exact release version).
 - React and ReactDOM 19.
 - A DOM test environment. The runner defaults to `globalThis.document`; plain Node without a
   supplied `Document` deliberately fails the `runtime.domAvailable` check.
@@ -36,7 +36,8 @@ npm install --save-dev \
 ## Run it in a DOM test
 
 This Vitest example uses jsdom explicitly and passes its `document` to make the environment
-requirement visible:
+requirement visible. `@example/components-adapter` stands for your adapter package: it exports the
+library manifest and must export its `package.json`.
 
 ```tsx
 // @vitest-environment jsdom

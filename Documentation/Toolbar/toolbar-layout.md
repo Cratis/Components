@@ -1,4 +1,7 @@
-# Toolbar Layout
+---
+title: Toolbar layout
+description: Swap complete toolbar regions from feature code with ToolbarLayout and slots.
+---
 
 `ToolbarLayout` is a named, transparent region inside a `Toolbar` that enables decoupled, dynamically swappable toolbar content. Unlike `ToolbarGroup`, it carries no visual container of its own — the injected content brings its own `ToolbarGroup` pills, `ToolbarSection` context switchers, and `ToolbarSeparator` dividers.
 
@@ -90,10 +93,8 @@ The `children` prop provides default content rendered when no slot content has b
 If the layout region has no meaningful default, omit `children` entirely — `ToolbarLayout` renders nothing when both its slot and its children are empty:
 
 ```tsx
-{
-    /* No fallback — layout is invisible until a feature registers */
-}
-<ToolbarLayout name='mode-tools' />;
+{/* No fallback: the layout is invisible until a feature registers */}
+<ToolbarLayout name='mode-tools' />
 ```
 
 ## Multiple Contributors
@@ -121,7 +122,7 @@ Multiple components can each register a `ToolbarSlot` with the same `slotName`. 
 
 ## Context-Sensitive Layouts
 
-A common pattern is to render a different slot content based on the active application mode. Mount and unmount (or swap the children of) a single `ToolbarSlot` as the mode changes:
+A common pattern is to render a different slot content based on the active application mode. Mount and unmount (or swap the children of) a single `ToolbarSlot` as the mode changes. `DrawingTools`, `TextTools`, and `ShapeTools` stand for your own components that return toolbar groups, and `activeMode` is your own state:
 
 ```tsx
 const modeContent = {

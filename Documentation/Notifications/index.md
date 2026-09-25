@@ -6,6 +6,8 @@ description: App-wide notifications with documented region and dismissal labels 
 Mount one toaster, then dispatch notifications from React components or ordinary modules.
 
 ```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+
 <CratisComponentsProvider toaster>
     <Application />
 </CratisComponentsProvider>
@@ -33,7 +35,44 @@ toast.success({
 - `toast.dismiss(id?)`
 - `toast.promise(promise, states)`
 
+Each call returns the toast's id, which `update` and `dismiss` take. `toast.dismiss()` without an id removes every toast.
+
+Useful `ToastOptions` beyond `title` and `description`:
+
+| Option | Purpose |
+| --- | --- |
+| `severity` | `'success'`, `'info'`, `'warn'`, `'error'`, `'secondary'`, or `'contrast'`; the shorthand methods set it for you |
+| `duration` | Milliseconds before auto-dismiss, overriding the toaster's `timeout`. `0` keeps the toast until it is dismissed. |
+| `dismissible` | The close control is shown unless this is `false` |
+| `loading` | Marks the toast as in progress; a loading toast does not auto-dismiss. `toast.promise` sets it on the pending toast. |
+| `action` | Button attributes for one action button in the toast |
+| `render` | Custom body; see [Custom body](#custom-body) |
+| `id` | Your own id; showing a toast with an existing id replaces that toast |
+| `onDismiss` / `onTimeout` | Called when the toast is dismissed or times out |
+
 The queue is shared across loaded Components copies. `setToastDispatch()` installs an application-owned dispatch and returns a scoped restore callback.
+
+## Toast a command result
+
+`toastCommandResult(result, options?)` turns an Arc command result into the matching toast and returns `true` when the command succeeded:
+
+```tsx
+import { toastCommandResult } from '@cratis/components/Notifications';
+
+const result = await command.execute();
+if (toastCommandResult(result, { successTitle: 'Author registered' })) {
+    close();
+}
+```
+
+| Result | Toast |
+| --- | --- |
+| Success | Success toast titled `successTitle` (default `'Success'`) with optional `successDescription`; skipped when `showSuccess: false` |
+| Not authorized | Warning toast titled `unauthorizedTitle` (default `'Not authorized'`) |
+| Invalid | Error toast titled `validationTitle` (default `'Validation failed'`) listing the validation messages |
+| Exceptions | Error toast titled `exceptionTitle` (default `'Something went wrong'`); exception messages and stack traces are not shown |
+
+It needs a mounted toaster like any other toast. Log `result.exceptionMessages` yourself if you need them.
 
 ## Building a custom rendering surface
 
@@ -94,12 +133,14 @@ Custom content replaces only the body. The frame, severity indicator, timeout, a
 
 | Prop               | Purpose                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------- |
-| `position`         | One of the six viewport edges/corners.                                                            |
-| `limit`            | Maximum visible frames.                                                                           |
-| `timeout`          | Default timeout in milliseconds.                                                                  |
+| `position`         | `'top-left'`, `'top-center'`, `'top-right'` (default), `'bottom-left'`, `'bottom-center'`, or `'bottom-right'`. |
+| `limit`            | Maximum visible frames; the newest are shown. Defaults to `3`.                                    |
+| `timeout`          | Default timeout in milliseconds. Defaults to `6000`; values below `5000` are raised to `5000`.    |
 | `dismissAriaLabel` | Accessible name for close controls. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.notifications.dismiss`, then `'Dismiss'`. |
 | `regionAriaLabel`  | Accessible name for the notification region. Falls back to the provider's `messages.notifications.region`, then `'Notifications'`. |
 | `pt`               | Stable `region`, `toast`, `icon`, `content`, `title`, `description`, `action`, and `close` parts. |
 
 Configure `dismissAriaLabel` / `regionAriaLabel` once for the whole application through
 `CratisComponentsProvider`'s `messages.notifications`, or override either per `<Toaster>` instance.
+
+To pass these props through the provider, give `toaster` an object instead of `true`, for example `<CratisComponentsProvider toaster={{ position: 'bottom-right', limit: 5 }}>`.

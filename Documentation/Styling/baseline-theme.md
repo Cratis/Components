@@ -40,4 +40,4 @@ Both arrangements are supported:
 - `cratis-dark cratis-theme` on the same element
 - `cratis-dark` on an ancestor of `cratis-theme`
 
-Override any `--cratis-*` variable after the theme import to adapt the baseline. For a complete product design, omit the baseline and follow [Build a product theme](themed.md).
+To adapt the baseline, override `--cratis-*` variables after the theme import, under the same selectors the theme uses. A plain `:root` override is not enough here: the theme's dark, explicit-light, and `.cratis-theme` rules are more specific and replace it in those states. [Customize the palette](custom-palette.md) shows the selectors. For a complete product design, omit the baseline and follow [Build a product theme](themed.md).

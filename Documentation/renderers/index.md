@@ -20,11 +20,13 @@ focus, collection, date, and overlay behavior internally.
 
 An optional adapter changes only the renderer slots that it declares:
 
-| Package                           | Current upstream boundary          | Declared coverage              |
-| --------------------------------- | ---------------------------------- | ------------------------------ |
-| `@cratis/components.mui`          | MUI 9 and Emotion 11               | Nine stable presentation slots |
-| `@cratis/components.primereact`   | PrimeReact 11 and PrimeUX themes 3 | Nine stable presentation slots |
-| `@cratis/components.primereact10` | PrimeReact `>=10.9.9 <11`          | Nine stable presentation slots |
+| Package                           | Vendor peers                                                                                        | Declared coverage              |
+| --------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `@cratis/components.mui`          | `@mui/material >=9 <10`, `@emotion/react >=11.5 <12`, `@emotion/styled >=11.11 <12`                 | Nine stable presentation slots |
+| `@cratis/components.primereact`   | `primereact`, `@primereact/core`, `@primereact/ui` `>=11 <12`; `@primeuix/themes >=3 <4`            | Nine stable presentation slots |
+| `@cratis/components.primereact10` | `primereact >=10.9.9 <11`                                                                           | Nine stable presentation slots |
+
+Every adapter also has React and ReactDOM 19 as peers. Each published adapter release declares a peer on exactly its own version of `@cratis/components` (for example, `@cratis/components.mui@4.14.0` requires `@cratis/components@4.14.0`), so install and upgrade the adapter and `@cratis/components` together at the same version. PrimeReact is a peer of the two PrimeReact adapters only; `@cratis/components` itself depends on no PrimeReact package.
 
 All three adapters publish stable `CratisPresentationUiLibrary` manifests for renderer ABI version 1. They do not replace DataPage, DataTables, CommandDialog, CommandForm, Toolbar, Canvas, or another Components-owned composition. The [primitive adaptation reference](primitive-adaptation.md) lists the exact nine-slot profile. Stable profile selection means nine-slot primitive adaptation, never full-catalog replacement.
 
@@ -40,6 +42,31 @@ graph TD
 
 The application-owned vendor surface is a sibling, not a hidden replacement for the Components
 composite.
+
+## Select an adapter
+
+Pass the adapter's manifest to `library` on `CratisComponentsProvider`:
+
+```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+import { muiUiLibrary } from '@cratis/components.mui';
+
+export const Application = () => (
+    <CratisComponentsProvider value={{ locale: 'en-US' }} library={muiUiLibrary}>
+        <main>Application content</main>
+    </CratisComponentsProvider>
+);
+```
+
+Each adapter then needs its own vendor setup around or beside that provider:
+
+| Adapter                           | Manifest                | Application setup                                                                                                                                                                                                     |
+| --------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@cratis/components.mui`          | `muiUiLibrary`          | Optional outer MUI `ThemeProvider`; the adapter reuses it, or MUI's default theme, as a CSS-variable theme. For server rendering, a request-local Emotion `CacheProvider` outside the Components provider.            |
+| `@cratis/components.primereact`   | `primeReactUiLibrary`   | Required outer `PrimeReactProvider` from `@primereact/core/config` with the application's license key and theme, plus `rendererSetup` with `'cratis-primereact.license-configured'` set to `true` only when the key was supplied; see the [licensing policy](licensing.md#primereact-11-key-ownership). |
+| `@cratis/components.primereact10` | `primeReact10UiLibrary` | One PrimeReact 10 theme stylesheet (for example `primereact/resources/themes/lara-light-cyan/theme.css`). An outer `PrimeReactProvider` from `primereact/api` is optional; the adapter mounts a default one when none exists. |
+
+The renderer changes only the declared slots. Command and query components still need Arc's `<Arc>` provider from `@cratis/arc.react` around the application; an adapter does not replace it.
 
 ## Direct vendor coexistence
 
@@ -62,7 +89,7 @@ credential, license key, cache, provider instance, or mutable configuration obje
 
 PrimeReact 11 demonstrates the boundary: the application passes its key directly to its own outer
 PrimeReact provider, then gives Components only a non-secret boolean assertion that setup occurred.
-The adapter fails closed when the provider or assertion is absent. The [licensing policy](licensing.md)
+The adapter fails closed with `CRATIS-UI-1005` when the provider or assertion is absent. The [licensing policy](licensing.md)
 explains this boundary without making a licensing conclusion for an application.
 
 ## Portals and z-index

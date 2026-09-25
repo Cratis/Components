@@ -38,15 +38,18 @@ layer and the same order, so importing both is redundant rather than wrong.
 Tailwind-generated utilities every component's markup uses, and the `@layer cratis-theme,
 cratis-components, cratis-utilities` statement that fixes cascade order. It is deliberately not
 copied into each area sheet — that would duplicate it once per surface and let two sheets disagree
-about layer order. Without it, components render unstyled. The aggregate already contains it, so an
-application using `@cratis/components/styles` must not import it as well.
+about layer order. Without it, components lose the utility rules their markup relies on and the
+Cratis layer order is left to whichever sheet happens to load first. The aggregate already contains
+it, so an application using `@cratis/components/styles` must not import it as well.
 
 **Each `<subpath>/styles` is self-contained for that subpath.** An area sheet contains the rules of
 every Components directory that subpath actually reaches, not just its own folder, because the split
 is derived from the built module graph rather than from a maintained list. `PivotViewer` renders a
 `FilterPanel`, so `@cratis/components/PivotViewer/styles` contains `Filter`'s rules too;
 `@cratis/components/DataPage/styles` contains the vendored Allotment split-view rules. There is never
-a second import to remember.
+a second import to remember. Each published sheet names its areas in its first comment
+(`/* @cratis/components/Dialogs/styles — … Areas: Dialogs, Display, Notifications. */`), so you can
+check what an entry point carries in the installed package.
 
 ## Entry points
 
@@ -62,11 +65,11 @@ a second import to remember.
 | `@cratis/components/Common/styles` | Common, Notifications |
 | `@cratis/components/DataPage/styles` | Common, DataPage (Allotment), DataTables, Dropdown, Notifications |
 | `@cratis/components/DataTables/styles` | Common, DataTables, Dropdown, Notifications |
-| `@cratis/components/Dialogs/styles` | Common, Dialogs, Display, Notifications |
+| `@cratis/components/Dialogs/styles` | Dialogs, Display, Notifications |
 | `@cratis/components/Display/styles` | Common, Display |
 | `@cratis/components/Dropdown/styles` | Common, Dropdown, Notifications |
 | `@cratis/components/Filter/styles` | Filter |
-| `@cratis/components/Notifications/styles` | Common, Notifications |
+| `@cratis/components/Notifications/styles` | Notifications |
 | `@cratis/components/ObjectContentEditor/styles` | Common, Notifications, ObjectNavigationalBar |
 | `@cratis/components/ObjectNavigationalBar/styles` | Common, ObjectNavigationalBar |
 | `@cratis/components/PivotViewer/styles` | Filter, PivotViewer |
@@ -77,12 +80,12 @@ a second import to remember.
 
 ## What it saves
 
-Indicative gzip transfer at the time of writing, against roughly 32 KiB for the aggregate: about
-2 KiB for the shared base, 6.4 KiB for `Dialogs`, 6.1 KiB for `DataTables`, 6.7 KiB for
-`PivotViewer`, 4.3 KiB for `TimeMachine`, 2.7 KiB for `Filter`. An application that mounts dialogs
-and data tables transfers roughly a third of the aggregate. Exact sizes move with the components;
-each entry point has its own reviewed ceiling in the published-archive gate, so none of them can
-grow unnoticed.
+Indicative gzip transfer measured on the published 4.14.0 package, against roughly 32 KiB for the
+aggregate: about 2 KiB for the shared base, 2.9 KiB for `Dialogs`, 6.3 KiB for `DataTables`,
+6.7 KiB for `PivotViewer`, 4.4 KiB for `TimeMachine`, 2.7 KiB for `Filter`. An application that
+mounts dialogs and data tables transfers roughly a third of the aggregate. Exact sizes move with the
+components; each entry point has its own reviewed ceiling in the published-archive gate, so none of
+them can grow unnoticed.
 
 ## Cascade and ordering
 

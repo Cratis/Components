@@ -1,6 +1,11 @@
-# Topics and naming
+---
+title: Topics and naming
+description: Start topics, order them, and name them from the host after the first message.
+---
 
 A chat is a set of topics — separate conversations, most recently active first. This page covers the topic lifecycle: what a topic is to the components, how one is started, and how a new topic gets its name from the host.
+
+In the excerpts below, `sidebarProps` stands for the required `ChatSidebar` props (`open`, `onClose`, `topics`, `messages`, `onSendMessage`) shown in the [basic usage](./index.md#basic-usage).
 
 ## The topic interface
 
@@ -22,8 +27,10 @@ The list orders topics by `lastActivity` (falling back to `started`) itself — 
 `onStartTopic` raises the intent; creating the topic is the application's business. Answer with the new topic's id — directly or through a promise — and the sidebar opens it, ready for the first message:
 
 ```tsx
+import { Guid } from '@cratis/fundamentals';
+
 <ChatSidebar
-    ...
+    {...sidebarProps}
     onStartTopic={async () => {
         const topicId = Guid.create();
         await createTopic(topicId);        // your command, your storage
@@ -40,11 +47,13 @@ A topic is not named by the components — it is named by the host, typically by
 
 1. A topic without a usable `name` counts as **unnamed**. It renders a placeholder (`New topic`, overridable through labels) in a pending style — in the topics list and as the conversation's title.
 2. When the **first** message is sent in an unnamed topic, the sidebar invokes `onRequestTopicName(topic, firstMessageBody)` — once. It is not invoked again for later messages, and never for a topic that already has a name.
+
+   "First" is decided from your data at send time: the sidebar asks when the open topic is in `topics`, is unnamed, and has no messages in `messages` yet. If a second message is sent before your data delivers the first one, the sidebar asks again, and if a newly started topic has not reached `topics` yet, it does not ask at all. Make the naming handler safe to call twice, and deliver a started topic before its first message is likely to be sent.
 3. The host produces a name however it likes and supplies it **through the topic data**. When the updated topic arrives (the next query push, the next render), the placeholder simply stops being needed.
 
 ```tsx
 <ChatSidebar
-    ...
+    {...sidebarProps}
     onRequestTopicName={async (topic, firstMessage) => {
         const name = await askLlmForTopicName(firstMessage);   // your model, your prompt
         await renameTopic(topic.id, name);                     // your command — flows back in via the data
@@ -58,7 +67,7 @@ The default rule is "no name, or only whitespace". A backend that stores a liter
 
 ```tsx
 <ChatSidebar
-    ...
+    {...sidebarProps}
     isTopicUnnamed={topic => topic.name === 'New topic'}
     labels={{ unnamedTopic: 'Naming…' }}
 />

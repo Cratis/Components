@@ -1,4 +1,7 @@
-# Context Switching
+---
+title: Context switching
+description: Swap between named sets of tools with an animated ToolbarSection.
+---
 
 `ToolbarSection` and `ToolbarContext` enable smooth animated transitions between different sets of tools. When `activeContext` changes, the current buttons fade out, the section morphs to the new size, then the new buttons fade in.
 
@@ -27,3 +30,5 @@ function ContextualToolbar() {
 ```
 
 Only the section transitions — buttons outside the section are unaffected.
+
+`activeContext` names the `ToolbarContext` to show; when it is omitted, the first context is active. A value that matches no context shows none of them. Inactive contexts stay mounted but are `inert` and `aria-hidden`, so their tools leave the Tab order and their tooltips are disabled. Inside a horizontal toolbar, pass `orientation='horizontal'` to `ToolbarSection` as well; it defaults to `vertical`. Under `prefers-reduced-motion: reduce` the stylesheet turns off the fade and resize transitions.

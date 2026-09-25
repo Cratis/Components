@@ -80,7 +80,7 @@ Properties are displayed in a table:
 | Property  | Type      |
 | --------- | --------- |
 | name      | string    |
-| email     | email     |
+| id        | guid      |
 | age       | number    |
 | createdAt | date-time |
 

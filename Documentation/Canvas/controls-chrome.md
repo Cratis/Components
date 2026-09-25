@@ -1,27 +1,40 @@
-# Controls Chrome
+---
+title: Canvas controls chrome
+description: Localize the Canvas zoom controls and render your own glass surface behind them.
+---
 
-`Canvas` renders its own `CanvasControls` instance when `showControls` is true (the default) — you don't normally render `CanvasControls` yourself. Two of its props are still worth knowing about, since `Canvas` forwards neither of them and a consumer who needs them renders `CanvasControls` directly instead.
+`Canvas` renders its own `CanvasControls` instance when `showControls` is true (the default), and it forwards every control option through its own props. You do not need to render `CanvasControls` yourself to localize or restyle the integrated controls.
+
+| `Canvas` prop           | Forwarded to `CanvasControls` as |
+| ----------------------- | -------------------------------- |
+| `controlsGlassSurface`  | `glassSurface`                   |
+| `disableControlsGlass`  | `disableGlass`                   |
+| `controlsLabels`        | `labels`                         |
+| `helpTitle`             | `helpTitle`                      |
+| `onHelp`                | `onHelp`                         |
+| `controlsPlacement`     | `placement`                      |
+| `showMinimap`           | `showMinimapToggle`              |
+| `captureAttributes.content` | `contentCaptureAttribute`    |
+
+`Canvas` also wires `getZoom`, `onZoomIn`, `onZoomOut`, `onZoomReset`, `minimapItems`, the minimap world size, and `onMinimapPan` for you. Render `CanvasControls` directly only when you compose the controls outside a `Canvas`; then you supply those callbacks yourself.
 
 ## `glassSurface` — custom chrome behind the pill
 
 ```tsx
-<CanvasControls
-    getZoom={() => 1}
-    onZoomIn={() => {}}
-    onZoomOut={() => {}}
-    onZoomReset={() => {}}
-    glassSurface={<MyFrostedGlassSurface cornerRadius={999} />}
+<Canvas
+    style={{ width: '100%', height: 480 }}
+    controlsGlassSurface={<MyFrostedGlassSurface cornerRadius={999} />}
 />
 ```
 
-`glassSurface` lets a consumer supply their own glass/acrylic surface to render behind the control bar — the spot a "frosted glass" component from a design system would occupy. When omitted, nothing extra is rendered there and the control bar falls back to its own plain CSS: a GPU-composited `backdrop-filter` pill (`.canvas-controls-glass`), no extra dependency required. `glassSurface` is ignored entirely when `disableGlass` is set.
+`MyFrostedGlassSurface` stands for your own component, for example a frosted-glass surface from your design system. When you omit `controlsGlassSurface`, nothing extra is rendered and the control bar uses its own CSS: a GPU-composited `backdrop-filter` pill (`.canvas-controls-glass--plain`), with no extra dependency. Setting `disableControlsGlass` forces that CSS pill and ignores `controlsGlassSurface`. Use it on large boards where a full-scene glass capture would re-rasterize the content behind the controls on every interaction frame.
 
 ## `labels` — localizing the button text
 
-Every button in the control bar has an English default tooltip. Override any subset of them with `labels`:
+Every button in the control bar has an English default used as its tooltip and accessible name: `Toggle minimap`, `Zoom Out`, `Reset Zoom`, `Zoom In`, and `Help`. Override any subset with `controlsLabels`:
 
 ```tsx
-import type { CanvasControlsLabels } from '@cratis/components/Canvas';
+import { Canvas, type CanvasControlsLabels } from '@cratis/components/Canvas';
 
 const labels: CanvasControlsLabels = {
     toggleMinimap: 'Vis minikart',
@@ -31,15 +44,9 @@ const labels: CanvasControlsLabels = {
     help: 'Hjelp',
 };
 
-<CanvasControls
-    getZoom={() => 1}
-    onZoomIn={() => {}}
-    onZoomOut={() => {}}
-    onZoomReset={() => {}}
-    labels={labels}
-/>
+<Canvas showMinimap controlsLabels={labels} onHelp={() => console.log('help')} />;
 ```
 
-Fields left unset keep their literal English default — this library ships no i18n mechanism of its own, so a consumer that localizes passes translated strings through `labels` (or through `Canvas`'s own `helpTitle` prop for the help button's tooltip specifically, which takes priority over `labels.help`).
+Fields left unset keep their literal English default. Components ships no i18n mechanism of its own, so a localized application passes translated strings through `controlsLabels`. For the help button, `helpTitle` takes priority over `labels.help`. The help button renders only when `onHelp` is set, and the minimap toggle only when `showMinimap` is true.
 
-Every other `CanvasControls` prop (`getZoom`, `onZoomIn`/`onZoomOut`/`onZoomReset`, `showMinimapToggle`, `minimapItems`, `onMinimapPan`, `placement`, `onHelp`, `disableGlass`) is wired up automatically when you use `Canvas`'s own `showControls`/`showMinimap`/`controlsPlacement`/`onHelp`/`helpTitle`/`disableControlsGlass` props — see [Pan & Zoom](pan-and-zoom.md).
+See [Pan and zoom](pan-and-zoom.md#controls-and-minimap) for placement and minimap options.

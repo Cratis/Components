@@ -23,7 +23,9 @@ import { ActionMenubar } from '@cratis/components/Common';
 />;
 ```
 
-The root is a `div` with `role='toolbar'` and `data-cratis-part='root'`. Pass `aria-label` to set the toolbar's accessible name.
+The root is a `div` with `role='toolbar'` and `data-cratis-part='root'`. Pass `aria-label` to set the toolbar's accessible name; there is no default.
+
+Each action renders as a native ghost `Button`. Every action is its own Tab stop: `ActionMenubar` does not add arrow-key navigation between actions. An item's visible `label` is also its accessible name, and `ActionMenuItem` has no separate `aria-label`, so give every item a `label` or use `template` for an icon-only action that names itself.
 
 ## `ActionMenuItem`
 

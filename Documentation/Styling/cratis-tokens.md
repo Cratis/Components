@@ -55,6 +55,18 @@ The `--cratis-*` variables are the supported theming boundary. The `tokens` entr
 | `--cratis-shadow-dialog`                        | Dialog elevation.                                                   |
 | `--cratis-shadow-toast`                         | Toast elevation.                                                    |
 
+## Component tokens
+
+A few tokens tune one component. The first three have defaults in `tokens`; the last two are not defined anywhere, and the component falls back to the listed value until you set them.
+
+| Token                                         | Default                              | Surface                                                    |
+| --------------------------------------------- | ------------------------------------ | ---------------------------------------------------------- |
+| `--cratis-number-input-adornment-color`       | `var(--cratis-text-color-secondary)` | NumberInput prefix and suffix text.                        |
+| `--cratis-number-input-step-background`       | `var(--cratis-surface-100)`          | NumberInput step buttons.                                  |
+| `--cratis-number-input-step-background-hover` | `var(--cratis-surface-hover)`        | Hovered NumberInput step button.                           |
+| `--cratis-shadow-card`                        | `none` (fallback)                    | Selected ToggleGroup option.                               |
+| `--cratis-filter-option-list-max-height`      | `14rem` (fallback)                   | `CheckboxListFilter` option list (Filter and PivotViewer). |
+
 ## Overlay stacking
 
 | Token                      | Default | Surface                           |
@@ -101,6 +113,8 @@ These tokens coordinate Components only. Configure direct Prime or product overl
     --cratis-focus-ring: var(--product-focus-ring);
 }
 ```
+
+This mapping assumes the product omits `@cratis/components/theme`. With the baseline theme imported, its scheme selectors are more specific than `:root`; see [Customize the palette](custom-palette.md) for selectors that win there.
 
 The token layer has renderer-independent baseline values and does not read legacy `--surface-*`, `--text-color`, `--primary-color`, or `--p-*` names. Import `@cratis/components/tokens` first, then assign product values to `--cratis-*` directly. This keeps product theming independent of any renderer token vocabulary.
 

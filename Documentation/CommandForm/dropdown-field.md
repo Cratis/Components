@@ -1,8 +1,13 @@
-# DropdownField
+---
+title: DropdownField
+description: Bind a string or number property on an Arc command to a single-select dropdown.
+---
 
 `DropdownField` renders the renderer-independent Cratis [`Dropdown`](../Dropdown/index.md) for choosing one value from a list.
 
 ## Usage
+
+The excerpt assumes `MyCommand` is a generated command proxy with the bound properties, and `visible` / `setVisible` is component state.
 
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
@@ -13,9 +18,16 @@ const statusOptions = [
     { label: 'Inactive', value: 'inactive' },
 ];
 
-<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
+<CommandDialog<MyCommand>
+    command={MyCommand}
+    title='Edit status'
+    visible={visible}
+    onSuccess={() => setVisible(false)}
+    onCancel={() => setVisible(false)}
+>
     <DropdownField<MyCommand>
         value={(c) => c.status}
+        title='Status'
         options={statusOptions}
         optionLabel='label'
         optionValue='value'
@@ -34,6 +46,7 @@ const roles = [
 
 <DropdownField<MyCommand>
     value={(c) => c.role}
+    title='Role'
     options={roles}
     optionLabel='display'
     optionValue='id'
@@ -55,8 +68,10 @@ const roles = [
 
 `DropdownField` deliberately does not surface `multiple`, `filter` or `showClear` — use [`MultiSelectField`](multi-select-field.md) for multi-select, or the [`Dropdown`](../Dropdown/index.md) wrapper directly outside a command form.
 
+Every field also accepts Arc's shared field props, such as `title`, `description`, `initialValue`, and `noInitialValue`, and the accessibility props `id`, `aria-label`, and `aria-describedby`. See [Accessible names and validation errors](index.md#accessible-names-and-validation-errors).
+
 ## Behavior
 
-- Default value is an empty string.
+- Shows an empty string while the bound property is unset. See [Field defaults and command values](index.md#field-defaults-and-command-values).
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.

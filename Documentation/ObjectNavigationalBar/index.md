@@ -22,28 +22,23 @@ ObjectNavigationalBar displays the current navigation path and allows users to j
 
 ## Quick Start
 
-```typescript
+```tsx
+import { useState } from 'react';
 import { ObjectNavigationalBar } from '@cratis/components/ObjectNavigationalBar';
 
-function MyNavigator() {
+export function MyNavigator() {
     const [path, setPath] = useState<string[]>(['profile', 'address']);
-
-    const handleNavigate = (index: number) => {
-        if (index === 0) {
-            setPath([]);  // Navigate to root
-        } else {
-            setPath(path.slice(0, index));  // Navigate to specific level
-        }
-    };
 
     return (
         <ObjectNavigationalBar
             navigationPath={path}
-            onNavigate={handleNavigate}
+            onNavigate={(index) => setPath(path.slice(0, index))}
         />
     );
 }
 ```
+
+The bar shows `Root > profile > address` with a back button. `path.slice(0, index)` covers every case: `0` returns to the root, and the index of the current segment leaves the path unchanged.
 
 ## Props
 
@@ -51,6 +46,13 @@ function MyNavigator() {
 
 - `navigationPath`: Array of strings representing the current path. `[]` is the root, `['profile']` is one level deep, and `['profile', 'address', 'city']` is three levels deep.
 - `onNavigate`: Callback invoked for a breadcrumb or back-button activation. It receives the destination index (`0` means root).
+
+### Optional Props
+
+- `backLabel`: Tooltip and accessible name of the back button. Defaults to `'Navigate back'`; override it to localize.
+- `className`: Extra class names on the root, which always has the `cratis-object-navigational-bar` class.
+
+The "Root" label and the `>` separators are fixed English text; there is no prop to change them.
 
 ## Visual Display
 
@@ -87,86 +89,72 @@ The back arrow button `[←]`:
 Each segment in the path:
 
 - Root is always shown
-- Intermediate segments are clickable and underlined
-- Current segment (last) is not underlined
+- Every segment, including Root and the current one, is a button
+- Segments before the current one are underlined; the current segment is not, and carries `aria-current='location'`
 - Click calls `onNavigate` with segment's index
+- A segment made only of digits is shown as an array index in brackets: `'0'` is shown as `[0]`
 
 ### Index Mapping
 
-```typescript
+```text
 navigationPath = ['profile', 'address', 'city']
 
-// Breadcrumb display:
-Root (index: 0)
-profile (index: 1)
-address (index: 2)
-city (index: 3)  ← current location
+Breadcrumb display:
+Root     (index: 0)
+profile  (index: 1)
+address  (index: 2)
+city     (index: 3)  ← current location
 ```
 
 ## Complete Example
 
-```typescript
-import { ObjectNavigationalBar } from '@cratis/components/ObjectNavigationalBar';
+```tsx
 import { useState } from 'react';
+import { ObjectNavigationalBar } from '@cratis/components/ObjectNavigationalBar';
 
-interface DataNode {
-    [key: string]: unknown;
-}
+type DataNode = { [key: string]: DataNode };
 
-function FileSystemNavigator() {
+const tree: DataNode = {
+    documents: {
+        work: { reports: {} },
+        personal: {},
+    },
+    photos: {},
+};
+
+export function FolderNavigator() {
     const [navigationPath, setNavigationPath] = useState<string[]>([]);
 
-    const data: DataNode = {
-        documents: {
-            work: {
-                reports: {
-                    '2024': { /* ... */ }
-                }
-            },
-            personal: { /* ... */ }
-        },
-        photos: { /* ... */ }
-    };
-
-    const handleNavigate = (index: number) => {
-        if (index === 0) {
-            // Navigate to root
-            setNavigationPath([]);
-        } else {
-            // Navigate to specific level
-            setNavigationPath(navigationPath.slice(0, index));
-        }
-    };
-
-    const navigateInto = (key: string) => {
-        setNavigationPath([...navigationPath, key]);
-    };
-
-    // Get current data at path
-    let currentData: DataNode = data;
+    let current: DataNode = tree;
     for (const segment of navigationPath) {
-        currentData = currentData[segment] as DataNode;
+        current = current[segment];
     }
 
     return (
         <div>
             <ObjectNavigationalBar
                 navigationPath={navigationPath}
-                onNavigate={handleNavigate}
+                onNavigate={(index) => setNavigationPath(navigationPath.slice(0, index))}
+                backLabel='Up one level'
             />
-
-            <div>
-                <h3>Current Location Contents:</h3>
-                {Object.keys(currentData).map(key => (
-                    <button key={key} onClick={() => navigateInto(key)}>
-                        {key}
-                    </button>
+            <ul>
+                {Object.keys(current).map((key) => (
+                    <li key={key}>
+                        <button
+                            type='button'
+                            onClick={() => setNavigationPath([...navigationPath, key])}
+                        >
+                            {key}
+                        </button>
+                    </li>
                 ))}
-            </div>
+            </ul>
         </div>
     );
 }
 ```
+
+The host owns both the path and the data: the bar only reports where the user wants to go.
 
 ## Example Scenarios
 
@@ -196,21 +184,17 @@ onNavigate(navigationPath.length - 1); // Back button
 
 ## Styling
 
-The component uses Cratis tokens and stable parts:
+The root has the `cratis-object-navigational-bar` class and a bottom border in `--cratis-surface-border`. The breadcrumb text uses `--cratis-text-color-secondary`, and the back button is a small ghost `Button` from Common.
 
-- Border at bottom
-- Surface border color
-- Text color for secondary content
-- Button styling for back arrow
-- Spacing and padding
-
-Customize via CSS:
+Customize it through the tokens, or target the root class or your own `className` in product CSS:
 
 ```css
-.px-4.py-2.mb-2.border-bottom-1 {
-    /* Override container styles */
+.cratis-object-navigational-bar {
+    border-bottom-color: var(--cratis-primary-color);
 }
 ```
+
+Load its CSS through `@cratis/components/styles` or `@cratis/components/ObjectNavigationalBar/styles`.
 
 ## Use Cases
 
@@ -225,9 +209,10 @@ Customize via CSS:
 
 Commonly used with:
 
-- **ObjectContentEditor**: Provides navigation for the editor
-- **SchemaEditor**: Navigate schema hierarchies
+- **ObjectContentEditor**: renders an `ObjectNavigationalBar` internally for its own nested navigation
 - **Custom data viewers**: Any hierarchical data display
+
+SchemaEditor has its own breadcrumb and does not use this component.
 
 ## Best Practices
 

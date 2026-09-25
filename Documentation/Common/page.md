@@ -1,110 +1,114 @@
-# Page
+---
+title: Page
+description: Give a routed view a full-height column layout with an optional visible title.
+---
 
-Layout component for creating consistent page structures.
+`Page` is a layout primitive for the root of a routed view. It renders a flex column that fills its parent's height, an optional level-1 heading, and a `<main>` element that takes the remaining space and clips overflow.
 
 ## Purpose
 
-The Page component provides a consistent layout structure with a title and content area.
+Use `Page` when every view in an application should share the same outer structure: a column that fills the available height, with the content region below an optional title.
 
 ## Key Features
 
-- Consistent page header styling
-- Flexible content area
-- Optional panel styling
-- Responsive layout
-- Tailwind CSS integration
+- Full-height flex column layout
+- Optional visible `h1` title
+- A `<main>` content region that grows to fill the remaining space
+- Standard `div` attributes forwarded to the root element
 
 ## Basic Usage
 
-```typescript
+```tsx
 import { Page } from '@cratis/components/Common';
 
-function MyPage() {
-    return (
-        <Page title="My Page">
-            <div>Page content goes here</div>
-        </Page>
-    );
-}
+export const AuthorsPage = () => (
+    <Page title='Authors'>
+        <p>Page content goes here</p>
+    </Page>
+);
 ```
 
 ## Showing the Title
 
-By default the title is not rendered. Pass `showTitle` to opt in:
+By default the title is not rendered. Pass `showTitle` to render it as an `h1` above the content:
 
-```typescript
-<Page title="My Page" showTitle>
-    <div>Page content goes here</div>
+```tsx
+<Page title='Authors' showTitle>
+    <p>Page content goes here</p>
 </Page>
 ```
 
+When `showTitle` is `false`, `title` is not written to the DOM at all: it does not set `document.title`, an `aria-label`, or any other attribute. Set the browser tab title and any hidden heading yourself.
+
 ## With Panel Styling
 
-```typescript
-<Page title="Dashboard" panel>
-    <div>Content with panel background</div>
+`panel` adds a bare `panel` class to the `<main>` element. The Components stylesheets ship no rule for that class, so it has no visible effect until your own CSS defines `.panel`:
+
+```tsx
+<Page title='Dashboard' panel>
+    <p>Content inside the main region</p>
 </Page>
 ```
 
 ## Props
 
-- `title`: Page title string (always required, used e.g. for accessibility or document title even when not visible)
-- `showTitle`: Render the title as a visible heading (default: `false`)
-- `panel`: Apply panel styling to content area (default: `false`)
-- `children`: Page content
-- All standard HTML div attributes (`className`, `style`, etc.)
+| Prop         | Type                             | Default  | Description                                                                                  |
+| ------------ | -------------------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `title`      | `string`                         | Required | Page title. Rendered only when `showTitle` is `true`.                                        |
+| `showTitle`  | `boolean`                        | `false`  | Renders `title` as an `h1` above the content.                                                |
+| `panel`      | `boolean`                        | `false`  | Adds a `panel` class to `<main>`. No styling for it ships with Components.                   |
+| `children`   | `ReactNode`                      | —        | Page content, rendered inside `<main>`.                                                      |
+| other props  | `HTMLAttributes<HTMLDivElement>` | —        | Forwarded to the root `div` (`id`, `style`, `aria-*`, `data-*`, event handlers, `className`). |
+
+:::caution[Passing `className` replaces the layout classes]
+The root's layout classes are set before the forwarded attributes, so a `className` you pass replaces them instead of being appended. The root then loses its flex column and full height. Use `style`, a `data-*` attribute, or a wrapping element to style the page, or reproduce the layout (`display: flex`, `flex-direction: column`, `flex: 1`, `height: 100%`) in your own class.
+:::
 
 ## Layout
 
-The Page component uses Flexbox for layout:
+- The root is a flex column that fills its parent's height (`height: 100%`, `flex: 1`).
+- The optional `h1` sits at the top.
+- `<main>` fills the remaining space as a flex column and hides overflow. Put a scrolling element inside it when the content can be taller than the view.
 
-- Full height container
-- Large heading (h1) at the top
-- Flexible content area that fills remaining space
-- Overflow handling for scrollable content
+`Page` renders a `<main>` landmark. Use one `Page` per view, and do not put it inside another `<main>` element, because a document should have only one visible `main` landmark.
 
 ## Examples
 
 ### Simple Page
 
-```typescript
-<Page title="Users">
+```tsx
+<Page title='Users' showTitle>
     <UserList />
 </Page>
 ```
 
 ### Page with Multiple Sections
 
-```typescript
-<Page title="Dashboard" panel>
-    <div className="grid grid-cols-3 gap-4">
-        <StatCard title="Users" value={totalUsers} />
-        <StatCard title="Orders" value={totalOrders} />
-        <StatCard title="Revenue" value={totalRevenue} />
-    </div>
-    
-    <div className="mt-4">
+The content is yours to lay out. Components ships no utility classes, so use your own CSS or inline styles:
+
+```tsx
+<Page title='Dashboard' showTitle>
+    <section aria-label='Totals' style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+        <StatCard title='Users' value={totalUsers} />
+        <StatCard title='Orders' value={totalOrders} />
+        <StatCard title='Revenue' value={totalRevenue} />
+    </section>
+    <section aria-label='Recent activity' style={{ marginTop: '1rem', overflow: 'auto' }}>
         <RecentActivity />
-    </div>
+    </section>
 </Page>
 ```
 
+`StatCard` and `RecentActivity` stand for your own components.
+
 ### Page with Custom Styling
 
-```typescript
-<Page 
-    title="Reports" 
-    className="custom-page"
-    style={{ backgroundColor: '#f5f5f5' }}
->
+```tsx
+<Page title='Reports' data-view='reports' style={{ backgroundColor: 'var(--cratis-surface-ground)' }}>
     <ReportViewer />
 </Page>
 ```
 
 ## Integration
 
-Works with:
-
-- Tailwind CSS for styling
-- React Router for navigation
-- Any content components
+`Page` has no routing or data dependencies. Render it as the element of a route in any router, and put any Components or product-owned content inside it.

@@ -1,16 +1,27 @@
-# TextAreaField
+---
+title: TextAreaField
+description: Bind a string property on an Arc command to a native multi-line input.
+---
 
 `TextAreaField` renders a Cratis-owned native multi-line input.
 
 ## Usage
 
+The excerpt assumes `MyCommand` is a generated command proxy with the bound properties, and `visible` / `setVisible` is component state.
+
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
 import { TextAreaField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
-    <TextAreaField<MyCommand> value={c => c.description} placeholder="Enter a description" rows={4} />
-    <TextAreaField<MyCommand> value={c => c.notes} rows={3} />
+<CommandDialog<MyCommand>
+    command={MyCommand}
+    title='Edit description'
+    visible={visible}
+    onSuccess={() => setVisible(false)}
+    onCancel={() => setVisible(false)}
+>
+    <TextAreaField<MyCommand> value={c => c.description} title="Description" placeholder="Enter a description" rows={4} />
+    <TextAreaField<MyCommand> value={c => c.notes} title="Notes" rows={3} />
 </CommandDialog>
 ```
 
@@ -23,8 +34,10 @@ import { TextAreaField } from '@cratis/components/CommandForm';
 | `rows` | `number` | `5` | Number of visible text rows. |
 | `cols` | `number` | — | Number of visible text columns. |
 
+Every field also accepts Arc's shared field props, such as `title`, `description`, `initialValue`, and `noInitialValue`, and the accessibility props `id`, `aria-label`, and `aria-describedby`. See [Accessible names and validation errors](index.md#accessible-names-and-validation-errors).
+
 ## Behavior
 
-- Default value is an empty string.
+- Shows an empty string while the bound property is unset. See [Field defaults and command values](index.md#field-defaults-and-command-values).
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.

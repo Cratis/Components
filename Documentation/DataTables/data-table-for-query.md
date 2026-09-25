@@ -1,86 +1,164 @@
-# DataTableForQuery
+---
+title: DataTableForQuery
+description: Show a paged Arc snapshot query in a table with selection, sorting, and filtering of the loaded page.
+---
 
-Displays data from standard queries with pagination and filtering support.
+`DataTableForQuery` displays the result of a generated Arc snapshot query (`IQueryFor`) in a paged table.
 
 ## Purpose
 
-DataTableForQuery provides a data table specifically designed for `IQueryFor` queries with server-side pagination.
+DataTableForQuery runs an `IQueryFor` query with server-side paging and renders the current page through the semantic Cratis table. Use it on its own, or let [DataPage](../DataPage/index.md) render it for you together with an action toolbar and a details pane.
 
 ## Key Features
 
-- Server-side pagination
-- Lazy loading
-- Single row selection
-- Global filtering
+- Server-side pagination, 20 rows per page
+- Single or multiple row selection
+- Sorting, column filters, and a global search box, all applied to the loaded page
 - Custom column templates
-- Client-side filtering option
+- Empty-state message
+
+## Prerequisites
+
+- `<Arc>` from `@cratis/arc.react` rendered around your app. The table runs the query through Arc's React hooks.
+- A generated Arc query proxy that derives from `QueryFor`. For an `ObservableQueryFor` proxy, use [DataTableForObservableQuery](data-table-for-observable-query.md).
+- A parent with a definite height if you want the rows to scroll inside the table. The table fills `100%` of its parent's height.
 
 ## Basic Usage
 
-```typescript
-import { DataTableForQuery } from '@cratis/components/DataTables';
-import { Column } from '@cratis/components/DataTables';
-import { MyQuery } from './queries';
+```tsx
+import { DataTableForQuery, Column } from '@cratis/components/DataTables';
+import { AllProducts, type Product } from './Product'; // generated Arc query proxy and read model
 
-function MyTable() {
+export function Products() {
     return (
-        <DataTableForQuery
-            query={MyQuery}
-            emptyMessage="No data available"
-            dataKey="id"
-        >
-            <Column field="name" header="Name" sortable />
-            <Column field="email" header="Email" />
-            <Column field="status" header="Status" />
+        <DataTableForQuery query={AllProducts} emptyMessage='No products found' dataKey='id'>
+            <Column field='name' header='Name' sortable />
+            <Column field='category' header='Category' sortable />
+            <Column<Product> field='price' header='Price' body={(product) => product.price.toFixed(2)} />
         </DataTableForQuery>
     );
 }
 ```
 
+`Column<Product>` types the row the `body` renderer receives; without the type argument it is `unknown`. See [Column Configuration](column-configuration.md#typing-fields-and-cells).
+
 ## Props
 
 ### Required Props
 
-- `query`: Query constructor (extends IQueryFor)
-- `emptyMessage`: Message when no data is found
+- `query`: Constructor of the generated query (derives from `QueryFor`)
+- `emptyMessage`: Message shown when there are no rows to display
 
 ### Optional Props
 
-- `queryArguments`: Optional arguments for the query
-- `dataKey`: Unique identifier field
-- `selection`: Currently selected row
-- `onSelectionChange`: Callback when selection changes
-- `globalFilterFields`: Fields searched on the loaded page
+- `children`: `Column` elements
+- `queryArguments`: Arguments for the query. The query runs again when a required argument changes.
+- `dataKey`: Row property used as stable identity for selection
+- `selection`: Currently selected row (controlled)
+- `onSelectionChange`: Called with `{ value, originalEvent }` when the user selects a row
+- `selectionMode`: `'single'` (default) or `'multiple'`. Multiple selection also needs a `Column` with `selectionMode='multiple'`; see [Column Configuration: Selection](column-configuration.md#selection)
+- `selectedItems`: Currently selected rows in multiple mode (controlled)
+- `onSelectedItemsChange`: Called with the full selected set when a multiple selection changes
+- `globalFilterFields`: Row fields searched by a search box above the table. The box is shown only when this is set.
 - `globalSearchPlaceholder`: Search-input placeholder. Falls back to the [`CratisComponentsProvider`](../Common/cratis-components-provider.md)'s `messages.dataTable.search`, then `'Search…'`
 - `globalSearchAriaLabel`: Accessible search-input name; localize independently from the placeholder. Falls back to the provider's `messages.dataTable.searchAriaLabel`, then `'Search table'`
-- `selectionAriaLabel`: Accessible name for a single-selection row control. Falls back to the provider's `messages.dataTable.selectRow`, then `'Select row'`
 - `defaultFilters`: Initial filter configuration (a `DataTableFilterMeta`)
 - `clientFiltering`: Deprecated compatibility prop; accepted but ignored because filtering is always scoped to the loaded page
-- `paginatorClassName` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
-- `children`: Column definitions
+- `className` / `pt`: Extra class and stable part attributes for the table
+- `paginatorClassName` / `paginatorPt` / `paginatorAriaLabels`: styling and explicit localization overrides for the paginator; accessible names default from `CratisComponentsProvider` messages
+
+`ptOptions`, `unstyled`, and `paginatorPtOptions` are deprecated and have no effect. The accessible name of a selection column comes from the provider's `messages.dataTable.selectRow`, then `'Select row'`, and a multiple-selection header's select-all checkbox from `messages.dataTable.selectAllRows`, then `'Select all rows'`; the query tables have no per-table prop for either.
 
 While the first query result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
 
+## Loading, empty, and failed queries
+
+The table does not render a loading indicator or an error state:
+
+| Situation | What renders |
+| --- | --- |
+| First result still loading | An empty table body with no message |
+| Query returned no rows | `emptyMessage` |
+| Filters or search match nothing on the loaded page | `emptyMessage` |
+| Query failed, was unauthorized, or is missing a required argument | `emptyMessage` |
+
+A failed query therefore looks like an empty one. When the difference matters, read the query result yourself through the generated proxy and render the table with the lower-level `DataTableCore` and `TablePaginator`, both exported from `@cratis/components/DataTables`:
+
+```tsx
+import { DataTableCore, TablePaginator, Column } from '@cratis/components/DataTables';
+import { Message, ProgressSpinner } from '@cratis/components/Display';
+import { AllProducts, type Product } from './Product';
+
+const pageSize = 20;
+
+export function Products() {
+    const [result, , , setPage] = AllProducts.useWithPaging(pageSize);
+
+    if (!result.isAuthorized) {
+        return <Message severity='warn'>You do not have access to products.</Message>;
+    }
+    if (result.hasExceptions) {
+        return <Message severity='error'>The products could not be loaded.</Message>;
+    }
+    if (result.isPerforming && !result.hasData) {
+        return <ProgressSpinner aria-label='Loading products' />;
+    }
+
+    return (
+        <>
+            <DataTableCore<Product>
+                data={result.data}
+                dataKey='id'
+                emptyMessage='No products found'
+                selectionMode='single'
+            >
+                <Column field='name' header='Name' sortable />
+                <Column field='category' header='Category' />
+            </DataTableCore>
+            {result.paging.totalPages > 1 && (
+                <TablePaginator
+                    page={result.paging.page}
+                    pageCount={result.paging.totalPages}
+                    totalItems={result.paging.totalItems}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                />
+            )}
+        </>
+    );
+}
+```
+
+`useWithPaging(pageSize)` is the paging hook the Arc proxy generator adds to a query proxy. Its result also exposes `isSuccess`, `isValid`, and `exceptionMessages`. Log `exceptionMessages` rather than showing them to users.
+
 ## Pagination
 
-DataTableForQuery automatically handles pagination with a default page size of 20 items. Pagination controls are displayed at the bottom of the table.
+DataTableForQuery requests 20 rows per page. The page size is fixed; there is no prop to change it. The paginator appears below the rows only when the server reports more than one page, and each page change runs the query again for that page.
+
+## Sorting
+
+`sortable` on a `Column` sorts the rows of the loaded page in the browser. The first click sorts ascending, the next descending, and so on; there is no way back to the unsorted order. The sort is not sent to the server, so it does not order the complete result set across pages. For that, add sort arguments to the query and apply them on the server before paging.
 
 ## Filtering
 
 Add `filter` to a `<Column>` for a per-column filter menu, and/or `globalFilterFields` for a global search box. Filtering is applied client-side to the loaded page; seed the initial state with `defaultFilters`:
 
-```typescript
+```tsx
+import { DataTableForQuery, Column, DataTableFilterMatchMode } from '@cratis/components/DataTables';
+
 <DataTableForQuery
-    query={MyQuery}
-    globalFilterFields={['name', 'email']}
+    query={AllProducts}
+    emptyMessage='No matching products'
+    dataKey='id'
+    globalFilterFields={['name', 'category']}
     defaultFilters={{
-        name: { value: '', matchMode: 'contains' }
+        category: { value: 'Books', matchMode: DataTableFilterMatchMode.Equals },
     }}
-    emptyMessage="No results"
 >
-    <Column field="name" header="Name" filter />
-    <Column field="status" header="Status" filter />
-</DataTableForQuery>
+    <Column field='name' header='Name' filter />
+    <Column field='category' header='Category' filter />
+    <Column field='inStock' header='In stock' filter dataType='boolean' />
+</DataTableForQuery>;
 ```
 
 Each filtered `Column` can localize its overlay through `filterLabels` or replace the built-in value editor through `filterElement`. See [Column Configuration](column-configuration.md#column-filters) for the callback contract and draft/apply behavior.
@@ -95,35 +173,75 @@ For complete-result filtering, put the filter values in `queryArguments`, apply 
 
 ## Selection
 
-Handle row selection:
+Every row is selectable, with or without a selection column. Track a single selection with `selection` and `onSelectionChange`:
 
-```typescript
-const [selectedItem, setSelectedItem] = useState(null);
+```tsx
+import { useState } from 'react';
+import { DataTableForQuery, Column } from '@cratis/components/DataTables';
+import { AllProducts, type Product } from './Product';
 
-<DataTableForQuery
-    query={MyQuery}
-    selection={selectedItem}
-    onSelectionChange={(e) => setSelectedItem(e.value)}
-    emptyMessage="No data"
->
-    <Column field="name" header="Name" />
-</DataTableForQuery>
+export function SelectableProducts() {
+    const [selected, setSelected] = useState<Product | null>(null);
+
+    return (
+        <>
+            <DataTableForQuery<AllProducts, Product, object>
+                query={AllProducts}
+                emptyMessage='No products found'
+                dataKey='id'
+                selection={selected}
+                onSelectionChange={(event) => setSelected(event.value)}
+            >
+                <Column field='name' header='Name' />
+            </DataTableForQuery>
+            <p>Selected: {selected?.name ?? 'nothing'}</p>
+        </>
+    );
+}
 ```
+
+The explicit type arguments (query, row, and query parameters) type `event.value` as `Product | null`. Without them TypeScript infers the row as `object`. Use `object` as the third argument for a query without parameters.
+
+For multiple selection with row checkboxes and a select-all header, see [Column Configuration: Selection](column-configuration.md#selection).
+
+Set `dataKey` so the selected row is still highlighted after a page change or a re-run replaces the row objects. The table never clears a selection itself; set `selection` to `null` to clear it.
 
 ## With Query Arguments
 
-Pass arguments to the query:
+Pass arguments to a query that takes parameters:
 
-```typescript
-<DataTableForQuery
-    query={ProductsByCategory}
-    queryArguments={{ categoryId: selectedCategory }}
-    emptyMessage="No products"
->
-    <Column field="name" header="Product Name" />
-    <Column field="price" header="Price" />
-</DataTableForQuery>
+```tsx
+import { DataTableForQuery, Column } from '@cratis/components/DataTables';
+import {
+    ProductsInCategory,
+    type Product,
+    type ProductsInCategoryParameters,
+} from './Product';
+
+export function ProductsForCategory({ category }: { category: string }) {
+    return (
+        <DataTableForQuery<ProductsInCategory, Product, ProductsInCategoryParameters>
+            query={ProductsInCategory}
+            queryArguments={{ category }}
+            emptyMessage='No products in this category'
+            dataKey='id'
+        >
+            <Column field='name' header='Product' />
+            <Column field='price' header='Price' />
+        </DataTableForQuery>
+    );
+}
 ```
+
+If a required argument is missing, Arc does not call the server and the table shows `emptyMessage`.
+
+## Keyboard and accessibility
+
+- The table renders a native `<table>` with `scope="col"` header cells.
+- Each row is a tab stop. Enter or Space selects the focused row, and the selected row carries `aria-selected="true"`. There is no arrow-key navigation between rows.
+- Sortable headers are buttons; the sorted column carries `aria-sort`.
+- The table has no accessible name by default. Add one through the table part: `pt={{ table: { 'aria-label': 'Products' } }}`.
+- The paginator's controls are named through `paginatorAriaLabels` or the provider messages.
 
 ## Integration
 
@@ -137,3 +255,4 @@ Integrates with:
 
 - [Column Configuration](column-configuration.md) - Customizing columns
 - [DataTableForObservableQuery](data-table-for-observable-query.md) - Real-time alternative
+- [DataPage](../DataPage/index.md) - Table with an action toolbar and details pane

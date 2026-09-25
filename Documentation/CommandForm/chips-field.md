@@ -1,16 +1,28 @@
-# ChipsField
+---
+title: ChipsField
+description: Bind a string array property on an Arc command to a token input.
+---
 
 `ChipsField` renders a Cratis-owned token input for collecting multiple text values.
 
 ## Usage
 
+The excerpt assumes `MyCommand` is a generated command proxy with the bound properties, and `visible` / `setVisible` is component state.
+
 ```tsx
 import { CommandDialog } from '@cratis/components/CommandDialog';
 import { ChipsField } from '@cratis/components/CommandForm';
 
-<CommandDialog command={MyCommand} visible={visible} onCancel={() => setVisible(false)}>
+<CommandDialog<MyCommand>
+    command={MyCommand}
+    title='Edit tags'
+    visible={visible}
+    onSuccess={() => setVisible(false)}
+    onCancel={() => setVisible(false)}
+>
     <ChipsField<MyCommand>
         value={(c) => c.tags}
+        title='Tags'
         placeholder='Add tags and press Enter'
         addOnBlur
     />
@@ -31,9 +43,11 @@ import { ChipsField } from '@cratis/components/CommandForm';
 | `className`                     | `string`                          | -          | Extra CSS class combined with the default `w-full`.                                                                                                             |
 | `pt` / `ptOptions` / `unstyled` | -                                 | -          | Stable Cratis chip/item/remove/input parts; compatibility flags are no-ops.                                                                                      |
 
+Every field also accepts Arc's shared field props, such as `title`, `description`, `initialValue`, and `noInitialValue`, and the accessibility props `id`, `aria-label`, and `aria-describedby`. See [Accessible names and validation errors](index.md#accessible-names-and-validation-errors).
+
 ## Behavior
 
-- Default value is an empty array.
+- Shows an empty array while the bound property is unset. See [Field defaults and command values](index.md#field-defaults-and-command-values).
 - Enter commits the current draft; `addOnBlur` can also commit when focus leaves the field.
 - Candidates are trimmed and empty candidates are ignored.
 - With `allowDuplicate={false}`, duplicates are removed against both existing values and other candidates in the same draft **before** `max` is applied. An existing duplicate therefore cannot consume the final slot ahead of a later unique value.
@@ -42,5 +56,6 @@ import { ChipsField } from '@cratis/components/CommandForm';
 - The field spans full width within its container.
 - Validation state is reflected through `aria-invalid` and `data-invalid`.
 
-> [!IMPORTANT]
-> `separator` is treated as a literal string. The draft is split on that string when the user commits it; it is not interpreted as a regular expression.
+:::note[The separator is literal]
+`separator` is treated as a literal string. The draft is split on that string when the user commits it; it is not interpreted as a regular expression.
+:::
