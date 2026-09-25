@@ -43,10 +43,15 @@ const settleDeferredFocusRestore = async () => {
 };
 
 /**
- * Presses a button the way a browser does: the pointer sequence, with the focus a real `mousedown`
- * performs as its default action wedged into the middle of it. jsdom dispatches the events but never
- * runs that default action, so the focus move has to be explicit here - without it this would not be
- * the scenario a user actually produces.
+ * Presses a button the way a browser does, up to and including the pointer release: the pointer
+ * sequence, with the focus a real `mousedown` performs as its default action wedged into the middle
+ * of it. jsdom dispatches the events but never runs that default action, so the focus move has to be
+ * explicit here - without it this would not be the scenario a user actually produces.
+ *
+ * The open menu contains focus, so the focus move is pulled back into it, and the pointer release
+ * dismisses the menu as an interaction outside it. The `click` that follows is deliberately not
+ * dispatched: in a browser it lands on the modal popover's underlay and opens nothing, while jsdom
+ * has no hit testing and would deliver it to the trigger, opening a menu a user never sees.
  */
 const pressButton = async (button: HTMLButtonElement) => {
     await act(async () => {
@@ -56,13 +61,25 @@ const pressButton = async (button: HTMLButtonElement) => {
         button.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, button: 0 }));
         button.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 0 }));
     });
-    await act(async () => {
-        button.dispatchEvent(new PointerEvent('click', { bubbles: true, button: 0 }));
-    });
     await settleDeferredFocusRestore();
 };
 
-describe('when dismissing one column filter by moving focus to another column filter trigger', () => {
+/**
+ * Opens the menu and lets React Aria's deferred autofocus place focus inside it, the state a user is
+ * in by the time they reach for another control. Opening without settling left it to timing whether
+ * focus was still on the trigger or already in the menu, and the two states dismiss differently.
+ */
+const openMenuWithFocusInside = async (table: FilterableTableInTheDom, trigger: HTMLButtonElement) => {
+    await act(async () => trigger.focus());
+    const menu = await openFilterMenu(table, trigger);
+    await settleDeferredFocusRestore();
+    if (!menu.contains(document.activeElement)) {
+        throw new Error('The opened ColumnFilterMenu did not take focus.');
+    }
+    return menu;
+};
+
+describe('when pressing another column filter trigger while a column filter menu has focus', () => {
     let table: FilterableTableInTheDom;
     let dismissedTrigger: HTMLButtonElement;
     let pressedTrigger: HTMLButtonElement;
@@ -75,8 +92,7 @@ describe('when dismissing one column filter by moving focus to another column fi
         });
         [dismissedTrigger, pressedTrigger] = table.triggers;
 
-        await act(async () => dismissedTrigger.focus());
-        dismissedMenu = await openFilterMenu(table, dismissedTrigger);
+        dismissedMenu = await openMenuWithFocusInside(table, dismissedTrigger);
         await pressButton(pressedTrigger);
     });
 
@@ -89,11 +105,11 @@ describe('when dismissing one column filter by moving focus to another column fi
         expect(document.body.contains(dismissedMenu)).to.equal(false);
     });
 
-    it('should leave focus on the control the user moved to', () => {
-        expect(document.activeElement).to.equal(pressedTrigger);
+    it('should return focus to the trigger whose menu was dismissed', () => {
+        expect(document.activeElement).to.equal(dismissedTrigger);
     });
 
-    it('should not pull focus back to the trigger whose menu was dismissed', () => {
-        expect(document.activeElement).to.not.equal(dismissedTrigger);
+    it('should not leave focus on the pressed trigger, which the open menu kept focus away from', () => {
+        expect(document.activeElement).to.not.equal(pressedTrigger);
     });
 });
