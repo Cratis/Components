@@ -53,26 +53,24 @@ describe('when dialog presentation is configured on a command dialog', () => {
         if (dialog) await unmount(dialog);
     });
 
-    it('should render the subtitle as the dialog description', async () => {
-        await renderDialog();
+    beforeEach(renderDialog);
+
+    it('should render the subtitle as the dialog description', () => {
 
         (document.querySelector('[data-cratis-part="subtitle"]')?.textContent ?? '').should.equal('Project details');
     });
 
-    it('should place the dialog at the requested edge', async () => {
-        await renderDialog();
+    it('should place the dialog at the requested edge', () => {
 
         (document.querySelector('[data-cratis-part="positioner"]')?.getAttribute('data-placement') ?? '').should.equal('end');
     });
 
-    it('should render the custom close icon', async () => {
-        await renderDialog();
+    it('should render the custom close icon', () => {
 
         (document.querySelector('[data-cratis-part="close"]')?.textContent ?? '').should.equal('Close example');
     });
 
-    it('should not send dialog-only props to the command form', async () => {
-        await renderDialog();
+    it('should not send dialog-only props to the command form', () => {
 
         const formProps = receivedFormProps.mock.lastCall?.[0] as Record<string, unknown>;
         Object.hasOwn(formProps, 'subtitle').should.be.false;
