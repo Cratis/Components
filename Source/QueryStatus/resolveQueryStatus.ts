@@ -9,9 +9,10 @@ export const resolveQueryStatus = (result: {
     hasExceptions?: boolean;
     isValid?: boolean;
     isPerforming?: boolean;
+    isReady?: boolean;
 }): QueryStatus => {
     if (result.isAuthorized === false) return QueryStatus.Unauthorized;
     if (result.hasExceptions === true || result.isValid === false) return QueryStatus.Failed;
-    if (result.isPerforming === true) return QueryStatus.Loading;
+    if (result.isPerforming === true || result.isReady === false) return QueryStatus.Loading;
     return QueryStatus.Ready;
 };

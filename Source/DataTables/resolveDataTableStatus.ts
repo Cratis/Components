@@ -18,4 +18,5 @@ export const resolveDataTableStatus = (result: {
     hasExceptions?: boolean;
     isValid?: boolean;
     isPerforming?: boolean;
+    isReady?: boolean;
 }): DataTableStatus => tableStatusByQueryStatus[resolveQueryStatus(result)];
