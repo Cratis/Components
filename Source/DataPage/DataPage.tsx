@@ -285,6 +285,13 @@ export interface DataPageProps<
      */
     emptyMessage: string;
 
+    /** Message shown while loading without rows. */
+    loadingMessage?: ReactNode;
+    /** Message shown when the query fails. */
+    failureMessage?: ReactNode;
+    /** Message shown when access is denied. */
+    unauthorizedMessage?: ReactNode;
+
     /**
      * The key to use for the data
      */

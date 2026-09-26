@@ -19,14 +19,12 @@ export function DrawingToolbar() {
                 icon={<FaArrowPointer aria-hidden='true' />}
                 title='Select'
                 active={activeTool === 'select'}
-                pt={{ root: { 'aria-pressed': activeTool === 'select' } }}
                 onClick={() => setActiveTool('select')}
             />
             <ToolbarButton
                 icon={<FaPencil aria-hidden='true' />}
                 title='Draw'
                 active={activeTool === 'draw'}
-                pt={{ root: { 'aria-pressed': activeTool === 'draw' } }}
                 onClick={() => setActiveTool('draw')}
             />
         </Toolbar>
@@ -34,4 +32,4 @@ export function DrawingToolbar() {
 }
 ```
 
-`active` adds the `toolbar-button--active` class and the `data-active` and `data-selected` attributes, which drive the built-in highlight and any product CSS. It does not set `aria-pressed`, so a screen reader cannot tell which tool is selected from `active` alone. Pass `aria-pressed` through `pt.root`, as above, to announce the tools as toggle buttons.
+`active` adds the `toolbar-button--active` class and the `data-active` and `data-selected` attributes, which drive the built-in highlight and any product CSS. Passing `active` also sets `aria-pressed` to `true` or `false` so screen readers can identify the selected tool. If you omit `active`, the button has no `aria-pressed` attribute and remains a plain action button. You can still override `aria-pressed` through `pt.root` when needed.

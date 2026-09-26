@@ -26,6 +26,7 @@ import {
     type DataTableFilterMeta,
 } from './DataTableFilterMeta';
 import { resolveDataTableFilterMatcher } from './DataTableFilterMatcherRegistry';
+import { DataTableStatus } from './DataTableStatus';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -65,6 +66,14 @@ export interface DataTableParts {
     emptyRow?: HTMLAttributes<HTMLTableRowElement>;
     /** Empty-state cell. */
     emptyCell?: TdHTMLAttributes<HTMLTableCellElement>;
+    /** Loading-state row. */
+    loadingRow?: HTMLAttributes<HTMLTableRowElement>;
+    /** Loading-state cell. */
+    loadingCell?: TdHTMLAttributes<HTMLTableCellElement>;
+    /** Failed or unauthorized row. */
+    failureRow?: HTMLAttributes<HTMLTableRowElement>;
+    /** Failed or unauthorized cell. */
+    failureCell?: TdHTMLAttributes<HTMLTableCellElement>;
 }
 
 /** Props for the semantic loaded-page DataTable renderer. */
@@ -77,6 +86,14 @@ export interface DataTableCoreProps<TData extends object> {
     dataKey?: string;
     /** Content shown when the loaded page has no matching rows. */
     emptyMessage: ReactNode;
+    /** Table display state. Defaults to ready. */
+    status?: DataTableStatus;
+    /** Message shown while loading without rows. */
+    loadingMessage?: ReactNode;
+    /** Message shown for a failed query. */
+    failureMessage?: ReactNode;
+    /** Message shown for an unauthorized query. */
+    unauthorizedMessage?: ReactNode;
     /**
      * Enables row selection. `'single'` selects one row at a time through row activation;
      * `'multiple'` adds per-row checkboxes and a select-all header checkbox, and reports through
@@ -268,6 +285,10 @@ export const DataTableCore = <TData extends object>({
     children,
     dataKey,
     emptyMessage,
+    status = DataTableStatus.Ready,
+    loadingMessage,
+    failureMessage,
+    unauthorizedMessage,
     selectionMode,
     selectionAriaLabel,
     selectAllAriaLabel,
@@ -298,6 +319,13 @@ export const DataTableCore = <TData extends object>({
         globalSearchPlaceholder ?? dataTableMessages?.search ?? 'Search…';
     const resolvedGlobalSearchAriaLabel =
         globalSearchAriaLabel ?? dataTableMessages?.searchAriaLabel ?? 'Search table';
+    const resolvedLoadingMessage = loadingMessage ?? dataTableMessages?.loading ?? 'Loading…';
+    const resolvedFailureMessage =
+        failureMessage ?? dataTableMessages?.failed ?? 'Could not load data.';
+    const resolvedUnauthorizedMessage =
+        unauthorizedMessage ?? dataTableMessages?.unauthorized ??
+        'You are not authorized to view this data.';
+    const isBusy = status === DataTableStatus.Loading && data.length > 0;
     const icon = useCratisIcon();
     const sortAscendingIcon = icon('sortAscending', '▲');
     const sortDescendingIcon = icon('sortDescending', '▼');
@@ -462,6 +490,7 @@ export const DataTableCore = <TData extends object>({
             )}
             style={{ ...pt?.root?.style, ...style }}
             data-cratis-part='root'
+            data-busy={isBusy || undefined}
         >
             {!!globalFilterFields?.length && (
                 <div
@@ -507,6 +536,7 @@ export const DataTableCore = <TData extends object>({
                         pt?.table?.className,
                     )}
                     data-cratis-part='table'
+                    aria-busy={isBusy || undefined}
                 >
                     <thead
                         {...pt?.head}
@@ -657,7 +687,55 @@ export const DataTableCore = <TData extends object>({
                         )}
                         data-cratis-part='body'
                     >
-                        {filteredRows.length === 0 ? (
+                        {status === DataTableStatus.Failed ||
+                        status === DataTableStatus.Unauthorized ? (
+                            <tr
+                                {...pt?.failureRow}
+                                className={classNames(
+                                    'cratis-datatable__failure-row',
+                                    pt?.failureRow?.className,
+                                )}
+                                data-cratis-part='failure-row'
+                                data-reason={status}
+                            >
+                                <td
+                                    {...pt?.failureCell}
+                                    colSpan={Math.max(columns.length, 1)}
+                                    className={classNames(
+                                        'cratis-datatable__failure-cell',
+                                        pt?.failureCell?.className,
+                                    )}
+                                    data-cratis-part='failure-cell'
+                                >
+                                    <div role='alert'>
+                                        {status === DataTableStatus.Failed
+                                            ? resolvedFailureMessage
+                                            : resolvedUnauthorizedMessage}
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : status === DataTableStatus.Loading && data.length === 0 ? (
+                            <tr
+                                {...pt?.loadingRow}
+                                className={classNames(
+                                    'cratis-datatable__loading-row',
+                                    pt?.loadingRow?.className,
+                                )}
+                                data-cratis-part='loading-row'
+                            >
+                                <td
+                                    {...pt?.loadingCell}
+                                    colSpan={Math.max(columns.length, 1)}
+                                    className={classNames(
+                                        'cratis-datatable__loading-cell',
+                                        pt?.loadingCell?.className,
+                                    )}
+                                    data-cratis-part='loading-cell'
+                                >
+                                    <div role='status'>{resolvedLoadingMessage}</div>
+                                </td>
+                            </tr>
+                        ) : filteredRows.length === 0 ? (
                             <tr
                                 {...pt?.emptyRow}
                                 className={classNames(
