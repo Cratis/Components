@@ -73,13 +73,8 @@ export interface FilterPanelProps {
     /**
      * `<FilterEditor>` elements that provide custom UI for specific filter groups.
      *
-     * ```tsx
-     * <FilterPanel filters={filters} {...stateProps}>
-     *   <FilterEditor filterKey="rating">
-     *     {({ value, onChange }) => <MyPicker value={value} onChange={onChange} />}
-     *   </FilterEditor>
-     * </FilterPanel>
-     * ```
+     * See the {@link FilterPanel} example below for the complete prop mapping
+     * and a custom editor.
      */
     children?: ReactNode;
 }
