@@ -176,6 +176,12 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
             }
         }, [autoFocus, disabled]);
 
+        useEffect(() => {
+            if (disabled) {
+                setShowEmojiPicker(false);
+            }
+        }, [disabled]);
+
         useImperativeHandle(
             handleRef,
             () => ({
