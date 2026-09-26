@@ -62,6 +62,25 @@ test('release preparation bumps all public workspaces and regenerates every bund
     }
 });
 
+for (const version of [undefined, 'not-a-version', 'v4.99.0']) {
+    test(`release preparation rejects ${version ?? 'a missing version'} without changing manifests`, () => {
+        const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'cratis-release-invalid-version-'));
+        const original = '{"name":"@cratis/components","version":"4.0.0","dependencies":{"@cratis/components.migrator":"4.0.0"}}\n';
+        try {
+            mkdirSync(path.join(temporaryRoot, 'Source'));
+            writeFileSync(path.join(temporaryRoot, 'package.json'), JSON.stringify({ workspaces: ['Source'] }));
+            writeFileSync(path.join(temporaryRoot, 'Source/package.json'), original);
+            assert.throws(
+                () => prepareReleaseVersion(temporaryRoot, version),
+                /release version must be a valid exact semantic version/i,
+            );
+            assert.equal(readFileSync(path.join(temporaryRoot, 'Source/package.json'), 'utf8'), original);
+        } finally {
+            rmSync(temporaryRoot, { recursive: true, force: true });
+        }
+    });
+}
+
 test('generated compatibility copies are deterministic and byte-identical', () => {
     const serialized = serializeCompatibilityManifest(createManifest());
     for (const relativePath of [

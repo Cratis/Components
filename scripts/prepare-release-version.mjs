@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import semver from 'semver';
 import {
     checkCompatibilityManifest,
     discoverWorkspaceManifestPaths,
@@ -11,6 +12,9 @@ import {
 } from './generate-compat-manifest.mjs';
 
 export function prepareReleaseVersion(rootDirectory, version) {
+    if (semver.valid(version) !== version) {
+        throw new Error('Release version must be a valid exact semantic version.');
+    }
     const rootPackage = JSON.parse(
         fs.readFileSync(path.join(rootDirectory, 'package.json'), 'utf8'),
     );
