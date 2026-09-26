@@ -57,9 +57,15 @@ function findComponentStylesheets(sourceDir, directory = sourceDir, found = []) 
     return found;
 }
 
-/** One manifest entry rendered the way it appears inside the published stylesheets. */
+/**
+ * One manifest entry rendered the way it appears inside the published stylesheets.
+ *
+ * The separator carries no decoration beyond the two-dash frame on purpose: it ships inside
+ * every published stylesheet (aggregate and per-area alike), and the aggregate's reviewed gzip
+ * ceiling is what forces that payload to stay honest.
+ */
 const renderStyleEntry = ({ specifier, file }) =>
-    `/* ── ${specifier} ─────────────────────────────────────── */\n${readFileSync(file, 'utf8')}`;
+    `/* ── ${specifier} ── */\n${readFileSync(file, 'utf8')}`;
 
 /**
  * Resolves the `@import` statements in `styles.css` into one flat stylesheet.
