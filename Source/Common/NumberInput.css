@@ -38,7 +38,8 @@
 .cratis-number-input[data-invalid='true'] .cratis-number-input__group {
     border-color: var(--cratis-red-500);
 }
-.cratis-number-input[data-disabled='true'] {
+.cratis-number-input[data-disabled='true'],
+.cratis-number-input__step:disabled {
     cursor: not-allowed;
     opacity: var(--cratis-disabled-opacity);
 }
@@ -99,10 +100,6 @@
 .cratis-number-input__step:focus-visible {
     outline: 2px solid var(--cratis-primary-color);
     outline-offset: -3px;
-}
-.cratis-number-input__step:disabled {
-    cursor: not-allowed;
-    opacity: var(--cratis-disabled-opacity);
 }
 .cratis-number-input__description,
 .cratis-number-input__error {

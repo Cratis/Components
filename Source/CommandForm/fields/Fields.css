@@ -32,7 +32,8 @@
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }
-.cratis-field-input:disabled {
+.cratis-field-input:disabled,
+.cratis-choice-field:has(.cratis-choice-field__native:disabled) {
     cursor: not-allowed;
     opacity: var(--cratis-disabled-opacity);
 }
@@ -71,7 +72,9 @@
 .cratis-password-field__toggle:hover {
     background: var(--cratis-surface-hover);
 }
-.cratis-password-field__toggle:focus-visible {
+.cratis-password-field__toggle:focus-visible,
+.cratis-slider-field__input:focus-visible,
+.cratis-color-field__input:focus-visible {
     outline: none;
     box-shadow: var(--cratis-focus-ring);
 }
@@ -82,10 +85,6 @@
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
-}
-.cratis-choice-field:has(.cratis-choice-field__native:disabled) {
-    cursor: not-allowed;
-    opacity: var(--cratis-disabled-opacity);
 }
 .cratis-choice-field__native {
     position: absolute;
@@ -198,10 +197,6 @@
     width: 100%;
     accent-color: var(--cratis-primary-color);
 }
-.cratis-slider-field__input:focus-visible {
-    outline: none;
-    box-shadow: var(--cratis-focus-ring);
-}
 .cratis-slider-field__value {
     min-width: 2.5rem;
     text-align: end;
@@ -270,10 +265,6 @@
     border: 1px solid var(--cratis-control-border);
     border-radius: var(--cratis-border-radius);
     background: var(--cratis-control-background);
-}
-.cratis-color-field__input:focus-visible {
-    outline: none;
-    box-shadow: var(--cratis-focus-ring);
 }
 .cratis-color-field__value {
     font-family: ui-monospace, monospace;
