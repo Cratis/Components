@@ -120,7 +120,8 @@
     box-shadow: inset 0 1px 0 var(--cratis-surface-border);
 }
 
-.pv-search input:focus {
+.pv-search input:focus,
+.pv-filter-group-search input:focus {
     outline: none;
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
@@ -138,12 +139,6 @@
     background: var(--cratis-surface-ground);
     color: inherit;
     font-size: 0.85rem;
-}
-
-.pv-filter-group-search input:focus {
-    outline: none;
-    border-color: var(--cratis-primary-color);
-    box-shadow: var(--cratis-focus-ring);
 }
 
 /* Reusable checkbox/radio option list (CheckboxListFilter) */

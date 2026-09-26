@@ -175,6 +175,8 @@ export interface PivotViewerProps<TItem extends object> {
     emptyContent?: ReactNode;
     /** Loading state; displays a loading indicator when true. */
     isLoading?: boolean;
+    /** Accessible status text while loading; defaults to "Loading…". */
+    loadingLabel?: string;
     /**
      * Optional color overrides mapped to semantic CSS variables.
      * If omitted, values are taken from the global theme (Cratis defaults).

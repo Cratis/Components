@@ -21,7 +21,7 @@ export const Authors = () => (
 );
 ```
 
-While the first result is loading, the table suppresses `emptyMessage` instead of showing a loading indicator; once the query has finished with no rows, it shows `emptyMessage`. The table does not render query failures: a failed or unauthorized query also ends with no rows and shows `emptyMessage`. When the screen must tell those cases apart, read the query result with the hook below. For a one-shot (non-live) query, use `DataTableForQuery` the same way.
+While the first result is loading without rows, the table shows `Loading…`. A failed or unauthorized query shows an alert instead of `emptyMessage`; a successful empty result shows `emptyMessage`. You can change these messages with `loadingMessage`, `failureMessage`, and `unauthorizedMessage`, or configure provider defaults. During a refetch the existing rows remain visible and the table is marked busy. For a one-shot (non-live) query, use `DataTableForQuery` the same way.
 
 ## Prefer the hook when you need the data, not a table
 

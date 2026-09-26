@@ -52,6 +52,7 @@ Same as DataTableForQuery, but the query must derive from `ObservableQueryFor`.
 
 - `children`: `Column` elements
 - `queryArguments`: Arguments for the query. The table resubscribes when any argument changes.
+- `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the loading, failed, and unauthorized states; each overrides its `messages.dataTable` provider message and English default
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row (controlled)
 - `onSelectionChange`: Called with `{ value, originalEvent }` when the user selects a row
@@ -72,9 +73,7 @@ Filtered columns use the same `filterLabels` localization and `filterElement` cu
 
 The deprecated `clientFiltering` prop remains accepted only for source compatibility and does not change that scope. Complete-result filtering must be applied by the server before paging, with filter values passed in `queryArguments`; see [Filtering scope and server pagination](data-table-for-query.md#filtering-scope-and-server-pagination).
 
-While the first observable result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
-
-The table shows no loading indicator and no error state. A failed or unauthorized query shows `emptyMessage`, the same as an empty result. When you must tell them apart, read the result through the generated proxy (`isPerforming`, `hasData`, `isSuccess`, `isAuthorized`, `hasExceptions`) and render `DataTableCore` yourself, as shown in [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries).
+While the first observable result is performing without rows, the table shows a loading row with a status announcement instead of `emptyMessage`. If a required argument is missing, Arc does not subscribe and this loading row remains until every required argument has a value. During a refetch with rows, it keeps the rows and marks the table busy. An unauthorized result takes precedence over a failed result; either displays a failure row with an alert instead of an empty state. A successful empty result still shows `emptyMessage`. Set `loadingMessage`, `failureMessage`, or `unauthorizedMessage` to customize these states. See [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries) for the state rules and defaults.
 
 ## Observable Behavior
 

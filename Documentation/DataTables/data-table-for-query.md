@@ -53,6 +53,7 @@ export function Products() {
 
 - `children`: `Column` elements
 - `queryArguments`: Arguments for the query. The query runs again when a required argument changes.
+- `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the loading, failed, and unauthorized states; each overrides its `messages.dataTable` provider message and English default
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row (controlled)
 - `onSelectionChange`: Called with `{ value, originalEvent }` when the user selects a row
@@ -69,67 +70,22 @@ export function Products() {
 
 `ptOptions`, `unstyled`, and `paginatorPtOptions` are deprecated and have no effect. The accessible name of a selection column comes from the provider's `messages.dataTable.selectRow`, then `'Select row'`, and a multiple-selection header's select-all checkbox from `messages.dataTable.selectAllRows`, then `'Select all rows'`; the query tables have no per-table prop for either.
 
-While the first query result is still performing, an empty default data array renders a silent table body rather than `emptyMessage`. Once the query settles, a genuinely empty result renders the configured message normally.
-
 ## Loading, empty, and failed queries
 
-The table does not render a loading indicator or an error state:
+The table distinguishes query state from a successful empty result:
 
 | Situation | What renders |
 | --- | --- |
-| First result still loading | An empty table body with no message |
+| First result still loading without rows | A loading row with `loadingMessage` (default `Loading…`) |
+| Refetching with rows | Existing rows; the table has `aria-busy="true"` and its root has `data-busy` |
 | Query returned no rows | `emptyMessage` |
 | Filters or search match nothing on the loaded page | `emptyMessage` |
-| Query failed, was unauthorized, or is missing a required argument | `emptyMessage` |
+| Query failed (`hasExceptions === true` or `isValid === false`) | A failure row with `failureMessage` (default `Could not load data.`) |
+| Query is unauthorized (`isAuthorized === false`) | A failure row with `unauthorizedMessage` (default `You are not authorized to view this data.`) |
+| Snapshot query missing a required argument | `emptyMessage` (Arc sends no request) |
+| Observable query missing a required argument | A loading row remains until every required argument has a value (Arc does not subscribe) |
 
-A failed query therefore looks like an empty one. When the difference matters, read the query result yourself through the generated proxy and render the table with the lower-level `DataTableCore` and `TablePaginator`, both exported from `@cratis/components/DataTables`:
-
-```tsx
-import { DataTableCore, TablePaginator, Column } from '@cratis/components/DataTables';
-import { Message, ProgressSpinner } from '@cratis/components/Display';
-import { AllProducts, type Product } from './Product';
-
-const pageSize = 20;
-
-export function Products() {
-    const [result, , , setPage] = AllProducts.useWithPaging(pageSize);
-
-    if (!result.isAuthorized) {
-        return <Message severity='warn'>You do not have access to products.</Message>;
-    }
-    if (result.hasExceptions) {
-        return <Message severity='error'>The products could not be loaded.</Message>;
-    }
-    if (result.isPerforming && !result.hasData) {
-        return <ProgressSpinner aria-label='Loading products' />;
-    }
-
-    return (
-        <>
-            <DataTableCore<Product>
-                data={result.data}
-                dataKey='id'
-                emptyMessage='No products found'
-                selectionMode='single'
-            >
-                <Column field='name' header='Name' sortable />
-                <Column field='category' header='Category' />
-            </DataTableCore>
-            {result.paging.totalPages > 1 && (
-                <TablePaginator
-                    page={result.paging.page}
-                    pageCount={result.paging.totalPages}
-                    totalItems={result.paging.totalItems}
-                    pageSize={pageSize}
-                    onPageChange={setPage}
-                />
-            )}
-        </>
-    );
-}
-```
-
-`useWithPaging(pageSize)` is the paging hook the Arc proxy generator adds to a query proxy. Its result also exposes `isSuccess`, `isValid`, and `exceptionMessages`. Log `exceptionMessages` rather than showing them to users.
+Authorization takes precedence over failure. A snapshot response that is not valid JSON (for example, an HTML error page from a proxy) is reported by Arc as an unsuccessful result without throwing and shows `emptyMessage`. The loading row announces its content with `role="status"`; failure messages use `role="alert"`. Query exception text is never shown by default. Override the three messages per table or through `CratisComponentsProvider`'s `messages.dataTable`. If you need a custom state layout rather than a table row, use the query hook and render your own composition with `DataTableCore` and `TablePaginator`.
 
 ## Pagination
 
