@@ -16,6 +16,7 @@ import {
     updateCardContent as updateCardContentExternal,
 } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
+import { syncScrollSprites } from './pivot/syncScrollSprites';
 import {
     updateGroupBackgrounds as updateGroupBackgroundsExternal,
     updateHighlight as updateHighlightExternal,
@@ -152,6 +153,8 @@ export function PivotCanvas<TItem extends object>({
     const lastViewChangeTimeRef = useRef(0);
     const previousViewModeRef = useRef<ViewMode>(viewMode);
     const prevLayoutRef = useRef<LayoutResult | null>(null);
+    const transitionLayoutRef = useRef<LayoutResult | null>(null);
+    const transitionSeenIdsRef = useRef<Set<ItemId>>(new Set());
     const prevGroupingRef = useRef<GroupingResult | null>(null);
     const prevScrollTopRef = useRef<number>(0);
     const prevScrollLeftRef = useRef<number>(0);
@@ -500,6 +503,8 @@ export function PivotCanvas<TItem extends object>({
         const layoutChanged = prevLayoutRef.current !== layout;
 
         if (viewModeChanged || groupingChanged || layoutChanged) {
+            transitionSeenIdsRef.current.clear();
+            if (layoutChanged) transitionLayoutRef.current = prevLayoutRef.current;
             isViewTransitionRef.current = true;
             lastViewChangeTimeRef.current = Date.now();
             previousViewModeRef.current = viewMode;
@@ -540,7 +545,7 @@ export function PivotCanvas<TItem extends object>({
         const currentScrollTop = parentContainerRef.current?.scrollTop || 0;
         const currentScrollLeft = parentContainerRef.current?.scrollLeft || 0;
 
-        syncSpritesToViewport({
+        const syncParams = {
             root: rootRef.current,
             groupsContainer: groupsContainerRef.current,
             container: parentContainerRef.current,
@@ -585,9 +590,11 @@ export function PivotCanvas<TItem extends object>({
                 ),
             isViewTransition: isViewTransitionRef.current,
             prevLayout: prevLayoutRef.current,
+            transitionSeenIds: transitionSeenIdsRef.current,
             prevScrollTop: prevScrollTopRef.current,
             prevScrollLeft: prevScrollLeftRef.current,
-        });
+        };
+        syncSpritesToViewport(syncParams);
 
         // Update previous scroll position for next frame
         prevScrollTopRef.current = currentScrollTop;
@@ -608,6 +615,8 @@ export function PivotCanvas<TItem extends object>({
             needsRenderRef,
             spritesRef,
             isViewTransitionRef,
+            syncVisibility: () => syncSpritesToViewport({ ...syncParams, isViewTransition: false, sweepImmediately: true }),
+            onTransitionComplete: () => transitionSeenIdsRef.current.clear(),
         });
     }, [
         layout,
@@ -713,7 +722,7 @@ export function PivotCanvas<TItem extends object>({
                 // because it encapsulates the logic for conditional vertical alignment (offsetY)
                 // in different view modes. Manually setting position here would overwrite that logic.
 
-                syncSpritesToViewport({
+                syncScrollSprites({
                     root: rootRef.current,
                     groupsContainer: groupsContainerRef.current,
                     container: parentContainerRef.current,
@@ -754,9 +763,10 @@ export function PivotCanvas<TItem extends object>({
                         ),
                     isViewTransition: isViewTransitionRef.current,
                     viewMode,
+                    transitionSeenIds: transitionSeenIdsRef.current,
                     prevScrollTop: prevScrollTopRef.current,
                     prevScrollLeft: prevScrollLeftRef.current,
-                });
+                }, transitionLayoutRef.current);
 
                 // Update previous scroll position for next frame
                 prevScrollTopRef.current = container.scrollTop || 0;

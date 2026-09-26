@@ -79,15 +79,22 @@ export function startAnimationLoop(
     needsRenderRef: { current: boolean };
     spritesRef: { current: Map<unknown, CardSprite> };
     isViewTransitionRef: { current: boolean };
+    onTransitionComplete?: () => void;
+    syncVisibility?: () => void;
   },
   animationSpeed = 0.15,
 ) {
-  const { mountedRef, appRef, animationFrameRef, isAnimatingRef, needsRenderRef, spritesRef, isViewTransitionRef } = refs;
+  const { mountedRef, appRef, animationFrameRef, isAnimatingRef, needsRenderRef, spritesRef, isViewTransitionRef, onTransitionComplete, syncVisibility } = refs;
 
   const animate = () => {
     if (!mountedRef.current) return;
 
+    const wasTransitioning = isViewTransitionRef.current;
     const stillAnimating = updatePositions(spritesRef.current, isViewTransitionRef, animationSpeed);
+    if (wasTransitioning && !isViewTransitionRef.current) {
+      syncVisibility?.();
+      onTransitionComplete?.();
+    }
 
     if (stillAnimating || needsRenderRef.current) {
       appRef.current?.renderer.render(appRef.current.stage);

@@ -45,6 +45,9 @@ export function createCardSprite<TItem extends object>(
         sprite.currentX = x;
         sprite.currentY = y;
 
+        // A recycled sprite must start a new hidden grace period if it leaves the viewport.
+        delete (sprite as CardSprite & { __lastHiddenAt?: number }).__lastHiddenAt;
+
         // Reset animation state
         delete sprite.animationStartTime;
         delete sprite.animationDelay;
