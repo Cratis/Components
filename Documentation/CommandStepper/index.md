@@ -62,7 +62,8 @@ export const ProjectWizard = () => (
   - `onException`: Callback invoked with the exception messages and stack trace when the result has exceptions
   - `onUnauthorized`: Callback invoked when the user is not authorized to execute the command
 - `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with, and it runs only on submit, so it can never satisfy required-field validation (seed those through `initialValues`). Submit turns busy before the transform runs, so an async transform cannot be submitted twice
-- `linear` (default `true`), `orientation` (`'horizontal'` default / `'vertical'`), `headerPosition` (`'top'` default / `'bottom'`), `start`, `end`, `onChangeStep`, and `pt`: the active `StepperCustomizationProps` surface. It maps onto stable `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, and `panel` parts.
+- `linear` (default `true`), `orientation` (`'horizontal'` default / `'vertical'`), `headerPosition` (`'top'` default / `'bottom'`), `start`, `end`, and `pt`: the active `StepperCustomizationProps` surface. It maps onto stable `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, and `panel` parts.
+- `onChangeStep`: Called once after each successful move to a different step through Previous, Next, or a clickable header. Receives `{ index }`, with a zero-based index. Blocked moves and clicks on the current header do not call it.
 - `ptOptions` and `unstyled`: retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned.
 
 Because `CommandStepper` has no outer dialog, it has no `dialogPt` or `dialogUnstyled` props; `pt` targets the stepper directly.
@@ -73,7 +74,8 @@ Conditional steps written as `{condition && <StepperPanel/>}` are counted correc
 
 - Previous is hidden on the first step and Next on the last step.
 - Next is disabled while a field on the current step shows an error. With the default `validateOn='blur'`, an untouched blank field shows no error, so it does not block Next. Pass `validateOnInit` to show errors from the start.
-- `linear` (the default) only makes the step headers unclickable; it does not require a step to be complete before Next.
+- `linear` (the default) makes other step headers unclickable; use Previous and Next to navigate. In non-linear mode, clickable headers also cannot advance past a current step showing an error. Neither mode requires a step to be complete before Next when no errors are shown.
+- The headers form an ordered list of buttons, not ARIA tabs. Each step panel is labelled by its header; the current header has `aria-current="step"`.
 - On the last step Submit is always rendered, but it is disabled until the command passes client validation and no step shows an error. (`StepperCommandDialog` hides its Submit button instead.)
 - While the command runs, Next and Submit are disabled and Submit shows a spinner. `isBusy` disables Previous, Next, and Submit for your own long-running work.
 - On failure the stepper stays on the last step, and server validation messages appear on their fields and turn their steps red.
