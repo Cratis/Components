@@ -237,7 +237,7 @@ export const CommandStepperContent = ({
                         <button
                             {...pt?.header}
                             type='button'
-                            id={`${stepperId}-step-${index}`}
+                            id={pt?.header?.id ?? `${stepperId}-step-${index}`}
                             className={[
                                 'cratis-command-stepper__header',
                                 pt?.header?.className,
@@ -340,7 +340,7 @@ export const CommandStepperContent = ({
                     data-selected={index === currentStep || undefined}
                     data-visited={visitedSteps.has(index) || undefined}
                     aria-label={String(panel.props.header ?? `Step ${index + 1}`)}
-                    aria-labelledby={`${stepperId}-step-${index}`}
+                    aria-labelledby={pt?.header?.id == null ? `${stepperId}-step-${index}` : undefined}
                 >
                     {processChildren(panel.props.children)}
                 </section>

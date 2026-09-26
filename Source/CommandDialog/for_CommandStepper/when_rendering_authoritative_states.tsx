@@ -156,9 +156,9 @@ describe('when CommandStepper renders authoritative states', () => {
             expect(elements[1].hasAttribute('data-invalid')).to.equal(false);
             expect(elements[1].dataset.busy).to.equal('true');
             if (name === 'header') {
-                expect(elements[1].id).not.to.equal('');
-                expect(elements[1].id).not.to.equal(elements[0].id);
-                expect(parts('panel')[1].getAttribute('aria-labelledby')).to.equal(elements[1].id);
+                expect(elements[1].id).to.equal('stepper-header');
+                expect(parts('panel')[1].hasAttribute('aria-labelledby')).to.equal(false);
+                expect(parts('panel')[1].getAttribute('aria-label')).to.equal('Second');
             } else {
                 expect(elements[1].getAttribute('id')).to.equal(`stepper-${name}`);
             }
