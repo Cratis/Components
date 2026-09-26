@@ -23,19 +23,29 @@ const chatStatusByQueryStatus: Record<QueryStatus, ChatStatus> = {
 const resolveChatStatus = (result: Parameters<typeof resolveQueryStatus>[0]): ChatStatus =>
     chatStatusByQueryStatus[resolveQueryStatus(result)];
 
-const MessagesSubscriber = <
-    TMessage extends ChatMessage,
-    TMessagesQuery extends IObservableQueryFor<TMessage[], TMessagesArguments>,
-    TMessagesArguments extends object,
+const serializeArguments = (args?: object): string => {
+    if (!args || Object.keys(args).length === 0) return '';
+    // Use Arc's sorted, JSON-serialized argument values as the subscription identity.
+    const sorted = Object.keys(args).sort().reduce<Record<string, unknown>>((entries, key) => {
+        entries[key] = (args as Record<string, unknown>)[key];
+        return entries;
+    }, {});
+    return JSON.stringify(sorted);
+};
+
+const KeyedQuerySubscriber = <
+    TData,
+    TQuery extends IObservableQueryFor<TData, TArguments>,
+    TArguments extends object,
 >({
     query, args, queryKey, onResult,
 }: {
-    query: Constructor<TMessagesQuery>;
-    args: TMessagesArguments;
+    query: Constructor<TQuery>;
+    args?: TArguments;
     queryKey: string;
-    onResult: (queryKey: string, result: QueryResultWithState<TMessage[]>) => void;
+    onResult: (queryKey: string, result: QueryResultWithState<TData>) => void;
 }) => {
-    const [result] = useObservableQuery<TMessage[], TMessagesQuery, TMessagesArguments>(query, args);
+    const [result] = useObservableQuery<TData, TQuery, TArguments>(query, args);
     useEffect(() => { onResult(queryKey, result); }, [queryKey, result, onResult]);
     return null;
 };
@@ -110,6 +120,22 @@ export const ChatSidebarForObservableQueries = <
     TMessagesArguments
 >) => {
     const [selectedId, setSelectedId] = useState<ChatIdentifier | undefined>(undefined);
+    const [topicsSnapshot, setTopicsSnapshot] = useState<{
+        queryKey: string;
+        topics: TTopic[];
+        status: ChatStatus;
+    }>();
+    const onTopicsResult = useCallback((queryKey: string, result: QueryResultWithState<TTopic[]>) => {
+        const topics = Array.isArray(result.data) ? result.data : [];
+        const status = resolveChatStatus(result);
+        setTopicsSnapshot((previous) => {
+            if (previous?.queryKey === queryKey && previous.status === status &&
+                (previous.topics === topics || previous.topics.length === 0 && topics.length === 0)) {
+                return previous;
+            }
+            return { queryKey, topics, status };
+        });
+    }, []);
     const [messagesSnapshot, setMessagesSnapshot] = useState<{
         queryKey: string;
         messages: TMessage[];
@@ -123,39 +149,38 @@ export const ChatSidebarForObservableQueries = <
         });
     }, []);
 
-    const [topicsResult] = useObservableQuery<TTopic[], TTopicsQuery, TTopicsArguments>(
-        topicsQuery,
-        topicsArguments,
-    );
-
+    const topicsQueryKey = serializeArguments(topicsArguments);
+    const currentTopics = topicsQueryKey === topicsSnapshot?.queryKey ? topicsSnapshot : undefined;
     const messagesQueryArguments = messagesArguments(selectedId);
-    // Match Arc's argument dependency: object-valued identifiers serialize by value, not identity.
-    const serializedArguments = messagesQueryArguments && JSON.stringify(
-        Object.fromEntries(Object.entries(messagesQueryArguments).sort(([left], [right]) => left.localeCompare(right))),
-    );
-    const queryKey = selectedId !== undefined && messagesQueryArguments !== undefined
-        ? JSON.stringify([chatIdentifierString(selectedId), serializedArguments])
+    const messagesQueryKey = selectedId !== undefined && messagesQueryArguments !== undefined
+        ? JSON.stringify([chatIdentifierString(selectedId), serializeArguments(messagesQueryArguments)])
         : undefined;
-    const currentMessages = queryKey === messagesSnapshot?.queryKey ? messagesSnapshot : undefined;
-    const topics = Array.isArray(topicsResult.data) ? topicsResult.data : [];
+    const currentMessages = messagesQueryKey === messagesSnapshot?.queryKey ? messagesSnapshot : undefined;
 
     return (
         <>
-            {queryKey !== undefined && messagesQueryArguments !== undefined && (
-                <MessagesSubscriber<TMessage, TMessagesQuery, TMessagesArguments>
-                    key={queryKey}
+            <KeyedQuerySubscriber<TTopic[], TTopicsQuery, TTopicsArguments>
+                key={topicsQueryKey}
+                query={topicsQuery}
+                args={topicsArguments}
+                queryKey={topicsQueryKey}
+                onResult={onTopicsResult}
+            />
+            {messagesQueryKey !== undefined && messagesQueryArguments !== undefined && (
+                <KeyedQuerySubscriber<TMessage[], TMessagesQuery, TMessagesArguments>
+                    key={messagesQueryKey}
                     query={messagesQuery}
                     args={messagesQueryArguments}
-                    queryKey={queryKey}
+                    queryKey={messagesQueryKey}
                     onResult={onMessagesResult}
                 />
             )}
             <ChatSidebar<TMessage, TTopic>
                 {...sidebar}
-                topics={topics}
+                topics={currentTopics?.topics ?? []}
                 messages={currentMessages?.messages ?? []}
-                topicsStatus={resolveChatStatus(topicsResult)}
-                messagesStatus={queryKey === undefined
+                topicsStatus={currentTopics?.status ?? ChatStatus.Loading}
+                messagesStatus={messagesQueryKey === undefined
                     ? ChatStatus.Ready
                     : currentMessages?.status ?? ChatStatus.Loading}
                 selectedTopicId={selectedId ?? null}
