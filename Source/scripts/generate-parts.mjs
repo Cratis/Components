@@ -688,7 +688,7 @@ export const partStateDefinitions = {
         cell: ['selected'],
         'button-bar': [],
         today: ['disabled'],
-        clear: [],
+        clear: ['disabled'],
     },
     Button: {
         root: ['disabled', 'loading'],

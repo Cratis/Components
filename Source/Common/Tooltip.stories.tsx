@@ -58,6 +58,13 @@ export const Positions: Story = {
     },
 };
 
+/** Rich but non-interactive tooltip content. Use a popover for actions or links. */
+export const RichContent: Story = {
+    args: {
+        content: <span><strong>Tip:</strong> Save the current changes.</span>,
+    },
+};
+
 /** With no content the child renders on its own — no tooltip attached. */
 export const NoContent: Story = {
     render: () => (

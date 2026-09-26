@@ -49,6 +49,8 @@ export interface CommandStepperContentProps extends StepperCustomizationProps {
     isBusy?: boolean;
     /** Whether submit is currently executing. */
     isSubmitting?: boolean;
+    /** Locks form fields during a guarded submission without changing unguarded forms. */
+    disableFieldsWhileSubmitting?: boolean;
     /** Disables submit regardless of current step state. */
     isSubmitDisabled?: boolean;
     /** Submit callback invoked on the last step. */
@@ -133,6 +135,7 @@ export const CommandStepperContent = ({
     okLabel,
     isBusy = false,
     isSubmitting = false,
+    disableFieldsWhileSubmitting = false,
     isSubmitDisabled = false,
     onSubmit,
     linear = true,
@@ -342,7 +345,11 @@ export const CommandStepperContent = ({
                     aria-label={String(panel.props.header ?? `Step ${index + 1}`)}
                     aria-labelledby={pt?.panel?.['aria-labelledby'] ?? (pt?.header?.id == null ? `${stepperId}-step-${index}` : undefined)}
                 >
-                    {processChildren(panel.props.children)}
+                    {disableFieldsWhileSubmitting ? (
+                        <fieldset disabled={isSubmitting} inert={isSubmitting} style={{ display: 'contents' }}>
+                            {processChildren(panel.props.children)}
+                        </fieldset>
+                    ) : processChildren(panel.props.children)}
                 </section>
             ))}
         </div>

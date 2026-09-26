@@ -11,6 +11,7 @@ import type { ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';
 import type { ChatMessage } from './ChatMessage';
 import { ChatSidebar } from './ChatSidebar';
+import { ChatStatus } from './ChatStatus';
 import type { ChatTopic } from './ChatTopic';
 
 const authors: Record<string, ChatAuthor> = {
@@ -73,6 +74,20 @@ export const Playground: Story = {
         onTopicSelected: fn(),
         authorOf,
         mentionCandidates,
+    },
+};
+
+/** Change topicsStatus in Controls to see the empty-list states; set selectedTopicId to topic-1 to see the failed conversation. */
+export const QueryStates: Story = {
+    args: {
+        open: true,
+        onClose: fn(),
+        topics: [],
+        messages: [],
+        selectedTopicId: null,
+        topicsStatus: ChatStatus.Loading,
+        messagesStatus: ChatStatus.Failed,
+        onSendMessage: fn(),
     },
 };
 

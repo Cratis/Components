@@ -1,10 +1,9 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ICommandResult } from '@cratis/arc/commands';
 import { DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
 import { Dialog, type DialogProps } from '../Dialogs/Dialog';
-import React, { useState } from 'react';
+import React from 'react';
 import {
     CommandForm,
     CommandFormFieldWrapper,
@@ -12,7 +11,9 @@ import {
     useCommandInstance,
     type CommandFormProps,
 } from '@cratis/arc.react/commands';
-import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import type { BeforeExecuteCallback } from './applyBeforeExecute';
+import type { ConfirmBeforeExecute } from './confirmBeforeExecute';
+import { useCommandExecution } from './useCommandExecution';
 import {
     isCommandFormField,
     markAsCommandFormColumn,
@@ -48,6 +49,16 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
 
     /**
+     * Ask whether to run the command after validation and `onBeforeExecute`.
+     * Receives the transformed values. Only `true` executes; all other outcomes
+     * keep the dialog open. May return a promise (for example from a confirmation dialog).
+     * If command values change while confirmation is pending, execution is skipped
+     * and the dialog stays open; confirm the new values again.
+     * Unlike `onConfirm`, this runs before execution, not after success.
+     */
+    confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
+
+    /**
      * Form fields and arbitrary content for the dialog body. Children that are
      * `CommandFormField` instances are automatically wrapped so they bind to
      * the command instance.
@@ -69,6 +80,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onException,
     onUnauthorized,
     onBeforeExecute,
+    confirmBeforeExecute,
     children,
     ...dialogProps
 }: Omit<DialogProps, 'isBusy'> & {
@@ -78,6 +90,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
     onException?: CommandFormProps<TCommand, TResponse>['onException'];
     onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+    confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
 }) => {
     const {
         setCommandValues,
@@ -85,25 +98,13 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
         isValid: isCommandFormValid,
     } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
-    const [isBusy, setIsBusy] = useState(false);
+    const submission = useCommandExecution<TCommand, TResponse>(
+        commandInstance, setCommandValues, onBeforeExecute, confirmBeforeExecute, onException,
+    );
 
     const handleConfirm = async () => {
-        setIsBusy(true);
-        let result: ICommandResult<TResponse>;
-        try {
-            if (onBeforeExecute) {
-                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-                setCommandValues(applied instanceof Promise ? await applied : applied);
-            }
-            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            result = await (
-                commandInstance as unknown as {
-                    execute: () => Promise<ICommandResult<TResponse>>;
-                }
-            ).execute();
-        } finally {
-            setIsBusy(false);
-        }
+        const result = await submission.run();
+        if (!result) return false;
 
         if (!result.isSuccess) {
             await onFailed?.(result);
@@ -114,22 +115,19 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
             }
-            setCommandResult(result);
+            if (submission.isMounted()) setCommandResult(result);
             return false;
         }
 
         await onSuccess?.(result.response as TResponse);
-
         if (onConfirm) {
             const closeResult = await onConfirm();
             return closeResult === true;
         }
-
         if (onClose) {
             const closeResult = await onClose(DialogResult.Ok);
             return closeResult !== false;
         }
-
         return true;
     };
 
@@ -171,7 +169,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             onClose={onClose}
             onConfirm={handleConfirm}
             isValid={isDialogValid}
-            isBusy={isBusy}
+            isBusy={submission.isSubmitting}
         >
             <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 {processedChildren}
@@ -322,6 +320,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
         onConfirm,
         onCancel,
         onBeforeExecute,
+        confirmBeforeExecute,
         className,
         pt,
         ptOptions,
@@ -368,6 +367,7 @@ const CommandDialogComponent = <TCommand extends object = object, TResponse = ob
                 onException={props.onException}
                 onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
+                confirmBeforeExecute={confirmBeforeExecute}
             >
                 {children}
             </CommandDialogWrapper>

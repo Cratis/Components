@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { unstable_useSlot } from '../renderer/RendererContext';
 import { renderSlot } from '../renderer/renderSlot';
 import type { unstable_SlotDeclaration } from '../renderer/slots';
@@ -19,8 +19,8 @@ interface TooltipTriggerElementProps {
 
 /** Props for the {@link Tooltip} component. */
 export interface TooltipProps {
-    /** Text displayed inside the tooltip. Empty content disables the tooltip. */
-    content?: string;
+    /** Non-interactive tooltip content. Use a popover for links or buttons. Undefined, null, either boolean, or an empty string disables the tooltip. */
+    content?: ReactNode;
     /** Where the tooltip appears relative to its trigger. */
     position?: TooltipPosition;
     /** When true, suppresses the tooltip. */

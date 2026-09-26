@@ -1,44 +1,55 @@
 ---
 title: Common components
-description: Native form controls, pickers, collection controls, layout, icons, and error handling from @cratis/components/Common.
+description: Choose among the native form controls, pickers, collection controls, layout, icons, and error handling in @cratis/components/Common.
 ---
 
-The Common module provides reusable UI components and the application provider that serve as building blocks for applications. Import the components from `@cratis/components/Common`:
+The Common subpath holds the building blocks that work with ordinary React state and need no Arc command binding. Import them from `@cratis/components/Common`:
 
 ```tsx
-import { Button, ComboBox, Page, TextInput } from '@cratis/components/Common';
+import { Button, ComboBox, DatePickerInput, TextInput } from '@cratis/components/Common';
 ```
 
-`CratisComponentsProvider` is also re-exported here, but the conventional import is the package root, `@cratis/components`.
+`CratisComponentsProvider` is also re-exported here, but the conventional import is the package root, `@cratis/components`. Mount it once at the application root to supply the locale and Components-owned labels; see [CratisComponentsProvider](cratis-components-provider.md).
 
-## Components
+When the value belongs to an Arc command, use the matching [CommandForm field](../CommandForm/index.md) instead of wiring a Common control to the command yourself.
 
-- **CratisComponentsProvider**: Locale, Components-owned labels and icons, and optional app-wide toaster.
-- **TextInput / TextArea**: Native text controls with semantic string changes and real element refs.
-- **NumberInput**: Controlled locale-aware numeric entry with nullable values, fractions, bounds, adornments, and explicit commits.
-- **ComboBox**: Single-selection entity picker — type to filter, keyboard selection, loading, failure, empty and add-new states.
-- **Checkbox / Radio / Switch**: Native form choices with semantic boolean changes and browser-owned submission and reset behavior.
-- **Button / IconButton**: Native actions with semantic variants, tones, loading, and disabled behavior.
-- **Surface**: A bounded `div`, `section`, or `article` container with no invented interaction state.
-- **ToggleGroup / Tabs / TagGroup / Breadcrumbs**: Choosing a value, switching a view, editing a set of values, and showing where you are.
-- **ActionMenubar**: A flat row of page-level command actions.
-- **Icon / IconDisplay**: Unified icon type that accepts a CSS class string or any React node.
-- **Page**: Layout primitive for consistent page structures.
-- **FormElement**: Lightweight wrapper that places an icon addon to the left of a form input.
-- **ErrorBoundary**: Error handling for React component trees.
+## Enter a value
 
-The subpath also exports `DatePickerInput` and `Tooltip`. `DatePickerInput` is the control behind [`CalendarField`](../CommandForm/calendar-field.md).
+| You want to… | Use | Reference |
+| --- | --- | --- |
+| Enter free text on one or several lines | `TextInput`, `TextArea` | [Basic controls](basic-controls.md) |
+| Enter a number with locale separators, fraction rules, bounds, or a nullable value | `NumberInput` | [Locale-aware number input](number-input.md) |
+| Enter a date or a date and time | `DatePickerInput` | [DatePickerInput](date-picker-input.md) |
+| Put an icon addon in front of your own input | `FormElement` | [FormElement](form-element.md) |
 
-## See Also
+## Choose from options
 
-- [Basic controls](basic-controls.md) — native form, ref, change, part, and state contracts
-- [Locale-aware number input](number-input.md) — locale, nullable edit, commit, adornment, range, part, and token contracts
-- [ComboBox](combobox.md) — filtering, not-ready states, the action row, accessibility, part and token contracts
-- [Collection controls](collection-controls.md) — `ToggleGroup`, `Tabs`, `TagGroup` and `Breadcrumbs`
-- [ActionMenubar](action-menubar.md) — page-level command actions
-- [CratisComponentsProvider](cratis-components-provider.md) — locale, labels, icons, and toaster configuration
-- [Icon](icon.md) - Icon type and IconDisplay component
-- [Page](page.md) - Page layout component
-- [FormElement](form-element.md) - Form field icon-addon wrapper
-- [ErrorBoundary](error-boundary.md) - Error boundary component
-- [Styling Overview](../Styling/index.md) — the supported styling options and how Common fits in
+| You want to… | Use | Reference |
+| --- | --- | --- |
+| Turn one option on or off | `Checkbox` or `Switch` | [Basic controls](basic-controls.md) |
+| Pick one of a few options that are all visible | `Radio`, or `ToggleGroup` for a segmented control | [Basic controls](basic-controls.md), [Collection controls](collection-controls.md) |
+| Pick one entity by typing to search, with loading, empty, failure and add-new states | `ComboBox` | [ComboBox](combobox.md) |
+| Pick one or more values from a known, small list | `Dropdown` (separate subpath) | [Dropdown](../Dropdown/index.md) |
+| Edit a set of values as removable tags | `TagGroup` | [Collection controls](collection-controls.md) |
+
+## Act, navigate, and lay out
+
+| You want to… | Use | Reference |
+| --- | --- | --- |
+| Run one action | `Button`, or `IconButton` for an icon-only action | [Basic controls](basic-controls.md) |
+| Show a row of page-level command actions | `ActionMenubar` | [ActionMenubar](action-menubar.md) |
+| Switch between views of the same content | `Tabs` | [Collection controls](collection-controls.md) |
+| Show where the user is in a hierarchy | `Breadcrumbs` | [Collection controls](collection-controls.md) |
+| Give a routed view a full-height layout and title | `Page` | [Page](page.md) |
+| Group content in a bounded `div`, `section`, or `article` | `Surface` | [Basic controls](basic-controls.md) |
+| Show a short hint on hover and keyboard focus of one element | `Tooltip` | [Tooltips](basic-controls.md#tooltips) |
+
+## Icons, configuration, and errors
+
+| You want to… | Use | Reference |
+| --- | --- | --- |
+| Pass an icon as a React node or icon-font class | `Icon`, `IconDisplay` | [Icon](icon.md) |
+| Set the locale, owned labels, icons, or the app-wide toaster | `CratisComponentsProvider` | [CratisComponentsProvider](cratis-components-provider.md) |
+| Stop a render failure from taking down the whole screen | `ErrorBoundary` | [ErrorBoundary](error-boundary.md) |
+
+Modal content, confirmations, and busy states are in the separate [Dialogs](../Dialogs/index.md) subpath. For choices that span several subpaths, such as a table versus a data page, see [Choosing a component](../choosing-a-component.md). To restyle any of these controls, start with the [Styling overview](../Styling/index.md).

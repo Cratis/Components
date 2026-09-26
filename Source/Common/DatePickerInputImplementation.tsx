@@ -109,6 +109,8 @@ export const DatePickerInputImplementation = ({
     const effectiveDisabled = disabled ?? pt?.input?.disabled ?? false;
     const effectiveReadOnly = readOnly ?? pt?.input?.readOnly ?? false;
     const effectiveInvalid = invalid ?? pt?.input?.['aria-invalid'] ?? false;
+    const actionsDisabled = effectiveDisabled || effectiveReadOnly;
+    const clearDisabled = actionsDisabled || pt?.clear?.disabled || false;
     const effectivePlaceholder = placeholder ?? pt?.input?.placeholder;
     const effectiveAriaLabel =
         ariaLabel ??
@@ -152,7 +154,10 @@ export const DatePickerInputImplementation = ({
                     isDisabled={effectiveDisabled}
                     isReadOnly={effectiveReadOnly}
                     isInvalid={effectiveInvalid}
-                    onOpenChange={setIsPickerOpen}
+                    isOpen={isPickerOpen}
+                    onOpenChange={(nextIsOpen) => {
+                        if (!nextIsOpen || !effectiveReadOnly) setIsPickerOpen(nextIsOpen);
+                    }}
                     minValue={minValue}
                     maxValue={maxValue}
                     granularity={showTime ? 'minute' : 'day'}
@@ -420,14 +425,14 @@ export const DatePickerInputImplementation = ({
                                                 )}
                                                 data-cratis-part='today'
                                                 data-disabled={
-                                                    isTodayOutOfBounds || undefined
+                                                    actionsDisabled || isTodayOutOfBounds || undefined
                                                 }
-                                                disabled={isTodayOutOfBounds}
+                                                disabled={actionsDisabled || isTodayOutOfBounds}
                                                 aria-disabled={
-                                                    isTodayOutOfBounds || undefined
+                                                    actionsDisabled || isTodayOutOfBounds || undefined
                                                 }
                                                 onClick={(event) => {
-                                                    if (isTodayOutOfBounds) return;
+                                                    if (actionsDisabled || isTodayOutOfBounds) return;
                                                     onChange(todayDate, {
                                                         source: 'user',
                                                         nativeEvent: event.nativeEvent,
@@ -444,12 +449,16 @@ export const DatePickerInputImplementation = ({
                                                     pt?.clear?.className,
                                                 )}
                                                 data-cratis-part='clear'
-                                                onClick={(event) =>
+                                                data-disabled={clearDisabled || undefined}
+                                                disabled={clearDisabled}
+                                                aria-disabled={clearDisabled || pt?.clear?.['aria-disabled'] || undefined}
+                                                onClick={(event) => {
+                                                    if (clearDisabled) return;
                                                     onChange(null, {
                                                         source: 'user',
                                                         nativeEvent: event.nativeEvent,
-                                                    })
-                                                }
+                                                    });
+                                                }}
                                             >
                                                 {resolvedClearLabel}
                                             </button>

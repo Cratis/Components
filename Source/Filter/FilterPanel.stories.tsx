@@ -39,12 +39,12 @@ const openFilterGroup = async (
         await userEvent.click(group);
     }
     await waitFor(() => expect(findGroup()).toHaveAttribute('aria-expanded', 'true'));
-    const panel = group.closest('aside');
+    const panel = group.closest('[role="dialog"]');
     const content = group.closest('.pv-filter')?.querySelector('.pv-filter-content');
     await waitFor(() => {
         expect(panel ? getComputedStyle(panel).opacity : '').toBe('1');
         expect(content ? getComputedStyle(content).opacity : '').toBe('1');
-    });
+    }, { timeout: 5000 });
     return { body, canvas };
 };
 

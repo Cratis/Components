@@ -3,6 +3,7 @@
 
 import type { ReactNode } from 'react';
 import type { FilterEditorProps } from '../Filter/FilterEditorProps';
+import type { PivotViewerLabels } from './PivotViewerLabels';
 
 /** Primitive value types that a pivot property can hold. */
 export type PivotPrimitive = string | number | boolean | Date | null | undefined;
@@ -175,8 +176,10 @@ export interface PivotViewerProps<TItem extends object> {
     emptyContent?: ReactNode;
     /** Loading state; displays a loading indicator when true. */
     isLoading?: boolean;
-    /** Accessible status text while loading; defaults to "Loading…". */
+    /** Accessible status text while loading; overrides labels.loading and defaults to "Loading…". */
     loadingLabel?: string;
+    /** Optional toolbar and loading-status text overrides. Unset fields keep their English defaults. */
+    labels?: PivotViewerLabels;
     /**
      * Optional color overrides mapped to semantic CSS variables.
      * If omitted, values are taken from the global theme (Cratis defaults).

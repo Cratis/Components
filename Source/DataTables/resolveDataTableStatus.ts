@@ -1,7 +1,16 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { QueryStatus } from '../QueryStatus/QueryStatus';
+import { resolveQueryStatus } from '../QueryStatus/resolveQueryStatus';
 import { DataTableStatus } from './DataTableStatus';
+
+const tableStatusByQueryStatus: Record<QueryStatus, DataTableStatus> = {
+    [QueryStatus.Ready]: DataTableStatus.Ready,
+    [QueryStatus.Loading]: DataTableStatus.Loading,
+    [QueryStatus.Failed]: DataTableStatus.Failed,
+    [QueryStatus.Unauthorized]: DataTableStatus.Unauthorized,
+};
 
 /** Resolve Arc query flags into the table's display state. */
 export const resolveDataTableStatus = (result: {
@@ -9,10 +18,4 @@ export const resolveDataTableStatus = (result: {
     hasExceptions?: boolean;
     isValid?: boolean;
     isPerforming?: boolean;
-}): DataTableStatus => {
-    if (result.isAuthorized === false) return DataTableStatus.Unauthorized;
-    if (result.hasExceptions === true || result.isValid === false) return DataTableStatus.Failed;
-    // Core shows a loading row without data, or keeps existing rows and marks them busy.
-    if (result.isPerforming === true) return DataTableStatus.Loading;
-    return DataTableStatus.Ready;
-};
+}): DataTableStatus => tableStatusByQueryStatus[resolveQueryStatus(result)];

@@ -384,6 +384,36 @@ export const Default: Story = {
     },
 };
 
+/** Override the toolbar copy and count for the collection being viewed. */
+export const ToolbarLabels: Story = {
+    render: () => (
+        <div
+            className='storybook-wrapper'
+            style={{
+                height: 'calc(100vh - 2rem)',
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                alignItems: 'stretch',
+                justifyContent: 'flex-start',
+            }}
+        >
+            <PivotViewer<Person>
+                data={sampleData}
+                dimensions={[{ key: 'department', label: 'Department', getValue: (item) => item.department }]}
+                cardRenderer={(item) => ({ title: item.name })}
+                labels={{
+                    collection: 'Browse',
+                    grouped: 'By department',
+                    sortBy: 'Arrange by',
+                    itemCount: (count) => `${count} people`,
+                }}
+            />
+        </div>
+    ),
+};
+
 export const LargeDataset: Story = {
     name: 'Large Dataset (2 500 employees)',
     render: () => {

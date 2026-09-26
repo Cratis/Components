@@ -13,6 +13,7 @@ export class SampleCommand {
 
 const execution = vi.hoisted(() => ({
     calls: 0,
+    pending: undefined as Promise<unknown> | undefined,
     result: {
         isSuccess: false,
         isValid: true,
@@ -52,7 +53,7 @@ vi.mock('@cratis/arc.react/commands', () => {
         name: '',
         execute: () => {
             execution.calls += 1;
-            return Promise.resolve(execution.result);
+            return execution.pending ?? Promise.resolve(execution.result);
         },
     };
 

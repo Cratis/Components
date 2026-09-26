@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FilterOption } from './types';
 import { useOptionListOverflow } from './useOptionListOverflow';
 
@@ -29,6 +29,10 @@ export interface CheckboxListFilterProps {
     searchable?: boolean;
     /** Placeholder text for the search input. Defaults to 'Search…'. */
     searchPlaceholder?: string;
+    /** Accessible name for the search input. Falls back to its placeholder, then 'Search'. */
+    searchAriaLabel?: string;
+    /** Focus the search when visible. FilterPanel enables this only for expanded groups. Defaults to false. */
+    autoFocusSearch?: boolean;
     /** Shown in place of the list when there are no options at all. */
     emptyMessage?: string;
     /** Shown in place of the list when a search matches nothing. */
@@ -75,6 +79,8 @@ export function CheckboxListFilter({
     onToggle,
     searchable,
     searchPlaceholder = 'Search…',
+    searchAriaLabel,
+    autoFocusSearch = false,
     emptyMessage = 'Nothing to choose from.',
     noMatchesMessage = 'No matches.',
     name,
@@ -82,12 +88,24 @@ export function CheckboxListFilter({
     const [search, setSearch] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
     const mirrorRef = useRef<HTMLUListElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const didAutoFocusSearch = useRef(false);
     const generatedName = useId();
     const groupName = name ?? generatedName;
 
     const autoDetect = searchable === undefined;
     const overflows = useOptionListOverflow(containerRef, mirrorRef, autoDetect);
     const showSearch = searchable === true || (autoDetect && overflows);
+    const hasOptions = options.length > 0;
+
+    useEffect(() => {
+        if (!autoFocusSearch) {
+            didAutoFocusSearch.current = false;
+        } else if (showSearch && !didAutoFocusSearch.current && searchInputRef.current) {
+            searchInputRef.current.focus();
+            didAutoFocusSearch.current = true;
+        }
+    }, [autoFocusSearch, showSearch, hasOptions]);
 
     const normalized = search.trim().toLowerCase();
     const visibleOptions = useMemo(
@@ -98,7 +116,7 @@ export function CheckboxListFilter({
         [options, showSearch, normalized],
     );
 
-    if (options.length === 0) {
+    if (!hasOptions) {
         return <p className='pv-option-list-empty'>{emptyMessage}</p>;
     }
 
@@ -107,8 +125,10 @@ export function CheckboxListFilter({
             {showSearch && (
                 <div className='pv-filter-group-search pv-option-list-search'>
                     <input
+                        ref={searchInputRef}
                         type='search'
                         placeholder={searchPlaceholder}
+                        aria-label={(searchAriaLabel ?? searchPlaceholder) || 'Search'}
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                     />
