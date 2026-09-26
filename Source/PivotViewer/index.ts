@@ -4,6 +4,7 @@
 export { PivotViewer } from './PivotViewer';
 // `PivotViewerOptimized` was an accidental alias of `PivotViewer` and has been
 // removed; import `PivotViewer` instead.
+export type { PivotViewerLabels } from './PivotViewerLabels';
 export type {
     PivotViewerProps,
     PivotViewerColors,
