@@ -1,8 +1,10 @@
 name: Update Packages
 
+# Scheduled runs are paused (#215). The shared workflow's default publication mode pushes dependency
+# updates straight to main, and those updates have to arrive as reviewed pull requests with the
+# package-manager and renderer checks. Run it manually only until the pull-request configuration
+# in #215 is in place.
 on:
-  schedule:
-    - cron: '0 6 * * *'
   workflow_dispatch:
 
 jobs:
