@@ -337,7 +337,7 @@ export function FilterPanel({
     return createPortal(
         <AnimatePresence initial={false}>
             {isOpen && (
-                <motion.aside
+                <motion.div
                     ref={panelRef}
                     role='dialog'
                     aria-label={ariaLabel}
@@ -514,7 +514,7 @@ export function FilterPanel({
                             })}
                         </div>
                     </div>
-                </motion.aside>
+                </motion.div>
             )}
         </AnimatePresence>,
         document.body,

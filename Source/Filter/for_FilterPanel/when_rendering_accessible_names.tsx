@@ -53,6 +53,11 @@ describe('when rendering the default filter panel', () => {
         expect(panel.getAttribute('aria-label')).to.equal('Filters');
     });
 
+    it('should render the dialog as a div instead of an aside landmark', () => {
+        const panel = document.querySelector('[role="dialog"]');
+        expect(panel?.tagName).to.equal('DIV');
+    });
+
     it('should name each group search from its own label or placeholder', () => {
         const inputs = document.querySelectorAll('.pv-filter-group-search input');
         expect(inputs[0].getAttribute('aria-label')).to.equal('Find status');

@@ -316,7 +316,7 @@ The first filter group starts expanded. The hook re-syncs its state when the set
 ## Accessibility and keyboard
 
 - The panel is rendered into `document.body` at a fixed position below `anchorRef`, and follows the anchor on scroll and resize.
-- The panel's `<aside>` element carries `role="dialog"`, so it is exposed as a named, non-modal dialog, not a complementary landmark. Override its English default name with `aria-label` for your locale. Opening the panel moves focus into the dialog; if an expanded group's `autoFocus` search is available, it receives focus instead. Focus is not trapped. Set `aria-expanded` on your trigger, as in the Quick Start.
+- The panel renders as a `<div>` with `role="dialog"`, so it is exposed as a named, non-modal dialog, not an `<aside>` complementary landmark. Override its English default name with `aria-label` for your locale. Opening the panel moves focus into the dialog; if an expanded group's `autoFocus` search is available, it receives focus instead. Focus is not trapped. Set `aria-expanded` on your trigger, as in the Quick Start.
 - Escape closes the panel and returns focus to `anchorRef` if focus is inside the panel or on its anchor. Escape with focus elsewhere does nothing. Outside mousedown closes without moving focus.
 - Each group header is a button with `aria-expanded`. The clear button is named by `clearFilterAriaLabel` or `clearRangeAriaLabel`.
 - Range sliders are named by `minimumAriaLabel` and `maximumAriaLabel` and respond to Arrow, Home, and End keys.

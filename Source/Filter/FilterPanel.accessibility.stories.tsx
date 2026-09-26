@@ -3,7 +3,7 @@
 
 import { useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { FilterPanel } from './FilterPanel';
 import type { FilterDefinition } from './types';
 
@@ -26,9 +26,11 @@ export const FocusSearchAndDismiss: Story = {
         await userEvent.click(body.getByRole('button', { name: 'Status' }));
         const search = body.getByRole('searchbox', { name: 'Find a status' });
         await expect(search).toHaveFocus();
-        await expect(body.getByRole('dialog', { name: 'Filter choices' })).toBeTruthy();
+        const panel = body.getByRole('dialog', { name: 'Filter choices' });
+        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'));
         await userEvent.keyboard('{Escape}');
         await expect(canvas.getByRole('button', { name: 'Filters' })).toHaveFocus();
+        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull());
     },
     render: () => {
         const anchorRef = useRef<HTMLButtonElement>(null);
