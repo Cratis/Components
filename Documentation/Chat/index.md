@@ -106,7 +106,9 @@ export const Workspace = () => {
 
 ## Focus and dismissal
 
-The default, non-modal sidebar is portaled to the end of `document.body` as a plain panel with an `h2` title. It does not move focus when it opens, trap focus, or close on Escape or an outside click, so the page behind stays usable. Move focus into it yourself when it opens from a keyboard action, or pass `autoFocus` to focus the composer when a conversation mounts. It does not use the provider's `overlayEnvironment`.
+The default, non-modal sidebar is a plain panel with an `h2` title. It portals to `document.body` after mount, or to the container supplied by the provider's `overlayEnvironment`. If that container is unavailable, the portal waits; server rendering produces no panel markup, so hydration does not mismatch. The panel slides in and out on open and close, except when reduced motion is requested.
+
+It does not move focus when it opens, trap focus, or close on Escape or an outside click, so the page behind stays usable. Move focus into it yourself when it opens from a keyboard action, or pass `autoFocus` to focus the composer when a conversation mounts.
 
 With `modal`, the panel renders through React Aria's modal overlay: a backdrop blocks the page, and Escape or a press outside the panel calls `onClose`.
 
