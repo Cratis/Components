@@ -16,6 +16,7 @@ describe('when an async transform settles after unmount without a guard', () => 
         await act(async () => resolveTransform({ name: 'After' }));
     });
     it('should still execute', () => { state.execute.mock.calls.length.should.equal(1); });
+    it('should execute with the transformed values', () => { state.values.name.should.equal('After'); });
     it('should deliver the result callback', () => { onSuccess.mock.calls.length.should.equal(1); });
     it('should call onConfirm', () => { onConfirm.mock.calls.length.should.equal(1); });
 });

@@ -25,7 +25,7 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
             if (onBeforeExecute) {
                 const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
                 values = applied instanceof Promise ? await applied : applied;
-                if (submission.isMounted()) setCommandValues(values);
+                setCommandValues(values);
             }
             if (confirmBeforeExecute) {
                 let approved = false;
