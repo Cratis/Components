@@ -468,33 +468,40 @@ ruleTester.run('no-primereact-dialog', noPrimereactDialog, {
 tsRuleTester.run('onbeforeexecute-must-return', onbeforeexecuteMustReturn, {
     valid: [
         // Expression-bodied arrow always returns.
-        'const a = <CommandDialog onBeforeExecute={values => values} />;',
+        "import { CommandDialog } from '@cratis/components/CommandDialog'; const a = <CommandDialog onBeforeExecute={values => values} />;",
         // Block body that returns the values.
-        "const b = <CommandDialog onBeforeExecute={(values) => { values.id = '1'; return values; }} />;",
-        // Object property form.
-        'const c = { onBeforeExecute: (v) => v };',
-        // Variable form.
-        'const onBeforeExecute = (v) => { return v; };',
+        "import { CommandDialog } from '@cratis/components/CommandDialog'; const b = <CommandDialog onBeforeExecute={(values) => { values.id = '1'; return values; }} />;",
+        // Object and variable forms have no resolvable owning component.
+        'const c = { onBeforeExecute: (v) => { log(v); } };',
+        'const onBeforeExecute = (v) => { log(v); };',
+        "import { CommandScope } from '@cratis/arc.react/commands'; const scope = <CommandScope onBeforeExecute={(command) => { log(command); }} />;",
+        'const unknown = <CommandDialog onBeforeExecute={() => { log(); }} />;',
+        "import { CommandDialog } from 'other-package'; const other = <CommandDialog onBeforeExecute={() => { log(); }} />;",
+        "import { CommandDialog } from '@cratis/components/CommandDialog'; const shadow = ((CommandDialog) => <CommandDialog onBeforeExecute={() => { log(); }} />)(Other);",
         // A nested callback returning nothing does not count against the outer return.
-        'const d = <CommandDialog onBeforeExecute={(v) => { [1].forEach(() => {}); return v; }} />;',
+        "import { CommandDialog } from '@cratis/components/CommandDialog'; const d = <CommandDialog onBeforeExecute={(v) => { [1].forEach(() => {}); return v; }} />;",
         // Unrelated callbacks are never flagged, even when they return nothing.
         'const e = <button onClick={() => { doThing(); }} />;',
     ],
     invalid: [
         {
-            code: 'const a = <CommandDialog onBeforeExecute={(values) => { doSideEffect(values); }} />;',
+            code: "import { CommandDialog as Dialog } from '@cratis/components/CommandDialog'; const a = <Dialog onBeforeExecute={(values) => { doSideEffect(values); }} />;",
             errors: [{ messageId: 'missingReturn' }],
         },
         {
-            code: 'const b = <CommandDialog onBeforeExecute={function (values) { doSideEffect(values); }} />;',
+            code: "import { StepperCommandDialog } from '@cratis/components/CommandDialog'; const b = <StepperCommandDialog onBeforeExecute={function (values) { doSideEffect(values); }} />;",
             errors: [{ messageId: 'missingReturn' }],
         },
         {
-            code: 'const c = <CommandDialog onBeforeExecute={(values) => { return; }} />;',
+            code: "import { CommandForm as Form } from '@cratis/arc.react/commands'; const c = <Form onBeforeExecute={(values) => { return; }} />;",
             errors: [{ messageId: 'emptyReturn' }],
         },
         {
-            code: 'const d = { onBeforeExecute: (v) => { log(v); } };',
+            code: "import { CommandStepper } from '@cratis/components/CommandStepper'; const d = <CommandStepper onBeforeExecute={(v) => { log(v); }} />;",
+            errors: [{ messageId: 'missingReturn' }],
+        },
+        {
+            code: "import * as Dialogs from '@cratis/components/CommandDialog'; const d = <Dialogs.CommandDialog onBeforeExecute={(v) => { log(v); }} />;",
             errors: [{ messageId: 'missingReturn' }],
         },
     ],

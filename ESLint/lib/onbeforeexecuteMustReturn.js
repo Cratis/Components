@@ -32,39 +32,22 @@ const keyNameOf = (key) => {
     return undefined;
 };
 
-// True when `node` is the function assigned to an `onBeforeExecute` binding — a JSX
-// attribute (`onBeforeExecute={...}`), an object property (`{ onBeforeExecute: ... }`), or a
-// variable (`const onBeforeExecute = ...`).
-const isOnBeforeExecuteCallback = (node) => {
-    const parent = node.parent;
-    if (!parent) return false;
+const transformerExports = new Map([
+    [
+        '@cratis/components/CommandDialog',
+        new Set(['CommandDialog', 'StepperCommandDialog', 'CommandStepper']),
+    ],
+    ['@cratis/components/CommandStepper', new Set(['CommandStepper'])],
+    ['@cratis/arc.react/commands', new Set(['CommandForm'])],
+]);
 
-    if (
-        parent.type === 'JSXExpressionContainer' &&
-        parent.parent?.type === 'JSXAttribute' &&
-        parent.parent.name?.name === 'onBeforeExecute'
-    ) {
-        return true;
+const importBinding = (scope, name) => {
+    for (let current = scope; current; current = current.upper) {
+        const variable = current.set.get(name);
+        if (variable)
+            return variable.defs.find(definition => definition.type === 'ImportBinding')?.node;
     }
-
-    if (
-        (parent.type === 'Property' || parent.type === 'PropertyDefinition') &&
-        parent.value === node &&
-        keyNameOf(parent.key) === 'onBeforeExecute'
-    ) {
-        return true;
-    }
-
-    if (
-        parent.type === 'VariableDeclarator' &&
-        parent.init === node &&
-        parent.id?.type === 'Identifier' &&
-        parent.id.name === 'onBeforeExecute'
-    ) {
-        return true;
-    }
-
-    return false;
+    return undefined;
 };
 
 // Require an `onBeforeExecute` callback to return the command values on every path. It is a
@@ -94,8 +77,34 @@ export const onbeforeexecuteMustReturn = {
         },
     },
     create(context) {
+        const imports = new Map();
+        const isTransformer = (node) => {
+            const attribute = node.parent?.parent;
+            if (
+                node.parent?.type !== 'JSXExpressionContainer' ||
+                attribute?.type !== 'JSXAttribute' ||
+                attribute.name?.name !== 'onBeforeExecute'
+            ) return false;
+            const opening = attribute.parent;
+            if (opening?.type !== 'JSXOpeningElement') return false;
+            const tag = opening.name;
+            const identifier = tag.type === 'JSXIdentifier'
+                ? tag
+                : tag.type === 'JSXMemberExpression' &&
+                    tag.object.type === 'JSXIdentifier' &&
+                    tag.property.type === 'JSXIdentifier'
+                    ? tag.object
+                    : undefined;
+            if (!identifier) return false;
+            const specifier = importBinding(context.sourceCode.getScope(node), identifier.name);
+            const imported = imports.get(specifier);
+            if (!imported) return false;
+            return tag.type === 'JSXIdentifier'
+                ? imported.kind === 'named'
+                : imported.kind === 'namespace' && imported.exports.has(tag.property.name);
+        };
         const check = (node) => {
-            if (!isOnBeforeExecuteCallback(node)) return;
+            if (!isTransformer(node)) return;
             // An expression-bodied arrow (`values => values`) always returns a value.
             if (
                 node.type === 'ArrowFunctionExpression' &&
@@ -118,6 +127,21 @@ export const onbeforeexecuteMustReturn = {
         };
 
         return {
+            ImportDeclaration(node) {
+                const exports = transformerExports.get(node.source.value);
+                if (!exports || node.importKind === 'type') return;
+                for (const specifier of node.specifiers) {
+                    if (specifier.type === 'ImportNamespaceSpecifier') {
+                        imports.set(specifier, { kind: 'namespace', exports });
+                    } else if (
+                        specifier.type === 'ImportSpecifier' &&
+                        specifier.importKind !== 'type' &&
+                        exports.has(keyNameOf(specifier.imported))
+                    ) {
+                        imports.set(specifier, { kind: 'named' });
+                    }
+                }
+            },
             ArrowFunctionExpression: check,
             FunctionExpression: check,
         };
