@@ -15,33 +15,6 @@ const state = vi.hoisted(() => ({
 }));
 export { state };
 
-vi.mock('../../../useSubmissionFlight', async () => {
-    const { useEffect, useRef, useState } = await import('react');
-    return {
-        useSubmissionFlight: () => {
-            const [isSubmitting, setIsSubmitting] = useState(false);
-            const inFlight = useRef(false);
-            const mounted = useRef(true);
-            useEffect(() => () => { mounted.current = false; }, []);
-            return {
-                isSubmitting,
-                isMounted: () => mounted.current,
-                begin: () => {
-                    if (!mounted.current || inFlight.current) return false;
-                    inFlight.current = true;
-                    state.busy = true;
-                    setIsSubmitting(true);
-                    return true;
-                },
-                finish: () => {
-                    inFlight.current = false;
-                    state.busy = false;
-                    if (mounted.current) setIsSubmitting(false);
-                },
-            };
-        },
-    };
-});
 vi.mock('../../../../Dialogs/Dialog', () => ({
     Dialog: (props: { onConfirm: () => Promise<boolean>; isBusy: boolean }) => {
         state.confirm = props.onConfirm;
