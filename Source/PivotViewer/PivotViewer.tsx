@@ -22,6 +22,7 @@ import { usePanning, useWheelZoom, useZoomScrollAnchor, useFilterOptions } from 
 import { useContainerDimensions } from './hooks/useContainerDimensions';
 import type { ViewMode } from './components/Toolbar';
 import { useFieldExtractors } from './hooks/useFieldExtractors';
+import { presentGrouping } from './utils/presentGrouping';
 import { useCurrentFilters, useCurrentGroupBy } from './hooks/useCurrentFilters';
 import { filterVisibleIdsBySearch } from './utils/search';
 import { resolveInternalItemIndex } from './utils/idResolution';
@@ -241,7 +242,7 @@ export function PivotViewer<TItem extends object>({
             }
         } else {
             void computeGrouping(visibleIds, currentGroupBy).then((result) => {
-                if (!cancelled) setGrouping(result);
+                if (!cancelled) setGrouping(presentGrouping(result, activeDimension, data));
             });
         }
 
@@ -256,6 +257,8 @@ export function PivotViewer<TItem extends object>({
         computeGrouping,
         sortIds,
         activeDimensionKey,
+        activeDimension,
+        data,
     ]);
 
     // Compute layout

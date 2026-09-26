@@ -3,7 +3,7 @@
 
 export type ItemId = number | string;
 
-export type FieldValue = string | number | boolean | null;
+export type FieldValue = string | number | boolean | null | undefined;
 
 export interface FieldDef {
     name: string;
@@ -22,6 +22,7 @@ export interface NumberField {
 
 export interface BooleanField {
     kind: 'boolean';
+    /** 0 = false, 1 = true, 2 = missing (null or undefined). */
     values: Uint8Array;
 }
 

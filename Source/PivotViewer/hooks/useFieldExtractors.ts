@@ -15,8 +15,9 @@ export function useFieldExtractors<TItem extends object>(
         for (const dim of dimensions) {
             extractors.set(dim.key, (item) => {
                 const val = dim.getValue(item);
+                // Dates are numeric timestamps in the engine, retaining numeric-range bucketing.
                 if (val instanceof Date) return val.getTime();
-                if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null) {
+                if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null || val === undefined) {
                     return val;
                 }
                 return String(val);
@@ -27,8 +28,9 @@ export function useFieldExtractors<TItem extends object>(
             for (const filter of filters) {
                 extractors.set(filter.key, (item) => {
                     const val = filter.getValue(item);
+                    // Date filters use numeric timestamps just like Date dimensions.
                     if (val instanceof Date) return val.getTime();
-                    if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null) {
+                    if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null || val === undefined) {
                         return val;
                     }
                     return String(val);
