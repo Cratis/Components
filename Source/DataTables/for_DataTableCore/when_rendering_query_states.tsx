@@ -59,6 +59,26 @@ describe('when rendering loading without rows', () => {
     });
 });
 
+describe('when loading with a multiple-selection column', () => {
+    beforeEach(async () => {
+        await act(async () => {
+            root.render(
+                <DataTableCore data={[]} status={DataTableStatus.Loading} emptyMessage='No rows' selectionMode='multiple'>
+                    <Column selectionMode='multiple' />
+                    <Column field='name' header='Name' />
+                    <Column field='id' header='Id' />
+                </DataTableCore>,
+            );
+        });
+    });
+
+    it('should span every header column including selection', () => {
+        const table = container.querySelector('table');
+        expect(table?.querySelectorAll('thead th').length).to.equal(3);
+        expect(table?.querySelector('tbody [data-cratis-part="loading-cell"]')?.getAttribute('colspan')).to.equal('3');
+    });
+});
+
 describe('when rendering failure', () => {
     beforeEach(async () => renderTable(DataTableStatus.Failed, [row]));
 
@@ -88,6 +108,15 @@ describe('when refetching with rows', () => {
         expect(container.querySelector('table')?.getAttribute('aria-busy')).to.equal('true');
         expect(container.querySelector('[data-cratis-part="root"]')?.getAttribute('data-busy')).to.equal('true');
         expect(container.querySelector('[data-cratis-part="loading-row"]')).to.equal(null);
+    });
+});
+
+describe('when rendering ready rows', () => {
+    beforeEach(async () => renderTable(DataTableStatus.Ready, [row]));
+
+    it('should omit busy attributes from the table and root', () => {
+        expect(container.querySelector('table')?.hasAttribute('aria-busy')).to.equal(false);
+        expect(container.querySelector('[data-cratis-part="root"]')?.hasAttribute('data-busy')).to.equal(false);
     });
 });
 
