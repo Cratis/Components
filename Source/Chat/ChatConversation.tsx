@@ -46,7 +46,7 @@ export interface ChatConversationLabels {
     /** Shown when loading messages fails, alongside any existing messages. Defaults to `'Could not load messages.'`. */
     failed?: string;
 
-    /** Shown when access is denied without existing messages. Defaults to `'You are not authorized to view these messages.'`. */
+    /** Shown when access is denied; replaces any existing messages. Defaults to `'You are not authorized to view these messages.'`. */
     unauthorized?: string;
 
     /** Shown when there are no messages yet. Defaults to `'No messages yet. Say hello!'`. */

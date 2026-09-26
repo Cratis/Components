@@ -45,7 +45,7 @@ export interface ChatTopicListLabels {
     /** Shown when loading topics fails, alongside any existing topics. Defaults to `'Could not load topics.'`. */
     failed?: string;
 
-    /** Shown when access is denied without existing topics. Defaults to `'You are not authorized to view these topics.'`. */
+    /** Shown when access is denied; replaces any existing topics. Defaults to `'You are not authorized to view these topics.'`. */
     unauthorized?: string;
 
     /** Shown when there are no topics yet. Defaults to `'No topics yet. Start the first one!'`. */
