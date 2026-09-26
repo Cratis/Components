@@ -5,9 +5,10 @@ import { CheckboxField as Check } from '@cratis/components/CommandForm/fields';
 export const FieldsView = () => (
     <>
         <Select onChange={(value) => consume(value)} />
-        <Fields.InputTextField onChange={(value) => consume(value)} />
-        <Fields.NumberField onChange={(value) => consume(value)} />
-        <Check onChange={(value) => consume(value)} />
+        <Fields.InputTextField onChange={(event) => consume(event.target.value)} />
+        <Fields.NumberField onChange={(event: React.ChangeEvent<HTMLInputElement>) => consume(event.currentTarget.valueAsNumber)} />
+        <Check onChange={({ target: { checked } }) => consume(checked)} />
+        <Check onValueChange={(value) => consume(value)} />
         <Select onChange={(value) => consume(value)} />
     </>
 );

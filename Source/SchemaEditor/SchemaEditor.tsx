@@ -145,12 +145,12 @@ export interface SchemaEditorProps {
     /** Optional event-type label displayed in the editor header. */
     eventTypeName?: string;
 
-    /** When false, the Edit action is hidden; defaults to `true`. */
+    /** When false, the Edit action remains visible but cannot enter edit mode; defaults to `true`. */
     canEdit?: boolean;
 
     /**
-     * When {@link canEdit} is false, this string is shown as a tooltip on the
-     * disabled Edit menu item to explain why editing is unavailable.
+     * When {@link canEdit} is false, this string is shown as a tooltip on an
+     * inert Edit action to explain why editing is unavailable.
      */
     canNotEditReason?: string;
 

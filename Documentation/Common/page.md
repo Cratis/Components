@@ -60,9 +60,7 @@ When `showTitle` is `false`, `title` is not written to the DOM at all: it does n
 | `children`   | `ReactNode`                      | —        | Page content, rendered inside `<main>`.                                                      |
 | other props  | `HTMLAttributes<HTMLDivElement>` | —        | Forwarded to the root `div` (`id`, `style`, `aria-*`, `data-*`, event handlers, `className`). |
 
-:::caution[Passing `className` replaces the layout classes]
-The root's layout classes are set before the forwarded attributes, so a `className` you pass replaces them instead of being appended. The root then loses its flex column and full height. Use `style`, a `data-*` attribute, or a wrapping element to style the page, or reproduce the layout (`display: flex`, `flex-direction: column`, `flex: 1`, `height: 100%`) in your own class.
-:::
+A `className` you pass is added after the root's layout classes, so the root keeps its flex column and full height. In Components 4.14.1 and earlier, a passed `className` replaced those layout classes instead.
 
 ## Layout
 

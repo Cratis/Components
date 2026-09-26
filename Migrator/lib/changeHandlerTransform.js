@@ -96,6 +96,14 @@ export function transformChangeHandlers(fileName, text, options = {}) {
             if (!ts.isJsxAttribute(attribute)) continue;
             const propName = attribute.name.getText(sourceFile);
             if (propName !== 'onChange' && propName !== 'onValueChange') continue;
+            if (target.group === 'CommandForm' && propName === 'onChange') {
+                report(
+                    attribute,
+                    target.component,
+                    "Components 4 field props do not accept onChange; move the handler to the enclosing CommandForm's onFieldChange(command, fieldName, oldValue, newValue, validationInfo?)",
+                );
+                continue;
+            }
             if (
                 !attribute.initializer ||
                 !ts.isJsxExpression(attribute.initializer) ||

@@ -181,27 +181,16 @@ The transform never guesses through JSX spreads, dynamic legacy values, duplicat
 
 ## `change-handler`
 
-`cratis-components-change-handler` resolves affected Components-owned JSX identifiers imported with aliases or namespaces from `@cratis/components/Dropdown`, `@cratis/components/CommandForm`, and `@cratis/components/CommandForm/fields`. It rewrites only a structurally-proven single forwarding callback:
+`cratis-components-change-handler` resolves Components-owned JSX identifiers imported with aliases or namespaces from `@cratis/components/Dropdown`, `@cratis/components/CommandForm`, and `@cratis/components/CommandForm/fields`. It rewrites structurally-proven single forwarding callbacks on standalone `Dropdown` and CommandForm field `onValueChange` props:
 
 ```tsx
-// Safe rewrites
+// Before
 <Dropdown onChange={(event) => setRole(event.value)} />
-<InputTextField onChange={(event) => setName(event.target.value)} />
-<CheckboxField onChange={({ target: { checked } }) => setEnabled(checked)} />
-
-// become
+// After
 <Dropdown onChange={(value) => setRole(value)} />
-<InputTextField onChange={(value) => setName(value)} />
-<CheckboxField onChange={(value) => setEnabled(value)} />
 ```
 
-The affected CommandForm fields cover legacy `target`/`currentTarget` `value`, `checked`, and `valueAsNumber` payloads, plus `DropdownField`/`MultiSelectField` `event.value`. Already-semantic callbacks and callback references such as `onChange={setValue}` are unchanged.
-
-The transform changes a callback's shape, not where it lives. With Arc 22.16.0, `CommandForm` calls an
-`onChange` placed on a field with the new value at runtime, but the Components 4 CommandForm field
-types do not declare `onChange`, so type-checked TSX reports TS2322 on a field that keeps one. Move
-those side effects to `CommandForm`'s `onFieldChange` callback. The standalone `Dropdown` declares
-`onChange` and is not affected. The [Components 3 to 4 migration guide](https://cratis.io/components/migration/3-to-4/) covers this case.
+For Components 4 CommandForm fields, the codemod leaves `onChange` unchanged and reports an actionable diagnostic instead of changing its callback. Arc's `asCommandFormField` wrappers do not expose `onChange` as a field prop in Components 4, so keeping the attribute would produce TS2322 even if the callback were rewritten. Move its side effects to the enclosing `CommandForm`'s `onFieldChange(command, fieldName, oldValue, newValue, validationInfo?)` callback. Legacy `onValueChange` field callbacks with a proven event payload are rewritten to semantic values; already-semantic `onValueChange` callbacks are untouched. The [Components 3 to 4 migration guide](https://cratis.io/components/migration/3-to-4/) covers this case.
 
 Multi-statement, multi-use, wrong-payload, destructuring-with-default/rest, and native-event-dependent callbacks are refused, reported, and annotated once:
 

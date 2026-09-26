@@ -25,13 +25,7 @@ export interface FilterEditorSlotProps {
  * The panel will slot each editor into the filter group whose key matches
  * the `filterKey` prop.
  *
- * ```tsx
- * <FilterPanel filters={filters} {...stateProps}>
- *   <FilterEditor filterKey="rating">
- *     {({ value, onChange }) => <MyRatingPicker value={value} onChange={onChange} />}
- *   </FilterEditor>
- * </FilterPanel>
- * ```
+ * See the {@link FilterPanel} example for a complete prop mapping and a custom editor.
  *
  * This component renders nothing itself — it is only used as a slot descriptor
  * by `FilterPanel`.

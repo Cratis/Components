@@ -31,9 +31,9 @@ const buttonCases = [
 ];
 
 const handlerCases = [
-    ['aliases-and-safe-wrappers', 0],
+    ['aliases-and-safe-wrappers', 3],
     ['ambiguous-refusal', 2],
-    ['already-semantic', 0],
+    ['already-semantic', 1],
 ];
 
 describe('Button variant/tone transform', () => {
@@ -131,7 +131,7 @@ describe('change-handler transform', () => {
         });
     }
 
-    it('rewrites every affected CommandForm payload shape and onValueChange', () => {
+    it('refuses CommandForm onChange but rewrites supported onValueChange field callbacks', () => {
         const input = [
             "import * as F from '@cratis/components/CommandForm';",
             'const fields=<>',
@@ -147,8 +147,13 @@ describe('change-handler transform', () => {
             '',
         ].join('\n');
         const result = transformChangeHandlers('Fields.tsx', input);
-        expect(result.diagnostics).toEqual([]);
-        expect(result.text.match(/\(value\)=>save\(value\)/gu)).toHaveLength(8);
+        expect(result.text).toContain('<F.ToggleSwitchField onValueChange={(value)=>save(value)}/>');
+        expect(result.changed).toBe(true);
+        expect(result.diagnostics).toHaveLength(7);
+        for (const diagnostic of result.diagnostics) {
+            expect(diagnostic.message).toContain('CommandForm');
+            expect(diagnostic.message).toContain('onFieldChange');
+        }
     });
 
     it('refuses wrong payloads and multi-use native-event dependencies', () => {
@@ -156,8 +161,25 @@ describe('change-handler transform', () => {
             "import { CheckboxField } from '@cratis/components/CommandForm';\nconst x=<CheckboxField onChange={(event)=>consume(event.target.value)}/>;\n";
         const result = transformChangeHandlers('Fields.tsx', input);
         expect(result.diagnostics).toHaveLength(1);
-        expect(result.text).toContain('TODO(cratis-codemod)');
+        expect(result.text).toBe(input);
+        expect(result.changed).toBe(false);
+        expect(result.diagnostics[0].message).toContain('onFieldChange');
         expect(result.text).toContain('event.target.value');
+    });
+
+    it('reports unsupported CommandForm field handler references without rewriting', () => {
+        const input = "import { InputTextField } from '@cratis/components/CommandForm';\nconst x=<InputTextField onChange={handleChange}/>;\n";
+        const result = transformChangeHandlers('Fields.tsx', input);
+        expect(result.text).toBe(input);
+        expect(result.diagnostics).toHaveLength(1);
+        expect(result.diagnostics[0].message).toContain('onFieldChange');
+    });
+
+    it('leaves semantic onValueChange field callbacks alone', () => {
+        const input = "import { ToggleSwitchField } from '@cratis/components/CommandForm';\nconst x=<ToggleSwitchField onValueChange={(value)=>consume(value)}/>;\n";
+        const result = transformChangeHandlers('Fields.tsx', input);
+        expect(result.text).toBe(input);
+        expect(result.diagnostics).toEqual([]);
     });
 
     it('supports a package override', () => {

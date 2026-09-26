@@ -27,17 +27,16 @@ export interface PageProps extends HTMLAttributes<HTMLDivElement> {
     children?: ReactNode;
 
     /**
-     * When true, wraps the body in a "panel" container that applies the
-     * surface, border, and radius styling defined by the `--cratis-*` tokens.
-     * Useful when the page is the sole occupant of a viewport region.
+     * When true, adds a `panel` class to the main content region for the
+     * application's own CSS. Page applies no panel styling itself.
      */
     panel?: boolean
 }
 
 /**
  * Top-level page layout primitive. Renders a flex column that fills its parent
- * vertically, with optional title heading and optional `panel` chrome around
- * the main content area. Intended as the root element of every routable view.
+ * vertically, with an optional title heading and a `panel` class hook on the
+ * main content area. Intended as the root element of every routable view.
  *
  * ```tsx
  * <Page title="Authors" showTitle panel>
@@ -47,9 +46,9 @@ export interface PageProps extends HTMLAttributes<HTMLDivElement> {
  *
  * @param props - {@link PageProps}.
  */
-export const Page = ({ title, showTitle = false, children, panel, ...rest }: PageProps) => {
+export const Page = ({ title, showTitle = false, children, panel, className, ...rest }: PageProps) => {
     return (
-        <div className='cratis:flex cratis:flex-col cratis:h-full cratis:flex-1' {...rest}>
+        <div className={`cratis:flex cratis:flex-col cratis:h-full cratis:flex-1${className ? ` ${className}` : ''}`} {...rest}>
             {showTitle && <h1 className='cratis:text-3xl cratis:mt-3 cratis:mb-4'>{title}</h1>}
             <main className={`cratis:overflow-hidden cratis:h-full cratis:flex cratis:flex-col cratis:flex-1 ${panel ? 'panel' : ''}`}>
                 {children}
