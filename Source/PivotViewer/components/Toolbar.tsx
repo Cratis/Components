@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import type { PivotDimension } from '../types';
+import type { PivotViewerLabels } from '../PivotViewerLabels';
 import { ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from '../utils/utils';
 
 export type ViewMode = 'collection' | 'grouped';
@@ -18,6 +19,7 @@ export interface ToolbarProps<TItem extends object> {
   activeFilterCount: number;
   /** Heading shown at the left of the toolbar. Omitted entirely when not given. */
   title?: string;
+  labels?: PivotViewerLabels;
   onFiltersToggle: () => void;
   onViewModeChange: (mode: ViewMode) => void;
   onZoomIn: () => void;
@@ -39,6 +41,7 @@ export function Toolbar<TItem extends object>({
   dimensions,
   activeFilterCount,
   title,
+  labels,
   onFiltersToggle,
   onViewModeChange,
   onZoomIn,
@@ -49,7 +52,6 @@ export function Toolbar<TItem extends object>({
   onDimensionChange,
   filterButtonRef,
 }: ToolbarProps<TItem>) {
-  const labelText = 'Sort by';
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [zoomInputValue, setZoomInputValue] = useState('');
 
@@ -95,7 +97,7 @@ export function Toolbar<TItem extends object>({
             type="button"
             className={`pv-filter-icon-button ${filtersOpen ? 'active' : ''}`}
             onClick={onFiltersToggle}
-            title="Filters"
+            title={labels?.filters ?? 'Filters'}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
@@ -106,7 +108,7 @@ export function Toolbar<TItem extends object>({
           </button>
         )}
         {title && <span className="pv-title">{title}</span>}
-        <span className="pv-count">{filteredCount} events</span>
+        <span className="pv-count">{labels?.itemCount?.(filteredCount) ?? `${filteredCount} events`}</span>
       </div>
       <div className="pv-toolbar-right">
         <div className="pv-zoom-controls">
@@ -114,20 +116,20 @@ export function Toolbar<TItem extends object>({
             type="button"
             onClick={onZoomOut}
             disabled={zoomLevel <= ZOOM_MIN}
-            title="Zoom out"
+            title={labels?.zoomOut ?? 'Zoom out'}
           >
             −
           </button>
           <input
             type="range"
-            aria-label="Zoom level"
+            aria-label={labels?.zoomLevel ?? 'Zoom level'}
             className="pv-zoom-slider"
             min={ZOOM_MIN}
             max={ZOOM_MAX}
             step={ZOOM_STEP}
             value={zoomLevel}
             onChange={onZoomSlider}
-            title={`Zoom: ${Math.round(zoomLevel * 100)}%`}
+            title={labels?.zoom?.(Math.round(zoomLevel * 100)) ?? `Zoom: ${Math.round(zoomLevel * 100)}%`}
           />
           {isEditingZoom ? (
             <input
@@ -140,14 +142,14 @@ export function Toolbar<TItem extends object>({
               autoFocus
             />
           ) : (
-            <span className="pv-zoom-level" onClick={handleZoomClick} title="Click to edit zoom level">
+            <span className="pv-zoom-level" onClick={handleZoomClick} title={labels?.editZoomLevel ?? 'Click to edit zoom level'}>
               {Math.round(zoomLevel * 100)}%
             </span>
           )}
           <button
             type="button"
             onClick={onZoomReset}
-            title="Reset zoom"
+            title={labels?.resetZoom ?? 'Reset zoom'}
             className="pv-zoom-reset"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -161,7 +163,7 @@ export function Toolbar<TItem extends object>({
             type="button"
             onClick={onZoomIn}
             disabled={zoomLevel >= ZOOM_MAX}
-            title="Zoom in"
+            title={labels?.zoomIn ?? 'Zoom in'}
           >
             +
           </button>
@@ -172,18 +174,18 @@ export function Toolbar<TItem extends object>({
             className={viewMode === 'collection' ? 'active' : ''}
             onClick={() => onViewModeChange('collection')}
           >
-            Collection
+            {labels?.collection ?? 'Collection'}
           </button>
           <button
             type="button"
             className={viewMode === 'grouped' ? 'active' : ''}
             onClick={() => onViewModeChange('grouped')}
           >
-            Grouped
+            {labels?.grouped ?? 'Grouped'}
           </button>
         </div>
         <label className="pv-dimension-select">
-          <span>{labelText}</span>
+          <span>{labels?.sortBy ?? 'Sort by'}</span>
           <select
             value={activeDimensionKey}
             onChange={(event) => onDimensionChange(event.target.value)}
