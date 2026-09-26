@@ -188,7 +188,7 @@ export const DataTableForObservableQuery = <
     //    typed. `@cratis/arc.react` pins `@cratis/arc` to an exact version, so any consumer whose own
     //    `@cratis/arc` differs by even a patch gets a second nested copy — two declarations of that
     //    class, and TS2345 "types have separate declarations of a private property". Our peer range
-    //    deliberately spans `>=20.3.1 <22`, so we cannot assume a consumer's tree is deduped.
+    //    allows multiple Arc versions, so we cannot assume a consumer's tree is deduped.
     //
     // Erasing the constructor type sidesteps the nominal comparison, and naming `TDataType`
     // explicitly recovers the row type this component is generic over — strictly better than the

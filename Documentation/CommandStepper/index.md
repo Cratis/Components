@@ -9,7 +9,7 @@ The `CommandStepper` component executes one Arc command through an inline, multi
 
 Use `CommandStepper` when the wizard belongs directly in a page region, panel, or route. It establishes a `CommandForm`, renders `StepperPanel` steps with built-in navigation, and executes the command from the final step.
 
-`CommandStepper` and [`StepperCommandDialog`](../StepperCommandDialog/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `StepperCommandDialog` when the wizard should be modal; the dialog also owns dismissal, a busy window that covers an async `onBeforeExecute`, and the `onException` / `onUnauthorized` callbacks.
+`CommandStepper` and [`StepperCommandDialog`](../StepperCommandDialog/index.md) are sibling public components that share the private `CommandStepperContent` rendering primitive. Both execute the command. Choose `StepperCommandDialog` when the wizard should be modal; the dialog also owns dismissal.
 
 ## Basic Usage
 
@@ -58,9 +58,10 @@ export const ProjectWizard = () => (
 - Other applicable `CommandForm` props, including `initialValues`, `currentValues`, `validateOnInit`, field-validation callbacks, and inherited command execution callbacks:
   - `onSuccess`: Callback invoked with the typed response after successful command execution
   - `onValidationFailure`: Callback invoked with validation results when command execution returns validation errors
-  - `onFailed`: Callback invoked with the full command result for an unsuccessful, non-validation result. Unlike the dialogs, `CommandStepper` does not also call it for validation failures
-- `onException` and `onUnauthorized` type-check but `CommandStepper` never calls them. Inspect the result in `onFailed` (`hasExceptions`, `exceptionMessages`, `isAuthorized`) instead
-- `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with, and it runs only on submit, so it can never satisfy required-field validation (seed those through `initialValues`). It runs before the Submit button turns busy, so an async transform does not disable Submit while it resolves
+  - `onFailed`: Callback invoked with the full command result for every unsuccessful result, including validation failures, as in the dialogs
+  - `onException`: Callback invoked with the exception messages and stack trace when the result has exceptions
+  - `onUnauthorized`: Callback invoked when the user is not authorized to execute the command
+- `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with, and it runs only on submit, so it can never satisfy required-field validation (seed those through `initialValues`). Submit turns busy before the transform runs, so an async transform cannot be submitted twice
 - `linear` (default `true`), `orientation` (`'horizontal'` default / `'vertical'`), `headerPosition` (`'top'` default / `'bottom'`), `start`, `end`, `onChangeStep`, and `pt`: the active `StepperCustomizationProps` surface. It maps onto stable `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, and `panel` parts.
 - `ptOptions` and `unstyled`: retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned.
 

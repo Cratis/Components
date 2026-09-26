@@ -13,20 +13,34 @@ import { Dialog } from './Dialog';
  * Consumes a {@link ConfirmationDialogRequest} from the dialog context,
  * which carries the `title`, `message`, and `buttons` to show.
  *
- * Use this through the `confirm` helper from `@cratis/arc.react/dialogs`,
- * which wraps the dialog host and the request type:
+ * Register this component with `DialogComponents` and use
+ * `useConfirmationDialog` from `@cratis/arc.react/dialogs` inside that host:
  *
  * ```tsx
- * import { confirm, DialogButtons } from '@cratis/arc.react/dialogs';
+ * import {
+ *     DialogButtons, DialogComponents, DialogResult, useConfirmationDialog,
+ * } from '@cratis/arc.react/dialogs';
+ * import { ConfirmationDialog } from '@cratis/components/Dialogs';
  *
- * const result = await confirm({
- *     title: 'Delete this item?',
- *     message: 'This action cannot be undone.',
- *     buttons: DialogButtons.YesNo,
- * });
+ * function ConfirmAction() {
+ *     const [showConfirmation] = useConfirmationDialog(
+ *         'Delete this item?', 'This action cannot be undone.', DialogButtons.YesNo,
+ *     );
+ *     const onClick = async () => {
+ *         const result = await showConfirmation();
+ *         if (result === DialogResult.Yes) {
+ *             // proceed with deletion
+ *         }
+ *     };
+ *     return <button onClick={onClick}>Delete</button>;
+ * }
  *
- * if (result === DialogResult.Yes) {
- *     // proceed with deletion
+ * function Example() {
+ *     return (
+ *         <DialogComponents confirmation={ConfirmationDialog}>
+ *             <ConfirmAction />
+ *         </DialogComponents>
+ *     );
  * }
  * ```
  */

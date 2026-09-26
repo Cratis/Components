@@ -141,6 +141,8 @@ type CommandStepperWrapperProps<TCommand extends object, TResponse = object> = O
     onSuccess?: CommandFormProps<TCommand, TResponse>['onSuccess'];
     onValidationFailure?: CommandFormProps<TCommand, TResponse>['onValidationFailure'];
     onFailed?: CommandFormProps<TCommand, TResponse>['onFailed'];
+    onException?: CommandFormProps<TCommand, TResponse>['onException'];
+    onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
 };
 
@@ -165,6 +167,8 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     onSuccess,
     onValidationFailure,
     onFailed,
+    onException,
+    onUnauthorized,
     onBeforeExecute,
 }: CommandStepperWrapperProps<TCommand, TResponse>) => {
     const {
@@ -179,15 +183,15 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async () => {
-        if (onBeforeExecute) {
-            const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-            setCommandValues(applied instanceof Promise ? await applied : applied);
-        }
-
         setIsSubmitting(true);
         let result: ICommandResult<TResponse>;
 
         try {
+            if (onBeforeExecute) {
+                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
+                setCommandValues(applied instanceof Promise ? await applied : applied);
+            }
+
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
             result = await (
                 commandInstance as unknown as {
@@ -199,10 +203,13 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
         }
 
         if (!result.isSuccess) {
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
+            }
+            if (!result.isAuthorized) await onUnauthorized?.();
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
-            } else {
-                await onFailed?.(result);
             }
             setCommandResult(result);
             return;
@@ -264,7 +271,8 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
  *   wizards long enough that a missed-required-field on page 1 would
  *   otherwise be hidden behind page 4.
  * - On final Submit, the bound command runs through Arc's command pipeline.
- *   Failure paths (`onValidationFailure` / `onFailed`) keep the wizard
+ *   Failure paths (`onFailed`, `onException`, `onUnauthorized`, and
+ *   `onValidationFailure`) keep the wizard
  *   open and re-surface field errors automatically.
  *
  * ## What `TCommand` is
@@ -349,6 +357,8 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
                 onSuccess={props.onSuccess}
                 onValidationFailure={props.onValidationFailure}
                 onFailed={props.onFailed}
+                onException={props.onException}
+                onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
             >
                 {children}

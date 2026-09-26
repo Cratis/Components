@@ -7,7 +7,7 @@ Cratis base config, [`@cratis/eslint-config`](https://www.npmjs.com/package/@cra
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `no-root-barrel-import`       | Disallows importing a removed Components 3 component namespace from the Components 4 setup-only root. Use the exact component subpath (`@cratis/components/CommandDialog`, `@cratis/components/DataPage`, `@cratis/components/Toolbar`, …). Package-wide provider/configuration symbols remain allowed at the root; an unambiguous namespace violation is autofixed. |
 | `no-primereact-dialog`        | Disallows importing `Dialog` from `primereact/dialog`. Use `CommandDialog` from `@cratis/components/CommandDialog`, or `Dialog` from `@cratis/components/Dialogs` — the wrappers add Arc command binding, overlay/focus fixes, and theming.                                                                                                                          |
-| `onbeforeexecute-must-return` | Requires an `onBeforeExecute` callback to return the command values. The runtime guards a missing return by keeping the current object and warning, but a replacement value is discarded and the callback violates the transformer contract.                                                                                                                         |
+| `onbeforeexecute-must-return` | Requires `onBeforeExecute` on imported Components command dialogs/steppers or Arc `CommandForm` to return command values. It does not flag Arc `CommandScope`, whose callback is void.                                                                                                                         |
 | `no-hooks-in-view-model`      | Disallows React hooks (including generated Arc proxies' `.use()`) inside a view model class. View models must be plain, hook-free classes that receive injected abstractions.                                                                                                                                                                                        |
 | `no-raw-command-form-marker`  | Disallows identifying a CommandForm field or column by a hand-written `displayName` string, in either direction. Use `markAsCommandFormField`/`markAsCommandFormColumn` and `isCommandFormField`/`isCommandFormColumn` from `@cratis/components/CommandForm` — they go through a marker a build transform cannot rewrite.                                            |
 | `no-react-in-kernel`          | Repository architecture rule that rejects React, React DOM, React Aria Components, and browser DOM globals in the explicit Components kernel inventory. It is intentionally not part of the consumer `recommended` config.                                                                                                                                           |
@@ -173,15 +173,7 @@ relies on the fallback.
 <CommandDialog onBeforeExecute={values => { return; }} />
 ```
 
-It flags JSX attribute (`onBeforeExecute={…}`), object property (`{ onBeforeExecute: … }`),
-and variable (`const onBeforeExecute = …`) forms. It is a lint backstop, not a full
-control-flow analysis: a callback that returns a value on some branches but can still fall
-through is not flagged.
-
-The rule matches the `onBeforeExecute` name, not the component. Arc's `CommandScope` also has an
-`onBeforeExecute` prop, but it is typed `(command) => void` and is not a transformer; the rule
-still reports a callback there that returns nothing. Return the command (harmless) or disable the
-rule for that line.
+The rule checks JSX callbacks only when the component resolves through an import from `@cratis/components/CommandDialog` (`CommandDialog`, `StepperCommandDialog`, `CommandStepper`), `@cratis/components/CommandStepper` (`CommandStepper`), or `@cratis/arc.react/commands` (`CommandForm`). Aliases and namespace imports are supported. Unknown components, object properties, and standalone variables are not flagged because their callback contract cannot be inferred. In particular, Arc `CommandScope` has a void-returning `onBeforeExecute` side-effect hook, not a transformer, so it is not flagged. This rule is not a full control-flow analysis: a callback that returns a value on some branches but can still fall through is not flagged.
 
 ### `no-hooks-in-view-model`
 

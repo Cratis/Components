@@ -164,7 +164,17 @@
 
 @media (forced-colors: active) {
     :root,
-    .cratis-theme {
+    .cratis-theme,
+    :root.cratis-light,
+    :root.cratis-dark.cratis-light,
+    :root.cratis-light .cratis-theme:not(.cratis-dark),
+    .cratis-theme.cratis-light,
+    .cratis-dark .cratis-theme.cratis-light,
+    :root.cratis-dark,
+    .cratis-dark .cratis-theme,
+    .cratis-theme.cratis-dark,
+    :root:not(.cratis-light),
+    .cratis-theme:not(.cratis-light) {
         --cratis-primary-color: Highlight;
         --cratis-primary-color-text: HighlightText;
         --cratis-primary-600-text: HighlightText;
