@@ -326,21 +326,9 @@ export function FilterPanel({
                 anchorRef.current?.focus();
             }
         };
-        const handlePanelEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
-            const focused = document.activeElement;
-            if (focused && panelRef.current?.contains(focused)) {
-                event.preventDefault();
-                onClose();
-                anchorRef.current?.focus();
-            }
-        };
-
         document.addEventListener('keydown', handleAnchorEscape, true);
-        document.addEventListener('keydown', handlePanelEscape);
         return () => {
             document.removeEventListener('keydown', handleAnchorEscape, true);
-            document.removeEventListener('keydown', handlePanelEscape);
         };
     }, [isOpen, anchorRef, onClose]);
 
@@ -354,6 +342,13 @@ export function FilterPanel({
                     role='dialog'
                     aria-label={ariaLabel}
                     tabIndex={-1}
+                    onKeyDown={(event) => {
+                        if (event.key !== 'Escape' || event.defaultPrevented || event.nativeEvent.isComposing) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        onClose();
+                        anchorRef.current?.focus();
+                    }}
                     className='pv-filter-dropdown'
                     style={{
                         position: 'fixed',
