@@ -29,16 +29,19 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
                 setCommandValues(values);
             }
             if (confirmBeforeExecute) {
-                let approvedValues: Record<string, unknown> = {};
                 let approved = false;
+                let valuesUnchanged = false;
                 try {
-                    approvedValues = snapshotCommandValues(commandInstance);
+                    const approvedValues = snapshotCommandValues(commandInstance);
                     approved = await confirmBeforeExecute(values);
+                    if (submission.isMounted() && approved === true) {
+                        valuesUnchanged = commandValuesUnchanged(commandInstance, approvedValues);
+                    }
                 } catch (error) {
                     confirmationError = { error };
                 }
                 if (confirmationError === undefined &&
-                    (!submission.isMounted() || approved !== true || !commandValuesUnchanged(commandInstance, approvedValues))) return undefined;
+                    (!submission.isMounted() || approved !== true || !valuesUnchanged)) return undefined;
             }
             if (confirmationError === undefined) {
                 // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
