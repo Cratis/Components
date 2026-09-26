@@ -32,7 +32,10 @@
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
 }
-.cratis-field-input:disabled,
+.cratis-field-input:disabled {
+    cursor: not-allowed;
+    opacity: var(--cratis-disabled-opacity);
+}
 .cratis-choice-field:has(.cratis-choice-field__native:disabled) {
     cursor: not-allowed;
     opacity: var(--cratis-disabled-opacity);
