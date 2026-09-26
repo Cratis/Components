@@ -124,7 +124,7 @@ export interface CommandStepperProps<TCommand extends object, TResponse = object
      * transforms that do not affect validity (for example a generated id).
      */
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
-    /** Ask before executing the transformed command values; return false to stay on the step. */
+    /** Ask before executing the transformed command values; only `true` executes. */
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
@@ -207,7 +207,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
                     if (submission.isMounted()) await reportConfirmationError(error, onException);
                     return;
                 }
-                if (!submission.isMounted() || !approved) return;
+                if (!submission.isMounted() || approved !== true) return;
             }
             if (!submission.isMounted()) return;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.

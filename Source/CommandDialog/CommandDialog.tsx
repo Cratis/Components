@@ -51,8 +51,8 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
 
     /**
      * Ask whether to run the command after validation and `onBeforeExecute`.
-     * Receives the transformed values. Return `false` to keep the dialog open
-     * without executing; may return a promise (for example from a confirmation dialog).
+     * Receives the transformed values. Only `true` executes; all other outcomes
+     * keep the dialog open. May return a promise (for example from a confirmation dialog).
      * Unlike `onConfirm`, this runs before execution, not after success.
      */
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
@@ -118,7 +118,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
                     if (submission.isMounted()) await reportConfirmationError(error, onException);
                     return false;
                 }
-                if (!submission.isMounted() || !approved) return false;
+                if (!submission.isMounted() || approved !== true) return false;
             }
             if (!submission.isMounted()) return false;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.

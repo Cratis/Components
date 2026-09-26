@@ -56,7 +56,7 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
      * transforms that do not affect validity (for example a generated id).
      */
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
-    /** Ask before executing the transformed command values; return false to stay open. */
+    /** Ask before executing the transformed command values; only `true` executes. */
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     /** Dialog title text. */
     title: string;
@@ -295,7 +295,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                     if (submission.isMounted()) await reportConfirmationError(error, onException);
                     return;
                 }
-                if (!submission.isMounted() || !approved) return;
+                if (!submission.isMounted() || approved !== true) return;
             }
             if (!submission.isMounted()) return;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
