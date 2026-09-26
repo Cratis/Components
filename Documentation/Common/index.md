@@ -42,7 +42,7 @@ When the value belongs to an Arc command, use the matching [CommandForm field](.
 | Show where the user is in a hierarchy | `Breadcrumbs` | [Collection controls](collection-controls.md) |
 | Give a routed view a full-height layout and title | `Page` | [Page](page.md) |
 | Group content in a bounded `div`, `section`, or `article` | `Surface` | [Basic controls](basic-controls.md) |
-| Show a short hint on hover and keyboard focus of one element | `Tooltip` | No reference page yet |
+| Show a short hint on hover and keyboard focus of one element | `Tooltip` | [Tooltips](basic-controls.md#tooltips) |
 
 ## Icons, configuration, and errors
 

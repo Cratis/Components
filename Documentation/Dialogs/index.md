@@ -18,7 +18,7 @@ import { BusyIndicatorDialog, ConfirmationDialog, Dialog } from '@cratis/compone
 | Show your own content, collect values, and return a typed result to the caller | `Dialog` with `useDialog` / `useDialogContext` | [Dialog](dialog.md) |
 | Show a detail pane against the side of the viewport | `Dialog` with `placement='start'` or `'end'` | [Dialog placement](dialog.md#placement) |
 
-`ConfirmationDialog` and `BusyIndicatorDialog` are rendered by the Arc dialog host: register them once with `DialogComponents` and trigger them through the hooks from `@cratis/arc.react/dialogs`. They take their title, message, and buttons from the request, so reach for `Dialog` as soon as you need content of your own.
+`ConfirmationDialog` and `BusyIndicatorDialog` are rendered by the Arc dialog host: register them once with `DialogComponents` and trigger them through the hooks from `@cratis/arc.react/dialogs`. `ConfirmationDialog` takes its title, message, and buttons from the request, and `BusyIndicatorDialog` takes its title and message, so reach for `Dialog` as soon as you need content of your own.
 
 ## When not to use a dialog from this subpath
 
