@@ -47,6 +47,9 @@ export const cratisDefaults: CratisComponentsConfig = {
             selectAllRows: 'Select all rows',
             search: 'Search…',
             searchAriaLabel: 'Search table',
+            loading: 'Loading…',
+            failed: 'Could not load data.',
+            unauthorized: 'You are not authorized to view this data.',
         },
         columnFilter: {
             matchModeAriaLabel: 'Match mode',
