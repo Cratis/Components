@@ -82,9 +82,10 @@ The table distinguishes query state from a successful empty result:
 | Filters or search match nothing on the loaded page | `emptyMessage` |
 | Query failed (`hasExceptions === true` or `isValid === false`) | A failure row with `failureMessage` (default `Could not load data.`) |
 | Query is unauthorized (`isAuthorized === false`) | A failure row with `unauthorizedMessage` (default `You are not authorized to view this data.`) |
-| Required argument is missing | `emptyMessage` (Arc sends no request) |
+| Snapshot query missing a required argument | `emptyMessage` (Arc sends no request) |
+| Observable query missing a required argument | A loading row remains until every required argument has a value (Arc does not subscribe) |
 
-Authorization takes precedence over failure. The loading row announces its content with `role="status"`; failure messages use `role="alert"`. Query exception text is never shown by default. Override the three messages per table or through `CratisComponentsProvider`'s `messages.dataTable`. If you need a custom state layout rather than a table row, use the query hook and render your own composition with `DataTableCore` and `TablePaginator`.
+Authorization takes precedence over failure. A snapshot response that is not valid JSON (for example, an HTML error page from a proxy) is reported by Arc as an unsuccessful result without throwing and shows `emptyMessage`. The loading row announces its content with `role="status"`; failure messages use `role="alert"`. Query exception text is never shown by default. Override the three messages per table or through `CratisComponentsProvider`'s `messages.dataTable`. If you need a custom state layout rather than a table row, use the query hook and render your own composition with `DataTableCore` and `TablePaginator`.
 
 ## Pagination
 

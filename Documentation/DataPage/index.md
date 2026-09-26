@@ -168,9 +168,9 @@ DataPage renders its table through [`DataTableForQuery`](../DataTables/data-tabl
 | Filters or search match nothing on the loaded page | `emptyMessage` |
 | Query failed or was unauthorized | An alert row with `failureMessage` or `unauthorizedMessage` |
 | Snapshot query missing a required argument | `emptyMessage` (no request is sent) |
-| Observable query missing a required argument | Depends on the Arc hook's result state; no subscription starts |
+| Observable query missing a required argument | A loading row with `loadingMessage` remains until every required argument has a value; Arc does not start a subscription |
 
-Unauthorized takes precedence over failure, which takes precedence over loading. Server exception text is not shown. Set the three message props on `DataPage` or configure the provider's `messages.dataTable` defaults. See [Loading, empty, and failed queries](../DataTables/data-table-for-query.md#loading-empty-and-failed-queries) for the exact table behavior.
+Unauthorized takes precedence over failure, which takes precedence over loading. A snapshot response that is not valid JSON (such as an HTML error page from a proxy) is reported by Arc as unsuccessful without throwing and shows `emptyMessage`. Server exception text is not shown. Set the three message props on `DataPage` or configure the provider's `messages.dataTable` defaults. See [Loading, empty, and failed queries](../DataTables/data-table-for-query.md#loading-empty-and-failed-queries) for the exact table behavior.
 
 ## Props
 
@@ -284,7 +284,7 @@ When no ancestor supplies a height, DataPage falls back to a minimum height of `
 | The paginator is cut off or the page is only about `20rem` tall | No ancestor with a definite height. See [DataPage needs an ancestor with a height](#datapage-needs-an-ancestor-with-a-height). |
 | The details pane overlaps or grows to its content | The Components stylesheet is not imported. |
 | The table shows `emptyMessage` instead of rows | The query completed empty, the loaded-page filters matched nothing, or a snapshot query is missing a required `queryArguments` value. Failures and authorization denials have separate alert rows. |
-| The table remains in its loading state | The first result has not arrived; if an observable query has missing required `queryArguments`, check whether Arc started a subscription. |
+| The table remains in its loading state | The first result has not arrived, or an observable query is missing required `queryArguments`; Arc does not subscribe until all required arguments have values. |
 | `event.value.name` or `item.name` does not compile | The row type was inferred as `object`. Add type arguments (`<DataPage<AllAuthors, Author, object>`) or type the `detailsComponent` with `IDetailsComponentProps<Author>`. |
 | The selection highlight disappears after an update | Set `dataKey` so rows are matched by identity instead of object reference. |
 
