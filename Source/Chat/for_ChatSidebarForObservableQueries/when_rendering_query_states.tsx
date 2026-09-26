@@ -32,15 +32,12 @@ class MessagesQuery extends ObservableQueryFor<ChatMessage[], { topicId: string 
 }
 
 const queryStates = vi.hoisted(() => ({
-    topics: { data: [] as ChatTopic[], isPerforming: false, hasExceptions: false, isValid: true, isAuthorized: true },
-    messages: { data: [] as ChatMessage[], isPerforming: false, hasExceptions: false, isValid: true, isAuthorized: true },
+    topics: { data: [] as ChatTopic[], isPerforming: false, hasExceptions: false, isValid: true, isAuthorized: true, exceptionMessages: ['Sensitive server exception'] },
+    messages: { data: [] as ChatMessage[], isPerforming: false, hasExceptions: false, isValid: true, isAuthorized: true, exceptionMessages: ['Sensitive server exception'] },
 }));
 
 vi.mock('@cratis/arc.react/queries', () => ({
-    useObservableQuery: (query: unknown) => [{
-        ...(query === TopicsQuery ? queryStates.topics : queryStates.messages),
-        exceptionMessages: ['Sensitive server exception'],
-    }],
+    useObservableQuery: (query: unknown) => [query === TopicsQuery ? queryStates.topics : queryStates.messages],
 }));
 
 let sidebar: ChatSidebarInTheDom;

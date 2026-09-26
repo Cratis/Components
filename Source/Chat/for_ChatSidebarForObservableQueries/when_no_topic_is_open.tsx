@@ -85,9 +85,9 @@ afterEach(async () => {
 });
 
 describe('when no topic is open', () => {
-    it('should keep messages ready and hold the messages subscription', () => {
+    it('should keep messages ready without subscribing', () => {
         sidebarProps!.messagesStatus!.should.equal(ChatStatus.Ready);
-        (queryState.messagesEnabled === false).should.equal(true);
+        (queryState.messagesEnabled === undefined).should.equal(true);
     });
 });
 
@@ -98,9 +98,9 @@ describe('when message arguments are unavailable for an open topic', () => {
         });
     });
 
-    it('should keep messages ready and hold the messages subscription', () => {
+    it('should keep messages ready without subscribing', () => {
         sidebarProps!.selectedTopicId!.should.equal('topic-1');
         sidebarProps!.messagesStatus!.should.equal(ChatStatus.Ready);
-        (queryState.messagesEnabled === false).should.equal(true);
+        (queryState.messagesEnabled === undefined).should.equal(true);
     });
 });
