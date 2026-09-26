@@ -25,7 +25,7 @@ A library screen starts with a list. We have an `AllAuthors` query from the back
     );
     ```
 
-2. **Put it on screen.** Render `<Authors />` inside the providers from [Getting started](/components/getting-started/) — in the Arc tutorial's `src/App.tsx`, that means replacing its plain list with this component. Run the frontend and open the page. You see a table with a **Name** column: one row per author you registered in the Arc tutorial, or _No authors yet_ if there are none.
+2. **Put it on screen.** Render `<Authors />` inside the providers from [Getting started](/components/getting-started/) — in the Arc tutorial's `src/App.tsx`, that means replacing its plain list with this component. Run the frontend and open the page. You see a table with a **Name** column: _Loading…_ until the first result arrives, then one row per author you registered in the Arc tutorial, or _No authors yet_ if there are none. A failed query shows _Could not load data._ instead of the empty message; an unauthorized query shows _You are not authorized to view this data._
 
 </Steps>
 

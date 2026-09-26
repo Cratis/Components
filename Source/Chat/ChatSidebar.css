@@ -156,3 +156,16 @@
     flex-direction: column;
     overflow: hidden;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .cratis-chat-sidebar__backdrop[data-entering],
+    .cratis-chat-sidebar__backdrop[data-exiting],
+    .cratis-chat-sidebar[data-entering],
+    .cratis-chat-sidebar[data-exiting] {
+        animation: none;
+    }
+
+    .cratis-chat-sidebar {
+        transition: none;
+    }
+}

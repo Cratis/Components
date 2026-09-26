@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal, ModalOverlay } from 'react-aria-components';
@@ -16,6 +16,7 @@ import { ChatTopicList } from './ChatTopicList';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { shouldRequestTopicName } from './shouldRequestTopicName';
 import { useCratisIcon } from '../configuration/useCratisIcon';
+import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 
@@ -232,6 +233,37 @@ export const ChatSidebar = <
     ...conversation
 }: ChatSidebarProps<TMessage, TTopic>) => {
     const icon = useCratisIcon();
+    const overlayEnvironment = unstable_useOverlayEnvironment();
+    const [mounted, setMounted] = useState(false);
+    const nonModalPanel = useRef<HTMLDivElement>(null);
+    const [nonModalPhase, setNonModalPhase] = useState<
+        'closed' | 'entering' | 'open' | 'exiting'
+    >('closed');
+
+    useEffect(() => setMounted(true), []);
+    useEffect(() => {
+        setNonModalPhase((phase) =>
+            open ? 'entering' : phase === 'closed' ? 'closed' : 'exiting',
+        );
+    }, [open]);
+    const portalContainer = !modal && mounted && nonModalPhase !== 'closed'
+        ? overlayEnvironment.getContainer()
+        : null;
+    useEffect(() => {
+        if (nonModalPhase !== 'entering' && nonModalPhase !== 'exiting') return;
+        if (!modal && (
+            window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ||
+            nonModalPanel.current?.getAnimations?.().length === 0
+        )) {
+            setNonModalPhase(nonModalPhase === 'entering' ? 'open' : 'closed');
+            return;
+        }
+        const timeout = setTimeout(() => {
+            setNonModalPhase(nonModalPhase === 'entering' ? 'open' : 'closed');
+        }, 250);
+        return () => clearTimeout(timeout);
+    }, [modal, nonModalPhase, portalContainer]);
+
     const [internalSelectedId, setInternalSelectedId] = useState<
         ChatIdentifier | undefined
     >();
@@ -426,7 +458,8 @@ export const ChatSidebar = <
         // interactive. React Aria's Modal blocks its backdrop by design (its dismissal props only
         // gate how it closes, never whether it intercepts), so the default is a plain portaled
         // layer with no dismissal behavior at all — only the close/back affordances dismiss it.
-        open &&
+        nonModalPhase !== 'closed' &&
+        portalContainer &&
         createPortal(
             <div
                 {...pt?.backdrop}
@@ -436,11 +469,14 @@ export const ChatSidebar = <
                 )}
                 data-cratis-part='backdrop'
                 data-modal={false}
-                data-open
+                data-open={open || undefined}
                 data-selected={openTopicId !== undefined || undefined}
+                data-entering={nonModalPhase === 'entering' || undefined}
+                data-exiting={nonModalPhase === 'exiting' || undefined}
             >
                 <div
                     {...pt?.root}
+                    ref={nonModalPanel}
                     className={classNames(
                         'cratis-chat-sidebar',
                         pt?.root?.className,
@@ -449,13 +485,22 @@ export const ChatSidebar = <
                     style={{ width, ...pt?.root?.style }}
                     data-cratis-part='root'
                     data-position={position}
-                    data-open
+                    data-open={open || undefined}
                     data-selected={openTopicId !== undefined || undefined}
+                    data-entering={nonModalPhase === 'entering' || undefined}
+                    data-exiting={nonModalPhase === 'exiting' || undefined}
+                    onAnimationEnd={(event) => {
+                        pt?.root?.onAnimationEnd?.(event);
+                        if (event.target !== event.currentTarget) return;
+                        setNonModalPhase((phase) =>
+                            phase === 'entering' ? 'open' : phase === 'exiting' ? 'closed' : phase,
+                        );
+                    }}
                 >
                     {panel}
                 </div>
             </div>,
-            document.body,
+            portalContainer,
         )
     );
 };

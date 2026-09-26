@@ -52,25 +52,8 @@
     flex-shrink: 0;
 }
 
-/* ── Canvas control icon button ──────────────────────────────────────────── */
-.canvas-controls-icon-btn {
-    color: var(--cratis-text-color-secondary);
-    background: transparent;
-    border: none;
-    transition: background 0.15s, color 0.15s;
-}
-
-.canvas-controls-icon-btn:hover {
-    background: var(--cratis-surface-100);
-    color: var(--cratis-text-color);
-}
-
-.canvas-controls-icon-btn--active {
-    background: var(--cratis-surface-100);
-    color: var(--cratis-text-color);
-}
-
-/* ── Canvas control zoom percentage button ───────────────────────────────── */
+/* ── Canvas control buttons ──────────────────────────────────────────────── */
+.canvas-controls-icon-btn,
 .canvas-controls-zoom-btn {
     color: var(--cratis-text-color-secondary);
     background: transparent;
@@ -78,6 +61,8 @@
     transition: background 0.15s, color 0.15s;
 }
 
+.canvas-controls-icon-btn:hover,
+.canvas-controls-icon-btn--active,
 .canvas-controls-zoom-btn:hover {
     background: var(--cratis-surface-100);
     color: var(--cratis-text-color);

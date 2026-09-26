@@ -64,6 +64,7 @@ export function PivotViewer<TItem extends object>({
     className,
     emptyContent,
     isLoading = false,
+    loadingLabel = 'Loading…',
     colors,
 }: PivotViewerProps<TItem>) {
     // Refs
@@ -462,6 +463,7 @@ export function PivotViewer<TItem extends object>({
                     data={data}
                     ready={ready}
                     isLoading={isLoading}
+                    loadingLabel={loadingLabel}
                     visibleIds={visibleIds}
                     grouping={grouping}
                     layout={layout}

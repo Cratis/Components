@@ -31,7 +31,8 @@
     background: var(--cratis-surface-100);
 }
 .cratis-text-input:disabled,
-.cratis-text-area:disabled {
+.cratis-text-area:disabled,
+.cratis-choice[data-disabled='true'] {
     cursor: not-allowed;
     opacity: var(--cratis-disabled-opacity);
 }
@@ -47,10 +48,6 @@
     gap: 0.5rem;
     color: var(--cratis-text-color);
     cursor: pointer;
-}
-.cratis-choice[data-disabled='true'] {
-    cursor: not-allowed;
-    opacity: var(--cratis-disabled-opacity);
 }
 .cratis-choice[data-readonly='true']:not([data-disabled='true']) {
     cursor: default;

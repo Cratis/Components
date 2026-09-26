@@ -103,6 +103,12 @@ export interface CratisDataTableMessages {
     search?: string;
     /** Accessible name for the loaded-page search input. */
     searchAriaLabel?: string;
+    /** Message shown while loading an empty table. */
+    loading?: string;
+    /** Message shown when a query fails. */
+    failed?: string;
+    /** Message shown when a query denies access. */
+    unauthorized?: string;
 }
 
 /** Localizable labels owned by the Cratis column-filter popup. */
@@ -145,7 +151,7 @@ export interface CratisComponentsMessages {
     stepper?: CratisStepperMessages;
     /** Toaster labels. */
     notifications?: CratisNotificationsMessages;
-    /** DataTable search/selection labels. */
+    /** DataTable search, selection, and query-state messages. */
     dataTable?: CratisDataTableMessages;
     /** Column-filter popup labels and match-mode copy. */
     columnFilter?: CratisColumnFilterMessages;

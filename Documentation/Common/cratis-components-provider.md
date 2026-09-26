@@ -68,7 +68,7 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | `messages.dialog`        | Action/dismissal labels (`ok`, `cancel`, `yes`, `no`, `close`) shared by `Dialog`, `CommandDialog`, and `StepperCommandDialog`. |
 | `messages.stepper`       | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`.                         |
 | `messages.notifications` | `Toaster`'s dismiss-action and region-landmark labels.                                                                          |
-| `messages.dataTable`     | `DataTableCore`'s loaded-page search, row-selection (`selectRow`), and multiple-selection select-all (`selectAllRows`) labels.   |
+| `messages.dataTable`     | `DataTableCore`'s search, selection, and loading (`loading`), failed (`failed`), and access-denied (`unauthorized`) messages.   |
 | `messages.columnFilter`  | The built-in column filter popup's clear/apply/boolean/match-mode labels.                                                       |
 | `messages.toolbar`       | `Toolbar`'s accessible-name fallback (`label`, default `Tools`) when neither `aria-label` nor `aria-labelledby` is passed.        |
 | `icons`                  | Components-owned icon vocabulary replacing the built-in glyphs the library draws. See [Register an icon set](#register-an-icon-set). |
@@ -161,6 +161,9 @@ English, spelled out explicitly (this is also what every group defaults to with 
                 selectAllRows: 'Select all rows',
                 search: 'Search…',
                 searchAriaLabel: 'Search table',
+                loading: 'Loading…',
+                failed: 'Could not load data.',
+                unauthorized: 'You are not authorized to view this data.',
             },
             columnFilter: {
                 matchModeAriaLabel: 'Match mode',
@@ -228,6 +231,9 @@ The same shape in Norwegian Bokmål:
                 selectAllRows: 'Velg alle rader',
                 search: 'Søk…',
                 searchAriaLabel: 'Søk i tabellen',
+                loading: 'Laster…',
+                failed: 'Kunne ikke laste data.',
+                unauthorized: 'Du har ikke tilgang til disse dataene.',
             },
             columnFilter: {
                 matchModeAriaLabel: 'Sammenligningsmodus',
@@ -408,7 +414,7 @@ export const App = () => (
 );
 ```
 
-Returning `null` defers the overlay; Components does not silently retarget it to `document.body`. One exception: `ChatSidebar` in its default non-modal mode portals straight to `document.body` and does not consult `overlayEnvironment`.
+Returning `null` defers the overlay; Components does not silently retarget it to `document.body`. The non-modal `ChatSidebar` also uses this container, or `document.body` when no environment is configured, and portals only after mount.
 Direct vendor overlays keep their own portal and z-index configuration. Verify layer order and focus
 behavior in the real application shell when both systems can open together.
 

@@ -41,8 +41,8 @@ for (const adapter of inventory.adapters) {
     const entries = Object.values(index.entries ?? {});
     const storyIds = entries.filter(entry => entry.type === 'story').map(entry => entry.id).sort();
     const docsIds = entries.filter(entry => entry.type === 'docs').map(entry => entry.id).sort();
-    if (storyIds.length !== 330 || docsIds.length !== 74) {
-        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 330 and 74.`);
+    if (storyIds.length !== 331 || docsIds.length !== 74) {
+        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 331 and 74.`);
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;
@@ -86,8 +86,8 @@ const { slotOwningModules, matrixStoryIds } = computeRendererMatrixScope({
 if (slotOwningModules.size !== 14) {
     throw new Error(`Expected 14 slot-owning modules (the stable nine-slot presentation profile plus experimental slots), found ${slotOwningModules.size}.`);
 }
-if (matrixStoryIds.size !== 178) {
-    throw new Error(`Expected 178 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
+if (matrixStoryIds.size !== 179) {
+    throw new Error(`Expected 179 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
 }
 
 const appearances = 2;

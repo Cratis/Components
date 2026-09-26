@@ -107,7 +107,8 @@
 }
 
 .pv-filter-button.active,
-.pv-filter-button:hover {
+.pv-filter-button:hover,
+.pv-filter-icon-button.active {
     background: var(--cratis-surface-hover);
     box-shadow: var(--cratis-focus-ring);
 }
@@ -133,11 +134,6 @@
 
 .pv-filter-icon-button:hover {
     background: var(--cratis-surface-hover);
-}
-
-.pv-filter-icon-button.active {
-    background: var(--cratis-surface-hover);
-    box-shadow: var(--cratis-focus-ring);
 }
 
 .pv-filter-badge {
@@ -526,7 +522,8 @@
     background: var(--cratis-highlight-bg);
 }
 
-.pv-axis-label:focus-visible {
+.pv-axis-label:focus-visible,
+.pv-card:focus-visible {
     outline: none;
     border-color: var(--cratis-primary-color);
     box-shadow: var(--cratis-focus-ring);
@@ -654,12 +651,6 @@
     color: inherit;
     border: 1px solid transparent;
     transition: border-color 160ms ease;
-}
-
-.pv-card:focus-visible {
-    outline: none;
-    border-color: var(--cratis-primary-color);
-    box-shadow: var(--cratis-focus-ring);
 }
 
 .pv-card.selected {
