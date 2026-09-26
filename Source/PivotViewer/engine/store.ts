@@ -54,7 +54,7 @@ export function buildStore<TItem extends object>(
             const values = new Uint8Array(count);
             for (let i = 0; i < count; i++) {
                 const val = extractor(items[i]);
-                values[i] = val === null || val === undefined ? 2 : val === true ? 1 : 0;
+                values[i] = val === null ? 2 : val === undefined ? 3 : val === true ? 1 : 0;
             }
             fields.set(fieldName, { kind: 'boolean', values });
         } else {
@@ -93,8 +93,9 @@ export function buildCategoricalIndex(field: Field): CategoricalIndex {
     const valueToIdsList = new Map<string, number[]>();
 
     for (let i = 0; i < field.values.length; i++) {
-        if (field.kind === 'boolean' && field.values[i] === 2) continue;
-        const value = field.kind === 'boolean' ? String(field.values[i] === 1) : field.values[i];
+        const value = field.kind === 'boolean'
+            ? ['false', 'true', 'null', 'undefined'][field.values[i]]
+            : field.values[i];
         let list = valueToIdsList.get(value);
         if (!list) {
             list = [];
@@ -331,7 +332,7 @@ function groupByCategorical(
 
     for (let i = 0; i < visibleIds.length; i++) {
         const id = visibleIds[i];
-        if (field.kind === 'boolean' && field.values[id] === 2) continue;
+        if (field.kind === 'boolean' && field.values[id] >= 2) continue;
         const value = field.kind === 'boolean' ? String(field.values[id] === 1) : field.values[id];
 
         let list = valueToIds.get(value);
