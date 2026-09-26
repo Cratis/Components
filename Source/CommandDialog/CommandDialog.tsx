@@ -1,7 +1,6 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ICommandResult } from '@cratis/arc/commands';
 import { DialogButtons, DialogResult } from '@cratis/arc.react/dialogs';
 import { Dialog, type DialogProps } from '../Dialogs/Dialog';
 import React from 'react';
@@ -12,9 +11,9 @@ import {
     useCommandInstance,
     type CommandFormProps,
 } from '@cratis/arc.react/commands';
-import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
-import { reportConfirmationError, type ConfirmBeforeExecute } from './confirmBeforeExecute';
-import { useSubmissionFlight } from './useSubmissionFlight';
+import type { BeforeExecuteCallback } from './applyBeforeExecute';
+import type { ConfirmBeforeExecute } from './confirmBeforeExecute';
+import { useCommandExecution } from './useCommandExecution';
 import {
     isCommandFormField,
     markAsCommandFormColumn,
@@ -97,64 +96,38 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
         isValid: isCommandFormValid,
     } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
-    const submission = useSubmissionFlight();
+    const submission = useCommandExecution<TCommand, TResponse>(
+        commandInstance, setCommandValues, onBeforeExecute, confirmBeforeExecute, onException,
+    );
 
     const handleConfirm = async () => {
-        if (!submission.begin()) return false;
-        let result: ICommandResult<TResponse>;
-        try {
-            let values = commandInstance;
-            if (onBeforeExecute) {
-                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-                values = applied instanceof Promise ? await applied : applied;
-                if (!submission.isMounted()) return false;
-                setCommandValues(values);
-            }
-            if (confirmBeforeExecute) {
-                let approved: boolean;
-                try {
-                    approved = await confirmBeforeExecute(values);
-                } catch (error) {
-                    if (submission.isMounted()) await reportConfirmationError(error, onException);
-                    return false;
-                }
-                if (!submission.isMounted() || approved !== true) return false;
-            }
-            if (!submission.isMounted()) return false;
-            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            result = await (
-                commandInstance as unknown as {
-                    execute: () => Promise<ICommandResult<TResponse>>;
-                }
-            ).execute();
-        } finally {
-            submission.finish();
-        }
+        const result = await submission.run();
+        if (!result) return false;
 
         if (!result.isSuccess) {
-                await onFailed?.(result);
-                if (result.hasExceptions) {
-                    await onException?.(result.exceptionMessages, result.exceptionStackTrace);
-                }
-                if (!result.isAuthorized) await onUnauthorized?.();
-                if (!result.isValid) {
-                    await onValidationFailure?.(result.validationResults);
-                }
-                if (submission.isMounted()) setCommandResult(result);
-                return false;
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
             }
+            if (!result.isAuthorized) await onUnauthorized?.();
+            if (!result.isValid) {
+                await onValidationFailure?.(result.validationResults);
+            }
+            if (submission.isMounted()) setCommandResult(result);
+            return false;
+        }
 
-            await onSuccess?.(result.response as TResponse);
-            if (!submission.isMounted()) return false;
-            if (onConfirm) {
-                const closeResult = await onConfirm();
-                return closeResult === true;
-            }
-            if (onClose) {
-                const closeResult = await onClose(DialogResult.Ok);
-                return closeResult !== false;
-            }
-            return true;
+        await onSuccess?.(result.response as TResponse);
+        if (!submission.isMounted()) return false;
+        if (onConfirm) {
+            const closeResult = await onConfirm();
+            return closeResult === true;
+        }
+        if (onClose) {
+            const closeResult = await onClose(DialogResult.Ok);
+            return closeResult !== false;
+        }
+        return true;
     };
 
     const processChildren = (nodes: React.ReactNode): React.ReactNode => {

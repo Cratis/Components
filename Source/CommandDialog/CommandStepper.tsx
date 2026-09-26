@@ -2,16 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState, type ButtonHTMLAttributes, type HTMLAttributes } from 'react';
-import type { ICommandResult } from '@cratis/arc/commands';
 import {
     CommandForm,
     useCommandFormContext,
     useCommandInstance,
     type CommandFormProps,
 } from '@cratis/arc.react/commands';
-import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
-import { reportConfirmationError, type ConfirmBeforeExecute } from './confirmBeforeExecute';
-import { useSubmissionFlight } from './useSubmissionFlight';
+import type { BeforeExecuteCallback } from './applyBeforeExecute';
+import type { ConfirmBeforeExecute } from './confirmBeforeExecute';
+import { useCommandExecution } from './useCommandExecution';
 import {
     CommandStepperContent,
     type CommandStepperContentProps,
@@ -186,54 +185,28 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     const commandInstance = useCommandInstance<TCommand>();
     const [activeStep, setActiveStep] = useState(0);
     const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
-    const submission = useSubmissionFlight();
+    const submission = useCommandExecution<TCommand, TResponse>(
+        commandInstance, setCommandValues, onBeforeExecute, confirmBeforeExecute, onException,
+    );
 
     const handleSubmit = async () => {
-        if (!submission.begin()) return;
-        let result: ICommandResult<TResponse>;
-        try {
-            let values = commandInstance;
-            if (onBeforeExecute) {
-                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-                values = applied instanceof Promise ? await applied : applied;
-                if (!submission.isMounted()) return;
-                setCommandValues(values);
-            }
-            if (confirmBeforeExecute) {
-                let approved: boolean;
-                try {
-                    approved = await confirmBeforeExecute(values);
-                } catch (error) {
-                    if (submission.isMounted()) await reportConfirmationError(error, onException);
-                    return;
-                }
-                if (!submission.isMounted() || approved !== true) return;
-            }
-            if (!submission.isMounted()) return;
-            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            result = await (
-                commandInstance as unknown as {
-                    execute: () => Promise<ICommandResult<TResponse>>;
-                }
-            ).execute();
-        } finally {
-            submission.finish();
-        }
+        const result = await submission.run();
+        if (!result) return;
 
         if (!result.isSuccess) {
-                await onFailed?.(result);
-                if (result.hasExceptions) {
-                    await onException?.(result.exceptionMessages, result.exceptionStackTrace);
-                }
-                if (!result.isAuthorized) await onUnauthorized?.();
-                if (!result.isValid) {
-                    await onValidationFailure?.(result.validationResults);
-                }
-                if (submission.isMounted()) setCommandResult(result);
-                return;
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
             }
+            if (!result.isAuthorized) await onUnauthorized?.();
+            if (!result.isValid) {
+                await onValidationFailure?.(result.validationResults);
+            }
+            if (submission.isMounted()) setCommandResult(result);
+            return;
+        }
 
-            await onSuccess?.(result.response as TResponse);
+        await onSuccess?.(result.response as TResponse);
     };
 
     return (

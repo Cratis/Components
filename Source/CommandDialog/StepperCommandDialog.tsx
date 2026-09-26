@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState, type CSSProperties } from 'react';
-import type { ICommandResult } from '@cratis/arc/commands';
 import { DialogResult, useDialogContext } from '@cratis/arc.react/dialogs';
 import { Button } from '../Common/Button';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
@@ -21,9 +20,9 @@ import {
 } from '../Dialogs/Dialog';
 import type { StepperCustomizationProps } from './CommandStepper';
 import { CommandStepperContent } from './CommandStepperContent';
-import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
-import { reportConfirmationError, type ConfirmBeforeExecute } from './confirmBeforeExecute';
-import { useSubmissionFlight } from './useSubmissionFlight';
+import type { BeforeExecuteCallback } from './applyBeforeExecute';
+import type { ConfirmBeforeExecute } from './confirmBeforeExecute';
+import { useCommandExecution } from './useCommandExecution';
 import { getStepPanels } from './stepChildren';
 import { transitionStep } from './transitionStep';
 
@@ -199,7 +198,9 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         getFieldError,
     } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
-    const submission = useSubmissionFlight();
+    const submission = useCommandExecution<TCommand, TResponse>(
+        commandInstance, setCommandValues, onBeforeExecute, confirmBeforeExecute, onException,
+    );
     const isBusy = submission.isSubmitting;
     const [activeStep, setActiveStep] = useState(0);
     const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
@@ -276,53 +277,26 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     // is already on its way: the operator cancels, the dialog closes reporting cancellation, the
     // transform resolves, and the command executes anyway. The `finally` is what releases it, so the
     // flag is cleared on the failure paths and on a transform that throws just as it is on success.
+    // Result callbacks run after the submission releases busy.
     const handleSubmit = async () => {
-        if (!submission.begin()) return;
-        let result: ICommandResult<TResponse>;
-        try {
-            let values = commandInstance;
-            if (onBeforeExecute) {
-                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-                values = applied instanceof Promise ? await applied : applied;
-                if (!submission.isMounted()) return;
-                setCommandValues(values);
-            }
-            if (confirmBeforeExecute) {
-                let approved: boolean;
-                try {
-                    approved = await confirmBeforeExecute(values);
-                } catch (error) {
-                    if (submission.isMounted()) await reportConfirmationError(error, onException);
-                    return;
-                }
-                if (!submission.isMounted() || approved !== true) return;
-            }
-            if (!submission.isMounted()) return;
-            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            result = await (
-                commandInstance as unknown as {
-                    execute: () => Promise<ICommandResult<TResponse>>;
-                }
-            ).execute();
-        } finally {
-            submission.finish();
-        }
+        const result = await submission.run();
+        if (!result) return;
 
         if (!result.isSuccess) {
-                await onFailed?.(result);
-                if (result.hasExceptions) {
-                    await onException?.(result.exceptionMessages, result.exceptionStackTrace);
-                }
-                if (!result.isAuthorized) await onUnauthorized?.();
-                if (!result.isValid) {
-                    await onValidationFailure?.(result.validationResults);
-                }
-                if (submission.isMounted()) setCommandResult(result);
-                return;
+            await onFailed?.(result);
+            if (result.hasExceptions) {
+                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
             }
+            if (!result.isAuthorized) await onUnauthorized?.();
+            if (!result.isValid) {
+                await onValidationFailure?.(result.validationResults);
+            }
+            if (submission.isMounted()) setCommandResult(result);
+            return;
+        }
 
-            await onSuccess?.(result.response as TResponse);
-            if (submission.isMounted()) await handleClose(DialogResult.Ok);
+        await onSuccess?.(result.response as TResponse);
+        if (submission.isMounted()) await handleClose(DialogResult.Ok);
     };
 
     const footer = (
