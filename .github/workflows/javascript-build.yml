@@ -108,13 +108,7 @@ jobs:
                   export NODE_OPTIONS="--max-old-space-size=4096"
                   yarn workspace @cratis/components run ci
 
-            # Every intentionally public declaration/member reachable from a JS `exports`
-            # subpath must carry a TSDoc comment (Cratis/Components#173). Runs against
-            # source, so it needs no build step; its own self-tests run first and fail
-            # the job if the reachability/doc-presence walk itself regresses.
-            - name: Verify public API TSDoc coverage
-              working-directory: Source
-              run: node scripts/verify-api-docs.mjs
+            # Source's ci script also checks public API TSDoc and the packed CSS budgets.
 
     # Matrix over the renderer-adapter workspaces that today run one after another inside
     # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10. In that
