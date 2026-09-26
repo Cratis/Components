@@ -228,6 +228,12 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // that documents the split, so the ceilings stay where they are once more - and the rule they
 // encode is no longer the only lever, because a consumer that does not want every surface can now
 // import the areas it mounts instead of raising this ceiling.
+// Measured again when the query-state rows and the PivotViewer loading label landed
+// (Cratis/Components#338): their rules alone measured gzip 32791, 23 bytes past the ceiling, so
+// the addition came with the reduction the ceiling demands - the per-file separator comment in
+// the published stylesheets dropped its dash decoration (45 banners across the aggregate, and
+// every per-area sheet carries fewer of the same), measuring raw 203689, gzip 32558, 1170
+// declaration blocks. The ceilings stay where they are.
 const styleBudget = {
     rawBytes: 205 * 1024,
     gzipBytes: 32 * 1024,
