@@ -5,7 +5,7 @@
 export function Spinner({ label }: { label: string }) {
   return (
     <div className="pv-loading" role="status">
-      <span className="cratis:sr-only">{label}</span>
+      <span className="pv-loading__label">{label}</span>
       <div className="pv-spinner" aria-hidden="true">
         <div className="pv-spinner-ring" />
         <div className="pv-spinner-ring" />

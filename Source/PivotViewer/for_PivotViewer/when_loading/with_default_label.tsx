@@ -15,7 +15,7 @@ describe('when PivotViewer is loading with the default label', () => {
 
     it('should expose the loading status', () => {
         html.should.include('role="status"');
-        html.should.include('class="cratis:sr-only">Loading…</span>');
+        html.should.include('class="pv-loading__label">Loading…</span>');
         html.should.include('aria-hidden="true"');
     });
 });
