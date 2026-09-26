@@ -48,6 +48,10 @@ export interface FilterPanelProps {
     search?: string;
     /** Placeholder text for the search input. Defaults to 'Search…'. */
     searchPlaceholder?: string;
+    /** Accessible name for the non-modal dialog. Defaults to 'Filters'. */
+    'aria-label'?: string;
+    /** Accessible name for the panel search. Falls back to its placeholder, then 'Search'. */
+    searchAriaLabel?: string;
     /** Accessible name for a clear-filter button. Override to localize. Defaults to 'Clear filter'. */
     clearFilterAriaLabel?: string;
     /** Accessible name for a clear-range button. Override to localize. Defaults to 'Clear range'. */
@@ -173,6 +177,7 @@ interface OptionListProps {
     onFilterToggle: (filterKey: string, optionKey: string, multi: boolean) => void;
     /** Falls back to the panel-level search placeholder when the filter group has none of its own. */
     searchPlaceholder?: string;
+    isExpanded: boolean;
 }
 
 /** Adapts a `FilterDefinition`'s string/option shape onto the reusable {@link CheckboxListFilter}. */
@@ -181,7 +186,8 @@ function OptionList({
     selections,
     onFilterToggle,
     searchPlaceholder,
-}: Omit<OptionListProps, 'onFilterClear'>) {
+    isExpanded,
+}: OptionListProps) {
     return (
         <CheckboxListFilter
             options={filter.options ?? []}
@@ -189,6 +195,8 @@ function OptionList({
             multi={filter.multi}
             searchable={filter.searchable}
             searchPlaceholder={filter.searchPlaceholder ?? searchPlaceholder}
+            searchAriaLabel={filter.searchAriaLabel}
+            autoFocusSearch={filter.autoFocus === true && isExpanded}
             name={`filter-${filter.key}`}
             onToggle={(optionKey) =>
                 onFilterToggle(filter.key, optionKey, filter.multi ?? false)
@@ -217,6 +225,8 @@ export function FilterPanel({
     customValues,
     search,
     searchPlaceholder = 'Search…',
+    'aria-label': ariaLabel = 'Filters',
+    searchAriaLabel,
     clearFilterAriaLabel = 'Clear filter',
     clearRangeAriaLabel = 'Clear range',
     expandedFilterKey,
@@ -297,6 +307,23 @@ export function FilterPanel({
         };
     }, [isOpen, anchorRef, onClose]);
 
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            const focused = document.activeElement;
+            if (focused && (panelRef.current?.contains(focused) || anchorRef.current?.contains(focused))) {
+                event.preventDefault();
+                onClose();
+                anchorRef.current?.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [isOpen, anchorRef, onClose]);
+
     if (!isBrowser) return null;
 
     return createPortal(
@@ -304,6 +331,8 @@ export function FilterPanel({
             {isOpen && (
                 <motion.aside
                     ref={panelRef}
+                    role='dialog'
+                    aria-label={ariaLabel}
                     className='pv-filter-dropdown'
                     style={{
                         position: 'fixed',
@@ -324,6 +353,7 @@ export function FilterPanel({
                                 <input
                                     type='search'
                                     placeholder={searchPlaceholder}
+                                    aria-label={(searchAriaLabel ?? searchPlaceholder) || 'Search'}
                                     value={search ?? ''}
                                     onChange={(event) =>
                                         onSearchChange(event.target.value)
@@ -459,6 +489,7 @@ export function FilterPanel({
                                                     selections={selections}
                                                     onFilterToggle={onFilterToggle}
                                                     searchPlaceholder={searchPlaceholder}
+                                                    isExpanded={isExpanded}
                                                 />
                                             )}
                                         </div>
