@@ -113,13 +113,13 @@ Switching views clears the selection.
 
 ## Keyboard behavior
 
-The toolbar exposes native buttons, a range input, and a select, and the filter panel uses native inputs and buttons, so their standard browser keyboard behavior applies. When the editable zoom percentage is open, `Enter` applies the typed percentage and `Escape` cancels editing. `PivotViewer` does not install global shortcuts for closing details, navigating cards, zooming with `+` / `-`, or focusing search. Do not advertise those shortcuts unless the host implements, scopes, and tests them.
+The toolbar exposes native buttons, a range input, and a select, and the filter panel uses native inputs and buttons, so their standard browser keyboard behavior applies. When the editable zoom percentage is open, `Enter` applies the typed percentage and `Escape` cancels editing. The open filter panel handles `Escape` when focus is inside it or on its trigger, then returns focus to the trigger. `PivotViewer` does not install global shortcuts for closing details, navigating cards, zooming with `+` / `-`, or focusing search. Do not advertise those shortcuts unless the host implements, scopes, and tests them.
 
 Keyboard limits to plan for:
 
 - Cards are drawn on a Pixi canvas and cannot be focused. Selecting a card, and therefore opening its details, needs a pointer or touch. If keyboard or screen-reader users must reach individual items, offer another view of the same data, such as a data table.
 - The zoom percentage is not focusable, so typing a zoom value needs a pointer. The slider and the zoom buttons work from the keyboard.
-- `Escape` does not close the filter panel or the detail drawer.
+- `Escape` closes the filter panel and returns focus to its trigger, but does not close the detail drawer.
 
 ## Touch Gestures
 
