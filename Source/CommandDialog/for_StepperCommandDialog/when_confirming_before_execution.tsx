@@ -39,6 +39,7 @@ const onFailed = vi.fn();
 describe('when confirming a stepper dialog submission', () => {
     let dialog: StepperDialogInTheDom;
     let declinedCalls: number;
+    let closeCallsAfterDecline: number;
     let approvedCalls: number;
     let enabledAfterDecline: boolean;
     beforeEach(async () => {
@@ -53,6 +54,7 @@ describe('when confirming a stepper dialog submission', () => {
         );
         await click(dialog, 'Submit');
         declinedCalls = execution.calls;
+        closeCallsAfterDecline = closeDialog.mock.calls.length;
         enabledAfterDecline = !disabledButtonLabels(dialog).includes('Submit');
         await click(dialog, 'Submit');
         approvedCalls = execution.calls;
@@ -60,7 +62,7 @@ describe('when confirming a stepper dialog submission', () => {
     afterEach(async () => await unmount(dialog));
     it('should not execute or close on decline', () => {
         declinedCalls.should.equal(0);
-        closeDialog.mock.calls.length.should.equal(1);
+        closeCallsAfterDecline.should.equal(0);
         onFailed.mock.calls.length.should.equal(0);
     });
     it('should release busy state after decline', () => { enabledAfterDecline.should.equal(true); });
