@@ -278,6 +278,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     // flag is cleared on the failure paths and on a transform that throws just as it is on success.
     const handleSubmit = async () => {
         if (!submission.begin()) return;
+        let result: ICommandResult<TResponse>;
         try {
             let values = commandInstance;
             if (onBeforeExecute) {
@@ -298,14 +299,17 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             }
             if (!submission.isMounted()) return;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            const result: ICommandResult<TResponse> = await (
+            result = await (
                 commandInstance as unknown as {
                     execute: () => Promise<ICommandResult<TResponse>>;
                 }
             ).execute();
             if (!submission.isMounted()) return;
+        } finally {
+            submission.finish();
+        }
 
-            if (!result.isSuccess) {
+        if (!result.isSuccess) {
                 await onFailed?.(result);
                 if (result.hasExceptions) {
                     await onException?.(result.exceptionMessages, result.exceptionStackTrace);
@@ -320,9 +324,6 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
 
             await onSuccess?.(result.response as TResponse);
             if (submission.isMounted()) await handleClose(DialogResult.Ok);
-        } finally {
-            submission.finish();
-        }
     };
 
     const footer = (

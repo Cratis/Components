@@ -190,6 +190,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
 
     const handleSubmit = async () => {
         if (!submission.begin()) return;
+        let result: ICommandResult<TResponse>;
         try {
             let values = commandInstance;
             if (onBeforeExecute) {
@@ -210,14 +211,17 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             }
             if (!submission.isMounted()) return;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            const result: ICommandResult<TResponse> = await (
+            result = await (
                 commandInstance as unknown as {
                     execute: () => Promise<ICommandResult<TResponse>>;
                 }
             ).execute();
             if (!submission.isMounted()) return;
+        } finally {
+            submission.finish();
+        }
 
-            if (!result.isSuccess) {
+        if (!result.isSuccess) {
                 await onFailed?.(result);
                 if (result.hasExceptions) {
                     await onException?.(result.exceptionMessages, result.exceptionStackTrace);
@@ -231,9 +235,6 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             }
 
             await onSuccess?.(result.response as TResponse);
-        } finally {
-            submission.finish();
-        }
     };
 
     return (

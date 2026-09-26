@@ -101,6 +101,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
 
     const handleConfirm = async () => {
         if (!submission.begin()) return false;
+        let result: ICommandResult<TResponse>;
         try {
             let values = commandInstance;
             if (onBeforeExecute) {
@@ -121,14 +122,17 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             }
             if (!submission.isMounted()) return false;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            const result: ICommandResult<TResponse> = await (
+            result = await (
                 commandInstance as unknown as {
                     execute: () => Promise<ICommandResult<TResponse>>;
                 }
             ).execute();
             if (!submission.isMounted()) return false;
+        } finally {
+            submission.finish();
+        }
 
-            if (!result.isSuccess) {
+        if (!result.isSuccess) {
                 await onFailed?.(result);
                 if (result.hasExceptions) {
                     await onException?.(result.exceptionMessages, result.exceptionStackTrace);
@@ -152,9 +156,6 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
                 return closeResult !== false;
             }
             return true;
-        } finally {
-            submission.finish();
-        }
     };
 
     const processChildren = (nodes: React.ReactNode): React.ReactNode => {
