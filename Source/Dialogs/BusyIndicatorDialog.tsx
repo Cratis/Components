@@ -16,25 +16,34 @@ import { DialogInitialFocus } from './DialogInitialFocus';
  *
  * **You do not instantiate this component directly.** It's rendered by the
  * dialog host machinery in response to a request. Trigger one from anywhere
- * in your tree by calling the host's `showBusyIndicator` helper:
+ * in your tree with `useBusyIndicator` from `@cratis/arc.react/dialogs`:
  *
  * ```tsx
- * import { useDialogs } from '@cratis/arc.react/dialogs';
+ * import { DialogComponents, useBusyIndicator } from '@cratis/arc.react/dialogs';
+ * import { BusyIndicatorDialog } from '@cratis/components/Dialogs';
  *
- * const Save = () => {
- *     const { showBusyIndicator, hideBusyIndicator } = useDialogs();
- *
- *     const onSave = async () => {
- *         showBusyIndicator({ title: 'Saving', message: 'Persisting your changes…' });
+ * function Save({ onSave }: { onSave: () => Promise<void> }) {
+ *     const [showBusy, closeBusy] = useBusyIndicator(
+ *         'Saving', 'Persisting your changes…',
+ *     );
+ *     const handleSave = async () => {
+ *         void showBusy();
  *         try {
- *             await someLongRunningCommand.execute();
+ *             await onSave();
  *         } finally {
- *             hideBusyIndicator();
+ *             closeBusy();
  *         }
  *     };
+ *     return <button onClick={handleSave}>Save</button>;
+ * }
  *
- *     return <Button onClick={onSave}>Save</Button>;
- * };
+ * function Example({ onSave }: { onSave: () => Promise<void> }) {
+ *     return (
+ *         <DialogComponents busyIndicator={BusyIndicatorDialog}>
+ *             <Save onSave={onSave} />
+ *         </DialogComponents>
+ *     );
+ * }
  * ```
  *
  * The host renders the BusyIndicatorDialog in response, threading the
