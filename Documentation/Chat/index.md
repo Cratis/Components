@@ -114,7 +114,7 @@ If your application owns the queries, import `ChatStatus` from `@cratis/componen
 | `ChatStatus.Ready` | Ordinary empty-state text | Existing content |
 | `ChatStatus.Loading` | Loading text with a status announcement | Existing content remains visible during a refetch |
 | `ChatStatus.Failed` | Failure text with an alert | Existing content remains visible |
-| `ChatStatus.Unauthorized` | Access-denied text with an alert | Existing content remains visible |
+| `ChatStatus.Unauthorized` | Access-denied text with an alert | Access-denied alert replaces the content |
 
 Override these messages with `labels.topicList.loading`, `.failed`, or `.unauthorized` for topics, and `labels.conversation.loading`, `.failed`, or `.unauthorized` for messages. Unset fields use English defaults; the existing `empty` labels still apply to successful empty results. Chat labels do not come from `CratisComponentsProvider.messages`. The [observable-query wrapper](./observable-queries.md#loading-and-failed-queries) resolves statuses for you.
 
