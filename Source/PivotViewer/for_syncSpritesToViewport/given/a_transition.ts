@@ -10,6 +10,7 @@ export class a_transition {
     root = new PIXI.Container();
     container = { clientWidth: 200, clientHeight: 200, scrollLeft: 0, scrollTop: 0 } as HTMLDivElement;
     sprites = new Map<number | string, CardSprite>();
+    transitionSeenIds = new Set<number | string>();
     layout: LayoutResult = {
         positions: new Map(Array.from({ length: 5 }, (_, index) => [index, { x: 0, y: 15000 + index * 30, groupIndex: 0 }] as const)),
         totalWidth: 200,
@@ -25,6 +26,7 @@ export class a_transition {
             sprites: this.sprites,
             layout: this.layout,
             prevLayout: this.previousLayout,
+            transitionSeenIds: this.transitionSeenIds,
             visibleIds: new Uint32Array(),
             items: [],
             cardWidth: 20,

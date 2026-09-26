@@ -153,6 +153,7 @@ export function PivotCanvas<TItem extends object>({
     const previousViewModeRef = useRef<ViewMode>(viewMode);
     const prevLayoutRef = useRef<LayoutResult | null>(null);
     const transitionLayoutRef = useRef<LayoutResult | null>(null);
+    const transitionSeenIdsRef = useRef<Set<ItemId>>(new Set());
     const prevGroupingRef = useRef<GroupingResult | null>(null);
     const prevScrollTopRef = useRef<number>(0);
     const prevScrollLeftRef = useRef<number>(0);
@@ -501,6 +502,7 @@ export function PivotCanvas<TItem extends object>({
         const layoutChanged = prevLayoutRef.current !== layout;
 
         if (viewModeChanged || groupingChanged || layoutChanged) {
+            transitionSeenIdsRef.current.clear();
             if (layoutChanged) transitionLayoutRef.current = prevLayoutRef.current;
             isViewTransitionRef.current = true;
             lastViewChangeTimeRef.current = Date.now();
@@ -587,6 +589,7 @@ export function PivotCanvas<TItem extends object>({
                 ),
             isViewTransition: isViewTransitionRef.current,
             prevLayout: prevLayoutRef.current,
+            transitionSeenIds: transitionSeenIdsRef.current,
             prevScrollTop: prevScrollTopRef.current,
             prevScrollLeft: prevScrollLeftRef.current,
         });
@@ -610,6 +613,7 @@ export function PivotCanvas<TItem extends object>({
             needsRenderRef,
             spritesRef,
             isViewTransitionRef,
+            onTransitionComplete: () => transitionSeenIdsRef.current.clear(),
         });
     }, [
         layout,
@@ -757,6 +761,7 @@ export function PivotCanvas<TItem extends object>({
                     isViewTransition: isViewTransitionRef.current,
                     viewMode,
                     prevLayout: transitionLayoutRef.current,
+                    transitionSeenIds: transitionSeenIdsRef.current,
                     prevScrollTop: prevScrollTopRef.current,
                     prevScrollLeft: prevScrollLeftRef.current,
                 });

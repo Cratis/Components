@@ -29,12 +29,13 @@ export interface SyncParams<TItem> {
     isViewTransition?: boolean;
     viewMode: string;
     prevLayout?: LayoutResult | null;
+    transitionSeenIds: Set<string | number>;
     prevScrollTop?: number;
     prevScrollLeft?: number;
 }
 
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
-    const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout } = params;
+    const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout, transitionSeenIds } = params;
     if (!root || !container) return;
 
     void _visibleIds;
@@ -156,9 +157,10 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     }
     if (isViewTransition) {
         for (const [id, position] of prevLayout?.positions ?? []) {
-            if (!sprites.has(id) && layout.positions.has(id) && position && intersectsViewport(position.x, position.y)) addVisibleId(id);
+            if (!sprites.has(id) && !transitionSeenIds.has(id) && layout.positions.has(id) && position && intersectsViewport(position.x, position.y)) addVisibleId(id);
         }
         for (const [id, sprite] of sprites) {
+            transitionSeenIds.add(id);
             if (layout.positions.has(id) && intersectsViewport(sprite.currentX, sprite.currentY)) addVisibleId(id);
         }
     }
@@ -287,6 +289,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
             sprite = createCardSprite(id, startX, startY);
             sprites.set(id, sprite);
+            if (isViewTransition) transitionSeenIds.add(id);
             if (sprite.container) {
                 root.addChild(sprite.container);
                 sprite.currentX = startX;
