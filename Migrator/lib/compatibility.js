@@ -98,10 +98,16 @@ export function validateBundledManifest(manifest, migratorVersion) {
     const packageEntry = manifest.packages?.find(
         ({ name }) => name === '@cratis/components.migrator',
     );
+    if (packageEntry?.version !== migratorVersion) {
+        throw new Error(
+            `Bundled compatibility manifest pins @cratis/components.migrator at ${packageEntry?.version ?? '<missing>'} but this package is ${migratorVersion}. ` +
+                'This is a packaging defect in this migrator release, not a problem with your project. ' +
+                'Report it at https://github.com/Cratis/Components/issues.',
+        );
+    }
     if (
-        packageEntry?.version !== migratorVersion ||
-        packageEntry?.independentRelease !== false ||
-        !semver.satisfies(migratorVersion, packageEntry?.releaseMajorRange ?? '')
+        packageEntry.independentRelease !== false ||
+        !semver.satisfies(migratorVersion, packageEntry.releaseMajorRange ?? '')
     ) {
         throw new Error(
             'Bundled compatibility manifest has stale migrator package metadata.',

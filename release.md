@@ -29,14 +29,23 @@ whether publication is required. The npm job:
 1. checks out the exact merged commit;
 2. installs the committed lockfile with `yarn install --immutable`;
 3. builds all public workspaces;
-4. updates every public workspace and local workspace dependency to the release version;
-5. publishes each package publicly with npm provenance;
-6. polls the npm registry until every public package answers at the release version, failing the
+4. updates all seven public workspace versions and local workspace dependencies to the release version;
+5. regenerates all three compatibility manifest copies from those bumped versions and verifies they
+   match before publishing anything;
+6. publishes each package publicly with npm provenance;
+7. polls the npm registry until every public package answers at the release version, failing the
    job if one is still missing after about ten minutes; and
-7. triggers documentation and sample dependency updates.
+8. triggers documentation and sample dependency updates.
 
-Publishing stops on the first package failure. The workflow fails explicitly when a release-bearing
-merge cannot be associated with a valid version label.
+`yarn publish-version` performs steps 4–6 in this order, including on manual recovery runs. A
+manifest generation or verification failure stops publication before the first package. Publishing
+stops on the first package failure. Before a 5.0.0 release, update the Components major window in
+`scripts/generate-compat-manifest.mjs`: package policies, `toolingCompatibility` ranges, and the
+support-window values and checks in `validateCompatibilityManifest`. Also update
+`Migrator/lib/compatibility.js`: `validateBundledManifest` currently requires source `>=3 <4` and
+target `>=4 <5`. Otherwise manifest validation or bundled migrator preflight rejects the release.
+The workflow fails explicitly when a release-bearing merge cannot be associated with a valid
+version label.
 
 ## Manual recovery
 

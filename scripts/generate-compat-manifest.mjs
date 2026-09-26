@@ -352,7 +352,7 @@ function validatePackageSet(packages) {
     }
 }
 
-function discoverWorkspaceManifestPaths(workspaces, rootDirectory) {
+export function discoverWorkspaceManifestPaths(workspaces, rootDirectory) {
     if (!Array.isArray(workspaces))
         fail('Root package.json must declare a workspaces array.');
     const manifestPaths = [];
@@ -403,25 +403,24 @@ function fail(message) {
     throw new Error(message);
 }
 
-async function main() {
-    const mode = process.argv[2] ?? '--check';
-    if (!['--check', '--write'].includes(mode)) {
-        throw new Error(
-            'Usage: node scripts/generate-compat-manifest.mjs [--check|--write]',
-        );
-    }
-    const serialized = serializeCompatibilityManifest(createCompatibilityManifest());
-    if (mode === '--write') {
-        for (const relativePath of outputPaths) {
-            fs.writeFileSync(path.join(repositoryDirectory, relativePath), serialized);
-        }
-        console.log(
-            `Wrote ${outputPaths.join(', ')} from the seven public workspace manifests.`,
-        );
-        return;
-    }
+export function writeCompatibilityManifest(rootDirectory = repositoryDirectory) {
+    const serialized = serializeCompatibilityManifest(
+        createCompatibilityManifest(rootDirectory),
+    );
     for (const relativePath of outputPaths) {
-        const outputPath = path.join(repositoryDirectory, relativePath);
+        fs.writeFileSync(path.join(rootDirectory, relativePath), serialized);
+    }
+    console.log(
+        `Wrote ${outputPaths.join(', ')} from the seven public workspace manifests.`,
+    );
+}
+
+export function checkCompatibilityManifest(rootDirectory = repositoryDirectory) {
+    const serialized = serializeCompatibilityManifest(
+        createCompatibilityManifest(rootDirectory),
+    );
+    for (const relativePath of outputPaths) {
+        const outputPath = path.join(rootDirectory, relativePath);
         if (!fs.existsSync(outputPath)) {
             throw new Error(
                 `${relativePath} is missing. Run yarn generate-compat-manifest.`,
@@ -436,6 +435,20 @@ async function main() {
     console.log(
         `Verified deterministic compatibility metadata in ${outputPaths.join(', ')}.`,
     );
+}
+
+async function main() {
+    const mode = process.argv[2] ?? '--check';
+    if (!['--check', '--write'].includes(mode)) {
+        throw new Error(
+            'Usage: node scripts/generate-compat-manifest.mjs [--check|--write]',
+        );
+    }
+    if (mode === '--write') {
+        writeCompatibilityManifest();
+    } else {
+        checkCompatibilityManifest();
+    }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
