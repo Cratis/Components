@@ -86,18 +86,6 @@ export function startAnimationLoop(
 ) {
   const { mountedRef, appRef, animationFrameRef, isAnimatingRef, needsRenderRef, spritesRef, isViewTransitionRef, onTransitionComplete, syncVisibility } = refs;
 
-  // Expose the rendered Pixi sprite count to the Storybook viewport check.
-  const canvas = appRef.current?.canvas as (HTMLCanvasElement & { __pivotVisibleCardCount?: () => number }) | undefined;
-  if (canvas) canvas.__pivotVisibleCardCount = () => {
-    const root = appRef.current?.stage.children[1];
-    if (!root) return 0;
-    return [...spritesRef.current.values()].filter(sprite => {
-      const x = sprite.currentX * root.scale.x + root.position.x;
-      const y = sprite.currentY * root.scale.y + root.position.y;
-      return sprite.container.visible && x + 180 > 0 && x < canvas.clientWidth && y + 120 > 0 && y < canvas.clientHeight;
-    }).length;
-  };
-
   const animate = () => {
     if (!mountedRef.current) return;
 
