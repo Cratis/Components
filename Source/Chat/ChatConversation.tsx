@@ -270,7 +270,7 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
     return (
         <div className={`cratis-chat-conversation${className ? ` ${className}` : ''}`}>
             <div className='cratis-chat-conversation__messages' aria-busy={status === ChatStatus.Loading && messages.length > 0 || undefined}>
-                {messages.length === 0 && (
+                {(messages.length === 0 || status === ChatStatus.Unauthorized) && (
                     <p className='cratis-chat-conversation__empty'>
                         {status === ChatStatus.Loading ? (
                             <span role='status'>{labels?.loading ?? 'Loading messages…'}</span>
@@ -283,7 +283,7 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                         )}
                     </p>
                 )}
-                {messages.map((message, index) => {
+                {status !== ChatStatus.Unauthorized && messages.map((message, index) => {
                     const author = authorFor(message.authorId);
                     const { showAuthor, showTimestamp } = renderInfo[index];
                     const availableActions = (actions ?? []).filter(
@@ -390,11 +390,13 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                         </div>
                     );
                 })}
-                <TypingIndicator
-                    authors={typingAuthors}
-                    label={typingLabel(typingAuthors, labels)}
-                    buildAvatarUrl={buildAvatarUrl}
-                />
+                {status !== ChatStatus.Unauthorized && (
+                    <TypingIndicator
+                        authors={typingAuthors}
+                        label={typingLabel(typingAuthors, labels)}
+                        buildAvatarUrl={buildAvatarUrl}
+                    />
+                )}
                 <div ref={messagesEndRef} />
             </div>
 

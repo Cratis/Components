@@ -40,7 +40,7 @@ describe.each([
     });
 });
 
-describe.each([ChatStatus.Loading, ChatStatus.Failed, ChatStatus.Unauthorized])(
+describe.each([ChatStatus.Loading, ChatStatus.Failed])(
     'when the conversation is %s with messages', (status) => {
         beforeEach(async () => {
             await mount(status, [message]);
@@ -64,6 +64,17 @@ describe.each([
 
     it('should use the host label', () => {
         conversation.container.querySelector(`[role="${role}"]`)!.textContent!.should.equal(text);
+    });
+});
+
+describe('when access to previously loaded messages is denied', () => {
+    beforeEach(async () => {
+        await mount(ChatStatus.Unauthorized, [message]);
+    });
+
+    it('should show the access-denied alert without exposing previous messages', () => {
+        conversation.container.querySelector('[role="alert"]')!.textContent!.should.equal('You are not authorized to view these messages.');
+        (conversation.container.querySelector('.cratis-chat-message__body') === null).should.be.true;
     });
 });
 

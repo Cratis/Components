@@ -154,7 +154,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                     <span>{labels?.newTopic ?? 'New topic'}</span>
                 </button>
             )}
-            {topics.length === 0 && (
+            {(topics.length === 0 || status === ChatStatus.Unauthorized) && (
                 <p className='cratis-chat-topics__empty'>
                     {status === ChatStatus.Loading ? (
                         <span role='status'>{labels?.loading ?? 'Loading topics…'}</span>
@@ -168,7 +168,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                 </p>
             )}
             <ul className='cratis-chat-topics__list'>
-                {topicsByActivity(topics).map((topic) => {
+                {status !== ChatStatus.Unauthorized && topicsByActivity(topics).map((topic) => {
                     const starter =
                         topic.startedBy === undefined
                             ? undefined

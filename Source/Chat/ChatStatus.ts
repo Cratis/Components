@@ -9,6 +9,6 @@ export enum ChatStatus {
     Loading = 'loading',
     /** Shows a failure message without data, or retains existing content after a failure. */
     Failed = 'failed',
-    /** Shows an access-denied message without data, or retains existing content. */
+    /** Shows an access-denied message instead of existing content. */
     Unauthorized = 'unauthorized',
 }

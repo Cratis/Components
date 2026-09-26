@@ -35,7 +35,7 @@ describe.each([
     });
 });
 
-describe.each([ChatStatus.Loading, ChatStatus.Failed, ChatStatus.Unauthorized])(
+describe.each([ChatStatus.Loading, ChatStatus.Failed])(
     'when the topic list is %s with topics', (status) => {
         beforeEach(async () => {
             await mount(status, [topic]);
@@ -59,6 +59,17 @@ describe.each([
 
     it('should use the host label', () => {
         list.container.querySelector(`[role="${role}"]`)!.textContent!.should.equal(text);
+    });
+});
+
+describe('when access to previously loaded topics is denied', () => {
+    beforeEach(async () => {
+        await mount(ChatStatus.Unauthorized, [topic]);
+    });
+
+    it('should show the access-denied alert without exposing previous topics', () => {
+        list.container.querySelector('[role="alert"]')!.textContent!.should.equal('You are not authorized to view these topics.');
+        (list.container.querySelector('.cratis-chat-topics__topic') === null).should.be.true;
     });
 });
 
