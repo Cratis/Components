@@ -340,7 +340,7 @@ export const CommandStepperContent = ({
                     data-selected={index === currentStep || undefined}
                     data-visited={visitedSteps.has(index) || undefined}
                     aria-label={String(panel.props.header ?? `Step ${index + 1}`)}
-                    aria-labelledby={pt?.header?.id == null ? `${stepperId}-step-${index}` : undefined}
+                    aria-labelledby={pt?.panel?.['aria-labelledby'] ?? (pt?.header?.id == null ? `${stepperId}-step-${index}` : undefined)}
                 >
                     {processChildren(panel.props.children)}
                 </section>
