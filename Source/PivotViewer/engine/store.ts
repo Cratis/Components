@@ -31,8 +31,17 @@ export function buildStore<TItem extends object>(
     }
 
     for (const [fieldName, extractor] of fieldExtractors) {
-        const firstValue = count > 0 ? extractor(items[0]) : null;
-        const kind = inferKind(firstValue);
+        // Missing values do not determine a column's kind. Dates have already been
+        // converted to timestamps by the field extractors, so they are numeric here.
+        let firstPresentValue: FieldValue = null;
+        for (const item of items) {
+            const value = extractor(item);
+            if (value !== null && value !== undefined) {
+                firstPresentValue = value;
+                break;
+            }
+        }
+        const kind = inferKind(firstPresentValue);
 
         if (kind === 'number') {
             const values = new Float64Array(count);
@@ -45,7 +54,7 @@ export function buildStore<TItem extends object>(
             const values = new Uint8Array(count);
             for (let i = 0; i < count; i++) {
                 const val = extractor(items[i]);
-                values[i] = val === true ? 1 : 0;
+                values[i] = val === null ? 2 : val === undefined ? 3 : val === true ? 1 : 0;
             }
             fields.set(fieldName, { kind: 'boolean', values });
         } else {
@@ -74,17 +83,19 @@ function stringifyValue(value: FieldValue): string {
 }
 
 /**
- * Build categorical index for a string field
+ * Build categorical index for a string or boolean field
  */
 export function buildCategoricalIndex(field: Field): CategoricalIndex {
-    if (field.kind !== 'string') {
-        throw new Error('Categorical index requires string field');
+    if (field.kind !== 'string' && field.kind !== 'boolean') {
+        throw new Error('Categorical index requires string or boolean field');
     }
 
     const valueToIdsList = new Map<string, number[]>();
 
     for (let i = 0; i < field.values.length; i++) {
-        const value = field.values[i];
+        const value = field.kind === 'boolean'
+            ? ['false', 'true', 'null', 'undefined'][field.values[i]]
+            : field.values[i];
         let list = valueToIdsList.get(value);
         if (!list) {
             list = [];
@@ -158,7 +169,7 @@ export function buildIndexes(store: PivotStore, fieldNames: string[]): PivotInde
         const field = store.fields.get(fieldName);
         if (!field) continue;
 
-        if (field.kind === 'string') {
+        if (field.kind === 'string' || field.kind === 'boolean') {
             categorical.set(fieldName, buildCategoricalIndex(field));
         } else if (field.kind === 'number') {
             numeric.set(fieldName, buildNumericIndex(field));
@@ -295,7 +306,7 @@ export function computeGrouping(
         return { groups: [] };
     }
 
-    if (field.kind === 'string') {
+    if (field.kind === 'string' || field.kind === 'boolean') {
         return groupByCategorical(
             field,
             visibleIds,
@@ -313,7 +324,7 @@ function groupByCategorical(
     visibleIds: Uint32Array,
     index?: CategoricalIndex,
 ): GroupingResult {
-    if (field.kind !== 'string') {
+    if (field.kind !== 'string' && field.kind !== 'boolean') {
         return { groups: [] };
     }
 
@@ -321,7 +332,8 @@ function groupByCategorical(
 
     for (let i = 0; i < visibleIds.length; i++) {
         const id = visibleIds[i];
-        const value = field.values[id];
+        if (field.kind === 'boolean' && field.values[id] >= 2) continue;
+        const value = field.kind === 'boolean' ? String(field.values[id] === 1) : field.values[id];
 
         let list = valueToIds.get(value);
         if (!list) {
@@ -342,7 +354,7 @@ function groupByCategorical(
         groups.push({
             key: value,
             label: value,
-            value,
+            value: field.kind === 'boolean' ? value === 'true' : value,
             ids,
             count: ids.length,
         });
@@ -455,7 +467,11 @@ export function sortIds(
 
     if (field.kind === 'number') {
         const values = field.values;
-        sortedIds.sort((a, b) => values[a] - values[b]);
+        sortedIds.sort((a, b) => {
+            if (Number.isNaN(values[a])) return Number.isNaN(values[b]) ? 0 : 1;
+            if (Number.isNaN(values[b])) return -1;
+            return values[a] - values[b];
+        });
     } else if (field.kind === 'string') {
         const values = field.values;
         sortedIds.sort((a, b) => values[a].localeCompare(values[b]));
