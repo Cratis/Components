@@ -52,6 +52,8 @@ export interface CommandDialogProps<TCommand extends object, TResponse = object>
      * Ask whether to run the command after validation and `onBeforeExecute`.
      * Receives the transformed values. Only `true` executes; all other outcomes
      * keep the dialog open. May return a promise (for example from a confirmation dialog).
+     * If command values change while confirmation is pending, execution is skipped
+     * and the dialog stays open; confirm the new values again.
      * Unlike `onConfirm`, this runs before execution, not after success.
      */
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;

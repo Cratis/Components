@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // @vitest-environment jsdom
 
-import React from 'react';
+import React, { act } from 'react';
 import { vi } from 'vitest';
 import { StepperPanel } from '../StepperPanel';
 import { StepperCommandDialog } from '../StepperCommandDialog';
@@ -28,10 +28,12 @@ vi.mock('@cratis/arc.react/commands', () => {
         CommandForm: (props: { children?: React.ReactNode }) => React.createElement('div', null, props.children),
         useCommandFormContext: () => context,
         useCommandInstance: () => command,
-        CommandFormFieldWrapper: () => null,
+        CommandFormFieldWrapper: () => React.createElement('input', { 'aria-label': 'Name' }),
     };
 });
 class SampleCommand { name = 'Example'; }
+const NameField = (props: { value: (command: SampleCommand) => string }) => { void props; return null; };
+NameField.displayName = 'CommandFormField';
 
 const guard = vi.fn(async () => false);
 const onSuccess = vi.fn();
@@ -67,4 +69,28 @@ describe('when confirming a stepper dialog submission', () => {
     });
     it('should release busy state after decline', () => { enabledAfterDecline.should.equal(true); });
     it('should execute on approval', () => { approvedCalls.should.equal(1); });
+});
+
+describe('when a stepper dialog confirmation is pending', () => {
+    let dialog: StepperDialogInTheDom;
+    let resolveGuard!: (approved: boolean) => void;
+    let disabledWhilePending: boolean;
+    const pendingGuard = vi.fn();
+    beforeEach(async () => {
+        const pending = new Promise<boolean>((resolve) => { resolveGuard = resolve; });
+        pendingGuard.mockReturnValue(pending);
+        dialog = await render(
+            <StepperCommandDialog<SampleCommand> command={SampleCommand} title='Example' confirmBeforeExecute={pendingGuard}>
+                <StepperPanel header='Only Step'><NameField value={(command) => command.name} /></StepperPanel>
+            </StepperCommandDialog>,
+        );
+        await click(dialog, 'Submit');
+        disabledWhilePending = dialog.container.querySelector('input')?.matches(':disabled') ?? false;
+        await act(async () => resolveGuard(false));
+    });
+    afterEach(async () => await unmount(dialog));
+    it('should disable fields while the guard is pending', () => { disabledWhilePending.should.equal(true); });
+    it('should enable fields after a decline', () => {
+        (dialog.container.querySelector('input')?.matches(':disabled') ?? true).should.equal(false);
+    });
 });

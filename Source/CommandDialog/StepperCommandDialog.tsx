@@ -55,7 +55,11 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
      * transforms that do not affect validity (for example a generated id).
      */
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
-    /** Ask before executing the transformed command values; only `true` executes. */
+    /**
+     * Ask before executing the transformed command values; only `true` executes.
+     * Fields are disabled while confirmation is pending. If command values change
+     * during that time, execution is skipped; confirm the new values again.
+     */
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     /** Dialog title text. */
     title: string;
@@ -385,6 +389,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
                 onStepErrorsChange={setStepErrors}
                 showNavigation={false}
                 showSubmit={false}
+                isSubmitting={confirmBeforeExecute !== undefined && isBusy}
+                disableFieldsWhileSubmitting={confirmBeforeExecute !== undefined}
                 linear={linear}
                 orientation={orientation}
                 headerPosition={headerPosition}

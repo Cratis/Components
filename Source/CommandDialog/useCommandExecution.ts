@@ -4,6 +4,7 @@
 import type { ICommandResult } from '@cratis/arc/commands';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
 import { reportConfirmationError, type ConfirmBeforeExecute } from './confirmBeforeExecute';
+import { commandValuesUnchanged, snapshotCommandValues } from './commandValuesUnchanged';
 import { useSubmissionFlight } from './useSubmissionFlight';
 
 /** Owns one submission from transform through execution, releasing busy before result callbacks. */
@@ -28,13 +29,15 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
                 setCommandValues(values);
             }
             if (confirmBeforeExecute) {
+                const approvedValues = snapshotCommandValues(commandInstance);
                 let approved = false;
                 try {
                     approved = await confirmBeforeExecute(values);
                 } catch (error) {
                     confirmationError = { error };
                 }
-                if (confirmationError === undefined && (!submission.isMounted() || approved !== true)) return undefined;
+                if (confirmationError === undefined &&
+                    (!submission.isMounted() || approved !== true || !commandValuesUnchanged(commandInstance, approvedValues))) return undefined;
             }
             if (confirmationError === undefined) {
                 // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.

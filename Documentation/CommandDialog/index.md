@@ -234,7 +234,7 @@ A callback that calls `closeDialog(...)` itself closes the dialog regardless of 
 
 ## Confirm before executing
 
-Use `confirmBeforeExecute` for a second, explicit decision. Unlike `onConfirm`, which runs **after** successful execution to decide whether to close, the guard runs **before** execution. A `false` result leaves the command dialog open, does not execute, and calls neither `onSuccess` nor `onFailed`. If you also provide `onBeforeExecute`, the guard receives its returned values, not the original form values. Client validation still happens first.
+Use `confirmBeforeExecute` for a second, explicit decision. Unlike `onConfirm`, which runs **after** successful execution to decide whether to close, the guard runs **before** execution. A `false` result leaves the command dialog open, does not execute, and calls neither `onSuccess` nor `onFailed`. If you also provide `onBeforeExecute`, the guard receives its returned values, not the original form values. Client validation still happens first. If the values change while confirmation is pending (for example, through `currentValues`), the command is not executed and no result callback runs; confirm again with the new values.
 
 Register `ConfirmationDialog` in `DialogComponents` above the component using the hook. The hook must run in a child of that provider, not in the component that creates the provider. The confirmation opens on a higher dialog z-index tier and its No result leaves the command form ready to edit or retry:
 

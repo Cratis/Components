@@ -123,7 +123,11 @@ export interface CommandStepperProps<TCommand extends object, TResponse = object
      * transforms that do not affect validity (for example a generated id).
      */
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
-    /** Ask before executing the transformed command values; only `true` executes. */
+    /**
+     * Ask before executing the transformed command values; only `true` executes.
+     * Fields are disabled while confirmation is pending. If command values change
+     * during that time, execution is skipped; confirm the new values again.
+     */
     confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
@@ -224,6 +228,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             okLabel={okLabel}
             isBusy={isBusy}
             isSubmitting={submission.isSubmitting}
+            disableFieldsWhileSubmitting={confirmBeforeExecute !== undefined}
             isSubmitDisabled={!isCommandFormValid}
             onSubmit={handleSubmit}
             linear={linear}

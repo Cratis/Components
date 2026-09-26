@@ -1,7 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-/** Receives values after onBeforeExecute; only `true` approves execution. */
+/**
+ * Receives values after onBeforeExecute; only `true` approves execution.
+ * If command property values change while confirmation is pending, approval is
+ * discarded without executing or reporting a result. Confirm the new values again.
+ */
 export type ConfirmBeforeExecute<TCommand> = (values: TCommand) => boolean | Promise<boolean>;
 
 /** Report a rejected guard through the same exception callback used for command failures. */
