@@ -66,32 +66,23 @@ if (
     process.exit(1);
 }
 const releaseVersion = isPublishing ? args[0] : undefined;
-const workspaceNames = new Set(Object.keys(workspaces));
-
-const saveJson = (file, value) =>
-    fs.writeFileSync(file, `${JSON.stringify(value, null, 4)}\n`, 'utf8');
-
-const preparePackageForRelease = (packageJson, version) => {
-    const releasePackage = structuredClone(packageJson);
-    releasePackage.version = version;
-    for (const field of [
-        'dependencies',
-        'devDependencies',
-        'peerDependencies',
-        'optionalDependencies',
-    ]) {
-        for (const dependencyName of Object.keys(releasePackage[field] ?? {})) {
-            if (workspaceNames.has(dependencyName)) {
-                releasePackage[field][dependencyName] = version;
-            }
-        }
-    }
-    return releasePackage;
-};
 
 console.log(`Performing '${task}' on workspaces`);
 if (args.length > 0) console.log(`  Using args : ${args}`);
 console.log('');
+
+if (isPublishing) {
+    const result = spawn(process.execPath, [path.join(__dirname, 'scripts/prepare-release-version.mjs'), releaseVersion], {
+        cwd: process.cwd(),
+        stdio: 'inherit',
+    });
+    if (result.status !== 0) {
+        console.error('Error preparing release version. Publication stopped.');
+        if (result.error) console.error(result.error);
+        if (result.signal) console.error(`Terminated by ${result.signal}.`);
+        process.exit(1);
+    }
+}
 
 for (const workspaceName in workspaces) {
     const workspaceRelativeLocation = workspaces[workspaceName];
@@ -107,8 +98,6 @@ for (const workspaceName in workspaces) {
         continue;
     }
     if (isPublishing) {
-        const releasePackage = preparePackageForRelease(packageJson, releaseVersion);
-        saveJson(packageJsonFile, releasePackage);
         console.log(
             `Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}' as ${releaseVersion}`,
         );

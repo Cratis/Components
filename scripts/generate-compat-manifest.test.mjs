@@ -2,15 +2,18 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import {
+    checkCompatibilityManifest,
     createCompatibilityManifest,
     serializeCompatibilityManifest,
     validateCompatibilityManifest,
 } from './generate-compat-manifest.mjs';
+import { prepareReleaseVersion } from './prepare-release-version.mjs';
 
 const repositoryDirectory = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -18,6 +21,46 @@ const repositoryDirectory = path.resolve(
 );
 
 const createManifest = () => createCompatibilityManifest(repositoryDirectory);
+
+test('release preparation bumps all public workspaces and regenerates every bundled copy before publication', () => {
+    const temporaryRoot = mkdtempSync(path.join(tmpdir(), 'cratis-release-preparation-'));
+    const workspaceDirectories = [
+        'Source', 'ESLint', 'Migrator', 'Conformance', 'Adapters/Mui',
+        'Adapters/PrimeReact', 'Adapters/PrimeReact10', 'Storybook',
+    ];
+    try {
+        copyFileSync(path.join(repositoryDirectory, 'package.json'), path.join(temporaryRoot, 'package.json'));
+        mkdirSync(path.join(temporaryRoot, 'scripts'), { recursive: true });
+        copyFileSync(path.join(repositoryDirectory, 'scripts/renderer-adapter-matrix.json'), path.join(temporaryRoot, 'scripts/renderer-adapter-matrix.json'));
+        for (const directory of workspaceDirectories) {
+            mkdirSync(path.join(temporaryRoot, directory), { recursive: true });
+            copyFileSync(path.join(repositoryDirectory, directory, 'package.json'), path.join(temporaryRoot, directory, 'package.json'));
+        }
+        mkdirSync(path.join(temporaryRoot, 'Conformance/for_plain_dom_renderer'));
+
+        prepareReleaseVersion(temporaryRoot, '4.99.0');
+        const expected = serializeCompatibilityManifest(createCompatibilityManifest(temporaryRoot));
+        for (const relativePath of ['compat-manifest.json', 'Source/compat-manifest.json', 'Migrator/compat-manifest.json']) {
+            assert.equal(readFileSync(path.join(temporaryRoot, relativePath), 'utf8'), expected);
+        }
+        const manifest = JSON.parse(expected);
+        assert.equal(manifest.packages.length, 7);
+        for (const entry of manifest.packages) {
+            assert.equal(entry.version, '4.99.0');
+        }
+        const migrator = JSON.parse(readFileSync(path.join(temporaryRoot, 'Migrator/package.json'), 'utf8'));
+        assert.equal(migrator.version, '4.99.0');
+        assert.equal(manifest.packages.find(({ name }) => name === migrator.name).version, migrator.version);
+        const adapter = JSON.parse(readFileSync(path.join(temporaryRoot, 'Adapters/Mui/package.json'), 'utf8'));
+        assert.equal(adapter.devDependencies['@cratis/components'], '4.99.0');
+        assert.equal(adapter.devDependencies['@cratis/components.conformance'], '4.99.0');
+
+        writeFileSync(path.join(temporaryRoot, 'Migrator/compat-manifest.json'), 'stale\n');
+        assert.throws(() => checkCompatibilityManifest(temporaryRoot), /Migrator\/compat-manifest.json is stale/u);
+    } finally {
+        rmSync(temporaryRoot, { recursive: true, force: true });
+    }
+});
 
 test('generated compatibility copies are deterministic and byte-identical', () => {
     const serialized = serializeCompatibilityManifest(createManifest());

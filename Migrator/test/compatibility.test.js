@@ -62,13 +62,18 @@ describe('compatibility preflight', () => {
         );
     });
 
-    it('rejects stale bundled migrator metadata', () => {
-        const stale = structuredClone(compatibilityManifest);
-        stale.packages.find(
+    it('accepts bundled migrator metadata at a bumped version', () => {
+        const bumped = structuredClone(compatibilityManifest);
+        bumped.packages.find(
             ({ name }) => name === '@cratis/components.migrator',
-        ).version = '4.0.1';
-        expect(() => validateBundledManifest(stale, '4.0.0')).toThrow(
-            'stale migrator package metadata',
+        ).version = '4.99.0';
+        expect(() => validateBundledManifest(bumped, '4.99.0')).not.toThrow();
+    });
+
+    it('rejects mismatched bundled migrator metadata as a packaging defect', () => {
+        const stale = structuredClone(compatibilityManifest);
+        expect(() => validateBundledManifest(stale, '4.99.0')).toThrow(
+            /pins @cratis\/components\.migrator at 4\.0\.0 but this package is 4\.99\.0\. This is a packaging defect/u,
         );
     });
 

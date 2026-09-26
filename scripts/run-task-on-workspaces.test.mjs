@@ -3,7 +3,7 @@
 
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
@@ -12,7 +12,7 @@ const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.
 const output = path.join(repository, '.ai-work/workspace-runner-tests');
 mkdirSync(output, { recursive: true });
 
-const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missingExecutable = false, signal = undefined } = {}) => {
+const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missingExecutable = false, signal = undefined, manifestGenerationFails = false } = {}) => {
     const directory = mkdtempSync(path.join(output, 'case-'));
     try {
         copyFileSync(path.join(repository, 'run-task-on-workspaces.js'), path.join(directory, 'run-task-on-workspaces.js'));
@@ -21,6 +21,20 @@ const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missi
             mkdirSync(path.join(directory, name));
             writeFileSync(path.join(directory, name, 'package.json'), JSON.stringify({ name, version: '1.0.0', scripts: { ci: 'synthetic fixture' } }));
         }
+        mkdirSync(path.join(directory, 'scripts'));
+        writeFileSync(path.join(directory, 'scripts', 'prepare-release-version.mjs'),
+            `import fs from 'node:fs';\n` +
+            `for (const name of ['first', 'second']) {\n` +
+            `  const file = new URL('../' + name + '/package.json', import.meta.url);\n` +
+            `  const manifest = JSON.parse(fs.readFileSync(file, 'utf8'));\n` +
+            `  manifest.version = process.argv[2];\n` +
+            `  fs.writeFileSync(file, JSON.stringify(manifest));\n` +
+            `}\n` +
+            `if (${manifestGenerationFails}) {\n` +
+            `  fs.appendFileSync(new URL('../events', import.meta.url), 'manifest generation failed\\n');\n` +
+            `  console.error('Manifest generation failed');\n` +
+            `  process.exitCode = 1;\n` +
+            `} else fs.appendFileSync(new URL('../events', import.meta.url), 'prepared and verified manifests\\n');\n`);
         const binaries = path.join(directory, 'bin');
         mkdirSync(binaries);
         if (!missingExecutable) {
@@ -28,6 +42,7 @@ const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missi
             const executable = `#!${process.execPath}\n` +
                 "const fs = require('node:fs'); const path = require('node:path');\n" +
                 "const workspace = path.basename(process.cwd());\n" +
+                "if (process.argv[1].endsWith('/npm')) { for (const name of ['first', 'second']) { const manifest = JSON.parse(fs.readFileSync(path.join('..', name, 'package.json'))); if (manifest.version !== '4.7.0') process.exit(9); } fs.appendFileSync('../events', `published ${workspace}\\n`); }\n" +
                 `if (workspace === 'first') fs.writeSync(1, 'x'.repeat(${outputBytes}));\n` +
                 "fs.writeSync(1, `\\n${workspace}: stdout complete\\n`);\n" +
                 "fs.writeSync(2, `${workspace}: warning detail\\n`);\n" +
@@ -49,11 +64,25 @@ const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missi
             child.on('error', reject);
             child.on('close', (code) => resolve({ code, stdout, stderr }));
         });
-        return result;
+        const eventFile = path.join(directory, 'events');
+        return { ...result, events: existsSync(eventFile) ? readFileSync(eventFile, 'utf8') : '' };
     } finally {
         rmSync(directory, { recursive: true, force: true });
     }
 };
+
+test('publish-version prepares all versions before publishing', async () => {
+    const result = await runFixture({ command: 'publish-version' });
+    assert.equal(result.code, 0, result.stderr);
+    assert.equal(result.events, 'prepared and verified manifests\npublished first\npublished second\n');
+});
+
+test('publish-version never publishes if manifest generation fails', async () => {
+    const result = await runFixture({ command: 'publish-version', manifestGenerationFails: true });
+    assert.notEqual(result.code, 0);
+    assert.match(result.stderr, /Manifest generation failed/u);
+    assert.equal(result.events, 'manifest generation failed\n');
+});
 
 for (const command of ['ci', 'publish-version']) {
     test(`${command} streams output larger than the default spawnSync buffer without truncation`, { timeout: 20000 }, async () => {
