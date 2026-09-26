@@ -127,7 +127,6 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
                     execute: () => Promise<ICommandResult<TResponse>>;
                 }
             ).execute();
-            if (!submission.isMounted()) return false;
         } finally {
             submission.finish();
         }
@@ -141,7 +140,7 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
                 if (!result.isValid) {
                     await onValidationFailure?.(result.validationResults);
                 }
-                setCommandResult(result);
+                if (submission.isMounted()) setCommandResult(result);
                 return false;
             }
 
