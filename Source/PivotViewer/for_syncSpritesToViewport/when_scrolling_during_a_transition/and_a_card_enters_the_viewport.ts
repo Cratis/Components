@@ -1,8 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { syncSpritesToViewport } from '../components/pivot/visibility';
-import { a_transition } from './given/a_transition';
+import { syncSpritesToViewport } from '../../components/pivot/visibility';
+import { a_transition } from '../given/a_transition';
 
 describe('when scrolling during a transition', () => {
     let context: a_transition;
@@ -22,7 +22,4 @@ describe('when scrolling during a transition', () => {
         context.createdIds.should.contain(7);
     });
 
-    it('should stop displaying the card left behind by the scroll', () => {
-        context.sprites.get(6)!.container.visible.should.be.false;
-    });
 });

@@ -16,6 +16,7 @@ import {
     updateCardContent as updateCardContentExternal,
 } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
+import { syncScrollSprites } from './pivot/syncScrollSprites';
 import {
     updateGroupBackgrounds as updateGroupBackgroundsExternal,
     updateHighlight as updateHighlightExternal,
@@ -721,7 +722,7 @@ export function PivotCanvas<TItem extends object>({
                 // because it encapsulates the logic for conditional vertical alignment (offsetY)
                 // in different view modes. Manually setting position here would overwrite that logic.
 
-                syncSpritesToViewport({
+                syncScrollSprites({
                     root: rootRef.current,
                     groupsContainer: groupsContainerRef.current,
                     container: parentContainerRef.current,
@@ -762,11 +763,10 @@ export function PivotCanvas<TItem extends object>({
                         ),
                     isViewTransition: isViewTransitionRef.current,
                     viewMode,
-                    prevLayout: transitionLayoutRef.current,
                     transitionSeenIds: transitionSeenIdsRef.current,
                     prevScrollTop: prevScrollTopRef.current,
                     prevScrollLeft: prevScrollLeftRef.current,
-                });
+                }, transitionLayoutRef.current);
 
                 // Update previous scroll position for next frame
                 prevScrollTopRef.current = container.scrollTop || 0;
