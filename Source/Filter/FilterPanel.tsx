@@ -317,7 +317,7 @@ export function FilterPanel({
         if (!isOpen) return;
 
         const handleEscape = (event: KeyboardEvent) => {
-            if (event.key !== 'Escape') return;
+            if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
             const focused = document.activeElement;
             if (focused && (panelRef.current?.contains(focused) || anchorRef.current?.contains(focused))) {
                 event.preventDefault();
