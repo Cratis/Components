@@ -14,7 +14,7 @@ import {
 } from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
-import { DataTableStatus } from './DataTableStatus';
+import { resolveDataTableStatus } from './resolveDataTableStatus';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -204,14 +204,7 @@ export const DataTableForQuery = <
 
     // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
-    // Keep a performing result in Loading even with cached rows so DataTableCore can mark refetches busy.
-    const status = result.isAuthorized === false
-        ? DataTableStatus.Unauthorized
-        : result.hasExceptions === true || result.isValid === false
-            ? DataTableStatus.Failed
-            : result.isPerforming === true
-                ? DataTableStatus.Loading
-                : DataTableStatus.Ready;
+    const status = resolveDataTableStatus(result);
 
     return (
         <div
