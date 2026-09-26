@@ -14,7 +14,7 @@ CommandDialog simplifies the process of presenting a command form to users withi
 - Binds `CommandForm` field children to one command instance
 - Keeps the confirm button disabled until the command passes client validation
 - Field-level change tracking and custom field validation
-- Pre-execution transformation of values
+- Pre-execution transformation of values and optional approval before execution
 - Success and cancellation handling through the Arc dialog context
 - Busy state management during command execution (buttons and fields disabled, spinner shown)
 - Integration with Cratis Arc command system
@@ -194,6 +194,7 @@ The form is treated as invalid until its first validation finishes, so confirm s
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution. It must return the values to run with and may be async
+- `confirmBeforeExecute(values)`: Optional synchronous or async guard called with the transformed values after validation. Return `true` to execute or `false` to stay open without executing
 - `style`: Custom CSS styles
 - `contentStyle`: Custom CSS styles for the dialog content area
 - `width`: Dialog width (default: `'450px'`)
@@ -216,7 +217,7 @@ The form is treated as invalid until its first validation finishes, so confirm s
 - `onUnauthorized()`: Invoked when authorization fails.
 - `onValidationFailure(validationResults: ValidationResult[])`: Invoked on validation errors.
 
-Multiple callbacks may fire for the same execution. For example, both `onFailed` and `onValidationFailure` will be invoked for validation errors. If `onBeforeExecute` throws, the command does not execute, no result callback runs, and the dialog stays open.
+Multiple callbacks may fire for the same execution. For example, both `onFailed` and `onValidationFailure` will be invoked for validation errors. If `onBeforeExecute` throws, the command does not execute, no result callback runs, and the dialog stays open. A rejection from `confirmBeforeExecute` also keeps the dialog open and skips execution; it calls `onException` with the error message and stack trace (or logs the error if no callback is supplied), not `onFailed`.
 
 ### Dialog Callbacks
 
@@ -225,10 +226,49 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 | User action | `onConfirm` / `onCancel` present | Only `onClose` present | No callback |
 | ----------- | -------------------------------- | ---------------------- | ----------- |
 | Confirm, after the command succeeds | `onConfirm()` runs; closes only if it returns `true` | `onClose(DialogResult.Ok)` runs; closes unless it returns `false` | Closes with `DialogResult.Ok` |
+| Confirm, `confirmBeforeExecute` returns `false` | Not called; dialog stays open | Not called; dialog stays open | Dialog stays open |
 | Confirm, command fails | Not called; dialog stays open | Not called; dialog stays open | Dialog stays open |
 | Cancel, X, `Escape`, backdrop | `onCancel()` runs; closes only if it returns `true` | `onClose(DialogResult.Cancelled)` runs; closes unless it returns `false` | Closes with `DialogResult.Cancelled` |
 
 A callback that calls `closeDialog(...)` itself closes the dialog regardless of its return value. Use `closeDialog(DialogResult.Ok, value)` when the caller needs a value; the automatic close never passes one.
+
+## Confirm before executing
+
+Use `confirmBeforeExecute` for a second, explicit decision. Unlike `onConfirm`, which runs **after** successful execution to decide whether to close, the guard runs **before** execution. A `false` result leaves the command dialog open, does not execute, and calls neither `onSuccess` nor `onFailed`. If you also provide `onBeforeExecute`, the guard receives its returned values, not the original form values. Client validation still happens first.
+
+Register `ConfirmationDialog` in `DialogComponents` above the component using the hook. The hook must run in a child of that provider, not in the component that creates the provider. The confirmation opens on a higher dialog z-index tier and its No result leaves the command form ready to edit or retry:
+
+```tsx
+import { DialogButtons, DialogComponents, DialogResult, useConfirmationDialog } from '@cratis/arc.react/dialogs';
+import { CommandDialog } from '@cratis/components/CommandDialog';
+import { ConfirmationDialog } from '@cratis/components/Dialogs';
+import { UpdateProject } from './UpdateProject';
+
+function UpdateProjectDialog() {
+    const [showConfirmation] = useConfirmationDialog(
+        'Save changes?', 'Apply these changes?', DialogButtons.YesNo,
+    );
+    return (
+        <CommandDialog<UpdateProject>
+            command={UpdateProject}
+            title='Update project'
+            initialValues={{ name: 'Example Project' }}
+            confirmBeforeExecute={async (_values) =>
+                (await showConfirmation()) === DialogResult.Yes}
+        />
+    );
+}
+
+export function ProjectDialogs() {
+    return (
+        <DialogComponents confirmation={ConfirmationDialog}>
+            <UpdateProjectDialog />
+        </DialogComponents>
+    );
+}
+```
+
+The equivalent runnable, type-checked example is the `WithPreExecutionConfirmation` story in `Source/CommandDialog/CommandDialog.stories.tsx`. In an app using `useDialog`, render the command dialog's wrapper inside `DialogComponents` instead of rendering it permanently as above.
 
 ## Controlled visibility
 
@@ -304,7 +344,7 @@ Pressing `Enter` inside a text field does not submit the command. The footer but
 
 ## Busy State
 
-`CommandDialog` automatically manages a busy state from the start of `onBeforeExecute` until command execution settles:
+`CommandDialog` automatically manages a busy state from the start of `onBeforeExecute`, through `confirmBeforeExecute`, until command execution settles:
 
 - All buttons, including header close, are disabled and the primary button shows a loading spinner.
 - The form fields are disabled and inert, so values cannot change while the command runs.

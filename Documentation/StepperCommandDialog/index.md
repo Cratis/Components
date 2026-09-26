@@ -123,6 +123,7 @@ Required values that no step shows, such as the id of the item being edited, bel
 - `onFieldValidate`: Custom validation function for fields
 - `onFieldChange`: Callback when field values change
 - `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with. It runs only on submit, after every step has been validated, so a value produced here can never satisfy required-field validation; seed required values through `initialValues` instead.
+- `confirmBeforeExecute(values)`: Optional sync or async guard after validation and `onBeforeExecute`. Receives transformed values; return `false` to leave the wizard open without executing. Rejection calls `onException` (or logs if absent), not `onFailed`.
 
 ### Stepper Props
 
@@ -163,6 +164,41 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 - `onClose` closes unless it returns `false`.
 - With none of the three, a successful submit closes with `DialogResult.Ok` and every dismissal closes with `DialogResult.Cancelled`.
 - A callback that calls `closeDialog(...)` itself closes the dialog regardless of its return value.
+
+## Confirm before submitting
+
+Pass `confirmBeforeExecute` when Submit should ask another question before running the command. Wrap the wizard in `DialogComponents` and use `useConfirmationDialog` from a child of that provider, as shown in the [CommandDialog recipe](../CommandDialog/index.md#confirm-before-executing):
+
+```tsx
+import { DialogButtons, DialogComponents, DialogResult, useConfirmationDialog } from '@cratis/arc.react/dialogs';
+import { StepperCommandDialog, StepperPanel } from '@cratis/components/CommandDialog';
+import { InputTextField } from '@cratis/components/CommandForm/fields';
+import { ConfirmationDialog } from '@cratis/components/Dialogs';
+import { CreateProject } from './CreateProject';
+
+function ProjectStepsDialog() {
+    const [showConfirmation] = useConfirmationDialog(
+        'Create project?', 'Submit these details?', DialogButtons.YesNo,
+    );
+    return (
+        <StepperCommandDialog<CreateProject>
+            command={CreateProject}
+            title='Create project'
+            confirmBeforeExecute={async (_values) =>
+                (await showConfirmation()) === DialogResult.Yes}>
+            <StepperPanel header='Details'>
+                <InputTextField<CreateProject> value={(command) => command.name} title='Project name' />
+            </StepperPanel>
+        </StepperCommandDialog>
+    );
+}
+
+export function ProjectWizardDialogs() {
+    return <DialogComponents confirmation={ConfirmationDialog}><ProjectStepsDialog /></DialogComponents>;
+}
+```
+
+A No response returns to the final step without calling success, failure, or close callbacks. The outer dialog stays busy while the nested confirmation is open; the confirmation stacks above it.
 
 ## Validation Indicators
 
@@ -244,7 +280,7 @@ The excerpt assumes `closeDialog` comes from `useDialogContext()` and `environme
 
 - When Submit is clicked, the Submit button shows a loading spinner and all navigation buttons are disabled.
 - Every route out of the dialog is withdrawn for the same window: the footer Cancel is disabled, the header X is not rendered, and neither Escape nor a backdrop click dismisses. A dialog can therefore never report cancellation for a command that goes on to execute anyway.
-- The window opens the moment Submit is pressed — including while an `async` `onBeforeExecute` transform is still resolving, before the command has been sent.
+- The window opens the moment Submit is pressed — including while an `async` `onBeforeExecute` transform or `confirmBeforeExecute` guard is still resolving, before the command has been sent.
 - Once execution completes (success or failure), the buttons and every dismissal route return to their normal state.
 
 ## Step Structure
