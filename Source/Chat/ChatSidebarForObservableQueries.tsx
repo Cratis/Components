@@ -5,10 +5,23 @@ import React, { useState } from 'react';
 import type { Constructor } from '@cratis/fundamentals';
 import type { IObservableQueryFor } from '@cratis/arc/queries';
 import { useObservableQuery } from '@cratis/arc.react/queries';
+import { QueryStatus } from '../QueryStatus/QueryStatus';
+import { resolveQueryStatus } from '../QueryStatus/resolveQueryStatus';
 import { ChatSidebar, type ChatSidebarProps } from './ChatSidebar';
 import type { ChatIdentifier } from './ChatIdentifier';
 import type { ChatMessage } from './ChatMessage';
 import type { ChatTopic } from './ChatTopic';
+import { ChatStatus } from './ChatStatus';
+
+const chatStatusByQueryStatus: Record<QueryStatus, ChatStatus> = {
+    [QueryStatus.Ready]: ChatStatus.Ready,
+    [QueryStatus.Loading]: ChatStatus.Loading,
+    [QueryStatus.Failed]: ChatStatus.Failed,
+    [QueryStatus.Unauthorized]: ChatStatus.Unauthorized,
+};
+
+const resolveChatStatus = (result: Parameters<typeof resolveQueryStatus>[0]): ChatStatus =>
+    chatStatusByQueryStatus[resolveQueryStatus(result)];
 
 /**
  * Props for {@link ChatSidebarForObservableQueries}.
@@ -28,7 +41,7 @@ export interface ChatSidebarForObservableQueriesProps<
     TMessagesArguments extends object = object,
 > extends Omit<
     ChatSidebarProps<TMessage, TTopic>,
-    'topics' | 'messages' | 'selectedTopicId'
+    'topics' | 'messages' | 'selectedTopicId' | 'topicsStatus' | 'messagesStatus'
 > {
     /** The observable query delivering the topics. */
     topicsQuery: Constructor<TTopicsQuery>;
@@ -109,6 +122,10 @@ export const ChatSidebarForObservableQueries = <
             {...sidebar}
             topics={topics}
             messages={messages}
+            topicsStatus={resolveChatStatus(topicsResult)}
+            messagesStatus={selectedId !== undefined && messagesQueryArguments !== undefined
+                ? resolveChatStatus(messagesResult)
+                : ChatStatus.Ready}
             selectedTopicId={selectedId ?? null}
             onTopicSelected={(topicId, topic) => {
                 setSelectedId(topicId);

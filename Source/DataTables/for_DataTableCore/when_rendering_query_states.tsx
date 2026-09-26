@@ -79,6 +79,20 @@ describe('when loading with a multiple-selection column', () => {
     });
 });
 
+describe('when loading changes to failure without rows', () => {
+    let loadingRow: Element;
+
+    beforeEach(async () => {
+        await renderTable(DataTableStatus.Loading);
+        loadingRow = container.querySelector('[data-cratis-part="loading-row"]')!;
+        await renderTable(DataTableStatus.Failed);
+    });
+
+    it('should mount a new state row for the failure alert', () => {
+        expect(container.querySelector('[data-cratis-part="failure-row"]')).not.to.equal(loadingRow);
+    });
+});
+
 describe('when rendering failure', () => {
     beforeEach(async () => renderTable(DataTableStatus.Failed, [row]));
 

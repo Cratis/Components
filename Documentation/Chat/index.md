@@ -91,6 +91,7 @@ export const Workspace = () => {
 | ---------------------------------------- | --------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------- |
 | `open` / `onClose`                       | `boolean`, `() => void`                       | Required  | The host owns the open state; the close button calls `onClose`.                                      |
 | `topics` / `messages`                    | `TTopic[]`, `TMessage[]`                      | Required  | The data, in any order. See [Topics and naming](./topics-and-naming.md).                             |
+| `topicsStatus` / `messagesStatus`        | `ChatStatus`                                  | `Ready`   | Optional independent states for the list and conversation. See [Query display states](#query-display-states). |
 | `onSendMessage`                          | `(topicId, body, mentions) => void`           | Required  | Receives the trimmed body and who it mentions.                                                       |
 | `onStartTopic`                           | `() => ChatIdentifier \| undefined \| Promise` | —         | Enables the new-topic affordance; answer the new topic's id to open it.                              |
 | `onRequestTopicName` / `isTopicUnnamed`  | callbacks                                     | —         | The host-side naming contract.                                                                       |
@@ -103,6 +104,21 @@ export const Workspace = () => {
 | `position` / `width`                     | `'left' \| 'right'`, CSS length               | `right`, `24rem` | Edge and width of the panel.                                                                  |
 | `modal`                                  | `boolean`                                     | `false`   | Adds a blocking backdrop with Escape and outside-click dismissal.                                    |
 | `labels`, `className`, `pt`              | `ChatSidebarLabels`, `string`, `ChatSidebarParts` | —     | English label overrides, panel class, and stable parts.                                              |
+
+## Query display states
+
+If your application owns the queries, import `ChatStatus` from `@cratis/components/Chat` and pass `topicsStatus` and `messagesStatus` to `ChatSidebar`. Both default to `ChatStatus.Ready`, so omitting them preserves the existing empty states. The standalone `ChatTopicList` and `ChatConversation` accept the same optional enum through their `status` prop.
+
+| Status | Without topics or messages | With existing topics or messages |
+| ------ | -------------------------- | -------------------------------- |
+| `ChatStatus.Ready` | Ordinary empty-state text | Existing content |
+| `ChatStatus.Loading` | Loading text with a status announcement | Existing content remains visible during a refetch |
+| `ChatStatus.Failed` | Failure text with an alert | Failure alert above the existing content; topics or messages remain visible |
+| `ChatStatus.Unauthorized` | Access-denied text with an alert | Access-denied alert replaces the content |
+
+While access is denied, the new-topic button and conversation composer are disabled, even if a draft was already started. The close and back buttons remain available.
+
+Override these messages with `labels.topicList.loading`, `.failed`, or `.unauthorized` for topics, and `labels.conversation.loading`, `.failed`, or `.unauthorized` for messages. Unset fields use English defaults; the existing `empty` labels still apply to successful empty results. Chat labels do not come from `CratisComponentsProvider.messages`. The [observable-query wrapper](./observable-queries.md#loading-and-failed-queries) resolves statuses for you.
 
 ## Focus and dismissal
 

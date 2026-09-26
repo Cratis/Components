@@ -81,6 +81,20 @@ describe('when the chat kit is shared between ./Chat and ./Canvas', () => {
         expect(violations, violations.join('\n')).to.deep.equal([]);
     });
 
+    it('should_not_import_from_datatables_in_chat', () => {
+        const violations: string[] = [];
+        for (const file of chatFiles) {
+            for (const specifier of relativeSpecifiers(readFileSync(file, 'utf8'))) {
+                const resolved = path.resolve(path.dirname(file), specifier);
+                const relativeToSource = path.relative(sourceRoot, resolved).split(path.sep).join('/');
+                if (relativeToSource === 'DataTables' || relativeToSource.startsWith('DataTables/')) {
+                    violations.push(`${path.relative(sourceRoot, file)} -> ${specifier}`);
+                }
+            }
+        }
+        expect(violations, violations.join('\n')).to.deep.equal([]);
+    });
+
     it('should_keep_the_shared_chat_kit_at_its_canonical_non_spatial_home', () => {
         const kitIndex = path.join(chatRoot, 'Kit', 'index.ts');
         expect(() => readFileSync(kitIndex, 'utf8')).to.not.throw();
