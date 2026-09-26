@@ -7,6 +7,7 @@ import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatTopic } from './ChatTopic';
+import { ChatStatus } from './ChatStatus';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { relativeTimestamp, type RelativeTimestampLabels } from './relativeTimestamp';
 import { topicsByActivity } from './topicsByActivity';
@@ -38,6 +39,15 @@ export interface ChatTopicListLabels {
     /** The started-by line under a topic's name. `{name}` is substituted. Defaults to `'Started by {name}'`. */
     startedBy?: string;
 
+    /** Shown while loading without topics. Defaults to `'Loading topics…'`. */
+    loading?: string;
+
+    /** Shown when loading topics fails without existing topics. Defaults to `'Could not load topics.'`. */
+    failed?: string;
+
+    /** Shown when access is denied without existing topics. Defaults to `'You are not authorized to view these topics.'`. */
+    unauthorized?: string;
+
     /** Shown when there are no topics yet. Defaults to `'No topics yet. Start the first one!'`. */
     empty?: string;
 
@@ -55,6 +65,9 @@ export interface ChatTopicListProps<TTopic extends ChatTopic = ChatTopic> {
      * the array a live (observable) query delivers and the list re-renders as it changes.
      */
     topics: TTopic[];
+
+    /** Query display state. Defaults to {@link ChatStatus.Ready}; existing topics remain visible on loading or failure. */
+    status?: ChatStatus;
 
     /**
      * Invoked when a topic is picked from the list.
@@ -111,6 +124,7 @@ export interface ChatTopicListProps<TTopic extends ChatTopic = ChatTopic> {
  */
 export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
     topics,
+    status = ChatStatus.Ready,
     onOpen,
     onStart,
     authorOf,
@@ -129,7 +143,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
         };
 
     return (
-        <div className={`cratis-chat-topics${className ? ` ${className}` : ''}`}>
+        <div className={`cratis-chat-topics${className ? ` ${className}` : ''}`} aria-busy={status === ChatStatus.Loading && topics.length > 0 || undefined}>
             {onStart && (
                 <button
                     type='button'
@@ -142,7 +156,15 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
             )}
             {topics.length === 0 && (
                 <p className='cratis-chat-topics__empty'>
-                    {labels?.empty ?? 'No topics yet. Start the first one!'}
+                    {status === ChatStatus.Loading ? (
+                        <span role='status'>{labels?.loading ?? 'Loading topics…'}</span>
+                    ) : status === ChatStatus.Failed ? (
+                        <span role='alert'>{labels?.failed ?? 'Could not load topics.'}</span>
+                    ) : status === ChatStatus.Unauthorized ? (
+                        <span role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these topics.'}</span>
+                    ) : (
+                        labels?.empty ?? 'No topics yet. Start the first one!'
+                    )}
                 </p>
             )}
             <ul className='cratis-chat-topics__list'>

@@ -9,6 +9,7 @@ export type { ChatIdentifier } from './ChatIdentifier';
 export type { ChatMention } from './ChatMention';
 export type { ChatMessage } from './ChatMessage';
 export type { ChatMessageAction } from './ChatMessageAction';
+export { ChatStatus } from './ChatStatus';
 export { ChatMessageBody } from './ChatMessageBody';
 export type { ChatMessageBodyProps } from './ChatMessageBody';
 export { ChatSidebar } from './ChatSidebar';
