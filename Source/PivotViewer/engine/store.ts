@@ -467,7 +467,11 @@ export function sortIds(
 
     if (field.kind === 'number') {
         const values = field.values;
-        sortedIds.sort((a, b) => values[a] - values[b]);
+        sortedIds.sort((a, b) => {
+            if (Number.isNaN(values[a])) return Number.isNaN(values[b]) ? 0 : 1;
+            if (Number.isNaN(values[b])) return -1;
+            return values[a] - values[b];
+        });
     } else if (field.kind === 'string') {
         const values = field.values;
         sortedIds.sort((a, b) => values[a].localeCompare(values[b]));
