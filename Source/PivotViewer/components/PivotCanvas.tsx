@@ -152,6 +152,7 @@ export function PivotCanvas<TItem extends object>({
     const lastViewChangeTimeRef = useRef(0);
     const previousViewModeRef = useRef<ViewMode>(viewMode);
     const prevLayoutRef = useRef<LayoutResult | null>(null);
+    const transitionLayoutRef = useRef<LayoutResult | null>(null);
     const prevGroupingRef = useRef<GroupingResult | null>(null);
     const prevScrollTopRef = useRef<number>(0);
     const prevScrollLeftRef = useRef<number>(0);
@@ -500,6 +501,7 @@ export function PivotCanvas<TItem extends object>({
         const layoutChanged = prevLayoutRef.current !== layout;
 
         if (viewModeChanged || groupingChanged || layoutChanged) {
+            if (layoutChanged) transitionLayoutRef.current = prevLayoutRef.current;
             isViewTransitionRef.current = true;
             lastViewChangeTimeRef.current = Date.now();
             previousViewModeRef.current = viewMode;
@@ -754,6 +756,7 @@ export function PivotCanvas<TItem extends object>({
                         ),
                     isViewTransition: isViewTransitionRef.current,
                     viewMode,
+                    prevLayout: transitionLayoutRef.current,
                     prevScrollTop: prevScrollTopRef.current,
                     prevScrollLeft: prevScrollLeftRef.current,
                 });

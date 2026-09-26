@@ -34,7 +34,7 @@ export interface SyncParams<TItem> {
 }
 
 export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
-    const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout, prevScrollTop, prevScrollLeft } = params;
+    const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout } = params;
     if (!root || !container) return;
 
     void _visibleIds;
@@ -136,43 +136,30 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     const inViewportIds: (string | number)[] = [];
     // Small tolerance in world units to avoid floating-point edge cases when
     // browser/device zoom or high scroll values produce tiny rounding errors.
-    // Scale epsilon with invScale so tolerance grows when zoomed out.
     const worldEpsilon = Math.max(0.5, 0.5 * invScale);
-
-    // Iterate layout positions directly to avoid depending on `visibleIds`
-    // which may be calculated in a different coordinate space or with
-    // different assumptions about zoom. Looping the positions map is
-    // deterministic and uses world coordinates directly.
-    for (const [id, position] of layout.positions) {
-        if (!position) continue;
-        const worldX = position.x;
-        const worldY = position.y;
-        const worldCardW = cardWidth;
-        const worldCardH = cardHeight;
-
-        if (
-            worldX + worldCardW >= viewportLeftWorld - worldEpsilon &&
-            worldX <= viewportRightWorld + worldEpsilon &&
-            worldY + worldCardH >= viewportTopWorld - worldEpsilon &&
-            worldY <= viewportBottomWorld + worldEpsilon
-        ) {
+    const intersectsViewport = (x: number, y: number) =>
+        x + cardWidth >= viewportLeftWorld - worldEpsilon &&
+        x <= viewportRightWorld + worldEpsilon &&
+        y + cardHeight >= viewportTopWorld - worldEpsilon &&
+        y <= viewportBottomWorld + worldEpsilon;
+    const addVisibleId = (id: string | number) => {
+        if (!visibleSet.has(id)) {
             inViewportIds.push(id);
             visibleSet.add(id);
         }
-    }
+    };
 
-    // During view transitions, if no cards are visible and we're not animating yet,
-    // force-add the first few cards from the layout to ensure content appears.
-    // This prevents a blank screen when switching modes, especially in packaged builds
-    // where scroll stabilization might be delayed.
-    if (isViewTransition && inViewportIds.length === 0 && layout.positions.size > 0) {
-        let count = 0;
-        for (const [id, position] of layout.positions) {
-            if (count < 5 && position) { // Add up to 5 cards
-                inViewportIds.push(id);
-                visibleSet.add(id);
-                count++;
-            }
+    // Target positions are authoritative, but during a transition cards may
+    // still be at their old positions while the camera catches up.
+    for (const [id, position] of layout.positions) {
+        if (position && intersectsViewport(position.x, position.y)) addVisibleId(id);
+    }
+    if (isViewTransition) {
+        for (const [id, position] of prevLayout?.positions ?? []) {
+            if (!sprites.has(id) && layout.positions.has(id) && position && intersectsViewport(position.x, position.y)) addVisibleId(id);
+        }
+        for (const [id, sprite] of sprites) {
+            if (layout.positions.has(id) && intersectsViewport(sprite.currentX, sprite.currentY)) addVisibleId(id);
         }
     }
 
@@ -200,66 +187,11 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         void e;
     }
 
-    // Fallback: if no sprites are calculated as visible (e.g., due to rounding
-    // or scroll/zoom race conditions), force a handful of cards into view so
-    // the canvas never renders empty at certain zoom levels.
-    // When transitioning views, be more aggressive to ensure content appears during the transition
-    let injectedFallback = false;
-    const fallbackCount = isViewTransition ? 30 : 12;
-    if (inViewportIds.length === 0 && layout.positions.size > 0) {
-        injectedFallback = true;
-        let count = 0;
-        for (const [id] of layout.positions) {
-            inViewportIds.push(id);
-            visibleSet.add(id);
-            count++;
-            if (count >= fallbackCount) break;
-        }
-    }
-
-    // If we detect a very large discrepancy between created sprites and the
-    // computed in-viewport count, that's a signal our culling math may be
-    // unstable (especially at non-100% zoom). In that case, skip hiding this
-    // frame as a conservative safeguard to avoid mass disappearing tiles.
-    // However, disable this safeguard during view transitions to ensure old sprites are cleaned up.
-    // EXCEPT: During view transitions, if scroll position hasn't stabilized yet (e.g., switching to grouped
-    // mode triggers a scroll-to-bottom), keep all sprites visible to prevent flickering.
-    // Check scroll stabilization by comparing current scroll to previous scroll position.
-    const currentScrollTop = container.scrollTop || 0;
-    const currentScrollLeft = container.scrollLeft || 0;
-    const scrollTopDelta = Math.abs(currentScrollTop - (prevScrollTop || currentScrollTop));
-    const scrollLeftDelta = Math.abs(currentScrollLeft - (prevScrollLeft || currentScrollLeft));
-    const scrollStabilized = scrollTopDelta < 10 && scrollLeftDelta < 10;
-    const aggressiveCull = !injectedFallback && (
-        (!isViewTransition && sprites.size > Math.max(120, Math.ceil(inViewportIds.length * 1.5))) ||
-        (isViewTransition && !scrollStabilized)
-    );
+    // Outside transitions, avoid mass-hiding sprites on a potentially stale viewport calculation.
+    const aggressiveCull = !isViewTransition && sprites.size > Math.max(120, Math.ceil(inViewportIds.length * 1.5));
 
     for (const [id, sprite] of sprites) {
         if (!visibleSet.has(id)) {
-            // If view transition is active, check if this sprite has a valid target in the new layout
-            // If so, keep it visible and animate it to the new position (even if off-screen)
-            if (isViewTransition && layout.positions.has(id)) {
-                const newPos = layout.positions.get(id);
-                if (newPos) {
-                    sprite.targetX = newPos.x;
-                    sprite.targetY = newPos.y;
-
-                    // Trigger animation if not already animating
-                    if (sprite.animationStartTime === undefined) {
-                        sprite.startX = sprite.currentX;
-                        sprite.startY = sprite.currentY;
-                        sprite.animationStartTime = Date.now();
-                        sprite.animationDelay = Math.random() * 300;
-                    }
-
-                    try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
-                    // Don't mark as hidden, so it won't be swept
-                    if ((sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt) delete (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
-                    continue;
-                }
-            }
-
             if (aggressiveCull) {
                 // Keep sprite visible this frame to avoid visual holes
                 try { if (sprite.container) sprite.container.visible = true; } catch (e) { void e; }
@@ -270,7 +202,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
                 if (sprite.container) {
                     sprite.container.visible = false;
                 }
-                (sprite as unknown as { __lastHiddenAt: number }).__lastHiddenAt = Date.now();
+                (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt ??= Date.now();
             } catch (e) {
                 void e;
             }
@@ -335,7 +267,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
             // If view transition, try to find old position to fly in from
             if (isViewTransition && prevLayout && prevLayout.positions.has(id)) {
                 const oldPos = prevLayout.positions.get(id);
-                if (oldPos) {
+                if (oldPos && intersectsViewport(oldPos.x, oldPos.y)) {
                     startX = oldPos.x;
                     startY = oldPos.y;
 
