@@ -201,7 +201,7 @@ The indicators, and the Next button, react to errors that are **shown**. With th
 
 The Submit button is hidden, not disabled, until the user reaches the last step **and** the command passes validation across every step (and `isValid` is not `false`). Next is disabled while a field on the current step shows an error. Submit receives focus when it appears.
 
-`linear` (the default) makes other step headers unclickable; users still move with Previous and Next. In non-linear mode, clickable headers also cannot advance past a current step showing an error. Next does not require a step's fields to be filled when no errors are shown. The step headers are buttons in an ordered list, not ARIA tabs; each panel is labelled by its header, and the current header has `aria-current="step"`.
+`linear` (the default) makes other step headers unclickable; users still move with Previous and Next. In non-linear mode, clickable headers also cannot advance past a current step showing an error. Next does not require a step's fields to be filled when no errors are shown. The step headers are buttons in an ordered list, not ARIA tabs; each panel is labelled by its header unless you pass `pt.header.id`. In that case, the headers keep your id and the panels keep their text labels instead of referencing a shared header id. The current header has `aria-current="step"`.
 
 ## Cancelling
 
