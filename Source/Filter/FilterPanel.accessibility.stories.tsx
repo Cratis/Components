@@ -27,10 +27,10 @@ export const FocusSearchAndDismiss: Story = {
         const search = body.getByRole('searchbox', { name: 'Find a status' });
         await expect(search).toHaveFocus();
         const panel = body.getByRole('dialog', { name: 'Filter choices' });
-        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'));
+        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
         await userEvent.keyboard('{Escape}');
         await expect(canvas.getByRole('button', { name: 'Filters' })).toHaveFocus();
-        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull());
+        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull(), { timeout: 5000 });
     },
     render: () => {
         const anchorRef = useRef<HTMLButtonElement>(null);

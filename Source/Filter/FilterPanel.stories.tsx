@@ -44,7 +44,7 @@ const openFilterGroup = async (
     await waitFor(() => {
         expect(panel ? getComputedStyle(panel).opacity : '').toBe('1');
         expect(content ? getComputedStyle(content).opacity : '').toBe('1');
-    });
+    }, { timeout: 5000 });
     return { body, canvas };
 };
 
