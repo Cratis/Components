@@ -296,8 +296,47 @@ try {
         }
     }
 
+    // Simulate the post-bump contents of a published tarball, not just the source-tree version.
+    const bumpedVersion = '4.99.0';
+    const bumpedPackage = { ...packedPackage, version: bumpedVersion };
+    const bumpedManifest = JSON.parse(packedManifest.toString('utf8'));
+    for (const entry of bumpedManifest.packages) entry.version = bumpedVersion;
+    writeFileSync(
+        path.join(installedRoot, 'package.json'),
+        JSON.stringify(bumpedPackage),
+    );
+    writeFileSync(
+        path.join(installedRoot, 'compat-manifest.json'),
+        JSON.stringify(bumpedManifest),
+    );
+    installSyntheticComponents(bumpedVersion);
+    assertRun(
+        'packed bumped Migrator passes preflight',
+        run(binary, ['--check', source], { cwd: consumer }),
+    );
+
+    bumpedManifest.packages.find(
+        ({ name }) => name === '@cratis/components.migrator',
+    ).version = packedPackage.version;
+    writeFileSync(
+        path.join(installedRoot, 'compat-manifest.json'),
+        JSON.stringify(bumpedManifest),
+    );
+    const mismatched = run(binary, ['--check', source], { cwd: consumer });
+    assertRun('packed mismatched Migrator rejects preflight', mismatched, 1);
+    if (
+        !mismatched.stderr.includes(
+            `pins @cratis/components.migrator at ${packedPackage.version} but this package is ${bumpedVersion}`,
+        ) ||
+        !mismatched.stderr.includes('packaging defect')
+    ) {
+        throw new Error(
+            `Unexpected mismatched-version preflight output:\n${mismatched.stderr}`,
+        );
+    }
+
     console.log(
-        'Packed @cratis/components.migrator manifest and CLIs verified with Components 3, 4, and unsupported versions.',
+        'Packed @cratis/components.migrator manifest and CLIs verified with Components 3, 4, bumped, mismatched, and unsupported versions.',
     );
 } finally {
     rmSync(scratch, { recursive: true, force: true });

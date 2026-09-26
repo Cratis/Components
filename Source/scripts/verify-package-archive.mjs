@@ -228,6 +228,10 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // that documents the split, so the ceilings stay where they are once more - and the rule they
 // encode is no longer the only lever, because a consumer that does not want every surface can now
 // import the areas it mounts instead of raising this ceiling.
+// Measured after the query-state styles and grouping identical declarations within Canvas,
+// CommandForm, Common, Filter, PivotViewer, and Toolbar: raw 206066, gzip 32428, 1156
+// declaration blocks. The aggregate ceiling is unchanged; all per-area ceilings still hold.
+// Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
     rawBytes: 205 * 1024,
     gzipBytes: 32 * 1024,

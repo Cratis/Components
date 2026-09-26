@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { DataTableCore } from './DataTableCore';
 import { Column } from './Column';
+import { DataTableStatus } from './DataTableStatus';
 
 interface Person {
     id: number;
@@ -85,6 +86,27 @@ const MultipleSelectionTable = () => {
 /** Bulk selection: a checkbox per row, and a select-all that covers the rows the filter leaves visible. */
 export const MultipleSelection: Story = {
     render: () => <MultipleSelectionTable />,
+};
+
+export const QueryStates: Story = {
+    render: () => (
+        <div style={{ display: 'grid', gap: '1rem' }}>
+            {([DataTableStatus.Loading, DataTableStatus.Failed, DataTableStatus.Unauthorized, DataTableStatus.Ready] as const).map((status) => (
+                <div key={status}>
+                    <h3>{status}</h3>
+                    <DataTableCore<Person> data={[]} status={status} emptyMessage='No people'>
+                        <Column<Person> field='name' header='Name' />
+                    </DataTableCore>
+                </div>
+            ))}
+            <div>
+                <h3>Refetching with rows</h3>
+                <DataTableCore<Person> data={people} status={DataTableStatus.Loading} emptyMessage='No people'>
+                    <Column<Person> field='name' header='Name' />
+                </DataTableCore>
+            </div>
+        </div>
+    ),
 };
 
 export const Empty: Story = {

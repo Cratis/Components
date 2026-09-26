@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export * from './DataTableCore';
+export * from './DataTableStatus';
 export * from './DataTableForQuery';
 export * from './DataTableForObservableQuery';
 export * from './Column';

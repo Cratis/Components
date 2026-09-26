@@ -119,7 +119,9 @@
     background: var(--cratis-highlight-bg);
     color: var(--cratis-highlight-text-color);
 }
-.cratis-datatable__empty-cell {
+.cratis-datatable__empty-cell,
+.cratis-datatable__loading-cell,
+.cratis-datatable__failure-cell {
     padding: 2rem 1rem;
     color: var(--cratis-text-color-secondary);
     text-align: center;

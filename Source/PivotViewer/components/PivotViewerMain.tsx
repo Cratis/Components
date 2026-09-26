@@ -16,6 +16,7 @@ export interface PivotViewerMainProps<TItem extends object> {
   data: TItem[];
   ready: boolean;
   isLoading: boolean;
+  loadingLabel: string;
   visibleIds: Uint32Array;
   grouping: GroupingResult;
   layout: LayoutResult;
@@ -51,6 +52,7 @@ export function PivotViewerMain<TItem extends object>({
   data,
   ready,
   isLoading,
+  loadingLabel,
   visibleIds,
   grouping,
   layout,
@@ -157,7 +159,7 @@ export function PivotViewerMain<TItem extends object>({
   };
 
   return isLoading ? (
-    <Spinner />
+    <Spinner label={loadingLabel} />
   ) : (
     <div className="pv-groups-wrapper">
       <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>

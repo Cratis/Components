@@ -14,6 +14,7 @@ import {
 } from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
+import { resolveDataTableStatus } from './resolveDataTableStatus';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -46,6 +47,13 @@ export interface DataTableForQueryProps<
      * The message to show when there is no data
      */
     emptyMessage: string;
+
+    /** Message shown while loading without rows. */
+    loadingMessage?: ReactNode;
+    /** Message shown when the query fails. */
+    failureMessage?: ReactNode;
+    /** Message shown when access is denied. */
+    unauthorizedMessage?: ReactNode;
 
     /**
      * The key to use for the data
@@ -196,8 +204,7 @@ export const DataTableForQuery = <
 
     // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
-    const emptyMessage =
-        result.isPerforming && rows.length === 0 ? null : props.emptyMessage;
+    const status = resolveDataTableStatus(result);
 
     return (
         <div
@@ -220,7 +227,11 @@ export const DataTableForQuery = <
                 <DataTableCore<TDataType>
                     data={rows}
                     dataKey={props.dataKey}
-                    emptyMessage={emptyMessage}
+                    emptyMessage={props.emptyMessage}
+                    status={status}
+                    loadingMessage={props.loadingMessage}
+                    failureMessage={props.failureMessage}
+                    unauthorizedMessage={props.unauthorizedMessage}
                     selectionMode={props.selectionMode ?? 'single'}
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
