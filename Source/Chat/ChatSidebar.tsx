@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal, ModalOverlay } from 'react-aria-components';
@@ -235,6 +235,7 @@ export const ChatSidebar = <
     const icon = useCratisIcon();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const [mounted, setMounted] = useState(false);
+    const nonModalPanel = useRef<HTMLDivElement>(null);
     const [nonModalPhase, setNonModalPhase] = useState<
         'closed' | 'entering' | 'open' | 'exiting'
     >('closed');
@@ -250,11 +251,18 @@ export const ChatSidebar = <
         : null;
     useEffect(() => {
         if (nonModalPhase !== 'entering' && nonModalPhase !== 'exiting') return;
+        if (!modal && (
+            window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ||
+            nonModalPanel.current?.getAnimations?.().length === 0
+        )) {
+            setNonModalPhase(nonModalPhase === 'entering' ? 'open' : 'closed');
+            return;
+        }
         const timeout = setTimeout(() => {
             setNonModalPhase(nonModalPhase === 'entering' ? 'open' : 'closed');
         }, 250);
         return () => clearTimeout(timeout);
-    }, [nonModalPhase]);
+    }, [modal, nonModalPhase, portalContainer]);
 
     const [internalSelectedId, setInternalSelectedId] = useState<
         ChatIdentifier | undefined
@@ -468,6 +476,7 @@ export const ChatSidebar = <
             >
                 <div
                     {...pt?.root}
+                    ref={nonModalPanel}
                     className={classNames(
                         'cratis-chat-sidebar',
                         pt?.root?.className,
