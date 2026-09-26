@@ -98,6 +98,13 @@ for (const workspaceName in workspaces) {
         continue;
     }
     if (isPublishing) {
+        if (packageJson.version !== releaseVersion) {
+            console.error(
+                `Workspace '${workspaceName}' at '${workspaceRelativeLocation}' has version '${packageJson.version ?? '<missing>'}', expected '${releaseVersion}'. Publication stopped.`,
+            );
+            process.exitCode = 1;
+            break;
+        }
         console.log(
             `Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}' as ${releaseVersion}`,
         );

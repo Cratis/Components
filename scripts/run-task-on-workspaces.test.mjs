@@ -12,7 +12,7 @@ const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.
 const output = path.join(repository, '.ai-work/workspace-runner-tests');
 mkdirSync(output, { recursive: true });
 
-const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missingExecutable = false, signal = undefined, manifestGenerationFails = false } = {}) => {
+const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missingExecutable = false, signal = undefined, manifestGenerationFails = false, nestedPublicPackage = false } = {}) => {
     const directory = mkdtempSync(path.join(output, 'case-'));
     try {
         copyFileSync(path.join(repository, 'run-task-on-workspaces.js'), path.join(directory, 'run-task-on-workspaces.js'));
@@ -20,6 +20,10 @@ const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missi
         for (const name of ['first', 'second']) {
             mkdirSync(path.join(directory, name));
             writeFileSync(path.join(directory, name, 'package.json'), JSON.stringify({ name, version: '1.0.0', scripts: { ci: 'synthetic fixture' } }));
+        }
+        if (nestedPublicPackage) {
+            mkdirSync(path.join(directory, 'first', 'nested'));
+            writeFileSync(path.join(directory, 'first', 'nested', 'package.json'), JSON.stringify({ name: 'nested', version: '1.0.0' }));
         }
         mkdirSync(path.join(directory, 'scripts'));
         writeFileSync(path.join(directory, 'scripts', 'prepare-release-version.mjs'),
@@ -42,7 +46,7 @@ const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missi
             const executable = `#!${process.execPath}\n` +
                 "const fs = require('node:fs'); const path = require('node:path');\n" +
                 "const workspace = path.basename(process.cwd());\n" +
-                "if (process.argv[1].endsWith('/npm')) { for (const name of ['first', 'second']) { const manifest = JSON.parse(fs.readFileSync(path.join('..', name, 'package.json'))); if (manifest.version !== '4.7.0') process.exit(9); } fs.appendFileSync('../events', `published ${workspace}\\n`); }\n" +
+                "if (process.argv[1].endsWith('/npm')) { for (const name of ['first', 'second']) { const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', name, 'package.json'))); if (manifest.version !== '4.7.0') process.exit(9); } fs.appendFileSync(path.join(__dirname, '..', 'events'), `published ${workspace}\\n`); }\n" +
                 `if (workspace === 'first') fs.writeSync(1, 'x'.repeat(${outputBytes}));\n` +
                 "fs.writeSync(1, `\\n${workspace}: stdout complete\\n`);\n" +
                 "fs.writeSync(2, `${workspace}: warning detail\\n`);\n" +
@@ -75,6 +79,13 @@ test('publish-version prepares all versions before publishing', async () => {
     const result = await runFixture({ command: 'publish-version' });
     assert.equal(result.code, 0, result.stderr);
     assert.equal(result.events, 'prepared and verified manifests\npublished first\npublished second\n');
+});
+
+test('publish-version refuses a nested public package not bumped by release preparation', async () => {
+    const result = await runFixture({ command: 'publish-version', nestedPublicPackage: true });
+    assert.notEqual(result.code, 0);
+    assert.match(result.stderr, /nested.*1\.0\.0.*4\.7\.0/u);
+    assert.ok(!result.events.includes('published nested'));
 });
 
 test('publish-version never publishes if manifest generation fails', async () => {
