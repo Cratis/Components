@@ -153,7 +153,9 @@ Uses the same range slider and histogram as `type: 'number'`, configured through
 
 ### Searching long option lists
 
-An option group shows a search box when its options do not fit in the group's box. Set `searchable: true` on the `FilterDefinition` to always show it, or `searchable: false` to never show it, and `searchPlaceholder` to change its placeholder.
+An option group shows a search box when its options do not fit in the group's box. Set `searchable: true` on the `FilterDefinition` to always show it, or `searchable: false` to never show it. Set `searchPlaceholder` to change its placeholder and `searchAriaLabel` to give the input a distinct accessible name. Without `searchAriaLabel`, its accessible name uses the effective placeholder, then the English default `'Search'` if the placeholder is empty. Standalone `CheckboxListFilter` accepts the same search props.
+
+Set `autoFocus: true` on a `FilterDefinition` to focus its inline search when that group becomes expanded, including if overflow measurement adds the input after rendering. The default is `false`; `autoFocus` has no effect if the group is collapsed or has no search input. For a standalone `CheckboxListFilter`, use `autoFocusSearch` to request focus when its search becomes visible.
 
 ### Custom editor (`type: 'custom'`)
 
@@ -211,6 +213,8 @@ Custom filter editors should not implement their own clear buttons; the header c
 | `customValues` | `CustomFilterValues` | — | Values for custom-editor filters |
 | `search` | `string` | — | Current search-box value |
 | `searchPlaceholder` | `string` | — | Placeholder for the panel's search input (default: `'Search…'`). Also the fallback placeholder for a searchable filter group that does not declare its own `searchPlaceholder`. |
+| `aria-label` | `string` | — | Accessible name of the non-modal dialog (English default: `'Filters'`) |
+| `searchAriaLabel` | `string` | — | Accessible name of the panel search input; falls back to `searchPlaceholder`, then the English default `'Search'` |
 | `clearFilterAriaLabel` | `string` | — | Accessible name and tooltip for a string/custom filter's clear button (default: `'Clear filter'`) |
 | `clearRangeAriaLabel` | `string` | — | Accessible name and tooltip for a numeric/date filter's clear button (default: `'Clear range'`) |
 | `expandedFilterKey` | `string \| null` | — | Which filter group is open |
@@ -312,10 +316,11 @@ The first filter group starts expanded. The hook re-syncs its state when the set
 ## Accessibility and keyboard
 
 - The panel is rendered into `document.body` at a fixed position below `anchorRef`, and follows the anchor on scroll and resize.
-- It closes when the user presses the mouse outside both the panel and the anchor. It does not close on Escape, and it does not move focus when it opens; keyboard users open and close it with the trigger button. Set `aria-expanded` on your trigger, as in the Quick Start.
+- The panel is a named, non-modal dialog (`role="dialog"`) rather than a complementary (`aside`) landmark. Override its English default name with `aria-label` for your locale. It does not trap focus or move focus on open (except when an expanded group's `autoFocus` is enabled). Set `aria-expanded` on your trigger, as in the Quick Start.
+- Escape closes the panel and returns focus to `anchorRef` if focus is inside the panel or on its anchor. Escape with focus elsewhere does nothing. Outside mousedown closes without moving focus.
 - Each group header is a button with `aria-expanded`. The clear button is named by `clearFilterAriaLabel` or `clearRangeAriaLabel`.
 - Range sliders are named by `minimumAriaLabel` and `maximumAriaLabel` and respond to Arrow, Home, and End keys.
-- The panel's search box and the option-list search boxes have a placeholder but no accessible name.
+- The panel and group search inputs have accessible names: `searchAriaLabel` on `FilterPanel`, `FilterDefinition`, or standalone `CheckboxListFilter` overrides each input's placeholder, which itself falls back to the English default `'Search'` when empty.
 
 ## Importing
 
