@@ -69,7 +69,7 @@ export interface MenuItemsProps {
 /**
  * Props for {@link Columns}.
  */
-export interface ColumnProps {
+export interface ColumnsProps {
     /** Cratis-owned `<Column>` markers describing each visible column. */
     children: ReactNode;
 }
@@ -156,7 +156,7 @@ export const MenuItems = ({ children }: MenuItemsProps) => {
  * Use as `<DataPage.Columns>` inside a `<DataPage>`, with Cratis-owned `<Column>`
  * children defining the table columns.
  */
-export const Columns = ({ children }: ColumnProps) => {
+export const Columns = ({ children }: ColumnsProps) => {
     const context = useDataPageContext();
     const isSnapshotQuery = context.query.prototype instanceof QueryFor;
     // SAFETY: The runtime prototype check above narrows a constructor shape that
@@ -212,9 +212,8 @@ export interface IDetailsComponentProps<TDataType> {
     item: TDataType;
 
     /**
-     * Callback the details component can invoke to ask the surrounding page to
-     * refresh its data — for example after the details panel has performed a
-     * mutating action.
+     * The caller's {@link DataPageProps.onRefresh} callback, forwarded unchanged
+     * to the details component. Invoking it does not make DataPage refetch.
      */
     onRefresh?: () => void;
 }
@@ -342,9 +341,7 @@ export interface DataPageProps<
      */
     clientFiltering?: boolean;
 
-    /**
-     * Callback triggered to signal data refresh
-     */
+    /** Optional callback forwarded to the details component as `onRefresh`; DataPage does not invoke it or refetch when it is called. */
     onRefresh?(): void;
 
     /**
@@ -444,8 +441,8 @@ export interface DataPageProps<
  *
  * - **`detailsComponent`** (optional) is a React component rendered in a
  *   right-hand pane via Allotment when a row is selected. It receives the
- *   selected item as `item` and an `onRefresh` callback the parent can
- *   invoke to ask the page to refetch.
+ *   selected item as `item` and the caller's `onRefresh` callback, if
+ *   supplied. DataPage does not refetch when the details component invokes it.
  *
  * ## Selection lifecycle
  *

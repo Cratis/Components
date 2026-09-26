@@ -127,28 +127,47 @@ function buildEditorMap(
  *   matches the filter's `key`. Controlled through `customValues`.
  *
  * ```tsx
- * const state = useFilterState(filters);
- * const [isOpen, setIsOpen] = useState(false);
- * const anchorRef = useRef<HTMLButtonElement>(null);
+ * import { useRef, useState } from 'react';
+ * import {
+ *   FilterEditor, FilterPanel, useFilterState, type FilterDefinition,
+ * } from '@cratis/components/Filter';
  *
- * return (
- *   <>
- *     <button ref={anchorRef} onClick={() => setIsOpen(!isOpen)}>
- *       Filters
- *     </button>
- *     <FilterPanel
- *       isOpen={isOpen}
- *       filters={filters}
- *       anchorRef={anchorRef}
- *       onClose={() => setIsOpen(false)}
- *       {...state}
- *     >
- *       <FilterEditor filterKey="rating">
- *         {({ value, onChange }) => <RatingPicker value={value} onChange={onChange} />}
- *       </FilterEditor>
- *     </FilterPanel>
- *   </>
- * );
+ * const filters: FilterDefinition[] = [{ key: 'category', label: 'Category', type: 'custom' }];
+ *
+ * function FilterExample() {
+ *   const state = useFilterState(filters);
+ *   const [isOpen, setIsOpen] = useState(false);
+ *   const anchorRef = useRef<HTMLButtonElement>(null);
+ *
+ *   return (
+ *     <>
+ *       <button ref={anchorRef} onClick={() => setIsOpen(!isOpen)}>
+ *         Filters
+ *       </button>
+ *       <FilterPanel
+ *         isOpen={isOpen}
+ *         filters={filters}
+ *         anchorRef={anchorRef}
+ *         onClose={() => setIsOpen(false)}
+ *         filterValues={state.filterValues}
+ *         rangeValues={state.rangeValues}
+ *         customValues={state.customValues}
+ *         expandedFilterKey={state.expandedFilterKey}
+ *         onFilterToggle={state.handleToggleFilter}
+ *         onFilterClear={state.handleClearFilter}
+ *         onRangeChange={state.handleRangeChange}
+ *         onExpandedFilterChange={state.setExpandedFilterKey}
+ *         onCustomValueChange={state.handleCustomValueChange}
+ *       >
+ *         <FilterEditor filterKey="category">
+ *           {({ value, onChange }) => (
+ *             <input value={String(value ?? '')} onChange={(event) => onChange(event.target.value)} />
+ *           )}
+ *         </FilterEditor>
+ *       </FilterPanel>
+ *     </>
+ *   );
+ * }
  * ```
  *
  * @param props - {@link FilterPanelProps}.
