@@ -311,7 +311,7 @@ export function FilterPanel({
         if (isOpen && panelRef.current && !panelRef.current.contains(document.activeElement)) {
             panelRef.current.focus();
         }
-    }, [isOpen]);
+    }, [isOpen, isBrowser]);
 
     useEffect(() => {
         if (!isOpen) return;
