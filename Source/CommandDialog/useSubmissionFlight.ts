@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 /** Tracks a submission synchronously so rapid clicks cannot start a second flight. */
 export const useSubmissionFlight = () => {
@@ -23,7 +24,9 @@ export const useSubmissionFlight = () => {
 
     const finish = () => {
         inFlight.current = false;
-        if (mounted.current) setIsSubmitting(false);
+        // Result and exception callbacks must observe an idle dialog, even within a React event batch.
+        // eslint-disable-next-line @eslint-react/dom-no-flush-sync -- The busy prop must settle before consumer callbacks.
+        if (mounted.current) flushSync(() => setIsSubmitting(false));
     };
 
     return { isSubmitting, begin, finish, isMounted: () => mounted.current };

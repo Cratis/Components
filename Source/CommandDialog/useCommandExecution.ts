@@ -18,6 +18,8 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
 
     const run = async (): Promise<ICommandResult<TResponse> | undefined> => {
         if (!submission.begin()) return undefined;
+        let confirmationError: { error: unknown } | undefined;
+        let result: ICommandResult<TResponse> | undefined;
         try {
             let values = commandInstance;
             if (onBeforeExecute) {
@@ -26,22 +28,25 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
                 if (submission.isMounted()) setCommandValues(values);
             }
             if (confirmBeforeExecute) {
-                let approved: boolean;
+                let approved = false;
                 try {
                     approved = await confirmBeforeExecute(values);
                 } catch (error) {
-                    if (submission.isMounted()) await reportConfirmationError(error, onException);
-                    return undefined;
+                    confirmationError = { error };
                 }
-                if (!submission.isMounted() || approved !== true) return undefined;
+                if (confirmationError === undefined && (!submission.isMounted() || approved !== true)) return undefined;
             }
-            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            return await (commandInstance as unknown as {
-                execute: () => Promise<ICommandResult<TResponse>>;
-            }).execute();
+            if (confirmationError === undefined) {
+                // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
+                result = await (commandInstance as unknown as {
+                    execute: () => Promise<ICommandResult<TResponse>>;
+                }).execute();
+            }
         } finally {
             submission.finish();
         }
+        if (confirmationError) await reportConfirmationError(confirmationError.error, onException);
+        return result;
     };
 
     return { run, isSubmitting: submission.isSubmitting, isMounted: submission.isMounted };

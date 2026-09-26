@@ -21,9 +21,10 @@ export let isBusy = false;
 const Harness = (props: {
     transform?: (values: typeof command) => typeof command | Promise<typeof command>;
     guard?: (values: typeof command) => boolean | Promise<boolean>;
+    reportException?: boolean;
 }) => {
     const submission = useCommandExecution<typeof command, object>(
-        command, setCommandValues, props.transform, props.guard, onException,
+        command, setCommandValues, props.transform, props.guard, props.reportException === false ? undefined : onException,
     );
     run = submission.run;
     isBusy = submission.isSubmitting;

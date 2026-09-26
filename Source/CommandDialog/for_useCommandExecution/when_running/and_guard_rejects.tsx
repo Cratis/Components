@@ -8,14 +8,17 @@ import * as submission from '../given/a_submission';
 
 describe('when a guard rejects asynchronously', () => {
     let rejectGuard!: (error: Error) => void;
+    let busyInException: boolean;
     beforeEach(async () => {
         const pending = new Promise<boolean>((_resolve, reject) => { rejectGuard = reject; });
         await submission.mount({ guard: () => pending });
+        submission.onException.mockImplementation(() => { busyInException = submission.isBusy; });
         await act(async () => { void submission.run(); });
         await act(async () => rejectGuard(new Error('Example guard failure')));
     });
     afterEach(submission.unmount);
     it('should report the exception', () => { submission.onException.mock.calls[0][0].should.deep.equal(['Example guard failure']); });
     it('should release busy', () => { submission.isBusy.should.equal(false); });
+    it('should release busy before onException', () => { busyInException.should.equal(false); });
     it('should not execute', () => { submission.execute.mock.calls.length.should.equal(0); });
 });
