@@ -31,7 +31,7 @@ How a dimension groups depends on the first non-missing (`null` or `undefined`) 
 | `Date` | Converted to a numeric timestamp, so it groups into ten ranges of milliseconds; missing values are excluded. |
 | `boolean` | Separate `false` and `true` columns; missing values are not grouped with `false`. |
 
-If every value is missing, the dimension uses string grouping. To group by exact numbers, years, or dates, return a string: `String(item.priority)` or `String(item.createdAt.getFullYear())`.
+In grouped view, items missing a numeric or boolean grouping value have no column, although the toolbar count still includes them. String dimensions instead show missing values in `null` and `undefined` columns. If every value is missing, the dimension uses string grouping. To group by exact numbers, years, or dates, return a string: `String(item.priority)` or `String(item.createdAt.getFullYear())`.
 
 `formatValue` changes only the displayed group label, not the group's key or filter value. For numeric and Date dimensions, the formatter receives the numeric lower bound of each range (a millisecond timestamp for Dates), not the original item value. `sort` orders groups before layout; its comparator receives `PivotGroup` objects with the original `items`, `key`, `label`, `value`, and `count`. Both callbacks run in the viewer after the engine returns, so they work the same whether grouping runs in a worker or the synchronous fallback. Without a custom sort, groups retain value order.
 
@@ -54,7 +54,7 @@ const dimensions: PivotDimension<Task>[] = [
 ];
 ```
 
-The `month` dimension returns zero-padded text such as `2024-03`, so its columns sort in calendar order.
+The `month` dimension returns zero-padded text such as `2024-03`, so its columns sort in calendar order. Boolean columns normally read `false` and `true`, while the filter panel labels those options **No** and **Yes**. To use the same labels in both places, set `formatValue: value => value ? 'Yes' : 'No'` on the boolean dimension.
 
 ## Filters
 
@@ -65,7 +65,7 @@ Filters appear in the filter panel, opened from the filter button at the left of
 1. **Categorical filter** (default): a list of values with counts. Single-select unless you set `multi: true`.
 2. **Range filter** (`type: 'number'`): a histogram with a minimum/maximum range selection.
 
-A filter and a dimension with the same `key` share one column in PivotViewer's store, and the filter's `getValue` wins. Give them the same `getValue`, or different keys. Categorical filters work on string and boolean columns; a categorical selection on a number column does not narrow the cards.
+A filter and a dimension with the same `key` share one column in PivotViewer's store, and the filter's `getValue` wins. Give them the same `getValue`, or different keys. Categorical filters work on string and boolean columns; a categorical selection on a number column does not narrow the cards. This also applies when the numeric column's first value is missing: the first non-missing value determines its type, so selecting a categorical option still does not narrow it.
 
 The `type` union also contains `'date'` and `'custom'`, and a filter can supply its own editor through `renderEditor`. This page covers the categorical and numeric filters that the PivotViewer stories exercise.
 
