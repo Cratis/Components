@@ -1,0 +1,48 @@
+{
+  "$comment": [
+    "Components' own answers for the managed quality gates (see .cratis/ai/hooks/scripts/quality-gates.json).",
+    "The repository root is a Yarn workspace aggregator without g:compile, g:compile:specs, or lint:ci;",
+    "the published package lives in Source/.",
+    "frontend-compile type-checks Source without emitting, the same check Source's compile script runs,",
+    "but without generate-parts or lint --fix, so the gate never rewrites files.",
+    "frontend-compile-specs has no counterpart: specs (for_*) are excluded from every tsconfig and are",
+    "type-stripped by Vitest, so frontend-specs is their check. The gate matches no change, so it never runs."
+  ],
+  "gates": [
+    {
+      "id": "frontend-lint",
+      "description": "Source: yarn lint:ci — zero ESLint errors",
+      "workingDirectory": "Source",
+      "command": [
+        "yarn",
+        "lint:ci"
+      ]
+    },
+    {
+      "id": "frontend-compile",
+      "description": "Source: tsc -p tsconfig.json --noEmit — zero TypeScript errors",
+      "workingDirectory": "Source",
+      "command": [
+        "node",
+        "../scripts/run-typescript.mjs",
+        "-p",
+        "tsconfig.json",
+        "-noEmit"
+      ]
+    },
+    {
+      "id": "frontend-compile-specs",
+      "description": "Not applicable: specs are type-stripped by Vitest and checked by frontend-specs",
+      "changed": []
+    },
+    {
+      "id": "frontend-specs",
+      "description": "Source: yarn test — zero failures",
+      "workingDirectory": "Source",
+      "command": [
+        "yarn",
+        "test"
+      ]
+    }
+  ]
+}
