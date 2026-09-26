@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 
-import { createElement } from 'react';
+import { act, createElement } from 'react';
 import { ChatStatus } from '../ChatStatus';
 import { ChatTopicList } from '../ChatTopicList';
 import type { ChatTopic } from '../ChatTopic';
@@ -70,6 +70,24 @@ describe.each([
 
     it('should use the host label', () => {
         list.container.querySelector(`[role="${role}"]`)!.textContent!.should.equal(text);
+    });
+});
+
+describe('when loading topics changes to a failure', () => {
+    let loadingRegion: Element;
+
+    beforeEach(async () => {
+        await mount(ChatStatus.Loading);
+        loadingRegion = list.container.querySelector('[role="status"]')!;
+        await act(async () => {
+            list.root.render(createElement(ChatTopicList, {
+                topics: [], status: ChatStatus.Failed, onOpen: () => undefined,
+            }));
+        });
+    });
+
+    it('should mount a new live region for the failure alert', () => {
+        (list.container.querySelector('[role="alert"]') !== loadingRegion).should.be.true;
     });
 });
 

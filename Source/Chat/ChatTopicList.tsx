@@ -157,11 +157,11 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
             {(topics.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized) && (
                 <p className='cratis-chat-topics__empty'>
                     {status === ChatStatus.Loading ? (
-                        <span role='status'>{labels?.loading ?? 'Loading topics…'}</span>
+                        <span key={status} role='status'>{labels?.loading ?? 'Loading topics…'}</span>
                     ) : status === ChatStatus.Failed ? (
-                        <span role='alert'>{labels?.failed ?? 'Could not load topics.'}</span>
+                        <span key={status} role='alert'>{labels?.failed ?? 'Could not load topics.'}</span>
                     ) : status === ChatStatus.Unauthorized ? (
-                        <span role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these topics.'}</span>
+                        <span key={status} role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these topics.'}</span>
                     ) : (
                         labels?.empty ?? 'No topics yet. Start the first one!'
                     )}

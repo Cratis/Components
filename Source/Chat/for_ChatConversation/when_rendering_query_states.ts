@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 
-import { createElement } from 'react';
+import { act, createElement } from 'react';
 import { ChatStatus } from '../ChatStatus';
 import { ChatConversation } from '../ChatConversation';
 import type { ChatMessage } from '../ChatMessage';
@@ -75,6 +75,24 @@ describe.each([
 
     it('should use the host label', () => {
         conversation.container.querySelector(`[role="${role}"]`)!.textContent!.should.equal(text);
+    });
+});
+
+describe('when loading messages changes to a failure', () => {
+    let loadingRegion: Element;
+
+    beforeEach(async () => {
+        await mount(ChatStatus.Loading);
+        loadingRegion = conversation.container.querySelector('[role="status"]')!;
+        await act(async () => {
+            conversation.root.render(createElement(ChatConversation, {
+                messages: [], status: ChatStatus.Failed, onSendMessage: () => undefined,
+            }));
+        });
+    });
+
+    it('should mount a new live region for the failure alert', () => {
+        (conversation.container.querySelector('[role="alert"]') !== loadingRegion).should.be.true;
     });
 });
 

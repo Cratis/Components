@@ -273,11 +273,11 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                 {(messages.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized) && (
                     <p className='cratis-chat-conversation__empty'>
                         {status === ChatStatus.Loading ? (
-                            <span role='status'>{labels?.loading ?? 'Loading messages…'}</span>
+                            <span key={status} role='status'>{labels?.loading ?? 'Loading messages…'}</span>
                         ) : status === ChatStatus.Failed ? (
-                            <span role='alert'>{labels?.failed ?? 'Could not load messages.'}</span>
+                            <span key={status} role='alert'>{labels?.failed ?? 'Could not load messages.'}</span>
                         ) : status === ChatStatus.Unauthorized ? (
-                            <span role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these messages.'}</span>
+                            <span key={status} role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these messages.'}</span>
                         ) : (
                             labels?.empty ?? 'No messages yet. Say hello!'
                         )}
