@@ -25,7 +25,8 @@ description: Props, colors, loading and empty states, and search configuration f
 | `title` | `string` | none | Heading at the left of the toolbar. Omit it when the host already names the view. |
 | `className` | `string` | none | Extra class on the `.pivot-viewer` root. |
 | `emptyContent` | `ReactNode` | "No items to display." | Shown when no items are visible. |
-| `isLoading` | `boolean` | `false` | Replaces the card area with a spinner. |
+| `isLoading` | `boolean` | `false` | Replaces the card area with a spinner and accessible loading status. |
+| `loadingLabel` | `string` | "Loading…" | Status text announced while `isLoading` is `true`. |
 | `colors` | `Partial<PivotViewerColors>` | theme tokens | Color overrides. See [Color customization](#color-customization). |
 
 PivotViewer has no `labels` prop. The toolbar and filter panel strings (`Filters`, `Sort by`, `Collection`, `Grouped`, `Search…`, the item count) are English and cannot be localized. The item count currently reads "*n* events" whatever the items are.
@@ -123,7 +124,7 @@ The server does not rasterize cards. Treat the server output as a stable loading
 
 ## Loading State
 
-Set `isLoading` while data is being fetched, as in the [example configuration](#example-configuration). While it is `true`, PivotViewer shows a spinner instead of the card area. The spinner has no text or live-region announcement; if screen-reader users need to know that data is loading, render your own status message next to the viewer.
+Set `isLoading` while data is being fetched, as in the [example configuration](#example-configuration). While it is `true`, PivotViewer shows a spinner instead of the card area. The spinner has a `role="status"` with visually hidden text, so screen readers can announce loading. Set `loadingLabel` to change the default "Loading…" text, for example to match your application's language.
 
 After `isLoading` turns `false`, PivotViewer shows "Building indexes..." until its engine has indexed the new `data`.
 

@@ -106,7 +106,7 @@ Three details in this example are easy to get wrong:
 
 | State | What PivotViewer shows |
 | --- | --- |
-| `isLoading` is `true` | A spinner in place of the card area. It has no text or live-region announcement, so add your own status message if screen-reader users need one. |
+| `isLoading` is `true` | A spinner in place of the card area, with a screen-reader status message. The default is "Loading…"; set `loadingLabel` to customize it. |
 | Indexes are being built | The text "Building indexes..." until the engine is ready. |
 | No visible items (empty `data`, or nothing matches the filters and search) | `emptyContent`, or "No items to display." when you omit it. |
 | Worker or engine failure | No error UI. Worker errors switch to the in-thread fallback and are logged to the console. Show data-loading errors from your own code. |
