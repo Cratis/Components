@@ -308,6 +308,12 @@ export function FilterPanel({
     }, [isOpen, anchorRef, onClose]);
 
     useEffect(() => {
+        if (isOpen && panelRef.current && !panelRef.current.contains(document.activeElement)) {
+            panelRef.current.focus();
+        }
+    }, [isOpen]);
+
+    useEffect(() => {
         if (!isOpen) return;
 
         const handleEscape = (event: KeyboardEvent) => {
@@ -333,6 +339,7 @@ export function FilterPanel({
                     ref={panelRef}
                     role='dialog'
                     aria-label={ariaLabel}
+                    tabIndex={-1}
                     className='pv-filter-dropdown'
                     style={{
                         position: 'fixed',
