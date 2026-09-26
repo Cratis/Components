@@ -96,6 +96,7 @@ export function CheckboxListFilter({
     const autoDetect = searchable === undefined;
     const overflows = useOptionListOverflow(containerRef, mirrorRef, autoDetect);
     const showSearch = searchable === true || (autoDetect && overflows);
+    const hasOptions = options.length > 0;
 
     useEffect(() => {
         if (!autoFocusSearch) {
@@ -104,7 +105,7 @@ export function CheckboxListFilter({
             searchInputRef.current.focus();
             didAutoFocusSearch.current = true;
         }
-    }, [autoFocusSearch, showSearch]);
+    }, [autoFocusSearch, showSearch, hasOptions]);
 
     const normalized = search.trim().toLowerCase();
     const visibleOptions = useMemo(
@@ -115,7 +116,7 @@ export function CheckboxListFilter({
         [options, showSearch, normalized],
     );
 
-    if (options.length === 0) {
+    if (!hasOptions) {
         return <p className='pv-option-list-empty'>{emptyMessage}</p>;
     }
 
