@@ -79,7 +79,7 @@ export function PivotViewer<TItem extends object>({
     const [selectedItem, setSelectedItem] = useState<TItem | null>(null);
     const [isZooming, setIsZooming] = useState(false);
     const [visibleIds, setVisibleIds] = useState<Uint32Array>(new Uint32Array(0));
-    const [grouping, setGrouping] = useState<GroupingResult>({ groups: [] });
+    const [rawGrouping, setRawGrouping] = useState<GroupingResult>({ groups: [] });
     const [hoveredGroupIndex, setHoveredGroupIndex] = useState<number | null>(null);
     const [preSelectionState, setPreSelectionState] = useState<{
         zoom: number;
@@ -205,7 +205,7 @@ export function PivotViewer<TItem extends object>({
     // older worker response can never overwrite a newer filter/search/view selection.
     useEffect(() => {
         if (!ready || visibleIds.length === 0) {
-            setGrouping({ groups: [] });
+            setRawGrouping({ groups: [] });
             return;
         }
 
@@ -215,7 +215,7 @@ export function PivotViewer<TItem extends object>({
             if (activeDimensionKey) {
                 void sortIds(visibleIds, activeDimensionKey).then((sortedIds) => {
                     if (cancelled) return;
-                    setGrouping({
+                    setRawGrouping({
                         groups: [
                             {
                                 key: 'all',
@@ -228,7 +228,7 @@ export function PivotViewer<TItem extends object>({
                     });
                 });
             } else {
-                setGrouping({
+                setRawGrouping({
                     groups: [
                         {
                             key: 'all',
@@ -242,7 +242,7 @@ export function PivotViewer<TItem extends object>({
             }
         } else {
             void computeGrouping(visibleIds, currentGroupBy).then((result) => {
-                if (!cancelled) setGrouping(presentGrouping(result, activeDimension, data));
+                if (!cancelled) setRawGrouping(result);
             });
         }
 
@@ -257,9 +257,12 @@ export function PivotViewer<TItem extends object>({
         computeGrouping,
         sortIds,
         activeDimensionKey,
-        activeDimension,
-        data,
     ]);
+
+    const grouping = useMemo(
+        () => viewMode === 'grouped' ? presentGrouping(rawGrouping, activeDimension, data) : rawGrouping,
+        [viewMode, rawGrouping, activeDimension, data],
+    );
 
     // Compute layout
     const layout = useMemo(() => {

@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import type { FieldValue } from '../engine/types';
 import type { PivotDimension, PivotFilter } from '../types';
 
@@ -9,53 +9,36 @@ export function useFieldExtractors<TItem extends object>(
     dimensions: PivotDimension<TItem>[],
     filters?: PivotFilter<TItem>[],
 ) {
+    // Presentation callbacks can change without changing the engine's columns.
+    // Preserve the extractor and index identities when only labels, formatters, or sorters change.
+    const sources = [...dimensions, ...(filters ?? [])];
+    const previousSources = useRef(sources);
+    if (sources.length !== previousSources.current.length || sources.some((source, index) =>
+        source.key !== previousSources.current[index].key || source.getValue !== previousSources.current[index].getValue
+    )) {
+        previousSources.current = sources;
+    }
+    const extractorSources = previousSources.current;
+
     const fieldExtractors = useMemo(() => {
         const extractors = new Map<string, (item: TItem) => FieldValue>();
 
-        for (const dim of dimensions) {
-            extractors.set(dim.key, (item) => {
-                const val = dim.getValue(item);
+        for (const source of extractorSources) {
+            extractors.set(source.key, (item) => {
+                const value = source.getValue(item);
                 // Dates are numeric timestamps in the engine, retaining numeric-range bucketing.
-                if (val instanceof Date) return val.getTime();
-                if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null || val === undefined) {
-                    return val;
+                if (value instanceof Date) return value.getTime();
+                if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null || value === undefined) {
+                    return value;
                 }
-                return String(val);
+                return String(value);
             });
         }
 
-        if (filters) {
-            for (const filter of filters) {
-                extractors.set(filter.key, (item) => {
-                    const val = filter.getValue(item);
-                    // Date filters use numeric timestamps just like Date dimensions.
-                    if (val instanceof Date) return val.getTime();
-                    if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean' || val === null || val === undefined) {
-                        return val;
-                    }
-                    return String(val);
-                });
-            }
-        }
-
         return extractors;
-    }, [dimensions, filters]);
+    }, [extractorSources]);
 
-    const indexFields = useMemo(() => {
-        const fields = new Set<string>();
-
-        for (const dim of dimensions) {
-            fields.add(dim.key);
-        }
-
-        if (filters) {
-            for (const filter of filters) {
-                fields.add(filter.key);
-            }
-        }
-
-        return Array.from(fields);
-    }, [dimensions, filters]);
+    const indexFields = useMemo(() => Array.from(new Set(extractorSources.map(source => source.key))), [extractorSources]);
 
     return { fieldExtractors, indexFields };
 }
