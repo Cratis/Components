@@ -77,6 +77,17 @@ describe('compatibility preflight', () => {
         );
     });
 
+    it('rejects independent release metadata even when the bundled migrator version matches', () => {
+        const stale = structuredClone(compatibilityManifest);
+        stale.packages.find(
+            ({ name }) => name === '@cratis/components.migrator',
+        ).independentRelease = true;
+
+        expect(() => validateBundledManifest(stale, '4.0.0')).toThrow(
+            /stale migrator package metadata/u,
+        );
+    });
+
     it('rejects an invalid support-window tooling range', () => {
         const invalid = structuredClone(compatibilityManifest);
         invalid.supportWindows.components3.tooling = 'not-a-range';
