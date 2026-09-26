@@ -89,6 +89,7 @@ export function CheckboxListFilter({
     const containerRef = useRef<HTMLDivElement>(null);
     const mirrorRef = useRef<HTMLUListElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+    const didAutoFocusSearch = useRef(false);
     const generatedName = useId();
     const groupName = name ?? generatedName;
 
@@ -97,7 +98,12 @@ export function CheckboxListFilter({
     const showSearch = searchable === true || (autoDetect && overflows);
 
     useEffect(() => {
-        if (autoFocusSearch && showSearch) searchInputRef.current?.focus();
+        if (!autoFocusSearch) {
+            didAutoFocusSearch.current = false;
+        } else if (showSearch && !didAutoFocusSearch.current && searchInputRef.current) {
+            searchInputRef.current.focus();
+            didAutoFocusSearch.current = true;
+        }
     }, [autoFocusSearch, showSearch]);
 
     const normalized = search.trim().toLowerCase();
