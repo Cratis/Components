@@ -102,6 +102,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
             [],
         );
         const inputRef = useRef<HTMLTextAreaElement>(null);
+        const didAutoFocus = useRef(false);
         const emojiButtonRef = useRef<HTMLButtonElement>(null);
         // Every candidate this draft has seen — resolved or picked — so the mentions reported on
         // send can be found again even when the resolver's latest answer no longer includes them.
@@ -171,8 +172,9 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
         const highlighted = Math.min(highlightedIndex, suggestions.length - 1);
 
         useEffect(() => {
-            if (autoFocus && !disabled) {
-                inputRef.current?.focus();
+            if (autoFocus && !disabled && !didAutoFocus.current && inputRef.current) {
+                inputRef.current.focus();
+                didAutoFocus.current = true;
             }
         }, [autoFocus, disabled]);
 
