@@ -162,14 +162,15 @@ DataPage renders its table through [`DataTableForQuery`](../DataTables/data-tabl
 
 | Situation | What renders |
 | --- | --- |
-| First result still loading | An empty table body with no message and no spinner |
+| First result still loading without rows | A loading row with `loadingMessage` (default `Loading…`) |
+| Refetching with rows | Existing rows; the table is marked busy |
 | Query returned no rows | `emptyMessage` |
 | Filters or search match nothing on the loaded page | `emptyMessage` |
-| Query failed or was unauthorized | `emptyMessage` (the failure is not shown) |
+| Query failed or was unauthorized | An alert row with `failureMessage` or `unauthorizedMessage` |
 | Snapshot query missing a required argument | `emptyMessage` (no request is sent) |
-| Observable query missing a required argument | An empty table body with no message, as while loading (no subscription starts) |
+| Observable query missing a required argument | Depends on the Arc hook's result state; no subscription starts |
 
-The last row matters: a failed query looks exactly like an empty one, and there is no loading indicator. When you must tell these apart, read the query result yourself through the generated proxy (`isPerforming`, `hasData`, `isSuccess`, `isAuthorized`, `hasExceptions`). See [Loading, empty, and failed queries](../DataTables/data-table-for-query.md#loading-empty-and-failed-queries) for a composition that does this.
+Unauthorized takes precedence over failure, which takes precedence over loading. Server exception text is not shown. Set the three message props on `DataPage` or configure the provider's `messages.dataTable` defaults. See [Loading, empty, and failed queries](../DataTables/data-table-for-query.md#loading-empty-and-failed-queries) for the exact table behavior.
 
 ## Props
 
@@ -183,6 +184,7 @@ The last row matters: a failed query looks exactly like an empty one, and there 
 ### Optional Props
 
 - `queryArguments`: Arguments to pass to the query. An observable query resubscribes when any argument changes; a snapshot query re-runs when a required argument changes.
+- `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the query states, passed to the bound table
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row. See [Selection](#selection).
 - `onSelectionChange`: Called with `{ value, originalEvent }` when the selection changes
@@ -204,7 +206,7 @@ The last row matters: a failed query looks exactly like an empty one, and there 
 
 `tablePtOptions`, `tableUnstyled`, `paginatorPtOptions`, `menubarPtOptions`, and `menubarUnstyled` are deprecated and have no effect.
 
-The query-backed table inside `DataPage` suppresses `emptyMessage` while its first result is still performing, so a pending query is not presented as a confirmed empty result.
+The query-backed table inside `DataPage` shows a loading row instead of `emptyMessage` while its first result is still performing without rows.
 
 ## Query Types
 
@@ -281,8 +283,8 @@ When no ancestor supplies a height, DataPage falls back to a minimum height of `
 | --- | --- |
 | The paginator is cut off or the page is only about `20rem` tall | No ancestor with a definite height. See [DataPage needs an ancestor with a height](#datapage-needs-an-ancestor-with-a-height). |
 | The details pane overlaps or grows to its content | The Components stylesheet is not imported. |
-| The table always shows `emptyMessage` | The query failed, the user is not authorized, or a snapshot query is missing a required `queryArguments` value. DataPage does not show query errors. |
-| The table stays blank with no message | An observable query is missing a required `queryArguments` value, so it never subscribes, or its first result has not arrived. |
+| The table shows `emptyMessage` instead of rows | The query completed empty, the loaded-page filters matched nothing, or a snapshot query is missing a required `queryArguments` value. Failures and authorization denials have separate alert rows. |
+| The table remains in its loading state | The first result has not arrived; if an observable query has missing required `queryArguments`, check whether Arc started a subscription. |
 | `event.value.name` or `item.name` does not compile | The row type was inferred as `object`. Add type arguments (`<DataPage<AllAuthors, Author, object>`) or type the `detailsComponent` with `IDetailsComponentProps<Author>`. |
 | The selection highlight disappears after an update | Set `dataKey` so rows are matched by identity instead of object reference. |
 

@@ -14,6 +14,7 @@ import {
 } from './TablePaginator';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
+import { DataTableStatus } from './DataTableStatus';
 
 /**
  * Props for {@link DataTableForObservableQuery}.
@@ -48,6 +49,13 @@ export interface DataTableForObservableQueryProps<
      * The message to show when there is no data
      */
     emptyMessage: string;
+
+    /** Message shown while loading without rows. */
+    loadingMessage?: ReactNode;
+    /** Message shown when the query fails. */
+    failureMessage?: ReactNode;
+    /** Message shown when access is denied. */
+    unauthorizedMessage?: ReactNode;
 
     /**
      * The key to use for the data
@@ -208,8 +216,14 @@ export const DataTableForObservableQuery = <
 
     // SAFETY: Arc observable collection queries are row-typed while runtime data is the current row array.
     const rows = result.data as unknown as TDataType[];
-    const emptyMessage =
-        result.isPerforming && rows.length === 0 ? null : props.emptyMessage;
+    // Keep a performing result in Loading even with cached rows so DataTableCore can mark refetches busy.
+    const status = result.isAuthorized === false
+        ? DataTableStatus.Unauthorized
+        : result.hasExceptions === true || result.isValid === false
+            ? DataTableStatus.Failed
+            : result.isPerforming === true
+                ? DataTableStatus.Loading
+                : DataTableStatus.Ready;
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -264,7 +278,11 @@ export const DataTableForObservableQuery = <
                 <DataTableCore<TDataType>
                     data={rows}
                     dataKey={props.dataKey}
-                    emptyMessage={emptyMessage}
+                    emptyMessage={props.emptyMessage}
+                    status={status}
+                    loadingMessage={props.loadingMessage}
+                    failureMessage={props.failureMessage}
+                    unauthorizedMessage={props.unauthorizedMessage}
                     selectionMode={props.selectionMode ?? 'single'}
                     selection={props.selection}
                     onSelectionChange={props.onSelectionChange}
