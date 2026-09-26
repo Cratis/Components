@@ -316,18 +316,32 @@ export function FilterPanel({
     useEffect(() => {
         if (!isOpen) return;
 
-        const handleEscape = (event: KeyboardEvent) => {
+        const handleAnchorEscape = (event: KeyboardEvent) => {
             if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
             const focused = document.activeElement;
-            if (focused && (panelRef.current?.contains(focused) || anchorRef.current?.contains(focused))) {
+            if (focused && anchorRef.current?.contains(focused)) {
+                event.preventDefault();
+                event.stopPropagation();
+                onClose();
+                anchorRef.current?.focus();
+            }
+        };
+        const handlePanelEscape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return;
+            const focused = document.activeElement;
+            if (focused && panelRef.current?.contains(focused)) {
                 event.preventDefault();
                 onClose();
                 anchorRef.current?.focus();
             }
         };
 
-        document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
+        document.addEventListener('keydown', handleAnchorEscape, true);
+        document.addEventListener('keydown', handlePanelEscape);
+        return () => {
+            document.removeEventListener('keydown', handleAnchorEscape, true);
+            document.removeEventListener('keydown', handlePanelEscape);
+        };
     }, [isOpen, anchorRef, onClose]);
 
     if (!isBrowser) return null;
