@@ -4,7 +4,7 @@
 
 import { act } from 'react';
 import { afterEach, beforeEach, describe, it } from 'vitest';
-import { SampleCommand, mount, onSuccess, reset, state, unmount } from './given/a_dialog_with_guard';
+import { SampleCommand, mount, onSuccess, reset, state, unmount } from '../given/a_dialog_with_guard';
 
 describe('when confirming with a guard that approves', () => {
     let receivedValues: SampleCommand | undefined;

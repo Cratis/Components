@@ -4,7 +4,7 @@
 
 import { act } from 'react';
 import { afterEach, beforeEach, describe, it } from 'vitest';
-import { mount, onException, onFailed, onSuccess, reset, state, unmount } from './given/a_dialog_with_guard';
+import { mount, onException, onFailed, onSuccess, reset, state, unmount } from '../given/a_dialog_with_guard';
 
 describe('when a pending guard rejects', () => {
     let rejectGuard: (error: Error) => void;

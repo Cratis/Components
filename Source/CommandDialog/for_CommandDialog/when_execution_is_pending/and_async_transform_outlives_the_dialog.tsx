@@ -4,7 +4,7 @@
 
 import { act } from 'react';
 import { beforeEach, describe, it } from 'vitest';
-import { mount, onConfirm, onSuccess, reset, state, unmount, type SampleCommand } from '../when_confirming_with_guard/given/a_dialog_with_guard';
+import { mount, onConfirm, onSuccess, reset, state, unmount, type SampleCommand } from '../given/a_dialog_with_guard';
 
 describe('when an async transform settles after unmount without a guard', () => {
     beforeEach(async () => {

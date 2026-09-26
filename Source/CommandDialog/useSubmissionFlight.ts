@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 
-/** Tracks a submission synchronously so rapid clicks cannot start a second flight. */
+/** Tracks busy state and guards re-entry while a confirmation is pending. */
 export const useSubmissionFlight = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const inFlight = useRef(false);
@@ -15,10 +15,10 @@ export const useSubmissionFlight = () => {
         return () => { mounted.current = false; };
     }, []);
 
-    const begin = () => {
-        if (!mounted.current || inFlight.current) return false;
-        inFlight.current = true;
-        setIsSubmitting(true);
+    const begin = (exclusive: boolean) => {
+        if (exclusive && (!mounted.current || inFlight.current)) return false;
+        if (exclusive) inFlight.current = true;
+        if (mounted.current) setIsSubmitting(true);
         return true;
     };
 

@@ -3,7 +3,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, afterEach, describe, it } from 'vitest';
-import { confirm, mount, onSuccess, reset, state, unmount } from '../when_confirming_with_guard/given/a_dialog_with_guard';
+import { confirm, mount, onSuccess, reset, state, unmount } from '../given/a_dialog_with_guard';
 
 describe('when execution succeeds without a guard', () => {
     let busyInSuccess: boolean;

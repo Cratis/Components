@@ -3,7 +3,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, it } from 'vitest';
-import { confirm, mount, reset, state, unmount } from './given/a_dialog_with_guard';
+import { confirm, mount, reset, state, unmount } from '../given/a_dialog_with_guard';
 
 describe('when a guard returns nothing at runtime', () => {
     beforeEach(async () => {

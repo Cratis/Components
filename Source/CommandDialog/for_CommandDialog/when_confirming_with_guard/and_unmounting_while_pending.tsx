@@ -4,7 +4,7 @@
 
 import { act } from 'react';
 import { beforeEach, describe, it } from 'vitest';
-import { mount, reset, state, unmount } from './given/a_dialog_with_guard';
+import { mount, reset, state, unmount } from '../given/a_dialog_with_guard';
 
 describe('when unmounting while the guard is pending', () => {
     let resolveGuard: (approved: boolean) => void;

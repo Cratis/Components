@@ -3,7 +3,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, it } from 'vitest';
-import { confirm, mount, onConfirm, onFailed, onSuccess, reset, state, unmount } from './given/a_dialog_with_guard';
+import { confirm, mount, onConfirm, onFailed, onSuccess, reset, state, unmount } from '../given/a_dialog_with_guard';
 
 describe('when confirming with a guard that declines', () => {
     let close: boolean;

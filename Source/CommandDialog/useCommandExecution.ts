@@ -17,7 +17,7 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
     const submission = useSubmissionFlight();
 
     const run = async (): Promise<ICommandResult<TResponse> | undefined> => {
-        if (!submission.begin()) return undefined;
+        if (!submission.begin(confirmBeforeExecute !== undefined)) return undefined;
         let confirmationError: { error: unknown } | undefined;
         let result: ICommandResult<TResponse> | undefined;
         try {

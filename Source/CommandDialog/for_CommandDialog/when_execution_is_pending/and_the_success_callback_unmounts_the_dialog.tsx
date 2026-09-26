@@ -4,7 +4,7 @@
 
 import { act } from 'react';
 import { beforeEach, describe, it } from 'vitest';
-import { mount, onConfirm, onSuccess, reset, state, unmount } from '../when_confirming_with_guard/given/a_dialog_with_guard';
+import { mount, onConfirm, onSuccess, reset, state, unmount } from '../given/a_dialog_with_guard';
 
 describe('when an async success callback unmounts the dialog', () => {
     beforeEach(async () => {

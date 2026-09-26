@@ -5,7 +5,7 @@
 import React, { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { vi } from 'vitest';
-import { CommandDialog } from '../../../CommandDialog';
+import { CommandDialog } from '../../CommandDialog';
 
 const state = vi.hoisted(() => ({
     confirm: undefined as (() => Promise<boolean>) | undefined,
@@ -15,7 +15,7 @@ const state = vi.hoisted(() => ({
 }));
 export { state };
 
-vi.mock('../../../../Dialogs/Dialog', () => ({
+vi.mock('../../../Dialogs/Dialog', () => ({
     Dialog: (props: { onConfirm: () => Promise<boolean>; isBusy: boolean }) => {
         state.confirm = props.onConfirm;
         state.busy = props.isBusy;
