@@ -544,7 +544,7 @@ export function PivotCanvas<TItem extends object>({
         const currentScrollTop = parentContainerRef.current?.scrollTop || 0;
         const currentScrollLeft = parentContainerRef.current?.scrollLeft || 0;
 
-        syncSpritesToViewport({
+        const syncParams = {
             root: rootRef.current,
             groupsContainer: groupsContainerRef.current,
             container: parentContainerRef.current,
@@ -592,7 +592,8 @@ export function PivotCanvas<TItem extends object>({
             transitionSeenIds: transitionSeenIdsRef.current,
             prevScrollTop: prevScrollTopRef.current,
             prevScrollLeft: prevScrollLeftRef.current,
-        });
+        };
+        syncSpritesToViewport(syncParams);
 
         // Update previous scroll position for next frame
         prevScrollTopRef.current = currentScrollTop;
@@ -613,6 +614,7 @@ export function PivotCanvas<TItem extends object>({
             needsRenderRef,
             spritesRef,
             isViewTransitionRef,
+            syncVisibility: () => syncSpritesToViewport({ ...syncParams, isViewTransition: false, sweepImmediately: true }),
             onTransitionComplete: () => transitionSeenIdsRef.current.clear(),
         });
     }, [

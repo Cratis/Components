@@ -30,6 +30,7 @@ export interface SyncParams<TItem> {
     viewMode: string;
     prevLayout?: LayoutResult | null;
     transitionSeenIds: Set<string | number>;
+    sweepImmediately?: boolean;
     prevScrollTop?: number;
     prevScrollLeft?: number;
 }
@@ -224,7 +225,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         const now = Date.now();
         for (const [id, sprite] of sprites) {
             const lastHidden = (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
-            if (lastHidden && now - lastHidden > SWEEP_MS) {
+            if (lastHidden && (params.sweepImmediately || now - lastHidden > SWEEP_MS)) {
                 try {
                     // remove from parent if present
                     if (sprite.container && sprite.container.parent) sprite.container.parent.removeChild(sprite.container);
