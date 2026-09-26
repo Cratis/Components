@@ -146,6 +146,24 @@ const passThrough = (profile: SlotProfile) =>
         }),
     );
 
+/**
+ * Combines a part variant's own `pt` attributes with the profile's pass-through markers, part by
+ * part, so a variant can reach a state through `pt` (for example a disabled action) while every
+ * part still carries its conformance marker.
+ */
+const variantPassThrough = (profile: SlotProfile, variantPt: unknown) => {
+    const markers = passThrough(profile) as Record<string, Record<string, unknown>>;
+    if (!variantPt || typeof variantPt !== 'object') return markers;
+    const merged: Record<string, Record<string, unknown>> = { ...markers };
+    for (const [part, attributes] of Object.entries(variantPt as Record<string, unknown>)) {
+        merged[part] = {
+            ...(attributes as Record<string, unknown>),
+            ...(markers[part] ?? {}),
+        };
+    }
+    return merged;
+};
+
 const addCheck = (
     checks: ConformanceCheck[],
     family: ConformanceFamily,
@@ -409,7 +427,7 @@ const checkSlot = async (
             const variantFixture = await mount(
                 document,
                 typedDeclaration,
-                { ...variant, pt: passThrough(profile) },
+                { ...variant, pt: variantPassThrough(profile, variant.pt) },
                 profile.refCapable,
                 options.wrapper,
             );
