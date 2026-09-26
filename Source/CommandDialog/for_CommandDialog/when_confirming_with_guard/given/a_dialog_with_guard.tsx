@@ -75,7 +75,7 @@ export const reset = () => {
 };
 export const mount = async (
     guard?: (values: SampleCommand) => boolean | Promise<boolean>,
-    transform?: (values: SampleCommand) => SampleCommand,
+    transform?: (values: SampleCommand) => SampleCommand | Promise<SampleCommand>,
 ) => {
     container = document.createElement('div');
     document.body.appendChild(container);

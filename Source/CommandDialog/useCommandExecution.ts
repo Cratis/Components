@@ -23,8 +23,7 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
             if (onBeforeExecute) {
                 const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
                 values = applied instanceof Promise ? await applied : applied;
-                if (!submission.isMounted()) return undefined;
-                setCommandValues(values);
+                if (submission.isMounted()) setCommandValues(values);
             }
             if (confirmBeforeExecute) {
                 let approved: boolean;
@@ -36,7 +35,6 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
                 }
                 if (!submission.isMounted() || approved !== true) return undefined;
             }
-            if (!submission.isMounted()) return undefined;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
             return await (commandInstance as unknown as {
                 execute: () => Promise<ICommandResult<TResponse>>;
