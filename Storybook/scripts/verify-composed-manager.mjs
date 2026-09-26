@@ -6,6 +6,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
 
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(storybookRoot, '..');
@@ -99,8 +100,9 @@ try {
     const selector = page.locator('select[aria-label="Renderer"]');
     await selector.waitFor({ state: 'visible', timeout: 30_000 });
     const options = await selector.locator('option').allTextContents();
-    if (options.length !== 4 || !options.includes('Cratis PrimeReact 10 renderer')) {
-        throw new Error(`Expected four renderer options, found: ${options.join(', ')}.`);
+    const expectedOptions = discoverAdapterPackages(repositoryRoot).adapters.map(adapter => adapter.metadata.displayName).sort();
+    if (JSON.stringify([...options].sort()) !== JSON.stringify(expectedOptions)) {
+        throw new Error(`Renderer options differ from the validated adapter metadata: expected ${expectedOptions.join(', ')}, found ${options.join(', ')}.`);
     }
     if ((await selector.inputValue()) !== sourceRendererId) {
         throw new Error(

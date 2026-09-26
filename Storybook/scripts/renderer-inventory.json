@@ -1,0 +1,9 @@
+{
+    "privateRenderers": [],
+    "publicRenderers": [
+        "cratis-built-in",
+        "cratis-mui",
+        "cratis-primereact",
+        "cratis-primereact10"
+    ]
+}

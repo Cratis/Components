@@ -14,7 +14,7 @@ const reportPath = path.join(temporary, 'report.json');
 try {
     const result = spawnSync(
         process.execPath,
-        ['scripts/verify-package-graph.mjs', '--report', reportPath],
+        ['scripts/verify-package-graph.mjs', '--report', reportPath, ...(process.argv.includes('--update') ? ['--update'] : [])],
         { cwd: packageDirectory, encoding: 'utf8' },
     );
     process.stdout.write(result.stdout);
@@ -41,16 +41,16 @@ try {
             'Package graph report contains the wrong lean Core-slot subpaths.',
         );
     }
-    if (!Array.isArray(report.kernelBoundary) || report.kernelBoundary.length !== 34) {
-        throw new Error(
-            'Package graph report must contain all 34 kernel boundary entries.',
-        );
+    const expectedKernelModules = report.kernelSourcePaths;
+    const reportedKernelModules = report.kernelBoundary?.map(entry => entry.sourcePath);
+    if (!Array.isArray(reportedKernelModules) || JSON.stringify(reportedKernelModules) !== JSON.stringify(expectedKernelModules)) {
+        throw new Error('Package graph report kernel boundary entries differ from the declared kernel modules.');
     }
     if (!Array.isArray(report.violations) || report.violations.length !== 0) {
         throw new Error('Package graph report contains module-boundary violations.');
     }
 
-    console.log('Package graph report metadata and all 34 kernel entries verified.');
+    console.log(`Package graph report metadata and all ${reportedKernelModules.length} kernel entries verified.`);
 } finally {
     rmSync(temporary, { recursive: true, force: true });
 }

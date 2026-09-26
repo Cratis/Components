@@ -1,0 +1,36 @@
+{
+    "atomicSlots": [
+        "common.tooltip",
+        "datatables.paginator",
+        "dialogs.dialog",
+        "display.datePicker",
+        "dropdown.select"
+    ],
+    "builtInSlots": [
+        "common.button",
+        "common.checkbox",
+        "common.iconButton",
+        "common.progress",
+        "common.radio",
+        "common.surface",
+        "common.switch",
+        "common.textArea",
+        "common.textInput",
+        "common.tooltip",
+        "datatables.paginator",
+        "dialogs.dialog",
+        "display.datePicker",
+        "dropdown.select"
+    ],
+    "presentationSlots": [
+        "common.button",
+        "common.checkbox",
+        "common.iconButton",
+        "common.progress",
+        "common.radio",
+        "common.surface",
+        "common.switch",
+        "common.textArea",
+        "common.textInput"
+    ]
+}

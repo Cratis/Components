@@ -36,6 +36,7 @@
         "lint": "node ./run-task-on-workspaces.js lint",
         "test": "node ./run-task-on-workspaces.js test",
         "generate-compat-manifest": "node ./scripts/generate-compat-manifest.mjs --write",
+        "generate-inventories": "node ./scripts/generate-inventories.mjs",
         "verify-compat-manifest": "node ./scripts/generate-compat-manifest.mjs --check",
         "generate-release-evidence": "node ./scripts/generate-release-evidence.mjs",
         "test-release-evidence": "node --test ./scripts/generate-release-evidence.test.mjs",
@@ -43,7 +44,7 @@
         "test-renderer-adapter-matrix": "node --test ./scripts/verify-renderer-adapter-matrix.test.mjs",
         "verify-renderer-adapters": "node ./scripts/verify-renderer-adapters.mjs",
         "publish-version": "node ./run-task-on-workspaces.js publish-version",
-        "test-tooling": "node --test scripts/parse-npm-pack-result.test.mjs scripts/typescript-compiler.test.mjs scripts/typescript-diagnostics.test.mjs scripts/run-task-on-workspaces.test.mjs",
+        "test-tooling": "node --test scripts/parse-npm-pack-result.test.mjs scripts/typescript-compiler.test.mjs scripts/typescript-diagnostics.test.mjs scripts/run-task-on-workspaces.test.mjs scripts/evidence-inventory.test.mjs",
         "verify-typescript-consumers": "node scripts/verify-typescript-consumers.mjs",
         "ci": "yarn test-tooling && yarn verify-compat-manifest && yarn test-release-policy && yarn test-release-evidence && yarn test-renderer-adapter-matrix && node ./run-task-on-workspaces.js ci && yarn verify-typescript-consumers",
         "up": "node ./run-task-on-workspaces.js up"

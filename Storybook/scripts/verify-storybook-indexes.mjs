@@ -4,6 +4,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkInventory, inventoryDifferences } from '../../scripts/lib/evidence-inventory.mjs';
 import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
 import { computeRendererMatrixScope } from './lib/renderer-matrix-scope.mjs';
 
@@ -25,7 +26,11 @@ const collectTextFiles = directory => readdirSync(directory, { withFileTypes: tr
     return entry.isFile() && /\.(?:html|js|json)$/u.test(entry.name) ? [entryPath] : [];
 });
 const storyFiles = collectStoryFiles(sourceRoot);
-if (storyFiles.length !== 74) throw new Error(`Expected the existing 74 story modules, found ${storyFiles.length}.`);
+const relativeSourcePath = file => path.relative(repositoryRoot, file).split(path.sep).join('/');
+const update = process.argv.includes('--update');
+const updateCommand = 'yarn generate-inventories';
+const snapshotPath = path.join(storybookRoot, 'scripts/storybook-inventory.json');
+const committed = !update && existsSync(snapshotPath) ? JSON.parse(readFileSync(snapshotPath, 'utf8')) : undefined;
 
 let canonicalStoryIds;
 let canonicalDocsIds;
@@ -41,15 +46,25 @@ for (const adapter of inventory.adapters) {
     const entries = Object.values(index.entries ?? {});
     const storyIds = entries.filter(entry => entry.type === 'story').map(entry => entry.id).sort();
     const docsIds = entries.filter(entry => entry.type === 'docs').map(entry => entry.id).sort();
-    if (storyIds.length !== 331 || docsIds.length !== 74) {
-        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 331 and 74.`);
+    if (committed) {
+        const differences = inventoryDifferences(
+            { stories: committed.stories, autodocs: committed.autodocs },
+            { stories: storyIds, autodocs: docsIds },
+        );
+        if (differences.length) {
+            throw new Error(`${adapter.metadata.id} differs from the committed Storybook inventory:\n- ${differences.join('\n- ')}\nRun ${updateCommand} and review the snapshot diff.`);
+        }
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;
     canonicalStoryEntries ??= entries.filter(entry => entry.type === 'story');
     if (JSON.stringify(storyIds) !== JSON.stringify(canonicalStoryIds)
         || JSON.stringify(docsIds) !== JSON.stringify(canonicalDocsIds)) {
-        throw new Error(`${adapter.metadata.id} does not expose the same stable story ids as the built-in preview.`);
+        const differences = inventoryDifferences(
+            { stories: canonicalStoryIds, autodocs: canonicalDocsIds },
+            { stories: storyIds, autodocs: docsIds },
+        );
+        throw new Error(`${adapter.metadata.id} does not expose the same stable story and autodocs ids as the built-in preview:\n- ${differences.join('\n- ')}`);
     }
     const attestation = JSON.parse(readFileSync(attestationFile, 'utf8'));
     const expectedVersions = adapter.expectedUpstreamVersion ? [adapter.expectedUpstreamVersion] : [];
@@ -77,18 +92,14 @@ const { slotOwningModules, matrixStoryIds } = computeRendererMatrixScope({
     sourceRoot,
 });
 
-// Attested against the derivation, not hand-maintained: a slotted component (or one that composes
-// a slotted primitive, such as `CommandDialog` or `DataPage`) is picked up automatically by
-// `computeRendererMatrixScope`. These counts are still pinned so that a change in what the
-// registry or the derivation reaches — a newly slotted component, a new composite, or a
-// regression in the reachability walk itself — fails this check loudly instead of silently
-// shrinking (or inflating) what the renderer matrix actually covers.
-if (slotOwningModules.size !== 14) {
-    throw new Error(`Expected 14 slot-owning modules (the stable nine-slot presentation profile plus experimental slots), found ${slotOwningModules.size}.`);
-}
-if (matrixStoryIds.size !== 179) {
-    throw new Error(`Expected 179 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
-}
+
+checkInventory(snapshotPath, {
+    storyModules: storyFiles.map(relativeSourcePath),
+    stories: canonicalStoryIds,
+    autodocs: canonicalDocsIds,
+    slotOwningModules: [...slotOwningModules].map(relativeSourcePath),
+    matrixStories: [...matrixStoryIds],
+}, updateCommand, update);
 
 const appearances = 2;
 const builtInOnlyStoryCount = canonicalStoryIds.length - matrixStoryIds.size;
