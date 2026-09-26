@@ -117,14 +117,6 @@ export function transformChangeHandlers(fileName, text, options = {}) {
             const result = analyzeCallback(callback, allowed);
             if (result.kind === 'already-semantic' || result.kind === 'irrelevant')
                 continue;
-            if (target.group === 'CommandForm') {
-                report(
-                    attribute,
-                    target.component,
-                    "move legacy field handler side effects to the enclosing CommandForm's onFieldChange(command, fieldName, oldValue, newValue, validationInfo?)",
-                );
-                continue;
-            }
             if (result.kind === 'unsupported') {
                 report(attribute, target.component, result.reason);
                 annotate(attribute);

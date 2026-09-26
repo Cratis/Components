@@ -181,7 +181,7 @@ The transform never guesses through JSX spreads, dynamic legacy values, duplicat
 
 ## `change-handler`
 
-`cratis-components-change-handler` resolves Components-owned JSX identifiers imported with aliases or namespaces from `@cratis/components/Dropdown`, `@cratis/components/CommandForm`, and `@cratis/components/CommandForm/fields`. It rewrites structurally-proven single forwarding callbacks on standalone `Dropdown`:
+`cratis-components-change-handler` resolves Components-owned JSX identifiers imported with aliases or namespaces from `@cratis/components/Dropdown`, `@cratis/components/CommandForm`, and `@cratis/components/CommandForm/fields`. It rewrites structurally-proven single forwarding callbacks on standalone `Dropdown` and CommandForm field `onValueChange` props:
 
 ```tsx
 // Before
@@ -190,7 +190,7 @@ The transform never guesses through JSX spreads, dynamic legacy values, duplicat
 <Dropdown onChange={(value) => setRole(value)} />
 ```
 
-For Components 4 CommandForm fields, the codemod leaves `onChange` unchanged and reports an actionable diagnostic instead of changing its callback. Arc's `asCommandFormField` wrappers do not expose `onChange` as a field prop in Components 4, so keeping the attribute would produce TS2322 even if the callback were rewritten. Move its side effects to the enclosing `CommandForm`'s `onFieldChange(command, fieldName, oldValue, newValue, validationInfo?)` callback. Legacy `onValueChange` field callbacks are also left unchanged with guidance; already-semantic `onValueChange` callbacks are untouched. The [Components 3 to 4 migration guide](https://cratis.io/components/migration/3-to-4/) covers this case.
+For Components 4 CommandForm fields, the codemod leaves `onChange` unchanged and reports an actionable diagnostic instead of changing its callback. Arc's `asCommandFormField` wrappers do not expose `onChange` as a field prop in Components 4, so keeping the attribute would produce TS2322 even if the callback were rewritten. Move its side effects to the enclosing `CommandForm`'s `onFieldChange(command, fieldName, oldValue, newValue, validationInfo?)` callback. Legacy `onValueChange` field callbacks with a proven event payload are rewritten to semantic values; already-semantic `onValueChange` callbacks are untouched. The [Components 3 to 4 migration guide](https://cratis.io/components/migration/3-to-4/) covers this case.
 
 Multi-statement, multi-use, wrong-payload, destructuring-with-default/rest, and native-event-dependent callbacks are refused, reported, and annotated once:
 

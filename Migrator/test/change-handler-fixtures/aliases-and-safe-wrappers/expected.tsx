@@ -8,6 +8,7 @@ export const FieldsView = () => (
         <Fields.InputTextField onChange={(event) => consume(event.target.value)} />
         <Fields.NumberField onChange={(event: React.ChangeEvent<HTMLInputElement>) => consume(event.currentTarget.valueAsNumber)} />
         <Check onChange={({ target: { checked } }) => consume(checked)} />
+        <Check onValueChange={(value) => consume(value)} />
         <Select onChange={(value) => consume(value)} />
     </>
 );

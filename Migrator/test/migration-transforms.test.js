@@ -131,7 +131,7 @@ describe('change-handler transform', () => {
         });
     }
 
-    it('leaves CommandForm field callbacks unchanged and reports onFieldChange guidance', () => {
+    it('refuses CommandForm onChange but rewrites supported onValueChange field callbacks', () => {
         const input = [
             "import * as F from '@cratis/components/CommandForm';",
             'const fields=<>',
@@ -147,9 +147,9 @@ describe('change-handler transform', () => {
             '',
         ].join('\n');
         const result = transformChangeHandlers('Fields.tsx', input);
-        expect(result.text).toBe(input);
-        expect(result.changed).toBe(false);
-        expect(result.diagnostics).toHaveLength(8);
+        expect(result.text).toContain('<F.ToggleSwitchField onValueChange={(value)=>save(value)}/>');
+        expect(result.changed).toBe(true);
+        expect(result.diagnostics).toHaveLength(7);
         for (const diagnostic of result.diagnostics) {
             expect(diagnostic.message).toContain('CommandForm');
             expect(diagnostic.message).toContain('onFieldChange');
