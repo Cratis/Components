@@ -1,13 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useId, useMemo } from 'react';
 import { Button } from '../Common/Button';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import { CommandFormFieldWrapper } from '@cratis/arc.react/commands';
 import { isCommandFormField } from '../CommandForm/commandFormMarkers';
 import type { StepperPanelProps } from './StepperPanel';
 import { getStepPanels } from './stepChildren';
+import { transitionStep } from './transitionStep';
 import type { StepperCustomizationProps } from './CommandStepper';
 
 /**
@@ -143,6 +144,7 @@ export const CommandStepperContent = ({
     pt,
 }: CommandStepperContentProps) => {
     const { messages } = useCratisComponentsConfig();
+    const stepperId = useId();
     const resolvedNextLabel = nextLabel ?? messages?.stepper?.next ?? 'Next';
     const resolvedPreviousLabel =
         previousLabel ?? messages?.stepper?.previous ?? 'Previous';
@@ -185,31 +187,18 @@ export const CommandStepperContent = ({
     const isCurrentStepInvalid = stepErrors[currentStep] ?? false;
     const hasAnyStepErrors = stepErrors.some((hasError) => hasError);
 
-    const handleStepChange = (index: number) => {
-        onChangeStep?.({ index });
-
-        if (index > currentStep && isCurrentStepInvalid) {
-            return;
-        }
-
-        if (index > currentStep) {
-            onVisitedStepsChange?.(new Set(visitedSteps).add(currentStep));
-        }
-        onActiveStepChange?.(index);
-    };
-
-    const handlePrevious = () => {
-        onActiveStepChange?.(Math.max(0, currentStep - 1));
-    };
-
-    const handleNext = () => {
-        if (isCurrentStepInvalid) {
-            return;
-        }
-
-        onVisitedStepsChange?.(new Set(visitedSteps).add(currentStep));
-        onActiveStepChange?.(Math.min(stepCount - 1, currentStep + 1));
-    };
+    const changeStep = (index: number, fromHeader = false) => transitionStep({
+        index,
+        currentStep,
+        stepCount,
+        isCurrentStepInvalid,
+        linear,
+        fromHeader,
+        visitedSteps,
+        onActiveStepChange,
+        onVisitedStepsChange,
+        onChangeStep,
+    });
 
     const isStepperBusy = isBusy || isSubmitting;
 
@@ -248,6 +237,7 @@ export const CommandStepperContent = ({
                         <button
                             {...pt?.header}
                             type='button'
+                            id={`${stepperId}-step-${index}`}
                             className={[
                                 'cratis-command-stepper__header',
                                 pt?.header?.className,
@@ -263,7 +253,7 @@ export const CommandStepperContent = ({
                             data-visited={visited || undefined}
                             disabled={headerDisabled}
                             aria-current={selected ? 'step' : undefined}
-                            onClick={() => handleStepChange(index)}
+                            onClick={() => changeStep(index, true)}
                         >
                             <span
                                 {...pt?.number}
@@ -350,6 +340,7 @@ export const CommandStepperContent = ({
                     data-selected={index === currentStep || undefined}
                     data-visited={visitedSteps.has(index) || undefined}
                     aria-label={String(panel.props.header ?? `Step ${index + 1}`)}
+                    aria-labelledby={`${stepperId}-step-${index}`}
                 >
                     {processChildren(panel.props.children)}
                 </section>
@@ -401,7 +392,7 @@ export const CommandStepperContent = ({
                     {!isFirstStep && (
                         <Button
                             variant='outline'
-                            onClick={handlePrevious}
+                            onClick={() => changeStep(currentStep - 1)}
                             disabled={isBusy}
                             style={{ width: 'auto' }}
                         >
@@ -411,7 +402,7 @@ export const CommandStepperContent = ({
                     <div style={{ flex: 1 }} />
                     {!isLastStep && (
                         <Button
-                            onClick={handleNext}
+                            onClick={() => changeStep(currentStep + 1)}
                             disabled={isBusy || isSubmitting || isCurrentStepInvalid}
                             style={{ width: 'auto' }}
                         >

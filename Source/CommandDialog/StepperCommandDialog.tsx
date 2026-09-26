@@ -23,6 +23,7 @@ import type { StepperCustomizationProps } from './CommandStepper';
 import { CommandStepperContent } from './CommandStepperContent';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
 import { getStepPanels } from './stepChildren';
+import { transitionStep } from './transitionStep';
 
 /**
  * Props for {@link StepperCommandDialog}. Combines the command-form props,
@@ -221,6 +222,17 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     const isFirstStep = currentStep <= 0;
     const isDialogValid = isValid !== false && isCommandFormValid;
     const isCurrentStepInvalid = stepErrors[currentStep] ?? false;
+    const changeStep = (index: number) => transitionStep({
+        index,
+        currentStep,
+        stepCount,
+        isCurrentStepInvalid,
+        linear,
+        visitedSteps,
+        onActiveStepChange: setActiveStep,
+        onVisitedStepsChange: setVisitedSteps,
+        onChangeStep,
+    });
 
     // Both close paths this wrapper owns — the footer Cancel and the successful Submit — run the
     // caller's gate before closing through the dialog host. The header X and Escape are owned by
@@ -316,7 +328,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             {!isFirstStep && (
                 <Button
                     variant='outline'
-                    onClick={() => setActiveStep(Math.max(0, currentStep - 1))}
+                    onClick={() => changeStep(currentStep - 1)}
                     disabled={isBusy}
                     style={{ width: 'auto' }}
                 >
@@ -326,10 +338,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
             <div style={{ flex: 1 }} />
             {!isLastStep && (
                 <Button
-                    onClick={() => {
-                        setVisitedSteps((previous) => new Set(previous).add(currentStep));
-                        setActiveStep(Math.min(stepCount - 1, currentStep + 1));
-                    }}
+                    onClick={() => changeStep(currentStep + 1)}
                     disabled={isBusy || isCurrentStepInvalid}
                     style={{ width: 'auto' }}
                 >
