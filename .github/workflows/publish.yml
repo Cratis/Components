@@ -147,7 +147,7 @@ jobs:
                   RELEASE_VERSION: ${{ needs.release.outputs.version || github.event.inputs.version }}
               run: |
                   missing=()
-                  for manifest in Source/package.json ESLint/package.json Migrator/package.json Adapters/*/package.json; do
+                  for manifest in Source/package.json ESLint/package.json Migrator/package.json Conformance/package.json Adapters/*/package.json; do
                     if [[ ! -f "$manifest" ]]; then
                       continue
                     fi
