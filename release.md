@@ -39,10 +39,13 @@ whether publication is required. The npm job:
 
 `yarn publish-version` performs steps 4–6 in this order, including on manual recovery runs. A
 manifest generation or verification failure stops publication before the first package. Publishing
-stops on the first package failure. Before a 5.0.0 release, update the `>=4 <5` release-major
-policies in `scripts/generate-compat-manifest.mjs`; otherwise manifest validation blocks the
-publish. The workflow fails explicitly when a release-bearing merge cannot be associated with a
-valid version label.
+stops on the first package failure. Before a 5.0.0 release, update the Components major window in
+`scripts/generate-compat-manifest.mjs`: package policies, `toolingCompatibility` ranges, and the
+support-window values and checks in `validateCompatibilityManifest`. Also update
+`Migrator/lib/compatibility.js`: `validateBundledManifest` currently requires source `>=3 <4` and
+target `>=4 <5`. Otherwise manifest validation or bundled migrator preflight rejects the release.
+The workflow fails explicitly when a release-bearing merge cannot be associated with a valid
+version label.
 
 ## Manual recovery
 
