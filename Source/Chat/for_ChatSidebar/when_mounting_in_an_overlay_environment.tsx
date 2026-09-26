@@ -41,6 +41,27 @@ describe('when mounting a non-modal sidebar in an overlay environment', () => {
         });
     });
 
+    describe('and the container becomes available on a later render', () => {
+        let overlayAvailable = false;
+        const overlayEnvironment = { getContainer: () => overlayAvailable ? overlay : null };
+        const renderSidebar = () => (
+            <CratisComponentsProvider overlayEnvironment={overlayEnvironment}>
+                <ChatSidebar open onClose={() => undefined} topics={[]} messages={[]} onSendMessage={() => undefined} />
+            </CratisComponentsProvider>
+        );
+
+        beforeEach(async () => {
+            overlayAvailable = false;
+            await act(async () => root.render(renderSidebar()));
+            overlayAvailable = true;
+            await act(async () => root.render(renderSidebar()));
+        });
+
+        it('should portal into the newly available container while open', () => {
+            (overlay.querySelector('.cratis-chat-sidebar') !== null).should.equal(true);
+        });
+    });
+
     describe('and the container is unavailable', () => {
         beforeEach(async () => {
             await act(async () => root.render(

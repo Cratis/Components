@@ -235,7 +235,6 @@ export const ChatSidebar = <
     const icon = useCratisIcon();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const [mounted, setMounted] = useState(false);
-    const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
     const [nonModalPhase, setNonModalPhase] = useState<
         'closed' | 'entering' | 'open' | 'exiting'
     >('closed');
@@ -246,13 +245,9 @@ export const ChatSidebar = <
             open ? 'entering' : phase === 'closed' ? 'closed' : 'exiting',
         );
     }, [open]);
-    useEffect(() => {
-        setPortalContainer(
-            !modal && mounted && nonModalPhase !== 'closed'
-                ? overlayEnvironment.getContainer()
-                : null,
-        );
-    }, [modal, mounted, nonModalPhase, overlayEnvironment]);
+    const portalContainer = !modal && mounted && nonModalPhase !== 'closed'
+        ? overlayEnvironment.getContainer()
+        : null;
     useEffect(() => {
         if (nonModalPhase !== 'entering' && nonModalPhase !== 'exiting') return;
         const timeout = setTimeout(() => {
