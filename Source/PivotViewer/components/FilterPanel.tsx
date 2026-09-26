@@ -9,6 +9,8 @@ import type { FilterState, RangeFilterState } from '../utils/utils';
 
 export interface FilterPanelProps<TItem extends object> {
   isOpen: boolean;
+  filterLabel?: string;
+  searchPlaceholder?: string;
   search: string;
   filterState: FilterState;
   rangeFilterState: RangeFilterState;
@@ -29,6 +31,8 @@ export interface FilterPanelProps<TItem extends object> {
 
 export function FilterPanel<TItem extends object>({
   isOpen,
+  filterLabel,
+  searchPlaceholder,
   search,
   filterState,
   rangeFilterState,
@@ -61,11 +65,12 @@ export function FilterPanel<TItem extends object>({
   return (
     <StandaloneFilterPanel
       isOpen={isOpen}
+      aria-label={filterLabel}
       filters={filters}
       filterValues={filterState}
       rangeValues={rangeFilterState}
       search={search}
-      searchPlaceholder="Search…"
+      searchPlaceholder={searchPlaceholder}
       expandedFilterKey={expandedFilterKey}
       anchorRef={anchorRef}
       onClose={onClose}

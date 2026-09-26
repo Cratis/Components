@@ -3,8 +3,10 @@
 
 /** Overrides for PivotViewer toolbar text and its loading status. Omitted fields retain their English defaults. */
 export interface PivotViewerLabels {
-    /** Filter button title; defaults to "Filters". */
+    /** Filter button title and filter panel accessible name; defaults to "Filters". */
     filters?: string;
+    /** Filter panel search placeholder and accessible name; defaults to "Search…". */
+    search?: string;
     /** Dimension selector label; defaults to "Sort by". */
     sortBy?: string;
     /** Collection view button text; defaults to "Collection". */

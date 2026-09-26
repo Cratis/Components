@@ -424,6 +424,8 @@ export function PivotViewer<TItem extends object>({
         <div className={viewerClassName} style={cssVariables as React.CSSProperties}>
             <FilterPanelContainer
                 isOpen={filtersOpen && hasFilters}
+                filterLabel={labels?.filters}
+                searchPlaceholder={labels?.search}
                 search={search}
                 filterState={filterState}
                 rangeFilterState={rangeFilterState}
