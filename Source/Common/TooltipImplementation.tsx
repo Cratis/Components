@@ -34,7 +34,7 @@ export const TooltipImplementation = ({
         nearestDialogZIndex === null
             ? 'var(--cratis-z-index-tooltip)'
             : zIndexAboveDialog(nearestDialogZIndex, TOOLTIP_OFFSET);
-    if (content === undefined || content === null || content === false || content === '' || disabled) return children;
+    if (content === undefined || content === null || typeof content === 'boolean' || content === '' || disabled) return children;
 
     const trigger = cloneElement(children, {
         className: ['cratis-tooltip-trigger', children.props.className, className]

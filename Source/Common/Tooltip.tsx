@@ -19,7 +19,7 @@ interface TooltipTriggerElementProps {
 
 /** Props for the {@link Tooltip} component. */
 export interface TooltipProps {
-    /** Non-interactive tooltip content. Use a popover for links or buttons. Undefined, null, false, or an empty string disables the tooltip. */
+    /** Non-interactive tooltip content. Use a popover for links or buttons. Undefined, null, either boolean, or an empty string disables the tooltip. */
     content?: ReactNode;
     /** Where the tooltip appears relative to its trigger. */
     position?: TooltipPosition;

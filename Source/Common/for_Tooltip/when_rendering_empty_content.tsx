@@ -6,7 +6,7 @@ import { beforeEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../CratisComponentsProvider';
 import { Tooltip } from '../Tooltip';
 
-describe.each([['empty string', ''], ['undefined', undefined], ['null', null], ['false', false]] as const)(
+describe.each([['empty string', ''], ['undefined', undefined], ['null', null], ['false', false], ['true', true]] as const)(
     'when rendering tooltip content of %s', (_description, content) => {
         let html: string;
 

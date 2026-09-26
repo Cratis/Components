@@ -69,7 +69,7 @@ import { Tooltip } from '@cratis/components/Common';
 </Tooltip>
 ```
 
-`content` accepts a React node, including text, elements, and the number `0`. `undefined`, `null`, `false`, and an empty string disable the tooltip. Keep tooltip content non-interactive: an ARIA tooltip is not focusable, so links and buttons inside it cannot be used reliably. Put interactive content in a [`Dialog`](../Dialogs/dialog.md) or an inline region instead. `Button` and `IconButton` retain their text-only `tooltip` prop.
+`content` accepts a React node, including text, elements, and the number `0`. `undefined`, `null`, either boolean (`true` or `false`), and an empty string disable the tooltip. Keep tooltip content non-interactive: an ARIA tooltip is not focusable, so links and buttons inside it cannot be used reliably. Put interactive content in a [`Dialog`](../Dialogs/dialog.md) or an inline region instead. `Button` and `IconButton` retain their text-only `tooltip` prop.
 
 ## Change metadata
 
