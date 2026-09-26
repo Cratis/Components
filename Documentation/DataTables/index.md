@@ -13,6 +13,8 @@ The DataTables module provides a semantic local-array table plus specialized Arc
 - **ColumnFilterMenu**: The reusable draft/apply filter popup used by filterable columns
 - **TablePaginator**: The standalone zero-based paginator used by query-backed tables
 
+`DataTableCore` accepts a `status` from `DataTableStatus` (`Ready`, `Loading`, `Failed`, or `Unauthorized`) (import `DataTableStatus` from `@cratis/components/DataTables`); it defaults to `Ready`. For a loading table with no rows, it renders a status row; with rows, it retains them and marks the table busy. Failed or unauthorized states render an alert row. Override the text with `loadingMessage`, `failureMessage`, and `unauthorizedMessage` or configure `CratisComponentsProvider`'s `messages.dataTable`.
+
 ## When to Use
 
 Use DataTableCore when:
@@ -20,7 +22,7 @@ Use DataTableCore when:
 - Rows are already loaded locally
 - Single or multiple selection and semantic table rendering are sufficient
 - Filtering and sorting should apply only to that loaded array
-- You run the query yourself, for example to show loading and error states the query-backed tables do not render (see [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries))
+- You run the query yourself and need a custom layout for its states beyond the query tables' loading and failure rows (see [Loading, empty, and failed queries](data-table-for-query.md#loading-empty-and-failed-queries))
 
 Use DataTableForQuery when:
 
@@ -41,7 +43,7 @@ All three table components share:
 - Single-row selection by default, or multiple selection with row checkboxes and a select-all header (`selectionMode='multiple'`)
 - Global filtering
 - Custom column templates
-- Empty state messages (no built-in loading indicator or error state)
+- Empty, loading, failure, and unauthorized state messages (set `DataTableCore.status` when rendering a locally managed query)
 - Keyboard selection: each row is a tab stop, and Enter or Space selects it; in multiple mode it toggles the row (on `DataTableCore`, only when `selectionMode` or `onRowClick` is set)
 - Cratis-owned semantic Column markers and stable table parts
 

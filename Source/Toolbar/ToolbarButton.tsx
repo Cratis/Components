@@ -77,7 +77,7 @@ export const ToolbarButton = ({
     icon,
     text,
     title,
-    active = false,
+    active,
     onClick,
     tooltipPosition = 'right',
     draggable,
@@ -108,6 +108,7 @@ export const ToolbarButton = ({
     if (isListMode) {
         return (
             <button
+                aria-pressed={active}
                 {...pt?.root}
                 type='button'
                 aria-label={title}
@@ -168,6 +169,7 @@ export const ToolbarButton = ({
             disabled={!isToolbarItemVisible}
         >
             <button
+                aria-pressed={active}
                 {...pt?.root}
                 type='button'
                 aria-label={title}
