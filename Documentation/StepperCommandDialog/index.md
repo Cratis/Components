@@ -131,7 +131,7 @@ Required values that no step shows, such as the id of the item being edited, bel
 - `orientation`: `'horizontal'` (default) or `'vertical'`
 - `headerPosition`: `'top'` (default) or `'bottom'`
 - `linear`: Whether the wizard is linear (default: `true`). In linear mode the step headers are not directly clickable — the user advances through Previous / Next. Set it to `false` to let the user jump between steps by clicking their headers.
-- `onChangeStep`: Callback when the active step changes, receiving `{ index }` (zero-based)
+- `onChangeStep`: Called once after each successful move to a different step through Previous, Next, or a clickable header. Receives `{ index }` (zero-based); blocked moves and clicks on the current header do not call it.
 - `start`: Content rendered before the stepper
 - `end`: Content rendered after the stepper
 - `pt`: Cratis-owned HTML attributes for the inner stepper's stable parts
@@ -201,7 +201,7 @@ The indicators, and the Next button, react to errors that are **shown**. With th
 
 The Submit button is hidden, not disabled, until the user reaches the last step **and** the command passes validation across every step (and `isValid` is not `false`). Next is disabled while a field on the current step shows an error. Submit receives focus when it appears.
 
-`linear` (the default) only makes the step headers unclickable; users still move with Previous and Next. It does not require a step's fields to be filled before Next is enabled.
+`linear` (the default) makes other step headers unclickable; users still move with Previous and Next. In non-linear mode, clickable headers also cannot advance past a current step showing an error. Next does not require a step's fields to be filled when no errors are shown. The step headers are buttons in an ordered list, not ARIA tabs; each panel is labelled by its header unless you pass `pt.header.id`. In that case, the headers keep your id and the panels keep their text labels instead of referencing a shared header id. The current header has `aria-current="step"`.
 
 ## Cancelling
 

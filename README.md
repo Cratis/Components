@@ -172,6 +172,13 @@ This is a framework-library repository. [Component source](https://github.com/Cr
 keeps public types, stories, and specifications near each component; export and
 package verification lives under `Source/scripts/`.
 
+Before pushing Source changes, run `cd Source && yarn ci` after `yarn install` at the
+repository root. It includes public API TSDoc coverage and packs the built package to check
+aggregate and per-area CSS budgets (`yarn verify-packed-css` runs that check alone after a
+build). CI additionally checks packed exports, public types under TypeScript 6 and 7,
+production tree shaking, and external consumer/package-manager matrices; `yarn ci` does not
+replace those jobs.
+
 For root and package README changes, verify the exact files explicitly:
 
 ```bash

@@ -17,6 +17,7 @@ export function useCurrentFilters<TItem extends object>(
     dimensionFilter: string | null,
     activeDimension: PivotDimension<TItem> | undefined,
 ): FilterSpec[] {
+    const dimensionField = activeDimension?.key;
     return useMemo((): FilterSpec[] => {
         const specs: FilterSpec[] = [];
 
@@ -46,26 +47,22 @@ export function useCurrentFilters<TItem extends object>(
         }
 
         // Dimension filter (grouped filter)
-        if (dimensionFilter && activeDimension) {
+        if (dimensionFilter && dimensionField) {
             specs.push({
-                field: activeDimension.key,
+                field: dimensionField,
                 type: 'categorical',
                 values: new Set([dimensionFilter]),
             });
         }
 
         return specs;
-    }, [filterState, rangeFilterState, dimensionFilter, activeDimension]);
+    }, [filterState, rangeFilterState, dimensionFilter, dimensionField]);
 }
 
 export function useCurrentGroupBy<TItem extends object>(
     activeDimensionKey: string | null,
     dimensions: PivotDimension<TItem>[],
 ): GroupSpec {
-    return useMemo((): GroupSpec => {
-        return {
-            field: activeDimensionKey || dimensions[0]?.key || '',
-            buckets: 10,
-        };
-    }, [activeDimensionKey, dimensions]);
+    const field = activeDimensionKey || dimensions[0]?.key || '';
+    return useMemo((): GroupSpec => ({ field, buckets: 10 }), [field]);
 }

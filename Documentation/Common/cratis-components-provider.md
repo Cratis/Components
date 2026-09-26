@@ -414,7 +414,7 @@ export const App = () => (
 );
 ```
 
-Returning `null` defers the overlay; Components does not silently retarget it to `document.body`. One exception: `ChatSidebar` in its default non-modal mode portals straight to `document.body` and does not consult `overlayEnvironment`.
+Returning `null` defers the overlay; Components does not silently retarget it to `document.body`. The non-modal `ChatSidebar` also uses this container, or `document.body` when no environment is configured, and portals only after mount.
 Direct vendor overlays keep their own portal and z-index configuration. Verify layer order and focus
 behavior in the real application shell when both systems can open together.
 
