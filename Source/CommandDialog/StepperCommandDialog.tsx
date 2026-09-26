@@ -22,6 +22,8 @@ import {
 import type { StepperCustomizationProps } from './CommandStepper';
 import { CommandStepperContent } from './CommandStepperContent';
 import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import { reportConfirmationError, type ConfirmBeforeExecute } from './confirmBeforeExecute';
+import { useSubmissionFlight } from './useSubmissionFlight';
 import { getStepPanels } from './stepChildren';
 import { transitionStep } from './transitionStep';
 
@@ -54,6 +56,8 @@ export interface StepperCommandDialogProps<TCommand extends object, TResponse = 
      * transforms that do not affect validity (for example a generated id).
      */
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+    /** Ask before executing the transformed command values; return false to stay open. */
+    confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     /** Dialog title text. */
     title: string;
     /** Controls dialog visibility. Defaults to `true`. */
@@ -129,6 +133,7 @@ type StepperCommandDialogWrapperProps<TCommand extends object, TResponse = objec
     onException?: CommandFormProps<TCommand, TResponse>['onException'];
     onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+    confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     okLabel?: string;
     nextLabel?: string;
     previousLabel?: string;
@@ -158,6 +163,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     onException,
     onUnauthorized,
     onBeforeExecute,
+    confirmBeforeExecute,
     okLabel,
     nextLabel,
     previousLabel,
@@ -193,7 +199,8 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         getFieldError,
     } = useCommandFormContext<TCommand>();
     const commandInstance = useCommandInstance<TCommand>();
-    const [isBusy, setIsBusy] = useState(false);
+    const submission = useSubmissionFlight();
+    const isBusy = submission.isSubmitting;
     const [activeStep, setActiveStep] = useState(0);
     const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
     const [stepErrors, setStepErrors] = useState<boolean[]>([]);
@@ -270,40 +277,52 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
     // transform resolves, and the command executes anyway. The `finally` is what releases it, so the
     // flag is cleared on the failure paths and on a transform that throws just as it is on success.
     const handleSubmit = async () => {
-        setIsBusy(true);
-        let result: ICommandResult<TResponse>;
-
+        if (!submission.begin()) return;
         try {
+            let values = commandInstance;
             if (onBeforeExecute) {
                 const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-                setCommandValues(applied instanceof Promise ? await applied : applied);
+                values = applied instanceof Promise ? await applied : applied;
+                if (!submission.isMounted()) return;
+                setCommandValues(values);
             }
-
+            if (confirmBeforeExecute) {
+                let approved: boolean;
+                try {
+                    approved = await confirmBeforeExecute(values);
+                } catch (error) {
+                    if (submission.isMounted()) await reportConfirmationError(error, onException);
+                    return;
+                }
+                if (!submission.isMounted() || !approved) return;
+            }
+            if (!submission.isMounted()) return;
             // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            result = await (
+            const result: ICommandResult<TResponse> = await (
                 commandInstance as unknown as {
                     execute: () => Promise<ICommandResult<TResponse>>;
                 }
             ).execute();
+            if (!submission.isMounted()) return;
+
+            if (!result.isSuccess) {
+                await onFailed?.(result);
+                if (result.hasExceptions) {
+                    await onException?.(result.exceptionMessages, result.exceptionStackTrace);
+                }
+                if (!result.isAuthorized) await onUnauthorized?.();
+                if (!result.isValid) {
+                    await onValidationFailure?.(result.validationResults);
+                }
+                setCommandResult(result);
+                return;
+            }
+
+            await onSuccess?.(result.response as TResponse);
+            if (submission.isMounted()) await handleClose(DialogResult.Ok);
         } finally {
-            setIsBusy(false);
+            submission.finish();
         }
-
-        if (!result.isSuccess) {
-            await onFailed?.(result);
-            if (result.hasExceptions) {
-                await onException?.(result.exceptionMessages, result.exceptionStackTrace);
-            }
-            if (!result.isAuthorized) await onUnauthorized?.();
-            if (!result.isValid) {
-                await onValidationFailure?.(result.validationResults);
-            }
-            setCommandResult(result);
-            return;
-        }
-
-        await onSuccess?.(result.response as TResponse);
-        await handleClose(DialogResult.Ok);
     };
 
     const footer = (
@@ -511,6 +530,7 @@ const StepperCommandDialogComponent = <
         onConfirm,
         onCancel,
         onBeforeExecute,
+        confirmBeforeExecute,
         okLabel,
         nextLabel,
         previousLabel,
@@ -552,6 +572,7 @@ const StepperCommandDialogComponent = <
                 onException={props.onException}
                 onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
+                confirmBeforeExecute={confirmBeforeExecute}
                 okLabel={okLabel}
                 nextLabel={nextLabel}
                 previousLabel={previousLabel}

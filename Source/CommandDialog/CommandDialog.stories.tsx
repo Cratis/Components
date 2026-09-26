@@ -7,7 +7,8 @@ import { CommandDialog } from './CommandDialog';
 import { Command, CommandResult, CommandValidator } from '@cratis/arc/commands';
 import { PropertyDescriptor } from '@cratis/arc/reflection';
 import { InputTextField, NumberField, TextAreaField } from '../CommandForm/fields';
-import { DialogResult, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
+import { DialogButtons, DialogComponents, DialogResult, useConfirmationDialog, useDialog, useDialogContext } from '@cratis/arc.react/dialogs';
+import { ConfirmationDialog } from '../Dialogs/ConfirmationDialog';
 import { DialogInitialFocus } from '../Dialogs/DialogInitialFocus';
 import '@cratis/arc/validation';
 import { expect, userEvent, within } from 'storybook/test';
@@ -867,6 +868,37 @@ export const WithResponseTypeAndCallbacks: Story = {
  * `initialFocus` moves the keyboard off it without giving up the footer, the
  * close (X), `Escape`, or the confirm wiring that runs the command.
  */
+const GuardedCommandDialog = () => {
+    const [showConfirmation] = useConfirmationDialog(
+        'Save changes?', 'Run the command with these values?', DialogButtons.YesNo,
+    );
+    return (
+        <CommandDialog<DemoSlowUpdateUserCommand>
+            command={DemoSlowUpdateUserCommand}
+            title='Update sample user'
+            initialValues={{ name: 'Sample User', email: 'sample@example.invalid', age: 30 }}
+            confirmBeforeExecute={async () => (await showConfirmation()) === DialogResult.Yes}
+        >
+            <InputTextField value={(command: DemoSlowUpdateUserCommand) => command.name} title='Name' />
+        </CommandDialog>
+    );
+};
+
+export const WithPreExecutionConfirmation: Story = {
+    play: openCommandDialog,
+    render: () => {
+        const [GuardedDialog, showDialog] = useDialog(GuardedCommandDialog);
+        return (
+            <DialogComponents confirmation={ConfirmationDialog}>
+                <div className='storybook-wrapper'>
+                    <button type='button' onClick={() => { void showDialog(); }}>Open command dialog</button>
+                    <GuardedDialog />
+                </div>
+            </DialogComponents>
+        );
+    },
+};
+
 export const DestructiveCommandFocusesDismiss: Story = {
     play: openCommandDialog,
     render: () => {
