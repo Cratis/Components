@@ -426,6 +426,7 @@ export function PivotViewer<TItem extends object>({
                 isOpen={filtersOpen && hasFilters}
                 filterLabel={labels?.filters}
                 searchPlaceholder={labels?.search}
+                searchGroup={labels?.searchGroup}
                 search={search}
                 filterState={filterState}
                 rangeFilterState={rangeFilterState}

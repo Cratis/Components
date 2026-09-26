@@ -1,12 +1,14 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-/** Overrides for PivotViewer toolbar text and its loading status. Omitted fields retain their English defaults. */
+/** Overrides for PivotViewer toolbar text, filter search labels, and loading status. Omitted fields retain their English defaults. */
 export interface PivotViewerLabels {
     /** Filter button title and filter panel accessible name; defaults to "Filters". */
     filters?: string;
-    /** Filter panel search placeholder and accessible name; defaults to "Search…". */
+    /** Filter panel search placeholder and accessible name, and each option-group search placeholder; defaults to "Search…". */
     search?: string;
+    /** Accessible name of a filter group's option search; defaults to (label) => `Search ${label}`. */
+    searchGroup?: (groupLabel: string) => string;
     /** Dimension selector label; defaults to "Sort by". */
     sortBy?: string;
     /** Collection view button text; defaults to "Collection". */
