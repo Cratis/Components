@@ -62,10 +62,10 @@ Render it under [`CratisComponentsProvider`](cratis-components-provider.md) so t
 | `meta.source` | `'user'` for every change the component emits. |
 | `meta.nativeEvent` | Present for the Today and Clear actions; absent for segment and calendar changes. |
 | Segment editing | `onChange` fires when the segments form a complete date. Clearing one segment leaves the last complete value in place without a callback; clearing every segment emits `null`. |
-| Today action | Emits today's date (local midnight, also in date-time mode). Disabled and inert when today falls outside `minDate`/`maxDate`. |
-| Clear action | Emits `null`. |
+| Today action | Emits today's date (local midnight, also in date-time mode). Disabled and inert when today falls outside `minDate`/`maxDate`, or the picker is disabled or read-only. |
+| Clear action | Emits `null`. Disabled and inert when the picker is disabled or read-only. |
 | Programmatic changes | Changing `value` from outside never calls `onChange`. |
-| Disabled or read-only | Segments, trigger and calendar cannot change the value. |
+| Disabled or read-only | Segments cannot change the value. The trigger and Today/Clear actions are disabled; read-only segments remain focusable, but cannot open the calendar with `Alt+ArrowDown`/`Alt+ArrowUp`. |
 
 The Today and Clear buttons call `onChange` directly; they do not close the popover themselves.
 
@@ -77,8 +77,8 @@ The Today and Clear buttons call `onChange` directly; they do not close the popo
 | `onChange` | `ChangeHandler<Date \| null>` | Required | Receives the next date or `null` and optional change metadata. |
 | `onBlur` | `FocusEventHandler<HTMLElement>` | — | Attached to the root wrapper. React focus events bubble, so it also fires when focus moves between segments or into the calendar, not only when focus leaves the picker. |
 | `invalid` | `boolean` | `false` | Marks the picker invalid. See [Validation and states](#validation-and-states). |
-| `disabled` | `boolean` | `false` | Disables the segments, trigger and calendar. |
-| `readOnly` | `boolean` | `false` | Keeps segments focusable but prevents editing; the calendar trigger is disabled. |
+| `disabled` | `boolean` | `false` | Disables the segments, trigger, calendar and Today/Clear actions. |
+| `readOnly` | `boolean` | `false` | Keeps segments focusable but prevents editing; disables the trigger and Today/Clear actions and prevents opening the calendar with `Alt+ArrowDown`/`Alt+ArrowUp`. |
 | `id` | `string` | — | DOM id of the segmented-input group. |
 | `placeholder` | `string` | — | Text shown while the value is `null` and the field is not focused. Also used as the accessible name when `aria-label` is absent. |
 | `showIcon` | `boolean` | `true` | Renders the calendar trigger button. Without it, the calendar is still reachable with `Alt+ArrowDown`. |
@@ -159,7 +159,7 @@ The segmented input, calendar and popover are React Aria's `DatePicker` parts. T
 | `Home` / `End` | Segment | Set the segment to its minimum or maximum. |
 | Digits | Segment | Type the segment value. |
 | `Backspace` / `Delete` | Segment | Remove the last digit, then clear the segment. |
-| `Alt+ArrowDown` / `Alt+ArrowUp` | Segmented input | Open the calendar popover. |
+| `Alt+ArrowDown` / `Alt+ArrowUp` | Segmented input | Open the calendar popover unless the picker is read-only. |
 
 Inside the popover, the calendar grid follows React Aria's calendar keyboard model; see the [React Aria DatePicker documentation](https://react-spectrum.adobe.com/react-aria/DatePicker.html).
 
@@ -186,7 +186,7 @@ The component does not display an error message. Render one yourself and connect
 
 Out-of-range values are not flagged for you. A date typed or stepped past `minDate`/`maxDate` reaches `onChange` and does not set `data-invalid`. Check the range in your own code and set `invalid` from the result.
 
-`disabled` sets `data-disabled` on the root, group, input, segments and trigger, and disables the trigger. `readOnly` sets `data-readonly` on the same parts and disables the trigger (which then also carries `data-disabled`), but leaves the root without `data-disabled`.
+`disabled` sets `data-disabled` on the root, group, input, segments, trigger and Today/Clear actions, and disables the trigger and actions. `readOnly` sets `data-readonly` on the root, group, input, segments and trigger and disables the trigger (which then also carries `data-disabled`) and Today/Clear actions (which also carry `data-disabled`), but leaves the root without `data-disabled`.
 
 ## Stable parts
 
@@ -211,7 +211,7 @@ Each part below carries `data-cratis-part` with the name in the DOM part column.
 | `cell` | `cell` | One day cell | `selected` |
 | `buttonBar` | `button-bar` | Today/Clear row | none |
 | `today` | `today` | Today action | `disabled` |
-| `clear` | `clear` | Clear action | none |
+| `clear` | `clear` | Clear action | `disabled` |
 
 The Cratis state attributes are present only while the state applies and are never rendered as `"false"`. React Aria adds its own attributes on some parts, such as `data-focused` and `data-placeholder` on segments and `data-disabled` or `data-outside-month` on cells; the built-in stylesheet uses them, but they are not part of the Cratis state contract.
 
