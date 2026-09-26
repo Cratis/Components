@@ -127,6 +127,21 @@ for (const command of commands) {
             expect(readFileSync(file, 'utf8')).toBe(once);
         });
 
+        if (command.name === 'change-handler') {
+            it('reports CommandForm field handlers without rewriting in check and apply modes', () => {
+                const file = path.join(dir, 'Field.tsx');
+                const source = "import { InputTextField } from '@cratis/components/CommandForm';\nexport const x=<InputTextField onChange={(event)=>consume(event.target.value)}/>;\n";
+                writeFileSync(file, source);
+
+                for (const args of [['--check', file], [file], [file]]) {
+                    const result = run(args);
+                    expect(result.status).toBe(1);
+                    expect(result.stderr).toContain('onFieldChange');
+                    expect(readFileSync(file, 'utf8')).toBe(source);
+                }
+            });
+        }
+
         it('honors --package', () => {
             const file = path.join(dir, 'Custom.tsx');
             writeFileSync(
