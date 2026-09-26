@@ -118,7 +118,6 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
         }
 
         await onSuccess?.(result.response as TResponse);
-        if (!submission.isMounted()) return false;
         if (onConfirm) {
             const closeResult = await onConfirm();
             return closeResult === true;

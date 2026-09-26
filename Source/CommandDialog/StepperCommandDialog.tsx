@@ -296,7 +296,7 @@ const StepperCommandDialogWrapper = <TCommand extends object, TResponse = object
         }
 
         await onSuccess?.(result.response as TResponse);
-        if (submission.isMounted()) await handleClose(DialogResult.Ok);
+        await handleClose(DialogResult.Ok);
     };
 
     const footer = (

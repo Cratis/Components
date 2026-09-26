@@ -17,5 +17,5 @@ describe('when a successful execute settles after unmount', () => {
         await act(async () => resolveExecution({ isSuccess: true, response: {} }));
     });
     it('should call the success callback', () => { onSuccess.mock.calls.length.should.equal(1); });
-    it('should not close after unmount', () => { onConfirm.mock.calls.length.should.equal(0); });
+    it('should call onConfirm after unmount', () => { onConfirm.mock.calls.length.should.equal(1); });
 });
