@@ -16,67 +16,87 @@ const filters: FilterDefinition[] = [
     { key: 'second', label: 'Second', searchable: true, autoFocus: true, options: [{ key: 'b', label: 'B', value: 'b' }] },
 ];
 
-describe('when a group requests search auto focus', () => {
-    let container: HTMLDivElement;
-    let root: Root;
-    const anchorRef = createRef<HTMLButtonElement>();
-    const render = async (expandedFilterKey: string | null, definitions = filters) => {
-        await act(async () => root.render(
-            <FilterPanel isOpen filters={definitions} filterValues={{}} rangeValues={{}}
-                expandedFilterKey={expandedFilterKey} anchorRef={anchorRef}
-                onClose={() => undefined} onFilterToggle={() => undefined}
-                onFilterClear={() => undefined} onRangeChange={() => undefined}
-                onExpandedFilterChange={() => undefined} />,
-        ));
-    };
+let container: HTMLDivElement;
+let root: Root;
+const anchorRef = createRef<HTMLButtonElement>();
+const render = async (expandedFilterKey: string | null, definitions = filters) => {
+    await act(async () => root.render(
+        <FilterPanel isOpen filters={definitions} filterValues={{}} rangeValues={{}}
+            expandedFilterKey={expandedFilterKey} anchorRef={anchorRef}
+            onClose={() => undefined} onFilterToggle={() => undefined}
+            onFilterClear={() => undefined} onRangeChange={() => undefined}
+            onExpandedFilterChange={() => undefined} />,
+    ));
+};
 
-    beforeEach(() => {
-        (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-        container = document.createElement('div');
-        document.body.append(container);
-        root = createRoot(container);
-    });
+beforeEach(() => {
+    (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+});
 
-    afterEach(async () => {
-        await act(async () => root.unmount());
-        container.remove();
-    });
+afterEach(async () => {
+    await act(async () => root.unmount());
+    container.remove();
+});
 
-    it('should focus the expanded group search on open', async () => {
+describe('when opening with an expanded autoFocus group', () => {
+    beforeEach(async () => {
         await render('second');
+    });
+
+    it('should focus the expanded group search', () => {
         expect(document.activeElement).to.equal(document.querySelectorAll('.pv-filter-group-search input')[1]);
     });
+});
 
-    it('should not focus a collapsed group search even though it remains mounted', async () => {
+describe('when opening with a collapsed autoFocus group', () => {
+    beforeEach(async () => {
         await render('first');
+    });
+
+    it('should leave the collapsed group search mounted without focusing it', () => {
         expect(document.querySelectorAll('.pv-filter-group-search input')).to.have.length(2);
         expect(document.activeElement).not.to.equal(document.querySelectorAll('.pv-filter-group-search input')[1]);
     });
 
-    it('should focus the group search on expansion', async () => {
+    it('should focus the panel instead of a group without autoFocus', () => {
+        expect(document.activeElement).to.equal(document.querySelector('[role="dialog"]'));
+    });
+});
+
+describe('when expanding an autoFocus group', () => {
+    beforeEach(async () => {
         await render('first');
         await render('second');
+    });
+
+    it('should focus the newly expanded group search', () => {
         expect(document.activeElement).to.equal(document.querySelectorAll('.pv-filter-group-search input')[1]);
     });
+});
 
-    it('should not focus the search of a group without autoFocus', async () => {
-        await render('first');
-        expect(document.activeElement).not.to.equal(document.querySelectorAll('.pv-filter-group-search input')[0]);
+describe('when overflow measurement adds search to an expanded autoFocus group', () => {
+    let restoreMeasurement: () => void;
+    beforeEach(async () => {
+        restoreMeasurement = stubOptionListLayoutMeasurement(600, '224px');
+        await render('second', [{ ...filters[1], searchable: undefined }]);
     });
+    afterEach(() => restoreMeasurement());
 
-    it('should focus its search after overflow measurement adds the input', async () => {
-        const restoreMeasurement = stubOptionListLayoutMeasurement(600, '224px');
-        try {
-            await render('second', [{ ...filters[1], searchable: undefined }]);
-            expect(document.activeElement).to.equal(document.querySelector('.pv-filter-group-search input'));
-        } finally {
-            restoreMeasurement();
-        }
+    it('should focus the new search', () => {
+        expect(document.activeElement).to.equal(document.querySelector('.pv-filter-group-search input'));
     });
+});
 
-    it('should not focus a group that has no search input', async () => {
+describe('when an expanded autoFocus group has no search input', () => {
+    beforeEach(async () => {
         await render('second', [{ ...filters[1], searchable: false }]);
-        expect(document.activeElement).not.to.equal(document.querySelector('.pv-filter-toggle'));
+    });
+
+    it('should focus the panel instead of an absent search', () => {
+        expect(document.activeElement).to.equal(document.querySelector('[role="dialog"]'));
         expect(document.querySelector('.pv-filter-group-search input')).to.equal(null);
     });
 });
