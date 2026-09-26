@@ -40,18 +40,29 @@ describe.each([
     });
 });
 
-describe.each([ChatStatus.Loading, ChatStatus.Failed])(
-    'when the conversation is %s with messages', (status) => {
-        beforeEach(async () => {
-            await mount(status, [message]);
-        });
+describe('when the conversation is loading with messages', () => {
+    beforeEach(async () => {
+        await mount(ChatStatus.Loading, [message]);
+    });
 
-        it('should keep existing messages visible', () => {
-            conversation.container.querySelector('.cratis-chat-message__body')!.textContent!.should.equal('Example message');
-            (conversation.container.querySelector('.cratis-chat-conversation__empty') === null).should.be.true;
-        });
-    },
-);
+    it('should keep existing messages visible without an alert', () => {
+        conversation.container.querySelector('.cratis-chat-message__body')!.textContent!.should.equal('Example message');
+        (conversation.container.querySelector('.cratis-chat-conversation__empty') === null).should.be.true;
+    });
+});
+
+describe('when the conversation fails with messages', () => {
+    beforeEach(async () => {
+        await mount(ChatStatus.Failed, [message]);
+    });
+
+    it('should show an alert above the existing messages', () => {
+        const alert = conversation.container.querySelector('[role="alert"]')!;
+        alert.textContent!.should.equal('Could not load messages.');
+        conversation.container.querySelector('.cratis-chat-message__body')!.textContent!.should.equal('Example message');
+        (alert.compareDocumentPosition(conversation.container.querySelector('.cratis-chat-message__body')!) & Node.DOCUMENT_POSITION_FOLLOWING).should.not.equal(0);
+    });
+});
 
 describe.each([
     [ChatStatus.Loading, 'status', { loading: 'Fetching messages' }, 'Fetching messages'],

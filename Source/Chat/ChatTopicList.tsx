@@ -42,7 +42,7 @@ export interface ChatTopicListLabels {
     /** Shown while loading without topics. Defaults to `'Loading topics…'`. */
     loading?: string;
 
-    /** Shown when loading topics fails without existing topics. Defaults to `'Could not load topics.'`. */
+    /** Shown when loading topics fails, alongside any existing topics. Defaults to `'Could not load topics.'`. */
     failed?: string;
 
     /** Shown when access is denied without existing topics. Defaults to `'You are not authorized to view these topics.'`. */
@@ -154,7 +154,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                     <span>{labels?.newTopic ?? 'New topic'}</span>
                 </button>
             )}
-            {(topics.length === 0 || status === ChatStatus.Unauthorized) && (
+            {(topics.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized) && (
                 <p className='cratis-chat-topics__empty'>
                     {status === ChatStatus.Loading ? (
                         <span role='status'>{labels?.loading ?? 'Loading topics…'}</span>

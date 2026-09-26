@@ -43,7 +43,7 @@ export interface ChatConversationLabels {
     /** Shown while loading without messages. Defaults to `'Loading messages…'`. */
     loading?: string;
 
-    /** Shown when loading messages fails without existing messages. Defaults to `'Could not load messages.'`. */
+    /** Shown when loading messages fails, alongside any existing messages. Defaults to `'Could not load messages.'`. */
     failed?: string;
 
     /** Shown when access is denied without existing messages. Defaults to `'You are not authorized to view these messages.'`. */
@@ -270,7 +270,7 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
     return (
         <div className={`cratis-chat-conversation${className ? ` ${className}` : ''}`}>
             <div className='cratis-chat-conversation__messages' aria-busy={status === ChatStatus.Loading && messages.length > 0 || undefined}>
-                {(messages.length === 0 || status === ChatStatus.Unauthorized) && (
+                {(messages.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized) && (
                     <p className='cratis-chat-conversation__empty'>
                         {status === ChatStatus.Loading ? (
                             <span role='status'>{labels?.loading ?? 'Loading messages…'}</span>

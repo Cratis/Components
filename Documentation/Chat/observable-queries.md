@@ -47,7 +47,7 @@ export const LiveChat = () => {
 
 ## Loading and failed queries
 
-The topics and messages queries resolve their statuses independently. Authorization denial takes precedence over failure or validation errors; failure takes precedence over loading. When a query is performing with no data, its list or conversation shows a loading message. When it completes successfully with an empty result, the ordinary empty-state text returns. Existing topics and messages stay visible during a refetch or after a failure, rather than disappearing behind a status message. An unauthorized result hides previously loaded content.
+The topics and messages queries resolve their statuses independently. Authorization denial takes precedence over failure or validation errors; failure takes precedence over loading. When a query is performing with no data, its list or conversation shows a loading message. When it completes successfully with an empty result, the ordinary empty-state text returns. Existing topics and messages stay visible during a refetch. After a failure, a failure alert appears above the existing topics or messages, which remain visible. An unauthorized result replaces previously loaded content with an access-denied alert.
 
 Set `labels.topicList.loading`, `labels.topicList.failed`, and `labels.topicList.unauthorized` for the topic list; set the corresponding `labels.conversation` keys for messages. The English defaults are “Loading topics…”, “Could not load topics.”, and “You are not authorized to view these topics.” for the list, and “Loading messages…”, “Could not load messages.”, and “You are not authorized to view these messages.” for the conversation. Chat uses `labels`, not the provider's `messages.dataTable` settings.
 

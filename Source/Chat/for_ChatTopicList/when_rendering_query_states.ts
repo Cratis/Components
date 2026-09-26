@@ -35,18 +35,29 @@ describe.each([
     });
 });
 
-describe.each([ChatStatus.Loading, ChatStatus.Failed])(
-    'when the topic list is %s with topics', (status) => {
-        beforeEach(async () => {
-            await mount(status, [topic]);
-        });
+describe('when the topic list is loading with topics', () => {
+    beforeEach(async () => {
+        await mount(ChatStatus.Loading, [topic]);
+    });
 
-        it('should keep existing topics visible', () => {
-            list.container.querySelector('.cratis-chat-topics__topic')!.textContent!.should.contain('Example topic');
-            (list.container.querySelector('.cratis-chat-topics__empty') === null).should.be.true;
-        });
-    },
-);
+    it('should keep existing topics visible without an alert', () => {
+        list.container.querySelector('.cratis-chat-topics__topic')!.textContent!.should.contain('Example topic');
+        (list.container.querySelector('.cratis-chat-topics__empty') === null).should.be.true;
+    });
+});
+
+describe('when the topic list fails with topics', () => {
+    beforeEach(async () => {
+        await mount(ChatStatus.Failed, [topic]);
+    });
+
+    it('should show an alert above the existing topics', () => {
+        const alert = list.container.querySelector('[role="alert"]')!;
+        alert.textContent!.should.equal('Could not load topics.');
+        list.container.querySelector('.cratis-chat-topics__topic')!.textContent!.should.contain('Example topic');
+        (alert.compareDocumentPosition(list.container.querySelector('.cratis-chat-topics__topic')!) & Node.DOCUMENT_POSITION_FOLLOWING).should.not.equal(0);
+    });
+});
 
 describe.each([
     [ChatStatus.Loading, 'status', { loading: 'Fetching topics' }, 'Fetching topics'],

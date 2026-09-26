@@ -7,7 +7,7 @@ export enum ChatStatus {
     Ready = 'ready',
     /** Shows a loading message without data, or retains existing content during a refetch. */
     Loading = 'loading',
-    /** Shows a failure message without data, or retains existing content after a failure. */
+    /** Shows a failure alert, alongside any existing topics or messages kept after a failure. */
     Failed = 'failed',
     /** Shows an access-denied message instead of existing content. */
     Unauthorized = 'unauthorized',
