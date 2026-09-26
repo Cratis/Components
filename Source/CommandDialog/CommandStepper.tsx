@@ -2,14 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import React, { useState, type ButtonHTMLAttributes, type HTMLAttributes } from 'react';
-import type { ICommandResult } from '@cratis/arc/commands';
 import {
     CommandForm,
     useCommandFormContext,
     useCommandInstance,
     type CommandFormProps,
 } from '@cratis/arc.react/commands';
-import { applyBeforeExecute, type BeforeExecuteCallback } from './applyBeforeExecute';
+import type { BeforeExecuteCallback } from './applyBeforeExecute';
+import type { ConfirmBeforeExecute } from './confirmBeforeExecute';
+import { useCommandExecution } from './useCommandExecution';
 import {
     CommandStepperContent,
     type CommandStepperContentProps,
@@ -122,6 +123,8 @@ export interface CommandStepperProps<TCommand extends object, TResponse = object
      * transforms that do not affect validity (for example a generated id).
      */
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+    /** Ask before executing the transformed command values; only `true` executes. */
+    confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
     /** StepperPanel children defining each wizard step. */
     children?: React.ReactNode;
 }
@@ -144,6 +147,7 @@ type CommandStepperWrapperProps<TCommand extends object, TResponse = object> = O
     onException?: CommandFormProps<TCommand, TResponse>['onException'];
     onUnauthorized?: CommandFormProps<TCommand, TResponse>['onUnauthorized'];
     onBeforeExecute?: BeforeExecuteCallback<TCommand>;
+    confirmBeforeExecute?: ConfirmBeforeExecute<TCommand>;
 };
 
 const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
@@ -170,6 +174,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     onException,
     onUnauthorized,
     onBeforeExecute,
+    confirmBeforeExecute,
 }: CommandStepperWrapperProps<TCommand, TResponse>) => {
     const {
         getFieldError,
@@ -180,27 +185,13 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
     const commandInstance = useCommandInstance<TCommand>();
     const [activeStep, setActiveStep] = useState(0);
     const [visitedSteps, setVisitedSteps] = useState<Set<number>>(new Set([0]));
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const submission = useCommandExecution<TCommand, TResponse>(
+        commandInstance, setCommandValues, onBeforeExecute, confirmBeforeExecute, onException,
+    );
 
     const handleSubmit = async () => {
-        setIsSubmitting(true);
-        let result: ICommandResult<TResponse>;
-
-        try {
-            if (onBeforeExecute) {
-                const applied = applyBeforeExecute(onBeforeExecute, commandInstance);
-                setCommandValues(applied instanceof Promise ? await applied : applied);
-            }
-
-            // SAFETY: Arc command instances expose execute at runtime; the wrapper's public type omits it.
-            result = await (
-                commandInstance as unknown as {
-                    execute: () => Promise<ICommandResult<TResponse>>;
-                }
-            ).execute();
-        } finally {
-            setIsSubmitting(false);
-        }
+        const result = await submission.run();
+        if (!result) return;
 
         if (!result.isSuccess) {
             await onFailed?.(result);
@@ -211,7 +202,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             if (!result.isValid) {
                 await onValidationFailure?.(result.validationResults);
             }
-            setCommandResult(result);
+            if (submission.isMounted()) setCommandResult(result);
             return;
         }
 
@@ -232,7 +223,7 @@ const CommandStepperWrapper = <TCommand extends object, TResponse = object>({
             previousLabel={previousLabel}
             okLabel={okLabel}
             isBusy={isBusy}
-            isSubmitting={isSubmitting}
+            isSubmitting={submission.isSubmitting}
             isSubmitDisabled={!isCommandFormValid}
             onSubmit={handleSubmit}
             linear={linear}
@@ -332,6 +323,7 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
         ptOptions,
         unstyled,
         onBeforeExecute,
+        confirmBeforeExecute,
         ...commandFormProps
     } = props;
 
@@ -360,6 +352,7 @@ export const CommandStepper = <TCommand extends object = object, TResponse = obj
                 onException={props.onException}
                 onUnauthorized={props.onUnauthorized}
                 onBeforeExecute={onBeforeExecute}
+                confirmBeforeExecute={confirmBeforeExecute}
             >
                 {children}
             </CommandStepperWrapper>

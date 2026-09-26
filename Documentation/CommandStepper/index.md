@@ -62,6 +62,7 @@ export const ProjectWizard = () => (
   - `onException`: Callback invoked with the exception messages and stack trace when the result has exceptions
   - `onUnauthorized`: Callback invoked when the user is not authorized to execute the command
 - `onBeforeExecute`: Transform command values before execution — it must **return** the values to run with, and it runs only on submit, so it can never satisfy required-field validation (seed those through `initialValues`). Submit turns busy before the transform runs, so an async transform cannot be submitted twice
+- `confirmBeforeExecute(values)`: Optional sync or async approval after validation and `onBeforeExecute`. Receives the transformed values; return `false` to skip execution and remain on the last step. A rejected guard calls `onException`, not `onFailed`, and leaves Submit available to retry
 - `linear` (default `true`), `orientation` (`'horizontal'` default / `'vertical'`), `headerPosition` (`'top'` default / `'bottom'`), `start`, `end`, and `pt`: the active `StepperCustomizationProps` surface. It maps onto stable `root`, `list`, `step`, `header`, `number`, `title`, `separator`, `panels`, and `panel` parts.
 - `onChangeStep`: Called once after each successful move to a different step through Previous, Next, or a clickable header. Receives `{ index }`, with a zero-based index. Blocked moves and clicks on the current header do not call it.
 - `ptOptions` and `unstyled`: retained temporarily for source compatibility; ignored because Cratis part attributes always merge and styling is CSS-owned.
@@ -77,9 +78,39 @@ Conditional steps written as `{condition && <StepperPanel/>}` are counted correc
 - `linear` (the default) makes other step headers unclickable; use Previous and Next to navigate. In non-linear mode, clickable headers also cannot advance past a current step showing an error. Neither mode requires a step to be complete before Next when no errors are shown.
 - The headers form an ordered list of buttons, not ARIA tabs. Each step panel is labelled by its header unless you pass `pt.header.id`. In that case, the headers keep your id and the panels keep their text labels instead of referencing a shared header id. The current header has `aria-current="step"`.
 - On the last step Submit is always rendered, but it is disabled until the command passes client validation and no step shows an error. (`StepperCommandDialog` hides its Submit button instead.)
-- While the command runs, Next and Submit are disabled and Submit shows a spinner. `isBusy` disables Previous, Next, and Submit for your own long-running work.
+- While the transform, confirmation, or command runs, Next and Submit are disabled and Submit shows a spinner. `isBusy` disables Previous, Next, and Submit for your own long-running work.
 - On failure the stepper stays on the last step, and server validation messages appear on their fields and turn their steps red.
 - On success nothing else happens: the stepper keeps its values and stays on the last step. Navigate away or reset the surrounding view in `onSuccess`.
+
+## Confirm before submitting
+
+The same `confirmBeforeExecute` callback used by [`CommandDialog`](../CommandDialog/index.md#confirm-before-executing) works on the inline stepper. Wrap the page in `DialogComponents` and call `useConfirmationDialog` from a child of that provider:
+
+```tsx
+import { DialogButtons, DialogComponents, DialogResult, useConfirmationDialog } from '@cratis/arc.react/dialogs';
+import { CommandStepper, StepperPanel } from '@cratis/components/CommandDialog';
+import { InputTextField } from '@cratis/components/CommandForm/fields';
+import { ConfirmationDialog } from '@cratis/components/Dialogs';
+import { CreateProject } from './CreateProject';
+
+function ProjectSteps() {
+    const [confirm] = useConfirmationDialog('Create project?', 'Continue?', DialogButtons.YesNo);
+    return (
+        <CommandStepper<CreateProject> command={CreateProject}
+            confirmBeforeExecute={async (_values) => (await confirm()) === DialogResult.Yes}>
+            <StepperPanel header='Details'>
+                <InputTextField<CreateProject> value={(command) => command.name} title='Project name' />
+            </StepperPanel>
+        </CommandStepper>
+    );
+}
+
+export function ProjectWizardWithConfirmation() {
+    return <DialogComponents confirmation={ConfirmationDialog}><ProjectSteps /></DialogComponents>;
+}
+```
+
+No keeps the stepper on the last step with its values intact. The type-checked dialog example is `WithPreExecutionConfirmation` in `Source/CommandDialog/CommandDialog.stories.tsx`.
 
 ## Validation Indicators
 
