@@ -63,7 +63,7 @@ Render it under [`CratisComponentsProvider`](cratis-components-provider.md) so t
 | `meta.nativeEvent` | Present for the Today and Clear actions; absent for segment and calendar changes. |
 | Segment editing | `onChange` fires when the segments form a complete date. Clearing one segment leaves the last complete value in place without a callback; clearing every segment emits `null`. |
 | Today action | Emits today's date (local midnight, also in date-time mode). Disabled and inert when today falls outside `minDate`/`maxDate`, or the picker is disabled or read-only. |
-| Clear action | Emits `null`. Disabled and inert when the picker is disabled or read-only. |
+| Clear action | Emits `null`. Disabled and inert when the picker is disabled or read-only, or when `pt.clear.disabled` is set. |
 | Programmatic changes | Changing `value` from outside never calls `onChange`. |
 | Disabled or read-only | Segments cannot change the value. The trigger and Today/Clear actions are disabled; read-only segments remain focusable, but cannot open the calendar with `Alt+ArrowDown`/`Alt+ArrowUp`. |
 
