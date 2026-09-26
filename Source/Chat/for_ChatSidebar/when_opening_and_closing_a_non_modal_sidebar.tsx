@@ -23,6 +23,7 @@ describe('when opening and closing a non-modal sidebar', () => {
     let root: Root;
 
     beforeEach(async () => {
+        vi.useFakeTimers();
         (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
         container = document.createElement('div');
         document.body.append(container);
@@ -33,6 +34,7 @@ describe('when opening and closing a non-modal sidebar', () => {
     afterEach(async () => {
         await act(async () => root.unmount());
         container.remove();
+        vi.useRealTimers();
     });
 
     it('should enter after mounting', () => {
@@ -91,13 +93,22 @@ describe('when opening and closing a non-modal sidebar', () => {
 
         describe('and the exit animation does not fire', () => {
             beforeEach(async () => {
-                await act(async () => {
-                    await new Promise((resolve) => setTimeout(resolve, 350));
-                });
+                await act(async () => vi.advanceTimersByTime(200));
             });
 
-            it('should unmount after the fallback timeout', () => {
-                (document.querySelector('.cratis-chat-sidebar') === null).should.equal(true);
+            it('should remain mounted and exiting before the fallback timeout', () => {
+                document.querySelector('.cratis-chat-sidebar')!
+                    .hasAttribute('data-exiting').should.equal(true);
+            });
+
+            describe('and the fallback timeout elapses', () => {
+                beforeEach(async () => {
+                    await act(async () => vi.advanceTimersByTime(100));
+                });
+
+                it('should unmount the panel', () => {
+                    (document.querySelector('.cratis-chat-sidebar') === null).should.equal(true);
+                });
             });
         });
     });
