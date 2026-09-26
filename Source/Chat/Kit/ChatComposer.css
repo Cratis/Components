@@ -55,7 +55,7 @@
         color 0.12s;
 }
 
-.chat-composer__emoji-toggle:hover {
+.chat-composer__emoji-toggle:hover:not(:disabled) {
     background: var(--cratis-surface-hover);
     color: var(--cratis-text-color);
 }
@@ -81,7 +81,9 @@
     background: var(--cratis-primary-600);
 }
 
-.chat-composer__send:disabled {
+.chat-composer__send:disabled,
+.chat-composer__emoji-toggle:disabled,
+.chat-composer__input:disabled {
     opacity: 0.35;
     cursor: default;
 }

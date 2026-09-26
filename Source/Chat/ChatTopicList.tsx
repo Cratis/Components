@@ -66,7 +66,7 @@ export interface ChatTopicListProps<TTopic extends ChatTopic = ChatTopic> {
      */
     topics: TTopic[];
 
-    /** Query display state. Defaults to {@link ChatStatus.Ready}; existing topics remain visible on loading or failure. */
+    /** Query display state. Defaults to {@link ChatStatus.Ready}; existing topics remain visible on loading or failure, and unauthorized disables starting a topic. */
     status?: ChatStatus;
 
     /**
@@ -148,6 +148,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                 <button
                     type='button'
                     className='cratis-chat-topics__start'
+                    disabled={status === ChatStatus.Unauthorized}
                     onClick={onStart}
                 >
                     <PlusIcon />

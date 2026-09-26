@@ -7,7 +7,7 @@ import { act, createElement } from 'react';
 import { ChatStatus } from '../ChatStatus';
 import { ChatConversation } from '../ChatConversation';
 import type { ChatMessage } from '../ChatMessage';
-import { render, unmount, type ConversationInTheDom } from './given/a_conversation_in_the_dom';
+import { render, typeInto, unmount, type ConversationInTheDom } from './given/a_conversation_in_the_dom';
 
 const message: ChatMessage = {
     id: 'message-1', topicId: 'topic-1', authorId: 'sample-user',
@@ -104,6 +104,24 @@ describe('when access to previously loaded messages is denied', () => {
     it('should show the access-denied alert without exposing previous messages', () => {
         conversation.container.querySelector('[role="alert"]')!.textContent!.should.equal('You are not authorized to view these messages.');
         (conversation.container.querySelector('.cratis-chat-message__body') === null).should.be.true;
+    });
+});
+
+describe('when access is denied after a message draft was started', () => {
+    beforeEach(async () => {
+        await mount(ChatStatus.Ready);
+        await typeInto(conversation.container.querySelector('textarea')!, 'Example draft');
+        await act(async () => {
+            conversation.root.render(createElement(ChatConversation, {
+                messages: [], status: ChatStatus.Unauthorized, onSendMessage: () => undefined,
+            }));
+        });
+    });
+
+    it('should disable the composer input, emoji button and send button', () => {
+        conversation.container.querySelector<HTMLTextAreaElement>('.chat-composer__input')!.disabled.should.be.true;
+        conversation.container.querySelector<HTMLButtonElement>('.chat-composer__emoji-toggle')!.disabled.should.be.true;
+        conversation.container.querySelector<HTMLButtonElement>('.chat-composer__send')!.disabled.should.be.true;
     });
 });
 

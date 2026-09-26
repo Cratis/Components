@@ -102,6 +102,19 @@ describe('when access to previously loaded topics is denied', () => {
     });
 });
 
+describe('when access is denied with a new-topic action', () => {
+    beforeEach(async () => {
+        list = await render(createElement(ChatTopicList, {
+            topics: [topic], status: ChatStatus.Unauthorized,
+            onOpen: () => undefined, onStart: () => undefined,
+        }));
+    });
+
+    it('should disable the new-topic button', () => {
+        list.container.querySelector<HTMLButtonElement>('.cratis-chat-topics__start')!.disabled.should.be.true;
+    });
+});
+
 describe('when topics are refetching', () => {
     beforeEach(async () => {
         await mount(ChatStatus.Loading, [topic]);

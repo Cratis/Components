@@ -116,6 +116,8 @@ If your application owns the queries, import `ChatStatus` from `@cratis/componen
 | `ChatStatus.Failed` | Failure text with an alert | Failure alert above the existing content; topics or messages remain visible |
 | `ChatStatus.Unauthorized` | Access-denied text with an alert | Access-denied alert replaces the content |
 
+While access is denied, the new-topic button and conversation composer are disabled, even if a draft was already started. The close and back buttons remain available.
+
 Override these messages with `labels.topicList.loading`, `.failed`, or `.unauthorized` for topics, and `labels.conversation.loading`, `.failed`, or `.unauthorized` for messages. Unset fields use English defaults; the existing `empty` labels still apply to successful empty results. Chat labels do not come from `CratisComponentsProvider.messages`. The [observable-query wrapper](./observable-queries.md#loading-and-failed-queries) resolves statuses for you.
 
 ## Focus and dismissal

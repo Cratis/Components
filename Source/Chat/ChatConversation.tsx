@@ -82,7 +82,7 @@ export interface ChatConversationProps<TMessage extends ChatMessage = ChatMessag
      */
     messages: TMessage[];
 
-    /** Query display state. Defaults to {@link ChatStatus.Ready}; existing messages remain visible on loading or failure. */
+    /** Query display state. Defaults to {@link ChatStatus.Ready}; existing messages remain visible on loading or failure, and unauthorized disables the composer. */
     status?: ChatStatus;
 
     /**
@@ -405,6 +405,7 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                 mentionCandidates={mentionCandidates}
                 resolveMentionCandidates={resolveMentionCandidates}
                 onSend={send}
+                disabled={status === ChatStatus.Unauthorized}
                 autoFocus={autoFocus}
                 buildAvatarUrl={buildAvatarUrl}
                 labels={labels?.composer}
