@@ -5,23 +5,23 @@ import React, { useState } from 'react';
 import type { Constructor } from '@cratis/fundamentals';
 import type { IObservableQueryFor } from '@cratis/arc/queries';
 import { useObservableQuery } from '@cratis/arc.react/queries';
-import { DataTableStatus } from '../DataTables/DataTableStatus';
-import { resolveDataTableStatus } from '../DataTables/resolveDataTableStatus';
+import { QueryStatus } from '../QueryStatus/QueryStatus';
+import { resolveQueryStatus } from '../QueryStatus/resolveQueryStatus';
 import { ChatSidebar, type ChatSidebarProps } from './ChatSidebar';
 import type { ChatIdentifier } from './ChatIdentifier';
 import type { ChatMessage } from './ChatMessage';
 import type { ChatTopic } from './ChatTopic';
 import { ChatStatus } from './ChatStatus';
 
-const chatStatusByTableStatus: Record<DataTableStatus, ChatStatus> = {
-    [DataTableStatus.Ready]: ChatStatus.Ready,
-    [DataTableStatus.Loading]: ChatStatus.Loading,
-    [DataTableStatus.Failed]: ChatStatus.Failed,
-    [DataTableStatus.Unauthorized]: ChatStatus.Unauthorized,
+const chatStatusByQueryStatus: Record<QueryStatus, ChatStatus> = {
+    [QueryStatus.Ready]: ChatStatus.Ready,
+    [QueryStatus.Loading]: ChatStatus.Loading,
+    [QueryStatus.Failed]: ChatStatus.Failed,
+    [QueryStatus.Unauthorized]: ChatStatus.Unauthorized,
 };
 
-const resolveChatStatus = (result: Parameters<typeof resolveDataTableStatus>[0]): ChatStatus =>
-    chatStatusByTableStatus[resolveDataTableStatus(result)];
+const resolveChatStatus = (result: Parameters<typeof resolveQueryStatus>[0]): ChatStatus =>
+    chatStatusByQueryStatus[resolveQueryStatus(result)];
 
 /**
  * Props for {@link ChatSidebarForObservableQueries}.
