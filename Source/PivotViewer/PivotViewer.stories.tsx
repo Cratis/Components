@@ -387,7 +387,18 @@ export const Default: Story = {
 /** Override the toolbar copy and count for the collection being viewed. */
 export const ToolbarLabels: Story = {
     render: () => (
-        <div style={{ height: 600 }}>
+        <div
+            className='storybook-wrapper'
+            style={{
+                height: 'calc(100vh - 2rem)',
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                alignItems: 'stretch',
+                justifyContent: 'flex-start',
+            }}
+        >
             <PivotViewer<Person>
                 data={sampleData}
                 dimensions={[{ key: 'department', label: 'Department', getValue: (item) => item.department }]}
