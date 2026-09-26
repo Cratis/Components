@@ -84,7 +84,7 @@ Conditional steps written as `{condition && <StepperPanel/>}` are counted correc
 
 ## Confirm before submitting
 
-The same `confirmBeforeExecute` callback used by [`CommandDialog`](../CommandDialog/index.md#confirm-before-executing) works on the inline stepper. Fields are disabled while confirmation is pending. If the values change during that time (for example, through `currentValues`), the command is not executed and no result callback runs; confirm again with the new values. Wrap the page in `DialogComponents` and call `useConfirmationDialog` from a child of that provider:
+The same `confirmBeforeExecute` callback used by [`CommandDialog`](../CommandDialog/index.md#confirm-before-executing) works on the inline stepper. Fields are disabled from the moment you submit until the guarded submission settles. If the values change during that time (for example, through `currentValues`), the command is not executed and no result callback runs; confirm again with the new values. Wrap the page in `DialogComponents` and call `useConfirmationDialog` from a child of that provider:
 
 ```tsx
 import { DialogButtons, DialogComponents, DialogResult, useConfirmationDialog } from '@cratis/arc.react/dialogs';

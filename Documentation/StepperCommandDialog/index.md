@@ -167,7 +167,7 @@ Multiple callbacks may fire for the same execution. For example, both `onFailed`
 
 ## Confirm before submitting
 
-Pass `confirmBeforeExecute` when Submit should ask another question before running the command. Fields are disabled while confirmation is pending. If the values change during that time (for example, through `currentValues`), the command is not executed and no result callback runs; confirm again with the new values. Wrap the wizard in `DialogComponents` and use `useConfirmationDialog` from a child of that provider, as shown in the [CommandDialog recipe](../CommandDialog/index.md#confirm-before-executing):
+Pass `confirmBeforeExecute` when Submit should ask another question before running the command. Fields are disabled from the moment you submit until the guarded submission settles. If the values change during that time (for example, through `currentValues`), the command is not executed and no result callback runs; confirm again with the new values. Wrap the wizard in `DialogComponents` and use `useConfirmationDialog` from a child of that provider, as shown in the [CommandDialog recipe](../CommandDialog/index.md#confirm-before-executing):
 
 ```tsx
 import { DialogButtons, DialogComponents, DialogResult, useConfirmationDialog } from '@cratis/arc.react/dialogs';

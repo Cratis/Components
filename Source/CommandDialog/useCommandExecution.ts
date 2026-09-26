@@ -29,9 +29,10 @@ export const useCommandExecution = <TCommand extends object, TResponse>(
                 setCommandValues(values);
             }
             if (confirmBeforeExecute) {
-                const approvedValues = snapshotCommandValues(commandInstance);
+                let approvedValues: Record<string, unknown> = {};
                 let approved = false;
                 try {
+                    approvedValues = snapshotCommandValues(commandInstance);
                     approved = await confirmBeforeExecute(values);
                 } catch (error) {
                     confirmationError = { error };
