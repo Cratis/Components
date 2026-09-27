@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import type { Constructor } from '@cratis/fundamentals';
 import type { IObservableQueryFor, QueryResultWithState } from '@cratis/arc/queries';
 import { useObservableQuery } from '@cratis/arc.react/queries';
@@ -22,6 +22,8 @@ const chatStatusByQueryStatus: Record<QueryStatus, ChatStatus> = {
 
 const resolveChatStatus = (result: Parameters<typeof resolveQueryStatus>[0]): ChatStatus =>
     chatStatusByQueryStatus[resolveQueryStatus(result)];
+
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 const serializeArguments = (args?: object): string => {
     if (!args || Object.keys(args).length === 0) return '';
@@ -46,7 +48,7 @@ const KeyedQuerySubscriber = <
     onResult: (queryKey: string, result: QueryResultWithState<TData>) => void;
 }) => {
     const [result] = useObservableQuery<TData, TQuery, TArguments>(query, args);
-    useEffect(() => { onResult(queryKey, result); }, [queryKey, result, onResult]);
+    useIsomorphicLayoutEffect(() => { onResult(queryKey, result); }, [queryKey, result, onResult]);
     return null;
 };
 
