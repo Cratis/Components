@@ -63,8 +63,7 @@
     --cratis-control-height-small: 2.25rem;
     --cratis-control-height-large: 3.25rem;
     --cratis-disabled-opacity: 0.55;
-    --cratis-focus-color: var(--cratis-primary-color);
-    --cratis-focus-ring: 0 0 0 3px var(--cratis-focus-color);
+    --cratis-focus-ring: 0 0 0 3px #2563eb;
     --cratis-shadow-subtle: 0 1px 2px rgb(0 0 0 / 5%);
     --cratis-shadow-overlay: 0 2px 12px rgb(0 0 0 / 10%);
     --cratis-shadow-dialog: 0 1rem 3rem rgb(0 0 0 / 22%);
@@ -106,8 +105,7 @@
     --cratis-highlight-bg: rgb(96 165 250 / 16%);
     --cratis-highlight-text-color: rgb(255 255 255 / 87%);
     --cratis-maskbg: rgb(0 0 0 / 40%);
-    --cratis-focus-color: #93c5fd;
-    --cratis-focus-ring: 0 0 0 3px var(--cratis-focus-color);
+    --cratis-focus-ring: 0 0 0 3px #93c5fd;
     --cratis-shadow-subtle: none;
     --cratis-shadow-overlay:
         0 2px 4px -1px rgb(0 0 0 / 20%), 0 4px 5px rgb(0 0 0 / 14%),
@@ -152,8 +150,7 @@
         --cratis-highlight-bg: rgb(96 165 250 / 16%);
         --cratis-highlight-text-color: rgb(255 255 255 / 87%);
         --cratis-maskbg: rgb(0 0 0 / 40%);
-        --cratis-focus-color: #93c5fd;
-        --cratis-focus-ring: 0 0 0 3px var(--cratis-focus-color);
+        --cratis-focus-ring: 0 0 0 3px #93c5fd;
         --cratis-shadow-subtle: none;
         --cratis-shadow-overlay:
             0 2px 4px -1px rgb(0 0 0 / 20%), 0 4px 5px rgb(0 0 0 / 14%),
@@ -190,7 +187,6 @@
         --cratis-control-border: CanvasText;
         --cratis-text-color: CanvasText;
         --cratis-text-color-secondary: CanvasText;
-        --cratis-focus-color: Highlight;
-        --cratis-focus-ring: 0 0 0 2px var(--cratis-focus-color);
+        --cratis-focus-ring: 0 0 0 2px Highlight;
     }
 }

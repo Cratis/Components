@@ -43,8 +43,7 @@ body.storybook-product-theme {
     --cratis-danger-background: #f87171;
     --cratis-danger-text: #450a0a;
     --cratis-border-radius: 10px;
-    --cratis-focus-color: #7dd3fc;
-    --cratis-focus-ring: 0 0 0 3px var(--cratis-focus-color);
+    --cratis-focus-ring: 0 0 0 3px #7dd3fc;
     --cratis-maskbg: rgb(2 6 23 / 55%);
     --cratis-shadow-subtle: none;
     --cratis-shadow-overlay: 0 8px 24px rgb(0 0 0 / 35%);

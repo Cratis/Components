@@ -371,11 +371,14 @@
     box-shadow: inset var(--cratis-focus-ring), inset 0 0 0 5px var(--cratis-surface-ground);
 }
 
-/* The canvas is a sibling painted above the viewport shadow. Its inset outline stays
-   fixed at the viewport edge as the Pixi cards scroll beneath it. */
-.pv-viewport:focus-visible ~ canvas {
-    outline: 3px solid var(--cratis-focus-color, var(--cratis-primary-color));
-    outline-offset: -3px;
+/* Paint the public focus ring above the Pixi canvas, fixed to the viewport edge. */
+.pv-groups-wrapper > div:has(> .pv-viewport:focus-visible)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    box-shadow: inset var(--cratis-focus-ring), inset 0 0 0 5px var(--cratis-surface-ground);
 }
 
 @media (forced-colors: active) {
@@ -385,7 +388,9 @@
         outline-offset: -3px;
     }
     .pv-viewport:focus-visible ~ canvas {
-        outline-color: Highlight;
+        /* Shadows are suppressed in forced colors; keep a visible ring over Pixi. */
+        outline: 2px solid Highlight;
+        outline-offset: -3px;
     }
 }
 

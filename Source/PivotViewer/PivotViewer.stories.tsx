@@ -419,13 +419,14 @@ const scrollableData = Array.from({ length: 3 }, (_, row) =>
 
 /** A bounded card area with enough rows to require native keyboard scrolling. */
 export const KeyboardScrollableViewport: Story = {
-    render: () => (
+    render: ({ colors }) => (
         <div className='storybook-wrapper' style={{ width: 600, height: 600, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
             <PivotViewer<Person>
                 data={scrollableData}
                 dimensions={[{ key: 'department', label: 'Department', getValue: (item) => item.department }]}
                 cardRenderer={(item) => ({ title: item.name })}
                 labels={{ viewport: 'Sample cards' }}
+                colors={colors}
             />
             <button type='button'>After the viewer</button>
         </div>

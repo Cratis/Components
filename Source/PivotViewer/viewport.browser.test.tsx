@@ -11,6 +11,7 @@ import meta, { KeyboardScrollableViewport } from './PivotViewer.stories';
 import '../tokens.css';
 import '../theme.css';
 import '../.storybook/preview.css';
+import '../Dialogs/Dialog.css';
 import './PivotViewer.css';
 
 const Story = composeStory(KeyboardScrollableViewport, meta);
@@ -28,6 +29,8 @@ afterEach(() => {
     root.unmount();
     host.remove();
     document.documentElement.classList.remove('cratis-light', 'cratis-dark');
+    document.documentElement.style.removeProperty('--cratis-focus-ring');
+    document.documentElement.style.removeProperty('--cratis-primary-color');
 });
 
 it('scrolls the overflowing Storybook card area with trusted keys and tabs out', async () => {
@@ -44,6 +47,8 @@ it('scrolls the overflowing Storybook card area with trusted keys and tabs out',
     await userEvent.tab();
     expect(document.activeElement).toBe(viewport);
     expect(viewport.matches(':focus-visible')).toBe(true);
+    // The overlay is paint-only; native viewport scrolling and scrollbars retain pointer input.
+    expect(getComputedStyle(viewport.parentElement!, '::after').pointerEvents).toBe('none');
     // An inset 3px ring is painted within the viewport bounds, not clipped by .pv-main.
     document.documentElement.classList.add('cratis-light');
     expect(getComputedStyle(viewport).boxShadow).toContain('rgb(37, 99, 235)');
@@ -152,14 +157,16 @@ it('paints the focus ring above cards at nonzero vertical and horizontal scroll'
         }
     }
 
-    // A theme's focus color drives both the inset shadow and the visible canvas outline.
-    document.documentElement.style.setProperty('--cratis-focus-color', '#fca5a5');
+    // The public CSS token must control the pixels even with a live Pixi canvas.
+    document.documentElement.style.setProperty('--cratis-focus-ring', '0 0 0 3px #fca5a5');
     try {
         expect(getComputedStyle(viewport).boxShadow).toContain('rgb(252, 165, 165)');
-        const custom = await edgePixels(viewport, 'top', [252, 165, 165]);
-        expect(custom.matching / custom.total).toBeGreaterThan(0.8);
+        for (const edge of ['top', 'bottom'] as const) {
+            const custom = await edgePixels(viewport, edge, [252, 165, 165]);
+            expect(custom.matching / custom.total, `CSS override ${edge}`).toBeGreaterThan(0.8);
+        }
     } finally {
-        document.documentElement.style.removeProperty('--cratis-focus-color');
+        document.documentElement.style.removeProperty('--cratis-focus-ring');
     }
 
     await userEvent.click(host.querySelector<HTMLButtonElement>('.pv-view-toggle button:nth-child(2)')!);
@@ -173,6 +180,13 @@ it('paints the focus ring above cards at nonzero vertical and horizontal scroll'
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     const pixels = await edgePixels(viewport, 'left', [147, 197, 253]);
     expect(pixels.matching / pixels.total, `grouped left: ${pixels.matching}/${pixels.total} ring pixels`).toBeGreaterThan(0.8);
+    document.documentElement.style.setProperty('--cratis-focus-ring', '0 0 0 3px #fca5a5');
+    try {
+        const custom = await edgePixels(viewport, 'left', [252, 165, 165]);
+        expect(custom.matching / custom.total, 'grouped CSS override left').toBeGreaterThan(0.8);
+    } finally {
+        document.documentElement.style.removeProperty('--cratis-focus-ring');
+    }
     const pixiCanvas = host.querySelector<HTMLCanvasElement>('.pv-viewport ~ canvas')!;
     expect(getComputedStyle(pixiCanvas).pointerEvents).toBe('none');
 
@@ -200,4 +214,46 @@ it('paints the focus ring above cards at nonzero vertical and horizontal scroll'
     } finally {
         await session.send('Emulation.setEmulatedMedia', { features: [] });
     }
+});
+
+it('paints colors.focusRing over cards after vertical and horizontal scroll', async () => {
+    root.render(<Story colors={{ focusRing: '0 0 0 3px #fb923c' }} />);
+    await waitFor(() => expect(host.querySelector('.pv-viewport')).not.toBeNull());
+    const viewport = host.querySelector<HTMLDivElement>('.pv-viewport')!;
+    const lastControl = host.querySelector<HTMLSelectElement>('.pv-dimension-select select')!;
+    await waitFor(() => expect(viewport.scrollHeight - viewport.clientHeight).toBeGreaterThan(500));
+    await waitForRenderedCanvas(viewport);
+    lastControl.focus();
+    await userEvent.tab();
+    expect(viewport.matches(':focus-visible')).toBe(true);
+    document.documentElement.classList.add('cratis-dark');
+    expect(getComputedStyle(viewport).boxShadow).toContain('rgb(251, 146, 60)');
+    viewport.scrollTo({ top: 250, behavior: 'instant' });
+    expect(viewport.scrollTop).toBeGreaterThan(0);
+    for (const edge of ['top', 'bottom'] as const) {
+        const pixels = await edgePixels(viewport, edge, [251, 146, 60]);
+        expect(pixels.matching / pixels.total, `colors.focusRing ${edge}`).toBeGreaterThan(0.8);
+    }
+
+    await userEvent.click(host.querySelector<HTMLButtonElement>('.pv-view-toggle button:nth-child(2)')!);
+    await waitFor(() => expect(viewport.scrollWidth - viewport.clientWidth).toBeGreaterThan(100));
+    await waitForRenderedCanvas(viewport);
+    lastControl.focus();
+    await userEvent.tab();
+    expect(viewport.matches(':focus-visible')).toBe(true);
+    viewport.scrollTo({ left: 150, behavior: 'instant' });
+    expect(viewport.scrollLeft).toBeGreaterThan(0);
+    const pixels = await edgePixels(viewport, 'left', [251, 146, 60]);
+    expect(pixels.matching / pixels.total, `grouped colors.focusRing left: ${pixels.matching}/${pixels.total}`).toBeGreaterThan(0.8);
+});
+
+it('keeps the independent light Dialog focus ring when only primary color changes', async () => {
+    document.documentElement.classList.add('cratis-light');
+    document.documentElement.style.setProperty('--cratis-primary-color', '#fb923c');
+    const button = document.createElement('button');
+    button.className = 'cratis-dialog__button';
+    host.append(button);
+    await userEvent.tab();
+    expect(button.matches(':focus-visible')).toBe(true);
+    expect(getComputedStyle(button).boxShadow).toContain('rgb(37, 99, 235)');
 });
