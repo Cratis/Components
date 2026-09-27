@@ -690,6 +690,7 @@ export const DataTableCore = <TData extends object>({
                         {status === DataTableStatus.Failed ||
                         status === DataTableStatus.Unauthorized ? (
                             <tr
+                                key={status}
                                 {...pt?.failureRow}
                                 className={classNames(
                                     'cratis-datatable__failure-row',
@@ -716,6 +717,7 @@ export const DataTableCore = <TData extends object>({
                             </tr>
                         ) : status === DataTableStatus.Loading && data.length === 0 ? (
                             <tr
+                                key={status}
                                 {...pt?.loadingRow}
                                 className={classNames(
                                     'cratis-datatable__loading-row',

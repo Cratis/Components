@@ -57,6 +57,20 @@ import {
 
 `Radio` represents exactly one native option. Give related options the same `name`; the browser owns grouping. Components does not add radio-group state or keyboard orchestration.
 
+## Tooltips
+
+Wrap one focusable control with `Tooltip` to show supplementary, non-interactive content on hover or keyboard focus:
+
+```tsx
+import { Tooltip } from '@cratis/components/Common';
+
+<Tooltip content={<span>Save the current changes</span>} position='right'>
+    <button type='button'>Save</button>
+</Tooltip>
+```
+
+`content` accepts a React node, including text, elements, and the number `0`. `undefined`, `null`, either boolean (`true` or `false`), and an empty string disable the tooltip. Keep tooltip content non-interactive: an ARIA tooltip is not focusable, so links and buttons inside it cannot be used reliably. Put interactive content in a [`Dialog`](../Dialogs/dialog.md) or an inline region instead. `Button` and `IconButton` retain their text-only `tooltip` prop.
+
 ## Change metadata
 
 Each value control uses `ChangeHandler<T>`:

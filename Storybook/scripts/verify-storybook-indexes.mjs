@@ -92,7 +92,7 @@ const { slotOwningModules, matrixStoryIds } = computeRendererMatrixScope({
     sourceRoot,
 });
 
-
+// The committed identities detect changes in the derived slot-owning and renderer-matrix scope.
 checkInventory(snapshotPath, {
     storyModules: storyFiles.map(relativeSourcePath),
     stories: canonicalStoryIds,

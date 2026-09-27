@@ -26,10 +26,34 @@ description: Props, colors, loading and empty states, and search configuration f
 | `className` | `string` | none | Extra class on the `.pivot-viewer` root. |
 | `emptyContent` | `ReactNode` | "No items to display." | Shown when no items are visible. |
 | `isLoading` | `boolean` | `false` | Replaces the card area with a spinner and accessible loading status. |
-| `loadingLabel` | `string` | "Loading…" | Status text announced while `isLoading` is `true`. |
+| `loadingLabel` | `string` | "Loading…" | Status text announced while `isLoading` is `true`. Takes precedence over `labels.loading`. |
+| `labels` | `PivotViewerLabels` | English defaults | Toolbar text, filter search labels, and loading status overrides. See [Toolbar labels](#toolbar-labels). |
 | `colors` | `Partial<PivotViewerColors>` | theme tokens | Color overrides. See [Color customization](#color-customization). |
 
-PivotViewer has no `labels` prop. The toolbar and filter panel strings (`Filters`, `Sort by`, `Collection`, `Grouped`, `Search…`, the item count) are English and cannot be localized. The item count currently reads "*n* events" whatever the items are.
+The toolbar's default count reads "*n* events" for backward compatibility, even for non-event collections. Override `labels.itemCount` to name your items. `labels.filters` also names the filter panel dialog. `labels.search` sets the panel search placeholder and accessible name, and the placeholder of each option-group search. `labels.searchGroup` names each option-group search using its filter label.
+
+## Toolbar labels
+
+Set only the fields you need. Omitted fields keep their current English text:
+
+| Key | Type | Default |
+| --- | --- | --- |
+| `filters` | `string` | `Filters` (filter button and panel dialog) |
+| `search` | `string` | `Search…` (panel search placeholder and accessible name; each option-group search placeholder) |
+| `searchGroup` | `(groupLabel: string) => string` | `Search ${groupLabel}` (each option-group search accessible name) |
+| `sortBy` | `string` | `Sort by` |
+| `collection` | `string` | `Collection` |
+| `grouped` | `string` | `Grouped` |
+| `zoomOut` | `string` | `Zoom out` |
+| `zoomLevel` | `string` | `Zoom level` (slider accessible name) |
+| `zoom` | `(percent: number) => string` | `Zoom: 100%` at 100% zoom (slider title) |
+| `editZoomLevel` | `string` | `Click to edit zoom level` |
+| `resetZoom` | `string` | `Reset zoom` |
+| `zoomIn` | `string` | `Zoom in` |
+| `itemCount` | `(count: number) => string` | `${count} events` |
+| `loading` | `string` | `Loading…` (unless `loadingLabel` is set) |
+
+For a collection of tasks, pass `labels.itemCount` as a formatter returning the count followed by "tasks". `zoom` receives the rounded zoom percentage. To customize the loading announcement along with the toolbar, set `labels.loading`; the existing `loadingLabel` prop continues to work and wins when both are provided. The filter group's option-search name defaults to "Search" followed by the group's label (for example, "Search Status"); use `labels.searchGroup` to translate or customize it. The empty state is configured separately with `emptyContent`.
 
 ## Example Configuration
 
@@ -124,7 +148,7 @@ The server does not rasterize cards. Treat the server output as a stable loading
 
 ## Loading State
 
-Set `isLoading` while data is being fetched, as in the [example configuration](#example-configuration). While it is `true`, PivotViewer shows a spinner instead of the card area. The spinner has a `role="status"` with visually hidden text, so screen readers can announce loading. Set `loadingLabel` to change the default "Loading…" text, for example to match your application's language.
+Set `isLoading` while data is being fetched, as in the [example configuration](#example-configuration). While it is `true`, PivotViewer shows a spinner instead of the card area. The spinner has a `role="status"` with visually hidden text, so screen readers can announce loading. Set `loadingLabel` or `labels.loading` to change the default "Loading…" text, for example to match your application's language. `loadingLabel` takes precedence when both are set.
 
 After `isLoading` turns `false`, PivotViewer shows "Building indexes..." until its engine has indexed the new `data`.
 

@@ -11,6 +11,7 @@ import { sameChatIdentifier, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';
 import type { ChatMessage } from './ChatMessage';
 import type { ChatTopic } from './ChatTopic';
+import type { ChatStatus } from './ChatStatus';
 import type { ChatTopicListLabels } from './ChatTopicList';
 import { ChatTopicList } from './ChatTopicList';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
@@ -85,7 +86,7 @@ export interface ChatSidebarProps<
     TTopic extends ChatTopic = ChatTopic,
 > extends Omit<
     ChatConversationProps<TMessage>,
-    'messages' | 'onSendMessage' | 'labels' | 'className'
+    'messages' | 'onSendMessage' | 'labels' | 'className' | 'status'
 > {
     /** Whether the sidebar is open. */
     open: boolean;
@@ -105,6 +106,12 @@ export interface ChatSidebarProps<
      * (observable) query delivers and the conversation re-renders as it changes.
      */
     messages: TMessage[];
+
+    /** Topic-list query display state. Defaults to ready when omitted. */
+    topicsStatus?: ChatStatus;
+
+    /** Conversation query display state. Defaults to ready when omitted. */
+    messagesStatus?: ChatStatus;
 
     /**
      * The open topic, for hosts that own the selection themselves: an identifier opens that
@@ -218,6 +225,8 @@ export const ChatSidebar = <
     onClose,
     topics,
     messages,
+    topicsStatus,
+    messagesStatus,
     selectedTopicId,
     onTopicSelected,
     onStartTopic,
@@ -390,6 +399,7 @@ export const ChatSidebar = <
                 {openTopicId === undefined ? (
                     <ChatTopicList<TTopic>
                         topics={topics}
+                        status={topicsStatus}
                         onOpen={(topic) => select(topic.id, topic)}
                         onStart={
                             onStartTopic
@@ -411,6 +421,7 @@ export const ChatSidebar = <
                     <ChatConversation<TMessage>
                         {...conversation}
                         messages={openMessages}
+                        status={messagesStatus}
                         onSendMessage={send}
                         labels={labels?.conversation}
                     />

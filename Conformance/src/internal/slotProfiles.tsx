@@ -357,7 +357,9 @@ export const createSlotProfiles = (
         ownershipSelectors: ['[data-cratis-part="trigger"]'],
         createProps: () =>
             recordProps({
-                content: 'Save changes',
+                // A React node, not a string: Tooltip content accepts any node since 4.16.0, and an
+                // adapter must render it as-is rather than coerce it to text.
+                content: createElement('span', null, 'Save ', createElement('strong', null, 'changes')),
                 children: createElement(
                     'button',
                     { type: 'button', className: 'sample-trigger' },
@@ -374,6 +376,7 @@ export const createSlotProfiles = (
         },
         exercise: async (document) => ({
             popupCount: document.querySelectorAll('[data-cratis-part="popup"]').length,
+            popupEmphasis: document.querySelector('[data-cratis-part="popup"] strong')?.textContent,
         }),
     },
     {
@@ -626,6 +629,13 @@ export const createSlotProfiles = (
                 minDate: new Date(2100, 0, 1),
                 showButtonBar: true,
                 'aria-label': 'Bounded delivery date',
+                onChange: () => undefined,
+            } satisfies DatePickerInputProps),
+            recordProps({
+                value: new Date(2024, 5, 15),
+                showButtonBar: true,
+                pt: { clear: { disabled: true } },
+                'aria-label': 'Required delivery date',
                 onChange: () => undefined,
             } satisfies DatePickerInputProps),
         ],

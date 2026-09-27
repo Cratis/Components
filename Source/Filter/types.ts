@@ -67,6 +67,10 @@ export interface FilterDefinition {
     searchable?: boolean;
     /** Placeholder shown in the inline search box. Defaults to 'Search…'. */
     searchPlaceholder?: string;
+    /** Accessible name for this group's search. Falls back to its placeholder, then 'Search'. */
+    searchAriaLabel?: string;
+    /** Focus this group's search when expanded and the search input exists. Defaults to false. */
+    autoFocus?: boolean;
 }
 
 /** Selected string/option values for each filter, keyed by FilterDefinition.key. */

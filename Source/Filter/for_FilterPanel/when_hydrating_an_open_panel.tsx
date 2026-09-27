@@ -75,4 +75,8 @@ describe('when hydrating an initially open FilterPanel', () => {
     it('should_mount_the_open_panel_after_hydration', () => {
         expect(document.querySelector('.pv-filter-dropdown')).not.to.equal(null);
     });
+
+    it('should_focus_the_open_panel_after_hydration', () => {
+        expect(document.activeElement).to.equal(document.querySelector('.pv-filter-dropdown'));
+    });
 });
