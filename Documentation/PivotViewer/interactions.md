@@ -30,7 +30,8 @@ The card area is a scroll container. Users move around it by:
 
 - dragging anywhere in the card area with the left or middle mouse button (the drag keeps coasting briefly after release);
 - scrolling with the wheel or trackpad;
-- dragging with one finger on a touch screen.
+- dragging with one finger on a touch screen;
+- focusing the card area with `Tab`, then using the arrow keys or `Page Up` / `Page Down` to scroll it. Press `Tab` again to leave the card area.
 
 ### Scroll Behavior
 
@@ -113,11 +114,11 @@ Switching views clears the selection.
 
 ## Keyboard behavior
 
-The toolbar exposes native buttons, a range input, and a select, and the filter panel uses native inputs and buttons, so their standard browser keyboard behavior applies. When the editable zoom percentage is open, `Enter` applies the typed percentage and `Escape` cancels editing. The open filter panel handles `Escape` when focus is inside it or on its trigger, then returns focus to the trigger. `PivotViewer` does not install global shortcuts for closing details, navigating cards, zooming with `+` / `-`, or focusing search. Do not advertise those shortcuts unless the host implements, scopes, and tests them.
+The toolbar exposes native buttons, a range input, and a select, and the filter panel uses native inputs and buttons, so their standard browser keyboard behavior applies. The card area is a focusable region named "Card area" by default (set `labels.viewport` to translate it). When cards overflow, focus it with `Tab` and scroll with the arrow keys or `Page Up` / `Page Down`; `Tab` moves focus on. This scrolls the viewport, not a selection between cards. When the editable zoom percentage is open, `Enter` applies the typed percentage and `Escape` cancels editing. The open filter panel handles `Escape` when focus is inside it or on its trigger, then returns focus to the trigger. `PivotViewer` does not install global shortcuts for closing details, navigating cards, zooming with `+` / `-`, or focusing search. Do not advertise those shortcuts unless the host implements, scopes, and tests them.
 
 Keyboard limits to plan for:
 
-- Cards are drawn on a Pixi canvas and cannot be focused. Selecting a card, and therefore opening its details, needs a pointer or touch. If keyboard or screen-reader users must reach individual items, offer another view of the same data, such as a data table.
+- Cards are drawn on a Pixi canvas and cannot be focused, even though the surrounding card area can now scroll from the keyboard. Selecting a card, and therefore opening its details, needs a pointer or touch. If keyboard or screen-reader users must reach individual items, offer another view of the same data, such as a data table.
 - The zoom percentage is not focusable, so typing a zoom value needs a pointer. The slider and the zoom buttons work from the keyboard.
 - `Escape` closes the filter panel and returns focus to its trigger, but does not close the detail drawer.
 

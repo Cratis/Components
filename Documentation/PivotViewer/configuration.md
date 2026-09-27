@@ -27,12 +27,12 @@ description: Props, colors, loading and empty states, and search configuration f
 | `emptyContent` | `ReactNode` | "No items to display." | Shown when no items are visible. |
 | `isLoading` | `boolean` | `false` | Replaces the card area with a spinner and accessible loading status. |
 | `loadingLabel` | `string` | "Loading…" | Status text announced while `isLoading` is `true`. Takes precedence over `labels.loading`. |
-| `labels` | `PivotViewerLabels` | English defaults | Toolbar text, filter search labels, and loading status overrides. See [Toolbar labels](#toolbar-labels). |
+| `labels` | `PivotViewerLabels` | English defaults | Toolbar text, filter search labels, card-area name, and loading status overrides. See [Labels](#labels). |
 | `colors` | `Partial<PivotViewerColors>` | theme tokens | Color overrides. See [Color customization](#color-customization). |
 
 The toolbar's default count reads "*n* events" for backward compatibility, even for non-event collections. Override `labels.itemCount` to name your items. `labels.filters` also names the filter panel dialog. `labels.search` sets the panel search placeholder and accessible name, and the placeholder of each option-group search. `labels.searchGroup` names each option-group search using its filter label.
 
-## Toolbar labels
+## Labels
 
 Set only the fields you need. Omitted fields keep their current English text:
 
@@ -52,8 +52,9 @@ Set only the fields you need. Omitted fields keep their current English text:
 | `zoomIn` | `string` | `Zoom in` |
 | `itemCount` | `(count: number) => string` | `${count} events` |
 | `loading` | `string` | `Loading…` (unless `loadingLabel` is set) |
+| `viewport` | `string` | `Card area` (accessible name of the keyboard-focusable scroll region) |
 
-For a collection of tasks, pass `labels.itemCount` as a formatter returning the count followed by "tasks". `zoom` receives the rounded zoom percentage. To customize the loading announcement along with the toolbar, set `labels.loading`; the existing `loadingLabel` prop continues to work and wins when both are provided. The filter group's option-search name defaults to "Search" followed by the group's label (for example, "Search Status"); use `labels.searchGroup` to translate or customize it. The empty state is configured separately with `emptyContent`.
+For a collection of tasks, pass `labels.itemCount` as a formatter returning the count followed by "tasks". `zoom` receives the rounded zoom percentage. To customize the loading announcement along with the toolbar, set `labels.loading`; the existing `loadingLabel` prop continues to work and wins when both are provided. The filter group's option-search name defaults to "Search" followed by the group's label (for example, "Search Status"); use `labels.searchGroup` to translate or customize it. The empty state is configured separately with `emptyContent`. Set `labels.viewport` to name the card area in your application's language; it does not make the canvas cards individually accessible. See [Keyboard behavior](interactions.md#keyboard-behavior).
 
 ## Example Configuration
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { Meta, StoryObj } from '@storybook/react';
-import { expect } from 'storybook/test';
+import { expect, userEvent, waitFor } from 'storybook/test';
 import { PivotViewer } from './PivotViewer';
 import { createCssColorResolver } from './components/pivot/colorResolver';
 
@@ -412,6 +412,41 @@ export const ToolbarLabels: Story = {
             />
         </div>
     ),
+};
+
+const scrollableData = Array.from({ length: 3 }, (_, row) =>
+    sampleData.map((item) => ({ ...item, id: item.id + row * sampleData.length }))).flat();
+
+/** A bounded card area with enough rows to require native keyboard scrolling. */
+export const KeyboardScrollableViewport: Story = {
+    render: () => (
+        <div className='storybook-wrapper' style={{ width: 600, height: 600, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            <PivotViewer<Person>
+                data={scrollableData}
+                dimensions={[{ key: 'department', label: 'Department', getValue: (item) => item.department }]}
+                cardRenderer={(item) => ({ title: item.name })}
+                labels={{ viewport: 'Sample cards' }}
+            />
+            <button type='button'>After the viewer</button>
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        const viewport = canvasElement.querySelector<HTMLDivElement>('.pv-viewport')!;
+        const lastControl = canvasElement.querySelector<HTMLSelectElement>('.pv-dimension-select select')!;
+
+        await waitFor(() => expect(viewport.scrollHeight).toBeGreaterThan(viewport.clientHeight));
+        await expect(viewport.scrollHeight - viewport.clientHeight).toBeGreaterThan(500);
+        lastControl.focus();
+        await userEvent.tab();
+        await expect(document.activeElement).toBe(viewport);
+        await expect(viewport.getAttribute('role')).toBe('region');
+        await expect(viewport.getAttribute('aria-label')).toBe('Sample cards');
+        await expect(getComputedStyle(viewport).outlineStyle).not.toBe('none');
+        await userEvent.tab();
+        await expect(document.activeElement).not.toBe(viewport);
+        // The Storybook a11y addon runs axe on this overflowing story, including
+        // scrollable-region-focusable, in both appearance modes.
+    },
 };
 
 export const LargeDataset: Story = {

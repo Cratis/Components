@@ -469,6 +469,7 @@ export function PivotViewer<TItem extends object>({
                     ready={ready}
                     isLoading={isLoading}
                     loadingLabel={loadingLabel ?? labels?.loading ?? 'Loading…'}
+                    viewportLabel={labels?.viewport ?? 'Card area'}
                     visibleIds={visibleIds}
                     grouping={grouping}
                     layout={layout}
