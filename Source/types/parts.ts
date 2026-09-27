@@ -237,7 +237,7 @@ export const cratisPartStates = {
         'cell': ['selected'],
         'button-bar': [],
         'today': ['disabled'],
-        'clear': [],
+        'clear': ['disabled'],
     },
     CalendarField: {
         'root': ['disabled', 'selected', 'open', 'invalid', 'readonly'],
@@ -257,7 +257,7 @@ export const cratisPartStates = {
         'cell': ['selected'],
         'button-bar': [],
         'today': ['disabled'],
-        'clear': [],
+        'clear': ['disabled'],
     },
     Button: {
         'root': ['disabled', 'loading'],

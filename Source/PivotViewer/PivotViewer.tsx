@@ -64,7 +64,8 @@ export function PivotViewer<TItem extends object>({
     className,
     emptyContent,
     isLoading = false,
-    loadingLabel = 'Loading…',
+    loadingLabel,
+    labels,
     colors,
 }: PivotViewerProps<TItem>) {
     // Refs
@@ -423,6 +424,9 @@ export function PivotViewer<TItem extends object>({
         <div className={viewerClassName} style={cssVariables as React.CSSProperties}>
             <FilterPanelContainer
                 isOpen={filtersOpen && hasFilters}
+                filterLabel={labels?.filters}
+                searchPlaceholder={labels?.search}
+                searchGroup={labels?.searchGroup}
                 search={search}
                 filterState={filterState}
                 rangeFilterState={rangeFilterState}
@@ -448,6 +452,7 @@ export function PivotViewer<TItem extends object>({
                     dimensions={dimensions}
                     activeFilterCount={activeFilterCount}
                     title={title}
+                    labels={labels}
                     onFiltersToggle={() => setFiltersOpen((prev) => !prev)}
                     onViewModeChange={setViewMode}
                     onZoomIn={handleZoomIn}
@@ -463,7 +468,7 @@ export function PivotViewer<TItem extends object>({
                     data={data}
                     ready={ready}
                     isLoading={isLoading}
-                    loadingLabel={loadingLabel}
+                    loadingLabel={loadingLabel ?? labels?.loading ?? 'Loading…'}
                     visibleIds={visibleIds}
                     grouping={grouping}
                     layout={layout}

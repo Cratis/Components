@@ -28,8 +28,13 @@
     transition: background 0.12s;
 }
 
-.cratis-chat-topics__start:hover {
+.cratis-chat-topics__start:hover:not(:disabled) {
     background: var(--cratis-primary-600);
+}
+
+.cratis-chat-topics__start:disabled {
+    opacity: 0.35;
+    cursor: default;
 }
 
 .cratis-chat-topics__empty {

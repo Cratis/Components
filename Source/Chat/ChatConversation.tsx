@@ -16,6 +16,7 @@ import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';
 import type { ChatMessage } from './ChatMessage';
+import { ChatStatus } from './ChatStatus';
 import type { ChatMessageAction } from './ChatMessageAction';
 import { ChatMessageBody } from './ChatMessageBody';
 import { relativeTimestamp, type RelativeTimestampLabels } from './relativeTimestamp';
@@ -39,6 +40,15 @@ const ReplyIcon = () => (
  *  back to a literal English default — this library ships no i18n mechanism of its own, so a host
  *  that localizes passes its own translated strings through here. */
 export interface ChatConversationLabels {
+    /** Shown while loading without messages. Defaults to `'Loading messages…'`. */
+    loading?: string;
+
+    /** Shown when loading messages fails, alongside any existing messages. Defaults to `'Could not load messages.'`. */
+    failed?: string;
+
+    /** Shown when access is denied; replaces any existing messages. Defaults to `'You are not authorized to view these messages.'`. */
+    unauthorized?: string;
+
     /** Shown when there are no messages yet. Defaults to `'No messages yet. Say hello!'`. */
     empty?: string;
 
@@ -71,6 +81,9 @@ export interface ChatConversationProps<TMessage extends ChatMessage = ChatMessag
      * (observable) query delivers and the conversation re-renders as it changes.
      */
     messages: TMessage[];
+
+    /** Query display state. Defaults to {@link ChatStatus.Ready}; existing messages remain visible on loading or failure, and unauthorized disables the composer. */
+    status?: ChatStatus;
 
     /**
      * Invoked when a message is sent, with the trimmed body and who it mentions. Everything else
@@ -210,6 +223,7 @@ const typingLabel = (
  */
 export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
     messages,
+    status = ChatStatus.Ready,
     onSendMessage,
     authorOf,
     renderAvatar,
@@ -255,13 +269,21 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
 
     return (
         <div className={`cratis-chat-conversation${className ? ` ${className}` : ''}`}>
-            <div className='cratis-chat-conversation__messages'>
-                {messages.length === 0 && (
+            <div className='cratis-chat-conversation__messages' aria-busy={status === ChatStatus.Loading && messages.length > 0 || undefined}>
+                {(messages.length === 0 || status === ChatStatus.Failed || status === ChatStatus.Unauthorized) && (
                     <p className='cratis-chat-conversation__empty'>
-                        {labels?.empty ?? 'No messages yet. Say hello!'}
+                        {status === ChatStatus.Loading ? (
+                            <span key={status} role='status'>{labels?.loading ?? 'Loading messages…'}</span>
+                        ) : status === ChatStatus.Failed ? (
+                            <span key={status} role='alert'>{labels?.failed ?? 'Could not load messages.'}</span>
+                        ) : status === ChatStatus.Unauthorized ? (
+                            <span key={status} role='alert'>{labels?.unauthorized ?? 'You are not authorized to view these messages.'}</span>
+                        ) : (
+                            labels?.empty ?? 'No messages yet. Say hello!'
+                        )}
                     </p>
                 )}
-                {messages.map((message, index) => {
+                {status !== ChatStatus.Unauthorized && messages.map((message, index) => {
                     const author = authorFor(message.authorId);
                     const { showAuthor, showTimestamp } = renderInfo[index];
                     const availableActions = (actions ?? []).filter(
@@ -368,11 +390,13 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                         </div>
                     );
                 })}
-                <TypingIndicator
-                    authors={typingAuthors}
-                    label={typingLabel(typingAuthors, labels)}
-                    buildAvatarUrl={buildAvatarUrl}
-                />
+                {status !== ChatStatus.Unauthorized && (
+                    <TypingIndicator
+                        authors={typingAuthors}
+                        label={typingLabel(typingAuthors, labels)}
+                        buildAvatarUrl={buildAvatarUrl}
+                    />
+                )}
                 <div ref={messagesEndRef} />
             </div>
 
@@ -381,6 +405,7 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                 mentionCandidates={mentionCandidates}
                 resolveMentionCandidates={resolveMentionCandidates}
                 onSend={send}
+                disabled={status === ChatStatus.Unauthorized}
                 autoFocus={autoFocus}
                 buildAvatarUrl={buildAvatarUrl}
                 labels={labels?.composer}

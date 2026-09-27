@@ -5,10 +5,15 @@ import { FilterPanel as StandaloneFilterPanel } from '../../Filter/FilterPanel';
 import { FilterEditor } from '../../Filter/FilterEditor';
 import type { FilterDefinition } from '../../Filter/types';
 import type { PivotFilter, PivotFilterOption, PivotPrimitive } from '../types';
+import type { PivotViewerLabels } from '../PivotViewerLabels';
 import type { FilterState, RangeFilterState } from '../utils/utils';
 
 export interface FilterPanelProps<TItem extends object> {
   isOpen: boolean;
+  filterLabel?: string;
+  searchPlaceholder?: string;
+  /** Formatter for each filter group's option-search accessible name. */
+  searchGroup?: PivotViewerLabels['searchGroup'];
   search: string;
   filterState: FilterState;
   rangeFilterState: RangeFilterState;
@@ -29,6 +34,9 @@ export interface FilterPanelProps<TItem extends object> {
 
 export function FilterPanel<TItem extends object>({
   isOpen,
+  filterLabel,
+  searchPlaceholder,
+  searchGroup,
   search,
   filterState,
   rangeFilterState,
@@ -46,6 +54,7 @@ export function FilterPanel<TItem extends object>({
   const filters: FilterDefinition[] = filterOptions.map(({ filter, options, numericRange }) => ({
     key: filter.key,
     label: filter.label,
+    searchAriaLabel: searchGroup?.(filter.label) ?? `Search ${filter.label}`,
     type: filter.type,
     multi: filter.multi,
     options: options.map((o) => ({
@@ -61,11 +70,12 @@ export function FilterPanel<TItem extends object>({
   return (
     <StandaloneFilterPanel
       isOpen={isOpen}
+      aria-label={filterLabel}
       filters={filters}
       filterValues={filterState}
       rangeValues={rangeFilterState}
       search={search}
-      searchPlaceholder="Search…"
+      searchPlaceholder={searchPlaceholder}
       expandedFilterKey={expandedFilterKey}
       anchorRef={anchorRef}
       onClose={onClose}

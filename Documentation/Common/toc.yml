@@ -8,6 +8,8 @@
   href: number-input.md
 - name: ComboBox
   href: combobox.md
+- name: DatePickerInput
+  href: date-picker-input.md
 - name: Collection controls
   href: collection-controls.md
 - name: Icon

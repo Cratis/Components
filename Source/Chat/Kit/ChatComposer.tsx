@@ -58,6 +58,9 @@ export interface ChatComposerProps {
     /** Whether to take focus when mounted. */
     autoFocus?: boolean;
 
+    /** Disables drafting, emoji insertion, and sending. Defaults to false. */
+    disabled?: boolean;
+
     /** Builds the avatar image URL for mention candidates. Omit to always show initials. */
     buildAvatarUrl?: (params: BuildAvatarUrlParams) => string;
 
@@ -86,6 +89,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
             resolveMentionCandidates,
             onSend,
             autoFocus = false,
+            disabled = false,
             buildAvatarUrl,
             labels,
         },
@@ -98,6 +102,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
             [],
         );
         const inputRef = useRef<HTMLTextAreaElement>(null);
+        const didAutoFocus = useRef(false);
         const emojiButtonRef = useRef<HTMLButtonElement>(null);
         // Every candidate this draft has seen — resolved or picked — so the mentions reported on
         // send can be found again even when the resolver's latest answer no longer includes them.
@@ -163,14 +168,21 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
             query && !queryIsCompleteMention
                 ? matchCandidates(candidatePool, query.text)
                 : [];
-        const isSuggesting = suggestions.length > 0;
+        const isSuggesting = !disabled && suggestions.length > 0;
         const highlighted = Math.min(highlightedIndex, suggestions.length - 1);
 
         useEffect(() => {
-            if (autoFocus) {
-                inputRef.current?.focus();
+            if (autoFocus && !disabled && !didAutoFocus.current && inputRef.current) {
+                inputRef.current.focus();
+                didAutoFocus.current = true;
             }
-        }, [autoFocus]);
+        }, [autoFocus, disabled]);
+
+        useEffect(() => {
+            if (disabled) {
+                setShowEmojiPicker(false);
+            }
+        }, [disabled]);
 
         useImperativeHandle(
             handleRef,
@@ -198,7 +210,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
 
         const send = () => {
             const trimmed = draft.text.trim();
-            if (!trimmed) return;
+            if (!trimmed || disabled) return;
             const known = uniqueById([
                 ...(mentionCandidates ?? []),
                 ...seenCandidatesRef.current.values(),
@@ -290,11 +302,13 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                         labels?.placeholder ?? 'Write a message… (Enter to send)'
                     }
                     rows={2}
+                    disabled={disabled}
                 />
                 <button
                     ref={emojiButtonRef}
                     type='button'
                     className='chat-composer__emoji-toggle'
+                    disabled={disabled}
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => setShowEmojiPicker((previous) => !previous)}
                     title={labels?.insertEmoji ?? 'Insert emoji'}
@@ -307,7 +321,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                     type='button'
                     className='chat-composer__send'
                     onClick={send}
-                    disabled={!draft.text.trim()}
+                    disabled={disabled || !draft.text.trim()}
                     title={labels?.send ?? 'Send'}
                     aria-label={labels?.sendMessage ?? 'Send message'}
                 >
@@ -328,7 +342,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(
                 panel scrolls/clips, so a picker positioned inside it would be cut off at the edge. */}
                 <AnchoredOverlay
                     anchorRef={emojiButtonRef}
-                    open={showEmojiPicker}
+                    open={showEmojiPicker && !disabled}
                     side='above'
                     align='right'
                     gap={6}
