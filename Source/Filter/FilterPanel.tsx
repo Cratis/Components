@@ -256,6 +256,8 @@ export function FilterPanel({
     } | null>(null);
     // Refs attach during commit, after render. Resolve the modal before mounting any open
     // panel so its first portal never lands in a shared root hidden by the modal.
+    // Ref attachment/identity can change on any commit; the state updater bails out if unchanged.
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
     useLayoutEffect(() => {
         const anchor = anchorRef.current;
         const modalRoot = anchor?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]') ?? null;
@@ -295,15 +297,26 @@ export function FilterPanel({
             );
         };
 
+        // A side Dialog's entering translate temporarily makes its root the fixed-position
+        // containing block. Measure again when the slide finishes and viewport positioning resumes.
+        let animationFrame: number | undefined;
+        const handleModalAnimationEnd = (event: AnimationEvent) => {
+            if (event.target !== modalRoot || event.animationName !== 'cratis-dialog-slide') return;
+            animationFrame = requestAnimationFrame(updatePosition);
+        };
+
         updatePosition();
         window.addEventListener('resize', updatePosition);
         window.addEventListener('scroll', updatePosition, true);
+        modalRoot?.addEventListener('animationend', handleModalAnimationEnd);
 
         return () => {
+            if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
             window.removeEventListener('resize', updatePosition);
             window.removeEventListener('scroll', updatePosition, true);
+            modalRoot?.removeEventListener('animationend', handleModalAnimationEnd);
         };
-    }, [anchorRef, isOpen]);
+    }, [anchorRef, isOpen, modalRoot]);
 
     // Handle click outside to close
     useEffect(() => {

@@ -69,6 +69,10 @@ export const FocusSearchAndDismiss: Story = {
         await expect(body.getByRole('dialog', { name: 'Edit filters' })).toBeTruthy();
         await userEvent.click(modalTrigger);
         await expect((await body.findByRole('dialog', { name: 'Filter choices' })).parentElement).toBe(modalRoot);
+        await userEvent.keyboard('{Escape}');
+        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Filter choices' })).toBeNull(), { timeout: 5000 });
+        await userEvent.click(body.getByRole('button', { name: 'Close' }));
+        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Edit filters' })).toBeNull(), { timeout: 5000 });
     },
     render: () => {
         const anchorRef = useRef<HTMLButtonElement>(null);
@@ -96,6 +100,53 @@ export const FocusSearchAndDismiss: Story = {
                 <FilterPanel isOpen={modalPanelOpen} filters={filters} filterValues={{}} rangeValues={{}}
                     aria-label='Filter choices' anchorRef={modalAnchorRef} expandedFilterKey={modalGroup}
                     onClose={() => setModalPanelOpen(false)} onExpandedFilterChange={setModalGroup}
+                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                    onRangeChange={() => undefined} />
+            </Dialog>}
+        </CratisComponentsProvider>;
+    },
+};
+
+/** Probe an initially open dropdown while its side-sheet host is still sliding into place. */
+export const SideDialogEntrance: Story = {
+    name: 'Initially open filter in a sliding side dialog',
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: 'Open side dialog' }));
+        const body = within(document.body);
+        const dialog = await body.findByRole('dialog', { name: 'Side filters' });
+        const root = dialog.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
+        const anchor = body.getByRole('button', { name: 'Side filter trigger' });
+        const panel = await body.findByRole('dialog', { name: 'Side filter choices' });
+        await expect(panel.parentElement).toBe(root);
+        if (root.hasAttribute('data-entering')) {
+            await expect(getComputedStyle(root).overflow).toBe('hidden');
+        }
+        await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
+        await waitFor(() => expect(Math.abs(panel.getBoundingClientRect().left - anchor.getBoundingClientRect().left)).toBeLessThan(4), { timeout: 5000 });
+        const finalAnchor = anchor.getBoundingClientRect();
+        const finalPanel = panel.getBoundingClientRect();
+        const finalRoot = root.getBoundingClientRect();
+        await expect(Math.abs(finalPanel.left - finalAnchor.left)).toBeLessThan(4);
+        await expect(finalPanel.right).toBeGreaterThan(finalRoot.right + 80);
+        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
+        // The overflowing portion must remain visible and clickable after the slide ends.
+        const outsideRoot = document.elementFromPoint(finalRoot.right + 16, finalPanel.top + 20);
+        await expect(panel.contains(outsideRoot)).toBe(true);
+    },
+    render: () => {
+        const [dialogOpen, setDialogOpen] = useState(false);
+        const anchorRef = useRef<HTMLButtonElement>(null);
+        return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById('side-filter-overlays') }}>
+            <button onClick={() => setDialogOpen(true)}>Open side dialog</button>
+            <div id='side-filter-overlays' />
+            {dialogOpen && <Dialog title='Side filters' placement='start' width='360px' onCancel={() => setDialogOpen(false)}>
+                <div style={{ paddingLeft: 255, minHeight: 300 }}>
+                    <button ref={anchorRef}>Side filter trigger</button>
+                </div>
+                <FilterPanel isOpen filters={filters} filterValues={{}} rangeValues={{}}
+                    aria-label='Side filter choices' anchorRef={anchorRef}
+                    onClose={() => undefined} onExpandedFilterChange={() => undefined}
                     onFilterToggle={() => undefined} onFilterClear={() => undefined}
                     onRangeChange={() => undefined} />
             </Dialog>}
