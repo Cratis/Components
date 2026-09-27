@@ -351,24 +351,37 @@ export function FilterPanel({
             if (event.target instanceof Node && panelRef.current?.contains(event.target)) return;
             schedulePosition();
         };
-        const handleModalAnimationEnd = (event: AnimationEvent) => {
-            if (event.target !== modalRoot || event.animationName !== 'cratis-dialog-slide') return;
-            schedulePosition();
+        // Consumers may replace the side Dialog's entry animation or animate its positioner.
+        // Ignore events bubbling from controls inside the dialog; one frame is enough for
+        // any number of animations or transitions ending in the same rendering frame.
+        const sideModal = modalRoot?.matches('[data-placement="start"], [data-placement="end"]')
+            ? modalRoot : null;
+        const positioner = sideModal?.parentElement?.matches('[data-cratis-part="positioner"]')
+            ? sideModal.parentElement : null;
+        const handleModalMotionEnd = (event: Event) => {
+            if (event.target === sideModal || event.target === positioner) schedulePosition();
         };
+        const motionEvents = ['animationend', 'animationcancel', 'transitionend'] as const;
 
         updatePosition();
         window.addEventListener('resize', schedulePosition);
         window.addEventListener('scroll', handleScroll, true);
-        modalRoot?.addEventListener('animationend', handleModalAnimationEnd);
+        for (const eventName of motionEvents) {
+            sideModal?.addEventListener(eventName, handleModalMotionEnd);
+            positioner?.addEventListener(eventName, handleModalMotionEnd);
+        }
 
         return () => {
             if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
             window.removeEventListener('resize', schedulePosition);
             window.removeEventListener('scroll', handleScroll, true);
-            modalRoot?.removeEventListener('animationend', handleModalAnimationEnd);
+            for (const eventName of motionEvents) {
+                sideModal?.removeEventListener(eventName, handleModalMotionEnd);
+                positioner?.removeEventListener(eventName, handleModalMotionEnd);
+            }
             probe.remove();
         };
-    }, [anchorRef, isOpen, modalRoot, portalContainer]);
+    }, [anchorRef, isOpen, modalRoot, portalContainer, resolvedAnchor?.anchor]);
 
     // Handle click outside to close
     useEffect(() => {

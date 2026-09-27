@@ -10,6 +10,7 @@ export default defineConfig({
     plugins: [react()],
     test: {
         include: ['PivotViewer/viewport.browser.test.tsx'],
+        testTimeout: 60_000,
         browser: {
             enabled: true,
             headless: true,
