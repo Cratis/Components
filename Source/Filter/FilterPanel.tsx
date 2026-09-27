@@ -289,17 +289,21 @@ export function FilterPanel({
     useLayoutEffect(() => {
         if (!isOpen || !portalContainer) return;
 
+        const probe = document.createElement('div');
+        probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none';
+        portalContainer.appendChild(probe);
+
         const updatePosition = () => {
             if (!anchorRef.current || !panelRef.current) return;
 
-            const probe = document.createElement('div');
-            probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none';
-            portalContainer.appendChild(probe);
+            // The probe stays mounted while open, but its origin must be read on every
+            // update: scrolling a transformed ancestor changes its viewport coordinates.
+            probe.style.top = '0';
+            probe.style.bottom = 'auto';
             const origin = probe.getBoundingClientRect();
             probe.style.top = 'auto';
             probe.style.bottom = '0';
             const containingBlockBottom = probe.getBoundingClientRect().bottom;
-            probe.remove();
 
             // offsetWidth is in local CSS pixels; the probe's rect supplies the viewport scale.
             // Preserve the viewport gutter even when a containing block scales the dropdown.
@@ -309,9 +313,9 @@ export function FilterPanel({
             // Measure the CSS width without a previous resize's inline clamp applied.
             const panel = panelRef.current;
             const previousWidth = panel.style.width;
-            panel.style.width = '';
+            if (previousWidth) panel.style.width = '';
             const cssWidth = panel.offsetWidth;
-            panel.style.width = previousWidth;
+            if (previousWidth) panel.style.width = previousWidth;
             const width = cssWidth * scaleX > viewport.width - 32
                 ? Math.max(0, (viewport.width - 32) / scaleX)
                 : undefined;
@@ -319,34 +323,50 @@ export function FilterPanel({
                 anchorRef.current.getBoundingClientRect(), viewport,
                 (width ?? cssWidth) * scaleX,
             );
-            setPosition({
+            const nextPosition = {
                 left: (viewportPosition.left - origin.left) / scaleX,
                 top: viewportPosition.top === undefined ? undefined : (viewportPosition.top - origin.top) / scaleY,
                 bottom: viewportPosition.bottom === undefined ? undefined
                     : (containingBlockBottom - (viewport.height - viewportPosition.bottom)) / scaleY,
                 maxHeight: viewportPosition.maxHeight / scaleY,
                 width,
-            });
+            };
+            setPosition((previous) => previous.left === nextPosition.left &&
+                previous.top === nextPosition.top && previous.bottom === nextPosition.bottom &&
+                previous.maxHeight === nextPosition.maxHeight && previous.width === nextPosition.width
+                ? previous : nextPosition);
         };
 
         // A side Dialog's entering translate temporarily makes its root the fixed-position
         // containing block. Measure again when the slide finishes and viewport positioning resumes.
         let animationFrame: number | undefined;
+        const schedulePosition = () => {
+            if (animationFrame !== undefined) return;
+            animationFrame = requestAnimationFrame(() => {
+                animationFrame = undefined;
+                updatePosition();
+            });
+        };
+        const handleScroll = (event: Event) => {
+            if (event.target instanceof Node && panelRef.current?.contains(event.target)) return;
+            schedulePosition();
+        };
         const handleModalAnimationEnd = (event: AnimationEvent) => {
             if (event.target !== modalRoot || event.animationName !== 'cratis-dialog-slide') return;
-            animationFrame = requestAnimationFrame(updatePosition);
+            schedulePosition();
         };
 
         updatePosition();
-        window.addEventListener('resize', updatePosition);
-        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', schedulePosition);
+        window.addEventListener('scroll', handleScroll, true);
         modalRoot?.addEventListener('animationend', handleModalAnimationEnd);
 
         return () => {
             if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
-            window.removeEventListener('resize', updatePosition);
-            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', schedulePosition);
+            window.removeEventListener('scroll', handleScroll, true);
             modalRoot?.removeEventListener('animationend', handleModalAnimationEnd);
+            probe.remove();
         };
     }, [anchorRef, isOpen, modalRoot, portalContainer]);
 

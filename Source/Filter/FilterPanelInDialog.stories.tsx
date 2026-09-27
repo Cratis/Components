@@ -9,8 +9,7 @@ import { Dialog } from '../Dialogs/Dialog';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import type { FilterDefinition } from './types';
 
-// Both scenarios exercise FilterPanel within a slotted Dialog; declare the Dialog so
-// the renderer matrix also runs these interactions against every Dialog adapter.
+// Both stories use a slotted Dialog, so exercise every Dialog renderer adapter.
 const meta: Meta<typeof Dialog> = { title: 'Filter/FilterPanel/In Dialog', component: Dialog };
 export default meta;
 type Story = StoryObj<typeof Dialog>;
@@ -152,82 +151,6 @@ export const SideDialogEntrance: Story = {
                     onFilterToggle={() => undefined} onFilterClear={() => undefined}
                     onRangeChange={() => undefined} />
             </Dialog>}
-        </CratisComponentsProvider>;
-    },
-};
-
-/** Exercise the browser's real fixed containing block, not jsdom's viewport-only geometry. */
-export const TransformedOverlayContainer: Story = {
-    name: 'Filter position in offset transformed overlay containers',
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        const body = within(document.body);
-        const centeredAnchor = canvas.getByRole('button', { name: 'Centered filter trigger' });
-        await userEvent.click(centeredAnchor);
-        const centeredPanel = await body.findByRole('dialog', { name: 'Transformed filter choices' });
-        await expect(centeredPanel.parentElement?.id).toBe('transformed-filter-overlays');
-        await expect(getComputedStyle(centeredPanel.parentElement!).transform).not.toBe('none');
-        await waitFor(() => expect(getComputedStyle(centeredPanel).opacity).toBe('1'), { timeout: 5000 });
-        await waitFor(() => {
-            const anchor = centeredAnchor.getBoundingClientRect();
-            const panel = centeredPanel.getBoundingClientRect();
-            expect(Math.abs(panel.left - anchor.left)).toBeLessThan(4);
-            expect(Math.abs(panel.top - anchor.bottom - 8)).toBeLessThan(4);
-            expect(panel.left).toBeGreaterThanOrEqual(16);
-            expect(panel.right).toBeLessThanOrEqual(window.innerWidth - 16 + 1);
-        }, { timeout: 5000 });
-        centeredAnchor.style.left = '260px';
-        window.dispatchEvent(new Event('resize'));
-        await waitFor(() => expect(Math.abs(centeredPanel.getBoundingClientRect().left - centeredAnchor.getBoundingClientRect().left)).toBeLessThan(4));
-        centeredAnchor.style.top = '200px';
-        window.dispatchEvent(new Event('scroll'));
-        await waitFor(() => expect(Math.abs(centeredPanel.getBoundingClientRect().top - centeredAnchor.getBoundingClientRect().bottom - 8)).toBeLessThan(4));
-        await userEvent.keyboard('{Escape}');
-        await waitFor(() => expect(body.queryByRole('dialog', { name: 'Transformed filter choices' })).toBeNull(), { timeout: 5000 });
-
-        const edgeAnchor = canvas.getByRole('button', { name: 'Edge filter trigger' });
-        await userEvent.click(edgeAnchor);
-        const edgePanel = await body.findByRole('dialog', { name: 'Ancestor filter choices' });
-        await expect(edgePanel.parentElement?.id).toBe('ancestor-filter-overlays');
-        await expect(getComputedStyle(edgePanel.parentElement!).transform).toBe('none');
-        await expect(getComputedStyle(edgePanel.parentElement!.parentElement!).transform).not.toBe('none');
-        await waitFor(() => expect(getComputedStyle(edgePanel).opacity).toBe('1'), { timeout: 5000 });
-        await waitFor(() => {
-            const anchor = edgeAnchor.getBoundingClientRect();
-            const panel = edgePanel.getBoundingClientRect();
-            expect(Math.abs(panel.right - (window.innerWidth - 16))).toBeLessThan(4);
-            expect(Math.abs(panel.bottom - (anchor.top - 8))).toBeLessThan(4);
-            expect(panel.left).toBeGreaterThanOrEqual(15);
-            expect(panel.top).toBeGreaterThanOrEqual(15);
-            expect(panel.right).toBeLessThanOrEqual(window.innerWidth - 15);
-            expect(panel.bottom).toBeLessThanOrEqual(window.innerHeight - 15);
-        }, { timeout: 5000 });
-    },
-    render: () => {
-        const centeredRef = useRef<HTMLButtonElement>(null);
-        const edgeRef = useRef<HTMLButtonElement>(null);
-        const [open, setOpen] = useState<'center' | 'edge' | null>(null);
-        const common = {
-            filters, filterValues: {}, rangeValues: {},
-            onFilterToggle: () => undefined, onFilterClear: () => undefined,
-            onRangeChange: () => undefined, onExpandedFilterChange: () => undefined,
-        };
-        return <CratisComponentsProvider overlayEnvironment={{
-            getContainer: () => document.getElementById(open === 'edge' ? 'ancestor-filter-overlays' : 'transformed-filter-overlays'),
-        }}>
-            <button ref={centeredRef} onClick={() => setOpen('center')}
-                style={{ position: 'fixed', top: 180, left: 240 }}>Centered filter trigger</button>
-            <button ref={edgeRef} onClick={() => setOpen('edge')}
-                style={{ position: 'fixed', bottom: 36, right: 24 }}>Edge filter trigger</button>
-            <div id='transformed-filter-overlays'
-                style={{ position: 'fixed', top: 100, left: 80, transform: 'translateZ(0)' }} />
-            <div style={{ position: 'fixed', top: 90, left: 60, transform: 'translateZ(0) scale(1.25)' }}>
-                <div style={{ position: 'relative', top: 10, left: 20 }} id='ancestor-filter-overlays' />
-            </div>
-            <FilterPanel {...common} isOpen={open === 'center'} anchorRef={centeredRef}
-                aria-label='Transformed filter choices' onClose={() => setOpen(null)} />
-            <FilterPanel {...common} isOpen={open === 'edge'} anchorRef={edgeRef}
-                aria-label='Ancestor filter choices' onClose={() => setOpen(null)} />
         </CratisComponentsProvider>;
     },
 };
