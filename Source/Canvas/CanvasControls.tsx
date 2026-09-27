@@ -25,6 +25,20 @@ export interface CanvasControlsLabels {
     help?: string;
 }
 
+/** Replacements for the controls' button glyphs. Any field left unset keeps the built-in icon. Each
+ *  replacement is rendered inside the button as-is, so it should be decorative (for example
+ *  `aria-hidden`); the button's accessible name always comes from {@link CanvasControlsLabels}. */
+export interface CanvasControlsIcons {
+    /** Glyph for the minimap toggle button. */
+    toggleMinimap?: React.ReactNode;
+    /** Glyph for the zoom-out button. */
+    zoomOut?: React.ReactNode;
+    /** Glyph for the zoom-in button. */
+    zoomIn?: React.ReactNode;
+    /** Glyph for the help button. */
+    help?: React.ReactNode;
+}
+
 /** Props for standalone or Canvas-integrated zoom/minimap/help controls. */
 export interface CanvasControlsProps {
     /** Reads the live zoom factor — polled slowly so gestures never re-render the canvas. */
@@ -63,6 +77,17 @@ export interface CanvasControlsProps {
      *  defaults. */
     labels?: CanvasControlsLabels;
 
+    /** Replacements for the controls' button glyphs. Unset fields keep the built-in icons. */
+    icons?: CanvasControlsIcons;
+
+    /**
+     * Whether the control bar steps aside by the host's viewport inset at its edge - the
+     * `--canvas-viewport-left` custom property for the bottom-left placement and
+     * `--canvas-viewport-right` for the bottom-right one. Defaults to `true`. Set it to `false` when
+     * the host already shrinks or shifts the canvas itself by that inset, so the bar is not moved twice.
+     */
+    followViewportInsets?: boolean;
+
     /**
      * Renders a product-owned glass/acrylic surface behind the control bar. When omitted, nothing is
      * rendered there and the CSS-only `.canvas-controls-glass` / `.canvas-controls-glass--plain`
@@ -99,6 +124,8 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
     onHelp,
     helpTitle,
     labels,
+    icons,
+    followViewportInsets = true,
     glassSurface,
     contentCaptureAttribute,
     disableGlass = false,
@@ -107,17 +134,21 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
     const [displayZoom, setDisplayZoom] = useState(getZoom);
     const alignClass = placement === 'bottom-right' ? 'cratis:items-end' : 'cratis:items-start';
 
-    // The controls step aside for whatever the canvas viewport is inset by at their own edge — the docked
-    // right panel for the bottom-right placement, the project drawer for the bottom-left one — exactly like
-    // the top toolbars do. See Components/Viewport.
+    // A host that overlays part of the canvas (a side panel, a drawer) publishes how far it reaches in
+    // through --canvas-viewport-left/right, and the bar steps aside by the inset at its own edge. A host
+    // that already moves the canvas out of the way turns this off, or the bar would move twice.
     const alignStyle: React.CSSProperties =
         placement === 'bottom-right'
             ? {
-                  right: 'calc(1rem + var(--canvas-viewport-right, 0px))',
+                  right: followViewportInsets
+                      ? 'calc(1rem + var(--canvas-viewport-right, 0px))'
+                      : '1rem',
                   transition: 'right 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               }
             : {
-                  left: 'calc(1rem + var(--canvas-viewport-left, 0px))',
+                  left: followViewportInsets
+                      ? 'calc(1rem + var(--canvas-viewport-left, 0px))'
+                      : '1rem',
                   transition: 'left 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               };
 
@@ -174,7 +205,9 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                                 className={`canvas-controls-icon-btn cratis:flex cratis:items-center cratis:justify-center cratis:w-9 cratis:h-9 cratis:rounded-lg cratis:cursor-pointer cratis:select-none${minimapOpen ? ' canvas-controls-icon-btn--active' : ''}`}
                                 onClick={() => setMinimapOpen((v) => !v)}
                             >
-                                <FaMap className='cratis:text-base' aria-hidden='true' />
+                                {icons?.toggleMinimap ?? (
+                                    <FaMap className='cratis:text-base' aria-hidden='true' />
+                                )}
                             </button>
                             <span className='canvas-controls-separator' />
                         </>
@@ -191,7 +224,9 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                             refreshDisplayZoom();
                         }}
                     >
-                        <FaMinus className='cratis:text-base' aria-hidden='true' />
+                        {icons?.zoomOut ?? (
+                            <FaMinus className='cratis:text-base' aria-hidden='true' />
+                        )}
                     </button>
                     <button
                         type='button'
@@ -215,7 +250,9 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                             refreshDisplayZoom();
                         }}
                     >
-                        <FaPlus className='cratis:text-base' aria-hidden='true' />
+                        {icons?.zoomIn ?? (
+                            <FaPlus className='cratis:text-base' aria-hidden='true' />
+                        )}
                     </button>
 
                     {/* Help - only where there is something to explain; a button that does nothing is worse than none. */}
@@ -229,10 +266,12 @@ export const CanvasControls: React.FC<CanvasControlsProps> = ({
                                 className='canvas-controls-icon-btn cratis:flex cratis:items-center cratis:justify-center cratis:w-9 cratis:h-9 cratis:rounded-lg cratis:cursor-pointer cratis:select-none'
                                 onClick={onHelp}
                             >
-                                <FaCircleQuestion
-                                    className='cratis:text-base'
-                                    aria-hidden='true'
-                                />
+                                {icons?.help ?? (
+                                    <FaCircleQuestion
+                                        className='cratis:text-base'
+                                        aria-hidden='true'
+                                    />
+                                )}
                             </button>
                         </>
                     )}

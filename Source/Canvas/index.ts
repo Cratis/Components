@@ -20,7 +20,11 @@ export type {
     CanvasMinimapProps,
 } from './CanvasMinimap';
 export { CanvasControls } from './CanvasControls';
-export type { CanvasControlsProps, CanvasControlsLabels } from './CanvasControls';
+export type {
+    CanvasControlsProps,
+    CanvasControlsLabels,
+    CanvasControlsIcons,
+} from './CanvasControls';
 export { CanvasOverlay } from './CanvasOverlay';
 export type { CanvasOverlayProps } from './CanvasOverlay';
 export { canvasGesture } from './canvasGesture';
