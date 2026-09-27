@@ -337,8 +337,8 @@ export function FilterPanel({
                 ? previous : nextPosition);
         };
 
-        // A side Dialog's entering translate temporarily makes its root the fixed-position
-        // containing block. Measure again when the slide finishes and viewport positioning resumes.
+        // A Dialog's entry motion may change the fixed-position containing block.
+        // Measure again when its root or positioner stops moving.
         let animationFrame: number | undefined;
         const schedulePosition = () => {
             if (animationFrame !== undefined) return;
@@ -351,15 +351,13 @@ export function FilterPanel({
             if (event.target instanceof Node && panelRef.current?.contains(event.target)) return;
             schedulePosition();
         };
-        // Consumers may replace the side Dialog's entry animation or animate its positioner.
+        // Consumers may replace the Dialog's entry animation or animate its positioner.
         // Ignore events bubbling from controls inside the dialog; one frame is enough for
         // any number of animations or transitions ending in the same rendering frame.
-        const sideModal = modalRoot?.matches('[data-placement="start"], [data-placement="end"]')
-            ? modalRoot : null;
-        const positioner = sideModal?.parentElement?.matches('[data-cratis-part="positioner"]')
-            ? sideModal.parentElement : null;
+        const positioner = modalRoot?.parentElement?.matches('[data-cratis-part="positioner"]')
+            ? modalRoot.parentElement : null;
         const handleModalMotionEnd = (event: Event) => {
-            if (event.target === sideModal || event.target === positioner) schedulePosition();
+            if (event.target === modalRoot || event.target === positioner) schedulePosition();
         };
         const motionEvents = ['animationend', 'animationcancel', 'transitionend'] as const;
 
@@ -367,7 +365,7 @@ export function FilterPanel({
         window.addEventListener('resize', schedulePosition);
         window.addEventListener('scroll', handleScroll, true);
         for (const eventName of motionEvents) {
-            sideModal?.addEventListener(eventName, handleModalMotionEnd);
+            modalRoot?.addEventListener(eventName, handleModalMotionEnd);
             positioner?.addEventListener(eventName, handleModalMotionEnd);
         }
 
@@ -376,7 +374,7 @@ export function FilterPanel({
             window.removeEventListener('resize', schedulePosition);
             window.removeEventListener('scroll', handleScroll, true);
             for (const eventName of motionEvents) {
-                sideModal?.removeEventListener(eventName, handleModalMotionEnd);
+                modalRoot?.removeEventListener(eventName, handleModalMotionEnd);
                 positioner?.removeEventListener(eventName, handleModalMotionEnd);
             }
             probe.remove();
