@@ -304,6 +304,11 @@ export function destroySprite(sprite: CardSprite) {
     spritePool.push(sprite);
 }
 
+// Internal diagnostic for the browser teardown regression; not exported from the package entry point.
+export function getSpritePoolSize() {
+    return spritePool.length;
+}
+
 export function clearSpritePool() {
     for (const sprite of spritePool) {
         try {

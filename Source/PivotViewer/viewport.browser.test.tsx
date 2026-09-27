@@ -8,6 +8,7 @@ import { composeStory } from '@storybook/react';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { waitFor } from 'storybook/test';
 import meta, { KeyboardScrollableViewport } from './PivotViewer.stories';
+import { getSpritePoolSize } from './components/pivot/sprites';
 import '../tokens.css';
 import '../theme.css';
 import '../.storybook/preview.css';
@@ -60,16 +61,19 @@ it('scrolls the overflowing Storybook card area with trusted keys and tabs out',
 
     const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
     viewport.scrollTo({ top: maxScrollTop, behavior: 'instant' });
-    expect(viewport.scrollTop).toBe(maxScrollTop);
-    const arrowScrollEnd = new Promise<void>(resolve => viewport.addEventListener('scrollend', () => resolve(), { once: true }));
+    await waitFor(() => expect(viewport.scrollTop).toBe(maxScrollTop));
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     await userEvent.keyboard('{ArrowUp}');
-    await arrowScrollEnd;
-    expect(viewport.scrollTop).toBeLessThan(maxScrollTop);
+    await waitFor(() => expect(viewport.scrollTop).toBeLessThan(maxScrollTop - 10), { timeout: 3000 });
+    // Native keyboard scrolling can animate; wait until ArrowUp stops before PageDown.
+    await waitFor(async () => {
+        const position = viewport.scrollTop;
+        await new Promise<void>(resolve => setTimeout(resolve, 150));
+        expect(viewport.scrollTop).toBe(position);
+    }, { timeout: 3000 });
     const afterArrow = viewport.scrollTop;
-    const pageScrollEnd = new Promise<void>(resolve => viewport.addEventListener('scrollend', () => resolve(), { once: true }));
     await userEvent.keyboard('{PageDown}');
-    await pageScrollEnd;
-    expect(viewport.scrollTop).toBeGreaterThan(afterArrow);
+    await waitFor(() => expect(viewport.scrollTop).toBeGreaterThan(afterArrow));
     await userEvent.tab();
     expect(document.activeElement).not.toBe(viewport);
     const results = await axe.run(host, { runOnly: ['scrollable-region-focusable'] });
@@ -117,15 +121,22 @@ async function waitForRenderedCanvas(viewport: HTMLDivElement) {
 }
 
 it('renders cards again after destroying a scrolled Pixi application', async () => {
+    expect(getSpritePoolSize()).toBe(0);
     root.render(<Story />);
     await waitFor(() => expect(host.querySelector<HTMLDivElement>('.pv-viewport')?.scrollHeight).toBeGreaterThan(1000));
     const firstViewport = host.querySelector<HTMLDivElement>('.pv-viewport')!;
     await waitForRenderedCanvas(firstViewport);
     firstViewport.scrollTo({ top: 0, behavior: 'instant' });
     await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-    firstViewport.scrollTo({ top: firstViewport.scrollHeight - firstViewport.clientHeight, behavior: 'instant' });
+    const bottom = firstViewport.scrollHeight - firstViewport.clientHeight;
+    firstViewport.scrollTo({ top: bottom, behavior: 'instant' });
     await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    // Off-screen sprites are pooled only on a later sync, after 100ms hidden grace.
+    await new Promise<void>(resolve => setTimeout(resolve, 150));
+    firstViewport.scrollTo({ top: bottom - 1, behavior: 'instant' });
+    await waitFor(() => expect(getSpritePoolSize()).toBeGreaterThan(0));
     root.unmount();
+    expect(getSpritePoolSize()).toBe(0);
     expect(host.querySelector('canvas')).toBeNull();
 
     root = createRoot(host);
