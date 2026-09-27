@@ -111,6 +111,49 @@ describe('when a filter panel opens in a real modal Dialog with the default body
 });
 
 describe('when a filter panel opens in a real modal Dialog with a shared overlay root', () => {
+    it('should mount an initially open panel only inside the modal, keep focus exposed, and reopen there', async () => {
+        const mountTargets: Node[] = [];
+        const recordMounts = (records: MutationRecord[]) => {
+            for (const record of records) {
+                for (const node of record.addedNodes) {
+                    if (node instanceof HTMLElement && node.matches('.pv-filter-dropdown')) {
+                        mountTargets.push(record.target);
+                    }
+                }
+            }
+        };
+        const observer = new MutationObserver(recordMounts);
+        observer.observe(document.body, { childList: true, subtree: true });
+        try {
+            await render(<Dialog title='Edit filters' onCancel={onModalCancel}>
+                <Panel />
+            </Dialog>, { getContainer: () => overlayRoot });
+            const modalRoot = anchorRef.current!.closest('.cratis-dialog[data-cratis-part="root"]');
+            recordMounts(observer.takeRecords());
+            expect(mountTargets.length).to.be.greaterThan(0);
+            expect(mountTargets.every((target) => target === modalRoot)).to.equal(true);
+            expect(panel()?.parentElement).to.equal(modalRoot);
+            expect(panel()?.closest('[aria-hidden="true"], [inert]')).to.equal(null);
+            expect(modalRoot?.contains(document.activeElement)).to.equal(true);
+
+            await act(async () => panel()!.dispatchEvent(new KeyboardEvent('keydown', {
+                key: 'Escape', bubbles: true, cancelable: true,
+            })));
+            await act(async () => { await new Promise((resolve) => setTimeout(resolve, 400)); });
+            expect(panel()).to.equal(null);
+            expect(document.activeElement).to.equal(anchorRef.current);
+            await openFromModal();
+            recordMounts(observer.takeRecords());
+            expect(panel()?.parentElement).to.equal(modalRoot);
+            expect(panel()?.closest('[aria-hidden="true"], [inert]')).to.equal(null);
+            expect(document.activeElement).to.equal(panel());
+            expect(mountTargets.every((target) => target === modalRoot)).to.equal(true);
+            expect(onModalCancel.mock.calls.length).to.equal(0);
+        } finally {
+            observer.disconnect();
+        }
+    });
+
     it('should keep its search focused and exposed, then dismiss only the panel with Escape', async () => {
         await render(<Dialog title='Edit filters' onCancel={onModalCancel}>
             <Panel expandedFilterKey='status' initiallyOpen={false} />

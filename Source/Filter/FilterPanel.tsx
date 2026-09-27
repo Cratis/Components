@@ -5,6 +5,7 @@ import {
     Children,
     isValidElement,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -249,10 +250,23 @@ export function FilterPanel({
     const icon = useCratisIcon();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const environmentContainer = isBrowser ? overlayEnvironment.getContainer() : null;
+    const [resolvedAnchor, setResolvedAnchor] = useState<{
+        anchor: HTMLButtonElement | null;
+        modalRoot: HTMLElement | null;
+    } | null>(null);
+    // Refs attach during commit, after render. Resolve the modal before mounting any open
+    // panel so its first portal never lands in a shared root hidden by the modal.
+    useLayoutEffect(() => {
+        const anchor = anchorRef.current;
+        const modalRoot = anchor?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]') ?? null;
+        setResolvedAnchor((previous) => previous?.anchor === anchor && previous.modalRoot === modalRoot
+            ? previous
+            : { anchor, modalRoot });
+    });
     // A shared overlay root sits outside a modal's focus scope and is hidden from assistive
     // technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
     // An explicitly unavailable container still defers the portal; it is never a body fallback.
-    const modalRoot = anchorRef.current?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]');
+    const modalRoot = resolvedAnchor?.modalRoot;
     const portalContainer = environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
         ? modalRoot
         : environmentContainer;
@@ -321,7 +335,7 @@ export function FilterPanel({
         if (isOpen && panelRef.current && !panelRef.current.contains(document.activeElement)) {
             panelRef.current.focus();
         }
-    }, [isOpen, portalContainer]);
+    }, [isOpen, portalContainer, resolvedAnchor]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -342,10 +356,10 @@ export function FilterPanel({
         };
     }, [isOpen, anchorRef, onClose]);
 
-    if (!portalContainer) return null;
+    if (!portalContainer || !resolvedAnchor || resolvedAnchor.anchor !== anchorRef.current) return null;
 
     return createPortal(
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={Boolean(modalRoot)}>
             {isOpen && (
                 <motion.div
                     ref={panelRef}
