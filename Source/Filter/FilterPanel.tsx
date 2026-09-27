@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCratisIcon } from '../configuration/useCratisIcon';
+import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type {
     FilterDefinition,
     FilterValues,
@@ -246,6 +247,15 @@ export function FilterPanel({
         serverSnapshot,
     );
     const icon = useCratisIcon();
+    const overlayEnvironment = unstable_useOverlayEnvironment();
+    const environmentContainer = isBrowser ? overlayEnvironment.getContainer() : null;
+    // A shared overlay root sits outside a modal's focus scope and is hidden from assistive
+    // technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
+    // An explicitly unavailable container still defers the portal; it is never a body fallback.
+    const modalRoot = anchorRef.current?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]');
+    const portalContainer = environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
+        ? modalRoot
+        : environmentContainer;
     const panelRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState<DropdownPosition>({
         top: 0,
@@ -311,7 +321,7 @@ export function FilterPanel({
         if (isOpen && panelRef.current && !panelRef.current.contains(document.activeElement)) {
             panelRef.current.focus();
         }
-    }, [isOpen, isBrowser]);
+    }, [isOpen, portalContainer]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -332,7 +342,7 @@ export function FilterPanel({
         };
     }, [isOpen, anchorRef, onClose]);
 
-    if (!isBrowser) return null;
+    if (!portalContainer) return null;
 
     return createPortal(
         <AnimatePresence initial={false}>
@@ -517,6 +527,6 @@ export function FilterPanel({
                 </motion.div>
             )}
         </AnimatePresence>,
-        document.body,
+        portalContainer,
     );
 }

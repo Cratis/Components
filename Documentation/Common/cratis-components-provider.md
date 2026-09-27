@@ -414,7 +414,7 @@ export const App = () => (
 );
 ```
 
-Returning `null` defers the overlay; Components does not silently retarget it to `document.body`. The non-modal `ChatSidebar` also uses this container, or `document.body` when no environment is configured, and portals only after mount.
+Returning `null` defers the overlay; Components does not silently retarget it to `document.body`. The non-modal `ChatSidebar` and `FilterPanel` also use this container, or `document.body` when no environment is configured, and portal only after mount. An open `FilterPanel` inside a Cratis modal `Dialog` mounts within that modal instead when the configured container is outside it, preserving focus and accessibility; a container inside the modal is used as configured.
 Direct vendor overlays keep their own portal and z-index configuration. Verify layer order and focus
 behavior in the real application shell when both systems can open together.
 
