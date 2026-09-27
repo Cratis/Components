@@ -365,6 +365,20 @@
     touch-action: pan-x pan-y;
 }
 
+.pv-viewport:focus-visible {
+    outline: none;
+    /* Both strokes stay inside the clipped viewport; the surface stroke separates the ring from the gradient. */
+    box-shadow: inset var(--cratis-focus-ring), inset 0 0 0 5px var(--cratis-surface-ground);
+}
+
+@media (forced-colors: active) {
+    .pv-viewport:focus-visible {
+        /* Forced colors suppress shadows; keep the replacement outline inside the clipping edge. */
+        outline: 2px solid Highlight;
+        outline-offset: -3px;
+    }
+}
+
 .pv-groups-grouped {
     flex: 1;
     padding-bottom: 0;

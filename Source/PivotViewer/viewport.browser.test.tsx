@@ -21,6 +21,7 @@ const root = createRoot(host);
 afterEach(() => {
     root.unmount();
     host.remove();
+    document.documentElement.classList.remove('cratis-light', 'cratis-dark');
 });
 
 it('scrolls the overflowing Storybook card area with trusted keys and tabs out', async () => {
@@ -35,6 +36,15 @@ it('scrolls the overflowing Storybook card area with trusted keys and tabs out',
     lastControl.focus();
     await userEvent.tab();
     expect(document.activeElement).toBe(viewport);
+    expect(viewport.matches(':focus-visible')).toBe(true);
+    // An inset 3px ring is painted within the viewport bounds, not clipped by .pv-main.
+    document.documentElement.classList.add('cratis-light');
+    expect(getComputedStyle(viewport).boxShadow).toContain('rgb(37, 99, 235)');
+    expect(getComputedStyle(viewport).boxShadow).toContain('3px inset');
+    document.documentElement.classList.remove('cratis-light');
+    document.documentElement.classList.add('cratis-dark');
+    expect(getComputedStyle(viewport).boxShadow).toContain('rgb(147, 197, 253)');
+    expect(getComputedStyle(viewport).boxShadow).toContain('3px inset');
 
     const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
     viewport.scrollTo({ top: maxScrollTop, behavior: 'instant' });

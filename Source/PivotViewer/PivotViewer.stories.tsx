@@ -441,7 +441,13 @@ export const KeyboardScrollableViewport: Story = {
         await expect(document.activeElement).toBe(viewport);
         await expect(viewport.getAttribute('role')).toBe('region');
         await expect(viewport.getAttribute('aria-label')).toBe('Sample cards');
-        await expect(getComputedStyle(viewport).outlineStyle).not.toBe('none');
+        await expect(viewport.matches(':focus-visible')).toBe(true);
+        if (matchMedia('(forced-colors: active)').matches) {
+            await expect(getComputedStyle(viewport).outlineStyle).toBe('solid');
+            await expect(getComputedStyle(viewport).outlineOffset).toBe('-3px');
+        } else {
+            await expect(getComputedStyle(viewport).boxShadow).toContain('3px inset');
+        }
         await userEvent.tab();
         await expect(document.activeElement).not.toBe(viewport);
         // The Storybook a11y addon runs axe on this overflowing story, including
