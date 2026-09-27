@@ -9,9 +9,11 @@ import { Dialog } from '../Dialogs/Dialog';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import type { FilterDefinition } from './types';
 
-const meta: Meta<typeof FilterPanel> = { title: 'Filter/FilterPanel/Accessibility', component: FilterPanel };
+// Both scenarios exercise FilterPanel within a slotted Dialog; declare the Dialog so
+// the renderer matrix also runs these interactions against every Dialog adapter.
+const meta: Meta<typeof Dialog> = { title: 'Filter/FilterPanel/In Dialog', component: Dialog };
 export default meta;
-type Story = StoryObj<typeof FilterPanel>;
+type Story = StoryObj<typeof Dialog>;
 
 const filters: FilterDefinition[] = [{
     key: 'status', label: 'Status', searchable: true, autoFocus: true,

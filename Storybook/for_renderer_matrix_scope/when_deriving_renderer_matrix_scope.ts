@@ -67,6 +67,23 @@ describe('when deriving renderer matrix scope', () => {
         expect(matrixStoryIds.size).to.equal(storyEntries.length);
     });
 
+    it('should include filter panel stories inside a slotted Dialog on every renderer', () => {
+        const storyEntries = [
+            {
+                id: 'filter-filterpanel-in-dialog--side-dialog-entrance',
+                componentPath: './Source/Dialogs/Dialog.tsx',
+                importPath: './Source/Filter/FilterPanelInDialog.stories.tsx',
+            },
+            {
+                id: 'filter-filterpanel-in-dialog--focus-search-and-dismiss',
+                componentPath: './Source/Dialogs/Dialog.tsx',
+                importPath: './Source/Filter/FilterPanelInDialog.stories.tsx',
+            },
+        ];
+        const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot, sourceRoot });
+        expect([...matrixStoryIds].sort()).to.deep.equal(storyEntries.map(entry => entry.id).sort());
+    });
+
     it('should include a story with no declared component, falling back to the story module itself', () => {
         const storyEntries = [
             storyEntry('display-overview--overview', 'Display/Display.stories.tsx', false),

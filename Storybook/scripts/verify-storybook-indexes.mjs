@@ -86,8 +86,17 @@ const { slotOwningModules, matrixStoryIds } = computeRendererMatrixScope({
 if (slotOwningModules.size !== 14) {
     throw new Error(`Expected 14 slot-owning modules (the stable nine-slot presentation profile plus experimental slots), found ${slotOwningModules.size}.`);
 }
-if (matrixStoryIds.size !== 181) {
-    throw new Error(`Expected 181 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
+if (matrixStoryIds.size !== 183) {
+    throw new Error(`Expected 183 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
+}
+for (const id of [
+    'filter-filterpanel-in-dialog--focus-search-and-dismiss',
+    'filter-filterpanel-in-dialog--side-dialog-entrance',
+]) {
+    const entry = canonicalStoryEntries.find(story => story.id === id);
+    if (entry?.componentPath !== './Source/Dialogs/Dialog.tsx' || !matrixStoryIds.has(id)) {
+        throw new Error(`FilterPanel-in-Dialog story '${id}' must run against every renderer preview.`);
+    }
 }
 
 const appearances = 2;
