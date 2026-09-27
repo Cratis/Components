@@ -22,6 +22,10 @@ describe('when discovering renderer previews', () => {
         expect(inventory.adapters.map((adapter) => adapter.metadata.id).sort()).to.deep.equal(
             expectedRenderers.publicRenderers,
         );
+        expect(inventory.adapters[0].builtIn).to.equal(true);
+        expect(inventory.adapters.slice(1).every((adapter) => !adapter.builtIn)).to.equal(true);
+        const displayNames = inventory.adapters.slice(1).map((adapter) => adapter.metadata.displayName);
+        expect(displayNames).to.deep.equal([...displayNames].sort((left, right) => left.localeCompare(right)));
         expect(
             inventory.adapters.every((adapter) => adapter.metadata.kind === 'ui-adapter'),
         ).to.equal(true);
