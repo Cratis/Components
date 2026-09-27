@@ -79,6 +79,11 @@ describe('when deriving renderer matrix scope', () => {
                 componentPath: './Source/Dialogs/Dialog.tsx',
                 importPath: './Source/Filter/FilterPanelInDialog.stories.tsx',
             },
+            {
+                id: 'filter-filterpanel-in-dialog--transformed-overlay-container',
+                componentPath: './Source/Dialogs/Dialog.tsx',
+                importPath: './Source/Filter/FilterPanelInDialog.stories.tsx',
+            },
         ];
         const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot, sourceRoot });
         expect([...matrixStoryIds].sort()).to.deep.equal(storyEntries.map(entry => entry.id).sort());

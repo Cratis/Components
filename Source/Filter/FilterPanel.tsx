@@ -273,7 +273,7 @@ export function FilterPanel({
         ? modalRoot
         : environmentContainer;
     const panelRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState<DropdownPosition>({
+    const [position, setPosition] = useState<DropdownPosition & { width?: number }>({
         top: 0,
         left: 0,
         maxHeight: 0,
@@ -282,19 +282,51 @@ export function FilterPanel({
     const editorMap = useMemo(() => buildEditorMap(children), [children]);
 
     // Keep the fixed-position portal attached to its anchor and clamped inside the viewport.
+    // A transform (or other fixed containing-block property) on the portal container OR any
+    // ancestor changes the meaning of CSS left/top/bottom. A fixed probe in the portal sees
+    // exactly the same containing block as the panel, without guessing which ancestor owns it.
     // Capture-phase scroll observation also covers nested scrolling containers.
-    useEffect(() => {
-        if (!isOpen) return;
+    useLayoutEffect(() => {
+        if (!isOpen || !portalContainer) return;
 
         const updatePosition = () => {
-            if (!anchorRef.current) return;
+            if (!anchorRef.current || !panelRef.current) return;
 
-            setPosition(
-                resolveDropdownPosition(anchorRef.current.getBoundingClientRect(), {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                }),
+            const probe = document.createElement('div');
+            probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none';
+            portalContainer.appendChild(probe);
+            const origin = probe.getBoundingClientRect();
+            probe.style.top = 'auto';
+            probe.style.bottom = '0';
+            const containingBlockBottom = probe.getBoundingClientRect().bottom;
+            probe.remove();
+
+            // offsetWidth is in local CSS pixels; the probe's rect supplies the viewport scale.
+            // Preserve the viewport gutter even when a containing block scales the dropdown.
+            const scaleX = origin.width || 1;
+            const scaleY = origin.height || 1;
+            const viewport = { width: window.innerWidth, height: window.innerHeight };
+            // Measure the CSS width without a previous resize's inline clamp applied.
+            const panel = panelRef.current;
+            const previousWidth = panel.style.width;
+            panel.style.width = '';
+            const cssWidth = panel.offsetWidth;
+            panel.style.width = previousWidth;
+            const width = cssWidth * scaleX > viewport.width - 32
+                ? Math.max(0, (viewport.width - 32) / scaleX)
+                : undefined;
+            const viewportPosition = resolveDropdownPosition(
+                anchorRef.current.getBoundingClientRect(), viewport,
+                (width ?? cssWidth) * scaleX,
             );
+            setPosition({
+                left: (viewportPosition.left - origin.left) / scaleX,
+                top: viewportPosition.top === undefined ? undefined : (viewportPosition.top - origin.top) / scaleY,
+                bottom: viewportPosition.bottom === undefined ? undefined
+                    : (containingBlockBottom - (viewport.height - viewportPosition.bottom)) / scaleY,
+                maxHeight: viewportPosition.maxHeight / scaleY,
+                width,
+            });
         };
 
         // A side Dialog's entering translate temporarily makes its root the fixed-position
@@ -316,7 +348,7 @@ export function FilterPanel({
             window.removeEventListener('scroll', updatePosition, true);
             modalRoot?.removeEventListener('animationend', handleModalAnimationEnd);
         };
-    }, [anchorRef, isOpen, modalRoot]);
+    }, [anchorRef, isOpen, modalRoot, portalContainer]);
 
     // Handle click outside to close
     useEffect(() => {
@@ -393,6 +425,7 @@ export function FilterPanel({
                         top: position.top,
                         bottom: position.bottom,
                         maxHeight: position.maxHeight,
+                        width: position.width,
                     }}
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -33,6 +33,14 @@ describe('when the filter anchor sits near a viewport edge', () => {
         expect(position.left).to.equal(688);
     });
 
+    it('should_clamp_using_the_rendered_width_in_a_scaled_containing_block', () => {
+        const position = resolveDropdownPosition(
+            { top: 100, bottom: 130, left: 1000 }, viewport, 400,
+        );
+
+        expect(position.left).to.equal(608);
+    });
+
     it('should_never_place_the_panel_left_of_the_gutter', () => {
         const position = resolveDropdownPosition(
             { top: 100, bottom: 130, left: -50 },
