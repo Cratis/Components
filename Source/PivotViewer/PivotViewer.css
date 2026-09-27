@@ -371,11 +371,21 @@
     box-shadow: inset var(--cratis-focus-ring), inset 0 0 0 5px var(--cratis-surface-ground);
 }
 
+/* The canvas is a sibling painted above the viewport shadow. Its inset outline stays
+   fixed at the viewport edge as the Pixi cards scroll beneath it. */
+.pv-viewport:focus-visible ~ canvas {
+    outline: 3px solid var(--cratis-primary-color);
+    outline-offset: -3px;
+}
+
 @media (forced-colors: active) {
     .pv-viewport:focus-visible {
         /* Forced colors suppress shadows; keep the replacement outline inside the clipping edge. */
         outline: 2px solid Highlight;
         outline-offset: -3px;
+    }
+    .pv-viewport:focus-visible ~ canvas {
+        outline-color: Highlight;
     }
 }
 
