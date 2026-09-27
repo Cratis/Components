@@ -14,6 +14,7 @@ import {
 import {
     createCardSprite as createCardSpriteExternal,
     updateCardContent as updateCardContentExternal,
+    clearSpritePool,
 } from './pivot/sprites';
 import { syncSpritesToViewport } from './pivot/visibility';
 import { syncScrollSprites } from './pivot/syncScrollSprites';
@@ -364,11 +365,10 @@ export function PivotCanvas<TItem extends object>({
                 rootRef.current = null;
             }
 
-            // Clear local sprite references to prevent re-use of destroyed sprites
+            // Pixi destroys the application's children. Discard detached, pooled
+            // sprites too so a later application cannot reuse their stale textures.
+            clearSpritePool();
             spritesRef.current.clear();
-
-            // Clear sprite pool to avoid holding onto destroyed textures
-            // clearSpritePool();
 
             // Remove any event listeners we attached to the parent container
             try {

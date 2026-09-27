@@ -61,11 +61,15 @@ it('scrolls the overflowing Storybook card area with trusted keys and tabs out',
     const maxScrollTop = viewport.scrollHeight - viewport.clientHeight;
     viewport.scrollTo({ top: maxScrollTop, behavior: 'instant' });
     expect(viewport.scrollTop).toBe(maxScrollTop);
+    const arrowScrollEnd = new Promise<void>(resolve => viewport.addEventListener('scrollend', () => resolve(), { once: true }));
     await userEvent.keyboard('{ArrowUp}');
-    await waitFor(() => expect(viewport.scrollTop).toBeLessThan(maxScrollTop));
+    await arrowScrollEnd;
+    expect(viewport.scrollTop).toBeLessThan(maxScrollTop);
     const afterArrow = viewport.scrollTop;
+    const pageScrollEnd = new Promise<void>(resolve => viewport.addEventListener('scrollend', () => resolve(), { once: true }));
     await userEvent.keyboard('{PageDown}');
-    await waitFor(() => expect(viewport.scrollTop).toBeGreaterThan(afterArrow));
+    await pageScrollEnd;
+    expect(viewport.scrollTop).toBeGreaterThan(afterArrow);
     await userEvent.tab();
     expect(document.activeElement).not.toBe(viewport);
     const results = await axe.run(host, { runOnly: ['scrollable-region-focusable'] });
@@ -86,37 +90,49 @@ async function capturePixels(viewport: HTMLDivElement) {
     return context.getImageData(0, 0, canvas.width, canvas.height);
 }
 
-// The scroll spacer can be ready before Pixi has attached or painted its canvas.
-// Compare interior pixels with the canvas hidden to require a real rendered card frame.
+// The scroll spacer and canvas dimensions can be ready before Pixi paints any cards.
+// Card edges introduce sharp pixel transitions; the viewport's CSS radial gradient
+// cannot. Sample the composited viewport without changing canvas visibility mid-frame.
 async function waitForRenderedCanvas(viewport: HTMLDivElement) {
     await waitFor(() => {
         const canvas = host.querySelector<HTMLCanvasElement>('.pv-viewport ~ canvas');
         expect(canvas?.width).toBeGreaterThan(0);
         expect(canvas?.height).toBeGreaterThan(0);
     });
-    const canvas = host.querySelector<HTMLCanvasElement>('.pv-viewport ~ canvas')!;
     await waitFor(async () => {
         await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-        const painted = await capturePixels(viewport);
-        canvas.style.visibility = 'hidden';
-        let withoutCanvas: ImageData;
-        try {
-            withoutCanvas = await capturePixels(viewport);
-        } finally {
-            canvas.style.visibility = '';
-        }
-        let changed = 0;
-        for (let y = 16; y < painted.height - 16; y += 12) {
-            for (let x = 16; x < painted.width - 16; x += 12) {
-                const offset = (y * painted.width + x) * 4;
-                if (Math.abs(painted.data[offset] - withoutCanvas.data[offset]) +
-                    Math.abs(painted.data[offset + 1] - withoutCanvas.data[offset + 1]) +
-                    Math.abs(painted.data[offset + 2] - withoutCanvas.data[offset + 2]) > 30) changed++;
+        const { data, width, height } = await capturePixels(viewport);
+        let edges = 0;
+        for (let y = 16; y < height - 16; y += 12) {
+            for (let x = 16; x < width - 28; x += 12) {
+                const offset = (y * width + x) * 4;
+                const next = offset + 12 * 4;
+                if (Math.abs(data[offset] - data[next]) +
+                    Math.abs(data[offset + 1] - data[next + 1]) +
+                    Math.abs(data[offset + 2] - data[next + 2]) > 30) edges++;
             }
         }
-        expect(changed, 'Pixi canvas must paint cards before edge sampling').toBeGreaterThan(8);
+        expect(edges, 'Pixi canvas must paint card edges before ring sampling').toBeGreaterThan(8);
     }, { timeout: 15000 });
 }
+
+it('renders cards again after destroying a scrolled Pixi application', async () => {
+    root.render(<Story />);
+    await waitFor(() => expect(host.querySelector<HTMLDivElement>('.pv-viewport')?.scrollHeight).toBeGreaterThan(1000));
+    const firstViewport = host.querySelector<HTMLDivElement>('.pv-viewport')!;
+    await waitForRenderedCanvas(firstViewport);
+    firstViewport.scrollTo({ top: 0, behavior: 'instant' });
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    firstViewport.scrollTo({ top: firstViewport.scrollHeight - firstViewport.clientHeight, behavior: 'instant' });
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    root.unmount();
+    expect(host.querySelector('canvas')).toBeNull();
+
+    root = createRoot(host);
+    root.render(<Story />);
+    await waitFor(() => expect(host.querySelector('.pv-viewport')).not.toBeNull());
+    await waitForRenderedCanvas(host.querySelector<HTMLDivElement>('.pv-viewport')!);
+});
 
 async function edgePixels(viewport: HTMLDivElement, edge: 'top' | 'bottom' | 'left', color: readonly number[]) {
     const { data, width, height } = await capturePixels(viewport);
@@ -171,12 +187,12 @@ it('paints the focus ring above cards at nonzero vertical and horizontal scroll'
 
     await userEvent.click(host.querySelector<HTMLButtonElement>('.pv-view-toggle button:nth-child(2)')!);
     await waitFor(() => expect(viewport.scrollWidth - viewport.clientWidth).toBeGreaterThan(100));
-    await waitForRenderedCanvas(viewport);
     lastControl.focus();
     await userEvent.tab();
     expect(viewport.matches(':focus-visible')).toBe(true);
     viewport.scrollTo({ left: 150, behavior: 'instant' });
     expect(viewport.scrollLeft).toBeGreaterThan(0);
+    await waitForRenderedCanvas(viewport);
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     const pixels = await edgePixels(viewport, 'left', [147, 197, 253]);
     expect(pixels.matching / pixels.total, `grouped left: ${pixels.matching}/${pixels.total} ring pixels`).toBeGreaterThan(0.8);
@@ -237,12 +253,12 @@ it('paints colors.focusRing over cards after vertical and horizontal scroll', as
 
     await userEvent.click(host.querySelector<HTMLButtonElement>('.pv-view-toggle button:nth-child(2)')!);
     await waitFor(() => expect(viewport.scrollWidth - viewport.clientWidth).toBeGreaterThan(100));
-    await waitForRenderedCanvas(viewport);
     lastControl.focus();
     await userEvent.tab();
     expect(viewport.matches(':focus-visible')).toBe(true);
     viewport.scrollTo({ left: 150, behavior: 'instant' });
     expect(viewport.scrollLeft).toBeGreaterThan(0);
+    await waitForRenderedCanvas(viewport);
     const pixels = await edgePixels(viewport, 'left', [251, 146, 60]);
     expect(pixels.matching / pixels.total, `grouped colors.focusRing left: ${pixels.matching}/${pixels.total}`).toBeGreaterThan(0.8);
 });
