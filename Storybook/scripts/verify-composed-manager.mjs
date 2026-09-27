@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { discoverAdapterPackages } from './lib/adapter-inventory.mjs';
+import { verifyRendererOptions } from './lib/renderer-options.mjs';
 
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(storybookRoot, '..');
@@ -99,11 +100,12 @@ try {
 
     const selector = page.locator('select[aria-label="Renderer"]');
     await selector.waitFor({ state: 'visible', timeout: 30_000 });
-    const options = await selector.locator('option').allTextContents();
-    const expectedOptions = discoverAdapterPackages(repositoryRoot).adapters.map(adapter => adapter.metadata.displayName).sort();
-    if (JSON.stringify([...options].sort()) !== JSON.stringify(expectedOptions)) {
-        throw new Error(`Renderer options differ from the validated adapter metadata: expected ${expectedOptions.join(', ')}, found ${options.join(', ')}.`);
-    }
+    const options = await selector.locator('option').evaluateAll(elements => elements.map(option => ({
+        id: option.value,
+        label: option.textContent ?? '',
+    })));
+    const snapshot = JSON.parse(readFileSync(path.join(storybookRoot, 'scripts/renderer-inventory.json'), 'utf8'));
+    verifyRendererOptions(options, discoverAdapterPackages(repositoryRoot).adapters, snapshot);
     if ((await selector.inputValue()) !== sourceRendererId) {
         throw new Error(
             'The renderer selector did not reflect the initial composed ref.',
