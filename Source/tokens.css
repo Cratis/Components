@@ -56,7 +56,8 @@
     --cratis-control-height-small: 2.25rem;
     --cratis-control-height-large: 3.25rem;
     --cratis-disabled-opacity: 0.55;
-    --cratis-focus-ring: 0 0 0 3px #2563eb;
+    --cratis-focus-color: var(--cratis-primary-color);
+    --cratis-focus-ring: 0 0 0 3px var(--cratis-focus-color);
     --cratis-maskbg: rgb(0 0 0 / 40%);
     --cratis-shadow-subtle: 0 1px 2px rgb(0 0 0 / 5%);
     --cratis-shadow-overlay: 0 2px 12px rgb(0 0 0 / 10%);

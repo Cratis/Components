@@ -374,7 +374,7 @@
 /* The canvas is a sibling painted above the viewport shadow. Its inset outline stays
    fixed at the viewport edge as the Pixi cards scroll beneath it. */
 .pv-viewport:focus-visible ~ canvas {
-    outline: 3px solid var(--cratis-primary-color);
+    outline: 3px solid var(--cratis-focus-color, var(--cratis-primary-color));
     outline-offset: -3px;
 }
 
