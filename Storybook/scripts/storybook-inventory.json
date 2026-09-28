@@ -626,6 +626,7 @@
         "toolbar-toolbar--with-folder-one-button",
         "toolbar-toolbar--with-folder-twenty-buttons",
         "toolbar-toolbar--with-groups",
+        "toolbar-toolbar--with-hidden-icon-part",
         "toolbar-toolbar--with-multiple-slot-contributors",
         "toolbar-toolbar--with-react-node-icons",
         "toolbar-toolbar--with-separators",
