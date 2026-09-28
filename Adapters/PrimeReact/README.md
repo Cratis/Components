@@ -66,7 +66,7 @@ is absent. Setting the attestation to `true` is an application assertion that th
 supplied; it is not a substitute for doing so. This prevents Components from creating a second
 provider and fails before adapter content when setup was not attested. The adapter does not validate
 the key and cannot guarantee that PrimeUI will accept it or omit its own license notice.
-For development without a key, [select the built-in Core renderer explicitly](../../Documentation/renderers/licensing.md#develop-without-a-primereact-key)
+For development without a key, [select the built-in Core renderer explicitly](https://github.com/Cratis/Components/blob/main/Documentation/renderers/licensing.md#develop-without-a-primereact-key)
 instead of selecting this adapter; a missing attestation never triggers a license fallback.
 
 Obtain a key from [PrimeUI](https://primeui.store/primeui). For Vite, expose the application-owned
