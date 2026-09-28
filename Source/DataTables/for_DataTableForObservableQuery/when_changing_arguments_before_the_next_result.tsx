@@ -15,6 +15,7 @@ interface Row { id: number; name: string }
 const deliverResult = new Map<string, (result: QueryResult<Row[]>) => void>();
 const requestedPages: number[] = [];
 let subscribedQuery: ScopedQuery | undefined;
+const recordSubscription = (query: ScopedQuery) => { subscribedQuery = query; };
 class ScopedQuery extends ObservableQueryFor<Row[], { scope: string }> {
     readonly route = '/api/sample/observable-scoped-rows';
     readonly defaultValue: Row[] = [];
@@ -23,7 +24,7 @@ class ScopedQuery extends ObservableQueryFor<Row[], { scope: string }> {
     constructor() { super(Object, true); }
     override subscribe(callback: (result: QueryResult<Row[]>) => void, args?: { scope: string }): ObservableQuerySubscription<Row[]> {
         requestedPages.push(this.paging.page);
-        subscribedQuery = this;
+        recordSubscription(this);
         deliverResult.set(args!.scope, callback);
         return { unsubscribe: () => { deliverResult.delete(args!.scope); } } as unknown as ObservableQuerySubscription<Row[]>;
     }
