@@ -9,6 +9,13 @@ const widgetSelector = 'input:not([type="button"]):not([type="submit"]):not([typ
 
 type Orientation = 'horizontal' | 'vertical';
 
+const isWidget = (tool: HTMLElement, root: HTMLElement) => {
+    for (let element: HTMLElement | null = tool; element && element !== root; element = element.parentElement) {
+        if (element.matches(widgetSelector)) return true;
+    }
+    return false;
+};
+
 /** Components-owned toolbar focus behavior; never captures keys from child widgets. */
 export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode: ToolbarFocusMode) => {
     const rootRef = useRef<HTMLDivElement>(null);
@@ -34,7 +41,9 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
 
     const updateTabStops = useCallback(() => {
         if (focusMode !== ToolbarFocusMode.SingleTabStop) return;
-        const available = tools();
+        const root = rootRef.current;
+        if (!root) return;
+        const available = tools().filter(tool => !isWidget(tool, root));
         const selected = lastFocusedRef.current && available.includes(lastFocusedRef.current)
             ? lastFocusedRef.current : available[0];
         lastFocusedRef.current = selected ?? null;
@@ -43,9 +52,20 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
             const tabIndex = tool === selected ? '0' : '-1';
             if (tool.getAttribute('tabindex') !== tabIndex) tool.setAttribute('tabindex', tabIndex);
         }
+        // Unavailable tools (including aria-disabled buttons) must not add another
+        // native Tab stop. Widgets instead keep their own native Tab behavior.
+        const excluded = Array.from(root.querySelectorAll<HTMLElement>(toolSelector)).filter(tool =>
+            tool.closest('[role="toolbar"]') === root && !isWidget(tool, root) && !available.includes(tool));
+        for (const tool of excluded) {
+            if (!originalTabIndicesRef.current.has(tool)) {
+                if (tool.getAttribute('tabindex') === '-1') continue;
+                originalTabIndicesRef.current.set(tool, tool.getAttribute('tabindex'));
+            }
+            if (tool.getAttribute('tabindex') !== '-1') tool.setAttribute('tabindex', '-1');
+        }
         for (const [tool, original] of originalTabIndicesRef.current) {
-            if (available.includes(tool)) continue;
-            if (rootRef.current?.contains(tool)) {
+            if (available.includes(tool) || excluded.includes(tool)) continue;
+            if (root.contains(tool)) {
                 if (original === null) tool.removeAttribute('tabindex');
                 else tool.setAttribute('tabindex', original);
             }
@@ -77,7 +97,7 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         const target = event.target;
         if (!root?.contains(target) || target.closest('[role="toolbar"]') !== root) return;
         const tool = target.closest<HTMLElement>(toolSelector);
-        if (tool && tools().includes(tool)) {
+        if (tool && !isWidget(tool, root) && tools().includes(tool)) {
             lastFocusedRef.current = tool;
             updateTabStops();
         }
@@ -94,7 +114,8 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         for (let element: Element | null = target; element && element !== root; element = element.parentElement) {
             if (element.matches(widgetSelector)) return;
         }
-        const available = tools();
+        const available = focusMode === ToolbarFocusMode.SingleTabStop
+            ? tools().filter(tool => !isWidget(tool, root)) : tools();
         const current = target.closest<HTMLElement>(toolSelector);
         const index = current ? available.indexOf(current) : -1;
         if (index < 0) return;

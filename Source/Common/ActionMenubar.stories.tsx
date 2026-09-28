@@ -59,6 +59,40 @@ export const SingleTabStop: Story = {
     },
 };
 
+export const SingleTabStopWithWidgets: Story = {
+    args: {
+        focusMode: ToolbarFocusMode.SingleTabStop,
+        model: [
+            { template: () => <input aria-label='Action name' defaultValue='Demo' /> },
+            { label: 'New', icon: <FaPlus /> },
+            { label: 'Save', icon: <FaFloppyDisk /> },
+            { template: () => <select aria-label='Action category'><option>General</option></select> },
+        ],
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const input = canvas.getByRole('textbox', { name: 'Action name' }) as HTMLInputElement;
+        const first = canvas.getByRole('button', { name: 'New' });
+        const last = canvas.getByRole('button', { name: 'Save' });
+        const select = canvas.getByRole('combobox', { name: 'Action category' });
+        await userEvent.tab();
+        await expect(input).toHaveFocus();
+        input.setSelectionRange(2, 2);
+        await userEvent.keyboard('{ArrowLeft}');
+        await expect(input.selectionStart).toBe(1);
+        await userEvent.tab();
+        await expect(first).toHaveFocus();
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(last).toHaveFocus();
+        await userEvent.tab();
+        await expect(select).toHaveFocus();
+        await userEvent.tab({ shift: true });
+        await expect(last).toHaveFocus();
+        await userEvent.keyboard('{Home}');
+        await expect(first).toHaveFocus();
+    },
+};
+
 export const DisabledAction: Story = {
     play: async ({ canvasElement, args }) => {
         const save = within(canvasElement).getByRole('button', { name: 'Save' });

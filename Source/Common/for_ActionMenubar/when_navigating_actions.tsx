@@ -98,6 +98,57 @@ describe('when navigating ActionMenubar actions', () => {
         expect(document.activeElement).to.equal(nested);
     });
 
+    it('should leave template widgets in each position on Tab and reach all actions by arrows in SingleTabStop', async () => {
+        const widgets: ActionMenuItem[] = [
+            { template: () => <input aria-label='Edit' /> },
+            { template: () => <select aria-label='Choose'><option>One</option></select> },
+            { template: () => <div role='slider' tabIndex={0} aria-label='Level' /> },
+        ];
+        for (let position = 0; position < 3; position++) {
+            const items: ActionMenuItem[] = [{ label: 'First' }, { label: 'Last' }];
+            items.splice(position, 0, widgets[position]);
+            await render([], ToolbarFocusMode.Arrows);
+            await render(items, ToolbarFocusMode.SingleTabStop);
+            const [first, last] = buttons();
+            const widget = container.querySelector<HTMLElement>('input,select,[role="slider"]')!;
+            expect(widget.getAttribute('tabindex')).to.equal(position === 2 ? '0' : null);
+            expect(widget.tabIndex).to.equal(0);
+            expect([first.tabIndex, last.tabIndex]).to.deep.equal([0, -1]);
+            first.focus();
+            await key(first, 'ArrowRight');
+            expect(document.activeElement).to.equal(last);
+            await key(last, 'Home');
+            expect(document.activeElement).to.equal(first);
+            await key(first, 'End');
+            expect(document.activeElement).to.equal(last);
+            widget.focus();
+            for (const name of ['ArrowRight', 'Home', 'End']) {
+                expect((await key(widget, name)).defaultPrevented).to.equal(false);
+                expect(document.activeElement).to.equal(widget);
+            }
+            expect((await key(widget, 'Tab')).defaultPrevented).to.equal(false);
+        }
+    });
+
+    it('should keep initially and dynamically aria-disabled template actions out of the Tab order', async () => {
+        const initiallyDisabled: ActionMenuItem[] = [
+            { label: 'First' }, { template: () => <button aria-disabled='true'>Unavailable</button> }, { label: 'Last' },
+        ];
+        await render(initiallyDisabled, ToolbarFocusMode.SingleTabStop);
+        expect(buttons().map(button => button.tabIndex)).to.deep.equal([0, -1, -1]);
+        buttons()[0].focus();
+        await key(buttons()[0], 'ArrowRight');
+        expect(document.activeElement).to.equal(buttons()[2]);
+        const items: ActionMenuItem[] = [{ template: () => <button>First</button> }, { template: () => <button>Last</button> }];
+        await render(items, ToolbarFocusMode.SingleTabStop);
+        buttons()[1].focus();
+        buttons()[1].setAttribute('aria-disabled', 'true');
+        await act(async () => { await Promise.resolve(); });
+        expect(buttons().map(button => button.tabIndex)).to.deep.equal([0, -1]);
+        await render(items, ToolbarFocusMode.Arrows);
+        expect(buttons().every(button => !button.hasAttribute('tabindex'))).to.equal(true);
+    });
+
     it('should opt out to native behavior with None', async () => {
         await render(model, ToolbarFocusMode.None);
         buttons()[0].focus();

@@ -218,6 +218,66 @@ describe('when navigating Toolbar tools', () => {
         expect((await key(third, 'Tab')).defaultPrevented).to.equal(false);
     });
 
+    it('should leave widgets in each position natively tabbable and reach every tool by arrows in SingleTabStop', async () => {
+        const widgets = [
+            <input key='widget' aria-label='Edit' />,
+            <select key='widget' aria-label='Choose'><option>One</option></select>,
+            <div key='widget' role='slider' tabIndex={0} aria-label='Level' />,
+        ];
+        for (let position = 0; position < 3; position++) {
+            const widget = widgets[position];
+            const children = [<button key='first'>First</button>, <button key='last'>Last</button>];
+            children.splice(position, 0, widget);
+            await render(null, { focusMode: ToolbarFocusMode.Arrows });
+            await render(children, { focusMode: ToolbarFocusMode.SingleTabStop });
+            const [first, last] = buttons();
+            const target = container.querySelector<HTMLElement>('input,select,[role="slider"]')!;
+            expect(target.getAttribute('tabindex')).to.equal(position === 2 ? '0' : null);
+            expect(target.tabIndex).to.equal(0);
+            expect([first.tabIndex, last.tabIndex]).to.deep.equal([0, -1]);
+            first.focus();
+            expect((await key(first, 'ArrowDown')).defaultPrevented).to.equal(true);
+            expect(document.activeElement).to.equal(last);
+            expect([first.tabIndex, last.tabIndex]).to.deep.equal([-1, 0]);
+            await key(last, 'Home');
+            expect(document.activeElement).to.equal(first);
+            await key(first, 'End');
+            expect(document.activeElement).to.equal(last);
+            target.focus();
+            for (const name of ['ArrowDown', 'Home', 'End']) {
+                expect((await key(target, name)).defaultPrevented).to.equal(false);
+                expect(document.activeElement).to.equal(target);
+            }
+            expect((await key(target, 'Tab')).defaultPrevented).to.equal(false);
+        }
+    });
+
+    it('should exclude initially aria-disabled tools from Tab and arrows, restoring their original attributes', async () => {
+        await render(<><button>First</button><button aria-disabled='true'>Unavailable</button><button tabIndex={2}>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        const [first, unavailable, last] = buttons();
+        expect(buttons().map(button => button.tabIndex)).to.deep.equal([0, -1, -1]);
+        first.focus();
+        await key(first, 'ArrowDown');
+        expect(document.activeElement).to.equal(last);
+        await render(<><button>First</button><button aria-disabled='true'>Unavailable</button><button tabIndex={2}>Last</button></>, { focusMode: ToolbarFocusMode.Arrows });
+        expect(first.hasAttribute('tabindex')).to.equal(false);
+        expect(unavailable.hasAttribute('tabindex')).to.equal(false);
+        expect(last.getAttribute('tabindex')).to.equal('2');
+    });
+
+    it('should remove the native Tab stop if the selected tool becomes aria-disabled', async () => {
+        await render(<><button>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        const [first, last] = buttons();
+        last.focus();
+        expect(buttons().map(button => button.tabIndex)).to.deep.equal([-1, 0]);
+        last.setAttribute('aria-disabled', 'true');
+        await act(async () => { await Promise.resolve(); });
+        expect(buttons().map(button => button.tabIndex)).to.deep.equal([0, -1]);
+        await render(<><button>First</button><button aria-disabled='true'>Last</button></>, { focusMode: ToolbarFocusMode.Arrows });
+        expect(first.hasAttribute('tabindex')).to.equal(false);
+        expect(last.hasAttribute('tabindex')).to.equal(false);
+    });
+
     it('should recover the first available Tab stop after the remembered tool is removed', async () => {
         await render(tools, { focusMode: ToolbarFocusMode.SingleTabStop });
         buttons()[2].focus();
