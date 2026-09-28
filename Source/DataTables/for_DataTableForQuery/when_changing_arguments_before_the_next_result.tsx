@@ -108,6 +108,26 @@ describe('when changing snapshot arguments from page two', () => {
     });
 });
 
+describe('when returning to cached snapshot arguments after page two', () => {
+    it('should never render the cached second page and should request the first page', async () => {
+        await show('A');
+        await deliver('A', resultWith([{ id: 1, name: 'Example A page one' }]));
+        await act(async () => { container.querySelector<HTMLButtonElement>('[aria-label="Next page"]')!.click(); });
+        requestedPages.at(-1)?.should.equal(1);
+        await deliver('A', resultWith([{ id: 21, name: 'Example A page two' }], 1));
+        await show('B');
+        await deliver('B', resultWith([{ id: 2, name: 'Example B page one' }]));
+        await show('A');
+        requestedPages.should.deep.equal([0, 1, 0, 0]);
+        (loadingText() === 'Loading example rows').should.equal(true);
+        (rowText() === null).should.equal(true);
+        await deliver('A', resultWith([{ id: 1, name: 'Example A fresh page one' }]));
+        rowText()?.should.contain('Example A fresh page one');
+        (rowText()?.includes('page two') === false).should.equal(true);
+        container.querySelector('.cratis-table-paginator-info')?.textContent.should.equal('1 / 2');
+    });
+});
+
 describe('when returning to cached snapshot arguments', () => {
     it('should restore rows before paint and retain paging without a loading flash', async () => {
         await show('A');

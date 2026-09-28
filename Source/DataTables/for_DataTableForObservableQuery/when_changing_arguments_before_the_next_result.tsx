@@ -113,6 +113,28 @@ describe('when changing observable arguments from page two', () => {
     });
 });
 
+describe('when returning to cached observable arguments after page two', () => {
+    it('should never display the cached second page while awaiting page one from the retained subscription', async () => {
+        await show('A');
+        await deliver('A', resultWith([{ id: 1, name: 'Example A page one' }]));
+        await act(async () => { container.querySelector<HTMLButtonElement>('[aria-label="Next page"]')!.click(); });
+        requestedPages.should.deep.equal([0]);
+        // Arc's retained page-0 callback may receive a page-2 push even though page changes do not re-subscribe.
+        await deliver('A', resultWith([{ id: 21, name: 'Example A page two' }], 1));
+        await show('B');
+        await deliver('B', resultWith([{ id: 2, name: 'Example B page one' }]));
+        await show('A');
+        // Arc issue: release/acquire retains A's original subscription. No new page-0
+        // subscribe is issued on return, so the server may never send this result.
+        requestedPages.should.deep.equal([0, 0]);
+        (loadingText() === 'Loading example rows').should.equal(true);
+        (rowText() === null).should.equal(true);
+        await deliver('A', resultWith([{ id: 1, name: 'Example A fresh page one' }]));
+        rowText()?.should.contain('Example A fresh page one');
+        container.querySelector('.cratis-table-paginator-info')?.textContent.should.equal('1 / 2');
+    });
+});
+
 describe('when returning to cached observable arguments', () => {
     it('should restore rows before paint and keep paging without a loading flash', async () => {
         await show('A');

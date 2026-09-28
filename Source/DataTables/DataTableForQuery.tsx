@@ -5,7 +5,7 @@ import type { DataTableParts } from './DataTableCore';
 import type { Constructor } from '@cratis/fundamentals';
 import { type IQueryFor, Paging, type QueryResultWithState } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
-import { type ReactNode, useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DataTableCore } from './DataTableCore';
 import {
     TablePaginator,
@@ -158,7 +158,14 @@ const KeyedQuerySubscriber = <
     onResult: (key: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => void;
 }) => {
     const [result, , , setPage] = useQueryWithPaging(query, paging, args);
-    useIsomorphicLayoutEffect(() => { onResult(queryKey, result, setPage); }, [queryKey, result, onResult]);
+    const receivedFirstPage = useRef(false);
+    useIsomorphicLayoutEffect(() => {
+        // Arc can seed a remount with a retained result for another page. Wait for
+        // the page requested by this fresh subscriber before exposing cached rows.
+        if (!receivedFirstPage.current && result.isReady && result.paging.page !== paging.page) return;
+        if (result.isReady) receivedFirstPage.current = true;
+        onResult(queryKey, result, setPage);
+    }, [queryKey, result, onResult, setPage]);
     return null;
 };
 
