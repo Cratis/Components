@@ -52,7 +52,7 @@ export function Products() {
 ### Optional Props
 
 - `children`: `Column` elements
-- `queryArguments`: Arguments for the query. The query runs again when a required argument changes.
+- `queryArguments`: Arguments for the query. The query runs again when any argument value changes (compared by serialized value), including optional arguments such as filters.
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the loading, failed, and unauthorized states; each overrides its `messages.dataTable` provider message and English default
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row (controlled)

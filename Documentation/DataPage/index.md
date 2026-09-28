@@ -183,7 +183,7 @@ Unauthorized takes precedence over failure, which takes precedence over loading.
 
 ### Optional Props
 
-- `queryArguments`: Arguments to pass to the query. An observable query resubscribes when any argument changes; a snapshot query re-runs when a required argument changes.
+- `queryArguments`: Arguments to pass to the query. Both tables react when any argument value changes (compared by serialized value), including optional arguments such as filters. The observable table subscribes for the new arguments; the snapshot table re-runs its query.
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the query states, passed to the bound table
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row. See [Selection](#selection).
@@ -212,7 +212,7 @@ The query-backed table inside `DataPage` shows a loading row instead of `emptyMe
 
 DataPage supports two types of queries:
 
-1. **IQueryFor**: Snapshot queries, fetched when the page mounts and again when a required argument or the page changes
+1. **IQueryFor**: Snapshot queries, fetched when the page mounts and again when any `queryArguments` value or the page changes
 2. **IObservableQueryFor**: Observable queries that update the table when the read model changes on the server
 
 DataPage checks whether the query class derives from `QueryFor` and renders the matching data table. Both tables request 20 rows per page; the page size is not configurable through DataPage.
