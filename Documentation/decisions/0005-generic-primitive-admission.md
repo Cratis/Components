@@ -6,7 +6,7 @@ status: accepted
 stage: none
 class: product
 reversibility: costly
-decided: 2026-09-29
+decided: 2026-09-28
 decider: woksin (delegated)
 applies-to:
     - 'Source/**/*'

@@ -15,6 +15,6 @@ boundaries.
 | [0002 — Public component classification](0002-component-classification.md) | Accepted | Implemented | 2026-08-27 | woksin |
 | [0003 — Repository-owned kernel boundary](0003-kernel-boundary.md) | Accepted | Implemented | 2026-08-27 | woksin |
 | [0004 — Stable presentation renderer profile](0004-stable-presentation-renderer-profile.md) | Accepted | Implemented | 2026-08-28 | woksin |
-| [0005 — Generic primitive admission](0005-generic-primitive-admission.md) | Accepted | None | 2026-09-29 | woksin (delegated) |
+| [0005 — Generic primitive admission](0005-generic-primitive-admission.md) | Accepted | None | 2026-09-28 | woksin (delegated) |
 
 Read [UI foundation](../ui-foundation.md) for the current architecture and capability matrix.
