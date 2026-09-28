@@ -37,11 +37,18 @@ export const Playground: Story = {
         const canvas = within(canvasElement);
         // These buttons only handle click; avoid userEvent's timer-driven pointer sequence
         // while testing the callbacks and the rendered minimap state.
-        canvas.getByRole('button', { name: 'Zoom In' }).click();
+        // element.click() skips userEvent's actionability checks, so assert them explicitly.
+        const clickable = async (name: string) => {
+            const button = canvas.getByRole('button', { name });
+            await expect(button).toBeVisible();
+            await expect(button).toBeEnabled();
+            return button;
+        };
+        (await clickable('Zoom In')).click();
         await expect(args.onZoomIn).toHaveBeenCalledOnce();
-        canvas.getByRole('button', { name: 'Help' }).click();
+        (await clickable('Help')).click();
         await expect(args.onHelp).toHaveBeenCalledOnce();
-        canvas.getByRole('button', { name: 'Toggle minimap' }).click();
+        (await clickable('Toggle minimap')).click();
         await waitFor(() => expect(canvasElement.querySelector('.canvas-minimap')).toBeVisible());
     },
 };

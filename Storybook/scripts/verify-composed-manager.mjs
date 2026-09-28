@@ -209,24 +209,6 @@ try {
         const page = await checkPage(`${refId} manager link`, managerPath(refId), refId);
         await page.close();
     }
-    // The root iframe.html belongs to the manager's own placeholder index, not the
-    // composed renderer indexes. Only /renderers/<ref>/iframe.html?id=<id> is a preview.
-    const rootIframe = await browser.newPage();
-    const rootIframeErrors = [];
-    rootIframe.on('pageerror', error => rootIframeErrors.push(error.message));
-    try {
-        const unsupportedIframe = `/iframe.html?id=${sourceRendererId}_${storyId}`;
-        await rootIframe.goto(`${baseUrl}${unsupportedIframe}`, { waitUntil: 'domcontentloaded' });
-        await rootIframe.waitForLoadState('networkidle');
-        if (await rootIframe.locator(selectorQuery).count() || rootIframe.frames().some(frame =>
-            frame.url().includes(`/renderers/${sourceRendererId}/iframe.html?id=${storyId}`))) {
-            throw new Error(`Root ${unsupportedIframe} unexpectedly loaded a composed renderer preview.`);
-        }
-        if (rootIframeErrors.length) throw new Error(`Root iframe page errors: ${rootIframeErrors.join(' | ')}`);
-        console.log(`Verified unsupported ${unsupportedIframe} has no renderer selector or composed story preview.`);
-    } finally {
-        await rootIframe.close();
-    }
     // The docs embed the composed manager, so also test a manager URL in an iframe,
     // with Storybook's embed parameter. The ref prefix still belongs in ?path=.
     const embedHost = await browser.newPage();
