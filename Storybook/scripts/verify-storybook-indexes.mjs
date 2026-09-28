@@ -41,8 +41,8 @@ for (const adapter of inventory.adapters) {
     const entries = Object.values(index.entries ?? {});
     const storyIds = entries.filter(entry => entry.type === 'story').map(entry => entry.id).sort();
     const docsIds = entries.filter(entry => entry.type === 'docs').map(entry => entry.id).sort();
-    if (storyIds.length !== 340 || docsIds.length !== 75) {
-        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 340 and 75.`);
+    if (storyIds.length !== 342 || docsIds.length !== 75) {
+        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 342 and 75.`);
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;
@@ -86,12 +86,14 @@ const { slotOwningModules, matrixStoryIds } = computeRendererMatrixScope({
 if (slotOwningModules.size !== 14) {
     throw new Error(`Expected 14 slot-owning modules (the stable nine-slot presentation profile plus experimental slots), found ${slotOwningModules.size}.`);
 }
-if (matrixStoryIds.size !== 184) {
-    throw new Error(`Expected 184 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
+if (matrixStoryIds.size !== 186) {
+    throw new Error(`Expected 186 stories to require the full renderer matrix, found ${matrixStoryIds.size}. If this is an intentional consequence of adding or removing a slotted/composite component, update this pinned count.`);
 }
 for (const id of [
     'filter-filterpanel-in-dialog--focus-search-and-dismiss',
     'filter-filterpanel-in-dialog--side-dialog-entrance',
+    'filter-filterpanel-in-dialog--side-dialog-with-classic-scrollbars',
+    'filter-filterpanel-in-dialog--transformed-positioner',
     'filter-filterpanel-in-dialog--persistent-containing-block',
 ]) {
     const entry = canonicalStoryEntries.find(story => story.id === id);

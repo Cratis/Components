@@ -155,6 +155,91 @@ export const SideDialogEntrance: Story = {
     },
 };
 
+/** Classic scrollbars do not turn a viewport-fixed dropdown into a root-clipped one. */
+export const SideDialogWithClassicScrollbars: Story = {
+    name: 'Side dialog filter extends past the root with classic scrollbars',
+    play: async ({ canvasElement }) => {
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        await expect(scrollbarWidth).toBeGreaterThan(0);
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open scrollable side dialog' }));
+        const body = within(document.body);
+        const root = (await body.findByRole('dialog', { name: 'Scrollable side filters' }))
+            .closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
+        await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
+        await userEvent.click(body.getByRole('button', { name: 'Scrollbar filter trigger' }));
+        const panel = await body.findByRole('dialog', { name: 'Scrollable side choices' });
+        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
+        const clip = root.getBoundingClientRect();
+        const bounds = panel.getBoundingClientRect();
+        await expect(window.innerWidth - document.documentElement.clientWidth).toBeGreaterThan(0);
+        await expect(bounds.width).toBeGreaterThan(300);
+        await expect(bounds.right).toBeGreaterThan(clip.right + 80);
+        await expect(panel.contains(document.elementFromPoint(clip.right + 16, bounds.top + 20))).toBe(true);
+    },
+    render: () => {
+        const [dialogOpen, setDialogOpen] = useState(false);
+        const [panelOpen, setPanelOpen] = useState(false);
+        const anchorRef = useRef<HTMLButtonElement>(null);
+        return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById('scrollbar-filter-overlays') }}>
+            <style>{'html { overflow-y: scroll !important; } html::-webkit-scrollbar { width: 15px; background: #ccc; }'}</style>
+            <div style={{ minHeight: '200vh' }}>
+                <button onClick={() => setDialogOpen(true)}>Open scrollable side dialog</button>
+            </div>
+            <div id='scrollbar-filter-overlays' />
+            {dialogOpen && <Dialog title='Scrollable side filters' placement='start' width='360px' onCancel={() => setDialogOpen(false)}>
+                <div style={{ paddingLeft: 255, minHeight: 300 }}>
+                    <button ref={anchorRef} onClick={() => setPanelOpen(true)}>Scrollbar filter trigger</button>
+                </div>
+                <FilterPanel isOpen={panelOpen} filters={filters} filterValues={{}} rangeValues={{}}
+                    aria-label='Scrollable side choices' anchorRef={anchorRef}
+                    onClose={() => undefined} onExpandedFilterChange={() => undefined}
+                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                    onRangeChange={() => undefined} />
+            </Dialog>}
+        </CratisComponentsProvider>;
+    },
+};
+
+/** A positioner containing block is outside the root, so the root cannot clip its fixed child. */
+export const TransformedPositioner: Story = {
+    name: 'Filter stays full width outside a transformed positioner dialog root',
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open positioned dialog' }));
+        const body = within(document.body);
+        const root = (await body.findByRole('dialog', { name: 'Positioned filters' }))
+            .closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
+        await waitFor(() => expect(root.hasAttribute('data-entering')).toBe(false), { timeout: 5000 });
+        await userEvent.click(body.getByRole('button', { name: 'Positioned filter trigger' }));
+        const panel = await body.findByRole('dialog', { name: 'Positioned filter choices' });
+        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
+        const clip = root.getBoundingClientRect();
+        const bounds = panel.getBoundingClientRect();
+        await expect(bounds.width).toBeGreaterThan(300);
+        await expect(bounds.right).toBeGreaterThan(clip.right + 80);
+        await expect(panel.contains(document.elementFromPoint(clip.right + 16, bounds.top + 20))).toBe(true);
+    },
+    render: () => {
+        const [dialogOpen, setDialogOpen] = useState(false);
+        const [panelOpen, setPanelOpen] = useState(false);
+        const anchorRef = useRef<HTMLButtonElement>(null);
+        return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById('positioned-filter-overlays') }}>
+            <button onClick={() => setDialogOpen(true)}>Open positioned dialog</button>
+            <div id='positioned-filter-overlays' />
+            {dialogOpen && <Dialog title='Positioned filters' placement='start' width='220px' onCancel={() => setDialogOpen(false)}
+                pt={{ positioner: { style: { transform: 'translateZ(0)' } } }}>
+                <div style={{ paddingLeft: 120, minHeight: 300 }}>
+                    <button ref={anchorRef} onClick={() => setPanelOpen(true)}>Positioned filter trigger</button>
+                </div>
+                <FilterPanel isOpen={panelOpen} filters={filters} filterValues={{}} rangeValues={{}}
+                    aria-label='Positioned filter choices' anchorRef={anchorRef}
+                    onClose={() => undefined} onExpandedFilterChange={() => undefined}
+                    onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                    onRangeChange={() => undefined} />
+            </Dialog>}
+        </CratisComponentsProvider>;
+    },
+};
+
 /** A persistent fixed containing block must not clip a dropdown inside the modal root. */
 export const PersistentContainingBlock: Story = {
     name: 'Filter options remain reachable in a transformed dialog',

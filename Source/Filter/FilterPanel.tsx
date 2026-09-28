@@ -289,41 +289,85 @@ export function FilterPanel({
     useLayoutEffect(() => {
         if (!isOpen || !portalContainer) return;
 
+        const probeStyle = 'position:fixed;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none';
         const probe = document.createElement('div');
-        probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none';
+        probe.style.cssText = probeStyle;
         portalContainer.appendChild(probe);
+        // A portal inside (rather than directly on) the root can have a different fixed
+        // containing block. A second probe distinguishes that descendant block from one
+        // owned by the positioner outside the root.
+        const rootProbe = modalRoot && modalRoot.contains(portalContainer) && portalContainer !== modalRoot
+            ? document.createElement('div') : null;
+        if (rootProbe && modalRoot) {
+            rootProbe.style.cssText = probeStyle;
+            modalRoot.appendChild(rootProbe);
+        }
+
+        const measureProbe = (element: HTMLDivElement) => {
+            element.style.top = '0';
+            element.style.bottom = 'auto';
+            const origin = element.getBoundingClientRect();
+            element.style.top = 'auto';
+            element.style.bottom = '0';
+            const bottom = element.getBoundingClientRect().bottom;
+            element.style.bottom = 'auto';
+            element.style.left = 'auto';
+            element.style.right = '0';
+            const right = element.getBoundingClientRect().right;
+            element.style.left = '0';
+            element.style.right = 'auto';
+            return { origin, bottom, right };
+        };
 
         const updatePosition = () => {
             if (!anchorRef.current || !panelRef.current) return;
 
             // The probe stays mounted while open, but its origin must be read on every
             // update: scrolling a transformed ancestor changes its viewport coordinates.
-            probe.style.top = '0';
-            probe.style.bottom = 'auto';
-            const origin = probe.getBoundingClientRect();
-            probe.style.top = 'auto';
-            probe.style.bottom = '0';
-            const containingBlockBottom = probe.getBoundingClientRect().bottom;
-            probe.style.bottom = 'auto';
-            probe.style.left = 'auto';
-            probe.style.right = '0';
-            const containingBlockRight = probe.getBoundingClientRect().right;
-            probe.style.left = '0';
-            probe.style.right = 'auto';
+            const { origin, bottom: containingBlockBottom, right: containingBlockRight } = measureProbe(probe);
 
             // offsetWidth is in local CSS pixels; the probe's rect supplies the viewport scale.
             // Preserve the viewport gutter even when a containing block scales the dropdown.
             const scaleX = origin.width || 1;
             const scaleY = origin.height || 1;
             const viewport = { width: window.innerWidth, height: window.innerHeight };
-            // A fixed descendant of a transformed Dialog root or positioner is clipped by
-            // the modal root's overflow. Intersect its visible rect with the viewport only
-            // when the probe shows a non-viewport fixed containing block.
-            const hasLocalContainingBlock = Math.abs(origin.left) > 0.5 || Math.abs(origin.top) > 0.5 ||
-                Math.abs(containingBlockRight - viewport.width) > 0.5 ||
-                Math.abs(containingBlockBottom - viewport.height) > 0.5;
-            const modalRect = modalRoot && modalRoot.contains(portalContainer) && hasLocalContainingBlock
+            const rootRect = modalRoot && modalRoot.contains(portalContainer)
                 ? modalRoot.getBoundingClientRect() : null;
+            const rootEdges = rootRect && (rootProbe ? measureProbe(rootProbe) :
+                { origin, bottom: containingBlockBottom, right: containingBlockRight });
+            const rootStyle = rootRect && getComputedStyle(modalRoot!);
+            const rootScaleX = rootEdges?.origin.width ?? 1;
+            const rootScaleY = rootEdges?.origin.height ?? 1;
+            // Axis-aligned bounding rects lose the padding origin under rotation/skew.
+            // The root's own containing-block properties cover those cases; the probe
+            // comparison below still handles nested portal containers geometrically.
+            const rootHasFixedContainingStyle = Boolean(rootStyle && (
+                rootStyle.transform !== 'none' || rootStyle.translate !== 'none' ||
+                rootStyle.scale !== 'none' || rootStyle.rotate !== 'none' ||
+                rootStyle.perspective !== 'none' || rootStyle.filter !== 'none' ||
+                rootStyle.getPropertyValue('backdrop-filter') !== 'none' &&
+                    rootStyle.getPropertyValue('backdrop-filter') !== '' ||
+                /\b(?:layout|paint|strict|content)\b/u.test(rootStyle.contain) ||
+                /^(?:size|inline-size)$/u.test(rootStyle.getPropertyValue('container-type')) ||
+                /\b(?:transform|translate|scale|rotate|perspective|filter|backdrop-filter|contain|container-type)\b/u
+                    .test(rootStyle.willChange)
+            ));
+            // A fixed probe spans its containing block, not the Dialog's overflow box.
+            // Compare all four edges to the root's padding box: a side dialog can share
+            // the positioner's top-left origin without sharing its containing block.
+            // Comparing to innerWidth/innerHeight instead would mistake classic scrollbars
+            // (excluded from the layout viewport) for a transformed containing block.
+            const rootOwnsBlock = rootHasFixedContainingStyle || Boolean(rootRect && rootEdges && rootStyle &&
+                Math.abs(rootEdges.origin.left - (rootRect.left + parseFloat(rootStyle.borderLeftWidth) * rootScaleX)) <= 0.5 &&
+                Math.abs(rootEdges.origin.top - (rootRect.top + parseFloat(rootStyle.borderTopWidth) * rootScaleY)) <= 0.5 &&
+                Math.abs(rootEdges.right - (rootRect.right - parseFloat(rootStyle.borderRightWidth) * rootScaleX)) <= 0.5 &&
+                Math.abs(rootEdges.bottom - (rootRect.bottom - parseFloat(rootStyle.borderBottomWidth) * rootScaleY)) <= 0.5);
+            const descendantOwnsBlock = Boolean(rootEdges && rootProbe && (
+                Math.abs(origin.left - rootEdges.origin.left) > 0.5 ||
+                Math.abs(origin.top - rootEdges.origin.top) > 0.5 ||
+                Math.abs(containingBlockRight - rootEdges.right) > 0.5 ||
+                Math.abs(containingBlockBottom - rootEdges.bottom) > 0.5));
+            const modalRect = rootOwnsBlock || descendantOwnsBlock ? rootRect : null;
             // Layoutless environments cannot supply a modal clip rect.
             const clip = modalRect && modalRect.right > modalRect.left && modalRect.bottom > modalRect.top
                 ? modalRect : null;
@@ -407,6 +451,7 @@ export function FilterPanel({
                 positioner?.removeEventListener(eventName, handleModalMotionEnd);
             }
             probe.remove();
+            rootProbe?.remove();
         };
     }, [anchorRef, isOpen, modalRoot, portalContainer, resolvedAnchor?.anchor]);
 
