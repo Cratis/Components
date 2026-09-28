@@ -7,6 +7,7 @@ import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatTopic } from './ChatTopic';
+import type { ChatTopicAction } from './ChatTopicAction';
 import { ChatStatus } from './ChatStatus';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { relativeTimestamp, type RelativeTimestampLabels } from './relativeTimestamp';
@@ -112,6 +113,9 @@ export interface ChatTopicListProps<TTopic extends ChatTopic = ChatTopic> {
     /** Overrides for every label rendered. Unset fields fall back to literal English defaults. */
     labels?: ChatTopicListLabels;
 
+    /** The host's actions to offer on each topic where they are available. */
+    topicActions?: ChatTopicAction<TTopic>[];
+
     /** Additional class name for the list's root element. */
     className?: string;
 }
@@ -132,6 +136,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
     isTopicUnnamed,
     buildAvatarUrl,
     labels,
+    topicActions,
     className,
 }: ChatTopicListProps<TTopic>) => {
     const unnamed = isTopicUnnamed ?? defaultIsTopicUnnamed;
@@ -176,59 +181,89 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                             : authorFor(topic.startedBy);
                     const isPending = unnamed(topic);
                     const activity = topic.lastActivity ?? topic.started;
+                    const topicName = isPending ? (labels?.unnamedTopic ?? 'New topic') : topic.name;
+                    const availableActions = (topicActions ?? []).filter(
+                        (action) => action.isAvailable?.(topic) ?? true,
+                    );
 
-                    return (
-                        <li key={chatIdentifierString(topic.id)}>
-                            <button
-                                type='button'
-                                className='cratis-chat-topics__topic'
-                                onClick={() => onOpen(topic)}
-                            >
-                                {topic.startedBy !== undefined &&
-                                    starter &&
-                                    (renderAvatar ? (
-                                        renderAvatar(topic.startedBy, starter)
-                                    ) : (
-                                        <PersonAvatarCircle
-                                            userId={chatIdentifierString(topic.startedBy)}
-                                            name={starter.name}
-                                            hasAvatar={starter.hasAvatar ?? false}
-                                            size={28}
-                                            ownerType={
-                                                starter.kind === ChatAuthorKind.Agent
-                                                    ? 'Agents'
-                                                    : 'Users'
-                                            }
-                                            version={starter.avatarVersion}
-                                            buildAvatarUrl={buildAvatarUrl}
-                                        />
-                                    ))}
-                                <span className='cratis-chat-topics__details'>
-                                    <span
-                                        className={`cratis-chat-topics__name${isPending ? ' cratis-chat-topics__name--pending' : ''}`}
-                                    >
-                                        {isPending
-                                            ? (labels?.unnamedTopic ?? 'New topic')
-                                            : topic.name}
-                                    </span>
-                                    {starter && (
-                                        <span className='cratis-chat-topics__started-by'>
-                                            {(
-                                                labels?.startedBy ?? 'Started by {name}'
-                                            ).replace('{name}', starter.name)}
-                                        </span>
-                                    )}
+                    const topicButton = (
+                        <button
+                            type='button'
+                            className='cratis-chat-topics__topic'
+                            onClick={() => onOpen(topic)}
+                        >
+                            {topic.startedBy !== undefined &&
+                                starter &&
+                                (renderAvatar ? (
+                                    renderAvatar(topic.startedBy, starter)
+                                ) : (
+                                    <PersonAvatarCircle
+                                        userId={chatIdentifierString(topic.startedBy)}
+                                        name={starter.name}
+                                        hasAvatar={starter.hasAvatar ?? false}
+                                        size={28}
+                                        ownerType={
+                                            starter.kind === ChatAuthorKind.Agent
+                                                ? 'Agents'
+                                                : 'Users'
+                                        }
+                                        version={starter.avatarVersion}
+                                        buildAvatarUrl={buildAvatarUrl}
+                                    />
+                                ))}
+                            <span className='cratis-chat-topics__details'>
+                                <span
+                                    className={`cratis-chat-topics__name${isPending ? ' cratis-chat-topics__name--pending' : ''}`}
+                                >
+                                    {topicName}
                                 </span>
-                                {activity !== undefined && (
-                                    <span className='cratis-chat-topics__activity'>
-                                        {relativeTimestamp(
-                                            activity,
-                                            new Date(),
-                                            labels?.timestamps,
-                                        )}
+                                {starter && (
+                                    <span className='cratis-chat-topics__started-by'>
+                                        {(
+                                            labels?.startedBy ?? 'Started by {name}'
+                                        ).replace('{name}', starter.name)}
                                     </span>
                                 )}
-                            </button>
+                            </span>
+                            {activity !== undefined && (
+                                <span className='cratis-chat-topics__activity'>
+                                    {relativeTimestamp(
+                                        activity,
+                                        new Date(),
+                                        labels?.timestamps,
+                                    )}
+                                </span>
+                            )}
+                        </button>
+                    );
+
+                    // Reuse the message action overlay so keyboard focus reveals controls without adding CSS.
+                    return (
+                        <li
+                            key={chatIdentifierString(topic.id)}
+                            className={availableActions.length > 0 ? 'cratis-chat-message cratis-chat-topics__row' : undefined}
+                            style={availableActions.length > 0 ? { position: 'relative' } : undefined}
+                        >
+                            {topicButton}
+                            {availableActions.length > 0 && (
+                                <div className='cratis-chat-message__actions'>
+                                    {availableActions.map((action) => (
+                                        <button
+                                            key={action.id}
+                                            type='button'
+                                            className='cratis-chat-message__action'
+                                            style={action.icon == null ? { width: 'auto', padding: '0 0.375rem' } : undefined}
+                                            title={action.label}
+                                            aria-label={`${action.label} ${topicName}`}
+                                            onClick={() => action.onInvoke(topic)}
+                                        >
+                                            {typeof action.icon === 'string' ? (
+                                                <i className={action.icon} aria-hidden='true' />
+                                            ) : (action.icon ?? action.label)}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </li>
                     );
                 })}

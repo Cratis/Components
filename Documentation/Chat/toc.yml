@@ -6,5 +6,7 @@
   href: mentions-and-emoji.md
 - name: Message actions
   href: message-actions.md
+- name: Topic actions
+  href: topic-actions.md
 - name: Observable queries
   href: observable-queries.md

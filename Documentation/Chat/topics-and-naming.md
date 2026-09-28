@@ -22,6 +22,18 @@ interface ChatTopic {
 
 The list orders topics by `lastActivity` (falling back to `started`) itself — hand it topics in any order.
 
+## ChatTopicList props
+
+| Prop | Type | Default | Behavior |
+| --- | --- | --- | --- |
+| `topics`, `onOpen` | `TTopic[]`, `(topic: TTopic) => void` | Required | Topics and the callback for opening one. |
+| `onStart` | `() => void` | — | Shows the new-topic button when supplied. |
+| `topicActions` | `ChatTopicAction<TTopic>[]` | — | Host actions beside topics where they are available. See [Topic actions](./topic-actions.md). |
+| `status` | `ChatStatus` | `Ready` | List query display state. |
+| `authorOf`, `renderAvatar`, `buildAvatarUrl` | callbacks | — | Resolve and render the topic starter. |
+| `isTopicUnnamed` | `(topic: TTopic) => boolean` | Blank name | Decides when to show the pending placeholder. |
+| `labels`, `className` | `ChatTopicListLabels`, `string` | — | Label overrides and root class name. |
+
 ## Starting a topic
 
 `onStartTopic` raises the intent; creating the topic is the application's business. Answer with the new topic's id — directly or through a promise — and the sidebar opens it, ready for the first message:

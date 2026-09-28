@@ -305,6 +305,7 @@
         "chat-chatsidebarforobservablequeries--playground",
         "chat-chattopiclist--empty",
         "chat-chattopiclist--playground",
+        "chat-chattopiclist--with-actions",
         "chat-kit-chat--basic-thread",
         "chat-kit-chat--with-failed-turn",
         "chat-kit-chatbubble--preview",

@@ -20,7 +20,7 @@ Everything about _data_ stays with your application:
 - `@`-mentions from a list you hold or a provider callback you resolve, rendered distinctly in message bodies
 - Emoji picker in the composer, with a quick row of recently used emoji
 - Host-supplied render callbacks for avatars and display names — messages carry only the author id
-- Extensible per-message actions shown on hover or keyboard focus
+- Extensible per-message and per-topic actions shown on hover or keyboard focus
 - Every color from the `--cratis-*` token seam, so the chat follows your theme
 
 ## Components
@@ -97,7 +97,8 @@ export const Workspace = () => {
 | `onRequestTopicName` / `isTopicUnnamed`  | callbacks                                     | —         | The host-side naming contract.                                                                       |
 | `selectedTopicId` / `onTopicSelected`    | `ChatIdentifier \| null`, callback            | Internal  | Owns or observes the open topic.                                                                     |
 | `authorOf`, `renderAvatar`, `renderAuthorName`, `buildAvatarUrl` | callbacks             | —         | Author resolution and rendering. Without `authorOf`, the id is shown as the name.                    |
-| `actions`, `quickReply`                  | `ChatMessageAction[]`, `boolean`              | —, `true` | See [Message actions](./message-actions.md).                                                         |
+| `actions`, `quickReply`                  | `ChatMessageAction[]`, `boolean`              | —, `true` | Message actions and quick reply; see [Message actions](./message-actions.md).                         |
+| `topicActions`                           | `ChatTopicAction<TTopic>[]`                   | —         | Actions beside available topics; see [Topic actions](./topic-actions.md).                             |
 | `mentionCandidates` / `resolveMentionCandidates` | array or callback                     | —         | See [Mentions and emoji](./mentions-and-emoji.md). Omit both to turn mentions off.                   |
 | `typingAuthors`                          | `ChatTypingAuthor[]`                          | `[]`      | Who the conversation is waiting on.                                                                  |
 | `autoFocus`                              | `boolean`                                     | `false`   | Focuses the composer when a conversation mounts.                                                     |
@@ -218,4 +219,5 @@ Import `@cratis/components/styles` (or, with per-area stylesheets, `@cratis/comp
 - [Topics and naming](./topics-and-naming.md) — the topic lifecycle and the host-side auto-naming contract
 - [Mentions and emoji](./mentions-and-emoji.md) — candidate providers, how mentions travel and render
 - [Message actions](./message-actions.md) — offering your own actions on messages
+- [Topic actions](./topic-actions.md) — offering your own actions on topics
 - [Observable queries](./observable-queries.md) — the optional Arc-aware wrapper
