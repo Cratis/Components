@@ -83,9 +83,7 @@ export default defineConfig({
         browser: {
             enabled: true,
             headless: true,
-            // The Dialog scrollbar regression needs a real layout viewport gutter;
-            // Playwright hides scrollbars by default even when the story forces one.
-            provider: playwright({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } }),
+            provider: playwright({}),
             instances: [{ browser: 'chromium' }],
         },
     },
