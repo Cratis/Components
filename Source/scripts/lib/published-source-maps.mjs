@@ -12,7 +12,6 @@ import {
 const archiveRoot = 'package/';
 const esmPrefix = `${archiveRoot}dist/esm/`;
 const mappingReference = /\/\/# sourceMappingURL=([^\r\n]+)/u;
-const moduleSpecifier = /(?:\bfrom\s*|\bimport\s*\()(['"])\.{1,2}\/[^'"\r\n]+\.js\1/u;
 
 function text(entries, entry) {
     const content = entries.get(entry);
@@ -36,21 +35,18 @@ function mapFor(entries, entry) {
 }
 
 /** Verify the references and original source bytes of every map actually shipped. */
-export function assertPackedSourceMaps(entries) {
+export function assertPackedSourceMaps(entries, rewrittenFiles) {
     let rewrittenJavaScript = 0;
     let rewrittenDeclarations = 0;
     for (const entry of entries.keys()) {
         if (!entry.startsWith(esmPrefix) || !/\.(?:js|d\.ts)$/u.test(entry)) continue;
         const generated = text(entries, entry);
         if (!generated.match(mappingReference)) {
-            assert.ok(
-                !moduleSpecifier.test(generated),
-                `${entry} rewrites specifiers but has no map`,
-            );
+            assert.ok(!rewrittenFiles.has(entry), `${entry} was rewritten without a map`);
             continue;
         }
         const { map, mapEntry } = mapFor(entries, entry);
-        if (moduleSpecifier.test(generated)) {
+        if (rewrittenFiles.has(entry)) {
             if (entry.endsWith('.d.ts')) rewrittenDeclarations++;
             else rewrittenJavaScript++;
         }
@@ -85,6 +81,11 @@ export function assertPackedSourceMaps(entries) {
             `${entry} is unreferenced`,
         );
     }
+    assert.equal(
+        rewrittenJavaScript + rewrittenDeclarations,
+        rewrittenFiles.size,
+        'Not every rewritten file was found in the packed artifact',
+    );
     assert.ok(rewrittenJavaScript > 0, 'No rewritten JavaScript was checked');
     assert.ok(rewrittenDeclarations > 0, 'No rewritten declarations were checked');
     return { rewrittenJavaScript, rewrittenDeclarations };
@@ -99,19 +100,29 @@ export function assertMappedToken(
     sourceEntry,
     sourceLine,
     sourceColumn,
+    tokenOffset = 0,
 ) {
     const { generated, map } = mapFor(entries, entry);
     const line = generated.split('\n')[generatedLine - 1];
     const column = line.indexOf(token);
     assert.ok(column >= 0, `${entry}:${generatedLine} is missing ${token}`);
-    const position = originalPositionFor(new TraceMap(map), {
+    const traceMap = new TraceMap(map);
+    if (tokenOffset) {
+        assert.ok(
+            decodedMappings(traceMap)[generatedLine - 1]?.some(
+                (segment) => segment[0] === column + tokenOffset,
+            ),
+            `${entry}:${generatedLine}:${column + tokenOffset} (${token}) has no exact segment`,
+        );
+    }
+    const position = originalPositionFor(traceMap, {
         line: generatedLine,
-        column,
+        column: column + tokenOffset,
     });
     const expectedSource = path.posix.relative(path.posix.dirname(entry), sourceEntry);
     assert.deepEqual(
         { source: position.source, line: position.line, column: position.column },
         { source: expectedSource, line: sourceLine, column: sourceColumn },
-        `${entry}:${generatedLine}:${column} (${token}) has a stale or incorrect source mapping`,
+        `${entry}:${generatedLine}:${column + tokenOffset} (${token}) has a stale or incorrect source mapping`,
     );
 }

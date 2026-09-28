@@ -6,8 +6,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import MagicString from 'magic-string';
-import remapping from '@jridgewell/remapping';
+import { decode, encode } from '@jridgewell/sourcemap-codec';
 import ts from 'typescript';
 import { packArtifact } from './lib/packed-artifact.mjs';
 import {
@@ -21,12 +20,21 @@ import { fixRelativeEsmSpecifiers } from '../../rollup.config.mjs';
 for (const extension of ['js', 'd.ts']) {
     const source = `export const example = import('./Example').then(useExample);\n`;
     const file = `package/dist/esm/example.${extension}`;
-    const original = new MagicString(source).generateMap({
-        source: '../../Source/example.ts',
+    const original = {
+        version: 3,
         file: `example.${extension}`,
-        includeContent: true,
-        hires: true,
-    });
+        sources: ['../../Source/example.ts'],
+        sourcesContent: [source],
+        names: [],
+        mappings: encode([
+            Array.from({ length: source.indexOf('\n') + 1 }, (_, column) => [
+                column,
+                0,
+                0,
+                column,
+            ]),
+        ]),
+    };
     const stale = new Map([
         [
             file,
@@ -35,7 +43,7 @@ for (const extension of ['js', 'd.ts']) {
                     `//# sourceMappingURL=example.${extension}.map\n`,
             ),
         ],
-        [`${file}.map`, Buffer.from(original.toString())],
+        [`${file}.map`, Buffer.from(JSON.stringify(original))],
     ]);
     const checkToken = (entries) =>
         assertMappedToken(
@@ -50,25 +58,20 @@ for (const extension of ['js', 'd.ts']) {
     assert.throws(() => checkToken(stale), /stale or incorrect source mapping/u);
 
     // Same generated text and source/line, but with the edited columns composed correctly.
-    const rewrite = new MagicString(source);
-    rewrite.update(
-        source.indexOf('./Example'),
-        source.indexOf('./Example') + './Example'.length,
-        './Example.js',
-    );
-    const composed = remapping(
-        [
-            rewrite.generateMap({
-                source: `example.${extension}`,
-                file: `example.${extension}`,
-                hires: true,
-            }),
-            original,
-        ],
-        () => null,
-    );
+    const editEnd = source.indexOf('./Example') + './Example'.length;
+    const correctedMap = {
+        ...original,
+        mappings: encode(
+            decode(original.mappings).map((segments) =>
+                segments.map(([column, ...originalPosition]) => [
+                    column >= editEnd ? column + 3 : column,
+                    ...originalPosition,
+                ]),
+            ),
+        ),
+    };
     const corrected = new Map(stale);
-    corrected.set(`${file}.map`, Buffer.from(JSON.stringify(composed)));
+    corrected.set(`${file}.map`, Buffer.from(JSON.stringify(correctedMap)));
     checkToken(corrected);
 }
 
@@ -163,19 +166,18 @@ try {
 }
 const scratch = mkdtempSync(path.join(tmpdir(), 'cratis-source-maps-'));
 try {
-    // Exercise the actual post-emit plugin with several specifier edits on a single line.
-    // Sparse tsc-like maps anchor just the start of the line and the following token, not
-    // every character; the composition must preserve that token's original column.
+    // Exercise the actual post-emit plugin with multiple edits on one line, mapping anchors
+    // at edit boundaries, after every edit, at end of line, and on an unedited second line.
     const fixtureSources = [
         [
             'fixture.js',
-            "import { Example } from './Example'; export { Example } from './Example'; const value = import('./Example').then(useExample);\n",
+            "import { Example } from './Example'; export { Example } from './Example'; const value = import('./Example').then(useExample);\nexport const untouched = 1;\n",
             'useExample',
             3,
         ],
         [
             'fixture.d.ts',
-            "export type { Example } from './Example'; export type Value = import('./Example').Value;\n",
+            "export type { Example } from './Example'; export type Value = import('./Example').Value;\nexport type Untouched = number;\n",
             '.Value',
             2,
         ],
@@ -188,14 +190,36 @@ try {
         );
         const sourceName = `${fileName}.source.ts`;
         writeFileSync(path.join(scratch, sourceName), source);
-        const sparseMap = new MagicString(source);
-        sparseMap.addSourcemapLocation(source.indexOf(token));
+        const originalLines = source.trimEnd().split('\n');
+        const columns = originalLines.map((line, lineIndex) =>
+            lineIndex === 0
+                ? [
+                      ...new Set([
+                          0,
+                          ...[...line.matchAll(/\.\/Example/gu)].flatMap(({ index }) => [
+                              index,
+                              index + 2,
+                              index + './Example'.length,
+                          ]),
+                          line.indexOf(token),
+                          line.length, // tsc emits end-of-line segments, including on edited lines.
+                      ]),
+                  ].sort((a, b) => a - b)
+                : [0, line.search(/[Uu]ntouched/u), line.length],
+        );
         writeFileSync(
             path.join(scratch, `${fileName}.map`),
-            sparseMap.generateMap({
-                source: sourceName,
+            JSON.stringify({
+                version: 3,
                 file: fileName,
-            }).toString(),
+                sources: [sourceName],
+                names: [],
+                mappings: encode(
+                    columns.map((lineColumns, lineIndex) =>
+                        lineColumns.map((column) => [column, 0, lineIndex, column]),
+                    ),
+                ),
+            }),
         );
     }
     writeFileSync(path.join(scratch, 'Example.js'), 'export const Example = 1;\n');
@@ -218,52 +242,117 @@ try {
             1,
             source.indexOf(token),
         );
+        const original = source.trimEnd().split('\n');
+        const edits = [...original[0].matchAll(/\.\/Example/gu)].map(
+            ({ index }) => index + './Example'.length,
+        );
+        const mappings = decode(JSON.parse(fixtureEntries.get(`${entry}.map`)).mappings);
+        const expected = original.map((line, lineIndex) => {
+            const columns =
+                lineIndex === 0
+                    ? [
+                          ...new Set([
+                              0,
+                              ...edits.flatMap((end) => [
+                                  end - './Example'.length,
+                                  end - './Example'.length + 2,
+                                  end,
+                              ]),
+                              line.indexOf(token),
+                              line.length,
+                          ]),
+                      ].sort((a, b) => a - b)
+                    : [0, line.search(/[Uu]ntouched/u), line.length];
+            return columns.map((column) => {
+                const earlier =
+                    lineIndex === 0 ? edits.filter((end) => end <= column).length : 0;
+                const containing =
+                    lineIndex === 0
+                        ? edits.find(
+                              (end) => column > end - './Example'.length && column < end,
+                          )
+                        : undefined;
+                return [
+                    containing === undefined
+                        ? column + 3 * earlier
+                        : containing - './Example'.length + 3 * earlier,
+                    0,
+                    lineIndex,
+                    column,
+                ];
+            });
+        });
+        assert.deepEqual(
+            mappings,
+            expected,
+            `${fileName} lost or shifted source-map segments`,
+        );
     }
 
     const { entries } = packArtifact(packageDir, scratch);
-    const counts = assertPackedSourceMaps(entries);
+    // The build writes this outside dist: the archive alone cannot distinguish a tsc shim
+    // changed by this pass from a Rollup module that already imported relative .js files.
+    const rewrittenFiles = new Set(
+        JSON.parse(
+            readFileSync(
+                path.join(packageDir, '../.ai-work/rewritten-source-maps.json'),
+                'utf8',
+            ),
+        ).map((file) => `package/dist/esm/${file}`),
+    );
+    const counts = assertPackedSourceMaps(entries, rewrittenFiles);
+    assert.ok(
+        !rewrittenFiles.has('package/dist/esm/Canvas/CanvasItem.js'),
+        'Rollup-emitted CanvasItem.js must not be counted as rewritten',
+    );
 
-    // Both modules import a rewritten relative specifier before the mapped declaration. Rollup
-    // does not assign source segments to its synthetic JS import lines; the first mapped runtime
-    // token is on the next line. The declaration sample also has inline import() type references.
-    for (const [file, token, declaration] of [
-        ['Canvas/CanvasItem.js', 'CanvasItem', false],
-        ['renderer/coreSlots.d.ts', 'unstable_coreSlots', true],
-    ]) {
+    // Both tsc re-export shims have a mapped end-of-line segment after a rewritten
+    // specifier. Requiring that exact shifted segment catches even a stale map whose
+    // last original segment might otherwise resolve the query to the right source column.
+    for (const file of ['Chat/Kit/index.js', 'Chat/Kit/index.d.ts']) {
         const entry = `package/dist/esm/${file}`;
+        assert.ok(rewrittenFiles.has(entry), `${entry} was not rewritten`);
         const generated = entries.get(entry).toString('utf8').split('\n');
         const generatedLine =
             generated.findIndex((line) =>
-                line.includes(
-                    declaration ? `declare const ${token}` : `const ${token} =`,
-                ),
+                line.startsWith("export { Chat } from './Chat.js';"),
             ) + 1;
-        assert.ok(generatedLine, `Missing ${token} in ${entry}`);
-        const originalEntry = `package/${declaration ? 'renderer/coreSlots.ts' : 'Canvas/CanvasItem.tsx'}`;
-        const map = JSON.parse(entries.get(`${entry}.map`).toString('utf8'));
-        const original =
-            map.sourcesContent?.[0] ??
-            readFileSync(
-                path.join(packageDir, originalEntry.slice('package/'.length)),
-                'utf8',
-            );
-        const originalLines = original.split('\n');
+        assert.ok(generatedLine, `Missing Chat re-export in ${entry}`);
+        const originalEntry = 'package/Chat/Kit/index.ts';
+        const originalLines = readFileSync(
+            path.join(packageDir, 'Chat/Kit/index.ts'),
+            'utf8',
+        ).split('\n');
         const originalLine =
-            originalLines.findIndex((line) => line.includes(`export const ${token}`)) + 1;
-        assert.ok(originalLine, `Missing ${token} in original source`);
-        assertMappedToken(
-            entries,
-            entry,
-            token,
-            generatedLine,
-            originalEntry,
-            originalLine,
-            originalLines[originalLine - 1].indexOf(token),
-        );
+            originalLines.findIndex((line) =>
+                line.startsWith("export { Chat } from './Chat';"),
+            ) + 1;
+        assert.ok(originalLine, `Missing Chat re-export in ${originalEntry}`);
+        const checkEndOfLine = (packed) =>
+            assertMappedToken(
+                packed,
+                entry,
+                "';",
+                generatedLine,
+                originalEntry,
+                originalLine,
+                originalLines[originalLine - 1].length,
+                2,
+            );
+        checkEndOfLine(entries);
+        // A map with the pre-rewrite end-of-line segment still resolves to the right
+        // source position by nearest preceding segment; exact-column checking rejects it.
+        const stale = new Map(entries);
+        const staleMap = JSON.parse(stale.get(`${entry}.map`).toString('utf8'));
+        const segments = decode(staleMap.mappings);
+        segments[generatedLine - 1].at(-1)[0] -= 3;
+        staleMap.mappings = encode(segments);
+        stale.set(`${entry}.map`, Buffer.from(JSON.stringify(staleMap)));
+        assert.throws(() => checkEndOfLine(stale), /no exact segment/u);
     }
     console.log(
-        `Packed source maps validated (${counts.rewrittenJavaScript} rewritten JS, ` +
-            `${counts.rewrittenDeclarations} rewritten declarations); stale-map fixtures rejected.`,
+        `Packed source maps validated (${counts.rewrittenJavaScript} actually rewritten JS, ` +
+            `${counts.rewrittenDeclarations} actually rewritten declarations); stale-map fixtures rejected.`,
     );
 } finally {
     rmSync(scratch, { recursive: true, force: true });
