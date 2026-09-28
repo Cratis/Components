@@ -51,7 +51,7 @@ Same as DataTableForQuery, but the query must derive from `ObservableQueryFor`.
 ### Optional Props
 
 - `children`: `Column` elements
-- `queryArguments`: Arguments for the query. The table uses the subscription for the current argument values.
+- `queryArguments`: Arguments for the query. The table resubscribes when any argument changes.
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the loading, failed, and unauthorized states; each overrides its `messages.dataTable` provider message and English default
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row (controlled)
@@ -77,13 +77,13 @@ While the first observable result is performing without rows, the table shows a 
 
 ## Observable Behavior
 
-The table uses an observable query subscription while mounted. It updates the display when the server pushes a new result, for example when:
+The table subscribes to the observable query when it mounts and unsubscribes when it unmounts. It updates the display when the server pushes a new result, for example when:
 
 - New items are added
 - Existing items are modified
 - Items are removed
 
-Each update replaces the row objects. Set `dataKey` so the selected row stays highlighted across updates. Sorting and filters are kept and applied to the new rows. With Arc 22.16, page changes on an observable table do not request a new page from the server ([Arc #2869](https://github.com/Cratis/Arc/issues/2869)), and the table shows the page its subscription delivers.
+Each update replaces the row objects. Set `dataKey` so the selected row stays highlighted across updates. Sorting and filters are kept and applied to the new rows.
 
 ## Real-Time Dashboard Example
 

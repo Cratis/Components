@@ -52,7 +52,7 @@ export function Products() {
 ### Optional Props
 
 - `children`: `Column` elements
-- `queryArguments`: Arguments for the query. The query runs again when any argument value changes (compared by serialized value), including optional arguments such as filters.
+- `queryArguments`: Arguments for the query. The query runs again when a required argument changes.
 - `loadingMessage`, `failureMessage`, `unauthorizedMessage`: Optional React content for the loading, failed, and unauthorized states; each overrides its `messages.dataTable` provider message and English default
 - `dataKey`: Row property used as stable identity for selection
 - `selection`: Currently selected row (controlled)
@@ -89,7 +89,7 @@ Authorization takes precedence over failure. A snapshot response that is not val
 
 ## Pagination
 
-DataTableForQuery requests 20 rows per page. The page size is fixed; there is no prop to change it. The paginator appears below the rows only when the server reports more than one page, and each page change runs the query again for that page. Changing `queryArguments` resets pagination to the first page.
+DataTableForQuery requests 20 rows per page. The page size is fixed; there is no prop to change it. The paginator appears below the rows only when the server reports more than one page, and each page change runs the query again for that page.
 
 ## Sorting
 
