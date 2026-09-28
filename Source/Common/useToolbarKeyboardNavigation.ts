@@ -90,7 +90,10 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         const target = event.target;
         // React events from a portal may bubble here without a DOM ancestor relationship.
         if (!(target instanceof Element) || !root?.contains(target) ||
-            target.closest('[role="toolbar"]') !== root || target.closest(widgetSelector)) return;
+            target.closest('[role="toolbar"]') !== root) return;
+        for (let element: Element | null = target; element && element !== root; element = element.parentElement) {
+            if (element.matches(widgetSelector)) return;
+        }
         const available = tools();
         const current = target.closest<HTMLElement>(toolSelector);
         const index = current ? available.indexOf(current) : -1;

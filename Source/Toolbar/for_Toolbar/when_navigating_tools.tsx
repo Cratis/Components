@@ -57,6 +57,31 @@ describe('when navigating Toolbar tools', () => {
         expect(document.activeElement).to.equal(third);
     });
 
+    it('should navigate inside an application ancestor', async () => {
+        await act(async () => root.render(<div role='application'><Toolbar><button>First</button><button>Second</button></Toolbar></div>));
+        const [first, second] = buttons();
+        first.focus();
+        expect((await key(first, 'ArrowDown')).defaultPrevented).to.equal(true);
+        expect(document.activeElement).to.equal(second);
+    });
+
+    it('should navigate inside a grid ancestor', async () => {
+        await act(async () => root.render(<div role='grid'><Toolbar><button>First</button><button>Second</button></Toolbar></div>));
+        const [first, second] = buttons();
+        first.focus();
+        expect((await key(first, 'ArrowDown')).defaultPrevented).to.equal(true);
+        expect(document.activeElement).to.equal(second);
+    });
+
+    it('should leave widgets inside an application toolbar in control of their keys', async () => {
+        await act(async () => root.render(<div role='application'><Toolbar><input aria-label='Text' /><div role='slider' tabIndex={0}>Slider</div><button>Last</button></Toolbar></div>));
+        for (const target of container.querySelectorAll<HTMLElement>('input,[role="slider"]')) {
+            target.focus();
+            expect((await key(target, 'ArrowDown')).defaultPrevented).to.equal(false);
+            expect(document.activeElement).to.equal(target);
+        }
+    });
+
     it('should navigate horizontally and reverse for an effective RTL direction', async () => {
         await render(tools, { orientation: 'horizontal' });
         const [first, second] = buttons();

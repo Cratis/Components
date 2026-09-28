@@ -50,6 +50,14 @@ describe('when navigating ActionMenubar actions', () => {
         expect(buttons().every(button => !button.hasAttribute('tabindex'))).to.equal(true);
     });
 
+    it('should navigate inside an application ancestor', async () => {
+        await act(async () => root.render(<div role='application'><ActionMenubar model={model} /></div>));
+        const [first, second] = buttons();
+        first.focus();
+        expect((await key(first, 'ArrowRight')).defaultPrevented).to.equal(true);
+        expect(document.activeElement).to.equal(second);
+    });
+
     it('should use effective RTL direction and skip disabled, inert and hidden actions', async () => {
         await render([
             { label: 'First' }, { label: 'Disabled', disabled: true },
