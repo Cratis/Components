@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export { Toolbar } from './Toolbar';
+export { ToolbarFocusMode } from '../Common/ToolbarFocusMode';
 export type { ToolbarParts, ToolbarProps } from './Toolbar';
 export { ToolbarButton } from './ToolbarButton';
 export type { ToolbarButtonParts, ToolbarButtonProps } from './ToolbarButton';
