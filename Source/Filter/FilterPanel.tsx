@@ -332,7 +332,11 @@ export function FilterPanel({
             // Preserve the viewport gutter even when a containing block scales the dropdown.
             const scaleX = origin.width || 1;
             const scaleY = origin.height || 1;
-            const viewport = { width: window.innerWidth, height: window.innerHeight };
+            // Layoutless renderers report zero; browser layout uses the scrollbar-free viewport.
+            const viewport = {
+                width: document.documentElement.clientWidth || window.innerWidth,
+                height: document.documentElement.clientHeight || window.innerHeight,
+            };
             const rootRect = modalRoot && modalRoot.contains(portalContainer)
                 ? modalRoot.getBoundingClientRect() : null;
             const rootEdges = rootRect && (rootProbe ? measureProbe(rootProbe) :
