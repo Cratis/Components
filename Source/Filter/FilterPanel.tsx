@@ -333,9 +333,11 @@ export function FilterPanel({
             const scaleX = origin.width || 1;
             const scaleY = origin.height || 1;
             // Layoutless renderers report zero; browser layout uses the scrollbar-free viewport.
+            // In quirks mode the viewport's client size is reported on the body, not the root.
+            const viewportElement = document.compatMode === 'BackCompat' ? document.body : document.documentElement;
             const viewport = {
-                width: document.documentElement.clientWidth || window.innerWidth,
-                height: document.documentElement.clientHeight || window.innerHeight,
+                width: viewportElement.clientWidth || window.innerWidth,
+                height: viewportElement.clientHeight || window.innerHeight,
             };
             const rootRect = modalRoot && modalRoot.contains(portalContainer)
                 ? modalRoot.getBoundingClientRect() : null;
