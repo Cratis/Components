@@ -235,7 +235,7 @@ try {
     };
     writeFileSync(path.join(scratch, 'Example.js'), 'export const Example = 1;\n');
     const fixtureManifest = path.join(scratch, 'rewritten-source-maps.json');
-    const cleanBuildMessage = /Run a clean build: yarn clean && yarn build/u;
+    const cleanBuildMessage = /Run a clean build in Source: yarn prepare/u;
     assert.throws(() => readRewrittenSourceMaps(fixtureManifest), cleanBuildMessage);
     writeFileSync(fixtureManifest, '[]');
     assert.throws(() => readRewrittenSourceMaps(fixtureManifest), cleanBuildMessage);

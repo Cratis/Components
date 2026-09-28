@@ -265,7 +265,7 @@ export const rewrittenSourceMapsManifest = (sourceDir) =>
     resolve(sourceDir, 'node_modules/.cache/cratis-components/rewritten-source-maps.json');
 
 export function readRewrittenSourceMaps(manifestPath) {
-    const message = 'Rewritten source maps manifest is missing or empty. Run a clean build: yarn clean && yarn build.';
+    const message = 'Rewritten source maps manifest is missing or empty. Run a clean build in Source: yarn prepare.';
     if (!existsSync(manifestPath)) throw new Error(message);
     const files = JSON.parse(readFileSync(manifestPath, 'utf8'));
     if (!Array.isArray(files) || files.length === 0) throw new Error(message);
