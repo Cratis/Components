@@ -17,11 +17,16 @@ const threeTopics: PinnableTopic[] = [
 ];
 
 let removeTopic: (id: string) => void = () => undefined;
+let addNewestTopic: () => void = () => undefined;
 
 const Host = ({ moveFocusTo, initialTopics = threeTopics }: { moveFocusTo?: 'outside'; initialTopics?: PinnableTopic[] }) => {
     const outside = useRef<HTMLInputElement>(null);
     const [topics, setTopics] = useState<PinnableTopic[]>(initialTopics);
     removeTopic = (id) => setTopics((current) => current.filter((candidate) => candidate.id !== id));
+    addNewestTopic = () => setTopics((current) => [
+        ...current,
+        { id: 'topic-0', name: 'Newest topic', lastActivity: new Date('2026-03-01') },
+    ]);
     return <>
         <input ref={outside} aria-label='Outside' />
         <ChatTopicList<PinnableTopic>
@@ -120,6 +125,19 @@ describe('when a focused topic action disappears', () => {
 
         it('should move focus to the new topic button', () => {
             document.activeElement!.classList.contains('cratis-chat-topics__start').should.equal(true);
+        });
+    });
+
+    describe('because the action removed its topic after the list re-sorted', () => {
+        beforeEach(async () => {
+            list = await render(<Host />);
+            list.container.querySelector<HTMLButtonElement>('[aria-label="Archive Second topic"]')!.focus();
+            await act(async () => { addNewestTopic(); });
+            await act(async () => { (document.activeElement as HTMLButtonElement).click(); });
+        });
+
+        it('should move focus to the topic that took its place in the current order', () => {
+            focusedTopicName()!.should.equal('Third topic');
         });
     });
 

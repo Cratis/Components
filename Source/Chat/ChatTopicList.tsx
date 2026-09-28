@@ -1,16 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { PersonAvatarCircle, type BuildAvatarUrlParams } from './Kit/Avatar';
 import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatTopic } from './ChatTopic';
 import type { ChatTopicAction } from './ChatTopicAction';
+import { ChatTopicActions } from './ChatTopicActions';
 import { ChatStatus } from './ChatStatus';
 import { isTopicUnnamed as defaultIsTopicUnnamed } from './isTopicUnnamed';
 import { relativeTimestamp, type RelativeTimestampLabels } from './relativeTimestamp';
+import { useTopicActionFocusRecovery } from './useTopicActionFocusRecovery';
 import { topicsByActivity } from './topicsByActivity';
 
 const PlusIcon = () => (
@@ -141,27 +143,11 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
 }: ChatTopicListProps<TTopic>) => {
     const unnamed = isTopicUnnamed ?? defaultIsTopicUnnamed;
     const listRef = useRef<HTMLUListElement>(null);
-    // The topic action that last held focus. If invoking it hides the action or removes its topic,
-    // the focused button unmounts and focus would fall to the document body.
-    const focusedActionRef = useRef<{ element: HTMLElement; topicKey: string; index: number } | null>(null);
-
     const orderedTopics = status === ChatStatus.Unauthorized ? [] : topicsByActivity(topics);
-    const orderedTopicKeys = orderedTopics.map((topic) => chatIdentifierString(topic.id));
-
-    useLayoutEffect(() => {
-        const focused = focusedActionRef.current;
-        if (!focused || focused.element.isConnected) return;
-        focusedActionRef.current = null;
-        const active = document.activeElement;
-        // Respect focus the host moved on purpose, for example into a rename dialog.
-        if (active && active !== document.body) return;
-        const rows = Array.from(listRef.current?.children ?? []);
-        const sameTopic = orderedTopicKeys.indexOf(focused.topicKey);
-        const row = sameTopic >= 0 ? rows[sameTopic] : rows[Math.min(focused.index, rows.length - 1)];
-        const target = row?.querySelector<HTMLElement>('.cratis-chat-topics__topic') ??
-            listRef.current?.parentElement?.querySelector<HTMLElement>('.cratis-chat-topics__start');
-        target?.focus();
-    });
+    const { onActionFocus, onActionBlur } = useTopicActionFocusRecovery(
+        listRef,
+        orderedTopics.map((topic) => chatIdentifierString(topic.id)),
+    );
 
     const authorFor = (authorId: ChatIdentifier): ChatAuthor =>
         authorOf?.(authorId) ?? {
@@ -196,7 +182,7 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                 </p>
             )}
             <ul ref={listRef} className='cratis-chat-topics__list'>
-                {status !== ChatStatus.Unauthorized && orderedTopics.map((topic, index) => {
+                {status !== ChatStatus.Unauthorized && orderedTopics.map((topic) => {
                     const starter =
                         topic.startedBy === undefined
                             ? undefined
@@ -268,36 +254,13 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                         >
                             {topicButton}
                             {availableActions.length > 0 && (
-                                <div className='cratis-chat-message__actions'>
-                                    {availableActions.map((action) => (
-                                        <button
-                                            key={action.id}
-                                            type='button'
-                                            className='cratis-chat-message__action'
-                                            style={action.icon == null ? { width: 'auto', padding: '0 0.375rem' } : undefined}
-                                            title={action.label}
-                                            aria-label={`${action.label} ${topicName}`}
-                                            onFocus={(event) => {
-                                                focusedActionRef.current = { element: event.currentTarget, topicKey, index };
-                                            }}
-                                            onBlur={(event) => {
-                                                // Focus left a still-mounted action on purpose; there is nothing to recover.
-                                                // A button removed while focused is already disconnected here.
-                                                const element = event.currentTarget;
-                                                queueMicrotask(() => {
-                                                    if (focusedActionRef.current?.element === element && element.isConnected) {
-                                                        focusedActionRef.current = null;
-                                                    }
-                                                });
-                                            }}
-                                            onClick={() => action.onInvoke(topic)}
-                                        >
-                                            {typeof action.icon === 'string' ? (
-                                                <i className={action.icon} aria-hidden='true' />
-                                            ) : (action.icon ?? action.label)}
-                                        </button>
-                                    ))}
-                                </div>
+                                <ChatTopicActions<TTopic>
+                                    topic={topic}
+                                    topicName={topicName}
+                                    actions={availableActions}
+                                    onActionFocus={onActionFocus(topicKey)}
+                                    onActionBlur={onActionBlur}
+                                />
                             )}
                         </li>
                     );
