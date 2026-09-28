@@ -6,6 +6,7 @@ import { expect } from 'chai';
 import React from 'react';
 import { vi } from 'vitest';
 import { DialogInitialFocus } from '../../Dialogs/DialogInitialFocus';
+import { CommandDialog } from '../CommandDialog';
 import {
     click,
     focusedElement,
@@ -52,8 +53,6 @@ describe('when a command dialog is given an initial focus', () => {
         executeCommand.mockClear();
         succeeded.mockClear();
 
-        const { CommandDialog } = await import('../CommandDialog');
-
         // SAFETY: The generated command proxy constructor is erased by this test harness only.
         dialog = await render(
             React.createElement(CommandDialog, {
@@ -64,6 +63,11 @@ describe('when a command dialog is given an initial focus', () => {
                 onSuccess: succeeded,
                 children: React.createElement('p', null, 'This cannot be undone'),
             }),
+            initialFocus === DialogInitialFocus.Content
+                ? 'h2:Delete personal data'
+                : initialFocus === DialogInitialFocus.Cancel
+                  ? 'button:Cancel'
+                  : 'button:Ok',
         );
     };
 

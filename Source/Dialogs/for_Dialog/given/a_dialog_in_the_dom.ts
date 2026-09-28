@@ -21,9 +21,10 @@ export interface DialogInTheDom {
  * before the spec observes it. The Cratis provider supplies locale and global
  * notification context just as an application root does.
  * @param element - The element to render.
+ * @param expectedFocus - When specified, wait for this focus target rather than elapsed time.
  * @returns The mounted dialog, to be passed to {@link unmount}.
  */
-export const render = async (element: React.ReactElement): Promise<DialogInTheDom> => {
+export const render = async (element: React.ReactElement, expectedFocus?: string): Promise<DialogInTheDom> => {
     // SAFETY: React's test-environment flag is an intentionally undocumented global absent from DOM typings.
     (
         globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
@@ -43,9 +44,19 @@ export const render = async (element: React.ReactElement): Promise<DialogInTheDo
         root.render(React.createElement(CratisComponentsProvider, null, element));
     });
 
-    await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 400));
-    });
+    if (expectedFocus) {
+        // DialogImplementation moves focus on the next animation frame. Count frames,
+        // not milliseconds: CPU contention must not make this spec wait for a fixed delay.
+        for (let frame = 0; frame < 10 && focusedElement() !== expectedFocus; frame++) {
+            await act(async () => {
+                await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+            });
+        }
+    } else {
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 400));
+        });
+    }
 
     return { container, root };
 };
