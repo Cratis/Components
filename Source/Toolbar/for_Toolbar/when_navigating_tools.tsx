@@ -131,6 +131,23 @@ describe('when navigating Toolbar tools', () => {
         expect(document.activeElement).to.equal(last);
     });
 
+    it('should navigate from an aria-disabled tool in Arrows mode', async () => {
+        await render(<><button>First</button><button aria-disabled='true'>Unavailable</button><button>Last</button></>);
+        const [first, unavailable, last] = buttons();
+        unavailable.focus();
+        expect((await key(unavailable, 'ArrowDown')).defaultPrevented).to.equal(true);
+        expect(document.activeElement).to.equal(last);
+        unavailable.focus();
+        expect((await key(unavailable, 'ArrowUp')).defaultPrevented).to.equal(true);
+        expect(document.activeElement).to.equal(first);
+        unavailable.focus();
+        await key(unavailable, 'Home');
+        expect(document.activeElement).to.equal(first);
+        unavailable.focus();
+        await key(unavailable, 'End');
+        expect(document.activeElement).to.equal(last);
+    });
+
     it('should leave editable, slider, select and custom widget keys alone', async () => {
         await render(<><button>First</button><input aria-label='Text' /><input type='range' /><select aria-label='Choice'><option>A</option></select><div role='combobox' tabIndex={0}>Combo</div><button>Last</button></>);
         for (const target of container.querySelectorAll<HTMLElement>('input,select,[role="combobox"]')) {
@@ -276,6 +293,56 @@ describe('when navigating Toolbar tools', () => {
         await render(<><button>First</button><button aria-disabled='true'>Last</button></>, { focusMode: ToolbarFocusMode.Arrows });
         expect(first.hasAttribute('tabindex')).to.equal(false);
         expect(last.hasAttribute('tabindex')).to.equal(false);
+    });
+
+    it('should navigate from a focused tool that becomes aria-disabled in SingleTabStop', async () => {
+        await render(tools, { focusMode: ToolbarFocusMode.SingleTabStop });
+        const [first, second, third] = buttons();
+        second.focus();
+        second.setAttribute('aria-disabled', 'true');
+        await act(async () => { await Promise.resolve(); });
+        expect(document.activeElement).to.equal(second);
+        expect((await key(second, 'ArrowDown')).defaultPrevented).to.equal(true);
+        expect(document.activeElement).to.equal(third);
+        second.focus();
+        expect((await key(second, 'ArrowUp')).defaultPrevented).to.equal(true);
+        expect(document.activeElement).to.equal(first);
+        second.focus();
+        await key(second, 'Home');
+        expect(document.activeElement).to.equal(first);
+        second.focus();
+        await key(second, 'End');
+        expect(document.activeElement).to.equal(third);
+    });
+
+    it('should restore a consumer-updated negative Tab stop on switching to Arrows', async () => {
+        await render(<><button tabIndex={0}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        await render(<><button tabIndex={-1}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        expect(buttons()[0].getAttribute('tabindex')).to.equal('-1');
+        await render(<><button tabIndex={-1}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.Arrows });
+        expect(buttons()[0].getAttribute('tabindex')).to.equal('-1');
+    });
+
+    it('should restore a consumer-updated negative Tab stop on switching to None', async () => {
+        await render(<><button tabIndex={0}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        await render(<><button tabIndex={-1}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        await render(<><button tabIndex={-1}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.None });
+        expect(buttons()[0].getAttribute('tabindex')).to.equal('-1');
+    });
+
+    it('should restore a consumer-updated Tab stop on switching to None', async () => {
+        await render(<><button tabIndex={0}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        await render(<><button tabIndex={2}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        expect(buttons()[0].getAttribute('tabindex')).to.equal('0');
+        await render(<><button tabIndex={2}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.None });
+        expect(buttons()[0].getAttribute('tabindex')).to.equal('2');
+    });
+
+    it('should restore the latest consumer Tab stop when a tool becomes a widget', async () => {
+        await render(<><button tabIndex={0}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        await render(<><button tabIndex={2}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        await render(<><button role='slider' tabIndex={2}>First</button><button>Last</button></>, { focusMode: ToolbarFocusMode.SingleTabStop });
+        expect(buttons()[0].getAttribute('tabindex')).to.equal('2');
     });
 
     it('should recover the first available Tab stop after the remembered tool is removed', async () => {

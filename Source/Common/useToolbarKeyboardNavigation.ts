@@ -20,15 +20,23 @@ const isWidget = (tool: HTMLElement, root: HTMLElement) => {
 export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode: ToolbarFocusMode) => {
     const rootRef = useRef<HTMLDivElement>(null);
     const lastFocusedRef = useRef<HTMLElement | null>(null);
-    const originalTabIndicesRef = useRef(new Map<HTMLElement, string | null>());
+    const tabIndicesRef = useRef(new Map<HTMLElement, { original: string | null; written: string }>());
+
+    const syncTabIndices = useCallback(() => {
+        for (const [tool, value] of tabIndicesRef.current) {
+            const current = tool.getAttribute('tabindex');
+            if (current !== value.written) value.original = current;
+        }
+    }, []);
 
     const tools = useCallback(() => {
+        syncTabIndices();
         const root = rootRef.current;
         if (!root) return [];
         return Array.from(root.querySelectorAll<HTMLElement>(toolSelector)).filter(tool => {
             if (tool.closest('[role="toolbar"]') !== root || tool.matches(':disabled, [disabled], [aria-disabled="true"]')) return false;
-            const original = originalTabIndicesRef.current.has(tool)
-                ? originalTabIndicesRef.current.get(tool) : tool.getAttribute('tabindex');
+            const value = tabIndicesRef.current.get(tool);
+            const original = value ? value.original : tool.getAttribute('tabindex');
             if (original === '-1') return false;
             for (let element: HTMLElement | null = tool; element && element !== root; element = element.parentElement) {
                 if (element.hidden || element.hasAttribute('inert') || element.getAttribute('aria-hidden') === 'true') return false;
@@ -37,7 +45,7 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
             }
             return true;
         });
-    }, []);
+    }, [syncTabIndices]);
 
     const updateTabStops = useCallback(() => {
         if (focusMode !== ToolbarFocusMode.SingleTabStop) return;
@@ -48,8 +56,10 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
             ? lastFocusedRef.current : available[0];
         lastFocusedRef.current = selected ?? null;
         for (const tool of available) {
-            if (!originalTabIndicesRef.current.has(tool)) originalTabIndicesRef.current.set(tool, tool.getAttribute('tabindex'));
             const tabIndex = tool === selected ? '0' : '-1';
+            const value = tabIndicesRef.current.get(tool);
+            if (value) value.written = tabIndex;
+            else tabIndicesRef.current.set(tool, { original: tool.getAttribute('tabindex'), written: tabIndex });
             if (tool.getAttribute('tabindex') !== tabIndex) tool.setAttribute('tabindex', tabIndex);
         }
         // Unavailable tools (including aria-disabled buttons) must not add another
@@ -57,19 +67,19 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         const excluded = Array.from(root.querySelectorAll<HTMLElement>(toolSelector)).filter(tool =>
             tool.closest('[role="toolbar"]') === root && !isWidget(tool, root) && !available.includes(tool));
         for (const tool of excluded) {
-            if (!originalTabIndicesRef.current.has(tool)) {
+            const value = tabIndicesRef.current.get(tool);
+            if (value) value.written = '-1';
+            else {
                 if (tool.getAttribute('tabindex') === '-1') continue;
-                originalTabIndicesRef.current.set(tool, tool.getAttribute('tabindex'));
+                tabIndicesRef.current.set(tool, { original: tool.getAttribute('tabindex'), written: '-1' });
             }
             if (tool.getAttribute('tabindex') !== '-1') tool.setAttribute('tabindex', '-1');
         }
-        for (const [tool, original] of originalTabIndicesRef.current) {
+        for (const [tool, value] of tabIndicesRef.current) {
             if (available.includes(tool) || excluded.includes(tool)) continue;
-            if (root.contains(tool)) {
-                if (original === null) tool.removeAttribute('tabindex');
-                else tool.setAttribute('tabindex', original);
-            }
-            originalTabIndicesRef.current.delete(tool);
+            if (value.original === null) tool.removeAttribute('tabindex');
+            else tool.setAttribute('tabindex', value.original);
+            tabIndicesRef.current.delete(tool);
         }
     }, [focusMode, tools]);
 
@@ -83,13 +93,14 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         observer.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'inert', 'aria-hidden', 'aria-disabled', 'disabled', 'style', 'class'] });
         return () => {
             observer.disconnect();
-            for (const [tool, original] of originalTabIndicesRef.current) {
-                if (original === null) tool.removeAttribute('tabindex');
-                else tool.setAttribute('tabindex', original);
+            syncTabIndices();
+            for (const [tool, value] of tabIndicesRef.current) {
+                if (value.original === null) tool.removeAttribute('tabindex');
+                else tool.setAttribute('tabindex', value.original);
             }
-            originalTabIndicesRef.current.clear();
+            tabIndicesRef.current.clear();
         };
-    }, [focusMode, updateTabStops]);
+    }, [focusMode, updateTabStops, syncTabIndices]);
 
     const onFocus = (event: FocusEvent<HTMLDivElement>) => {
         if (focusMode !== ToolbarFocusMode.SingleTabStop) return;
@@ -117,8 +128,8 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         const available = focusMode === ToolbarFocusMode.SingleTabStop
             ? tools().filter(tool => !isWidget(tool, root)) : tools();
         const current = target.closest<HTMLElement>(toolSelector);
-        const index = current ? available.indexOf(current) : -1;
-        if (index < 0) return;
+        if (!current || current === root || current.closest('[role="toolbar"]') !== root) return;
+        const index = available.indexOf(current);
 
         const directionElement = root.closest<HTMLElement>('[dir]');
         const direction = getComputedStyle(root).direction || directionElement?.dir || 'ltr';
@@ -127,8 +138,12 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         let next: HTMLElement | undefined;
         if (event.key === 'Home') next = available[0];
         else if (event.key === 'End') next = available[available.length - 1];
-        else if (event.key === (orientation === 'vertical' ? 'ArrowDown' : forward)) next = available[index + 1];
-        else if (event.key === (orientation === 'vertical' ? 'ArrowUp' : backward)) next = available[index - 1];
+        else if (event.key === (orientation === 'vertical' ? 'ArrowDown' : forward)) next = index >= 0
+            ? available[index + 1]
+            : available.find(tool => !!(current.compareDocumentPosition(tool) & Node.DOCUMENT_POSITION_FOLLOWING));
+        else if (event.key === (orientation === 'vertical' ? 'ArrowUp' : backward)) next = index >= 0
+            ? available[index - 1]
+            : available.slice().reverse().find(tool => !!(current.compareDocumentPosition(tool) & Node.DOCUMENT_POSITION_PRECEDING));
         if (!next || next === current) return;
         event.preventDefault();
         next.focus();
