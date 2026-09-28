@@ -18,6 +18,7 @@ import { resolveDataTableStatus } from './resolveDataTableStatus';
 import { DataTableStatus } from './DataTableStatus';
 import { serializeQueryArguments } from '../QueryStatus/serializeQueryArguments';
 import { isSameTableResult } from './isSameTableResult';
+import { isQueryResultReady } from '../QueryStatus/isQueryResultReady';
 
 /**
  * Props for {@link DataTableForObservableQuery}.
@@ -219,7 +220,7 @@ export const DataTableForObservableQuery = <
     }>();
     const onResult = useCallback((queryKey: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => {
         setSnapshot((previous) => {
-            if (!result.isReady && previous?.queryKey !== queryKey) return previous;
+            if (!isQueryResultReady(result) && previous?.queryKey !== queryKey) return previous;
             return previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
                 ? previous : { queryKey, result, setPage };
         });
@@ -227,7 +228,7 @@ export const DataTableForObservableQuery = <
     const queryKey = serializeQueryArguments(props.queryArguments);
     const current = snapshot?.queryKey === queryKey ? snapshot : undefined;
     const result = current?.result;
-    const paginatorResult = current?.result.isReady ? current : snapshot;
+    const paginatorResult = current && isQueryResultReady(current.result) ? current : snapshot;
     const containerRef = useRef<HTMLDivElement>(null);
     const [tableHeight, setTableHeight] = useState<number>(600);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -333,7 +334,7 @@ export const DataTableForObservableQuery = <
                         page={paginatorResult.result.paging.page}
                         pageCount={pageCount}
                         onPageChange={paginatorResult.setPage}
-                        disabled={!current?.result.isReady}
+                        disabled={!current || !isQueryResultReady(current.result)}
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}

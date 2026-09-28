@@ -18,6 +18,7 @@ import { resolveDataTableStatus } from './resolveDataTableStatus';
 import { DataTableStatus } from './DataTableStatus';
 import { serializeQueryArguments } from '../QueryStatus/serializeQueryArguments';
 import { isSameTableResult } from './isSameTableResult';
+import { isQueryResultReady } from '../QueryStatus/isQueryResultReady';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -162,8 +163,8 @@ const KeyedQuerySubscriber = <
     useIsomorphicLayoutEffect(() => {
         // Arc can seed a remount with a retained result for another page. Wait for
         // the page requested by this fresh subscriber before exposing cached rows.
-        if (!receivedFirstPage.current && result.isReady && result.paging.page !== paging.page) return;
-        if (result.isReady) receivedFirstPage.current = true;
+        if (!receivedFirstPage.current && isQueryResultReady(result) && result.paging.page !== paging.page) return;
+        if (isQueryResultReady(result)) receivedFirstPage.current = true;
         onResult(queryKey, result, setPage);
     }, [queryKey, result, onResult, setPage]);
     return null;
@@ -227,7 +228,7 @@ export const DataTableForQuery = <
     }>();
     const onResult = useCallback((queryKey: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => {
         setSnapshot((previous) => {
-            if (!result.isReady && previous?.queryKey !== queryKey) return previous;
+            if (!isQueryResultReady(result) && previous?.queryKey !== queryKey) return previous;
             return previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
                 ? previous : { queryKey, result, setPage };
         });
@@ -235,7 +236,7 @@ export const DataTableForQuery = <
     const queryKey = serializeQueryArguments(props.queryArguments);
     const current = snapshot?.queryKey === queryKey ? snapshot : undefined;
     const result = current?.result;
-    const paginatorResult = current?.result.isReady ? current : snapshot;
+    const paginatorResult = current && isQueryResultReady(current.result) ? current : snapshot;
     const totalItems = paginatorResult?.result.paging.totalItems ?? 0;
     const pageCount = paginatorResult?.result.paging.totalPages ?? 0;
 
@@ -305,7 +306,7 @@ export const DataTableForQuery = <
                         page={paginatorResult.result.paging.page}
                         pageCount={pageCount}
                         onPageChange={paginatorResult.setPage}
-                        disabled={!current?.result.isReady}
+                        disabled={!current || !isQueryResultReady(current.result)}
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}
