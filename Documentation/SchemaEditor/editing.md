@@ -7,7 +7,7 @@ SchemaEditor is controlled: it emits each structural change through `onChange`, 
 
 ## Enter edit mode
 
-Use the Edit action in the SchemaEditor toolbar. Set `editMode` to choose the initial mode, or set `canEdit={false}` to prevent editing.
+Use the Edit action in the SchemaEditor toolbar. Left/Right and Home/End move between actions, and Tab still reaches each one. Set `editMode` to choose the initial mode, or set `canEdit={false}` to prevent editing.
 
 When `canEdit` is false, the Edit action is still shown but does nothing. Set `canNotEditReason` to render it as a disabled action (`aria-disabled`) with a tooltip that explains why editing is unavailable; without a reason, the action looks enabled.
 

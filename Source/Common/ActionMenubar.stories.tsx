@@ -72,6 +72,37 @@ export const ArrowsWithWidgets: Story = {
     },
 };
 
+export const ClosedDetailsAction: Story = {
+    args: {
+        model: [
+            { template: () => <details><summary>Earlier actions</summary><button type='button'>Hidden first</button></details> },
+            { label: 'First' },
+            { template: () => <details><summary>More actions</summary><button type='button'>Hidden middle</button></details> },
+            { label: 'Last' },
+            { template: () => <details><summary>Later actions</summary><button type='button'>Hidden last</button></details> },
+        ],
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const first = canvas.getByRole('button', { name: 'First' });
+        const last = canvas.getByRole('button', { name: 'Last' });
+        await expect(canvasElement.querySelectorAll('details:not([open]) button')).toHaveLength(3);
+        await userEvent.click(first);
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(last).toHaveFocus();
+        await userEvent.keyboard('{ArrowLeft}');
+        await expect(first).toHaveFocus();
+        await userEvent.keyboard('{End}');
+        await expect(last).toHaveFocus();
+        await userEvent.keyboard('{End}');
+        await expect(last).toHaveFocus();
+        await userEvent.keyboard('{Home}');
+        await expect(first).toHaveFocus();
+        await userEvent.keyboard('{Home}');
+        await expect(first).toHaveFocus();
+    },
+};
+
 export const DisabledAction: Story = {
     play: async ({ canvasElement, args }) => {
         const save = within(canvasElement).getByRole('button', { name: 'Save' });

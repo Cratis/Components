@@ -47,18 +47,23 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         const direction = getComputedStyle(root).direction || directionElement?.dir || 'ltr';
         const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
         const backward = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
-        let next: HTMLElement | undefined;
-        if (event.key === 'Home') next = available[0];
-        else if (event.key === 'End') next = available[available.length - 1];
-        else if (event.key === (orientation === 'vertical' ? 'ArrowDown' : forward)) next = index >= 0
-            ? available[index + 1]
-            : available.find(tool => !!(current.compareDocumentPosition(tool) & Node.DOCUMENT_POSITION_FOLLOWING));
-        else if (event.key === (orientation === 'vertical' ? 'ArrowUp' : backward)) next = index >= 0
-            ? available[index - 1]
-            : available.slice().reverse().find(tool => !!(current.compareDocumentPosition(tool) & Node.DOCUMENT_POSITION_PRECEDING));
-        if (!next || next === current) return;
-        event.preventDefault();
-        next.focus();
+        let candidates: HTMLElement[] = [];
+        if (event.key === 'Home') candidates = available;
+        else if (event.key === 'End') candidates = available.slice().reverse();
+        else if (event.key === (orientation === 'vertical' ? 'ArrowDown' : forward)) candidates = index >= 0
+            ? available.slice(index + 1)
+            : available.filter(tool => !!(current.compareDocumentPosition(tool) & Node.DOCUMENT_POSITION_FOLLOWING));
+        else if (event.key === (orientation === 'vertical' ? 'ArrowUp' : backward)) candidates = index >= 0
+            ? available.slice(0, index).reverse()
+            : available.slice().reverse().filter(tool => !!(current.compareDocumentPosition(tool) & Node.DOCUMENT_POSITION_PRECEDING));
+        for (const candidate of candidates) {
+            if (candidate === current) return;
+            candidate.focus();
+            if (candidate.ownerDocument.activeElement === candidate) {
+                event.preventDefault();
+                return;
+            }
+        }
     };
 
     return { rootRef, onKeyDown };
