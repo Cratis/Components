@@ -27,19 +27,19 @@ The examples use the proxies from the Arc tutorial: `RegisterAuthor` has a requi
 
     React Aria, the internationalized date implementation, and React Icons are internal dependencies. The package does not depend on PrimeReact or any other UI kit or theme runtime, and you don't configure an icon package. The optional MUI and PrimeReact integrations are separate [renderer adapter](/components/renderers/) packages.
 
-    The package declares React, Arc, Fundamentals, `reflect-metadata`, and `tsyringe` as peers. Keep `@cratis/arc` and `@cratis/arc.react` on the same version your generated proxies were produced with. A strict installer can install every peer explicitly (replace the Arc version with the one your backend uses):
+    The package requires React, Arc, and Fundamentals as peers. `reflect-metadata` and `tsyringe` remain declared peers but are optional for Components: Arc React installs `tsyringe` as its own dependency, and Arc loads Fundamentals' Reflect metadata implementation. Keep `@cratis/arc` and `@cratis/arc.react` on the same version your generated proxies were produced with. This example still installs `reflect-metadata` because its entry point imports it explicitly; omit both that install and the import if your application does not use the package. For a strict installer, install the required peers explicitly (replace the Arc version with the one your backend uses):
 
     ```bash title="Install explicit peers"
     ARC_VERSION=22.16.0
     npm install @cratis/components@^4 \
       "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
       @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
-      reflect-metadata@0.2.2 tsyringe@4.10.0
+      reflect-metadata@0.2.2
     ```
 
     Use Arc 22.16.0 or newer if you plan to use `AutoCommandForm`'s explicit field binding.
 
-    `pixi.js@^8.20.0` is an additional **optional** peer, needed only if you use `Canvas` or `PivotViewer`. Every other component needs nothing beyond the peers above; install Pixi later, when you reach a spatial workspace or card-grid screen. See [Choosing a component](/components/choosing-a-component/#spatial-workspaces).
+    `pixi.js@^8.20.0` is another **optional** peer, needed only if you use `Canvas` or `PivotViewer`. Every other component needs nothing beyond the required peers above; install Pixi later, when you reach a spatial workspace or card-grid screen. See [Choosing a component](/components/choosing-a-component/#spatial-workspaces).
 
 2. **Import the stylesheets once**, at your application entry point, after `reflect-metadata`:
 
