@@ -8,24 +8,33 @@ import { createRoot, type Root } from 'react-dom/client';
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { FilterPanel } from '../FilterPanel';
+import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 import type { FilterDefinition } from '../types';
 
 const filters: FilterDefinition[] = [
     { key: 'named', label: 'Named', searchable: true, searchAriaLabel: 'Find status', searchPlaceholder: 'Type a status', options: [{ key: 'a', label: 'Active', value: 'a' }] },
     { key: 'placeholder', label: 'Placeholder', searchable: true, searchPlaceholder: 'Find category', options: [{ key: 'b', label: 'Category', value: 'b' }] },
+    { key: 'empty', label: 'Empty', searchable: true, searchPlaceholder: '', options: [{ key: 'c', label: 'Other', value: 'c' }] },
 ];
 
 let container: HTMLDivElement;
 let root: Root;
 const anchorRef = createRef<HTMLButtonElement>();
-const render = async (label?: string, searchAriaLabel?: string, searchPlaceholder?: string) => {
+const render = async (
+    label?: string,
+    searchAriaLabel?: string,
+    searchPlaceholder?: string,
+    filterMessages?: { label?: string; searchAriaLabel?: string },
+) => {
     await act(async () => root.render(
-        <FilterPanel isOpen filters={filters} filterValues={{}} rangeValues={{}}
-            aria-label={label} searchAriaLabel={searchAriaLabel} searchPlaceholder={searchPlaceholder}
-            search='' onSearchChange={() => undefined} anchorRef={anchorRef}
-            onClose={() => undefined} onFilterToggle={() => undefined}
-            onFilterClear={() => undefined} onRangeChange={() => undefined}
-            onExpandedFilterChange={() => undefined} />,
+        <CratisComponentsProvider value={filterMessages ? { messages: { filter: filterMessages } } : undefined}>
+            <FilterPanel isOpen filters={filters} filterValues={{}} rangeValues={{}}
+                aria-label={label} searchAriaLabel={searchAriaLabel} searchPlaceholder={searchPlaceholder}
+                search='' onSearchChange={() => undefined} anchorRef={anchorRef}
+                onClose={() => undefined} onFilterToggle={() => undefined}
+                onFilterClear={() => undefined} onRangeChange={() => undefined}
+                onExpandedFilterChange={() => undefined} />
+        </CratisComponentsProvider>,
     ));
 };
 
@@ -53,6 +62,10 @@ describe('when rendering the default filter panel', () => {
         expect(panel.getAttribute('aria-label')).to.equal('Filters');
     });
 
+    it('should name the panel search from its default placeholder without a provider', () => {
+        expect(document.querySelector('.pv-search input')?.getAttribute('aria-label')).to.equal('Search…');
+    });
+
     it('should render the dialog as a div instead of an aside landmark', () => {
         const panel = document.querySelector('[role="dialog"]');
         expect(panel?.tagName).to.equal('DIV');
@@ -62,6 +75,7 @@ describe('when rendering the default filter panel', () => {
         const inputs = document.querySelectorAll('.pv-filter-group-search input');
         expect(inputs[0].getAttribute('aria-label')).to.equal('Find status');
         expect(inputs[1].getAttribute('aria-label')).to.equal('Find category');
+        expect(inputs[2].getAttribute('aria-label')).to.equal('Search');
     });
 });
 
@@ -92,6 +106,57 @@ describe('when naming panel search explicitly', () => {
 
     it('should honor the separate search name', () => {
         expect(document.querySelector('.pv-search input')?.getAttribute('aria-label')).to.equal('Search all filters');
+    });
+});
+
+describe('when provider filter messages are partial', () => {
+    beforeEach(async () => {
+        await render(undefined, undefined, 'Find filters', { label: 'Filtre' });
+    });
+
+    it('should name the dialog from the provider and the panel search from its placeholder', () => {
+        expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).to.equal('Filtre');
+        expect(document.querySelector('.pv-search input')?.getAttribute('aria-label')).to.equal('Find filters');
+    });
+});
+
+describe('when provider filter messages name both surfaces', () => {
+    beforeEach(async () => {
+        await render(undefined, undefined, 'Find filters', { label: 'Filtre', searchAriaLabel: 'Søk i filtre' });
+    });
+
+    it('should name the dialog and panel search ahead of the placeholder', () => {
+        expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).to.equal('Filtre');
+        expect(document.querySelector('.pv-search input')?.getAttribute('aria-label')).to.equal('Søk i filtre');
+    });
+
+    it('should use the provider name for groups without their own search name', () => {
+        const inputs = document.querySelectorAll('.pv-filter-group-search input');
+        expect(inputs[0].getAttribute('aria-label')).to.equal('Find status');
+        expect(inputs[1].getAttribute('aria-label')).to.equal('Søk i filtre');
+        expect(inputs[2].getAttribute('aria-label')).to.equal('Søk i filtre');
+    });
+});
+
+describe('when explicit filter names compete with provider messages', () => {
+    beforeEach(async () => {
+        await render('Choose filters', 'Search this panel', 'Find filters', { label: 'Filtre', searchAriaLabel: 'Søk i filtre' });
+    });
+
+    it('should keep both explicit names', () => {
+        expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).to.equal('Choose filters');
+        expect(document.querySelector('.pv-search input')?.getAttribute('aria-label')).to.equal('Search this panel');
+    });
+});
+
+describe('when provider messages are empty strings', () => {
+    beforeEach(async () => {
+        await render(undefined, undefined, 'Find filters', { label: '', searchAriaLabel: '' });
+    });
+
+    it('should retain an empty dialog name but fall back to English for the search name', () => {
+        expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).to.equal('');
+        expect(document.querySelector('.pv-search input')?.getAttribute('aria-label')).to.equal('Search');
     });
 });
 

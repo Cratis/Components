@@ -4,6 +4,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FilterOption } from './types';
 import { useOptionListOverflow } from './useOptionListOverflow';
+import { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
 
 /**
  * Props for {@link CheckboxListFilter}.
@@ -29,7 +30,7 @@ export interface CheckboxListFilterProps {
     searchable?: boolean;
     /** Placeholder text for the search input. Defaults to 'Search…'. */
     searchPlaceholder?: string;
-    /** Accessible name for the search input. Falls back to its placeholder, then 'Search'. */
+    /** Accessible name for the search input. Falls back to `messages.filter.searchAriaLabel`, its placeholder, then 'Search'. */
     searchAriaLabel?: string;
     /** Focus the search when visible. FilterPanel enables this only for expanded groups. Defaults to false. */
     autoFocusSearch?: boolean;
@@ -85,6 +86,7 @@ export function CheckboxListFilter({
     noMatchesMessage = 'No matches.',
     name,
 }: CheckboxListFilterProps) {
+    const { messages } = useCratisComponentsConfig();
     const [search, setSearch] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
     const mirrorRef = useRef<HTMLUListElement>(null);
@@ -128,7 +130,7 @@ export function CheckboxListFilter({
                         ref={searchInputRef}
                         type='search'
                         placeholder={searchPlaceholder}
-                        aria-label={(searchAriaLabel ?? searchPlaceholder) || 'Search'}
+                        aria-label={(searchAriaLabel ?? messages?.filter?.searchAriaLabel ?? searchPlaceholder) || 'Search'}
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                     />

@@ -6,6 +6,7 @@
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { CheckboxListFilter } from '../CheckboxListFilter';
+import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 import type { CheckboxListFilterInTheDom } from './given/a_checkbox_list_filter_in_the_dom';
 import { render, stubOptionListLayoutMeasurement, unmount } from './given/a_checkbox_list_filter_in_the_dom';
 
@@ -45,6 +46,51 @@ describe('when a checkbox list search placeholder is empty', () => {
     });
 
     it('should use the English fallback', () => {
+        expect(mounted.container.querySelector('input[type="search"]')?.getAttribute('aria-label')).to.equal('Search');
+    });
+});
+
+describe('when a checkbox list uses a provider search name', () => {
+    beforeEach(async () => {
+        mounted = await render(
+            <CratisComponentsProvider value={{ messages: { filter: { searchAriaLabel: 'Søk i filtre' } } }}>
+                <CheckboxListFilter options={options} selected={new Set()} onToggle={() => undefined}
+                    searchable searchPlaceholder='Find options' />
+            </CratisComponentsProvider>,
+        );
+    });
+
+    it('should prefer the provider message to the placeholder', () => {
+        expect(mounted.container.querySelector('input[type="search"]')?.getAttribute('aria-label')).to.equal('Søk i filtre');
+    });
+});
+
+describe('when a checkbox list overrides its provider search name', () => {
+    beforeEach(async () => {
+        mounted = await render(
+            <CratisComponentsProvider value={{ messages: { filter: { searchAriaLabel: 'Søk i filtre' } } }}>
+                <CheckboxListFilter options={options} selected={new Set()} onToggle={() => undefined}
+                    searchable searchPlaceholder='Find options' searchAriaLabel='Find statuses' />
+            </CratisComponentsProvider>,
+        );
+    });
+
+    it('should prefer its explicit name to the provider message', () => {
+        expect(mounted.container.querySelector('input[type="search"]')?.getAttribute('aria-label')).to.equal('Find statuses');
+    });
+});
+
+describe('when a checkbox list receives a partial provider and empty placeholder', () => {
+    beforeEach(async () => {
+        mounted = await render(
+            <CratisComponentsProvider value={{ messages: { filter: { label: 'Filtre' } } }}>
+                <CheckboxListFilter options={options} selected={new Set()} onToggle={() => undefined}
+                    searchable searchPlaceholder='' />
+            </CratisComponentsProvider>,
+        );
+    });
+
+    it('should retain the English fallback', () => {
         expect(mounted.container.querySelector('input[type="search"]')?.getAttribute('aria-label')).to.equal('Search');
     });
 });

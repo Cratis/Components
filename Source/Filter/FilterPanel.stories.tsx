@@ -174,6 +174,55 @@ export const SingleSelectFilter: Story = {
 };
 
 // ---------------------------------------------------------------------------
+// Story: Provider-localized filter names
+// ---------------------------------------------------------------------------
+
+export const ProviderLocalizedNames: Story = {
+    name: 'Provider-localized names',
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open filters' }));
+        const panel = await within(document.body).findByRole('dialog', { name: 'Filtre' });
+        const panelSearch = panel.querySelector<HTMLElement>('.pv-search');
+        await expect(within(panelSearch!).getByRole('searchbox', { name: 'Søk i filtre' })).toBeTruthy();
+        await userEvent.click(within(panel).getByRole('button', { name: 'Status' }));
+        const groupSearch = panel.querySelector<HTMLElement>('.pv-filter-group-search');
+        await expect(within(groupSearch!).getByRole('searchbox', { name: 'Søk i filtre' })).toBeTruthy();
+        await userEvent.keyboard('{Escape}');
+        await waitFor(() => expect(within(document.body).queryByRole('dialog', { name: 'Filtre' })).toBeNull());
+    },
+    render: () => {
+        const buttonRef = useRef<HTMLButtonElement>(null!);
+        const [isOpen, setIsOpen] = useState(false);
+        const filters: FilterDefinition[] = [
+            { key: 'status', label: 'Status', searchable: true, options: [
+                { key: 'active', label: 'Active', value: 'active' },
+            ] },
+        ];
+        return (
+            <CratisComponentsProvider
+                value={{ messages: { filter: { label: 'Filtre', searchAriaLabel: 'Søk i filtre' } } }}
+                overlayEnvironment={{ getContainer: () => document.getElementById('localized-filter-overlay') }}>
+                <div style={{ ...pageStyle, '--cratis-surface-card': '#0d0d1a',
+                    '--cratis-surface-ground': '#0d0d1a', '--cratis-surface-section': '#172033',
+                    '--cratis-surface-overlay': '#172033', '--cratis-text-color': '#e2e8f0',
+                    '--cratis-text-color-secondary': '#cbd5e1' } as React.CSSProperties}>
+                    <div id='localized-filter-overlay' />
+                    <button ref={buttonRef} style={{ ...buttonStyle, background: '#172033', color: '#e2e8f0' }}
+                        onClick={() => setIsOpen((open) => !open)}>
+                        Open filters
+                    </button>
+                    <FilterPanel isOpen={isOpen} filters={filters} filterValues={{}} rangeValues={{}}
+                        searchPlaceholder='Find filters' onSearchChange={() => undefined}
+                        anchorRef={buttonRef} onClose={() => setIsOpen(false)}
+                        onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                        onRangeChange={() => undefined} onExpandedFilterChange={() => undefined} />
+                </div>
+            </CratisComponentsProvider>
+        );
+    },
+};
+
+// ---------------------------------------------------------------------------
 // Story: Multi-select string filter
 // ---------------------------------------------------------------------------
 

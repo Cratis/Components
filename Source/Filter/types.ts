@@ -67,7 +67,7 @@ export interface FilterDefinition {
     searchable?: boolean;
     /** Placeholder shown in the inline search box. Defaults to 'Search…'. */
     searchPlaceholder?: string;
-    /** Accessible name for this group's search. Falls back to its placeholder, then 'Search'. */
+    /** Accessible name for this group's search. Overrides `messages.filter.searchAriaLabel`, then falls back to the effective placeholder and 'Search'. */
     searchAriaLabel?: string;
     /** Focus this group's search when expanded and the search input exists. Defaults to false. */
     autoFocus?: boolean;

@@ -41,8 +41,8 @@ for (const adapter of inventory.adapters) {
     const entries = Object.values(index.entries ?? {});
     const storyIds = entries.filter(entry => entry.type === 'story').map(entry => entry.id).sort();
     const docsIds = entries.filter(entry => entry.type === 'docs').map(entry => entry.id).sort();
-    if (storyIds.length !== 339 || docsIds.length !== 75) {
-        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 339 and 75.`);
+    if (storyIds.length !== 340 || docsIds.length !== 75) {
+        throw new Error(`${adapter.metadata.id} indexed ${storyIds.length} stories and ${docsIds.length} autodocs pages; expected 340 and 75.`);
     }
     canonicalStoryIds ??= storyIds;
     canonicalDocsIds ??= docsIds;
@@ -98,10 +98,14 @@ for (const id of [
         throw new Error(`FilterPanel-in-Dialog story '${id}' must run against every renderer preview.`);
     }
 }
-const transformedId = 'filter-filterpanel--transformed-overlay-container';
-if (canonicalStoryEntries.find(story => story.id === transformedId)?.componentPath !== './Source/Filter/FilterPanel.tsx'
-    || matrixStoryIds.has(transformedId)) {
-    throw new Error(`FilterPanel story '${transformedId}' must run only in the built-in preview.`);
+for (const builtInOnlyId of [
+    'filter-filterpanel--transformed-overlay-container',
+    'filter-filterpanel--provider-localized-names',
+]) {
+    if (canonicalStoryEntries.find(story => story.id === builtInOnlyId)?.componentPath !== './Source/Filter/FilterPanel.tsx'
+        || matrixStoryIds.has(builtInOnlyId)) {
+        throw new Error(`FilterPanel story '${builtInOnlyId}' must run only in the built-in preview.`);
+    }
 }
 
 const appearances = 2;
