@@ -1,11 +1,25 @@
 ---
+id: '0004'
 title: Stable presentation renderer profile
 description: The bounded nine-slot renderer contract promoted after independent conformance proof.
+status: accepted
+stage: implemented
+class: contract
+reversibility: costly
+decided: 2026-08-28
+decider: woksin
+applies-to:
+    - 'Source/renderer/**/*'
+    - 'Source/Common/CratisComponentsProvider.tsx'
+    - 'Adapters/**/*'
+    - 'Conformance/**/*'
 sidebar:
     badge: { text: Accepted, variant: tip }
 ---
 
 **Status:** Accepted
+
+**Provenance:** The decision date and decider come from the accepting commit (`04b04d2`), which first added this record marked Accepted.
 
 ## Context
 

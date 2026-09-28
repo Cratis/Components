@@ -38,7 +38,7 @@ This avoids coupling a product design system to a renderer preset, proprietary p
 
 Use Components for Cratis application surfaces that consume generated commands, queries, dialogs, forms, tables, notifications, or shared interaction patterns.
 
-Use native HTML or a product-owned presentational component for a one-off element that has no Cratis behavior. The two approaches compose naturally because Components uses semantic HTML and consumer-owned CSS.
+Use native HTML or a product-owned presentational component for a one-off element that has no Cratis behavior. The two approaches compose naturally because Components uses semantic HTML and consumer-owned CSS. For a proposed new generic primitive, see the [generic primitive admission decision](decisions/0005-generic-primitive-admission.md): show reuse and a Components-owned interaction contract or a need from an established Components contract. Markup and tokens alone do not qualify.
 
 ## Why the foundation changed
 
