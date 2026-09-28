@@ -17,5 +17,7 @@ boundaries.
   dependency graphs out of the setup-only root.
 - [Stable presentation renderer profile](0004-stable-presentation-renderer-profile.md) — promotes the
   exact nine-slot `stable-presentation/v1` adapter boundary while broader machinery remains unstable.
+- [Generic primitive admission](0005-generic-primitive-admission.md) — requires reuse and a
+  Components-owned interaction contract or a need from an established Components contract.
 
 Read [UI foundation](../ui-foundation.md) for the current architecture and capability matrix.
