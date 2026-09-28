@@ -85,7 +85,7 @@ tsRuleTester.run('no-root-barrel-import', noRootBarrelImport, {
         "import type { CratisComponentsConfig, CratisComponentsProviderProps } from '@cratis/components';",
         "import { type CratisComponentsConfig } from '@cratis/components';",
         "import { useCratisComponentsConfig } from '@cratis/components';",
-        "import type { CratisComponentsMessages, CratisPaginatorMessages, CratisDatePickerMessages, CratisDropdownMessages, CratisDialogMessages, CratisStepperMessages, CratisNotificationsMessages, CratisDataTableMessages, CratisColumnFilterMessages } from '@cratis/components';",
+        "import type { CratisComponentsMessages, CratisPaginatorMessages, CratisDatePickerMessages, CratisDropdownMessages, CratisDialogMessages, CratisStepperMessages, CratisNotificationsMessages, CratisDataTableMessages, CratisFilterMessages, CratisColumnFilterMessages } from '@cratis/components';",
         // Re-exporting an approved setup symbol from the root is fine too.
         "export { CratisComponentsProvider } from '@cratis/components';",
         // The 'allow' option still permits an exact specifier wholesale.

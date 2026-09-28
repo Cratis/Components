@@ -33,6 +33,7 @@ export {
     type CratisStepperMessages,
     type CratisNotificationsMessages,
     type CratisDataTableMessages,
+    type CratisFilterMessages,
     type CratisColumnFilterMessages,
     type CratisComponentsIcons,
 } from './Common/CratisComponentsProvider';

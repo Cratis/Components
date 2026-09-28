@@ -51,6 +51,10 @@ export const cratisDefaults: CratisComponentsConfig = {
             failed: 'Could not load data.',
             unauthorized: 'You are not authorized to view this data.',
         },
+        filter: {
+            label: 'Filters',
+            // Leave searchAriaLabel unset: existing placeholders remain search names by default.
+        },
         columnFilter: {
             matchModeAriaLabel: 'Match mode',
             clear: 'Clear',

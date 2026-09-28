@@ -9,6 +9,7 @@ import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { stubOptionListLayoutMeasurement } from '../../Filter/for_CheckboxListFilter/given/a_checkbox_list_filter_in_the_dom';
 import { PivotViewer } from '../PivotViewer';
+import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 import type { PivotViewerLabels } from '../PivotViewerLabels';
 
 const dimensions = [{ key: 'status', label: 'Status', getValue: (item: { status: string }) => item.status }];
@@ -22,6 +23,13 @@ const filters = [{
         value: `status-${index}`,
         count: 1,
     })),
+}, {
+    key: 'category',
+    label: 'Category',
+    getValue: (item: { status: string }) => item.status,
+    options: Array.from({ length: 20 }, (_, index) => ({
+        key: `category-${index}`, label: `Category ${index}`, value: `category-${index}`, count: 1,
+    })),
 }];
 
 let container: HTMLDivElement;
@@ -30,10 +38,12 @@ let restoreMeasurement: () => void;
 let panelSearch: HTMLInputElement;
 let groupSearch: HTMLInputElement;
 
-const renderExpandedGroup = async (labels?: PivotViewerLabels) => {
+const renderExpandedGroup = async (labels?: PivotViewerLabels, providerSearch?: string) => {
     await act(async () => root.render(
-        <PivotViewer data={[]} dimensions={dimensions} filters={filters}
-            cardRenderer={() => ({ title: 'Sample item' })} labels={labels} />,
+        <CratisComponentsProvider value={providerSearch === undefined ? undefined : { messages: { filter: { searchAriaLabel: providerSearch } } }}>
+            <PivotViewer data={[]} dimensions={dimensions} filters={filters}
+                cardRenderer={() => ({ title: 'Sample item' })} labels={labels} />
+        </CratisComponentsProvider>,
     ));
     await act(async () => {
         container.querySelector<HTMLButtonElement>('button[title="Filters"]')!.click();
@@ -72,6 +82,35 @@ describe('when searching an overflowing filter group with default labels', () =>
 
     it('should keep the panel search placeholder on the group search', () => {
         expect(groupSearch.placeholder).to.equal('Search…');
+    });
+});
+
+describe('when PivotViewer uses provider filter messages', () => {
+    beforeEach(async () => {
+        await renderExpandedGroup(undefined, 'Provider search');
+    });
+
+    it('should keep its default panel name and group-specific name instead of the provider search name', () => {
+        expect(panelSearch.getAttribute('aria-label')).to.equal('Search…');
+        expect(groupSearch.getAttribute('aria-label')).to.equal('Search Status');
+    });
+
+    it('should retain distinct names when another group is expanded', async () => {
+        await act(async () => {
+            document.querySelectorAll<HTMLButtonElement>('.pv-filter-toggle')[1].click();
+        });
+        expect(document.querySelector('.pv-filter.expanded .pv-filter-group-search input')?.getAttribute('aria-label')).to.equal('Search Category');
+    });
+});
+
+describe('when PivotViewer labels compete with provider filter messages', () => {
+    beforeEach(async () => {
+        await renderExpandedGroup({ search: 'Find items', searchGroup: (label) => `Find ${label} options` }, 'Provider search');
+    });
+
+    it('should keep both explicit labels ahead of the provider name', () => {
+        expect(panelSearch.getAttribute('aria-label')).to.equal('Find items');
+        expect(groupSearch.getAttribute('aria-label')).to.equal('Find Status options');
     });
 });
 

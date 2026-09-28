@@ -54,6 +54,7 @@ export function FilterPanel<TItem extends object>({
   const filters: FilterDefinition[] = filterOptions.map(({ filter, options, numericRange }) => ({
     key: filter.key,
     label: filter.label,
+    // Group-specific names are explicit: a shared provider string must not erase the group label.
     searchAriaLabel: searchGroup?.(filter.label) ?? `Search ${filter.label}`,
     type: filter.type,
     multi: filter.multi,
@@ -76,6 +77,7 @@ export function FilterPanel<TItem extends object>({
       rangeValues={rangeFilterState}
       search={search}
       searchPlaceholder={searchPlaceholder}
+      searchAriaLabel={searchPlaceholder ?? 'Search…'}
       expandedFilterKey={expandedFilterKey}
       anchorRef={anchorRef}
       onClose={onClose}

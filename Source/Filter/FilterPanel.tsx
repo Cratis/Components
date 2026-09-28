@@ -15,6 +15,7 @@ import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCratisIcon } from '../configuration/useCratisIcon';
+import { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type {
     FilterDefinition,
@@ -50,9 +51,9 @@ export interface FilterPanelProps {
     search?: string;
     /** Placeholder text for the search input. Defaults to 'Search…'. */
     searchPlaceholder?: string;
-    /** Accessible name for the non-modal dialog. Defaults to 'Filters'. */
+    /** Accessible name for the non-modal dialog. Overrides `messages.filter.label`, then 'Filters'. */
     'aria-label'?: string;
-    /** Accessible name for the panel search. Falls back to its placeholder, then 'Search'. */
+    /** Accessible name for the panel search. Falls back to `messages.filter.searchAriaLabel`, its placeholder, then 'Search'. */
     searchAriaLabel?: string;
     /** Accessible name for a clear-filter button. Override to localize. Defaults to 'Clear filter'. */
     clearFilterAriaLabel?: string;
@@ -227,7 +228,7 @@ export function FilterPanel({
     customValues,
     search,
     searchPlaceholder = 'Search…',
-    'aria-label': ariaLabel = 'Filters',
+    'aria-label': ariaLabel,
     searchAriaLabel,
     clearFilterAriaLabel = 'Clear filter',
     clearRangeAriaLabel = 'Clear range',
@@ -248,6 +249,7 @@ export function FilterPanel({
         serverSnapshot,
     );
     const icon = useCratisIcon();
+    const { messages } = useCratisComponentsConfig();
     const overlayEnvironment = unstable_useOverlayEnvironment();
     const environmentContainer = isBrowser ? overlayEnvironment.getContainer() : null;
     const [resolvedAnchor, setResolvedAnchor] = useState<{
@@ -514,7 +516,7 @@ export function FilterPanel({
                 <motion.div
                     ref={panelRef}
                     role='dialog'
-                    aria-label={ariaLabel}
+                    aria-label={ariaLabel ?? messages?.filter?.label ?? 'Filters'}
                     tabIndex={-1}
                     onKeyDown={(event) => {
                         if (event.key !== 'Escape' || event.defaultPrevented || event.nativeEvent.isComposing) return;
@@ -544,7 +546,7 @@ export function FilterPanel({
                                 <input
                                     type='search'
                                     placeholder={searchPlaceholder}
-                                    aria-label={(searchAriaLabel ?? searchPlaceholder) || 'Search'}
+                                    aria-label={(searchAriaLabel ?? messages?.filter?.searchAriaLabel ?? searchPlaceholder) || 'Search'}
                                     value={search ?? ''}
                                     onChange={(event) =>
                                         onSearchChange(event.target.value)

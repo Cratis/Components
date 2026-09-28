@@ -95,7 +95,7 @@ Components 4 removes every component-family namespace from the package root. The
 
 - `CratisComponentsProvider`, `useCratisComponentsConfig`, `cratisDefaults`, and `mergeCratisComponentsConfig`;
 - `CratisComponentsConfig`, `CratisComponentsProviderProps`, and `CratisComponentsMessages`;
-- `CratisPaginatorMessages`, `CratisDatePickerMessages`, `CratisDropdownMessages`, `CratisDialogMessages`, `CratisStepperMessages`, `CratisNotificationsMessages`, `CratisDataTableMessages`, and `CratisColumnFilterMessages`;
+- `CratisPaginatorMessages`, `CratisDatePickerMessages`, `CratisDropdownMessages`, `CratisDialogMessages`, `CratisStepperMessages`, `CratisNotificationsMessages`, `CratisDataTableMessages`, `CratisFilterMessages`, and `CratisColumnFilterMessages`;
 - `CratisComponentsIcons`, `CratisIconResolver`, and `useCratisIcon`.
 
 ```ts

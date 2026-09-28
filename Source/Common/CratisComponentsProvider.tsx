@@ -111,6 +111,18 @@ export interface CratisDataTableMessages {
     unauthorized?: string;
 }
 
+/** Localizable accessible names for the Cratis filter panel and its searches. */
+export interface CratisFilterMessages {
+    /** FilterPanel dialog name. Defaults to 'Filters'. */
+    label?: string;
+    /**
+     * Search-input name for FilterPanel, its option groups, and standalone CheckboxListFilter.
+     * Unset by default so an effective search placeholder retains precedence over 'Search'.
+     * PivotViewer supplies group-specific names instead of using this shared name for its groups.
+     */
+    searchAriaLabel?: string;
+}
+
 /** Localizable labels owned by the Cratis column-filter popup. */
 export interface CratisColumnFilterMessages {
     /** Builds the filter-trigger accessible name from the effective field. */
@@ -153,6 +165,8 @@ export interface CratisComponentsMessages {
     notifications?: CratisNotificationsMessages;
     /** DataTable search, selection, and query-state messages. */
     dataTable?: CratisDataTableMessages;
+    /** FilterPanel dialog and search-input accessible names. */
+    filter?: CratisFilterMessages;
     /** Column-filter popup labels and match-mode copy. */
     columnFilter?: CratisColumnFilterMessages;
     /** Toolbar accessible-name fallback. */

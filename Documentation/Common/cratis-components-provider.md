@@ -69,6 +69,7 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | `messages.stepper`       | Navigation labels (`next`, `previous`, `submit`) shared by `CommandStepper` and `StepperCommandDialog`.                         |
 | `messages.notifications` | `Toaster`'s dismiss-action and region-landmark labels.                                                                          |
 | `messages.dataTable`     | `DataTableCore`'s search, selection, and loading (`loading`), failed (`failed`), and access-denied (`unauthorized`) messages.   |
+| `messages.filter`        | `FilterPanel` dialog and PivotViewer filter button name (`label`), and panel/group/standalone `CheckboxListFilter` search name (`searchAriaLabel`). |
 | `messages.columnFilter`  | The built-in column filter popup's clear/apply/boolean/match-mode labels.                                                       |
 | `messages.toolbar`       | `Toolbar`'s accessible-name fallback (`label`, default `Tools`) when neither `aria-label` nor `aria-labelledby` is passed.        |
 | `icons`                  | Components-owned icon vocabulary replacing the built-in glyphs the library draws. See [Register an icon set](#register-an-icon-set). |
@@ -110,7 +111,16 @@ completed that setup; Components never receives the key itself. See the adapter 
 the exact provider and build-environment wiring, and the [renderer licensing policy](../renderers/licensing.md)
 for the cross-adapter ownership rule.
 
-Every message group follows the same precedence: a named component prop (or a component's own `labels`/`filterLabels` override) wins, then the matching provider message, then the English default shown above. Per-instance overrides keep working exactly as before — the provider only fills gaps a call site left unset.
+Every message group follows the same precedence: a named component prop (or its own `labels`/`filterLabels` override) → provider message → English default. Per-instance overrides keep working. For filter search names, the effective placeholder comes between the provider message and `'Search'`, preserving the placeholder fallback when no provider search name is set. `PivotViewer` supplies its own panel search name from `labels.search` (default `Search…`), so `messages.filter.searchAriaLabel` does not name that search. Its group searches use `labels.searchGroup` or `Search ${groupLabel}` rather than assigning one provider string to every group.
+
+### Filter accessible-name defaults
+
+| Message key | Default | Used when |
+| --- | --- | --- |
+| `messages.filter.label` | `Filters` | No explicit panel `aria-label` (or PivotViewer `labels.filters`) is passed; it also names PivotViewer's filter button. |
+| `messages.filter.searchAriaLabel` | Unset; effective placeholder, then `Search` | No explicit panel, group, or standalone `CheckboxListFilter` `searchAriaLabel` is passed. `PivotViewer` supplies its own panel and group names. |
+
+Filter messages do not change visible placeholders. A partial `filter` group leaves the other key at its default. As in sibling groups, an empty string is a supplied value: `label: ''` leaves the dialog name empty; `searchAriaLabel: ''` (or an explicit empty search name) falls through the search input's existing nonempty-name guard to the English `'Search'`, not to its placeholder.
 
 ## Localize owned labels
 
@@ -164,6 +174,10 @@ English, spelled out explicitly (this is also what every group defaults to with 
                 loading: 'Loading…',
                 failed: 'Could not load data.',
                 unauthorized: 'You are not authorized to view this data.',
+            },
+            filter: {
+                label: 'Filters',
+                // searchAriaLabel is omitted by default so placeholders name searches.
             },
             columnFilter: {
                 matchModeAriaLabel: 'Match mode',
@@ -234,6 +248,10 @@ The same shape in Norwegian Bokmål:
                 loading: 'Laster…',
                 failed: 'Kunne ikke laste data.',
                 unauthorized: 'Du har ikke tilgang til disse dataene.',
+            },
+            filter: {
+                label: 'Filtre',
+                searchAriaLabel: 'Søk i filtre',
             },
             columnFilter: {
                 matchModeAriaLabel: 'Sammenligningsmodus',
