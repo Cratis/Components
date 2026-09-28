@@ -89,7 +89,7 @@ Authorization takes precedence over failure. A snapshot response that is not val
 
 ## Pagination
 
-DataTableForQuery requests 20 rows per page. The page size is fixed; there is no prop to change it. The paginator appears below the rows only when the server reports more than one page, and each page change runs the query again for that page.
+DataTableForQuery requests 20 rows per page. The page size is fixed; there is no prop to change it. The paginator appears below the rows only when the server reports more than one page, and each page change runs the query again for that page. Changing `queryArguments` resets pagination to the first page.
 
 ## Sorting
 

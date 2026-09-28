@@ -83,7 +83,7 @@ The table subscribes to the observable query when it mounts and unsubscribes whe
 - Existing items are modified
 - Items are removed
 
-Each update replaces the row objects. Set `dataKey` so the selected row stays highlighted across updates. Sorting and filters are kept and applied to the new rows.
+Each update replaces the row objects. Set `dataKey` so the selected row stays highlighted across updates. Sorting and filters are kept and applied to the new rows. Changing `queryArguments` resets pagination to the first page.
 
 ## Real-Time Dashboard Example
 

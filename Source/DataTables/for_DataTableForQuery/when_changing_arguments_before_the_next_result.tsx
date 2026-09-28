@@ -90,6 +90,24 @@ describe.each([
     });
 });
 
+describe('when changing snapshot arguments from page two', () => {
+    it('should request and display the first page of the new arguments', async () => {
+        await show('A');
+        await deliver('A', resultWith([{ id: 1, name: 'Example A page one' }]));
+        await act(async () => { container.querySelector<HTMLButtonElement>('[aria-label="Next page"]')!.click(); });
+        requestedPages.at(-1)?.should.equal(1);
+        await deliver('A', resultWith([{ id: 21, name: 'Example A page two' }], 1));
+        container.querySelector('.cratis-table-paginator-info')?.textContent.should.equal('2 / 2');
+
+        await show('B');
+        requestedPages.at(-1)?.should.equal(0);
+        (rowText() === null).should.equal(true);
+        await deliver('B', resultWith([{ id: 2, name: 'Example B page one' }]));
+        rowText()?.should.contain('Example B page one');
+        container.querySelector('.cratis-table-paginator-info')?.textContent.should.equal('1 / 2');
+    });
+});
+
 describe('when returning to cached snapshot arguments', () => {
     it('should restore rows before paint and retain paging without a loading flash', async () => {
         await show('A');
