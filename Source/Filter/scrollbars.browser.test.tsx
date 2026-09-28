@@ -1,7 +1,10 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+import { useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
+import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
+import { FilterPanel } from './FilterPanel';
 import { composeStory } from '@storybook/react';
 import { page, userEvent } from 'vitest/browser';
 import { afterEach, beforeEach, expect, it } from 'vitest';
@@ -14,6 +17,23 @@ import '../Dialogs/Dialog.css';
 import './FilterPanel.css';
 
 const Story = composeStory(SideDialogWithClassicScrollbars, meta);
+
+const EdgePanelWithClassicScrollbars = () => {
+    const anchorRef = useRef<HTMLButtonElement>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    return <CratisComponentsProvider>
+        <style>{'html { overflow-y: scroll !important; } html::-webkit-scrollbar { width: 15px; background: #ccc; }'}</style>
+        <div style={{ minHeight: '200vh' }} />
+        <button ref={anchorRef} style={{ position: 'fixed', right: 4, top: 120 }}
+            onClick={() => setIsOpen(true)}>Edge filter trigger</button>
+        <FilterPanel isOpen={isOpen} filters={[{ key: 'status', label: 'Status',
+            options: [{ key: 'active', label: 'Active', value: 'active' }] }]}
+            filterValues={{}} rangeValues={{}} anchorRef={anchorRef}
+            aria-label='Edge filter choices' onClose={() => setIsOpen(false)}
+            onFilterToggle={() => undefined} onFilterClear={() => undefined}
+            onRangeChange={() => undefined} onExpandedFilterChange={() => undefined} />
+    </CratisComponentsProvider>;
+};
 let host: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
 
@@ -45,4 +65,13 @@ it('does not clip a fixed filter panel to the Dialog root when classic scrollbar
     expect(bounds.width).toBeGreaterThan(300);
     expect(bounds.right).toBeGreaterThan(clip.right + 80);
     expect(panel.contains(document.elementFromPoint(clip.right + 16, bounds.top + 20))).toBe(true);
+});
+
+it('keeps an edge-anchored filter inside the layout viewport on pages with classic scrollbars', async () => {
+    root.render(<EdgePanelWithClassicScrollbars />);
+    await waitFor(() => expect(window.innerWidth - document.documentElement.clientWidth).toBeGreaterThan(0));
+    await userEvent.click(within(host).getByRole('button', { name: 'Edge filter trigger' }));
+    const panel = await within(document.body).findByRole('dialog', { name: 'Edge filter choices' });
+    await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
+    expect(panel.getBoundingClientRect().right).toBeLessThanOrEqual(document.documentElement.clientWidth - 16 + 1);
 });
