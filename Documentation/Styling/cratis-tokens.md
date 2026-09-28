@@ -57,7 +57,7 @@ The `--cratis-*` variables are the supported theming boundary. The `tokens` entr
 
 ## Component tokens
 
-A few tokens tune one component. The first three have defaults in `tokens`; the last two are not defined anywhere, and the component falls back to the listed value until you set them.
+A few tokens tune one component. The first three have defaults in `tokens`; the rest are not defined anywhere, and the component falls back to the listed value until you set them.
 
 | Token                                         | Default                              | Surface                                                    |
 | --------------------------------------------- | ------------------------------------ | ---------------------------------------------------------- |
@@ -66,6 +66,8 @@ A few tokens tune one component. The first three have defaults in `tokens`; the 
 | `--cratis-number-input-step-background-hover` | `var(--cratis-surface-hover)`        | Hovered NumberInput step button.                           |
 | `--cratis-shadow-card`                        | `none` (fallback)                    | Selected ToggleGroup option.                               |
 | `--cratis-filter-option-list-max-height`      | `14rem` (fallback)                   | `CheckboxListFilter` option list (Filter and PivotViewer). |
+| `--cratis-canvas-minimap-grid-color`          | `var(--cratis-surface-border)` (fallback) | Canvas minimap dot grid.                              |
+| `--cratis-canvas-minimap-item-color`          | `var(--cratis-text-color)` at 25% (fallback) | Canvas minimap items without their own `color`.    |
 
 ## Overlay stacking
 

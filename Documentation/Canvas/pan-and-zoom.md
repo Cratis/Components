@@ -53,6 +53,7 @@ Safari/WebKit's non-standard trackpad gesture events are also handled, so pinch-
 - `controlsPlacement` (default `'bottom-left'`) — `'bottom-left'` or `'bottom-right'`.
 - `minimapWorldWidth` / `minimapWorldHeight` — the world-space area the minimap represents. `CanvasMinimap` defaults these to `4000`×`3000` when omitted.
 - `minimapItems` — explicit item boxes to draw on the minimap. When omitted, `Canvas` builds this list automatically from every mounted `CanvasItem`'s reported position and size, so the minimap works out of the box for the declarative-children approach without any extra wiring.
+- The minimap draws its dot grid in `--cratis-canvas-minimap-grid-color` and every item without its own `color` in `--cratis-canvas-minimap-item-color`. Neither is defined by default; they fall back to `--cratis-surface-border` and to the text color at 25% opacity. See [Component tokens](../Styling/cratis-tokens.md#component-tokens).
 
 ## `CanvasHandle` — imperative camera control
 
