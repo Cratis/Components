@@ -258,6 +258,7 @@
         "compile": "yarn generate-parts && node ../scripts/run-typescript.mjs -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
+        "verify-source-maps": "node ./scripts/verify-source-maps.mjs",
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
         "verify-packed-css": "node ./scripts/verify-packed-css.mjs",
         "verify-packed-production": "node ./scripts/verify-packed-production.mjs",
@@ -277,7 +278,7 @@
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
-        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn verify-api-docs && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts && yarn verify-package-graph-report && yarn verify-packed-css",
+        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn verify-api-docs && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts && yarn verify-package-graph-report && yarn verify-packed-css && yarn verify-source-maps",
         "up": "yarn g:up",
         "dev": "yarn workspace @cratis/components.storybook dev",
         "build-storybook": "yarn workspace @cratis/components.storybook build"

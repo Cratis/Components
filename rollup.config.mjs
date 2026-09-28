@@ -4,15 +4,11 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import {
-    existsSync,
-    mkdirSync,
-    readFileSync,
-    readdirSync,
-    unlinkSync,
-    writeFileSync,
-} from 'fs';
-import { dirname, join, relative, resolve } from 'path';
+import MagicString from 'magic-string';
+import remapping from '@jridgewell/remapping';
+import { decodedMappings, TraceMap } from '@jridgewell/trace-mapping';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
+import { basename, dirname, join, relative, resolve } from 'path';
 import ts from 'typescript';
 import {
     AGGREGATE_STYLES_FILE,
@@ -264,16 +260,14 @@ function moduleSpecifiers(sourceFile) {
     return specifiers;
 }
 
-const sourceMapReference = /\n?\/\/# sourceMappingURL=[^\r\n]+(?:\r?\n)?$/u;
+const sourceMapReference = /\/\/# sourceMappingURL=([^\r\n]+)/u;
 
 /**
- * Makes every relative ESM specifier directly executable by Node.
- *
- * Rewriting changes generated columns, so a pre-rewrite JavaScript/declaration map would be
- * dishonest. Files that need a rewrite have their map reference and corresponding map removed;
- * untouched files retain their valid maps. A future source-aware emit can preserve all maps.
+ * Rollup's JS maps and TypeScript's declaration maps both precede this Node ESM specifier
+ * rewrite. Compose a precise generated-column map with each original map instead of deleting
+ * it. Rollup does not emit declarations, so this pass must handle both kinds of output.
  */
-function fixRelativeEsmSpecifiers(esmPath) {
+export function fixRelativeEsmSpecifiers(esmPath) {
     return {
         name: 'fix-relative-esm-specifiers',
         closeBundle() {
@@ -293,21 +287,59 @@ function fixRelativeEsmSpecifiers(esmPath) {
                         specifier: resolvedRelativeSpecifier(file, node.text),
                         original: node.text,
                     }))
-                    .filter(({ specifier, original }) => specifier !== original)
-                    .sort((left, right) => right.start - left.start);
+                    .filter(({ specifier, original }) => specifier !== original);
 
-                let rewritten = source;
-                for (const replacement of replacements) {
-                    rewritten =
-                        rewritten.slice(0, replacement.start) +
-                        replacement.specifier +
-                        rewritten.slice(replacement.end);
+                const reference = source.match(sourceMapReference)?.[1];
+                if (!reference) {
+                    if (replacements.length)
+                        throw new Error(`Missing source map for ${file}`);
+                    continue;
                 }
-                if (rewritten !== source) {
-                    writeFileSync(file, rewritten.replace(sourceMapReference, '\n'));
-                    const mapFile = `${file}.map`;
-                    if (existsSync(mapFile)) unlinkSync(mapFile);
+                const mapFile = resolve(dirname(file), reference);
+                const originalMap = JSON.parse(readFileSync(mapFile, 'utf8'));
+                let outputMap = originalMap;
+                if (replacements.length) {
+                    const rewritten = new MagicString(source);
+                    for (const { start, end, specifier } of replacements) {
+                        rewritten.update(start, end, specifier);
+                    }
+
+                    // Keep each original map's generated segments as anchors. High-resolution
+                    // mapping of every emitted character would needlessly inflate the archive;
+                    // these anchors retain the input map's line/column precision after edits.
+                    const lines = source.split('\n');
+                    let offset = 0;
+                    for (const [lineIndex, segments] of decodedMappings(
+                        new TraceMap(originalMap),
+                    ).entries()) {
+                        for (const [column] of segments)
+                            rewritten.addSourcemapLocation(offset + column);
+                        offset += (lines[lineIndex]?.length ?? 0) + 1;
+                    }
+                    const editMap = rewritten.generateMap({
+                        source: basename(file),
+                        file: basename(file),
+                    });
+                    outputMap = remapping([editMap, originalMap], () => null);
+                    writeFileSync(file, rewritten.toString());
                 }
+
+                // Source/*.ts(x) is not included by the package's files whitelist. Embed the
+                // original source in *all* maps (including unchanged declarations), so every
+                // shipped reference is usable from an installed archive without this checkout.
+                outputMap.sourcesContent = outputMap.sources.map(
+                    (specifier, index) =>
+                        outputMap.sourcesContent?.[index] ??
+                        readFileSync(
+                            resolve(
+                                dirname(mapFile),
+                                outputMap.sourceRoot ?? '',
+                                specifier,
+                            ),
+                            'utf8',
+                        ),
+                );
+                writeFileSync(mapFile, JSON.stringify(outputMap));
             }
         },
     };
