@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import { PersonAvatarCircle, type BuildAvatarUrlParams } from './Kit/Avatar';
 import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
@@ -140,6 +140,28 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
     className,
 }: ChatTopicListProps<TTopic>) => {
     const unnamed = isTopicUnnamed ?? defaultIsTopicUnnamed;
+    const listRef = useRef<HTMLUListElement>(null);
+    // The topic action that last held focus. If invoking it hides the action or removes its topic,
+    // the focused button unmounts and focus would fall to the document body.
+    const focusedActionRef = useRef<{ element: HTMLElement; topicKey: string; index: number } | null>(null);
+
+    const orderedTopics = status === ChatStatus.Unauthorized ? [] : topicsByActivity(topics);
+    const orderedTopicKeys = orderedTopics.map((topic) => chatIdentifierString(topic.id));
+
+    useLayoutEffect(() => {
+        const focused = focusedActionRef.current;
+        if (!focused || focused.element.isConnected) return;
+        focusedActionRef.current = null;
+        const active = document.activeElement;
+        // Respect focus the host moved on purpose, for example into a rename dialog.
+        if (active && active !== document.body) return;
+        const rows = Array.from(listRef.current?.children ?? []);
+        const sameTopic = orderedTopicKeys.indexOf(focused.topicKey);
+        const row = sameTopic >= 0 ? rows[sameTopic] : rows[Math.min(focused.index, rows.length - 1)];
+        const target = row?.querySelector<HTMLElement>('.cratis-chat-topics__topic') ??
+            listRef.current?.parentElement?.querySelector<HTMLElement>('.cratis-chat-topics__start');
+        target?.focus();
+    });
 
     const authorFor = (authorId: ChatIdentifier): ChatAuthor =>
         authorOf?.(authorId) ?? {
@@ -173,8 +195,8 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                     )}
                 </p>
             )}
-            <ul className='cratis-chat-topics__list'>
-                {status !== ChatStatus.Unauthorized && topicsByActivity(topics).map((topic) => {
+            <ul ref={listRef} className='cratis-chat-topics__list'>
+                {status !== ChatStatus.Unauthorized && orderedTopics.map((topic, index) => {
                     const starter =
                         topic.startedBy === undefined
                             ? undefined
@@ -237,12 +259,12 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                         </button>
                     );
 
-                    // Reuse the message action overlay so keyboard focus reveals controls without adding CSS.
+                    const topicKey = chatIdentifierString(topic.id);
+                    // Reuses the message action overlay styling; keyboard focus reveals the controls.
                     return (
                         <li
-                            key={chatIdentifierString(topic.id)}
-                            className={availableActions.length > 0 ? 'cratis-chat-message cratis-chat-topics__row' : undefined}
-                            style={availableActions.length > 0 ? { position: 'relative' } : undefined}
+                            key={topicKey}
+                            className={availableActions.length > 0 ? 'cratis-chat-topics__row' : undefined}
                         >
                             {topicButton}
                             {availableActions.length > 0 && (
@@ -255,6 +277,9 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                                             style={action.icon == null ? { width: 'auto', padding: '0 0.375rem' } : undefined}
                                             title={action.label}
                                             aria-label={`${action.label} ${topicName}`}
+                                            onFocus={(event) => {
+                                                focusedActionRef.current = { element: event.currentTarget, topicKey, index };
+                                            }}
                                             onClick={() => action.onInvoke(topic)}
                                         >
                                             {typeof action.icon === 'string' ? (
