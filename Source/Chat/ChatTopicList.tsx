@@ -280,6 +280,16 @@ export const ChatTopicList = <TTopic extends ChatTopic = ChatTopic>({
                                             onFocus={(event) => {
                                                 focusedActionRef.current = { element: event.currentTarget, topicKey, index };
                                             }}
+                                            onBlur={(event) => {
+                                                // Focus left a still-mounted action on purpose; there is nothing to recover.
+                                                // A button removed while focused is already disconnected here.
+                                                const element = event.currentTarget;
+                                                queueMicrotask(() => {
+                                                    if (focusedActionRef.current?.element === element && element.isConnected) {
+                                                        focusedActionRef.current = null;
+                                                    }
+                                                });
+                                            }}
                                             onClick={() => action.onInvoke(topic)}
                                         >
                                             {typeof action.icon === 'string' ? (

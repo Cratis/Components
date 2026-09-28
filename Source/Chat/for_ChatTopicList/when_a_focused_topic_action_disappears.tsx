@@ -10,13 +10,18 @@ import { render, unmount, type TopicListInTheDom } from './given/a_topic_list_in
 
 type PinnableTopic = ChatTopic & { pinned?: boolean };
 
-const Host = ({ moveFocusTo }: { moveFocusTo?: 'outside' }) => {
+const threeTopics: PinnableTopic[] = [
+    { id: 'topic-1', name: 'First topic', lastActivity: new Date('2026-01-03') },
+    { id: 'topic-2', name: 'Second topic', lastActivity: new Date('2026-01-02') },
+    { id: 'topic-3', name: 'Third topic', lastActivity: new Date('2026-01-01') },
+];
+
+let removeTopic: (id: string) => void = () => undefined;
+
+const Host = ({ moveFocusTo, initialTopics = threeTopics }: { moveFocusTo?: 'outside'; initialTopics?: PinnableTopic[] }) => {
     const outside = useRef<HTMLInputElement>(null);
-    const [topics, setTopics] = useState<PinnableTopic[]>([
-        { id: 'topic-1', name: 'First topic', lastActivity: new Date('2026-01-03') },
-        { id: 'topic-2', name: 'Second topic', lastActivity: new Date('2026-01-02') },
-        { id: 'topic-3', name: 'Third topic', lastActivity: new Date('2026-01-01') },
-    ]);
+    const [topics, setTopics] = useState<PinnableTopic[]>(initialTopics);
+    removeTopic = (id) => setTopics((current) => current.filter((candidate) => candidate.id !== id));
     return <>
         <input ref={outside} aria-label='Outside' />
         <ChatTopicList<PinnableTopic>
@@ -31,6 +36,12 @@ const Host = ({ moveFocusTo }: { moveFocusTo?: 'outside' }) => {
                             candidate.id === topic.id ? { ...candidate, pinned: true } : candidate));
                         if (moveFocusTo === 'outside') outside.current!.focus();
                     },
+                },
+                {
+                    id: 'bump', label: 'Bump',
+                    onInvoke: (topic) => setTopics((current) => current.map((candidate) =>
+                        candidate.id === topic.id ? { ...candidate, pinned: true, lastActivity: new Date('2026-02-01') } : candidate)),
+                    isAvailable: (topic) => !topic.pinned,
                 },
                 {
                     id: 'archive', label: 'Archive',
@@ -87,6 +98,41 @@ describe('when a focused topic action disappears', () => {
 
         it('should move focus to the topic before it', () => {
             focusedTopicName()!.should.equal('Second topic');
+        });
+    });
+
+    describe('because the action moved its topic to the top of the list', () => {
+        beforeEach(async () => {
+            list = await render(<Host />);
+            await invoke(list, 'Bump Third topic');
+        });
+
+        it('should move focus to the same topic in its new position', () => {
+            focusedTopicName()!.should.equal('Third topic');
+        });
+    });
+
+    describe('because the action removed the only topic', () => {
+        beforeEach(async () => {
+            list = await render(<Host initialTopics={[threeTopics[0]]} />);
+            await invoke(list, 'Archive First topic');
+        });
+
+        it('should move focus to the new topic button', () => {
+            document.activeElement!.classList.contains('cratis-chat-topics__start').should.equal(true);
+        });
+    });
+
+    describe('after focus had already left the action', () => {
+        beforeEach(async () => {
+            list = await render(<Host />);
+            list.container.querySelector<HTMLButtonElement>('[aria-label="Archive Second topic"]')!.focus();
+            await act(async () => { (document.activeElement as HTMLElement).blur(); });
+            await act(async () => { removeTopic('topic-2'); });
+        });
+
+        it('should not move focus back into the list', () => {
+            (document.activeElement === document.body).should.equal(true);
         });
     });
 
