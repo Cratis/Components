@@ -6,7 +6,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { format } from 'node:util';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { runTransformCli } from '../lib/runTransformCli.js';
+import { transformButtonVariantTone } from '../lib/buttonVariantToneTransform.js';
+import { transformChangeHandlers } from '../lib/changeHandlerTransform.js';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const scriptsDir = path.join(testDir, '..', 'scripts');
@@ -39,6 +43,9 @@ const commands = [
         expected: "variant='ghost'",
         refusal:
             "import { Button } from '@cratis/components/Common';\nexport const x=<Button text={dynamic}/>;\n",
+        description:
+            'Migrates deprecated Button text/link/outlined/rounded/severity JSX props to variant/tone/shape. Uncertain cases are annotated and reported for manual review.',
+        transform: transformButtonVariantTone,
     },
     {
         name: 'change-handler',
@@ -47,16 +54,47 @@ const commands = [
         expected: '(value)=>consume(value)',
         refusal:
             "import { Dropdown } from '@cratis/components/Dropdown';\nexport const x=<Dropdown onChange={(event)=>{log(event);consume(event.value)}}/>;\n",
+        description:
+            'Migrates structurally-proven Components event-wrapper callbacks to semantic value callbacks. Ambiguous handlers are annotated and reported for manual review.',
+        transform: transformChangeHandlers,
     },
 ];
 
+// This is the only spawned CLI spec; the packed-package check exercises all published bins.
+// Allow process startup extra time under load, not the transform assertions above.
+it('wires the change-handler bin to the CLI', () => {
+    const result = spawnSync(
+        process.execPath,
+        [path.join(scriptsDir, 'change-handler.js'), '--help'],
+        { encoding: 'utf8' },
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('Usage: cratis-components-change-handler');
+}, 15_000);
+
 for (const command of commands) {
-    const run = (args) =>
-        spawnSync(
-            process.execPath,
-            [path.join(scriptsDir, `${command.name}.js`), ...args],
-            { cwd: dir, encoding: 'utf8' },
-        );
+    const run = (args) => {
+        const stdout = [];
+        const stderr = [];
+        const cwd = process.cwd();
+        const log = vi.spyOn(console, 'log').mockImplementation((...values) => stdout.push(format(...values)));
+        const error = vi.spyOn(console, 'error').mockImplementation((...values) => stderr.push(format(...values)));
+        const warn = vi.spyOn(console, 'warn').mockImplementation((...values) => stderr.push(format(...values)));
+        try {
+            process.chdir(dir);
+            const status = runTransformCli(args, {
+                command: command.publicName,
+                description: command.description,
+                transform: command.transform,
+            });
+            return { status, stdout: stdout.join('\n'), stderr: stderr.join('\n') };
+        } finally {
+            process.chdir(cwd);
+            log.mockRestore();
+            error.mockRestore();
+            warn.mockRestore();
+        }
+    };
 
     describe(`${command.publicName} CLI`, () => {
         it('prints public help, requires paths, and rejects unknown options', () => {

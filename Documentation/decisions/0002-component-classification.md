@@ -1,11 +1,23 @@
 ---
+id: '0002'
 title: Public component classification
 description: The architecture categories assigned to every component exported by the public package barrels.
+status: accepted
+stage: implemented
+class: contract
+reversibility: costly
+decided: 2026-08-27
+decider: woksin
+applies-to:
+    - 'Source/**/*'
+    - 'Documentation/decisions/0002-component-classification.md'
 sidebar:
     badge: { text: Accepted, variant: tip }
 ---
 
 **Status:** Accepted
+
+**Provenance:** The decision date and decider come from the accepting commit (`1eb42ce`), which first added this record marked Accepted.
 
 ## Context
 
