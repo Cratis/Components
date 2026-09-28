@@ -304,30 +304,59 @@ export function FilterPanel({
             probe.style.top = 'auto';
             probe.style.bottom = '0';
             const containingBlockBottom = probe.getBoundingClientRect().bottom;
+            probe.style.bottom = 'auto';
+            probe.style.left = 'auto';
+            probe.style.right = '0';
+            const containingBlockRight = probe.getBoundingClientRect().right;
+            probe.style.left = '0';
+            probe.style.right = 'auto';
 
             // offsetWidth is in local CSS pixels; the probe's rect supplies the viewport scale.
             // Preserve the viewport gutter even when a containing block scales the dropdown.
             const scaleX = origin.width || 1;
             const scaleY = origin.height || 1;
             const viewport = { width: window.innerWidth, height: window.innerHeight };
+            // A fixed descendant of a transformed Dialog root or positioner is clipped by
+            // the modal root's overflow. Intersect its visible rect with the viewport only
+            // when the probe shows a non-viewport fixed containing block.
+            const hasLocalContainingBlock = Math.abs(origin.left) > 0.5 || Math.abs(origin.top) > 0.5 ||
+                Math.abs(containingBlockRight - viewport.width) > 0.5 ||
+                Math.abs(containingBlockBottom - viewport.height) > 0.5;
+            const modalRect = modalRoot && modalRoot.contains(portalContainer) && hasLocalContainingBlock
+                ? modalRoot.getBoundingClientRect() : null;
+            // Layoutless environments cannot supply a modal clip rect.
+            const clip = modalRect && modalRect.right > modalRect.left && modalRect.bottom > modalRect.top
+                ? modalRect : null;
+            const bounds = {
+                left: Math.max(0, clip?.left ?? 0),
+                top: Math.max(0, clip?.top ?? 0),
+                right: Math.min(viewport.width, clip?.right ?? viewport.width),
+                bottom: Math.min(viewport.height, clip?.bottom ?? viewport.height),
+            };
+            const visible = {
+                width: Math.max(0, bounds.right - bounds.left),
+                height: Math.max(0, bounds.bottom - bounds.top),
+            };
             // Measure the CSS width without a previous resize's inline clamp applied.
             const panel = panelRef.current;
             const previousWidth = panel.style.width;
             if (previousWidth) panel.style.width = '';
             const cssWidth = panel.offsetWidth;
             if (previousWidth) panel.style.width = previousWidth;
-            const width = cssWidth * scaleX > viewport.width - 32
-                ? Math.max(0, (viewport.width - 32) / scaleX)
+            const width = cssWidth * scaleX > visible.width - 32
+                ? Math.max(0, (visible.width - 32) / scaleX)
                 : undefined;
-            const viewportPosition = resolveDropdownPosition(
-                anchorRef.current.getBoundingClientRect(), viewport,
-                (width ?? cssWidth) * scaleX,
-            );
+            const anchor = anchorRef.current.getBoundingClientRect();
+            const viewportPosition = resolveDropdownPosition({
+                left: anchor.left - bounds.left,
+                top: anchor.top - bounds.top,
+                bottom: anchor.bottom - bounds.top,
+            }, visible, (width ?? cssWidth) * scaleX);
             const nextPosition = {
-                left: (viewportPosition.left - origin.left) / scaleX,
-                top: viewportPosition.top === undefined ? undefined : (viewportPosition.top - origin.top) / scaleY,
+                left: (bounds.left + viewportPosition.left - origin.left) / scaleX,
+                top: viewportPosition.top === undefined ? undefined : (bounds.top + viewportPosition.top - origin.top) / scaleY,
                 bottom: viewportPosition.bottom === undefined ? undefined
-                    : (containingBlockBottom - (viewport.height - viewportPosition.bottom)) / scaleY,
+                    : (containingBlockBottom - (bounds.bottom - viewportPosition.bottom)) / scaleY,
                 maxHeight: viewportPosition.maxHeight / scaleY,
                 width,
             };

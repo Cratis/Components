@@ -9,7 +9,7 @@ import { Dialog } from '../Dialogs/Dialog';
 import { CratisComponentsProvider } from '../Common/CratisComponentsProvider';
 import type { FilterDefinition } from './types';
 
-// Both stories use a slotted Dialog, so exercise every Dialog renderer adapter.
+// These stories use a slotted Dialog, so exercise every Dialog renderer adapter.
 const meta: Meta<typeof Dialog> = { title: 'Filter/FilterPanel/In Dialog', component: Dialog };
 export default meta;
 type Story = StoryObj<typeof Dialog>;
@@ -149,6 +149,62 @@ export const SideDialogEntrance: Story = {
                     aria-label='Side filter choices' anchorRef={anchorRef}
                     onClose={() => undefined} onExpandedFilterChange={() => undefined}
                     onFilterToggle={() => undefined} onFilterClear={() => undefined}
+                    onRangeChange={() => undefined} />
+            </Dialog>}
+        </CratisComponentsProvider>;
+    },
+};
+
+/** A persistent fixed containing block must not clip a dropdown inside the modal root. */
+export const PersistentContainingBlock: Story = {
+    name: 'Filter options remain reachable in a transformed dialog',
+    play: async ({ canvasElement }) => {
+        await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open clipped dialog' }));
+        const body = within(document.body);
+        const root = (await body.findByRole('dialog', { name: 'Clipped filters' }))
+            .closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]')!;
+        const panel = await body.findByRole('dialog', { name: 'Clipped filter choices' });
+        await waitFor(() => expect(getComputedStyle(panel).opacity).toBe('1'), { timeout: 5000 });
+        const clip = root.getBoundingClientRect();
+        const bounds = panel.getBoundingClientRect();
+        // Chromium's fixed descendants are clipped by this transformed, overflow-hidden root.
+        const overflow = {
+            left: clip.left - bounds.left, right: bounds.right - clip.right,
+            top: clip.top - bounds.top, bottom: bounds.bottom - clip.bottom,
+        };
+        if (Object.values(overflow).some((pixels) => pixels > 1)) {
+            throw new Error(`Filter panel exceeds transformed Dialog clip rect: ${JSON.stringify(overflow)}`);
+        }
+        const scrollbox = panel.querySelector<HTMLElement>('.pv-filter-dropdown-content')!;
+        await expect(scrollbox.scrollHeight).toBeGreaterThan(scrollbox.clientHeight);
+        const last = body.getByRole('radio', { name: 'Option 19' });
+        last.scrollIntoView({ block: 'center' });
+        await expect(scrollbox.scrollTop).toBeGreaterThan(0);
+        await userEvent.click(last);
+        await expect(last).toBeChecked();
+    },
+    render: () => {
+        const [dialogOpen, setDialogOpen] = useState(false);
+        const [selected, setSelected] = useState<string | null>(null);
+        const anchorRef = useRef<HTMLButtonElement>(null);
+        const manyOptions: FilterDefinition[] = [{
+            key: 'options', label: 'Options',
+            options: Array.from({ length: 20 }, (_, index) => ({
+                key: `option-${index}`, label: `Option ${index}`, value: `option-${index}`,
+            })),
+        }];
+        return <CratisComponentsProvider overlayEnvironment={{ getContainer: () => document.getElementById('clipped-filter-overlays') }}>
+            <button onClick={() => setDialogOpen(true)}>Open clipped dialog</button>
+            <div id='clipped-filter-overlays' />
+            {dialogOpen && <Dialog title='Clipped filters' width='360px' onCancel={() => setDialogOpen(false)}
+                pt={{ root: { style: { height: 340, transform: 'translateZ(0)' } } }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', height: 190 }}>
+                    <button ref={anchorRef}>Filter options</button>
+                </div>
+                <FilterPanel isOpen filters={manyOptions} filterValues={{ options: new Set(selected ? [selected] : []) }}
+                    rangeValues={{}} expandedFilterKey='options' aria-label='Clipped filter choices'
+                    anchorRef={anchorRef} onClose={() => undefined} onExpandedFilterChange={() => undefined}
+                    onFilterToggle={(_key, option) => setSelected(option)} onFilterClear={() => setSelected(null)}
                     onRangeChange={() => undefined} />
             </Dialog>}
         </CratisComponentsProvider>;
