@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-/** Overrides for PivotViewer toolbar text, filter search labels, and loading status. Omitted fields retain their English defaults. */
+/** Overrides for PivotViewer controls, card-area region, and loading status. Omitted fields retain their English defaults. */
 export interface PivotViewerLabels {
     /** Filter button title and filter panel accessible name; defaults to "Filters". */
     filters?: string;
@@ -31,4 +31,6 @@ export interface PivotViewerLabels {
     itemCount?: (count: number) => string;
     /** Loading status text; defaults to "Loading…". The existing loadingLabel prop takes precedence. */
     loading?: string;
+    /** Accessible name of the focusable card-area scroll region; defaults to "Card area". */
+    viewport?: string;
 }

@@ -110,6 +110,32 @@ for (const adapter of inventory.adapters) {
     }
 }
 
+// Exercise native browser scrolling outside a Storybook play function: Storybook's userEvent
+// dispatches synthetic keys, and Playwright provider calls inside play can deadlock the axe runner.
+console.log('\n--- PivotViewer native keyboard viewport (Chromium) ---');
+const nativeViewport = spawnSync(
+    process.execPath,
+    [vitest, 'run', '--config', path.join(storybookRoot, 'vitest.viewport.config.ts')],
+    { cwd: sourceRoot, stdio: 'inherit', timeout: 120_000 },
+);
+if (nativeViewport.error) throw nativeViewport.error;
+if (nativeViewport.status !== 0) {
+    throw new Error(`PivotViewer native keyboard viewport failed with exit code ${nativeViewport.status}.`);
+}
+
+// Classic scrollbars alter the layout viewport; keep this Chromium regression outside
+// every Storybook renderer/axe preview and leave Playwright's default arguments intact there.
+console.log('\n--- FilterPanel classic scrollbar viewport (Chromium) ---');
+const classicScrollbars = spawnSync(
+    process.execPath,
+    [vitest, 'run', '--config', path.join(storybookRoot, 'vitest.scrollbars.config.ts')],
+    { cwd: sourceRoot, stdio: 'inherit', timeout: 120_000 },
+);
+if (classicScrollbars.error) throw classicScrollbars.error;
+if (classicScrollbars.status !== 0) {
+    throw new Error(`FilterPanel classic scrollbar viewport failed with exit code ${classicScrollbars.status}.`);
+}
+
 const nonBuiltInAdapterCount = inventory.adapters.length - 1;
 console.log(
     `\nCompleted 1 built-in preview × ${storyCount} stories + ${nonBuiltInAdapterCount} renderer-distinguishing preview(s) × ${matrixStoryCount} stories, × ${appearances.length} appearance mode(s) = ${totalCases} story/appearance/axe cases.`,

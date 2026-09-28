@@ -5,6 +5,7 @@ import {
     Children,
     isValidElement,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -14,6 +15,8 @@ import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCratisIcon } from '../configuration/useCratisIcon';
+import { useCratisComponentsConfig } from '../configuration/CratisComponentsContext';
+import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type {
     FilterDefinition,
     FilterValues,
@@ -48,9 +51,9 @@ export interface FilterPanelProps {
     search?: string;
     /** Placeholder text for the search input. Defaults to 'Search…'. */
     searchPlaceholder?: string;
-    /** Accessible name for the non-modal dialog. Defaults to 'Filters'. */
+    /** Accessible name for the non-modal dialog. Overrides `messages.filter.label`, then 'Filters'. */
     'aria-label'?: string;
-    /** Accessible name for the panel search. Falls back to its placeholder, then 'Search'. */
+    /** Accessible name for the panel search. Falls back to `messages.filter.searchAriaLabel`, its placeholder, then 'Search'. */
     searchAriaLabel?: string;
     /** Accessible name for a clear-filter button. Override to localize. Defaults to 'Clear filter'. */
     clearFilterAriaLabel?: string;
@@ -225,7 +228,7 @@ export function FilterPanel({
     customValues,
     search,
     searchPlaceholder = 'Search…',
-    'aria-label': ariaLabel = 'Filters',
+    'aria-label': ariaLabel,
     searchAriaLabel,
     clearFilterAriaLabel = 'Clear filter',
     clearRangeAriaLabel = 'Clear range',
@@ -246,8 +249,33 @@ export function FilterPanel({
         serverSnapshot,
     );
     const icon = useCratisIcon();
+    const { messages } = useCratisComponentsConfig();
+    const overlayEnvironment = unstable_useOverlayEnvironment();
+    const environmentContainer = isBrowser ? overlayEnvironment.getContainer() : null;
+    const [resolvedAnchor, setResolvedAnchor] = useState<{
+        anchor: HTMLButtonElement | null;
+        modalRoot: HTMLElement | null;
+    } | null>(null);
+    // Refs attach during commit, after render. Resolve the modal before mounting any open
+    // panel so its first portal never lands in a shared root hidden by the modal.
+    // Ref attachment/identity can change on any commit; the state updater bails out if unchanged.
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
+    useLayoutEffect(() => {
+        const anchor = anchorRef.current;
+        const modalRoot = anchor?.closest<HTMLElement>('.cratis-dialog[data-cratis-part="root"]') ?? null;
+        setResolvedAnchor((previous) => previous?.anchor === anchor && previous.modalRoot === modalRoot
+            ? previous
+            : { anchor, modalRoot });
+    });
+    // A shared overlay root sits outside a modal's focus scope and is hidden from assistive
+    // technology. Keep a panel anchored inside a Cratis Dialog inside that modal instead.
+    // An explicitly unavailable container still defers the portal; it is never a body fallback.
+    const modalRoot = resolvedAnchor?.modalRoot;
+    const portalContainer = environmentContainer && modalRoot && !modalRoot.contains(environmentContainer)
+        ? modalRoot
+        : environmentContainer;
     const panelRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState<DropdownPosition>({
+    const [position, setPosition] = useState<DropdownPosition & { width?: number }>({
         top: 0,
         left: 0,
         maxHeight: 0,
@@ -256,30 +284,178 @@ export function FilterPanel({
     const editorMap = useMemo(() => buildEditorMap(children), [children]);
 
     // Keep the fixed-position portal attached to its anchor and clamped inside the viewport.
+    // A transform (or other fixed containing-block property) on the portal container OR any
+    // ancestor changes the meaning of CSS left/top/bottom. A fixed probe in the portal sees
+    // exactly the same containing block as the panel, without guessing which ancestor owns it.
     // Capture-phase scroll observation also covers nested scrolling containers.
-    useEffect(() => {
-        if (!isOpen) return;
+    useLayoutEffect(() => {
+        if (!isOpen || !portalContainer) return;
+
+        const probeStyle = 'position:fixed;left:0;top:0;width:1px;height:1px;margin:0;padding:0;border:0;visibility:hidden;pointer-events:none';
+        const probe = document.createElement('div');
+        probe.style.cssText = probeStyle;
+        portalContainer.appendChild(probe);
+        // A portal inside (rather than directly on) the root can have a different fixed
+        // containing block. A second probe distinguishes that descendant block from one
+        // owned by the positioner outside the root.
+        const rootProbe = modalRoot && modalRoot.contains(portalContainer) && portalContainer !== modalRoot
+            ? document.createElement('div') : null;
+        if (rootProbe && modalRoot) {
+            rootProbe.style.cssText = probeStyle;
+            modalRoot.appendChild(rootProbe);
+        }
+
+        const measureProbe = (element: HTMLDivElement) => {
+            element.style.top = '0';
+            element.style.bottom = 'auto';
+            const origin = element.getBoundingClientRect();
+            element.style.top = 'auto';
+            element.style.bottom = '0';
+            const bottom = element.getBoundingClientRect().bottom;
+            element.style.bottom = 'auto';
+            element.style.left = 'auto';
+            element.style.right = '0';
+            const right = element.getBoundingClientRect().right;
+            element.style.left = '0';
+            element.style.right = 'auto';
+            return { origin, bottom, right };
+        };
 
         const updatePosition = () => {
-            if (!anchorRef.current) return;
+            if (!anchorRef.current || !panelRef.current) return;
 
-            setPosition(
-                resolveDropdownPosition(anchorRef.current.getBoundingClientRect(), {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                }),
-            );
+            // The probe stays mounted while open, but its origin must be read on every
+            // update: scrolling a transformed ancestor changes its viewport coordinates.
+            const { origin, bottom: containingBlockBottom, right: containingBlockRight } = measureProbe(probe);
+
+            // offsetWidth is in local CSS pixels; the probe's rect supplies the viewport scale.
+            // Preserve the viewport gutter even when a containing block scales the dropdown.
+            const scaleX = origin.width || 1;
+            const scaleY = origin.height || 1;
+            const viewport = { width: window.innerWidth, height: window.innerHeight };
+            const rootRect = modalRoot && modalRoot.contains(portalContainer)
+                ? modalRoot.getBoundingClientRect() : null;
+            const rootEdges = rootRect && (rootProbe ? measureProbe(rootProbe) :
+                { origin, bottom: containingBlockBottom, right: containingBlockRight });
+            const rootStyle = rootRect && getComputedStyle(modalRoot!);
+            const rootScaleX = rootEdges?.origin.width ?? 1;
+            const rootScaleY = rootEdges?.origin.height ?? 1;
+            // Axis-aligned bounding rects lose the padding origin under rotation/skew.
+            // The root's own containing-block properties cover those cases; the probe
+            // comparison below still handles nested portal containers geometrically.
+            const rootHasFixedContainingStyle = Boolean(rootStyle && (
+                rootStyle.transform !== 'none' || rootStyle.translate !== 'none' ||
+                rootStyle.scale !== 'none' || rootStyle.rotate !== 'none' ||
+                rootStyle.perspective !== 'none' || rootStyle.filter !== 'none' ||
+                rootStyle.getPropertyValue('backdrop-filter') !== 'none' &&
+                    rootStyle.getPropertyValue('backdrop-filter') !== '' ||
+                /\b(?:layout|paint|strict|content)\b/u.test(rootStyle.contain) ||
+                /^(?:size|inline-size)$/u.test(rootStyle.getPropertyValue('container-type')) ||
+                /\b(?:transform|translate|scale|rotate|perspective|filter|backdrop-filter|contain|container-type)\b/u
+                    .test(rootStyle.willChange)
+            ));
+            // A fixed probe spans its containing block, not the Dialog's overflow box.
+            // Compare all four edges to the root's padding box: a side dialog can share
+            // the positioner's top-left origin without sharing its containing block.
+            // Comparing to innerWidth/innerHeight instead would mistake classic scrollbars
+            // (excluded from the layout viewport) for a transformed containing block.
+            const rootOwnsBlock = rootHasFixedContainingStyle || Boolean(rootRect && rootEdges && rootStyle &&
+                Math.abs(rootEdges.origin.left - (rootRect.left + parseFloat(rootStyle.borderLeftWidth) * rootScaleX)) <= 0.5 &&
+                Math.abs(rootEdges.origin.top - (rootRect.top + parseFloat(rootStyle.borderTopWidth) * rootScaleY)) <= 0.5 &&
+                Math.abs(rootEdges.right - (rootRect.right - parseFloat(rootStyle.borderRightWidth) * rootScaleX)) <= 0.5 &&
+                Math.abs(rootEdges.bottom - (rootRect.bottom - parseFloat(rootStyle.borderBottomWidth) * rootScaleY)) <= 0.5);
+            const descendantOwnsBlock = Boolean(rootEdges && rootProbe && (
+                Math.abs(origin.left - rootEdges.origin.left) > 0.5 ||
+                Math.abs(origin.top - rootEdges.origin.top) > 0.5 ||
+                Math.abs(containingBlockRight - rootEdges.right) > 0.5 ||
+                Math.abs(containingBlockBottom - rootEdges.bottom) > 0.5));
+            const modalRect = rootOwnsBlock || descendantOwnsBlock ? rootRect : null;
+            // Layoutless environments cannot supply a modal clip rect.
+            const clip = modalRect && modalRect.right > modalRect.left && modalRect.bottom > modalRect.top
+                ? modalRect : null;
+            const bounds = {
+                left: Math.max(0, clip?.left ?? 0),
+                top: Math.max(0, clip?.top ?? 0),
+                right: Math.min(viewport.width, clip?.right ?? viewport.width),
+                bottom: Math.min(viewport.height, clip?.bottom ?? viewport.height),
+            };
+            const visible = {
+                width: Math.max(0, bounds.right - bounds.left),
+                height: Math.max(0, bounds.bottom - bounds.top),
+            };
+            // Measure the CSS width without a previous resize's inline clamp applied.
+            const panel = panelRef.current;
+            const previousWidth = panel.style.width;
+            if (previousWidth) panel.style.width = '';
+            const cssWidth = panel.offsetWidth;
+            if (previousWidth) panel.style.width = previousWidth;
+            const width = cssWidth * scaleX > visible.width - 32
+                ? Math.max(0, (visible.width - 32) / scaleX)
+                : undefined;
+            const anchor = anchorRef.current.getBoundingClientRect();
+            const viewportPosition = resolveDropdownPosition({
+                left: anchor.left - bounds.left,
+                top: anchor.top - bounds.top,
+                bottom: anchor.bottom - bounds.top,
+            }, visible, (width ?? cssWidth) * scaleX);
+            const nextPosition = {
+                left: (bounds.left + viewportPosition.left - origin.left) / scaleX,
+                top: viewportPosition.top === undefined ? undefined : (bounds.top + viewportPosition.top - origin.top) / scaleY,
+                bottom: viewportPosition.bottom === undefined ? undefined
+                    : (containingBlockBottom - (bounds.bottom - viewportPosition.bottom)) / scaleY,
+                maxHeight: viewportPosition.maxHeight / scaleY,
+                width,
+            };
+            setPosition((previous) => previous.left === nextPosition.left &&
+                previous.top === nextPosition.top && previous.bottom === nextPosition.bottom &&
+                previous.maxHeight === nextPosition.maxHeight && previous.width === nextPosition.width
+                ? previous : nextPosition);
         };
+
+        // A Dialog's entry motion may change the fixed-position containing block.
+        // Measure again when its root or positioner stops moving.
+        let animationFrame: number | undefined;
+        const schedulePosition = () => {
+            if (animationFrame !== undefined) return;
+            animationFrame = requestAnimationFrame(() => {
+                animationFrame = undefined;
+                updatePosition();
+            });
+        };
+        const handleScroll = (event: Event) => {
+            if (event.target instanceof Node && panelRef.current?.contains(event.target)) return;
+            schedulePosition();
+        };
+        // Consumers may replace the Dialog's entry animation or animate its positioner.
+        // Ignore events bubbling from controls inside the dialog; one frame is enough for
+        // any number of animations or transitions ending in the same rendering frame.
+        const positioner = modalRoot?.parentElement?.matches('[data-cratis-part="positioner"]')
+            ? modalRoot.parentElement : null;
+        const handleModalMotionEnd = (event: Event) => {
+            if (event.target === modalRoot || event.target === positioner) schedulePosition();
+        };
+        const motionEvents = ['animationend', 'animationcancel', 'transitionend'] as const;
 
         updatePosition();
-        window.addEventListener('resize', updatePosition);
-        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', schedulePosition);
+        window.addEventListener('scroll', handleScroll, true);
+        for (const eventName of motionEvents) {
+            modalRoot?.addEventListener(eventName, handleModalMotionEnd);
+            positioner?.addEventListener(eventName, handleModalMotionEnd);
+        }
 
         return () => {
-            window.removeEventListener('resize', updatePosition);
-            window.removeEventListener('scroll', updatePosition, true);
+            if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
+            window.removeEventListener('resize', schedulePosition);
+            window.removeEventListener('scroll', handleScroll, true);
+            for (const eventName of motionEvents) {
+                modalRoot?.removeEventListener(eventName, handleModalMotionEnd);
+                positioner?.removeEventListener(eventName, handleModalMotionEnd);
+            }
+            probe.remove();
+            rootProbe?.remove();
         };
-    }, [anchorRef, isOpen]);
+    }, [anchorRef, isOpen, modalRoot, portalContainer, resolvedAnchor?.anchor]);
 
     // Handle click outside to close
     useEffect(() => {
@@ -311,7 +487,7 @@ export function FilterPanel({
         if (isOpen && panelRef.current && !panelRef.current.contains(document.activeElement)) {
             panelRef.current.focus();
         }
-    }, [isOpen, isBrowser]);
+    }, [isOpen, portalContainer, resolvedAnchor]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -332,15 +508,15 @@ export function FilterPanel({
         };
     }, [isOpen, anchorRef, onClose]);
 
-    if (!isBrowser) return null;
+    if (!portalContainer || !resolvedAnchor || resolvedAnchor.anchor !== anchorRef.current) return null;
 
     return createPortal(
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={Boolean(modalRoot)}>
             {isOpen && (
                 <motion.div
                     ref={panelRef}
                     role='dialog'
-                    aria-label={ariaLabel}
+                    aria-label={ariaLabel ?? messages?.filter?.label ?? 'Filters'}
                     tabIndex={-1}
                     onKeyDown={(event) => {
                         if (event.key !== 'Escape' || event.defaultPrevented || event.nativeEvent.isComposing) return;
@@ -356,6 +532,7 @@ export function FilterPanel({
                         top: position.top,
                         bottom: position.bottom,
                         maxHeight: position.maxHeight,
+                        width: position.width,
                     }}
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -369,7 +546,7 @@ export function FilterPanel({
                                 <input
                                     type='search'
                                     placeholder={searchPlaceholder}
-                                    aria-label={(searchAriaLabel ?? searchPlaceholder) || 'Search'}
+                                    aria-label={(searchAriaLabel ?? messages?.filter?.searchAriaLabel ?? searchPlaceholder) || 'Search'}
                                     value={search ?? ''}
                                     onChange={(event) =>
                                         onSearchChange(event.target.value)
@@ -517,6 +694,6 @@ export function FilterPanel({
                 </motion.div>
             )}
         </AnimatePresence>,
-        document.body,
+        portalContainer,
     );
 }

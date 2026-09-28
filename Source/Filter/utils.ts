@@ -64,6 +64,7 @@ const clamp = (value: number, minimum: number, maximum: number) =>
 export function resolveDropdownPosition(
     anchor: DropdownAnchorRect,
     viewport: DropdownViewport,
+    panelWidth = DROPDOWN_MAX_WIDTH,
 ): DropdownPosition {
     const viewportWidth = Math.max(0, viewport.width);
     const viewportHeight = Math.max(0, viewport.height);
@@ -71,7 +72,7 @@ export function resolveDropdownPosition(
     const verticalGutter = Math.min(DROPDOWN_GUTTER, viewportHeight / 2);
     const width = Math.max(
         0,
-        Math.min(DROPDOWN_MAX_WIDTH, viewportWidth - horizontalGutter * 2),
+        Math.min(panelWidth, viewportWidth - horizontalGutter * 2),
     );
     const left = clamp(
         anchor.left,

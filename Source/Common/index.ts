@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 export * from './ActionMenubar';
+export { ToolbarFocusMode } from './ToolbarFocusMode';
 export * from './CratisComponentsProvider';
 export * from './DatePickerInput';
 export * from './ErrorBoundary';

@@ -178,7 +178,7 @@ export interface PivotViewerProps<TItem extends object> {
     isLoading?: boolean;
     /** Accessible status text while loading; overrides labels.loading and defaults to "Loading…". */
     loadingLabel?: string;
-    /** Optional toolbar and loading-status text overrides. Unset fields keep their English defaults. */
+    /** Optional controls, card-area region, and loading-status text overrides. Unset fields keep their English defaults. */
     labels?: PivotViewerLabels;
     /**
      * Optional color overrides mapped to semantic CSS variables.

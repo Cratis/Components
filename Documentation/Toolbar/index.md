@@ -20,9 +20,11 @@ import { Toolbar, ToolbarButton } from '@cratis/components/Toolbar';
 ## Keyboard and accessibility
 
 - The root renders `role='toolbar'`, `aria-orientation`, and an accessible name. The name falls back to the provider's `messages.toolbar.label`, then `Tools`; pass `aria-label` or `aria-labelledby` to name each toolbar.
-- Every `ToolbarButton`, folder trigger, and fan-out trigger is a native `button` and its own Tab stop. The toolbar does not implement arrow-key navigation between tools.
+- `focusMode` defaults to `ToolbarFocusMode.Arrows`: Up/Down move between tools in the default vertical orientation; a horizontal toolbar uses Left/Right (reversed in RTL). Home/End move to the first/last available tool in DOM order. Navigation skips disabled, hidden, and inert tools and stops at either end; it does not wrap. Each tool remains its own Tab stop, so Tab and Shift+Tab work as before.
+- Set `focusMode={ToolbarFocusMode.None}` to keep native Tab behavior without toolbar key handling. Import `ToolbarFocusMode` from `@cratis/components/Toolbar`. A single-Tab-stop mode is planned ([#353](https://github.com/Cratis/Components/issues/353)).
+- Arrows and Home/End inside inputs, sliders, selects, and custom widgets retain their own behavior. Nested toolbars handle their own keys. Key handlers on a tool or `pt.root` can cancel navigation with `preventDefault()` or `stopPropagation()`.
 - `title` is required on `ToolbarButton` and `ToolbarFolder`, and `tooltip` on `ToolbarFanOutItem`. That text becomes the button's `aria-label` and its tooltip, which appears on hover and on keyboard focus.
-- `active` is a visual and styling state (`data-active`, `data-selected`). It sets no `aria-pressed`; see [Active state](active-state.md) for how to expose it.
+- Passing `active` sets `aria-pressed` to `true` or `false` as well as the visual state (`data-active`, `data-selected`); omitting `active` leaves it unset. See [Active state](active-state.md).
 - Folder and fan-out triggers expose `aria-expanded` and `aria-controls`. Their panels close on Escape or a pointer press outside, return focus to their trigger after Escape, and are `inert` and `aria-hidden` while collapsed.
 - Toolbar, folder, fan-out, and context transitions are suppressed under `prefers-reduced-motion: reduce`.
 

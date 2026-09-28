@@ -271,7 +271,7 @@ When no ancestor supplies a height, DataPage falls back to a minimum height of `
 ## Accessibility and keyboard
 
 - DataPage renders its content inside a `<main>` element. If your application shell already has a `<main>`, the page adds a second main landmark; account for that in your shell.
-- The action bar is a toolbar of buttons named by `actionsAriaLabel` (default `'Actions'`). Disabled items are real disabled buttons.
+- The action bar is a toolbar of buttons named by `actionsAriaLabel` (default `'Actions'`). Disabled items are real disabled buttons. Left/Right and Home/End move between actions, and Tab still reaches each one.
 - Each data row is a tab stop. Enter or Space selects the focused row; there is no arrow-key navigation between rows. Selected rows carry `aria-selected="true"`.
 - Sortable headers are buttons, and the sorted column carries `aria-sort`.
 - The table has no accessible name by default, and `title` is not used for one. Name it through the table part: `tablePt={{ table: { 'aria-label': 'Authors' } }}`.

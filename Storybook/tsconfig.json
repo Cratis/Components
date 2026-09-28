@@ -24,6 +24,8 @@
         "scripts/lib/*.d.mts",
         "vitest.config.ts",
         "vitest.storybook.config.ts",
+        "vitest.viewport.config.ts",
+        "vitest.scrollbars.config.ts",
         "../Adapters/*/.storybook/**/*.tsx"
     ],
     "exclude": ["../Source/storybook-static", "node_modules"]

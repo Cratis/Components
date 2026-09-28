@@ -12,6 +12,7 @@
         "**/for_*/**",
         "**/*.stories.ts",
         "**/*.stories.tsx",
+        "**/*.browser.test.tsx",
         ".storybook/**",
         "vite.config.ts",
         "vite.config.mts",

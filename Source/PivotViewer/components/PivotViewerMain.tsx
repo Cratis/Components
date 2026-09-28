@@ -17,6 +17,8 @@ export interface PivotViewerMainProps<TItem extends object> {
   ready: boolean;
   isLoading: boolean;
   loadingLabel: string;
+  /** Accessible name of the focusable card-area scroll region. */
+  viewportLabel: string;
   visibleIds: Uint32Array;
   grouping: GroupingResult;
   layout: LayoutResult;
@@ -53,6 +55,7 @@ export function PivotViewerMain<TItem extends object>({
   ready,
   isLoading,
   loadingLabel,
+  viewportLabel,
   visibleIds,
   grouping,
   layout,
@@ -166,6 +169,9 @@ export function PivotViewerMain<TItem extends object>({
         <div
           className={`pv-viewport ${isZooming ? 'pv-zooming' : ''}`}
           ref={containerRef}
+          tabIndex={0}
+          role="region"
+          aria-label={viewportLabel}
           style={{ overflow: 'auto', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           onClick={handleViewportClick}
           onMouseMove={handleViewportMouseMove}

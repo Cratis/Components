@@ -1,7 +1,8 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { useCratisComponentsConfig } from '../../configuration/CratisComponentsContext';
 import type { PivotDimension } from '../types';
 import type { PivotViewerLabels } from '../PivotViewerLabels';
 import { ZOOM_MIN, ZOOM_MAX, ZOOM_STEP } from '../utils/utils';
@@ -54,6 +55,9 @@ export function Toolbar<TItem extends object>({
 }: ToolbarProps<TItem>) {
   const [isEditingZoom, setIsEditingZoom] = useState(false);
   const [zoomInputValue, setZoomInputValue] = useState('');
+  const { messages } = useCratisComponentsConfig();
+  const filterLabel = labels?.filters ?? messages?.filter?.label ?? 'Filters';
+  const filterBadgeId = useId();
 
   const handleZoomClick = () => {
     setIsEditingZoom(true);
@@ -97,13 +101,15 @@ export function Toolbar<TItem extends object>({
             type="button"
             className={`pv-filter-icon-button ${filtersOpen ? 'active' : ''}`}
             onClick={onFiltersToggle}
-            title={labels?.filters ?? 'Filters'}
+            aria-label={filterLabel}
+            aria-describedby={activeFilterCount > 0 ? filterBadgeId : undefined}
+            title={filterLabel}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
             {activeFilterCount > 0 && (
-              <span className="pv-filter-badge">{activeFilterCount}</span>
+              <span id={filterBadgeId} className="pv-filter-badge">{activeFilterCount}</span>
             )}
           </button>
         )}

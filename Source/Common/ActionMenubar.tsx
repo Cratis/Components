@@ -3,6 +3,8 @@
 
 import { Fragment, type ReactNode } from 'react';
 import { Button, type ButtonParts, type ButtonSeverity, type ButtonTone } from './Button';
+import { ToolbarFocusMode } from './ToolbarFocusMode';
+import { useToolbarKeyboardNavigation } from './useToolbarKeyboardNavigation';
 
 /** A single action in an {@link ActionMenubar}. */
 export interface ActionMenuItem {
@@ -24,6 +26,8 @@ export interface ActionMenuItem {
 
 /** Props for {@link ActionMenubar}. */
 export interface ActionMenubarProps {
+    /** Keyboard focus behavior (default: {@link ToolbarFocusMode.Arrows}). */
+    focusMode?: ToolbarFocusMode;
     /** Actions to render from left to right. */
     model: ActionMenuItem[];
     /** Extra class name for the toolbar container. */
@@ -55,11 +59,15 @@ const buttonToneForSeverity: Record<ButtonSeverity, ButtonTone> = {
 /** A horizontal, accessible toolbar of command actions. */
 export const ActionMenubar = ({
     model,
+    focusMode = ToolbarFocusMode.Arrows,
     className,
     pt,
     'aria-label': ariaLabel,
-}: ActionMenubarProps) => (
-    <div
+}: ActionMenubarProps) => {
+    const { rootRef, onKeyDown } = useToolbarKeyboardNavigation('horizontal', focusMode);
+    return <div
+        ref={rootRef}
+        onKeyDown={onKeyDown}
         role='toolbar'
         className={['cratis-action-menubar', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
@@ -85,5 +93,5 @@ export const ActionMenubar = ({
                 />
             );
         })}
-    </div>
-);
+    </div>;
+};
