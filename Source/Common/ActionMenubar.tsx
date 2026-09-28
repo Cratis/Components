@@ -64,10 +64,9 @@ export const ActionMenubar = ({
     pt,
     'aria-label': ariaLabel,
 }: ActionMenubarProps) => {
-    const { rootRef, onFocus, onKeyDown } = useToolbarKeyboardNavigation('horizontal', focusMode);
+    const { rootRef, onKeyDown } = useToolbarKeyboardNavigation('horizontal', focusMode);
     return <div
         ref={rootRef}
-        onFocus={onFocus}
         onKeyDown={onKeyDown}
         role='toolbar'
         className={['cratis-action-menubar', className].filter(Boolean).join(' ')}

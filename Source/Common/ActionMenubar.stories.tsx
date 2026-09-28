@@ -38,30 +38,9 @@ export const Default: Story = {
     },
 };
 
-export const SingleTabStop: Story = {
-    args: { focusMode: ToolbarFocusMode.SingleTabStop },
-    play: async ({ canvasElement }) => {
-        const canvas = within(canvasElement);
-        const first = canvas.getByRole('button', { name: 'New' });
-        const second = canvas.getByRole('button', { name: 'Save' });
-        const last = canvas.getByRole('button', { name: 'Delete' });
-        await expect(first).toHaveAttribute('tabindex', '0');
-        await expect(second).toHaveAttribute('tabindex', '-1');
-        await userEvent.tab();
-        await expect(first).toHaveFocus();
-        await userEvent.keyboard('{ArrowRight}');
-        await expect(second).toHaveFocus();
-        await expect(second).toHaveAttribute('tabindex', '0');
-        await userEvent.tab();
-        await expect(last).not.toHaveFocus();
-        await userEvent.tab({ shift: true });
-        await expect(second).toHaveFocus();
-    },
-};
-
-export const SingleTabStopWithWidgets: Story = {
+export const ArrowsWithWidgets: Story = {
     args: {
-        focusMode: ToolbarFocusMode.SingleTabStop,
+        focusMode: ToolbarFocusMode.Arrows,
         model: [
             { template: () => <input aria-label='Action name' defaultValue='Demo' /> },
             { label: 'New', icon: <FaPlus /> },
@@ -89,7 +68,7 @@ export const SingleTabStopWithWidgets: Story = {
         await userEvent.tab({ shift: true });
         await expect(last).toHaveFocus();
         await userEvent.keyboard('{Home}');
-        await expect(first).toHaveFocus();
+        await expect(input).toHaveFocus();
     },
 };
 

@@ -63,7 +63,7 @@ export const Toolbar = ({
     'aria-labelledby': ariaLabelledBy,
     pt,
 }: ToolbarProps) => {
-    const { rootRef, onFocus, onKeyDown } = useToolbarKeyboardNavigation(orientation, focusMode);
+    const { rootRef, onKeyDown } = useToolbarKeyboardNavigation(orientation, focusMode);
     const { messages } = useCratisComponentsConfig();
     const resolvedAriaLabel = ariaLabel ?? messages?.toolbar?.label ?? 'Tools';
 
@@ -72,7 +72,6 @@ export const Toolbar = ({
             <div
                 {...pt?.root}
                 ref={rootRef}
-                onFocus={event => { pt?.root?.onFocus?.(event); if (!event.isPropagationStopped()) onFocus(event); }}
                 onKeyDown={event => { pt?.root?.onKeyDown?.(event); if (!event.isPropagationStopped()) onKeyDown(event); }}
                 role='toolbar'
                 aria-orientation={orientation}
