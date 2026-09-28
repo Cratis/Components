@@ -99,8 +99,15 @@ describe('when changing snapshot arguments from page two', () => {
         await deliver('A', resultWith([{ id: 21, name: 'Example A page two' }], 1));
         container.querySelector('.cratis-table-paginator-info')?.textContent.should.equal('2 / 2');
 
+        const paginator = container.querySelector('.cratis-table-paginator');
+        const next = container.querySelector<HTMLButtonElement>('[aria-label="Previous page"]')!;
+        next.focus();
         await show('B');
         requestedPages.at(-1)?.should.equal(0);
+        (container.querySelector('.cratis-table-paginator') === paginator).should.equal(true);
+        (document.activeElement === next).should.equal(true);
+        await act(async () => { next.click(); });
+        requestedPages.should.deep.equal([0, 1, 0]);
         (rowText() === null).should.equal(true);
         await deliver('B', resultWith([{ id: 2, name: 'Example B page one' }]));
         rowText()?.should.contain('Example B page one');
@@ -134,13 +141,22 @@ describe('when returning to cached snapshot arguments', () => {
         await deliver('A', resultWith([{ id: 1, name: 'Example A' }]));
         const search = container.querySelector('[data-cratis-part="search-input"]');
         await act(async () => { container.querySelector<HTMLButtonElement>('[data-cratis-part="sort"]')!.click(); });
+        const paginator = container.querySelector('.cratis-table-paginator');
+        const next = container.querySelector<HTMLButtonElement>('[aria-label="Next page"]')!;
+        next.focus();
         await show('B');
         (loadingText() === 'Loading example rows').should.equal(true);
         (rowText() === null).should.equal(true);
         (container.querySelector('[data-cratis-part="search-input"]') === search).should.equal(true);
+        (container.querySelector('.cratis-table-paginator') === paginator).should.equal(true);
+        (document.activeElement === next).should.equal(true);
+        await act(async () => { next.click(); });
+        requestedPages.should.deep.equal([0, 0]);
         container.querySelector('[aria-sort="ascending"]')?.textContent.should.contain('Name');
         await deliver('B', resultWith([{ id: 2, name: 'Example B' }]));
         await show('A');
+        (container.querySelector('.cratis-table-paginator') === paginator).should.equal(true);
+        (document.activeElement === next).should.equal(true);
         (loadingText() === null).should.equal(true);
         rowText()?.should.contain('Example A');
         (container.querySelector('[data-cratis-part="search-input"]') === search).should.equal(true);

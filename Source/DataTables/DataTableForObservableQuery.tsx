@@ -221,17 +221,21 @@ export const DataTableForObservableQuery = <
         setPage: (page: number) => void;
     }>();
     const onResult = useCallback((queryKey: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => {
-        setSnapshot((previous) => previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
-            ? previous : { queryKey, result, setPage });
+        setSnapshot((previous) => {
+            if (!result.isReady && previous?.queryKey !== queryKey) return previous;
+            return previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
+                ? previous : { queryKey, result, setPage };
+        });
     }, []);
     const queryKey = serializeQueryArguments(props.queryArguments);
     const current = snapshot?.queryKey === queryKey ? snapshot : undefined;
     const result = current?.result;
+    const paginatorResult = current?.result.isReady ? current : snapshot;
     const containerRef = useRef<HTMLDivElement>(null);
     const [tableHeight, setTableHeight] = useState<number>(600);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const totalItems = result?.paging.totalItems ?? 0;
-    const pageCount = result?.paging.totalPages ?? 0;
+    const totalItems = paginatorResult?.result.paging.totalItems ?? 0;
+    const pageCount = paginatorResult?.result.paging.totalPages ?? 0;
     const showPaginator = totalItems > 0 && pageCount > 1;
 
     // Arc's unauthorized result has null data; the table always receives an array.
@@ -321,7 +325,7 @@ export const DataTableForObservableQuery = <
                 </DataTableCore>
             </div>
 
-            {showPaginator && current && (
+            {showPaginator && paginatorResult && (
                 <div
                     style={{
                         borderTop: '1px solid var(--cratis-surface-border)',
@@ -329,9 +333,10 @@ export const DataTableForObservableQuery = <
                     }}
                 >
                     <TablePaginator
-                        page={current.result.paging.page}
+                        page={paginatorResult.result.paging.page}
                         pageCount={pageCount}
-                        onPageChange={current.setPage}
+                        onPageChange={paginatorResult.setPage}
+                        disabled={!current?.result.isReady}
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}

@@ -226,14 +226,18 @@ export const DataTableForQuery = <
         setPage: (page: number) => void;
     }>();
     const onResult = useCallback((queryKey: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => {
-        setSnapshot((previous) => previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
-            ? previous : { queryKey, result, setPage });
+        setSnapshot((previous) => {
+            if (!result.isReady && previous?.queryKey !== queryKey) return previous;
+            return previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
+                ? previous : { queryKey, result, setPage };
+        });
     }, []);
     const queryKey = serializeQueryArguments(props.queryArguments);
     const current = snapshot?.queryKey === queryKey ? snapshot : undefined;
     const result = current?.result;
-    const totalItems = result?.paging.totalItems ?? 0;
-    const pageCount = result?.paging.totalPages ?? 0;
+    const paginatorResult = current?.result.isReady ? current : snapshot;
+    const totalItems = paginatorResult?.result.paging.totalItems ?? 0;
+    const pageCount = paginatorResult?.result.paging.totalPages ?? 0;
 
     // Arc's unauthorized result has null data; the table always receives an array.
     const rows = Array.isArray(result?.data) ? result.data as TDataType[] : [];
@@ -290,7 +294,7 @@ export const DataTableForQuery = <
                 </DataTableCore>
             </div>
 
-            {current && totalItems > 0 && pageCount > 1 && (
+            {paginatorResult && totalItems > 0 && pageCount > 1 && (
                 <div
                     style={{
                         borderTop: '1px solid var(--cratis-surface-border)',
@@ -298,9 +302,10 @@ export const DataTableForQuery = <
                     }}
                 >
                     <TablePaginator
-                        page={current.result.paging.page}
+                        page={paginatorResult.result.paging.page}
                         pageCount={pageCount}
-                        onPageChange={current.setPage}
+                        onPageChange={paginatorResult.setPage}
+                        disabled={!current?.result.isReady}
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}

@@ -34,6 +34,8 @@ export interface TablePaginatorProps {
     pageCount: number;
     /** Invoked with the requested zero-based page. */
     onPageChange: (page: number) => void;
+    /** Keep controls focusable but prevent navigation while new query arguments load. */
+    disabled?: boolean;
     /** Total number of records across all pages — enables the "X–Y of Z" range report. */
     totalItems?: number;
     /** Rows per page — enables the "X–Y of Z" range report. */

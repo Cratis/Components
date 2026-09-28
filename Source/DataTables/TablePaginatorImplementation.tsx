@@ -17,6 +17,7 @@ export const TablePaginatorImplementation = ({
     page,
     pageCount,
     onPageChange,
+    disabled,
     totalItems,
     pageSize,
     ariaLabels,
@@ -43,6 +44,7 @@ export const TablePaginatorImplementation = ({
             {...pt?.root}
             role='navigation'
             aria-label={labels.navigation}
+            aria-disabled={disabled || undefined}
             data-cratis-part='root'
             className={['cratis-table-paginator', pt?.root?.className, className]
                 .filter(Boolean)
@@ -62,7 +64,7 @@ export const TablePaginatorImplementation = ({
             <Button
                 variant='ghost'
                 disabled={isFirst}
-                onClick={() => onPageChange(0)}
+                onClick={() => { if (!disabled) onPageChange(0); }}
                 aria-label={labels.first}
                 pt={pt?.first}
             >
@@ -71,7 +73,7 @@ export const TablePaginatorImplementation = ({
             <Button
                 variant='ghost'
                 disabled={isFirst}
-                onClick={() => onPageChange(page - 1)}
+                onClick={() => { if (!disabled) onPageChange(page - 1); }}
                 aria-label={labels.previous}
                 pt={pt?.previous}
             >
@@ -89,7 +91,7 @@ export const TablePaginatorImplementation = ({
             <Button
                 variant='ghost'
                 disabled={isLast}
-                onClick={() => onPageChange(page + 1)}
+                onClick={() => { if (!disabled) onPageChange(page + 1); }}
                 aria-label={labels.next}
                 pt={pt?.next}
             >
@@ -98,7 +100,7 @@ export const TablePaginatorImplementation = ({
             <Button
                 variant='ghost'
                 disabled={isLast}
-                onClick={() => onPageChange(pageCount - 1)}
+                onClick={() => { if (!disabled) onPageChange(pageCount - 1); }}
                 aria-label={labels.last}
                 pt={pt?.last}
             >
