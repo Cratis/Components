@@ -54,6 +54,14 @@ export function assertPackedSourceMaps(entries) {
             if (entry.endsWith('.d.ts')) rewrittenDeclarations++;
             else rewrittenJavaScript++;
         }
+        if (entry.endsWith('.d.ts')) {
+            assert.ok(
+                !Object.hasOwn(map, 'sourcesContent'),
+                `${mapEntry} must not embed sourcesContent in a declaration map`,
+            );
+            // Declaration maps remain useful when the original sources exist in a linked workspace.
+            continue;
+        }
         for (const [index, source] of map.sources.entries()) {
             const resolved = path.posix.normalize(
                 path.posix.join(

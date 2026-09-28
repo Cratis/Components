@@ -324,21 +324,25 @@ export function fixRelativeEsmSpecifiers(esmPath) {
                     writeFileSync(file, rewritten.toString());
                 }
 
-                // Source/*.ts(x) is not included by the package's files whitelist. Embed the
-                // original source in *all* maps (including unchanged declarations), so every
-                // shipped reference is usable from an installed archive without this checkout.
-                outputMap.sourcesContent = outputMap.sources.map(
-                    (specifier, index) =>
-                        outputMap.sourcesContent?.[index] ??
-                        readFileSync(
-                            resolve(
-                                dirname(mapFile),
-                                outputMap.sourceRoot ?? '',
-                                specifier,
+                // TypeScript's language service ignores declaration maps with embedded source
+                // content. Leave declaration sources pointing at the files on disk; only JS maps
+                // need embedded content because Source/*.ts(x) is absent from the archive.
+                if (file.endsWith('.d.ts')) {
+                    delete outputMap.sourcesContent;
+                } else {
+                    outputMap.sourcesContent = outputMap.sources.map(
+                        (specifier, index) =>
+                            outputMap.sourcesContent?.[index] ??
+                            readFileSync(
+                                resolve(
+                                    dirname(mapFile),
+                                    outputMap.sourceRoot ?? '',
+                                    specifier,
+                                ),
+                                'utf8',
                             ),
-                            'utf8',
-                        ),
-                );
+                    );
+                }
                 writeFileSync(mapFile, JSON.stringify(outputMap));
             }
         },

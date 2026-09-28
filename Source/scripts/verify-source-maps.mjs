@@ -7,6 +7,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import MagicString from 'magic-string';
+import remapping from '@jridgewell/remapping';
+import ts from 'typescript';
 import { packArtifact } from './lib/packed-artifact.mjs';
 import {
     assertMappedToken,
@@ -20,7 +22,7 @@ for (const extension of ['js', 'd.ts']) {
     const source = `export const example = import('./Example').then(useExample);\n`;
     const file = `package/dist/esm/example.${extension}`;
     const original = new MagicString(source).generateMap({
-        source: '../../../Source/example.ts',
+        source: '../../Source/example.ts',
         file: `example.${extension}`,
         includeContent: true,
         hires: true,
@@ -35,26 +37,135 @@ for (const extension of ['js', 'd.ts']) {
         ],
         [`${file}.map`, Buffer.from(original.toString())],
     ]);
-    assert.throws(
-        () =>
-            assertMappedToken(
-                stale,
-                file,
-                'useExample',
-                1,
-                'package/Source/example.ts',
-                1,
-                source.indexOf('useExample'),
-            ),
-        /stale or incorrect source mapping/u,
+    const checkToken = (entries) =>
+        assertMappedToken(
+            entries,
+            file,
+            'useExample',
+            1,
+            'package/Source/example.ts',
+            1,
+            source.indexOf('useExample'),
+        );
+    assert.throws(() => checkToken(stale), /stale or incorrect source mapping/u);
+
+    // Same generated text and source/line, but with the edited columns composed correctly.
+    const rewrite = new MagicString(source);
+    rewrite.update(
+        source.indexOf('./Example'),
+        source.indexOf('./Example') + './Example'.length,
+        './Example.js',
     );
+    const composed = remapping(
+        [
+            rewrite.generateMap({
+                source: `example.${extension}`,
+                file: `example.${extension}`,
+                hires: true,
+            }),
+            original,
+        ],
+        () => null,
+    );
+    const corrected = new Map(stale);
+    corrected.set(`${file}.map`, Buffer.from(JSON.stringify(composed)));
+    checkToken(corrected);
 }
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// TypeScript only follows declaration maps to source files on disk. These source files exist
+// beside this in-repo build, even though Source/*.tsx is excluded from the published archive.
+const navigationFile = path.join(packageDir, 'scripts', 'source-map-navigation.ts');
+const navigationSource = [
+    "import type { CanvasItemRegistryEntry } from '../dist/esm/Canvas/Canvas.js';",
+    "import type { CanvasItemProps } from '../dist/esm/Canvas/CanvasItem.js';",
+    'type Rewritten = CanvasItemRegistryEntry;',
+    'type Unchanged = CanvasItemProps;',
+].join('\n');
+const navigationHost = {
+    getScriptFileNames: () => [navigationFile],
+    getScriptVersion: () => '0',
+    getScriptSnapshot: (file) => {
+        const content = file === navigationFile ? navigationSource : ts.sys.readFile(file);
+        return content === undefined ? undefined : ts.ScriptSnapshot.fromString(content);
+    },
+    getCurrentDirectory: () => packageDir,
+    getCompilationSettings: () => ({
+        module: ts.ModuleKind.NodeNext,
+        moduleResolution: ts.ModuleResolutionKind.NodeNext,
+        jsx: ts.JsxEmit.ReactJSX,
+        skipLibCheck: true,
+    }),
+    getDefaultLibFileName: ts.getDefaultLibFilePath,
+    fileExists: (file) => file === navigationFile || ts.sys.fileExists(file),
+    readFile: (file) => file === navigationFile ? navigationSource : ts.sys.readFile(file),
+    readDirectory: ts.sys.readDirectory,
+    directoryExists: ts.sys.directoryExists,
+    realpath: ts.sys.realpath,
+};
+const languageService = ts.createLanguageService(navigationHost);
+// tsserver maps the language-service definition through the declaration map before returning
+// it to editors. getDefinitionAtPosition alone reports the intermediate .d.ts location.
+const sourceMapper = ts.getSourceMapper({
+    ...navigationHost,
+    getProgram: () => languageService.getProgram(),
+    useCaseSensitiveFileNames: () => ts.sys.useCaseSensitiveFileNames,
+    log: () => {},
+});
+try {
+    for (const [symbol, sourceFile] of [
+        ['CanvasItemRegistryEntry', 'Canvas/Canvas.tsx'], // Rewritten declaration
+        ['CanvasItemProps', 'Canvas/CanvasItem.tsx'], // Unchanged declaration
+    ]) {
+        const usage = navigationSource.lastIndexOf(symbol);
+        const declaration = languageService.getDefinitionAtPosition(navigationFile, usage)?.[0];
+        assert.ok(declaration, `No definition for ${symbol}`);
+        assert.equal(
+            declaration.fileName,
+            path.join(packageDir, 'dist/esm', sourceFile.replace('.tsx', '.d.ts')),
+            `${symbol} did not resolve through its declaration`,
+        );
+        const definition = ts.getMappedDocumentSpan(declaration, sourceMapper, ts.sys.fileExists);
+        const source = path.join(packageDir, sourceFile);
+        const sourceText = readFileSync(source, 'utf8');
+        const expected = sourceText.indexOf(`export interface ${symbol}`);
+        assert.ok(expected >= 0, `${sourceFile} is missing ${symbol}`);
+        assert.ok(definition, `${symbol} has no navigable declaration map`);
+        assert.equal(definition.fileName, source, `${symbol} did not navigate to its source`);
+        assert.equal(definition.textSpan.start, expected + 'export interface '.length);
+
+        // Recreate the old emitted map without touching dist. TypeScript discards it even
+        // when the embedded bytes are identical to the source file on disk.
+        const mapFile = `${declaration.fileName}.map`;
+        const map = JSON.parse(readFileSync(mapFile, 'utf8'));
+        const blockedMapper = ts.getSourceMapper({
+            ...navigationHost,
+            getProgram: () => languageService.getProgram(),
+            useCaseSensitiveFileNames: () => ts.sys.useCaseSensitiveFileNames,
+            log: () => {},
+            readFile: (file) =>
+                file === mapFile
+                    ? JSON.stringify({
+                          ...map,
+                          sourcesContent: map.sources.map(() => sourceText),
+                      })
+                    : navigationHost.readFile(file),
+        });
+        assert.equal(
+            ts.getMappedDocumentSpan(declaration, blockedMapper, ts.sys.fileExists),
+            undefined,
+            `${symbol} unexpectedly navigated through embedded declaration content`,
+        );
+    }
+} finally {
+    languageService.dispose();
+}
 const scratch = mkdtempSync(path.join(tmpdir(), 'cratis-source-maps-'));
 try {
-    // Exercise the actual post-emit plugin on fixtures with tokens after changed specifiers
-    // on the same line. The real Rollup map does not map its synthetic static import lines.
+    // Exercise the actual post-emit plugin with several specifier edits on a single line.
+    // Sparse tsc-like maps anchor just the start of the line and the following token, not
+    // every character; the composition must preserve that token's original column.
     const fixtureSources = [
         [
             'fixture.js',
@@ -70,21 +181,21 @@ try {
         ],
     ];
     const fixtureEntries = new Map();
-    for (const [fileName, source] of fixtureSources) {
+    for (const [fileName, source, token] of fixtureSources) {
         writeFileSync(
             path.join(scratch, fileName),
             `${source}//# sourceMappingURL=${fileName}.map\n`,
         );
+        const sourceName = `${fileName}.source.ts`;
+        writeFileSync(path.join(scratch, sourceName), source);
+        const sparseMap = new MagicString(source);
+        sparseMap.addSourcemapLocation(source.indexOf(token));
         writeFileSync(
             path.join(scratch, `${fileName}.map`),
-            new MagicString(source)
-                .generateMap({
-                    source: 'fixture.ts',
-                    file: fileName,
-                    includeContent: true,
-                    hires: true,
-                })
-                .toString(),
+            sparseMap.generateMap({
+                source: sourceName,
+                file: fileName,
+            }).toString(),
         );
     }
     writeFileSync(path.join(scratch, 'Example.js'), 'export const Example = 1;\n');
@@ -103,7 +214,7 @@ try {
             entry,
             token,
             1,
-            'package/dist/esm/fixture.ts',
+            `package/dist/esm/${fileName}.source.ts`,
             1,
             source.indexOf(token),
         );
