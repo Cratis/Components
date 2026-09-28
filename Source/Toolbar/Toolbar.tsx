@@ -3,6 +3,8 @@
 
 import { type HTMLAttributes, type ReactNode } from 'react';
 import { ToolbarDragContext } from './ToolbarDragContext';
+import { ToolbarFocusMode } from '../Common/ToolbarFocusMode';
+import { useToolbarKeyboardNavigation } from '../Common/useToolbarKeyboardNavigation';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
@@ -20,6 +22,8 @@ void toolbarPartsMatchManifest;
 export interface ToolbarProps {
     /** The {@link ToolbarButton} elements to render inside this toolbar group. */
     children: ReactNode;
+    /** Keyboard focus behavior (default: {@link ToolbarFocusMode.Arrows}). */
+    focusMode?: ToolbarFocusMode;
     /** Layout direction of the toolbar (default: 'vertical'). */
     orientation?: 'vertical' | 'horizontal';
     /** Extra class name for the toolbar root. */
@@ -51,6 +55,7 @@ export interface ToolbarProps {
 export const Toolbar = ({
     children,
     orientation = 'vertical',
+    focusMode = ToolbarFocusMode.Arrows,
     draggable = false,
     onItemDragStart,
     className,
@@ -58,6 +63,7 @@ export const Toolbar = ({
     'aria-labelledby': ariaLabelledBy,
     pt,
 }: ToolbarProps) => {
+    const { rootRef, onFocus, onKeyDown } = useToolbarKeyboardNavigation(orientation, focusMode);
     const { messages } = useCratisComponentsConfig();
     const resolvedAriaLabel = ariaLabel ?? messages?.toolbar?.label ?? 'Tools';
 
@@ -65,6 +71,9 @@ export const Toolbar = ({
         <ToolbarDragContext.Provider value={{ draggable, onItemDragStart }}>
             <div
                 {...pt?.root}
+                ref={rootRef}
+                onFocus={event => { pt?.root?.onFocus?.(event); if (!event.isPropagationStopped()) onFocus(event); }}
+                onKeyDown={event => { pt?.root?.onKeyDown?.(event); if (!event.isPropagationStopped()) onKeyDown(event); }}
                 role='toolbar'
                 aria-orientation={orientation}
                 aria-label={ariaLabelledBy ? undefined : resolvedAriaLabel}

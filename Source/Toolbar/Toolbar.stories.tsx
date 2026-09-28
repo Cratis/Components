@@ -239,6 +239,18 @@ export const WithReactNodeIcons: Story = {
 
 /** A single toolbar group with several drawing-tool buttons. */
 export const Default: Story = {
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const select = canvas.getByRole('button', { name: 'Select' });
+        const layers = canvas.getByRole('button', { name: 'Layers' });
+        await userEvent.click(select);
+        await userEvent.keyboard('{ArrowDown}');
+        await expect(layers).toHaveFocus();
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'Shapes' })).toHaveFocus();
+        await userEvent.keyboard('{Home}');
+        await expect(select).toHaveFocus();
+    },
     render: () => (
         <Toolbar>
             <ToolbarButton icon={<ToolGlyph name='arrow-up-left' />} title='Select' />
@@ -246,6 +258,32 @@ export const Default: Story = {
             <ToolbarButton icon={<ToolGlyph name='circle' />} title='Shapes' />
             <ToolbarButton icon={<ToolGlyph name='stop' />} title='Rectangle' />
             <ToolbarButton icon={<ToolGlyph name='file' />} title='Sticky note' />
+        </Toolbar>
+    ),
+};
+
+/** An editable tool retains its caret keys while the toolbar navigates buttons. */
+export const WithEditableTool: Story = {
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const first = canvas.getByRole('button', { name: 'First tool' });
+        const input = canvas.getByRole('textbox', { name: 'Tool name' }) as HTMLInputElement;
+        const last = canvas.getByRole('button', { name: 'Last tool' });
+        await userEvent.click(first);
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(input).toHaveFocus();
+        input.setSelectionRange(2, 2);
+        await userEvent.keyboard('{ArrowLeft}');
+        await expect(input).toHaveFocus();
+        await expect(input.selectionStart).toBe(1);
+        await userEvent.tab();
+        await expect(last).toHaveFocus();
+    },
+    render: () => (
+        <Toolbar orientation='horizontal'>
+            <ToolbarButton title='First tool' icon={<ToolGlyph name='pencil' />} />
+            <input aria-label='Tool name' defaultValue='Demo' />
+            <ToolbarButton title='Last tool' icon={<ToolGlyph name='save' />} />
         </Toolbar>
     ),
 };

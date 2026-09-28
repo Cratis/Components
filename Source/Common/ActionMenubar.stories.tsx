@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { FaFloppyDisk, FaPlus, FaTrash } from 'react-icons/fa6';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { ActionMenubar } from './ActionMenubar';
+import { ToolbarFocusMode } from './ToolbarFocusMode';
 
 const meta = {
     title: 'Common/ActionMenubar',
@@ -25,8 +26,36 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
     play: async ({ canvasElement, args }) => {
-        await userEvent.click(within(canvasElement).getByRole('button', { name: 'New' }));
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: 'New' }));
         await expect(args.model[0].command).toHaveBeenCalledOnce();
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(canvas.getByRole('button', { name: 'Save' })).toHaveFocus();
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'Delete' })).toHaveFocus();
+        await userEvent.keyboard('{Home}');
+        await expect(canvas.getByRole('button', { name: 'New' })).toHaveFocus();
+    },
+};
+
+export const SingleTabStop: Story = {
+    args: { focusMode: ToolbarFocusMode.SingleTabStop },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const first = canvas.getByRole('button', { name: 'New' });
+        const second = canvas.getByRole('button', { name: 'Save' });
+        const last = canvas.getByRole('button', { name: 'Delete' });
+        await expect(first).toHaveAttribute('tabindex', '0');
+        await expect(second).toHaveAttribute('tabindex', '-1');
+        await userEvent.tab();
+        await expect(first).toHaveFocus();
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(second).toHaveFocus();
+        await expect(second).toHaveAttribute('tabindex', '0');
+        await userEvent.tab();
+        await expect(last).not.toHaveFocus();
+        await userEvent.tab({ shift: true });
+        await expect(second).toHaveFocus();
     },
 };
 
