@@ -7,6 +7,7 @@ import type { IObservableQueryFor, QueryResultWithState } from '@cratis/arc/quer
 import { useObservableQuery } from '@cratis/arc.react/queries';
 import { QueryStatus } from '../QueryStatus/QueryStatus';
 import { resolveQueryStatus } from '../QueryStatus/resolveQueryStatus';
+import { serializeQueryArguments } from '../QueryStatus/serializeQueryArguments';
 import { ChatSidebar, type ChatSidebarProps } from './ChatSidebar';
 import { chatIdentifierString, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatMessage } from './ChatMessage';
@@ -24,16 +25,6 @@ const resolveChatStatus = (result: Parameters<typeof resolveQueryStatus>[0]): Ch
     chatStatusByQueryStatus[resolveQueryStatus(result)];
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
-
-const serializeArguments = (args?: object): string => {
-    if (!args || Object.keys(args).length === 0) return '';
-    // Use Arc's sorted, JSON-serialized argument values as the subscription identity.
-    const sorted = Object.keys(args).sort().reduce<Record<string, unknown>>((entries, key) => {
-        entries[key] = (args as Record<string, unknown>)[key];
-        return entries;
-    }, {});
-    return JSON.stringify(sorted);
-};
 
 const KeyedQuerySubscriber = <
     TData,
@@ -151,11 +142,11 @@ export const ChatSidebarForObservableQueries = <
         });
     }, []);
 
-    const topicsQueryKey = serializeArguments(topicsArguments);
+    const topicsQueryKey = serializeQueryArguments(topicsArguments);
     const currentTopics = topicsQueryKey === topicsSnapshot?.queryKey ? topicsSnapshot : undefined;
     const messagesQueryArguments = messagesArguments(selectedId);
     const messagesQueryKey = selectedId !== undefined && messagesQueryArguments !== undefined
-        ? JSON.stringify([chatIdentifierString(selectedId), serializeArguments(messagesQueryArguments)])
+        ? JSON.stringify([chatIdentifierString(selectedId), serializeQueryArguments(messagesQueryArguments)])
         : undefined;
     const currentMessages = messagesQueryKey === messagesSnapshot?.queryKey ? messagesSnapshot : undefined;
 

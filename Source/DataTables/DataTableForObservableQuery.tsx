@@ -16,7 +16,7 @@ import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import { resolveDataTableStatus } from './resolveDataTableStatus';
 import { DataTableStatus } from './DataTableStatus';
-import { serializeQueryArguments } from './serializeQueryArguments';
+import { serializeQueryArguments } from '../QueryStatus/serializeQueryArguments';
 import { isSameTableResult } from './isSameTableResult';
 
 /**
