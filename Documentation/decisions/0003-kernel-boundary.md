@@ -1,11 +1,24 @@
 ---
+id: '0003'
 title: Repository-owned kernel boundary
 description: The explicit React-free and browser-DOM-free computation kernel enforced in Components source and emitted package graphs.
+status: accepted
+stage: implemented
+class: contract
+reversibility: costly
+decided: 2026-08-27
+decider: woksin
+applies-to:
+    - 'Source/**/*'
+    - 'ESLint/**/*'
+    - 'eslint.config.mjs'
 sidebar:
     badge: { text: Accepted, variant: tip }
 ---
 
 **Status:** Accepted
+
+**Provenance:** The decision date and decider come from the accepting commit (`051def4`), which first added this record marked Accepted.
 
 ## Context
 
@@ -27,6 +40,8 @@ A declared kernel module must not:
 - reach a browser DOM global through its emitted runtime or declaration closure.
 
 This boundary is separate from the existing Pixi, renderer-vendor, renderer export, and private `renderer/coreSlots` package-graph assertions. Those rules remain unchanged.
+
+> **2026-09-29 — enforcement clarification.** `ESLint/lib/kernelBoundary.js` remains the canonical source list; `Source/scripts/kernel-inventory.json` is its checked-in inventory snapshot (added under #217). `Source/scripts/lib/package-inventories.mjs` checks that snapshot against the source list. `eslint.config.mjs` and `ESLint/lib/noReactInKernel.js` enforce the source rule; `Source/scripts/verify-package-graph.mjs` and `Source/scripts/verify-package-graph-report.mjs` check emitted runtime and declaration closures. The decision above is unchanged.
 
 ## Included modules
 
