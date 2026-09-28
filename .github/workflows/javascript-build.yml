@@ -701,8 +701,9 @@ jobs:
                     /tmp/cratis-components.tgz \
                     "@cratis/arc@${{ matrix.arc-version }}" \
                     "@cratis/arc.react@${{ matrix.arc-version }}" \
-                    @cratis/fundamentals react@19 react-dom@19 \
-                    reflect-metadata tsyringe
+                    @cratis/fundamentals react@19 react-dom@19 reflect-metadata
+                  cp "$GITHUB_WORKSPACE/Source/scripts/lib/peer-absent-consumer-probe.mjs" verify-peers.mjs
+                  node verify-peers.mjs
                   node --input-type=module - <<'NODE'
                   const commandDialog = await import('@cratis/components/CommandDialog');
                   const dataPage = await import('@cratis/components/DataPage');
@@ -777,6 +778,8 @@ jobs:
                   JSON
                   cp Source/scripts/lib/package-manager-consumer-probe.mjs \
                     /tmp/components-consumer/verify.mjs
+                  cp Source/scripts/lib/peer-absent-consumer-probe.mjs \
+                    /tmp/components-consumer/verify-peers.mjs
 
             - name: Verify npm consumer
               if: matrix.manager == 'npm'
@@ -788,9 +791,9 @@ jobs:
                     /tmp/cratis-components.tgz \
                     @cratis/arc@22.16.0 @cratis/arc.react@22.16.0 \
                     @cratis/fundamentals@7.19.2 @types/react@19.2.18 \
-                    react@19.2.8 react-dom@19.2.8 \
-                    reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
+                    react@19.2.8 react-dom@19.2.8 reflect-metadata@0.2.2 "${PIXI[@]}"
                   node verify.mjs "${{ matrix.pixi }}"
+                  node verify-peers.mjs
 
             - name: Verify pnpm consumer
               if: matrix.manager == 'pnpm'
@@ -803,9 +806,9 @@ jobs:
                     /tmp/cratis-components.tgz \
                     @cratis/arc@22.16.0 @cratis/arc.react@22.16.0 \
                     @cratis/fundamentals@7.19.2 @types/react@19.2.18 \
-                    react@19.2.8 react-dom@19.2.8 \
-                    reflect-metadata@0.2.2 tsyringe@4.10.0 "${PIXI[@]}"
+                    react@19.2.8 react-dom@19.2.8 reflect-metadata@0.2.2 "${PIXI[@]}"
                   pnpm exec node verify.mjs "${{ matrix.pixi }}"
+                  pnpm exec node verify-peers.mjs
 
             - name: Verify Yarn PnP consumer
               if: matrix.manager == 'yarn-pnp'
@@ -822,8 +825,9 @@ jobs:
                     @cratis/arc@22.16.0 @cratis/arc.react@22.16.0 \
                     @cratis/fundamentals@7.19.2 @types/react@19.2.18 \
                     react@19.2.8 react-dom@19.2.8 \
-                    reflect-metadata@0.2.2 tsyringe@4.10.0 rxjs@7.8.2 "${PIXI[@]}"
+                    reflect-metadata@0.2.2 rxjs@7.8.2 "${PIXI[@]}"
                   yarn node verify.mjs "${{ matrix.pixi }}"
+                  yarn node verify-peers.mjs
 
     verify-renderer-adapters:
         name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }})

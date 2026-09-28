@@ -457,6 +457,8 @@ __metadata:
   peerDependenciesMeta:
     pixi.js:
       optional: true
+    tsyringe:
+      optional: true
   languageName: unknown
   linkType: soft
 

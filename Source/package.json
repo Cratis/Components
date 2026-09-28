@@ -311,6 +311,9 @@
     "peerDependenciesMeta": {
         "pixi.js": {
             "optional": true
+        },
+        "tsyringe": {
+            "optional": true
         }
     }
 }

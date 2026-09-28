@@ -11,6 +11,7 @@ import { sameChatIdentifier, type ChatIdentifier } from './ChatIdentifier';
 import type { ChatMention } from './ChatMention';
 import type { ChatMessage } from './ChatMessage';
 import type { ChatTopic } from './ChatTopic';
+import type { ChatTopicAction } from './ChatTopicAction';
 import type { ChatStatus } from './ChatStatus';
 import type { ChatTopicListLabels } from './ChatTopicList';
 import { ChatTopicList } from './ChatTopicList';
@@ -106,6 +107,9 @@ export interface ChatSidebarProps<
      * (observable) query delivers and the conversation re-renders as it changes.
      */
     messages: TMessage[];
+
+    /** The host's actions to offer on each topic where they are available. The inherited `actions` prop applies only to messages. */
+    topicActions?: ChatTopicAction<TTopic>[];
 
     /** Topic-list query display state. Defaults to ready when omitted. */
     topicsStatus?: ChatStatus;
@@ -225,6 +229,7 @@ export const ChatSidebar = <
     onClose,
     topics,
     messages,
+    topicActions,
     topicsStatus,
     messagesStatus,
     selectedTopicId,
@@ -399,6 +404,7 @@ export const ChatSidebar = <
                 {openTopicId === undefined ? (
                     <ChatTopicList<TTopic>
                         topics={topics}
+                        topicActions={topicActions}
                         status={topicsStatus}
                         onOpen={(topic) => select(topic.id, topic)}
                         onStart={

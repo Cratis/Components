@@ -86,7 +86,7 @@ if (!existsSync(esmRoot)) {
     process.exit(1);
 }
 
-/** Mandatory peers only - `pixi.js` is intentionally never installed by this fixture. */
+/** Mandatory peers only. pixi.js is absent, and Arc React supplies the optional tsyringe peer. */
 const EXPECTED_MANDATORY_PEERS = new Set([
     '@cratis/arc',
     '@cratis/arc.react',
@@ -94,16 +94,17 @@ const EXPECTED_MANDATORY_PEERS = new Set([
     'react',
     'react-dom',
     'reflect-metadata',
-    'tsyringe',
 ]);
 const optionalPeers = new Set(
     Object.entries(pkg.peerDependenciesMeta ?? {})
         .filter(([, metadata]) => metadata?.optional === true)
         .map(([name]) => name),
 );
-if (optionalPeers.size !== 1 || !optionalPeers.has('pixi.js')) {
+const expectedOptionalPeers = new Set(['pixi.js', 'tsyringe']);
+if (optionalPeers.size !== expectedOptionalPeers.size ||
+    [...expectedOptionalPeers].some((peer) => !optionalPeers.has(peer))) {
     console.error(
-        'The no-Pixi contract requires pixi.js to be the only optional peer. ' +
+        'The no-Pixi contract requires exactly pixi.js and tsyringe to be optional peers. ' +
             `Found: ${[...optionalPeers].join(', ') || '(none)'}.`,
     );
     process.exit(1);

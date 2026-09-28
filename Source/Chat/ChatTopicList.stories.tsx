@@ -3,6 +3,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from 'storybook/test';
+import { FaPen, FaBoxArchive } from 'react-icons/fa6';
 import { ChatAuthorKind } from './Kit/ChatAuthorKind';
 import type { ChatAuthor } from './ChatAuthor';
 import type { ChatIdentifier } from './ChatIdentifier';
@@ -69,6 +70,26 @@ export const Playground: Story = {
                 overflow: 'hidden',
             }}
         >
+            <ChatTopicList {...args} />
+        </div>
+    ),
+};
+
+/** Hover a topic, or Tab from its open button, to see the host's available actions. */
+export const WithActions: Story = {
+    args: {
+        topics: [
+            { id: 'topic-1', name: 'Example topic' },
+            { id: 'topic-2', name: 'Pinned topic', metadata: { pinned: true } },
+        ],
+        onOpen: fn(),
+        topicActions: [
+            { id: 'rename', label: 'Rename', icon: <FaPen />, onInvoke: fn() },
+            { id: 'archive', label: 'Archive', icon: <FaBoxArchive />, isAvailable: (topic) => topic.metadata?.pinned !== true, onInvoke: fn() },
+        ],
+    },
+    render: (args) => (
+        <div style={{ width: 360, border: '1px solid var(--cratis-surface-border)', borderRadius: 8 }}>
             <ChatTopicList {...args} />
         </div>
     ),

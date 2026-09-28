@@ -69,8 +69,24 @@
     transition: background 0.12s;
 }
 
-.cratis-chat-topics__topic:hover {
+.cratis-chat-topics__topic:hover,
+.cratis-chat-topics__row:hover .cratis-chat-topics__topic {
     background: var(--cratis-surface-hover);
+}
+
+/* Topic actions reuse the message action overlay, centered on the row instead of hanging above it. */
+.cratis-chat-topics__row {
+    position: relative;
+}
+
+.cratis-chat-topics__row .cratis-chat-message__actions {
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.cratis-chat-topics__row:hover .cratis-chat-message__actions {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .cratis-chat-topics__details {

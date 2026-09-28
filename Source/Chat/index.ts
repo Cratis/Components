@@ -21,6 +21,7 @@ export type {
 export { ChatSidebarForObservableQueries } from './ChatSidebarForObservableQueries';
 export type { ChatSidebarForObservableQueriesProps } from './ChatSidebarForObservableQueries';
 export type { ChatTopic } from './ChatTopic';
+export type { ChatTopicAction } from './ChatTopicAction';
 export { ChatTopicList } from './ChatTopicList';
 export type { ChatTopicListProps, ChatTopicListLabels } from './ChatTopicList';
 export { isTopicUnnamed } from './isTopicUnnamed';
