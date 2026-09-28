@@ -111,6 +111,8 @@ completed that setup; Components never receives the key itself. See the adapter 
 the exact provider and build-environment wiring, and the [renderer licensing policy](../renderers/licensing.md)
 for the cross-adapter ownership rule.
 
+## Localize owned labels
+
 Every message group follows the same precedence: a named component prop (or its own `labels`/`filterLabels` override) → provider message → English default. Per-instance overrides keep working. For filter search names, the effective placeholder comes between the provider message and `'Search'`, preserving the placeholder fallback when no provider search name is set. `PivotViewer` supplies its own panel search name from `labels.search` (default `Search…`), so `messages.filter.searchAriaLabel` does not name that search. Its group searches use `labels.searchGroup` or `Search ${groupLabel}` rather than assigning one provider string to every group.
 
 ### Filter accessible-name defaults
@@ -121,8 +123,6 @@ Every message group follows the same precedence: a named component prop (or its 
 | `messages.filter.searchAriaLabel` | Unset; effective placeholder, then `Search` | No explicit panel, group, or standalone `CheckboxListFilter` `searchAriaLabel` is passed. `PivotViewer` supplies its own panel and group names. |
 
 Filter messages do not change visible placeholders. A partial `filter` group leaves the other key at its default. As in sibling groups, an empty string is a supplied value: `label: ''` leaves the dialog name empty; `searchAriaLabel: ''` (or an explicit empty search name) falls through the search input's existing nonempty-name guard to the English `'Search'`, not to its placeholder.
-
-## Localize owned labels
 
 English, spelled out explicitly (this is also what every group defaults to with no provider at all):
 
