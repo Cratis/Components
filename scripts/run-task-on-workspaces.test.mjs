@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const output = path.join(repository, '.ai-work/workspace-runner-tests');
+const output = path.join(repository, 'node_modules/.cache/cratis-components/workspace-runner-tests');
 mkdirSync(output, { recursive: true });
 
 const runFixture = async ({ command = 'ci', exitCode = 0, outputBytes = 0, missingExecutable = false, signal = undefined, manifestGenerationFails = false, nestedPublicPackage = false } = {}) => {

@@ -13,7 +13,11 @@ import {
     assertMappedToken,
     assertPackedSourceMaps,
 } from './lib/published-source-maps.mjs';
-import { fixRelativeEsmSpecifiers } from '../../rollup.config.mjs';
+import {
+    fixRelativeEsmSpecifiers,
+    readRewrittenSourceMaps,
+    rewrittenSourceMapsManifest,
+} from '../../rollup.config.mjs';
 
 // A pre-rewrite map is valid JSON, resolves its source and still returns a position: only
 // checking the original column after an inline specifier can expose that it is stale.
@@ -76,6 +80,13 @@ for (const extension of ['js', 'd.ts']) {
 }
 
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// The build writes this outside dist: the archive alone cannot distinguish a tsc shim
+// changed by this pass from a Rollup module that already imported relative .js files.
+const rewrittenFiles = new Set(
+    readRewrittenSourceMaps(rewrittenSourceMapsManifest(packageDir)).map(
+        (file) => `package/dist/esm/${file}`,
+    ),
+);
 
 // TypeScript only follows declaration maps to source files on disk. These source files exist
 // beside this in-repo build, even though Source/*.tsx is excluded from the published archive.
@@ -183,7 +194,7 @@ try {
         ],
     ];
     const fixtureEntries = new Map();
-    for (const [fileName, source, token] of fixtureSources) {
+    const writeFixture = ([fileName, source, token]) => {
         writeFileSync(
             path.join(scratch, fileName),
             `${source}//# sourceMappingURL=${fileName}.map\n`,
@@ -221,9 +232,25 @@ try {
                 ),
             }),
         );
-    }
+    };
     writeFileSync(path.join(scratch, 'Example.js'), 'export const Example = 1;\n');
-    fixRelativeEsmSpecifiers(scratch).closeBundle();
+    const fixtureManifest = path.join(scratch, 'rewritten-source-maps.json');
+    const cleanBuildMessage = /Run a clean build: yarn clean && yarn build/u;
+    assert.throws(() => readRewrittenSourceMaps(fixtureManifest), cleanBuildMessage);
+    writeFileSync(fixtureManifest, '[]');
+    assert.throws(() => readRewrittenSourceMaps(fixtureManifest), cleanBuildMessage);
+
+    writeFixture(fixtureSources[0]);
+    fixRelativeEsmSpecifiers(scratch, fixtureManifest).closeBundle();
+    assert.deepEqual(readRewrittenSourceMaps(fixtureManifest), ['fixture.js']);
+    writeFixture(fixtureSources[1]);
+    fixRelativeEsmSpecifiers(scratch, fixtureManifest).closeBundle();
+    assert.deepEqual(readRewrittenSourceMaps(fixtureManifest), ['fixture.d.ts', 'fixture.js']);
+    writeFileSync(fixtureManifest, JSON.stringify(['missing.js', 'fixture.js', 'fixture.d.ts']));
+    fixRelativeEsmSpecifiers(scratch, fixtureManifest).closeBundle();
+    assert.deepEqual(readRewrittenSourceMaps(fixtureManifest), ['fixture.d.ts', 'fixture.js']);
+    rmSync(fixtureManifest);
+
     for (const [fileName, source, token, count] of fixtureSources) {
         const entry = `package/dist/esm/${fileName}`;
         const rewritten = readFileSync(path.join(scratch, fileName), 'utf8');
@@ -290,16 +317,6 @@ try {
     }
 
     const { entries } = packArtifact(packageDir, scratch);
-    // The build writes this outside dist: the archive alone cannot distinguish a tsc shim
-    // changed by this pass from a Rollup module that already imported relative .js files.
-    const rewrittenFiles = new Set(
-        JSON.parse(
-            readFileSync(
-                path.join(packageDir, '../.ai-work/rewritten-source-maps.json'),
-                'utf8',
-            ),
-        ).map((file) => `package/dist/esm/${file}`),
-    );
     const counts = assertPackedSourceMaps(entries, rewrittenFiles);
     assert.ok(
         !rewrittenFiles.has('package/dist/esm/Canvas/CanvasItem.js'),

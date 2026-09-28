@@ -253,7 +253,7 @@
         "generate-parts": "node ./scripts/generate-parts.mjs",
         "verify-parts-manifest": "node ./scripts/verify-parts-manifest.mjs",
         "prepare": "yarn generate-parts && yarn clean && yarn g:build",
-        "clean": "rm -rf dist && yarn g:clean",
+        "clean": "rm -rf dist && rm -f node_modules/.cache/cratis-components/rewritten-source-maps.json && yarn g:clean",
         "build": "yarn generate-parts && node ../scripts/run-typescript.mjs -p tsconfig.json",
         "compile": "yarn generate-parts && node ../scripts/run-typescript.mjs -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",

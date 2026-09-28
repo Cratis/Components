@@ -7,7 +7,7 @@ import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import { encode } from '@jridgewell/sourcemap-codec';
 import { decodedMappings, TraceMap } from '@jridgewell/trace-mapping';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
-import { dirname, join, relative, resolve } from 'path';
+import { dirname, join, relative, resolve, sep } from 'path';
 import ts from 'typescript';
 import {
     AGGREGATE_STYLES_FILE,
@@ -261,6 +261,17 @@ function moduleSpecifiers(sourceFile) {
 
 const sourceMapReference = /\/\/# sourceMappingURL=([^\r\n]+)/u;
 
+export const rewrittenSourceMapsManifest = (sourceDir) =>
+    resolve(sourceDir, 'node_modules/.cache/cratis-components/rewritten-source-maps.json');
+
+export function readRewrittenSourceMaps(manifestPath) {
+    const message = 'Rewritten source maps manifest is missing or empty. Run a clean build: yarn clean && yarn build.';
+    if (!existsSync(manifestPath)) throw new Error(message);
+    const files = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    if (!Array.isArray(files) || files.length === 0) throw new Error(message);
+    return files;
+}
+
 /**
  * Rollup's JS maps and TypeScript's declaration maps both precede this Node ESM specifier
  * rewrite. Shift the original generated segments directly, retaining even end-of-line
@@ -370,8 +381,18 @@ export function fixRelativeEsmSpecifiers(esmPath, manifestPath) {
                 writeFileSync(mapFile, JSON.stringify(outputMap));
             }
             if (manifestPath) {
+                const previous = existsSync(manifestPath)
+                    ? JSON.parse(readFileSync(manifestPath, 'utf8'))
+                    : [];
+                const distDir = resolve(esmPath);
+                const merged = [...new Set([...previous, ...rewrittenFiles])]
+                    .filter((file) => {
+                        const emitted = resolve(distDir, file);
+                        return emitted.startsWith(`${distDir}${sep}`) && existsSync(emitted);
+                    })
+                    .sort();
                 mkdirSync(dirname(manifestPath), { recursive: true });
-                writeFileSync(manifestPath, JSON.stringify([...rewrittenFiles].sort()));
+                writeFileSync(manifestPath, JSON.stringify(merged));
             }
         },
     };
@@ -522,7 +543,7 @@ export function rollup(esmPath, tsconfigPath, pkg) {
             // been rewritten to real files.
             fixRelativeEsmSpecifiers(
                 esmPath,
-                resolve(sourceDir, '../.ai-work/rewritten-source-maps.json'),
+                rewrittenSourceMapsManifest(sourceDir),
             ),
             bundleStyles(sourceDir, esmPath, pkg),
         ],
