@@ -164,12 +164,9 @@ const KeyedQuerySubscriber = <
     const [result, , setPage] = useObservableQueryWithPaging<TDataType, never, TArguments>(
         query as never, paging, args,
     );
-    const receivedFirstPage = useRef(false);
     useIsomorphicLayoutEffect(() => {
-        // Arc can retain a page-two result under an arguments-only key. Its existing
-        // subscription may not request page one again; never render those stale rows.
-        if (!receivedFirstPage.current && result.isReady && result.paging.page !== paging.page) return;
-        if (result.isReady) receivedFirstPage.current = true;
+        // Arc #2869: page changes do not resubscribe, so accept the page delivered
+        // by the subscription for this arguments key, including retained results.
         onResult(queryKey, result, setPage);
     }, [queryKey, result, onResult, setPage]);
     return null;
