@@ -34,7 +34,7 @@
     color: var(--cratis-action-text);
 }
 
-.toolbar-button [data-cratis-part='icon'] {
+.toolbar-button :where([data-cratis-part='icon']:not([hidden])) {
     display: flex;
     align-items: center;
     line-height: 1;
@@ -190,18 +190,7 @@
     pointer-events: auto;
 }
 
-/*
- * Reveal complete. The clip-path did its job — the wipe cannot run without it,
- * because `clip-path: none` is a discrete value that snaps instead of
- * interpolating. But clip-path also clips every descendant, so leaving a zero
- * inset in place slices off the hover tooltips of the outermost buttons, which
- * paint outside the panel by design.
- *
- * ToolbarFanOutItem therefore adds this class once the reveal transition ends,
- * and takes it off again (restoring an interpolable inset) before the close
- * transition starts — so both wipes keep their exact timing and a settled panel
- * clips nothing.
- */
+/* A settled panel must stop clipping tooltips; restore the inset before the close wipe. */
 .toolbar-fanout-panel--settled {
     clip-path: none;
 }

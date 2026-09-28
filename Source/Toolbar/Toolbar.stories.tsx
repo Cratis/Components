@@ -164,6 +164,21 @@ const ToolGlyph = ({ name }: { name: string }) => {
     return <Icon aria-hidden='true' />;
 };
 
+/** Native hidden on the icon part must beat the toolbar's icon layout rule. */
+export const WithHiddenIconPart: Story = {
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const icon = canvas.getByRole('button', { name: 'Hidden icon' }).querySelector<HTMLElement>('[data-cratis-part="icon"]');
+        await expect(icon).toHaveAttribute('hidden');
+        await expect(getComputedStyle(icon!).display).toBe('none');
+    },
+    render: () => (
+        <Toolbar>
+            <ToolbarButton title='Hidden icon' icon={<ToolGlyph name='star' />} pt={{ icon: { hidden: true } }} />
+        </Toolbar>
+    ),
+};
+
 const folderIcons: string[] = [
     'exclamation-circle',
     'eye',
