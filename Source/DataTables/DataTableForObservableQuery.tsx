@@ -3,9 +3,9 @@
 
 import type { DataTableParts } from './DataTableCore';
 import type { Constructor } from '@cratis/fundamentals';
-import { type IObservableQueryFor, Paging } from '@cratis/arc/queries';
+import { type IObservableQueryFor, Paging, type QueryResultWithState } from '@cratis/arc/queries';
 import { useObservableQueryWithPaging } from '@cratis/arc.react/queries';
-import { type ReactNode, useState, useRef, useEffect } from 'react';
+import { type ReactNode, useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { DataTableCore } from './DataTableCore';
 import {
     TablePaginator,
@@ -15,6 +15,9 @@ import {
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import { resolveDataTableStatus } from './resolveDataTableStatus';
+import { DataTableStatus } from './DataTableStatus';
+import { serializeQueryArguments } from './serializeQueryArguments';
+import { isSameTableResult } from './isSameTableResult';
 
 /**
  * Props for {@link DataTableForObservableQuery}.
@@ -144,6 +147,26 @@ export interface DataTableForObservableQueryProps<
 }
 
 const paging = new Paging(0, 20);
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+const KeyedQuerySubscriber = <
+    TQuery extends IObservableQueryFor<TDataType, TArguments> | IObservableQueryFor<TDataType[], TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+>({ query, args, queryKey, onResult }: {
+    query: Constructor<TQuery>;
+    args?: TArguments;
+    queryKey: string;
+    onResult: (key: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => void;
+}) => {
+    // Arc's nominal subscription type requires constructor erasure and an explicit row type
+    // to avoid the separate private declarations in different consumer copies of Arc.
+    const [result, , setPage] = useObservableQueryWithPaging<TDataType, never, TArguments>(
+        query as never, paging, args,
+    );
+    useIsomorphicLayoutEffect(() => { onResult(queryKey, result, setPage); }, [queryKey, result, onResult]);
+    return null;
+};
 
 /**
  * A paged data table bound to a real-time Cratis Arc observable query
@@ -185,38 +208,28 @@ export const DataTableForObservableQuery = <
 >(
     props: DataTableForObservableQueryProps<TQuery, TDataType, TArguments>,
 ) => {
-    // Type arguments are supplied explicitly, and the constructor is erased on the way in
-    // (Cratis/Components#135). Two separate defects in `@cratis/arc.react` make the plain call
-    // fail to type-check:
-    //
-    // 1. `useObservableQueryWithPaging<TDataType, TQuery extends IObservableQueryFor<TDataType>, …>`
-    //    gives `TDataType` no inference site — it appears only inside `TQuery`'s constraint — so it
-    //    silently falls back to `unknown` and `result` comes back as `QueryResultWithState<unknown>`.
-    // 2. `ObservableQuerySubscription<T>` carries a `private _connection`, which makes it nominally
-    //    typed. `@cratis/arc.react` pins `@cratis/arc` to an exact version, so any consumer whose own
-    //    `@cratis/arc` differs by even a patch gets a second nested copy — two declarations of that
-    //    class, and TS2345 "types have separate declarations of a private property". Our peer range
-    //    allows multiple Arc versions, so we cannot assume a consumer's tree is deduped.
-    //
-    // Erasing the constructor type sidesteps the nominal comparison, and naming `TDataType`
-    // explicitly recovers the row type this component is generic over — strictly better than the
-    // `unknown` the inference would otherwise produce. Remove both once Arc returns an interface
-    // from `subscribe()` and makes `TDataType` inferable.
-    const [result, , setPage] = useObservableQueryWithPaging<
-        TDataType,
-        never,
-        TArguments
-    >(props.query as never, paging, props.queryArguments);
+    const [snapshot, setSnapshot] = useState<{
+        queryKey: string;
+        result: QueryResultWithState<unknown>;
+        setPage: (page: number) => void;
+    }>();
+    const onResult = useCallback((queryKey: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => {
+        setSnapshot((previous) => previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
+            ? previous : { queryKey, result, setPage });
+    }, []);
+    const queryKey = serializeQueryArguments(props.queryArguments);
+    const current = snapshot?.queryKey === queryKey ? snapshot : undefined;
+    const result = current?.result;
     const containerRef = useRef<HTMLDivElement>(null);
     const [tableHeight, setTableHeight] = useState<number>(600);
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    const totalItems = result.paging.totalItems;
-    const pageCount = result.paging.totalPages;
+    const totalItems = result?.paging.totalItems ?? 0;
+    const pageCount = result?.paging.totalPages ?? 0;
     const showPaginator = totalItems > 0 && pageCount > 1;
 
-    // SAFETY: Arc observable collection queries are row-typed while runtime data is the current row array.
-    const rows = result.data as unknown as TDataType[];
-    const status = resolveDataTableStatus(result);
+    // Arc's unauthorized result has null data; the table always receives an array.
+    const rows = Array.isArray(result?.data) ? result.data as TDataType[] : [];
+    const status = result ? resolveDataTableStatus(result) : DataTableStatus.Loading;
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -267,6 +280,10 @@ export const DataTableForObservableQuery = <
                 overflow: 'hidden',
             }}
         >
+            <KeyedQuerySubscriber<TQuery, TDataType, TArguments>
+                key={queryKey} query={props.query} args={props.queryArguments}
+                queryKey={queryKey} onResult={onResult}
+            />
             <div style={{ height: `${tableHeight}px`, overflow: 'hidden' }}>
                 <DataTableCore<TDataType>
                     data={rows}
@@ -297,7 +314,7 @@ export const DataTableForObservableQuery = <
                 </DataTableCore>
             </div>
 
-            {showPaginator && (
+            {showPaginator && current && (
                 <div
                     style={{
                         borderTop: '1px solid var(--cratis-surface-border)',
@@ -305,9 +322,9 @@ export const DataTableForObservableQuery = <
                     }}
                 >
                     <TablePaginator
-                        page={result.paging.page}
+                        page={current.result.paging.page}
                         pageCount={pageCount}
-                        onPageChange={setPage}
+                        onPageChange={current.setPage}
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}

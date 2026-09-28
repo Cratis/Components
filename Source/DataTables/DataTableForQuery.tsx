@@ -3,9 +3,9 @@
 
 import type { DataTableParts } from './DataTableCore';
 import type { Constructor } from '@cratis/fundamentals';
-import { type IQueryFor, Paging } from '@cratis/arc/queries';
+import { type IQueryFor, Paging, type QueryResultWithState } from '@cratis/arc/queries';
 import { useQueryWithPaging } from '@cratis/arc.react/queries';
-import type { ReactNode } from 'react';
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { DataTableCore } from './DataTableCore';
 import {
     TablePaginator,
@@ -15,6 +15,9 @@ import {
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import type { DataTableSelectionChangeEvent } from './DataTableSelectionChangeEvent';
 import { resolveDataTableStatus } from './resolveDataTableStatus';
+import { DataTableStatus } from './DataTableStatus';
+import { serializeQueryArguments } from './serializeQueryArguments';
+import { isSameTableResult } from './isSameTableResult';
 
 /**
  * Props for {@link DataTableForQuery}.
@@ -142,6 +145,22 @@ export interface DataTableForQueryProps<
 }
 
 const paging = new Paging(0, 20);
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+const KeyedQuerySubscriber = <
+    TQuery extends IQueryFor<TDataType, TArguments> | IQueryFor<TDataType[], TArguments>,
+    TDataType extends object,
+    TArguments extends object,
+>({ query, args, queryKey, onResult }: {
+    query: Constructor<TQuery>;
+    args?: TArguments;
+    queryKey: string;
+    onResult: (key: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => void;
+}) => {
+    const [result, , , setPage] = useQueryWithPaging(query, paging, args);
+    useIsomorphicLayoutEffect(() => { onResult(queryKey, result, setPage); }, [queryKey, result, onResult]);
+    return null;
+};
 
 /**
  * A paged data table bound to a snapshot Cratis Arc query
@@ -194,17 +213,24 @@ export const DataTableForQuery = <
 >(
     props: DataTableForQueryProps<TQuery, TDataType, TArguments>,
 ) => {
-    const [result, , , setPage] = useQueryWithPaging(
-        props.query,
-        paging,
-        props.queryArguments,
-    );
-    const totalItems = result.paging.totalItems;
-    const pageCount = result.paging.totalPages;
+    const [snapshot, setSnapshot] = useState<{
+        queryKey: string;
+        result: QueryResultWithState<unknown>;
+        setPage: (page: number) => void;
+    }>();
+    const onResult = useCallback((queryKey: string, result: QueryResultWithState<unknown>, setPage: (page: number) => void) => {
+        setSnapshot((previous) => previous?.queryKey === queryKey && isSameTableResult(previous.result, result)
+            ? previous : { queryKey, result, setPage });
+    }, []);
+    const queryKey = serializeQueryArguments(props.queryArguments);
+    const current = snapshot?.queryKey === queryKey ? snapshot : undefined;
+    const result = current?.result;
+    const totalItems = result?.paging.totalItems ?? 0;
+    const pageCount = result?.paging.totalPages ?? 0;
 
-    // SAFETY: Arc collection queries are row-typed while their runtime data is the current row array.
-    const rows = result.data as unknown as TDataType[];
-    const status = resolveDataTableStatus(result);
+    // Arc's unauthorized result has null data; the table always receives an array.
+    const rows = Array.isArray(result?.data) ? result.data as TDataType[] : [];
+    const status = result ? resolveDataTableStatus(result) : DataTableStatus.Loading;
 
     return (
         <div
@@ -217,6 +243,10 @@ export const DataTableForQuery = <
                 overflow: 'hidden',
             }}
         >
+            <KeyedQuerySubscriber<TQuery, TDataType, TArguments>
+                key={queryKey} query={props.query} args={props.queryArguments}
+                queryKey={queryKey} onResult={onResult}
+            />
             {/* The scroll container must be `DataTableCore`'s own bounded container rather than
                 this wrapper. `.cratis-datatable__container` sets `overflow-x: auto`, and CSS
                 computes the matching `overflow-y: visible` to `auto`, so that element is always
@@ -253,7 +283,7 @@ export const DataTableForQuery = <
                 </DataTableCore>
             </div>
 
-            {totalItems > 0 && pageCount > 1 && (
+            {current && totalItems > 0 && pageCount > 1 && (
                 <div
                     style={{
                         borderTop: '1px solid var(--cratis-surface-border)',
@@ -261,9 +291,9 @@ export const DataTableForQuery = <
                     }}
                 >
                     <TablePaginator
-                        page={result.paging.page}
+                        page={current.result.paging.page}
                         pageCount={pageCount}
-                        onPageChange={setPage}
+                        onPageChange={current.setPage}
                         totalItems={totalItems}
                         pageSize={paging.pageSize}
                         className={props.paginatorClassName}
