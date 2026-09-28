@@ -71,6 +71,28 @@ The boolean says only that the application completed its own setup. It is not a 
 that the key is valid, and does not suppress upstream license behavior. The adapter fails closed
 when the outer provider or the attestation is absent.
 
+### Develop without a PrimeReact key
+
+If you do not have a PrimeReact 11 key, select the built-in Core renderer instead of
+selecting `primeReactUiLibrary`. Mount `CratisComponentsProvider` without `library` and
+without the PrimeReact setup assertion:
+
+```tsx
+import { CratisComponentsProvider } from '@cratis/components';
+
+export const Application = () => (
+    <CratisComponentsProvider>
+        <main>Application content</main>
+    </CratisComponentsProvider>
+);
+```
+
+This renders Components with Core; it does not need a PrimeReact provider or key. If you
+select the PrimeReact 11 adapter without its required provider and attestation, it still
+throws `CRATIS-UI-1005`. There is no automatic switch to Core on a licensing failure:
+silently falling back would change the licensing contract while leaving the adapter selected.
+The normal slot fallback for an undeclared slot is not a license fallback.
+
 Never place a key in `rendererSetup`, Components configuration, a renderer manifest, a published
 package, a Storybook parameter, a test fixture, or a log. A client application must follow its own
 secret-to-client-build policy for any key the vendor requires at runtime.

@@ -9,13 +9,12 @@ boundaries.
 
 ## Decisions
 
-- [DOM-coupled public component contract](0001-dom-coupled-contract.md) — React, native HTML, refs,
-  events, and form semantics are intentional public contracts.
-- [Public component classification](0002-component-classification.md) — distinguishes primitives,
-  composites, and interop-only surfaces.
-- [Repository-owned kernel boundary](0003-kernel-boundary.md) — keeps optional and renderer-specific
-  dependency graphs out of the setup-only root.
-- [Stable presentation renderer profile](0004-stable-presentation-renderer-profile.md) — promotes the
-  exact nine-slot `stable-presentation/v1` adapter boundary while broader machinery remains unstable.
+| ID and decision | Status | Stage | Decided | Decider |
+| --- | --- | --- | --- | --- |
+| [0001 — DOM-coupled public component contract](0001-dom-coupled-contract.md) | Accepted | Implemented | 2026-08-27 | woksin |
+| [0002 — Public component classification](0002-component-classification.md) | Accepted | Implemented | 2026-08-27 | woksin |
+| [0003 — Repository-owned kernel boundary](0003-kernel-boundary.md) | Accepted | Implemented | 2026-08-27 | woksin |
+| [0004 — Stable presentation renderer profile](0004-stable-presentation-renderer-profile.md) | Accepted | Implemented | 2026-08-28 | woksin |
+| [0005 — Generic primitive admission](0005-generic-primitive-admission.md) | Accepted | None | 2026-09-28 | woksin (delegated) |
 
 Read [UI foundation](../ui-foundation.md) for the current architecture and capability matrix.

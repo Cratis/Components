@@ -8,3 +8,5 @@
   href: 0003-kernel-boundary.md
 - name: Stable presentation renderer profile
   href: 0004-stable-presentation-renderer-profile.md
+- name: Generic primitive admission
+  href: 0005-generic-primitive-admission.md

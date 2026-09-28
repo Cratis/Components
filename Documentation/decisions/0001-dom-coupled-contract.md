@@ -1,11 +1,23 @@
 ---
+id: '0001'
 title: DOM-coupled public component contract
 description: Why Components intentionally exposes React, HTML, native form, ref, and DOM event semantics while keeping renderer vendors private.
+status: accepted
+stage: implemented
+class: contract
+reversibility: costly
+decided: 2026-08-27
+decider: woksin
+applies-to:
+    - 'Source/**/*'
+    - 'Adapters/**/*'
 sidebar:
     badge: { text: Accepted, variant: tip }
 ---
 
 **Status:** Accepted
+
+**Provenance:** The decision date and decider come from the accepting commit (`1eb42ce`), which first added this record marked Accepted.
 
 ## Context
 
