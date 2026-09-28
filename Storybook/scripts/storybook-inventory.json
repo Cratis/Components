@@ -281,6 +281,8 @@
         "canvas-canvas--with-controls-and-minimap",
         "canvas-canvascontrols--localized-controlled-zoom",
         "canvas-canvascontrols--playground",
+        "canvas-canvascontrols--replacement-icons",
+        "canvas-canvascontrols--without-viewport-insets",
         "canvas-canvasminimap--playground",
         "canvas-canvasminimap--synchronized-viewport",
         "canvas-canvasoverlay--inspector-panel",
