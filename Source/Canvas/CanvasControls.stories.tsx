@@ -3,7 +3,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { type CSSProperties, useRef } from 'react';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { CanvasControls } from './CanvasControls';
 
 const meta = {
@@ -35,14 +35,14 @@ type Story = StoryObj<typeof meta>;
 export const Playground: Story = {
     play: async ({ args, canvasElement }) => {
         const canvas = within(canvasElement);
-        await userEvent.click(canvas.getByRole('button', { name: 'Zoom In' }));
+        // These buttons only handle click; avoid userEvent's timer-driven pointer sequence
+        // while testing the callbacks and the rendered minimap state.
+        canvas.getByRole('button', { name: 'Zoom In' }).click();
         await expect(args.onZoomIn).toHaveBeenCalledOnce();
-        await userEvent.click(canvas.getByRole('button', { name: 'Help' }));
+        canvas.getByRole('button', { name: 'Help' }).click();
         await expect(args.onHelp).toHaveBeenCalledOnce();
-        await userEvent.click(canvas.getByRole('button', { name: 'Toggle minimap' }));
-        const minimap = canvasElement.querySelector('.canvas-minimap');
-        if (!minimap) throw new Error('Canvas minimap did not render.');
-        await expect(minimap).toBeVisible();
+        canvas.getByRole('button', { name: 'Toggle minimap' }).click();
+        await waitFor(() => expect(canvasElement.querySelector('.canvas-minimap')).toBeVisible());
     },
 };
 
