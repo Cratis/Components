@@ -1228,3 +1228,32 @@ export const LayoutWithGlobalAndEditorRegions: Story = {
         return <LayoutWithGlobalAndEditorRegionsDemo />;
     },
 };
+
+/** Icon font and SVG glyphs stay vertically centered even when a host sets a taller line height. */
+export const IconsWithInheritedLineHeight: Story = {
+    render: () => (
+        <div style={{ lineHeight: '24px' }}>
+            <style>{'.sample-toolbar-glyph::before { content: "◆"; font-style: normal; }'}</style>
+            <Toolbar orientation='horizontal'>
+                <ToolbarButton title='Regular font icon' icon='sample-toolbar-glyph' />
+                <ToolbarButton title='Regular SVG icon' icon={<svg width='20' height='20' viewBox='0 0 20 20' aria-hidden='true'><circle cx='10' cy='10' r='8' /></svg>} />
+                <ToolbarFolder title='List icons' icon='sample-toolbar-glyph' mode='list'>
+                    <ToolbarButton title='List font icon' icon='sample-toolbar-glyph' />
+                    <ToolbarButton title='List SVG icon' icon={<svg width='20' height='20' viewBox='0 0 20 20' aria-hidden='true'><circle cx='10' cy='10' r='8' /></svg>} />
+                </ToolbarFolder>
+            </Toolbar>
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: 'List icons' }));
+        for (const title of ['Regular font icon', 'Regular SVG icon', 'List font icon', 'List SVG icon']) {
+            const button = canvas.getByRole('button', { name: title });
+            const icon = button.querySelector('i, svg');
+            if (!icon) throw new Error(`Missing icon for ${title}`);
+            const buttonBounds = button.getBoundingClientRect();
+            const iconBounds = icon.getBoundingClientRect();
+            await expect(Math.abs((iconBounds.top + iconBounds.bottom - buttonBounds.top - buttonBounds.bottom) / 2), title).toBeLessThanOrEqual(1);
+        }
+    },
+};

@@ -34,6 +34,12 @@
     color: var(--cratis-action-text);
 }
 
+.toolbar-button [data-cratis-part='icon'] {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+}
+
 .toolbar-button--draggable {
     cursor: grab;
 }
@@ -68,7 +74,8 @@
         height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.toolbar-section--transitioning {
+.toolbar-section--transitioning,
+.toolbar-slot-section--transitioning {
     overflow: hidden;
 }
 
@@ -287,10 +294,6 @@
 }
 
 /* ToolbarGroup slots use the section transition above. */
-
-.toolbar-slot-section--transitioning {
-    overflow: hidden;
-}
 
 @keyframes toolbar-slot-fade-in {
     from {
