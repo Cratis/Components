@@ -59,6 +59,8 @@
         "@cyclonedx/yarn-plugin-cyclonedx": "3.4.0",
         "@eslint-react/eslint-plugin": "5.19.0",
         "@eslint/js": "^10.0.1",
+        "@jridgewell/sourcemap-codec": "1.6.0",
+        "@jridgewell/trace-mapping": "0.3.31",
         "@rollup/plugin-node-resolve": "^16.0.3",
         "@rollup/plugin-typescript": "^12.3.0",
         "@storybook/addon-a11y": "^10.6.0",

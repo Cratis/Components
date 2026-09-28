@@ -4,15 +4,10 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
-import {
-    existsSync,
-    mkdirSync,
-    readFileSync,
-    readdirSync,
-    unlinkSync,
-    writeFileSync,
-} from 'fs';
-import { dirname, join, relative, resolve } from 'path';
+import { encode } from '@jridgewell/sourcemap-codec';
+import { decodedMappings, TraceMap } from '@jridgewell/trace-mapping';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
+import { dirname, join, relative, resolve, sep } from 'path';
 import ts from 'typescript';
 import {
     AGGREGATE_STYLES_FILE,
@@ -264,18 +259,30 @@ function moduleSpecifiers(sourceFile) {
     return specifiers;
 }
 
-const sourceMapReference = /\n?\/\/# sourceMappingURL=[^\r\n]+(?:\r?\n)?$/u;
+const sourceMapReference = /\/\/# sourceMappingURL=([^\r\n]+)/u;
+
+export const rewrittenSourceMapsManifest = (sourceDir) =>
+    resolve(sourceDir, 'node_modules/.cache/cratis-components/rewritten-source-maps.json');
+
+export function readRewrittenSourceMaps(manifestPath) {
+    const message = 'Rewritten source maps manifest is missing or empty. Run a clean build in Source: yarn prepare.';
+    if (!existsSync(manifestPath)) throw new Error(message);
+    const files = JSON.parse(readFileSync(manifestPath, 'utf8'));
+    if (!Array.isArray(files) || files.length === 0) throw new Error(message);
+    return files;
+}
 
 /**
- * Makes every relative ESM specifier directly executable by Node.
- *
- * Rewriting changes generated columns, so a pre-rewrite JavaScript/declaration map would be
- * dishonest. Files that need a rewrite have their map reference and corresponding map removed;
- * untouched files retain their valid maps. A future source-aware emit can preserve all maps.
+ * Rollup's JS maps and TypeScript's declaration maps both precede this Node ESM specifier
+ * rewrite. Shift the original generated segments directly, retaining even end-of-line
+ * segments. Rollup does not emit declarations, so this pass must handle both kinds of output.
+ * The optional manifest lives outside dist and records only files this pass actually edits.
  */
-function fixRelativeEsmSpecifiers(esmPath) {
+export function fixRelativeEsmSpecifiers(esmPath, manifestPath) {
+    const rewrittenFiles = new Set();
     return {
         name: 'fix-relative-esm-specifiers',
+        rewrittenFiles,
         closeBundle() {
             for (const file of findEmittedModules(esmPath)) {
                 const source = readFileSync(file, 'utf8');
@@ -293,21 +300,99 @@ function fixRelativeEsmSpecifiers(esmPath) {
                         specifier: resolvedRelativeSpecifier(file, node.text),
                         original: node.text,
                     }))
-                    .filter(({ specifier, original }) => specifier !== original)
-                    .sort((left, right) => right.start - left.start);
+                    .filter(({ specifier, original }) => specifier !== original);
 
-                let rewritten = source;
-                for (const replacement of replacements) {
-                    rewritten =
-                        rewritten.slice(0, replacement.start) +
-                        replacement.specifier +
-                        rewritten.slice(replacement.end);
+                const reference = source.match(sourceMapReference)?.[1];
+                if (!reference) {
+                    if (replacements.length)
+                        throw new Error(`Missing source map for ${file}`);
+                    continue;
                 }
-                if (rewritten !== source) {
-                    writeFileSync(file, rewritten.replace(sourceMapReference, '\n'));
-                    const mapFile = `${file}.map`;
-                    if (existsSync(mapFile)) unlinkSync(mapFile);
+                const mapFile = resolve(dirname(file), reference);
+                const originalMap = JSON.parse(readFileSync(mapFile, 'utf8'));
+                let outputMap = originalMap;
+                if (replacements.length) {
+                    const editsByLine = new Map();
+                    for (const { start, end, specifier } of replacements) {
+                        const startPosition =
+                            sourceFile.getLineAndCharacterOfPosition(start);
+                        const endPosition = sourceFile.getLineAndCharacterOfPosition(end);
+                        if (startPosition.line !== endPosition.line)
+                            throw new Error(`Multiline specifier rewrite in ${file}`);
+                        const edits = editsByLine.get(startPosition.line) ?? [];
+                        edits.push({
+                            start: startPosition.character,
+                            end: endPosition.character,
+                            length: specifier.length,
+                        });
+                        editsByLine.set(startPosition.line, edits);
+                    }
+                    for (const edits of editsByLine.values())
+                        edits.sort((left, right) => left.start - right.start);
+
+                    const mappings = decodedMappings(new TraceMap(originalMap)).map(
+                        (segments, line) =>
+                            segments.map(([column, ...originalPosition]) => {
+                                let shift = 0;
+                                for (const edit of editsByLine.get(line) ?? []) {
+                                    if (column >= edit.end) {
+                                        shift += edit.length - (edit.end - edit.start);
+                                    } else if (column > edit.start) {
+                                        // A segment inside replaced text cannot retain its column.
+                                        return [edit.start + shift, ...originalPosition];
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                return [column + shift, ...originalPosition];
+                            }),
+                    );
+                    outputMap = { ...originalMap, mappings: encode(mappings) };
+                    let rewritten = source;
+                    for (const { start, end, specifier } of replacements.sort(
+                        (left, right) => right.start - left.start,
+                    )) {
+                        rewritten =
+                            rewritten.slice(0, start) + specifier + rewritten.slice(end);
+                    }
+                    writeFileSync(file, rewritten);
+                    rewrittenFiles.add(relative(esmPath, file).replaceAll('\\', '/'));
                 }
+
+                // TypeScript's language service ignores declaration maps with embedded source
+                // content. Leave declaration sources pointing at the files on disk; only JS maps
+                // need embedded content because Source/*.ts(x) is absent from the archive.
+                if (file.endsWith('.d.ts')) {
+                    delete outputMap.sourcesContent;
+                } else {
+                    outputMap.sourcesContent = outputMap.sources.map(
+                        (specifier, index) =>
+                            outputMap.sourcesContent?.[index] ??
+                            readFileSync(
+                                resolve(
+                                    dirname(mapFile),
+                                    outputMap.sourceRoot ?? '',
+                                    specifier,
+                                ),
+                                'utf8',
+                            ),
+                    );
+                }
+                writeFileSync(mapFile, JSON.stringify(outputMap));
+            }
+            if (manifestPath) {
+                const previous = existsSync(manifestPath)
+                    ? JSON.parse(readFileSync(manifestPath, 'utf8'))
+                    : [];
+                const distDir = resolve(esmPath);
+                const merged = [...new Set([...previous, ...rewrittenFiles])]
+                    .filter((file) => {
+                        const emitted = resolve(distDir, file);
+                        return emitted.startsWith(`${distDir}${sep}`) && existsSync(emitted);
+                    })
+                    .sort();
+                mkdirSync(dirname(manifestPath), { recursive: true });
+                writeFileSync(manifestPath, JSON.stringify(merged));
             }
         },
     };
@@ -456,7 +541,10 @@ export function rollup(esmPath, tsconfigPath, pkg) {
             // After `fix-relative-esm-specifiers`: the per-area stylesheets are derived from the
             // emitted JavaScript graph, which is only walkable once its directory imports have
             // been rewritten to real files.
-            fixRelativeEsmSpecifiers(esmPath),
+            fixRelativeEsmSpecifiers(
+                esmPath,
+                rewrittenSourceMapsManifest(sourceDir),
+            ),
             bundleStyles(sourceDir, esmPath, pkg),
         ],
     };
