@@ -59,7 +59,7 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         for (const candidate of candidates) {
             if (candidate === current) return;
             candidate.focus();
-            if (candidate.ownerDocument.activeElement === candidate) {
+            if ((candidate.getRootNode() as Document | ShadowRoot).activeElement === candidate || candidate.matches(':focus')) {
                 event.preventDefault();
                 return;
             }

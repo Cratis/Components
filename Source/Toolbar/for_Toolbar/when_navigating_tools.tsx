@@ -57,6 +57,29 @@ describe('when navigating Toolbar tools', () => {
         expect(document.activeElement).to.equal(third);
     });
 
+    it('should move exactly one tool and reach both ends inside a shadow root', async () => {
+        const host = document.createElement('div');
+        document.body.append(host);
+        const shadow = host.attachShadow({ mode: 'open' });
+        const shadowRoot = createRoot(shadow);
+        try {
+            await act(async () => shadowRoot.render(<Toolbar orientation='horizontal'>{tools}</Toolbar>));
+            const [first, second, third] = shadow.querySelectorAll<HTMLButtonElement>('button');
+            first.focus();
+            expect(document.activeElement).to.equal(host);
+            expect(shadow.activeElement).to.equal(first);
+            expect((await key(first, 'ArrowRight')).defaultPrevented).to.equal(true);
+            expect(shadow.activeElement).to.equal(second);
+            expect((await key(second, 'End')).defaultPrevented).to.equal(true);
+            expect(shadow.activeElement).to.equal(third);
+            expect((await key(third, 'Home')).defaultPrevented).to.equal(true);
+            expect(shadow.activeElement).to.equal(first);
+        } finally {
+            await act(async () => shadowRoot.unmount());
+            host.remove();
+        }
+    });
+
     it('should navigate inside an application ancestor', async () => {
         await act(async () => root.render(<div role='application'><Toolbar><button>First</button><button>Second</button></Toolbar></div>));
         const [first, second] = buttons();
