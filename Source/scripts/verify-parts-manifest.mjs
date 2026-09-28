@@ -5,6 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { checkInventory } from '../../scripts/lib/evidence-inventory.mjs';
 import {
     canonicalPartStateNames,
     dynamicPartExpressions,
@@ -21,6 +22,7 @@ import {
 
 const sourceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const generatedPath = path.join(sourceRoot, 'types', 'parts.ts');
+const snapshotPath = path.join(sourceRoot, 'scripts/parts-inventory.json');
 const expectedCanonicalPartStateNames = [
     'disabled',
     'loading',
@@ -580,7 +582,7 @@ function verifyPublicPtContracts() {
     }
 
     const discoveredFiles = new Set();
-    let declarationCount = 0;
+    const declarations = [];
     for (const sourceFile of program.getSourceFiles()) {
         if (
             !sourceFile.fileName.startsWith(sourceRoot) ||
@@ -598,7 +600,8 @@ function verifyPublicPtContracts() {
                 ((ts.isIdentifier(node.name) && node.name.text === 'pt') ||
                     (ts.isStringLiteral(node.name) && node.name.text === 'pt'))
             ) {
-                declarationCount++;
+                const ownerName = node.parent.name?.getText(sourceFile) ?? `anonymous-${declarations.filter(identity => identity.startsWith(`${relative}#anonymous-`)).length + 1}`;
+                declarations.push(`${relative}#${ownerName}`);
                 discoveredFiles.add(relative);
                 const line =
                     sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
@@ -638,12 +641,7 @@ function verifyPublicPtContracts() {
             `Public pt file inventory differs: source=[${actualFiles.join(', ')}], manifest=[${expectedFiles.join(', ')}].`,
         );
     }
-    if (actualFiles.length !== 50 || declarationCount !== 53) {
-        problems.push(
-            `Expected the authoritative 50 pt files / 53 declarations, found ${actualFiles.length} files / ${declarationCount} declarations.`,
-        );
-    }
-    return problems;
+    return { problems, declarations };
 }
 
 function verifyTestSelectors(allParts) {
@@ -831,13 +829,22 @@ export function verifyPartsManifest() {
         partEmissions,
         stateEmissions,
     );
-    return [
+    const publicPtContracts = verifyPublicPtContracts();
+    const problems = [
         ...emissionProblems,
         ...definitionProblems,
-        ...verifyPublicPtContracts(),
+        ...publicPtContracts.problems,
         ...verifyTestSelectors(allParts),
         ...verifyGeneratedFile(),
     ];
+    if (problems.length === 0) {
+        checkInventory(snapshotPath, {
+            componentParts: Object.keys(partDefinitions).flatMap(component => resolvedParts(component).map(part => `${component}.${part}`)),
+            componentStates: Object.keys(partDefinitions).flatMap(component => Object.entries(resolvedPartStates(component)).flatMap(([part, states]) => states.map(state => `${component}.${part}.${state}`))),
+            ptDeclarations: publicPtContracts.declarations,
+        }, 'yarn generate-inventories', process.argv.includes('--update'));
+    }
+    return problems;
 }
 
 function main() {
@@ -874,7 +881,7 @@ function main() {
         0,
     );
     console.log(
-        `Parts manifest verified: ${componentCount} components, ${partCount} component parts, ${stateCount} component/part states, 50 pt files, and 53 pt declarations.`,
+        `Parts manifest verified: ${componentCount} components, ${partCount} component parts, and ${stateCount} component/part states (public pt declarations checked against scripts/parts-inventory.json).`,
     );
 }
 

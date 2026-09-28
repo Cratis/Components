@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { Meta, StoryObj } from '@storybook/react';
-import { useRef } from 'react';
+import { type CSSProperties, useRef } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import { CanvasControls } from './CanvasControls';
 
@@ -84,5 +84,42 @@ export const LocalizedControlledZoom: Story = {
         await expect(readout).toHaveTextContent('100%');
         await userEvent.click(canvas.getByRole('button', { name: 'Reduce scale' }));
         await expect(readout).toHaveTextContent('75%');
+    },
+};
+
+/** Replacement glyphs from a host's own icon set; the accessible names stay with the labels. */
+export const ReplacementIcons: Story = {
+    args: {
+        icons: {
+            toggleMinimap: <span aria-hidden='true'>▦</span>,
+            zoomOut: <span aria-hidden='true'>−</span>,
+            zoomIn: <span aria-hidden='true'>+</span>,
+            help: <span aria-hidden='true'>?</span>,
+        },
+    },
+    play: async ({ args, canvasElement }) => {
+        const canvas = within(canvasElement);
+        const zoomIn = canvas.getByRole('button', { name: 'Zoom In' });
+        await expect(zoomIn).toHaveTextContent('+');
+        await expect(zoomIn.querySelector('svg')).toBeNull();
+        await userEvent.click(zoomIn);
+        await expect(args.onZoomIn).toHaveBeenCalledOnce();
+    },
+};
+
+/** A host that already moves the canvas by its viewport inset keeps the bar at the edge. */
+export const WithoutViewportInsets: Story = {
+    args: { followViewportInsets: false, placement: 'bottom-right' },
+    decorators: [
+        (Story) => (
+            <div style={{ '--canvas-viewport-right': '12rem' } as CSSProperties}>
+                <Story />
+            </div>
+        ),
+    ],
+    play: async ({ canvasElement }) => {
+        const bar = canvasElement.querySelector('.canvas-controls-glass')?.parentElement;
+        if (!bar) throw new Error('Canvas controls did not render.');
+        await expect(bar.style.right).toBe('1rem');
     },
 };

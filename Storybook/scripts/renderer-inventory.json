@@ -1,0 +1,15 @@
+{
+    "privateRenderers": [],
+    "publicRendererOptions": [
+        "cratis-built-in: Cratis built-in renderer",
+        "cratis-mui: Cratis Material UI renderer",
+        "cratis-primereact10: Cratis PrimeReact 10 renderer",
+        "cratis-primereact: Cratis PrimeReact renderer"
+    ],
+    "publicRenderers": [
+        "cratis-built-in",
+        "cratis-mui",
+        "cratis-primereact",
+        "cratis-primereact10"
+    ]
+}

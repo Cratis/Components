@@ -7,11 +7,23 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
 import { describe, it } from 'vitest';
+import expectedStorybook from '../scripts/storybook-inventory.json';
 import { computeRendererMatrixScope, findSlotOwningModules } from '../scripts/lib/renderer-matrix-scope.mjs';
 
 const storybookRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repositoryRoot = path.resolve(storybookRoot, '..');
 const sourceRoot = path.join(repositoryRoot, 'Source');
+
+const expectSlotOwningModulesToMatchInventory = (
+    slotOwningModules: ReadonlySet<string>,
+    root: string,
+    expectedModules: readonly string[],
+) => {
+    expect(slotOwningModules.size).to.be.greaterThan(0);
+    expect([...slotOwningModules]
+        .map(file => path.relative(root, file).split(path.sep).join('/'))
+        .sort()).to.deep.equal([...expectedModules].sort());
+};
 
 const storyEntry = (id: string, relativeComponentOrStoryFile: string, componentIsKnown = true) => ({
     id,
@@ -21,11 +33,11 @@ const storyEntry = (id: string, relativeComponentOrStoryFile: string, componentI
 
 describe('when deriving renderer matrix scope', () => {
     // A regex rotting silently (for example after `unstable_useSlot` is renamed) would make the
-    // registry empty and quietly send every story down the built-in-only path. Pinning both the
-    // count and the presentation-profile files guards against that.
-    it('should derive exactly the nine-slot presentation profile plus the experimental slots from source', () => {
+    // registry empty and quietly send every story down the built-in-only path. Compare module
+    // identities with the committed inventory and retain the presentation-profile membership guard.
+    it('should match the reviewed slot-owning module inventory and nine-slot presentation profile', () => {
         const slotOwningModules = findSlotOwningModules(sourceRoot);
-        expect(slotOwningModules.size).to.equal(14);
+        expectSlotOwningModulesToMatchInventory(slotOwningModules, repositoryRoot, expectedStorybook.slotOwningModules);
         for (const presentationSlotFile of [
             'Common/Button.tsx',
             'Common/IconButton.tsx',
@@ -41,6 +53,28 @@ describe('when deriving renderer matrix scope', () => {
                 [...slotOwningModules].some(file => file.endsWith(path.join(...presentationSlotFile.split('/')))),
                 `expected ${presentationSlotFile} to own a renderer slot`,
             ).to.equal(true);
+        }
+    });
+
+    it('should detect a new slot owner even when it replaces an existing owner without changing the count', () => {
+        const root = mkdtempSync(path.join(os.tmpdir(), 'cratis-slot-inventory-'));
+        try {
+            const fixtureSourceRoot = path.join(root, 'Source');
+            mkdirSync(path.join(fixtureSourceRoot, 'Common'), { recursive: true });
+            const original = path.join(fixtureSourceRoot, 'Common/Original.tsx');
+            const replacement = path.join(fixtureSourceRoot, 'Common/NewSlot.tsx');
+            writeFileSync(original, "unstable_useSlot('common.original');\n");
+            const snapshot = ['Source/Common/Original.tsx'];
+            const before = findSlotOwningModules(fixtureSourceRoot);
+            expectSlotOwningModulesToMatchInventory(before, root, snapshot);
+
+            rmSync(original);
+            writeFileSync(replacement, "unstable_useSlot('common.new');\n");
+            const after = findSlotOwningModules(fixtureSourceRoot);
+            expect(after.size).to.equal(before.size);
+            expect(() => expectSlotOwningModulesToMatchInventory(after, root, snapshot)).to.throw();
+        } finally {
+            rmSync(root, { recursive: true, force: true });
         }
     });
 

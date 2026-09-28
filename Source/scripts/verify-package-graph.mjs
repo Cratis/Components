@@ -51,6 +51,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { kernelEmittedPath, kernelSourcePaths } from '../../ESLint/lib/kernelBoundary.js';
+import { checkExportInventory, checkKernelInventory } from './lib/package-inventories.mjs';
 import {
     analyzeKernelBoundary,
     browserRuntimeReferences,
@@ -86,6 +87,8 @@ function readFileSyncOrFail(file) {
 }
 
 const pkg = readJson(path.join(packageDir, 'package.json'));
+checkKernelInventory(process.argv.includes('--update'));
+checkExportInventory(pkg.exports, process.argv.includes('--update'));
 
 const esmRoot = path.join(packageDir, path.dirname(pkg.module ?? 'dist/esm/index.js'));
 if (!existsSync(esmRoot)) {

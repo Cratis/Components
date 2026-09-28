@@ -161,7 +161,7 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
                         position: 'absolute',
                         inset: 0,
                         backgroundImage:
-                            'radial-gradient(circle, var(--cratis-surface-border) 1px, transparent 1px)',
+                            'radial-gradient(circle, var(--cratis-canvas-minimap-grid-color, var(--cratis-surface-border)) 1px, transparent 1px)',
                         backgroundSize: '10px 10px',
                         pointerEvents: 'none',
                     }}
@@ -180,7 +180,7 @@ export const CanvasMinimap = forwardRef<CanvasMinimapHandle, CanvasMinimapProps>
                             height: Math.max(2, item.height * scaleYConst),
                             background:
                                 item.color ??
-                                'color-mix(in srgb, var(--cratis-text-color) 25%, transparent)',
+                                'var(--cratis-canvas-minimap-item-color, color-mix(in srgb, var(--cratis-text-color) 25%, transparent))',
                             borderRadius: 2,
                             pointerEvents: 'none',
                         }}

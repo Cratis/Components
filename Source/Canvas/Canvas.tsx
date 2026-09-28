@@ -3,7 +3,11 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
-import { CanvasControls, type CanvasControlsLabels } from './CanvasControls';
+import {
+    CanvasControls,
+    type CanvasControlsIcons,
+    type CanvasControlsLabels,
+} from './CanvasControls';
 import type { CanvasMinimapHandle, MinimapItem } from './CanvasMinimap';
 import { canvasGesture } from './canvasGesture';
 import { canvasTransformActivity } from './canvasTransformActivity';
@@ -195,6 +199,13 @@ export interface CanvasProps<T extends CanvasItemData = CanvasItemData> {
     helpTitle?: string;
     /** Localized labels for integrated zoom/minimap/help controls. */
     controlsLabels?: CanvasControlsLabels;
+    /** Replacement glyphs for integrated zoom/minimap/help controls. Unset fields keep the built-in icons. */
+    controlsIcons?: CanvasControlsIcons;
+    /**
+     * Whether the integrated controls step aside by the host's `--canvas-viewport-left`/`--canvas-viewport-right`
+     * inset at their edge. Defaults to `true`; set `false` when the host already moves the canvas by that inset.
+     */
+    controlsFollowViewportInsets?: boolean;
     /** Optional product-owned glass/acrylic surface behind integrated controls. */
     controlsGlassSurface?: React.ReactNode;
     /** Uses a low-cost CSS frosted pill instead of a consumer-supplied glass surface. */
@@ -263,6 +274,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
     onHelp,
     helpTitle,
     controlsLabels,
+    controlsIcons,
+    controlsFollowViewportInsets = true,
     controlsGlassSurface,
     disableControlsGlass = false,
     captureAttributes,
@@ -1307,6 +1320,8 @@ function Canvas<T extends CanvasItemData = CanvasItemData>({
                     onHelp={onHelp}
                     helpTitle={helpTitle}
                     labels={controlsLabels}
+                    icons={controlsIcons}
+                    followViewportInsets={controlsFollowViewportInsets}
                     glassSurface={controlsGlassSurface}
                     contentCaptureAttribute={captureAttributes?.content}
                     disableGlass={disableControlsGlass}

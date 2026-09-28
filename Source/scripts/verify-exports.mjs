@@ -33,6 +33,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkExportInventory } from './lib/package-inventories.mjs';
 import {
     assertExpectedCascadeLayerOrder,
     cascadeLayerEstablishmentOrder,
@@ -124,6 +125,7 @@ const readPackageManifest = async () => {
 const pkg = await readPackageManifest();
 const exportsMap = pkg.exports ?? {};
 const subpaths = Object.keys(exportsMap);
+checkExportInventory(exportsMap, process.argv.includes('--update'));
 
 if (subpaths.length === 0) {
     console.error('No `exports` map found in Source/package.json - nothing to verify.');
