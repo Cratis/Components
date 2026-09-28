@@ -105,6 +105,9 @@ const navigationHost = {
         return content === undefined ? undefined : ts.ScriptSnapshot.fromString(content);
     },
     getCurrentDirectory: () => packageDir,
+    // The language service and the source mapper must canonicalize paths the same way;
+    // otherwise the mapper cannot find declaration files on case-sensitive file systems.
+    useCaseSensitiveFileNames: () => ts.sys.useCaseSensitiveFileNames,
     getCompilationSettings: () => ({
         module: ts.ModuleKind.NodeNext,
         moduleResolution: ts.ModuleResolutionKind.NodeNext,
