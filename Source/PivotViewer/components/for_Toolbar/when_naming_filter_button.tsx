@@ -5,7 +5,8 @@
 
 import { createRef, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { computeAccessibleName, computeAccessibleDescription } from 'dom-accessibility-api';
+import { expect } from 'chai';
+import { within } from 'storybook/test';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { CratisComponentsProvider } from '../../../Common/CratisComponentsProvider';
 import { Toolbar } from '../Toolbar';
@@ -51,15 +52,14 @@ for (const [source, label, providerLabel, filtersLabel] of [
     describe(`when naming the filter button from the ${source} label`, () => {
         it('should have that accessible name with no active filters', async () => {
             const button = await render(0, providerLabel, filtersLabel);
-            computeAccessibleName(button).should.equal(label);
+            expect(within(container).getByRole('button', { name: label })).to.equal(button);
             button.getAttribute('aria-label')!.should.equal(label);
             button.title.should.equal(label);
         });
 
         it('should keep that accessible name and describe one active filter', async () => {
             const button = await render(1, providerLabel, filtersLabel);
-            computeAccessibleName(button).should.equal(label);
-            computeAccessibleDescription(button).should.equal('1');
+            expect(within(container).getByRole('button', { name: label, description: '1' })).to.equal(button);
             button.getAttribute('aria-describedby')!.should.equal(button.querySelector('.pv-filter-badge')!.id);
             button.title.should.equal(label);
         });

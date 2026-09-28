@@ -4292,7 +4292,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dom-accessibility-api@npm:0.5.16, dom-accessibility-api@npm:^0.5.9":
+"dom-accessibility-api@npm:^0.5.9":
   version: 0.5.16
   resolution: "dom-accessibility-api@npm:0.5.16"
   checksum: 10/377b4a7f9eae0a5d72e1068c369c99e0e4ca17fdfd5219f3abd32a73a590749a267475a59d7b03a891f9b673c27429133a818c44b2e47e32fec024b34274e2ca
@@ -6932,7 +6932,6 @@ __metadata:
     axe-core: "npm:^4.13.0"
     chai: "npm:^6.2.2"
     chai-as-promised: "npm:^8.0.2"
-    dom-accessibility-api: "npm:0.5.16"
     eslint: "npm:^10.10.0"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-no-null: "npm:^1.0.2"

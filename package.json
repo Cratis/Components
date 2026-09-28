@@ -87,7 +87,6 @@
         "axe-core": "^4.13.0",
         "chai": "^6.2.2",
         "chai-as-promised": "^8.0.2",
-        "dom-accessibility-api": "0.5.16",
         "eslint": "^10.10.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-no-null": "^1.0.2",
