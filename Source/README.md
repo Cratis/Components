@@ -27,7 +27,7 @@ The current package manifest declares these peer dependencies:
 - optional `pixi.js` `^8.20.0`
 - `react` and `react-dom` `^19.0.0`
 - `reflect-metadata` `0.2.2`
-- `tsyringe` `4.10.0`
+- optional `tsyringe` `4.10.0` (Arc React installs it as its own dependency)
 
 Strict installers can declare them explicitly; keep both Arc packages on the version your generated proxies were produced with. This repository builds and tests against Arc 22.16.0:
 
@@ -36,7 +36,7 @@ ARC_VERSION=22.16.0
 npm install @cratis/components@^4 \
   "@cratis/arc@$ARC_VERSION" "@cratis/arc.react@$ARC_VERSION" \
   @cratis/fundamentals@^7.19.2 react@^19 react-dom@^19 \
-  reflect-metadata@0.2.2 tsyringe@4.10.0
+  reflect-metadata@0.2.2
 ```
 
 The current manifest does not declare PrimeReact, PrimeIcons, or PrimeUI packages as dependencies or peers. Applications retaining direct dependencies keep their own package, provider, styling, and license boundaries.

@@ -27,7 +27,7 @@ The examples use the proxies from the Arc tutorial: `RegisterAuthor` has a requi
 
     React Aria, the internationalized date implementation, and React Icons are internal dependencies. The package does not depend on PrimeReact or any other UI kit or theme runtime, and you don't configure an icon package. The optional MUI and PrimeReact integrations are separate [renderer adapter](/components/renderers/) packages.
 
-    The package requires React, Arc, and Fundamentals as peers. `reflect-metadata` and `tsyringe` remain declared peers but are optional for Components: Arc React installs `tsyringe` as its own dependency, and Arc loads Fundamentals' Reflect metadata implementation. Keep `@cratis/arc` and `@cratis/arc.react` on the same version your generated proxies were produced with. This example still installs `reflect-metadata` because its entry point imports it explicitly; omit both that install and the import if your application does not use the package. For a strict installer, install the required peers explicitly (replace the Arc version with the one your backend uses):
+    The package requires React, Arc, Fundamentals, and `reflect-metadata` as peers. `tsyringe` is an optional peer: Components never imports it, and Arc React installs it as its own dependency. Keep `@cratis/arc` and `@cratis/arc.react` on the same version your generated proxies were produced with. A strict installer can install the required peers explicitly (replace the Arc version with the one your backend uses):
 
     ```bash title="Install explicit peers"
     ARC_VERSION=22.16.0

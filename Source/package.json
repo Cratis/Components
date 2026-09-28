@@ -311,9 +311,6 @@
         "pixi.js": {
             "optional": true
         },
-        "reflect-metadata": {
-            "optional": true
-        },
         "tsyringe": {
             "optional": true
         }

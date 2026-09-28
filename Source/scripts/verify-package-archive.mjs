@@ -184,6 +184,52 @@ if (runtimeWithoutDocs.includes(apiDocMarker)) {
     process.exit(1);
 }
 
+// tsyringe is an optional peer: Arc React brings it, and Components must never import it itself,
+// or strict installers (pnpm, Yarn PnP) fail for consumers that did not install it. reflect-metadata
+// is initialized by the application entry point, not by Components.
+const consumerOwnedModules = ['tsyringe', 'reflect-metadata'];
+const importsOf = (text) => [
+    ...text.matchAll(/\b(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/gu),
+    ...text.matchAll(/\brequire\s*\(\s*['"]([^'"]+)['"]/gu),
+].map((match) => match[1]);
+const importsConsumerOwnedModule = (text) =>
+    importsOf(text).some((specifier) =>
+        consumerOwnedModules.some((module) => specifier === module || specifier.startsWith(`${module}/`)));
+for (const planted of [
+    "import { container } from 'tsyringe';",
+    "import 'reflect-metadata';",
+    "const module = await import('tsyringe');",
+    "const reflect = require('reflect-metadata');",
+    "export type { InjectionToken } from 'tsyringe/dist/typings/types';",
+]) {
+    if (!importsConsumerOwnedModule(planted)) {
+        console.error(`The consumer-owned import check missed a planted import: ${planted}`);
+        process.exit(1);
+    }
+}
+if (importsConsumerOwnedModule("import { useQuery } from '@cratis/arc.react/queries';")) {
+    console.error('The consumer-owned import check flagged an unrelated import.');
+    process.exit(1);
+}
+const scriptEntries = [...entries].filter((entry) =>
+    entry.startsWith('package/dist/') && /\.(?:c|m)?js$|\.d\.(?:c|m)?ts$/u.test(entry));
+if (scriptEntries.length === 0) {
+    console.error('The published archive contains no JavaScript or declaration files to check.');
+    process.exit(1);
+}
+const consumerOwnedImports = scriptEntries.filter((entry) => importsConsumerOwnedModule(readPackedText(entry)));
+if (consumerOwnedImports.length > 0) {
+    console.error(
+        `Published files import modules Components must not import (${consumerOwnedModules.join(', ')}):\n- ` +
+            consumerOwnedImports.join('\n- '),
+    );
+    process.exit(1);
+}
+console.log(
+    `No published JavaScript or declaration file imports ${consumerOwnedModules.join(' or ')} ` +
+        `(${scriptEntries.length} files checked).`,
+);
+
 const stylesEntry = 'package/dist/esm/styles.css';
 const styles = readPackedText(stylesEntry);
 try {

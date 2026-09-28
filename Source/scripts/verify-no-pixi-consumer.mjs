@@ -4,12 +4,12 @@
 /*
  * Packed, no-Pixi consumer verification for the setup-only root architecture
  * (Cratis/Components root architecture). Proves that a consumer who installs only the
- * *mandatory* peers - never `pixi.js` or `reflect-metadata` - can fully use the package root and every
+ * *mandatory* peers - never `pixi.js` - can fully use the package root and every
  * non-spatial subpath (everything except `./Canvas` and `./PivotViewer`).
  *
  * Unlike `verify-public-types.mjs`, which symlinks the whole monorepo `node_modules`
  * (including the `pixi.js` devDependency) into its scratch consumer, this script
- * deliberately BUILDS A NODE_MODULES WITHOUT `pixi.js`, `reflect-metadata`, `@pixi/*`, or `@webgpu/*` -
+ * deliberately BUILDS A NODE_MODULES WITHOUT `pixi.js`, `@pixi/*`, or `@webgpu/*` -
  * so "pixi is absent" is a real `ERR_MODULE_NOT_FOUND`/module-resolution failure, not
  * an assumption. What is checked against that scratch consumer:
  *
@@ -86,24 +86,25 @@ if (!existsSync(esmRoot)) {
     process.exit(1);
 }
 
-/** Mandatory peers only. Arc React supplies tsyringe; pixi.js and reflect-metadata are absent. */
+/** Mandatory peers only. pixi.js is absent, and Arc React supplies the optional tsyringe peer. */
 const EXPECTED_MANDATORY_PEERS = new Set([
     '@cratis/arc',
     '@cratis/arc.react',
     '@cratis/fundamentals',
     'react',
     'react-dom',
+    'reflect-metadata',
 ]);
 const optionalPeers = new Set(
     Object.entries(pkg.peerDependenciesMeta ?? {})
         .filter(([, metadata]) => metadata?.optional === true)
         .map(([name]) => name),
 );
-const expectedOptionalPeers = new Set(['pixi.js', 'reflect-metadata', 'tsyringe']);
+const expectedOptionalPeers = new Set(['pixi.js', 'tsyringe']);
 if (optionalPeers.size !== expectedOptionalPeers.size ||
     [...expectedOptionalPeers].some((peer) => !optionalPeers.has(peer))) {
     console.error(
-        'The no-Pixi contract requires pixi.js, reflect-metadata, and tsyringe to be optional peers. ' +
+        'The no-Pixi contract requires exactly pixi.js and tsyringe to be optional peers. ' +
             `Found: ${[...optionalPeers].join(', ') || '(none)'}.`,
     );
     process.exit(1);
@@ -168,7 +169,7 @@ const { packedComponentsDir } = buildScratchNodeModules({
     monorepoRoot,
     scratchRoot,
     packedEntries,
-    excludeTopLevel: new Set(['pixi.js', 'reflect-metadata']),
+    excludeTopLevel: new Set(['pixi.js']),
     excludeScoped: new Set(['@pixi', '@webgpu']),
 });
 
@@ -200,23 +201,6 @@ if (
         'pixi.js must be absent from the no-pixi consumer',
         `import.meta.resolve('pixi.js') reported: ${probeOut || resolveProbe.stderr}`,
     );
-}
-
-const reflectProbe = spawnSync(
-    process.execPath,
-    [
-        '--input-type',
-        'module',
-        '--eval',
-        "try { import.meta.resolve('reflect-metadata'); console.log('RESOLVED'); } catch (error) { console.log('ERR ' + error.code); }",
-    ],
-    { cwd: scratchRoot, encoding: 'utf8', timeout: 30_000 },
-);
-if (reflectProbe.status === 0 && (reflectProbe.stdout ?? '').trim() === 'ERR ERR_MODULE_NOT_FOUND') {
-    pass('reflect-metadata is absent from the consumer node_modules');
-} else {
-    fail('reflect-metadata must be absent from the no-Pixi consumer',
-        (reflectProbe.stdout || reflectProbe.stderr || '').trim());
 }
 
 // --- 3. Runtime: every non-spatial subpath imports cleanly with no pixi installed ----------------
@@ -397,7 +381,7 @@ if (failures.length > 0) {
 }
 
 console.log(
-    `All no-pixi consumer checks passed: mandatory peers only, pixi.js and reflect-metadata genuinely absent, ` +
+    `All no-pixi consumer checks passed: mandatory peers only, pixi.js genuinely absent, ` +
         `${nonSpatialSubpaths.length} non-spatial subpath(s) load, strict Bundler+NodeNext root ` +
         'type-checks, SSR smoke passes, and the packed root closure is clean.',
 );

@@ -1,7 +1,11 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-/** Run inside a packed consumer with neither reflect-metadata nor tsyringe installed explicitly. */
+/**
+ * Run inside a packed consumer that does not install tsyringe explicitly. tsyringe is an
+ * optional peer of Components: Components never imports it, and Arc React brings it as its
+ * own dependency. reflect-metadata remains a required peer and is expected to be present.
+ */
 import { createRequire } from 'node:module';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -15,12 +19,10 @@ const resolveIfPresent = (specifier, resolver) => {
     }
 };
 const consumerRequire = createRequire(import.meta.url);
-const componentsRequire = createRequire(import.meta.resolve('@cratis/components'));
-if (resolveIfPresent('reflect-metadata', consumerRequire) ||
-    resolveIfPresent('reflect-metadata', componentsRequire)) {
-    throw new Error('reflect-metadata is installed; this is not the absent-peer case.');
+if (!resolveIfPresent('reflect-metadata', consumerRequire)) {
+    throw new Error('reflect-metadata is a required peer and must be installed in the consumer.');
 }
-console.log('reflect-metadata absent from consumer and Components');
+console.log('required peer reflect-metadata is installed');
 
 const root = await import('@cratis/components');
 if (!root.CratisComponentsProvider) throw new Error('Root import did not export the provider.');
@@ -35,11 +37,6 @@ if (!resolveIfPresent('tsyringe', arcReactRequire)) {
     throw new Error('Arc React did not bring tsyringe as its own dependency.');
 }
 console.log('Arc React resolves its own tsyringe dependency');
-await import('@cratis/arc');
-if (typeof Reflect.getMetadata !== 'function') {
-    throw new Error('Arc did not initialize the Fundamentals Reflect metadata implementation.');
-}
-console.log('Arc initializes Reflect metadata without reflect-metadata');
 
 const dataTables = await import('@cratis/components/DataTables');
 if (!dataTables.DataTableForQuery) throw new Error('Arc-backed DataTables import failed.');
@@ -58,4 +55,4 @@ const markup = renderToStaticMarkup(createElement(dataTables.DataTableForQuery, 
 if (!markup.includes('cratis-datatable__table')) {
     throw new Error('Arc-backed DataTables query did not render a table.');
 }
-console.log('Arc-backed DataTables query rendered without optional peers');
+console.log('Arc-backed DataTables query rendered without installing tsyringe explicitly');
