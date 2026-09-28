@@ -12,4 +12,17 @@ Use the **Appearance** toolbar to switch between light and dark baseline modes.
 
 Every story generates an autodocs page from public component types and TSDoc.
 
+## Link to a story
+
+Append one of these paths to the composed Storybook URL. Include the renderer ref before the story id so the link opens the intended preview:
+
+- Built-in renderer: `/?path=/story/cratis-built-in_common-button--ghost`
+- Material UI renderer: `/?path=/story/cratis-mui_common-button--ghost`
+- PrimeReact 10 renderer: `/?path=/story/cratis-primereact10_common-button--ghost`
+- PrimeReact 11 renderer: `/?path=/story/cratis-primereact_common-button--ghost`
+
+For an embedded manager with the Renderer control, use the same path in an iframe URL, for example `/?path=/story/cratis-mui_common-button--ghost&embed=1`. For a story-only iframe without the manager, use the renderer's preview URL instead: `/renderers/cratis-mui/iframe.html?id=common-button--ghost`.
+
+An unprefixed `/?path=/story/common-button--ghost` or `/?story=cratis-mui_common-button--ghost` does not select a renderer or load the story in the composed manager.
+
 <StorybookEmbed fullPage={true} />
