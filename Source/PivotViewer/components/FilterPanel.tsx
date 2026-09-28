@@ -77,7 +77,7 @@ export function FilterPanel<TItem extends object>({
       rangeValues={rangeFilterState}
       search={search}
       searchPlaceholder={searchPlaceholder}
-      searchAriaLabel={searchPlaceholder}
+      searchAriaLabel={searchPlaceholder ?? 'Search…'}
       expandedFilterKey={expandedFilterKey}
       anchorRef={anchorRef}
       onClose={onClose}

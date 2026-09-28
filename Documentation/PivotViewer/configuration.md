@@ -30,7 +30,7 @@ description: Props, colors, loading and empty states, and search configuration f
 | `labels` | `PivotViewerLabels` | English defaults | Toolbar text, filter search labels, card-area name, and loading status overrides. See [Labels](#labels). |
 | `colors` | `Partial<PivotViewerColors>` | theme tokens | Color overrides. See [Color customization](#color-customization). |
 
-The toolbar's default count reads "*n* events" for backward compatibility, even for non-event collections. Override `labels.itemCount` to name your items. `labels.filters` also names the filter panel dialog. `labels.search` sets the panel search placeholder and accessible name, and the placeholder of each option-group search. `labels.searchGroup` names each option-group search using its filter label.
+The toolbar's default count reads "*n* events" for backward compatibility, even for non-event collections. Override `labels.itemCount` to name your items. `labels.filters` names both the filter button and its dialog; when unset, `messages.filter.label` names both, then `Filters` is the default. The panel's main search uses PivotViewer's own `labels.search` (default `Search…`) as its placeholder and explicit accessible name, so `messages.filter.searchAriaLabel` does not apply to that search. `labels.search` also sets each option-group search placeholder; `labels.searchGroup` names each option-group search using its filter label.
 
 ## Labels
 
@@ -38,7 +38,7 @@ Set only the fields you need. Omitted fields keep their current English text:
 
 | Key | Type | Default |
 | --- | --- | --- |
-| `filters` | `string` | `Filters` (filter button and panel dialog) |
+| `filters` | `string` | `messages.filter.label`, then `Filters` (filter button and panel dialog) |
 | `search` | `string` | `Search…` (panel search placeholder and accessible name; each option-group search placeholder) |
 | `searchGroup` | `(groupLabel: string) => string` | `Search ${groupLabel}` (each option-group search accessible name) |
 | `sortBy` | `string` | `Sort by` |

@@ -90,8 +90,8 @@ describe('when PivotViewer uses provider filter messages', () => {
         await renderExpandedGroup(undefined, 'Provider search');
     });
 
-    it('should use the provider name for panel search without collapsing the group name', () => {
-        expect(panelSearch.getAttribute('aria-label')).to.equal('Provider search');
+    it('should keep its default panel name and group-specific name instead of the provider search name', () => {
+        expect(panelSearch.getAttribute('aria-label')).to.equal('Search…');
         expect(groupSearch.getAttribute('aria-label')).to.equal('Search Status');
     });
 
