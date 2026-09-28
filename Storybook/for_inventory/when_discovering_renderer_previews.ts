@@ -9,6 +9,7 @@ import { expect } from 'chai';
 import { describe, it } from 'vitest';
 import sourcePackage from '../../Source/package.json';
 import adapterSchema from '../../Source/schemas/ui-adapter.schema.json';
+import expectedRenderers from '../scripts/renderer-inventory.json';
 import { discoverAdapterPackages } from '../scripts/lib/adapter-inventory.mjs';
 import { validateAgainstSchema } from '../scripts/lib/schema-validator.mjs';
 
@@ -18,12 +19,13 @@ const repositoryRoot = path.resolve(storybookRoot, '..');
 describe('when discovering renderer previews', () => {
     it('should derive the required inventory from schema-valid workspace package metadata', () => {
         const inventory = discoverAdapterPackages(repositoryRoot);
-        expect(inventory.adapters.map((adapter) => adapter.metadata.id)).to.deep.equal([
-            'cratis-built-in',
-            'cratis-mui',
-            'cratis-primereact10',
-            'cratis-primereact',
-        ]);
+        expect(inventory.adapters.map((adapter) => adapter.metadata.id).sort()).to.deep.equal(
+            expectedRenderers.publicRenderers,
+        );
+        expect(inventory.adapters[0].builtIn).to.equal(true);
+        expect(inventory.adapters.slice(1).every((adapter) => !adapter.builtIn)).to.equal(true);
+        const displayNames = inventory.adapters.slice(1).map((adapter) => adapter.metadata.displayName);
+        expect(displayNames).to.deep.equal([...displayNames].sort((left, right) => left.localeCompare(right)));
         expect(
             inventory.adapters.every((adapter) => adapter.metadata.kind === 'ui-adapter'),
         ).to.equal(true);
