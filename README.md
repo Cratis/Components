@@ -180,6 +180,8 @@ built API with a published release (default: the latest); CI adds that report to
 It lists removals and changes as breaking-change candidates, but release intent is still decided
 by a person, and DOM, parts, and behavior need their own review. Only exported declarations are
 compared: a change to a type that is reachable only through an unexported name does not show up.
+A re-export of another package is recorded as `re-export of <package>#<name>`, so a change inside
+that package does not show up either.
 
 Before pushing Source changes, run `cd Source && yarn ci` after `yarn install` at the
 repository root. It includes public API TSDoc coverage and packs the built package to check

@@ -14,10 +14,8 @@ export const typedSubpaths = (packageDir) => {
     const manifest = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
     const subpaths = [];
     for (const [subpath, target] of Object.entries(manifest.exports ?? {})) {
-        // Stylesheets and JSON assets are not part of the typed API.
-        const asset = typeof target === 'string' || subpath.endsWith('.json') || subpath.endsWith('.css') ||
-            subpath.endsWith('/styles') || (typeof target === 'object' && target !== null && target.style !== undefined);
-        if (asset) continue;
+        // Stylesheets and JSON files published as they are carry no declarations.
+        if (typeof target === 'string' && /\.(css|json)$/u.test(target)) continue;
         if (typeof target !== 'object' || target === null ||
             typeof target.types !== 'string' || typeof target.import !== 'string') {
             // A new export shape must not silently drop out of the snapshot.
@@ -62,6 +60,62 @@ const declarationText = (declaration) => {
     }
 };
 
+// The alias declarations an export passes through before reaching its declaration.
+const aliasChain = (checker, exported) => {
+    const chain = [];
+    const seen = new Set();
+    for (let symbol = exported; symbol && symbol.flags & ts.SymbolFlags.Alias && !seen.has(symbol);) {
+        seen.add(symbol);
+        chain.push(...(symbol.declarations ?? []));
+        symbol = checker.getImmediateAliasedSymbol(symbol);
+    }
+    return chain;
+};
+
+const moduleSpecifierOf = (declaration) => {
+    if (ts.isExportSpecifier(declaration)) return declaration.parent.parent.moduleSpecifier;
+    if (ts.isImportSpecifier(declaration)) return declaration.parent.parent.parent.moduleSpecifier;
+    if (ts.isImportClause(declaration)) return declaration.parent.moduleSpecifier;
+    if (ts.isNamespaceImport(declaration)) return declaration.parent.parent.moduleSpecifier;
+    if (ts.isNamespaceExport(declaration)) return declaration.parent.moduleSpecifier;
+    return undefined;
+};
+
+const importedNameOf = (declaration) => {
+    if (ts.isExportSpecifier(declaration) || ts.isImportSpecifier(declaration)) {
+        return (declaration.propertyName ?? declaration.name).text;
+    }
+    return ts.isImportClause(declaration) ? 'default' : '*';
+};
+
+// The first alias in the chain that names a bare package specifier, as `package#name`.
+const externalSource = (chain) => {
+    for (const declaration of chain) {
+        const specifier = moduleSpecifierOf(declaration);
+        if (specifier && ts.isStringLiteral(specifier) && !specifier.text.startsWith('.') && !path.isAbsolute(specifier.text)) {
+            return `${specifier.text}#${importedNameOf(declaration)}`;
+        }
+    }
+    return undefined;
+};
+
+// The installed package whose files declare an export, for declarations reached without an alias,
+// such as through `export *`.
+const installedPackageOf = (packageRoot, declarations) => {
+    const names = declarations.map((declaration) => {
+        const file = path.resolve(declaration.getSourceFile().fileName);
+        const relative = path.relative(packageRoot, file).split(path.sep);
+        const inside = relative[0] !== '..' && !path.isAbsolute(relative.join(path.sep));
+        if (inside && !relative.includes('node_modules')) return undefined;
+        const segments = file.split(path.sep);
+        const index = segments.lastIndexOf('node_modules');
+        if (index < 0) throw new Error(`An export is declared outside the package and outside node_modules: ${file}`);
+        const scoped = segments[index + 1]?.startsWith('@');
+        return segments.slice(index + 1, index + (scoped ? 3 : 2)).join('/');
+    });
+    return names.every((name) => name !== undefined) ? names[0] : undefined;
+};
+
 /**
  * Computes the exported API surface of every typed subpath: each export's name and the text of
  * the declarations it resolves to, with comments removed.
@@ -79,7 +133,7 @@ export const computeApiSurface = (packageDir) => {
         jsx: ts.JsxEmit.ReactJSX,
     });
     const checker = program.getTypeChecker();
-    const packageRoot = `${path.resolve(packageDir)}${path.sep}`;
+    const packageRoot = path.resolve(packageDir);
     const surface = {};
     for (const { subpath, entry } of subpaths) {
         const sourceFile = program.getSourceFile(entry);
@@ -87,20 +141,23 @@ export const computeApiSurface = (packageDir) => {
         const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
         const exports = moduleSymbol ? checker.getExportsOfModule(moduleSymbol) : [];
         const entries = exports.map((exported) => {
+            const chain = aliasChain(checker, exported);
+            const typeOnly = chain.some((declaration) => ts.isTypeOnlyImportOrExportDeclaration(declaration));
+            // A re-export of another package is recorded by the package and name it comes from:
+            // its text depends on that package's installed version, and it is recorded the same
+            // way whether or not that package can be resolved here.
+            const external = externalSource(chain);
+            if (external) return [exported.getName(), `re-export of ${typeOnly ? 'type ' : ''}${external}`];
             const target = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
             const declarations = target.declarations ?? [];
             if (declarations.length === 0) {
                 throw new Error(`The export '${subpath}#${exported.getName()}' does not resolve to a declaration.`);
             }
-            // A re-export of another package's type is recorded by where it comes from; its text
-            // depends on that package's installed version, not on this package.
-            const external = declarations.every((declaration) =>
-                !path.resolve(declaration.getSourceFile().fileName).startsWith(packageRoot) ||
-                declaration.getSourceFile().fileName.includes(`${path.sep}node_modules${path.sep}`));
-            const text = external
-                ? `re-export of ${checker.getFullyQualifiedName(target)}`
-                : declarations.map(declarationText).join(' | ');
-            return [exported.getName(), text];
+            const installed = installedPackageOf(packageRoot, declarations);
+            if (installed) return [exported.getName(), `re-export of ${typeOnly ? 'type ' : ''}${installed}#${target.getName()}`];
+            // Exporting a value with `export type` removes the value for consumers.
+            const text = declarations.map(declarationText).join(' | ');
+            return [exported.getName(), typeOnly && target.flags & ts.SymbolFlags.Value ? `(type-only) ${text}` : text];
         }).sort(([left], [right]) => ordinal(left, right));
         surface[subpath] = Object.fromEntries(entries);
     }

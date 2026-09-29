@@ -15,8 +15,7 @@
  * package's own API surface could not be computed.
  */
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
-import os from 'node:os';
+import { appendFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compareApiSurfaces, computeApiSurface } from './lib/api-surface.mjs';
@@ -26,7 +25,11 @@ const version = process.argv.slice(2).find((argument) => !argument.startsWith('-
 const failOnBreaking = process.argv.includes('--fail-on-breaking');
 const packageName = '@cratis/components';
 
-const scratch = mkdtempSync(path.join(os.tmpdir(), 'cratis-api-baseline-'));
+// The baseline is unpacked below this package's node_modules, so its imports of other packages
+// resolve to the installed dependencies as they do for the current build.
+const cacheDir = path.join(packageDir, 'node_modules', '.cache');
+mkdirSync(cacheDir, { recursive: true });
+const scratch = mkdtempSync(path.join(cacheDir, 'cratis-api-baseline-'));
 try {
     const pack = spawnSync('npm', ['pack', `${packageName}@${version}`, '--silent', '--fetch-retries=3',
         '--pack-destination', scratch], { encoding: 'utf8' });
