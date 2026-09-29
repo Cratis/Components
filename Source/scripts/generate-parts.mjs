@@ -385,7 +385,13 @@ export const partDefinitions = {
             'row',
             'cell',
         ],
-        sources: ['DataTables/DataTableCore.tsx'],
+        sources: [
+            'DataTables/DataTableCore.tsx',
+            'DataTables/DataTableSearch.tsx',
+            'DataTables/DataTableHeaderCell.tsx',
+            'DataTables/DataTableBody.tsx',
+            'DataTables/DataTableRow.tsx',
+        ],
         ptKeys: [
             'root',
             'search',
