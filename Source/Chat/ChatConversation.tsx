@@ -118,6 +118,14 @@ export interface ChatConversationProps<TMessage extends ChatMessage = ChatMessag
      */
     renderAuthorName?: (authorId: ChatIdentifier, author: ChatAuthor) => ReactNode;
 
+    /**
+     * Renders host content under a message's body, for example reactions or a failed-reply notice.
+     * Nothing extra is rendered when it returns null or undefined.
+     * @param message The message being rendered.
+     * @returns What to render under the message body.
+     */
+    renderMessageExtra?: (message: TMessage) => ReactNode;
+
     /** The host's own actions, offered as buttons on every message each is available for. */
     actions?: ChatMessageAction<TMessage>[];
 
@@ -228,6 +236,7 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
     authorOf,
     renderAvatar,
     renderAuthorName,
+    renderMessageExtra,
     actions,
     mentionCandidates,
     resolveMentionCandidates,
@@ -377,6 +386,7 @@ export const ChatConversation = <TMessage extends ChatMessage = ChatMessage>({
                                         </div>
                                     )}
                                 </div>
+                                {renderMessageExtra?.(message)}
                                 {showTimestamp && (
                                     <span className='cratis-chat-message__time'>
                                         {relativeTimestamp(
