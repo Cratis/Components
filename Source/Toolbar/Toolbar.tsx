@@ -5,6 +5,7 @@ import { type HTMLAttributes, type ReactNode } from 'react';
 import { ToolbarDragContext } from './ToolbarDragContext';
 import { ToolbarFocusMode } from '../Common/ToolbarFocusMode';
 import { useToolbarKeyboardNavigation } from '../Common/useToolbarKeyboardNavigation';
+import { ToolbarRovingContext } from '../Common/ToolbarRovingContext';
 import { useCratisComponentsConfig } from '../Common/CratisComponentsProvider';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
@@ -63,7 +64,7 @@ export const Toolbar = ({
     'aria-labelledby': ariaLabelledBy,
     pt,
 }: ToolbarProps) => {
-    const { rootRef, onKeyDown } = useToolbarKeyboardNavigation(orientation, focusMode);
+    const { rootRef, onKeyDown, roving } = useToolbarKeyboardNavigation(orientation, focusMode);
     const { messages } = useCratisComponentsConfig();
     const resolvedAriaLabel = ariaLabel ?? messages?.toolbar?.label ?? 'Tools';
 
@@ -89,7 +90,9 @@ export const Toolbar = ({
                 data-cratis-part='root'
                 data-orientation={orientation}
             >
-                {children}
+                <ToolbarRovingContext.Provider value={roving}>
+                    {children}
+                </ToolbarRovingContext.Provider>
             </div>
         </ToolbarDragContext.Provider>
     );

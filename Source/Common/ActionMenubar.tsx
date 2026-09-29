@@ -5,6 +5,7 @@ import { Fragment, type ReactNode } from 'react';
 import { Button, type ButtonParts, type ButtonSeverity, type ButtonTone } from './Button';
 import { ToolbarFocusMode } from './ToolbarFocusMode';
 import { useToolbarKeyboardNavigation } from './useToolbarKeyboardNavigation';
+import { ToolbarRovingContext, useRovingTool } from './ToolbarRovingContext';
 
 /** A single action in an {@link ActionMenubar}. */
 export interface ActionMenuItem {
@@ -56,6 +57,28 @@ const buttonToneForSeverity: Record<ButtonSeverity, ButtonTone> = {
     contrast: 'neutral',
 };
 
+/** One Components-owned action button, which takes part in the menubar's single Tab stop. */
+const ActionMenubarButton = ({ item, pt }: { item: ActionMenuItem; pt: ActionMenubarProps['pt'] }) => {
+    // The consumer's pt.root tab index and focus handler are composed, because props passed
+    // directly to Button take precedence over pt.root.
+    const rovingTool = useRovingTool<HTMLButtonElement>(pt?.root?.tabIndex, pt?.root?.onFocus);
+    return (
+        <Button
+            variant='ghost'
+            tone={item.severity ? buttonToneForSeverity[item.severity] : undefined}
+            onClick={item.command}
+            disabled={item.disabled}
+            className={item.className}
+            icon={item.icon}
+            label={item.label}
+            pt={pt}
+            ref={rovingTool.ref}
+            tabIndex={rovingTool.tabIndex}
+            onFocus={rovingTool.onFocus}
+        />
+    );
+};
+
 /** A horizontal, accessible toolbar of command actions. */
 export const ActionMenubar = ({
     model,
@@ -64,7 +87,7 @@ export const ActionMenubar = ({
     pt,
     'aria-label': ariaLabel,
 }: ActionMenubarProps) => {
-    const { rootRef, onKeyDown } = useToolbarKeyboardNavigation('horizontal', focusMode);
+    const { rootRef, onKeyDown, roving } = useToolbarKeyboardNavigation('horizontal', focusMode);
     return <div
         ref={rootRef}
         onKeyDown={onKeyDown}
@@ -73,25 +96,13 @@ export const ActionMenubar = ({
         data-cratis-part='root'
         aria-label={ariaLabel}
     >
+        <ToolbarRovingContext.Provider value={roving}>
         {model.map((item, index) => {
             if (item.template)
                 return <Fragment key={index}>{item.template(item)}</Fragment>;
 
-            return (
-                <Button
-                    key={index}
-                    variant='ghost'
-                    tone={
-                        item.severity ? buttonToneForSeverity[item.severity] : undefined
-                    }
-                    onClick={item.command}
-                    disabled={item.disabled}
-                    className={item.className}
-                    icon={item.icon}
-                    label={item.label}
-                    pt={pt}
-                />
-            );
+            return <ActionMenubarButton key={index} item={item} pt={pt} />;
         })}
+        </ToolbarRovingContext.Provider>
     </div>;
 };
