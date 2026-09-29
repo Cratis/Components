@@ -8,11 +8,12 @@ redistribute the vendor packages listed below.
 
 ## PrimeReact 11 and PrimeUX themes
 
-The proof matrix uses these peer packages:
+The proof matrix uses these peer packages, at its minimum (11.0.0) and current (11.2.0)
+boundaries; the adapter's own build and tests use 11.1.0:
 
-- `@primereact/core` 11.1.0
-- `@primereact/ui` 11.1.0
-- `primereact` 11.1.0
+- `@primereact/core`
+- `@primereact/ui`
+- `primereact`
 - `@primeuix/themes` 3.0.0
 
 Their package metadata states `SEE LICENSE IN LICENSE.md`. The supplied license describes PrimeUI

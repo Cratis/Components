@@ -86,8 +86,9 @@ collection/injection requirements.
 ## Peer policy
 
 PrimeReact packages are bounded to `>=11 <12`, PrimeUX themes to `>=3 <4`, and React/ReactDOM to
-React 19. Vendor packages are peers and are never bundled. Exact repository proof uses 11.1.0 and
-`@primeuix/themes` 3.0.0.
+React 19. Vendor packages are peers and are never bundled. The packed consumer matrix proves
+PrimeReact 11.0.0 and 11.2.0 with `@primeuix/themes` 3.0.0; the adapter's own build and tests use
+11.1.0.
 
 The source manifest declares `@cratis/components >=4 <5`, the Components major whose renderer ABI
 and stable presentation profile the adapter implements. The release step replaces that range with
