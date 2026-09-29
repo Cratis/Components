@@ -31,7 +31,7 @@ import {
     asReactAriaListBoxItemProps,
     asReactAriaListBoxProps,
 } from './reactAriaProps';
-import { classNames } from './classNames';
+import { classNames } from '../ClassNames/classNames';
 
 /** Attributes a consumer may hand to one {@link ComboBox} part: class, style, title and data attributes. */
 export type ComboBoxPartAttributes = Pick<

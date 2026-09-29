@@ -27,7 +27,7 @@ import {
     type DataTableFilterConstraint,
     type DataTableFilterMatchMode as FilterMatchMode,
 } from './DataTableFilterMeta';
-import { classNames } from '../Common/classNames';
+import { classNames } from '../ClassNames/classNames';
 
 /** Value editor used by a built-in column filter. */
 export type ColumnFilterDataType = 'text' | 'numeric' | 'date' | 'boolean';

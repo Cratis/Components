@@ -8,7 +8,7 @@ import {
 } from 'react-aria-components/ToggleButtonGroup';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
-import { classNames } from './classNames';
+import { classNames } from '../ClassNames/classNames';
 
 /** Attributes a consumer may hand to one {@link ToggleGroup} part: class, style, title and data attributes. */
 export type ToggleGroupPartAttributes = Pick<

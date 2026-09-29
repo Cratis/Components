@@ -20,7 +20,7 @@ import {
 } from './toast';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
-import { classNames } from '../Common/classNames';
+import { classNames } from '../ClassNames/classNames';
 
 /** Supported viewport positions for the global toast region. */
 export type ToasterPosition =

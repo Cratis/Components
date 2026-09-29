@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
-import { classNames } from '../Common/classNames';
+import { classNames } from '../ClassNames/classNames';
 import type { DataTableMessages } from './DataTableMessages';
 import type { DataTableParts } from './DataTableParts';
 import { DataTableStatus } from './DataTableStatus';

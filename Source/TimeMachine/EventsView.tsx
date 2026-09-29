@@ -14,7 +14,7 @@ import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineL
 import { Properties } from './Properties';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
-import { classNames } from '../Common/classNames';
+import { classNames } from '../ClassNames/classNames';
 
 /** Stable part attributes for {@link EventsView}. */
 export interface EventsViewParts {

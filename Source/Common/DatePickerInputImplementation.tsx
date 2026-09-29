@@ -33,7 +33,7 @@ import {
     toCalendarDate,
 } from '@internationalized/date';
 import type { DatePickerInputProps } from './DatePickerInput';
-import { classNames } from './classNames';
+import { classNames } from '../ClassNames/classNames';
 
 const asDateValue = (
     value: Date | null,

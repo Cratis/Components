@@ -34,7 +34,7 @@ import {
     asReactAriaListBoxItemProps,
     asReactAriaListBoxProps,
 } from '../Common/reactAriaProps';
-import { classNames } from '../Common/classNames';
+import { classNames } from '../ClassNames/classNames';
 
 type DropdownOptionValue =
     string | number | boolean | bigint | symbol | object | null | undefined;

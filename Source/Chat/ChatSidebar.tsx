@@ -21,7 +21,7 @@ import { useCratisIcon } from '../configuration/useCratisIcon';
 import { unstable_useOverlayEnvironment } from '../renderer/RendererContext';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
-import { classNames } from '../Common/classNames';
+import { classNames } from '../ClassNames/classNames';
 
 type ChatSidebarPartAttributes<TElement> = HTMLAttributes<TElement> & {
     [attribute: `data-${string}`]: string | number | boolean | undefined;

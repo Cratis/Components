@@ -20,7 +20,7 @@ import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import { NumberInputCommitReason } from './NumberInputCommitReason';
 import type { NumberInputPartAttributes } from './NumberInputPartAttributes';
-import { classNames } from './classNames';
+import { classNames } from '../ClassNames/classNames';
 
 /** Stable Cratis-owned parts for styling a {@link NumberInput}. */
 export interface NumberInputParts {

@@ -18,7 +18,7 @@ import {
     openDialogTier,
 } from '../renderer/dialogStack';
 import { DialogStackContext } from '../renderer/DialogStackContext';
-import { classNames } from '../Common/classNames';
+import { classNames } from '../ClassNames/classNames';
 
 const subscribeToBrowserEnvironment = () => () => undefined;
 const useIsBrowser = () =>
