@@ -22,7 +22,7 @@ npm install @cratis/components.primereact@^4 @cratis/components@^4 \
   @primeuix/themes@^3 react@^19 react-dom@^19
 ```
 
-Node-based build, test, and server-rendering environments require Node.js 23 or newer.
+Node-based build, test, and server-rendering environments require Node.js 22 or newer.
 
 The adapter uses PrimeReact 11 styled components. It covers Button, IconButton, TextInput,
 TextArea, Checkbox, Radio, Switch, ProgressBar, and Surface. The five atomic interaction slots are
