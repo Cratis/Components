@@ -304,7 +304,6 @@ export const WithEditableTool: Story = {
     ),
 };
 
-/** Demonstrates the active (selected) state of a toolbar button. */
 /** One Tab stop for the toolbar's own tools; the input keeps its own Tab stop. */
 export const SingleTabStop: Story = {
     render: () => (
@@ -335,6 +334,7 @@ export const SingleTabStop: Story = {
     },
 };
 
+/** Demonstrates the active (selected) state of a toolbar button. */
 export const WithActiveButton: Story = {
     render: () => {
         const ActiveDemo = () => {

@@ -21,39 +21,69 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
     const activeKeyRef = useRef<string | null>(null);
     const listeners = useRef(new Set<() => void>());
 
+    // Keys of managed tools that lie in this toolbar's own DOM scope. A tool rendered through a
+    // portal or under a nested consumer toolbar can never be reached from here, so it keeps its
+    // native Tab stop instead of a -1 the toolbar could never lift.
+    const inScopeRef = useRef(new Set<string>());
+    const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
+    const isInToolbarScope = useCallback((tool: Element) => {
+        const root = rootRef.current;
+        return !!root && tool !== root && root.contains(tool) && tool.closest('[role="toolbar"]') === root;
+    }, []);
+
+    const isAvailable = useCallback((tool: HTMLElement) => {
+        const root = rootRef.current;
+        if (!root || !isInToolbarScope(tool) || tool.matches(':disabled, [disabled], [aria-disabled="true"]')) return false;
+        if (tool.getAttribute('tabindex') === '-1' && !keyByManaged.current.has(tool)) return false;
+        for (let element: HTMLElement | null = tool; element && element !== root; element = element.parentElement) {
+            if (element.hidden || element.hasAttribute('inert') || element.getAttribute('aria-hidden') === 'true') return false;
+            const style = getComputedStyle(element);
+            if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+        }
+        return true;
+    }, [isInToolbarScope]);
+
     const tools = useCallback(() => {
         const root = rootRef.current;
         if (!root) return [];
-        return Array.from(root.querySelectorAll<HTMLElement>(toolSelector)).filter(tool => {
-            if (tool.closest('[role="toolbar"]') !== root || tool.matches(':disabled, [disabled], [aria-disabled="true"]')) return false;
-            if (tool.getAttribute('tabindex') === '-1' && !keyByManaged.current.has(tool)) return false;
-            for (let element: HTMLElement | null = tool; element && element !== root; element = element.parentElement) {
-                if (element.hidden || element.hasAttribute('inert') || element.getAttribute('aria-hidden') === 'true') return false;
-                const style = getComputedStyle(element);
-                if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
-            }
-            return true;
-        });
-    }, []);
+        return Array.from(root.querySelectorAll<HTMLElement>(toolSelector)).filter(isAvailable);
+    }, [isAvailable]);
+
+    const notify = useCallback(() => listeners.current.forEach(listener => listener()), []);
 
     const setActiveKey = useCallback((key: string | null) => {
-        if (activeKeyRef.current === key) return;
+        if (activeKeyRef.current === key) return false;
         activeKeyRef.current = key;
-        listeners.current.forEach(listener => listener());
-    }, []);
+        notify();
+        return true;
+    }, [notify]);
 
-    // Keep the active tool available: when it is removed, disabled, hidden, or opts out with its
-    // own tab index, the first available tool the toolbar owns becomes the single Tab stop. This
-    // only changes the toolbar's own state; tools render their tab index from it.
+    // Keep the active tool available: when it is removed, disabled, hidden, moved out of scope, or
+    // opts out with its own tab index, the first available tool the toolbar owns becomes the single
+    // Tab stop. This only changes the toolbar's own state; tools render their tab index from it.
     const reconcile = useCallback(() => {
         if (!singleTabStop) return;
-        const available = tools();
+        let scopeChanged = false;
+        for (const key of inScopeRef.current) {
+            if (!managedByKey.current.has(key)) inScopeRef.current.delete(key);
+        }
+        for (const [key, element] of managedByKey.current) {
+            const inside = isInToolbarScope(element);
+            if (inside === inScopeRef.current.has(key)) continue;
+            if (inside) inScopeRef.current.add(key);
+            else inScopeRef.current.delete(key);
+            scopeChanged = true;
+        }
         const current = activeKeyRef.current;
         const element = current === null ? undefined : managedByKey.current.get(current);
-        if (element && available.includes(element)) return;
-        const first = available.find(tool => keyByManaged.current.has(tool));
-        setActiveKey(first ? keyByManaged.current.get(first)! : null);
-    }, [singleTabStop, tools, setActiveKey]);
+        // Checking the active tool alone is enough on most renders; the full scan runs only when it is gone.
+        if (!(element && inScopeRef.current.has(current!) && isAvailable(element))) {
+            const first = tools().find(tool => inScopeRef.current.has(keyByManaged.current.get(tool) ?? ''));
+            if (setActiveKey(first ? keyByManaged.current.get(first)! : null)) return;
+        }
+        if (scopeChanged) notify();
+    }, [singleTabStop, isInToolbarScope, isAvailable, tools, setActiveKey, notify]);
 
     // Several registrations and mutations in one commit or frame need only one check.
     const reconcileScheduled = useRef(false);
@@ -71,8 +101,13 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         const root = rootRef.current;
         if (!root || !singleTabStop) return;
         // Only changes on a managed tool or one of its ancestors can make it unavailable.
-        const affectsManagedTool = (record: MutationRecord) => record.type === 'childList' ||
-            [...keyByManaged.current.keys()].some(tool => record.target === tool || record.target.contains(tool));
+        const affectsManagedTool = (record: MutationRecord) => {
+            if (record.type === 'childList') return true;
+            for (const tool of keyByManaged.current.keys()) {
+                if (record.target === tool || record.target.contains(tool)) return true;
+            }
+            return false;
+        };
         const observer = new MutationObserver(records => {
             if (records.some(affectsManagedTool)) scheduleReconcile();
         });
@@ -82,29 +117,49 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
             attributes: true,
             attributeFilter: ['hidden', 'inert', 'aria-hidden', 'aria-disabled', 'disabled', 'style', 'class'],
         });
-        return () => observer.disconnect();
+        // Hiding through a stylesheet alone, such as a media query, changes no attribute; the
+        // hidden tool's box collapses instead.
+        if (typeof ResizeObserver !== 'undefined') {
+            resizeObserverRef.current = new ResizeObserver(scheduleReconcile);
+            managedByKey.current.forEach(tool => resizeObserverRef.current!.observe(tool));
+        }
+        return () => {
+            observer.disconnect();
+            resizeObserverRef.current?.disconnect();
+            resizeObserverRef.current = null;
+        };
     }, [singleTabStop, scheduleReconcile]);
 
     const roving = useMemo<ToolbarRoving | null>(() => singleTabStop ? {
         getActiveKey: () => activeKeyRef.current,
+        isInScope: key => inScopeRef.current.has(key),
         subscribe: listener => {
             listeners.current.add(listener);
             return () => listeners.current.delete(listener);
         },
         register: (key, element) => {
             const previous = managedByKey.current.get(key);
-            if (previous) keyByManaged.current.delete(previous);
+            if (previous) {
+                keyByManaged.current.delete(previous);
+                resizeObserverRef.current?.unobserve(previous);
+            }
             if (element) {
                 managedByKey.current.set(key, element);
                 keyByManaged.current.set(element, key);
+                resizeObserverRef.current?.observe(element);
             } else {
+                // Scope is kept: a ref that changes identity unregisters and registers again in
+                // one commit, and reconcile prunes keys that stay unregistered.
                 managedByKey.current.delete(key);
             }
             // A tool that stops being managed (unmounted, or given its own tab index) may have
-            // been the active one; a new tool may be the first available one.
+            // been the active one; a new tool may be the first available one or lie out of scope.
             scheduleReconcile();
         },
-        activate: key => setActiveKey(key),
+        // A tool outside the toolbar's scope cannot hold its single Tab stop.
+        activate: key => {
+            if (inScopeRef.current.has(key)) setActiveKey(key);
+        },
     } : null, [singleTabStop, scheduleReconcile, setActiveKey]);
 
     const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

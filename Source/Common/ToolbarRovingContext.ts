@@ -11,6 +11,11 @@ import { createContext, useCallback, useContext, useId, useSyncExternalStore, ty
 export interface ToolbarRoving {
     /** The active tool's key, or null until the toolbar has chosen one. */
     getActiveKey(): string | null;
+    /**
+     * Whether a tool lies in the toolbar's own DOM scope. A tool rendered elsewhere, for example
+     * through a portal or under a nested consumer toolbar, keeps its native Tab stop.
+     */
+    isInScope(key: string): boolean;
     /** Subscribes to changes of the active tool. */
     subscribe(listener: () => void): () => void;
     /** Records the element for a tool, or removes it when the element is null. */
@@ -56,7 +61,9 @@ export const useRovingTool = <TElement extends HTMLElement>(
         () => {
             if (!store) return unmanaged;
             const activeKey = store.getActiveKey();
-            return activeKey === null ? undecided : activeKey === key ? active : inactive;
+            if (activeKey === null) return undecided;
+            if (!store.isInScope(key)) return unmanaged;
+            return activeKey === key ? active : inactive;
         },
         // Server-rendered markup keeps native Tab stops until the toolbar chooses its active tool.
         () => (store ? undecided : unmanaged),
@@ -69,6 +76,7 @@ export const useRovingTool = <TElement extends HTMLElement>(
         store?.activate(key);
     }, [onFocus, store, key]);
     if (!store) return { tabIndex: explicitTabIndex, onFocus };
+    // A tool outside the toolbar's scope still registers, so the toolbar can notice when it enters.
     return {
         ref,
         tabIndex: state === active ? 0 : state === inactive ? -1 : undefined,
