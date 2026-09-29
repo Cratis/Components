@@ -7,7 +7,6 @@ import React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { vi } from 'vitest';
-import { waitFor } from '@testing-library/dom';
 import { CommandDialog } from '../CommandDialog';
 import { CratisComponentsProvider } from '../../Common/CratisComponentsProvider';
 
@@ -83,7 +82,7 @@ describe('when dismissal is configured on a command dialog', () => {
             );
         });
         // Wait for the dialog itself rather than for a fixed delay.
-        await waitFor(() => {
+        await vi.waitFor(() => {
             if (!document.querySelector('[role="dialog"]')) throw new Error('The dialog has not opened yet.');
         });
     };
