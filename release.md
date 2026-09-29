@@ -59,6 +59,28 @@ A brand-new npm package must receive a one-time authenticated bootstrap publicat
 publishing can be configured; do not begin a multi-package release until all package records and
 trusted publishers are ready.
 
+## Components 3 maintenance releases
+
+Components 3 is in maintenance support and is released from the `support/3.x` branch, never from
+`main`. Land a fix there through a pull request, then dispatch `publish.yml` on `support/3.x` with
+the exact 3.x version. That workflow:
+
+- refuses to run anywhere but `support/3.x`, or for a version that is not a new 3.x version;
+- builds, lints, and tests before publishing;
+- publishes `@cratis/components` and `@cratis/eslint-plugin-components` under the `v3-lts`
+  dist-tag. `publish-version` refuses to publish without a non-`latest` tag, so npm `latest` stays
+  on the current major. Applications depending on `^3.x` still receive the release through their
+  range;
+- verifies that the packages reached the registry under `v3-lts` and that `latest` did not move;
+  and
+- pushes a plain `v3.x.y` git tag and creates no GitHub release. The release action on `main`
+  computes its next version from the latest GitHub release, so a 3.x release there would derail
+  the next 4.x version.
+
+If a publish ever moves `latest` to 3.x, restore it with an npm account that can manage the
+package: `npm dist-tag add @cratis/components@<current 4.x version> latest`, and the same for
+`@cratis/eslint-plugin-components`.
+
 ## Release evidence and verification
 
 `.github/workflows/javascript-build.yml` generates retained archives, SHA-256/SHA-512 manifests,
