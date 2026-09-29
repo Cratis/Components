@@ -836,7 +836,7 @@ jobs:
                   yarn node verify-peers.mjs
 
     verify-renderer-adapters:
-        name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }})
+        name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }}, Node ${{ matrix.node }})
         runs-on: ubuntu-latest
         timeout-minutes: 25
         strategy:
@@ -845,6 +845,25 @@ jobs:
                 adapter: [mui, primereact11, primereact10]
                 boundary: [minimum, current]
                 manager: [npm, pnpm, yarn-pnp]
+                node: [24.x]
+                # The oldest Node.js the published packages declare in engines. npm with
+                # engine-strict refuses to install a package whose engines exclude the running
+                # Node.js, so these legs prove both the declared range and that the adapter works.
+                include:
+                    - adapter: mui
+                      boundary: current
+                      manager: npm
+                      node: 22.x
+                    - adapter: primereact11
+                      boundary: current
+                      manager: npm
+                      node: 22.x
+                    - adapter: primereact10
+                      boundary: current
+                      manager: npm
+                      node: 22.x
+        env:
+            npm_config_engine_strict: ${{ matrix.node == '22.x' }}
 
         steps:
             - name: Checkout code
@@ -855,7 +874,7 @@ jobs:
             - name: Setup node
               uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 24.x
+                  node-version: ${{ matrix.node }}
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Enable Corepack
