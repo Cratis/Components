@@ -258,6 +258,9 @@
         "compile": "yarn generate-parts && node ../scripts/run-typescript.mjs -p tsconfig.json -noEmit && yarn g:lint",
         "copy-css": "./scripts/copy-css.sh",
         "verify-exports": "node ./scripts/verify-exports.mjs",
+        "verify-api-surface": "node ./scripts/verify-api-surface.mjs",
+        "generate-api-surface": "node ./scripts/verify-api-surface.mjs --update",
+        "report-api-compatibility": "node ./scripts/report-api-compatibility.mjs",
         "verify-source-maps": "node ./scripts/verify-source-maps.mjs",
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
         "verify-packed-css": "node ./scripts/verify-packed-css.mjs",
@@ -278,7 +281,7 @@
         "lint": "yarn g:lint",
         "lint:ci": "yarn g:lint:ci",
         "test": "yarn g:test",
-        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn verify-api-docs && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts && yarn verify-package-graph-report && yarn verify-packed-css && yarn verify-source-maps",
+        "ci": "yarn generate-parts && yarn verify-parts-manifest && yarn verify-api-docs && yarn g:ci && yarn typecheck-stories && yarn g:build && yarn verify-renderer-contracts && yarn verify-package-graph-report && yarn verify-packed-css && yarn verify-source-maps && yarn verify-api-surface",
         "up": "yarn g:up",
         "dev": "yarn workspace @cratis/components.storybook dev",
         "build-storybook": "yarn workspace @cratis/components.storybook build"

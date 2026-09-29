@@ -172,6 +172,17 @@ This is a framework-library repository. [Component source](https://github.com/Cr
 keeps public types, stories, and specifications near each component; export and
 package verification lives under `Source/scripts/`.
 
+The public API of every typed subpath is kept in a reviewable snapshot, `Source/api-surface.json`.
+`yarn ci` fails when the built declarations differ from it; after an intentional API change, run
+`cd Source && yarn generate-api-surface` and commit the snapshot, so the pull request shows exactly
+which exports it adds, removes, or changes. `yarn report-api-compatibility [version]` compares the
+built API with a published release (default: the latest); CI adds that report to the job summary.
+It lists removals and changes as breaking-change candidates, but release intent is still decided
+by a person, and DOM, parts, and behavior need their own review. Only exported declarations are
+compared: a change to a type that is reachable only through an unexported name does not show up.
+A re-export of another package is recorded as `re-export of <package>#<name>`, so a change inside
+that package does not show up either.
+
 Before pushing Source changes, run `cd Source && yarn ci` after `yarn install` at the
 repository root. It includes public API TSDoc coverage and packs the built package to check
 aggregate and per-area CSS budgets (`yarn verify-packed-css` runs that check alone after a
