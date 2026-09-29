@@ -84,7 +84,7 @@ named profile and version so existing adapters never acquire an unimplemented re
 version. Renderer ABI major `1` remains separate from npm versioning, and every adapter retains the
 honest `@cratis/components >=4 <5` peer range.
 
-> **2026-09-29 — peer range clarification.** The `>=4 <5` range above is what each adapter's source manifest declares. Every published 4.x adapter and Conformance release has instead peered on exactly its own release, for example `@cratis/components.mui@4.21.0` requires `@cratis/components@4.21.0`, because `scripts/prepare-release-version.mjs` stamps workspace peers with the release version. [#233](https://github.com/Cratis/Components/issues/233) recorded the decision to keep that exact pin, so an adapter and core that were never released together cannot be installed side by side. It also recorded that the range can widen to `>=4 <5` once the renderer ABI has stayed stable across several releases. The stable profile and its compatibility rules above are unchanged.
+> **2026-09-29 — peer range replaced.** The published peer range is now governed by [ADR 0006, Published adapters pin their Components release](0006-exact-adapter-peer-pin.md), decided on [#233](https://github.com/Cratis/Components/issues/233): each published adapter and Conformance release peers on exactly its own `@cratis/components` release. The `>=4 <5` range above remains what the adapter source manifests declare. The rest of this decision is unchanged.
 
 ## Intentionally unstable
 
