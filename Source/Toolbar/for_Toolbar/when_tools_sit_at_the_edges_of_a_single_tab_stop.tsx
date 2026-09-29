@@ -3,7 +3,7 @@
 
 // @vitest-environment jsdom
 
-import { act } from 'react';
+import { act, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, it, vi } from 'vitest';
@@ -159,6 +159,40 @@ describe('when a stylesheet alone hides the active tool', () => {
         } finally {
             document.body.classList.remove('narrow');
             style.remove();
+            vi.unstubAllGlobals();
+        }
+    });
+});
+
+describe('when a tool re-renders inside its tooltip', () => {
+    it('should not register the same element again', async () => {
+        let observed = 0;
+        vi.stubGlobal('ResizeObserver', class {
+            observe() { observed++; }
+            unobserve() { /* Nothing to release. */ }
+            disconnect() { /* Nothing to release. */ }
+        });
+        let rerender: () => void = () => undefined;
+        const Tools = () => {
+            const [count, setCount] = useState(0);
+            rerender = () => setCount(count + 1);
+            return (
+                <Toolbar focusMode={ToolbarFocusMode.SingleTabStop}>
+                    <ToolbarButton icon='pi pi-pencil' title={`Draw ${count}`} />
+                    <ToolbarButton icon='pi pi-eraser' title='Erase' />
+                </Toolbar>
+            );
+        };
+        try {
+            await render(<Tools />);
+            const initial = observed;
+            for (let index = 0; index < 3; index++) {
+                await act(async () => rerender());
+                await act(async () => { await Promise.resolve(); });
+            }
+            expect(observed).to.equal(initial);
+            expect([tabIndexOf('Draw 3'), tabIndexOf('Erase')]).to.deep.equal(['0', '-1']);
+        } finally {
             vi.unstubAllGlobals();
         }
     });

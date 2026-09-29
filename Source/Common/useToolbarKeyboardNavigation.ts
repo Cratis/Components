@@ -96,6 +96,29 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         });
     }, [reconcile]);
 
+    // Tools that unregistered and did not register again: forget them, and choose a new Tab stop
+    // if one of them was active (unmounted, or given its own tab index).
+    const pendingRemovalRef = useRef(new Set<string>());
+    const removalCheckScheduledRef = useRef(false);
+    const scheduleRemovalCheck = useCallback(() => {
+        if (removalCheckScheduledRef.current) return;
+        removalCheckScheduledRef.current = true;
+        queueMicrotask(() => {
+            removalCheckScheduledRef.current = false;
+            if (pendingRemovalRef.current.size === 0) return;
+            for (const key of pendingRemovalRef.current) {
+                const element = managedByKey.current.get(key);
+                if (element) {
+                    keyByManaged.current.delete(element);
+                    resizeObserverRef.current?.unobserve(element);
+                }
+                managedByKey.current.delete(key);
+            }
+            pendingRemovalRef.current.clear();
+            reconcile();
+        });
+    }, [reconcile]);
+
     useLayoutEffect(reconcile);
     useLayoutEffect(() => {
         const root = rootRef.current;
@@ -139,28 +162,32 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         },
         register: (key, element) => {
             const previous = managedByKey.current.get(key);
+            if (!element) {
+                // A tooltip wrapper builds a new merged ref on every render, so React detaches and
+                // re-attaches the same element within one commit. Removal waits for a microtask,
+                // and a re-attach of the same element in between costs nothing.
+                if (previous) pendingRemovalRef.current.add(key);
+                scheduleRemovalCheck();
+                return;
+            }
+            if (previous === element && pendingRemovalRef.current.delete(key)) return;
+            pendingRemovalRef.current.delete(key);
+            if (previous === element) return;
             if (previous) {
                 keyByManaged.current.delete(previous);
                 resizeObserverRef.current?.unobserve(previous);
             }
-            if (element) {
-                managedByKey.current.set(key, element);
-                keyByManaged.current.set(element, key);
-                resizeObserverRef.current?.observe(element);
-            } else {
-                // Scope is kept: a ref that changes identity unregisters and registers again in
-                // one commit, and reconcile prunes keys that stay unregistered.
-                managedByKey.current.delete(key);
-            }
-            // A tool that stops being managed (unmounted, or given its own tab index) may have
-            // been the active one; a new tool may be the first available one or lie out of scope.
+            managedByKey.current.set(key, element);
+            keyByManaged.current.set(element, key);
+            resizeObserverRef.current?.observe(element);
+            // A new tool may be the first available one or lie out of scope.
             scheduleReconcile();
         },
         // A tool outside the toolbar's scope cannot hold its single Tab stop.
         activate: key => {
             if (inScopeRef.current.has(key)) setActiveKey(key);
         },
-    } : null, [singleTabStop, scheduleReconcile, setActiveKey]);
+    } : null, [singleTabStop, scheduleReconcile, scheduleRemovalCheck, setActiveKey]);
 
     const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
         if (focusMode === ToolbarFocusMode.None || event.defaultPrevented || event.isPropagationStopped() ||

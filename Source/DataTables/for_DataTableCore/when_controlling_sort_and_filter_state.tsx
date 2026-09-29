@@ -12,7 +12,7 @@ import { DataTableCore, type DataTableCoreProps } from '../DataTableCore';
 import type { DataTableSort } from '../DataTableSort';
 import { DataTableSortDirection } from '../DataTableSortDirection';
 import { DataTableRowProcessing } from '../DataTableRowProcessing';
-import { DataTableFilterMatchMode } from '../DataTableFilterMeta';
+import { DataTableFilterMatchMode, type DataTableFilterMeta } from '../DataTableFilterMeta';
 
 interface Product {
     id: number;
@@ -32,10 +32,21 @@ const render = async (props: Partial<DataTableCoreProps<Product>>) => {
     await act(async () => {
         root.render(
             <DataTableCore<Product> data={data} dataKey='id' emptyMessage='None' globalFilterFields={['name']} {...props}>
-                <Column<Product> field='name' header='Name' sortable />
+                <Column<Product> field='name' header='Name' sortable filter />
             </DataTableCore>,
         );
     });
+};
+const typeInto = (input: HTMLInputElement, text: string) => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, text);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+};
+const buttonLabeled = (label: string) =>
+    Array.from(document.querySelectorAll<HTMLButtonElement>('[data-cratis-part="filter-actions"] button'))
+        .find(button => button.textContent?.trim() === label)!;
+const openFilterMenu = async () => {
+    if (document.querySelector('[data-cratis-part="filter-actions"]')) return;
+    await act(async () => container.querySelector<HTMLButtonElement>('[data-cratis-part="filter-trigger"]')!.click());
 };
 const clickSort = async () => {
     await act(async () => container.querySelector<HTMLButtonElement>('[data-cratis-part="sort"]')!.click());
@@ -92,6 +103,41 @@ describe('when controlling sort and filter state', () => {
             sort: { field: 'name', direction: DataTableSortDirection.Ascending },
             globalFilter: 'bra',
         });
+        expect(names()).to.deep.equal(['Charlie', 'Alpha', 'Bravo']);
+    });
+
+    it('should report typed search text without changing the controlled search text', async () => {
+        const reported: string[] = [];
+        await render({ globalFilter: 'bra', onGlobalFilterChange: text => reported.push(text) });
+        const input = container.querySelector<HTMLInputElement>('[data-cratis-part="search-input"]')!;
+        await act(async () => typeInto(input, 'char'));
+        expect(reported).to.deep.equal(['char']);
+        expect(input.value).to.equal('bra');
+        expect(names()).to.deep.equal(['Bravo']);
+    });
+
+    it('should report applied and cleared column filters without changing the controlled filters', async () => {
+        const reported: DataTableFilterMeta[] = [];
+        await render({ filters: {}, onFilter: filters => reported.push(filters) });
+        await openFilterMenu();
+        await act(async () => typeInto(document.querySelector<HTMLInputElement>('[data-cratis-part="filter-menu"] input')!, 'Alpha'));
+        await act(async () => buttonLabeled('Apply').click());
+        expect(reported).to.have.length(1);
+        expect(reported[0].name).to.deep.include({ value: 'Alpha' });
+        expect(names()).to.deep.equal(['Charlie', 'Alpha', 'Bravo']);
+        await openFilterMenu();
+        await act(async () => buttonLabeled('Clear').click());
+        expect(reported).to.have.length(2);
+        expect(names()).to.deep.equal(['Charlie', 'Alpha', 'Bravo']);
+    });
+
+    it('should report an applied column filter and still render rows as given when row processing is off', async () => {
+        const reported: DataTableFilterMeta[] = [];
+        await render({ rowProcessing: DataTableRowProcessing.None, onFilter: filters => reported.push(filters) });
+        await openFilterMenu();
+        await act(async () => typeInto(document.querySelector<HTMLInputElement>('[data-cratis-part="filter-menu"] input')!, 'Alpha'));
+        await act(async () => buttonLabeled('Apply').click());
+        expect(reported).to.have.length(1);
         expect(names()).to.deep.equal(['Charlie', 'Alpha', 'Bravo']);
     });
 });
