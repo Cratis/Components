@@ -102,10 +102,6 @@ const externalSource = (chain) => {
 
 const isTypeOnlyAlias = (declaration) => ts.isTypeOnlyImportOrExportDeclaration(declaration);
 
-// A namespace re-export of a module is described by the names it exports, not the module's text.
-const namespaceText = (checker, target) =>
-    `namespace { ${checker.getExportsOfModule(target).map((symbol) => symbol.getName()).sort(ordinal).join(', ')} }`;
-
 // The installed package whose files declare an export, for declarations reached without an alias,
 // such as through `export *`.
 const installedPackageOf = (packageRoot, declarations) => {
@@ -121,6 +117,51 @@ const installedPackageOf = (packageRoot, declarations) => {
         return segments.slice(index + 1, index + (scoped ? 3 : 2)).join('/');
     });
     return names.every((name) => name !== undefined) ? names[0] : undefined;
+};
+
+// Each export of a module with the text that describes it, sorted by name. A namespace re-export
+// of an internal module is described member by member, so a member's change shows up too.
+const describeModule = (checker, packageRoot, subpath, moduleSymbol, sourceFile, visiting) => {
+    if (!moduleSymbol) return [];
+    visiting.add(sourceFile);
+    const starTypeOnly = typeOnlyStarExports(checker, sourceFile);
+    const entries = checker.getExportsOfModule(moduleSymbol).map((exported) => {
+        const name = exported.getName();
+        const chain = aliasChain(checker, exported);
+        // A name this module does not export itself arrives through `export *`.
+        const throughStar = !(exported.declarations ?? []).some((declaration) => declaration.getSourceFile() === sourceFile);
+        const starOnlyAsType = throughStar && starTypeOnly.get(name) === true;
+        // A re-export of another package is recorded by the package and name it comes from,
+        // judged only by this package's own aliases, so it reads the same whether or not that
+        // package resolves here and whatever that package does internally.
+        const external = externalSource(chain);
+        if (external) {
+            const typeOnly = starOnlyAsType || chain.slice(0, external.index + 1).some(isTypeOnlyAlias);
+            return [name, `re-export of ${typeOnly ? 'type ' : ''}${external.source}`];
+        }
+        const typeOnly = starOnlyAsType || chain.some(isTypeOnlyAlias);
+        const target = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
+        const declarations = target.declarations ?? [];
+        if (declarations.length === 0) {
+            throw new Error(`The export '${subpath}#${name}' does not resolve to a declaration.`);
+        }
+        const installed = installedPackageOf(packageRoot, declarations);
+        if (installed) return [name, `re-export of ${typeOnly ? 'type ' : ''}${installed}#${target.getName()}`];
+        const moduleFile = declarations.find(ts.isSourceFile);
+        let text;
+        if (moduleFile) {
+            const members = visiting.has(moduleFile)
+                ? [['(cycle)', '']]
+                : describeModule(checker, packageRoot, subpath, target, moduleFile, visiting);
+            text = `namespace { ${members.map(([member, memberText]) => `${member}: ${memberText};`).join(' ')} }`;
+        } else {
+            text = declarations.map(declarationText).join(' | ');
+        }
+        // Exporting a value with `export type` removes the value for consumers.
+        return [name, typeOnly && target.flags & ts.SymbolFlags.Value ? `(type-only) ${text}` : text];
+    }).sort(([left], [right]) => ordinal(left, right));
+    visiting.delete(sourceFile);
+    return entries;
 };
 
 /**
@@ -146,37 +187,7 @@ export const computeApiSurface = (packageDir) => {
         const sourceFile = program.getSourceFile(entry);
         if (!sourceFile) throw new Error(`The declaration entry for '${subpath}' was not found: ${entry}`);
         const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
-        const exports = moduleSymbol ? checker.getExportsOfModule(moduleSymbol) : [];
-        const starTypeOnly = typeOnlyStarExports(checker, sourceFile);
-        const entries = exports.map((exported) => {
-            const name = exported.getName();
-            const chain = aliasChain(checker, exported);
-            // A name this module does not export itself arrives through `export *`.
-            const throughStar = !(exported.declarations ?? []).some((declaration) => declaration.getSourceFile() === sourceFile);
-            const starOnlyAsType = throughStar && starTypeOnly.get(name) === true;
-            // A re-export of another package is recorded by the package and name it comes from,
-            // judged only by this package's own aliases, so it reads the same whether or not that
-            // package resolves here and whatever that package does internally.
-            const external = externalSource(chain);
-            if (external) {
-                const typeOnly = starOnlyAsType || chain.slice(0, external.index + 1).some(isTypeOnlyAlias);
-                return [name, `re-export of ${typeOnly ? 'type ' : ''}${external.source}`];
-            }
-            const typeOnly = starOnlyAsType || chain.some(isTypeOnlyAlias);
-            const target = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
-            const declarations = target.declarations ?? [];
-            if (declarations.length === 0) {
-                throw new Error(`The export '${subpath}#${name}' does not resolve to a declaration.`);
-            }
-            const installed = installedPackageOf(packageRoot, declarations);
-            if (installed) return [name, `re-export of ${typeOnly ? 'type ' : ''}${installed}#${target.getName()}`];
-            const text = declarations.some(ts.isSourceFile)
-                ? namespaceText(checker, target)
-                : declarations.map(declarationText).join(' | ');
-            // Exporting a value with `export type` removes the value for consumers.
-            return [name, typeOnly && target.flags & ts.SymbolFlags.Value ? `(type-only) ${text}` : text];
-        }).sort(([left], [right]) => ordinal(left, right));
-        surface[subpath] = Object.fromEntries(entries);
+        surface[subpath] = Object.fromEntries(describeModule(checker, packageRoot, subpath, moduleSymbol, sourceFile, new Set()));
     }
     return surface;
 };

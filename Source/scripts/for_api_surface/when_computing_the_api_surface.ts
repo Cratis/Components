@@ -117,10 +117,32 @@ describe('when computing the API surface', () => {
         expect(computeApiSurface(packageDir)['./Example'].Shared).toBe('re-export of @example/external#Shared');
     });
 
-    it('should describe a namespace re-export of an internal module by its export names', () => {
+    it('should describe a namespace re-export of an internal module member by member', () => {
         mkdirSync(path.join(packageDir, 'dist'), { recursive: true });
         writeFileSync(path.join(packageDir, 'dist', 'inner.d.ts'), 'declare const hidden: number;\nexport declare const second: typeof hidden;\nexport declare class First { }\nexport {};\n');
         writePackage("export * as Inner from './inner';\n");
-        expect(computeApiSurface(packageDir)['./Example'].Inner).toBe('namespace { First, second }');
+        const before = computeApiSurface(packageDir);
+        expect(before['./Example'].Inner).toBe('namespace { First: export declare class First { }; second: second: typeof hidden; }');
+        writeFileSync(path.join(packageDir, 'dist', 'inner.d.ts'), 'declare const hidden: string;\nexport declare const second: number;\nexport declare class First { }\nexport {};\n');
+        expect(compareApiSurfaces(before, computeApiSurface(packageDir)).changed).toEqual(['./Example#Inner']);
+    });
+
+    it("should let a barrel's own value export shadow a type-only star export", () => {
+        mkdirSync(path.join(packageDir, 'dist'), { recursive: true });
+        writeFileSync(path.join(packageDir, 'dist', 'w.d.ts'), 'export declare class W { }\n');
+        writeFileSync(path.join(packageDir, 'dist', 'middle.d.ts'), "export { W } from './w';\nexport type * from './w';\n");
+        writePackage("export * from './middle';\n");
+        const before = computeApiSurface(packageDir);
+        expect(before['./Example'].W).toBe('export declare class W { }');
+        writeFileSync(path.join(packageDir, 'dist', 'middle.d.ts'), "export type { W } from './w';\nexport type * from './w';\n");
+        expect(compareApiSurfaces(before, computeApiSurface(packageDir)).changed).toEqual(['./Example#W']);
+    });
+
+    it('should mark a name reached only through a type-only star export inside a cycle', () => {
+        mkdirSync(path.join(packageDir, 'dist'), { recursive: true });
+        writeFileSync(path.join(packageDir, 'dist', 'w.d.ts'), 'export declare class W { }\n');
+        writeFileSync(path.join(packageDir, 'dist', 'cycle.d.ts'), "export * from './Example';\nexport type * from './w';\n");
+        writePackage("export * from './cycle';\n");
+        expect(computeApiSurface(packageDir)['./Example'].W).toBe('(type-only) export declare class W { }');
     });
 });

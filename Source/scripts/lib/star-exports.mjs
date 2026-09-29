@@ -26,13 +26,16 @@ const collect = (checker, sourceFile, typeOnly, visiting) => {
         if (!moduleSymbol) continue;
         const onlyAsType = typeOnly || statement.isTypeOnly;
         const target = moduleSymbol.declarations?.find(ts.isSourceFile);
+        // A cycle adds no names that are not already reached another way.
+        if (target && visiting.has(target)) continue;
+        const internal = target && ts.isStringLiteral(statement.moduleSpecifier) && isRelative(statement.moduleSpecifier.text);
         // Names from deeper star exports of an internal module carry their own path's marking.
-        const deeper = target && ts.isStringLiteral(statement.moduleSpecifier) && isRelative(statement.moduleSpecifier.text)
-            ? collect(checker, target, onlyAsType, visiting)
-            : new Map();
+        const deeper = internal ? collect(checker, target, onlyAsType, visiting) : new Map();
         for (const exported of checker.getExportsOfModule(moduleSymbol)) {
             const name = exported.getName();
-            merge(name, deeper.has(name) ? deeper.get(name) : onlyAsType);
+            // A name the target exports or declares itself shadows its own star exports.
+            const ownExport = (exported.declarations ?? []).some((declaration) => declaration.getSourceFile() === target);
+            merge(name, deeper.has(name) && !ownExport ? deeper.get(name) : onlyAsType);
         }
     }
     visiting.delete(sourceFile);
