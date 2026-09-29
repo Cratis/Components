@@ -103,7 +103,7 @@ jobs:
     verify:
         needs: publish
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 20
         permissions:
             contents: read
 
@@ -111,26 +111,35 @@ jobs:
             - name: Verify the release and that latest stayed on the current major
               run: |
                   set -euo pipefail
+                  packages=(@cratis/components @cratis/eslint-plugin-components)
                   failed=0
-                  for name in @cratis/components @cratis/eslint-plugin-components; do
-                    # The registry's read path can lag a successful publish by minutes; separate a
-                    # slow registry from one that never received the publish.
-                    published=""
-                    tagged=""
-                    for _ in $(seq 1 30); do
-                      published=$(npm view "$name@$VERSION" version 2>/dev/null || true)
-                      tagged=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
-                      [[ "$published" == "$VERSION" && "$tagged" == "$VERSION" ]] && break
-                      sleep 20
-                    done
+                  # A moved latest is reported at once; it needs an npm account to repair.
+                  for name in "${packages[@]}"; do
                     latest=$(npm view "$name" dist-tags.latest)
-                    echo "$name: published=$published $NPM_PUBLISH_TAG=$tagged latest=$latest"
-                    if [[ "$published" != "$VERSION" || "$tagged" != "$VERSION" ]]; then
-                      echo "::error::$name@$VERSION is not on the registry under $NPM_PUBLISH_TAG."
-                      failed=1
-                    fi
+                    echo "$name: latest=$latest"
                     if [[ "$latest" == 3.* ]]; then
                       echo "::error::$name latest moved to $latest; restore it with npm dist-tag add $name@<current 4.x> latest."
+                      failed=1
+                    fi
+                  done
+                  # The registry's read path can lag a successful publish by minutes; poll both
+                  # packages together so a slow registry is told apart from a missing publish.
+                  for _ in $(seq 1 30); do
+                    pending=0
+                    for name in "${packages[@]}"; do
+                      published=$(npm view "$name@$VERSION" version 2>/dev/null || true)
+                      tagged=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
+                      [[ "$published" == "$VERSION" && "$tagged" == "$VERSION" ]] || pending=1
+                    done
+                    [[ $pending == 0 ]] && break
+                    sleep 20
+                  done
+                  for name in "${packages[@]}"; do
+                    published=$(npm view "$name@$VERSION" version 2>/dev/null || true)
+                    tagged=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
+                    echo "$name: published=$published $NPM_PUBLISH_TAG=$tagged"
+                    if [[ "$published" != "$VERSION" || "$tagged" != "$VERSION" ]]; then
+                      echo "::error::$name@$VERSION is not on the registry under $NPM_PUBLISH_TAG."
                       failed=1
                     fi
                   done
