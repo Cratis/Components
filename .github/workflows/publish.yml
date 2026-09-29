@@ -56,7 +56,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             - name: Release
               id: release
@@ -76,19 +76,19 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Configure npm for OIDC-based publishing
               run: |
-                  # setup-node writes a placeholder _authToken (XXXXX-XXXXX-XXXXX-XXXXX) into
-                  # .npmrc and exports NODE_AUTH_TOKEN with the same placeholder. npm uses this
-                  # token as-is for registry auth → 404. Remove it so npm falls back to OIDC.
+                  # setup-node writes _authToken=${NODE_AUTH_TOKEN} into .npmrc. npm would use
+                  # that entry instead of OIDC trusted publishing, so delete it and make sure
+                  # NODE_AUTH_TOKEN is empty.
                   sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
                   echo "NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
                   echo "--- .npmrc after stripping placeholder ---"
@@ -107,15 +107,16 @@ jobs:
                     }
                   "
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  # The same key as the build, which the lockfile is part of. Never cache yarn.lock
+                  # itself: a restore would replace the checked-out lockfile with a stale one.
+                  key: ${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml', '.yarn/releases/yarn-4.17.1.cjs') }}
 
             - name: Yarn install
               run: yarn install --immutable
@@ -181,14 +182,14 @@ jobs:
                   fi
 
             - name: Trigger Documentation Build
-              uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3
+              uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
               with:
                   token: ${{ secrets.PAT_DOCUMENTATION }}
                   repository: cratis/documentation
                   event-type: build-docs
 
             - name: Trigger Dependency Updates on Sample Repository
-              uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3
+              uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
               with:
                   token: ${{ secrets.PAT_DOCUMENTATION }}
                   repository: cratis/samples

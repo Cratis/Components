@@ -84,6 +84,8 @@ named profile and version so existing adapters never acquire an unimplemented re
 version. Renderer ABI major `1` remains separate from npm versioning, and every adapter retains the
 honest `@cratis/components >=4 <5` peer range.
 
+> **2026-09-29 — peer range replaced.** The published peer range is now governed by [ADR 0006, Published adapters pin their Components release](0006-exact-adapter-peer-pin.md), decided on [#233](https://github.com/Cratis/Components/issues/233): each published adapter and Conformance release peers on exactly its own `@cratis/components` release. The `>=4 <5` range above remains what the adapter source manifests declare. The rest of this decision is unchanged.
+
 ## Intentionally unstable
 
 The following surfaces keep their `unstable_` prefix and carry no promise from this decision:

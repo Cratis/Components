@@ -17,7 +17,7 @@ mechanism.
 
 ## Requirements
 
-- Node.js 23 or newer.
+- Node.js 22 or newer.
 - `@cratis/components` at the same version as this package (the source manifest declares `>=4 <5`;
   the release step pins the published peer to the exact release version).
 - React and ReactDOM 19.

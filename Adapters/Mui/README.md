@@ -19,7 +19,7 @@ npm install @cratis/components.mui@^4 @cratis/components@^4 \
   @mui/material@^9 @emotion/react@^11 @emotion/styled@^11 react@^19 react-dom@^19
 ```
 
-Node-based build, test, and server-rendering environments require Node.js 23 or newer.
+Node-based build, test, and server-rendering environments require Node.js 22 or newer.
 
 Select the adapter on the application Components provider:
 

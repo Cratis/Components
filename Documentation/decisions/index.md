@@ -16,5 +16,6 @@ boundaries.
 | [0003 — Repository-owned kernel boundary](0003-kernel-boundary.md) | Accepted | Implemented | 2026-08-27 | woksin |
 | [0004 — Stable presentation renderer profile](0004-stable-presentation-renderer-profile.md) | Accepted | Implemented | 2026-08-28 | woksin |
 | [0005 — Generic primitive admission](0005-generic-primitive-admission.md) | Accepted | None | 2026-09-28 | woksin (delegated) |
+| [0006 — Published adapters pin their Components release](0006-exact-adapter-peer-pin.md) | Accepted | Implemented | 2026-09-25 | woksin |
 
 Read [UI foundation](../ui-foundation.md) for the current architecture and capability matrix.

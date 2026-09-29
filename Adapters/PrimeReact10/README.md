@@ -23,7 +23,7 @@ npm install @cratis/components.primereact10@^4 @cratis/components@^4 \
   primereact@^10.9.9 react@^19 react-dom@^19
 ```
 
-Node-based build, test, and server-rendering environments require Node.js 23 or newer.
+Node-based build, test, and server-rendering environments require Node.js 22 or newer.
 
 The adapter covers Button, IconButton, TextInput, TextArea, Checkbox, Radio, Switch, ProgressBar,
 and Surface. The five atomic interaction slots are not part of this profile and continue through the

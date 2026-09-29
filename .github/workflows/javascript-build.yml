@@ -81,17 +81,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -149,17 +149,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -198,17 +198,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -258,17 +258,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -336,17 +336,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -366,7 +366,7 @@ jobs:
                   --output "${{ runner.temp }}/components-v4-release-evidence"
 
             - name: Upload release evidence
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: components-v4-release-evidence-${{ github.sha }}
                   path: |
@@ -398,17 +398,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -448,17 +448,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -484,7 +484,7 @@ jobs:
 
             - name: Upload verify-public-types report
               if: always()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: verify-public-types-report-ts${{ matrix.typescript }}
                   path: ${{ runner.temp }}/verify-public-types-report.json
@@ -502,17 +502,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -536,7 +536,7 @@ jobs:
 
             - name: Upload verify-package-graph report
               if: always()
-              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
                   name: verify-package-graph-report
                   path: ${{ runner.temp }}/verify-package-graph-report.json
@@ -552,17 +552,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -594,17 +594,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -637,17 +637,17 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
-            - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+            - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               id: yarn-cache
               with:
                   path: |
@@ -679,14 +679,14 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Yarn install
@@ -754,14 +754,14 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: 24.x
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Enable Corepack
@@ -836,7 +836,7 @@ jobs:
                   yarn node verify-peers.mjs
 
     verify-renderer-adapters:
-        name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }})
+        name: Renderer adapter (${{ matrix.adapter }}, ${{ matrix.boundary }}, ${{ matrix.manager }}, Node ${{ matrix.node }})
         runs-on: ubuntu-latest
         timeout-minutes: 25
         strategy:
@@ -845,17 +845,36 @@ jobs:
                 adapter: [mui, primereact11, primereact10]
                 boundary: [minimum, current]
                 manager: [npm, pnpm, yarn-pnp]
+                node: [24.x]
+                # The oldest Node.js the published packages declare in engines. npm with
+                # engine-strict refuses to install a package whose engines exclude the running
+                # Node.js, so these legs prove both the declared range and that the adapter works.
+                include:
+                    - adapter: mui
+                      boundary: current
+                      manager: npm
+                      node: 22.x
+                    - adapter: primereact11
+                      boundary: current
+                      manager: npm
+                      node: 22.x
+                    - adapter: primereact10
+                      boundary: current
+                      manager: npm
+                      node: 22.x
+        env:
+            npm_config_engine_strict: ${{ matrix.node == '22.x' }}
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
 
             - name: Setup node
-              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
               with:
-                  node-version: 23.x
+                  node-version: ${{ matrix.node }}
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Enable Corepack
