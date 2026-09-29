@@ -44,6 +44,10 @@ The public adapters implement the declared presentation slots rather than replac
 
 Use the [UI foundation capability matrix](ui-foundation.md#capability-matrix) to check the server-rendering boundary for the component profile. For a custom portal container, resolve `document` inside `overlayEnvironment.getContainer` and return `null` when it is unavailable, as shown in [Choose an overlay container](Common/cratis-components-provider.md#choose-an-overlay-container).
 
+## Components 3 fails to build after updating PrimeReact to 11.2
+
+`@cratis/components` 3.x imports `@primereact/styles/password`, which PrimeReact 11.2.0 renamed to `inputpassword`. Components 3.6.1 and earlier declare PrimeReact `^11.0.0`, so the install succeeds and then a bundler that follows package `exports`, such as Vite, fails with `"styles" is not exported by ... @primereact/styles/password`. Later 3.x maintenance releases limit PrimeReact to versions below 11.2.0, so the package manager reports the mismatch instead. Keep `primereact` and every `@primereact/*` package at 11.1.x while you stay on Components 3, or move to Components 4, which does not depend on PrimeReact; see [Migrating from 3 to 4](Migration/3-to-4.md). The PrimeReact 11 renderer adapter for Components 4 is tested against 11.2.0.
+
 ## See also
 
 For generated proxies, command authorization, command validation, and Arc request behavior, use [Arc troubleshooting](/arc/troubleshooting/).

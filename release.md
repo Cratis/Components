@@ -59,6 +59,41 @@ A brand-new npm package must receive a one-time authenticated bootstrap publicat
 publishing can be configured; do not begin a multi-package release until all package records and
 trusted publishers are ready.
 
+## Components 3 maintenance releases
+
+Components 3 is in maintenance support and is released from the `support/3.x` branch, never from
+`main`. Land a fix there through a pull request, then dispatch the support branch's `publish.yml`
+with the exact 3.x version:
+
+```bash
+gh workflow run publish.yml --ref support/3.x -f version=3.x.y
+```
+
+In the GitHub form, choose **Use workflow from: support/3.x**. Dispatching on `main` runs the
+4.x publish workflow, which refuses a version from an older major.
+
+The support branch's workflow:
+
+- refuses to run anywhere but `support/3.x`, or for a version that is not a new 3.x version;
+- builds, lints, and tests before publishing, in a job that cannot write to the repository;
+- publishes `@cratis/components` and `@cratis/eslint-plugin-components` under the `v3-lts`
+  dist-tag. `publish-version` refuses to publish without a non-`latest` tag, so npm `latest` stays
+  on the current major. Applications depending on `^3.x` still receive the release through their
+  range;
+- skips packages already on the registry at that version, so re-running a failed run continues
+  where it stopped;
+- verifies that both packages reached the registry under `v3-lts` and that `latest` did not move;
+  and
+- then pushes a plain `v3.x.y` git tag. It creates no GitHub release, so GitHub never marks a 3.x
+  release as the repository's latest release. The release action on `main` versions from the
+  highest release, so 3.x tags do not affect it.
+
+If both packages show the version under `v3-lts` but the tag was never pushed, push it at the
+dispatched commit: `git tag v3.x.y <commit> && git push origin v3.x.y`. If a publish ever moves
+`latest` to 3.x, restore it with an npm account that can manage the package:
+`npm dist-tag add @cratis/components@<current 4.x version> latest`, and the same for
+`@cratis/eslint-plugin-components`.
+
 ## Release evidence and verification
 
 `.github/workflows/javascript-build.yml` generates retained archives, SHA-256/SHA-512 manifests,

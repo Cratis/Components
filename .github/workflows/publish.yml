@@ -58,6 +58,30 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+            # Older majors are released from their support branch (see release.md). A version from
+            # an older major dispatched here would create its GitHub release on main.
+            - name: Refuse a dispatched version from an older major
+              if: github.event_name == 'workflow_dispatch'
+              env:
+                  VERSION: ${{ github.event.inputs.version }}
+              run: |
+                  set -euo pipefail
+                  [[ "$VERSION" == "0.0.0" ]] && exit 0
+                  if [[ ! "$VERSION" =~ ^([0-9]+)\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "::error::'$VERSION' is not a version."
+                    exit 1
+                  fi
+                  requested_major="${BASH_REMATCH[1]}"
+                  current_major=$(node -p "require('./Source/package.json').version.split('.')[0]")
+                  if [[ ! "$current_major" =~ ^[0-9]+$ ]]; then
+                    echo "::error::Could not read the current major from Source/package.json."
+                    exit 1
+                  fi
+                  if (( 10#$requested_major < 10#$current_major )); then
+                    echo "::error::$VERSION belongs to an older major; dispatch publish.yml on its support branch instead."
+                    exit 1
+                  fi
+
             - name: Release
               id: release
               uses: cratis/release-action@f5fc6db6adbb4db6e6c4548cd7addfc924426e69 # v1
