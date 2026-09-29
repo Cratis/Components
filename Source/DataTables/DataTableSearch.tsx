@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { classNames } from './classNames';
+import { classNames } from '../Common/classNames';
 import type { DataTableParts } from './DataTableParts';
 
 /** Props for {@link DataTableSearch}. */

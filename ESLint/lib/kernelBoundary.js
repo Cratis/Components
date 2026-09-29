@@ -26,6 +26,7 @@ export const kernelSourcePaths = Object.freeze([
     'Source/DataTables/DataTableFilterMeta.ts',
     'Source/DataTables/paginatorRange.ts',
     'Source/DataTables/selectionKeys.ts',
+    'Source/Common/classNames.ts',
     'Source/CommandDialog/applyBeforeExecute.ts',
     'Source/CommandForm/commandFormMarkers.ts',
     'Source/CommandForm/fields/chipValues.ts',

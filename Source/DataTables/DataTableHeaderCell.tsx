@@ -4,7 +4,7 @@
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import type { ColumnProps } from './Column';
 import { ColumnFilterMenu } from './ColumnFilterMenu';
-import { classNames } from './classNames';
+import { classNames } from '../Common/classNames';
 import type {
     DataTableFilterConstraint,
     DataTableFilterMeta,

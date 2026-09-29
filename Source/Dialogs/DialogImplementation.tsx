@@ -18,9 +18,7 @@ import {
     openDialogTier,
 } from '../renderer/dialogStack';
 import { DialogStackContext } from '../renderer/DialogStackContext';
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
+import { classNames } from '../Common/classNames';
 
 const subscribeToBrowserEnvironment = () => () => undefined;
 const useIsBrowser = () =>

@@ -22,6 +22,7 @@
         "Source/CommandForm/commandFormMarkers.ts",
         "Source/CommandForm/fields/chipValues.ts",
         "Source/CommandForm/fields/fieldValueFromEvent.ts",
+        "Source/Common/classNames.ts",
         "Source/DataTables/DataTableFilterMatcherRegistry.ts",
         "Source/DataTables/DataTableFilterMeta.ts",
         "Source/DataTables/paginatorRange.ts",

@@ -4,7 +4,7 @@
 import React, { useId, useMemo, type CSSProperties, type ReactNode } from 'react';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ColumnProps } from './Column';
-import { classNames } from './classNames';
+import { classNames } from '../Common/classNames';
 import type { DataTableFilterMeta } from './DataTableFilterMeta';
 import { DataTableHeaderCell } from './DataTableHeaderCell';
 import type { DataTableParts } from './DataTableParts';

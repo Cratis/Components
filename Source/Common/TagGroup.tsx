@@ -18,6 +18,7 @@ import { Button as AriaButton } from 'react-aria-components/Button';
 import { useCratisIcon } from '../configuration/useCratisIcon';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { classNames } from './classNames';
 
 /** Attributes a consumer may hand to one {@link TagGroup} part: class, style, title and data attributes. */
 export type TagGroupPartAttributes = Pick<
@@ -89,9 +90,6 @@ export interface TagGroupProps {
     /** Cratis-owned per-part attributes. */
     pt?: TagGroupParts;
 }
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 /**
  * A group of removable values with an optional text entry — the control behind a tag or chips field.

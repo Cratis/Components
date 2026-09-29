@@ -3,7 +3,7 @@
 
 import type { ReactElement, ReactNode, SyntheticEvent } from 'react';
 import type { ColumnProps } from './Column';
-import { classNames } from './classNames';
+import { classNames } from '../Common/classNames';
 import type { DataTableParts } from './DataTableParts';
 import { valueAtPath } from './valueAtPath';
 
