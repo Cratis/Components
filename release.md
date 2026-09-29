@@ -70,7 +70,7 @@ gh workflow run publish.yml --ref support/3.x -f version=3.x.y
 ```
 
 In the GitHub form, choose **Use workflow from: support/3.x**. Dispatching on `main` runs the
-4.x publish workflow instead, which would create a `v3.x.y` GitHub release on `main`.
+4.x publish workflow, which refuses a version from an older major.
 
 The support branch's workflow:
 
