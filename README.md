@@ -178,7 +178,8 @@ The public API of every typed subpath is kept in a reviewable snapshot, `Source/
 which exports it adds, removes, or changes. `yarn report-api-compatibility [version]` compares the
 built API with a published release (default: the latest); CI adds that report to the job summary.
 It lists removals and changes as breaking-change candidates, but release intent is still decided
-by a person, and DOM, parts, and behavior need their own review.
+by a person, and DOM, parts, and behavior need their own review. Only exported declarations are
+compared: a change to a type that is reachable only through an unexported name does not show up.
 
 Before pushing Source changes, run `cd Source && yarn ci` after `yarn install` at the
 repository root. It includes public API TSDoc coverage and packs the built package to check

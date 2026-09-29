@@ -10,8 +10,9 @@
  * Usage:  node scripts/report-api-compatibility.mjs [version]   (default: latest)
  *         add --fail-on-breaking to exit 1 when anything was removed or changed.
  *
- * Exit codes: 0 when the report was produced (or nothing is breaking with --fail-on-breaking),
- * 1 with --fail-on-breaking when something was removed or changed, 2 when it could not run.
+ * Exit codes: 0 when the report was produced, including a report that no baseline could be
+ * downloaded; 1 with --fail-on-breaking when something was removed or changed; 2 when this
+ * package's own API surface could not be computed.
  */
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
@@ -27,12 +28,27 @@ const packageName = '@cratis/components';
 
 const scratch = mkdtempSync(path.join(os.tmpdir(), 'cratis-api-baseline-'));
 try {
-    const pack = spawnSync('npm', ['pack', `${packageName}@${version}`, '--silent', '--pack-destination', scratch],
-        { encoding: 'utf8' });
+    const pack = spawnSync('npm', ['pack', `${packageName}@${version}`, '--silent', '--fetch-retries=3',
+        '--pack-destination', scratch], { encoding: 'utf8' });
     const archive = readdirSync(scratch).find((file) => file.endsWith('.tgz'));
     if (pack.status !== 0 || !archive) {
-        console.error(`Could not download ${packageName}@${version}: ${(pack.stderr || pack.stdout || '').trim()}`);
-        process.exit(2);
+        // The report is informational: a missing baseline (first publish, registry outage) is
+        // stated in the report rather than failing the build. Computing this package's own API
+        // surface failing is still an error below.
+        const output = (pack.stderr || pack.stdout || '').trim();
+        const reason = /E404|404 Not Found/u.test(output)
+            ? `${packageName}@${version} is not published yet, so there is no release to compare with.`
+            : `The baseline ${packageName}@${version} could not be downloaded: ${output.split('\n')[0] || 'no output'}`;
+        const report = `## Public API compared with the latest release\n\nNo baseline. ${reason}\n`;
+        console.log(report);
+        if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${report}\n`);
+        try {
+            computeApiSurface(packageDir);
+        } catch (error) {
+            console.error(`Could not compute the API surface: ${error instanceof Error ? error.message : String(error)}`);
+            process.exit(2);
+        }
+        process.exit(0);
     }
     const extract = spawnSync('tar', ['-xzf', path.join(scratch, archive), '-C', scratch], { encoding: 'utf8' });
     if (extract.status !== 0) {

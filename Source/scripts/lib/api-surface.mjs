@@ -12,12 +12,24 @@ import ts from 'typescript';
  */
 export const typedSubpaths = (packageDir) => {
     const manifest = JSON.parse(readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
-    return Object.entries(manifest.exports ?? {})
-        .filter(([subpath, target]) => typeof target === 'object' && target !== null &&
-            typeof target.types === 'string' && typeof target.import === 'string' && !subpath.endsWith('.json'))
-        .map(([subpath, target]) => ({ subpath, entry: path.join(packageDir, target.types) }))
-        .sort((left, right) => left.subpath.localeCompare(right.subpath));
+    const subpaths = [];
+    for (const [subpath, target] of Object.entries(manifest.exports ?? {})) {
+        // Stylesheets and JSON assets are not part of the typed API.
+        const asset = typeof target === 'string' || subpath.endsWith('.json') || subpath.endsWith('.css') ||
+            subpath.endsWith('/styles') || (typeof target === 'object' && target !== null && target.style !== undefined);
+        if (asset) continue;
+        if (typeof target !== 'object' || target === null ||
+            typeof target.types !== 'string' || typeof target.import !== 'string') {
+            // A new export shape must not silently drop out of the snapshot.
+            throw new Error(`The export '${subpath}' has a shape this check does not understand: ${JSON.stringify(target)}`);
+        }
+        subpaths.push({ subpath, entry: path.join(packageDir, target.types) });
+    }
+    return subpaths.sort((left, right) => ordinal(left.subpath, right.subpath));
 };
+
+// Ordinal comparison keeps the snapshot byte-identical across locales and ICU builds.
+const ordinal = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
 const printer = ts.createPrinter({ removeComments: true, newLine: ts.NewLineKind.LineFeed });
 
@@ -67,6 +79,7 @@ export const computeApiSurface = (packageDir) => {
         jsx: ts.JsxEmit.ReactJSX,
     });
     const checker = program.getTypeChecker();
+    const packageRoot = `${path.resolve(packageDir)}${path.sep}`;
     const surface = {};
     for (const { subpath, entry } of subpaths) {
         const sourceFile = program.getSourceFile(entry);
@@ -76,11 +89,19 @@ export const computeApiSurface = (packageDir) => {
         const entries = exports.map((exported) => {
             const target = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported;
             const declarations = target.declarations ?? [];
-            const text = declarations.length === 0
-                ? '<unresolved>'
+            if (declarations.length === 0) {
+                throw new Error(`The export '${subpath}#${exported.getName()}' does not resolve to a declaration.`);
+            }
+            // A re-export of another package's type is recorded by where it comes from; its text
+            // depends on that package's installed version, not on this package.
+            const external = declarations.every((declaration) =>
+                !path.resolve(declaration.getSourceFile().fileName).startsWith(packageRoot) ||
+                declaration.getSourceFile().fileName.includes(`${path.sep}node_modules${path.sep}`));
+            const text = external
+                ? `re-export of ${checker.getFullyQualifiedName(target)}`
                 : declarations.map(declarationText).join(' | ');
             return [exported.getName(), text];
-        }).sort(([left], [right]) => left.localeCompare(right));
+        }).sort(([left], [right]) => ordinal(left, right));
         surface[subpath] = Object.fromEntries(entries);
     }
     return surface;
@@ -96,7 +117,7 @@ export const compareApiSurfaces = (baseline, current) => {
     const removed = [];
     const changed = [];
     const added = [];
-    const subpaths = [...new Set([...Object.keys(baseline), ...Object.keys(current)])].sort();
+    const subpaths = [...new Set([...Object.keys(baseline), ...Object.keys(current)])].sort(ordinal);
     for (const subpath of subpaths) {
         const before = baseline[subpath];
         const after = current[subpath];
