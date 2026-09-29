@@ -92,9 +92,9 @@ const rewrittenFiles = new Set(
 // beside this in-repo build, even though Source/*.tsx is excluded from the published archive.
 const navigationFile = path.join(packageDir, 'scripts', 'source-map-navigation.ts');
 const navigationSource = [
-    "import type { CanvasItemRegistryEntry } from '../dist/esm/Canvas/Canvas.js';",
+    "import type { CanvasProps } from '../dist/esm/Canvas/Canvas.js';",
     "import type { CanvasItemProps } from '../dist/esm/Canvas/CanvasItem.js';",
-    'type Rewritten = CanvasItemRegistryEntry;',
+    'type Rewritten = CanvasProps;',
     'type Unchanged = CanvasItemProps;',
 ].join('\n');
 const navigationHost = {
@@ -132,7 +132,7 @@ const sourceMapper = ts.getSourceMapper({
 });
 try {
     for (const [symbol, sourceFile] of [
-        ['CanvasItemRegistryEntry', 'Canvas/Canvas.tsx'], // Rewritten declaration
+        ['CanvasProps', 'Canvas/Canvas.tsx'], // Rewritten declaration
         ['CanvasItemProps', 'Canvas/CanvasItem.tsx'], // Unchanged declaration
     ]) {
         const usage = navigationSource.lastIndexOf(symbol);

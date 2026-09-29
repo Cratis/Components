@@ -27,6 +27,7 @@ import {
     type DataTableFilterConstraint,
     type DataTableFilterMatchMode as FilterMatchMode,
 } from './DataTableFilterMeta';
+import { classNames } from '../ClassNames/classNames';
 
 /** Value editor used by a built-in column filter. */
 export type ColumnFilterDataType = 'text' | 'numeric' | 'date' | 'boolean';
@@ -191,9 +192,6 @@ const optionsFor = (dataType: ColumnFilterDataType): MatchModeOption[] => {
             ].map(([label, value]) => ({ label, value }) as MatchModeOption);
     }
 };
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 const defaultModeFor = (dataType: ColumnFilterDataType): FilterMatchMode => {
     if (dataType === 'text') return DataTableFilterMatchMode.Contains;

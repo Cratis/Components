@@ -34,6 +34,7 @@ import {
     asReactAriaListBoxItemProps,
     asReactAriaListBoxProps,
 } from '../Common/reactAriaProps';
+import { classNames } from '../ClassNames/classNames';
 
 type DropdownOptionValue =
     string | number | boolean | bigint | symbol | object | null | undefined;
@@ -89,9 +90,6 @@ const resolveOptions = (
             disabled,
         };
     });
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 /** The part of the ComboBox lifecycle a commit has to reach, from outside the ComboBox subtree. */
 interface CommittableComboBox {

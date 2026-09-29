@@ -31,6 +31,7 @@ import {
     asReactAriaListBoxItemProps,
     asReactAriaListBoxProps,
 } from './reactAriaProps';
+import { classNames } from '../ClassNames/classNames';
 
 /** Attributes a consumer may hand to one {@link ComboBox} part: class, style, title and data attributes. */
 export type ComboBoxPartAttributes = Pick<
@@ -165,9 +166,6 @@ const partAttributes = (part: ComboBoxPartAttributes | undefined) => ({
     ...part,
     style: part?.style as CSSProperties | undefined,
 });
-
-const classNames = (...values: Array<string | undefined | false>) =>
-    values.filter(Boolean).join(' ');
 
 const matches = (option: ComboBoxOption, text: string, filter: ComboBoxFilter) => {
     if (filter === 'none' || text === '') return true;

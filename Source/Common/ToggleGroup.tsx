@@ -8,6 +8,7 @@ import {
 } from 'react-aria-components/ToggleButtonGroup';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { classNames } from '../ClassNames/classNames';
 
 /** Attributes a consumer may hand to one {@link ToggleGroup} part: class, style, title and data attributes. */
 export type ToggleGroupPartAttributes = Pick<
@@ -73,9 +74,6 @@ export interface ToggleGroupProps {
     /** Cratis-owned per-part attributes. */
     pt?: ToggleGroupParts;
 }
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 /**
  * A single-selection group of exclusive choices — a segmented control.

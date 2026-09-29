@@ -9,6 +9,7 @@ import {
 } from 'react-aria-components/Breadcrumbs';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { classNames } from '../ClassNames/classNames';
 
 /** Attributes a consumer may hand to one {@link Breadcrumbs} part: class, style, title and data attributes. */
 export type BreadcrumbsPartAttributes = Pick<
@@ -59,9 +60,6 @@ export interface BreadcrumbsProps {
     /** Cratis-owned per-part attributes. */
     pt?: BreadcrumbsParts;
 }
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 /**
  * A breadcrumb trail.

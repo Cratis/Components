@@ -33,9 +33,7 @@ import {
     toCalendarDate,
 } from '@internationalized/date';
 import type { DatePickerInputProps } from './DatePickerInput';
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
+import { classNames } from '../ClassNames/classNames';
 
 const asDateValue = (
     value: Date | null,

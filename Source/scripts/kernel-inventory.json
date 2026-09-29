@@ -18,6 +18,7 @@
         "Source/Chat/isTopicUnnamed.ts",
         "Source/Chat/shouldRequestTopicName.ts",
         "Source/Chat/topicsByActivity.ts",
+        "Source/ClassNames/classNames.ts",
         "Source/CommandDialog/applyBeforeExecute.ts",
         "Source/CommandForm/commandFormMarkers.ts",
         "Source/CommandForm/fields/chipValues.ts",

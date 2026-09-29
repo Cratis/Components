@@ -14,6 +14,7 @@ import { type TimeMachineLabels, defaultTimeMachineLabels } from './TimeMachineL
 import { Properties } from './Properties';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { classNames } from '../ClassNames/classNames';
 
 /** Stable part attributes for {@link EventsView}. */
 export interface EventsViewParts {
@@ -53,9 +54,6 @@ export interface EventsViewProps {
     /** Override any user-facing string (for localization). See {@link TimeMachineLabels}. */
     labels?: TimeMachineLabels;
 }
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 export const SelectedEventSequenceNumbersContext =
     createContext<ReadonlySet<number> | undefined>(undefined);

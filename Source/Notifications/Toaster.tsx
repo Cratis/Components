@@ -20,6 +20,7 @@ import {
 } from './toast';
 import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
+import { classNames } from '../ClassNames/classNames';
 
 /** Supported viewport positions for the global toast region. */
 export type ToasterPosition =
@@ -83,8 +84,6 @@ const severitySymbol: Record<ToastSeverity, string> = {
 };
 
 const emptyToasts: ToastRecord[] = [];
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 interface ToastFrameProps {
     item: ToastRecord;

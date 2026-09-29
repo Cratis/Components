@@ -20,6 +20,7 @@ import type { ExactPartKeys } from '../types/ExactPartKeys';
 import type { PartsOf } from '../types/parts';
 import { NumberInputCommitReason } from './NumberInputCommitReason';
 import type { NumberInputPartAttributes } from './NumberInputPartAttributes';
+import { classNames } from '../ClassNames/classNames';
 
 /** Stable Cratis-owned parts for styling a {@link NumberInput}. */
 export interface NumberInputParts {
@@ -107,9 +108,6 @@ export interface NumberInputProps {
     /** Cratis-owned per-part attributes. */
     pt?: NumberInputParts;
 }
-
-const classNames = (...values: Array<string | undefined>) =>
-    values.filter(Boolean).join(' ');
 
 const semanticValue = (value: number | null): number | null =>
     value !== null && Number.isFinite(value) ? value : null;
