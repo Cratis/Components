@@ -96,4 +96,31 @@ describe('when computing the API surface', () => {
         writePackage('export declare const value: string;\n', packageDir, { './Plain': './dist/Plain.js' });
         expect(() => computeApiSurface(packageDir)).toThrow(/does not understand/u);
     });
+
+    it('should report switching a star export to a type-only star export as a change', () => {
+        mkdirSync(path.join(packageDir, 'dist'), { recursive: true });
+        writeFileSync(path.join(packageDir, 'dist', 'Widget.d.ts'), 'export declare class Widget { }\n');
+        writeFileSync(path.join(packageDir, 'dist', 'inner.d.ts'), "export * from './Widget';\n");
+        writePackage("export * from './inner';\n");
+        const before = computeApiSurface(packageDir);
+        writeFileSync(path.join(packageDir, 'dist', 'inner.d.ts'), "export type * from './Widget';\n");
+        const after = computeApiSurface(packageDir);
+        expect(compareApiSurfaces(before, after)).toEqual({ removed: [], changed: ['./Example#Widget'], added: [] });
+    });
+
+    it('should record a package re-export the same way whatever the package does internally', () => {
+        writePackage("export { Shared } from '@example/external';\n");
+        installExternalPackage(packageDir);
+        const external = path.join(packageDir, 'node_modules', '@example', 'external');
+        writeFileSync(path.join(external, 'shared.d.ts'), 'export declare class Shared { }\n');
+        writeFileSync(path.join(external, 'index.d.ts'), "export type { Shared } from './shared';\n");
+        expect(computeApiSurface(packageDir)['./Example'].Shared).toBe('re-export of @example/external#Shared');
+    });
+
+    it('should describe a namespace re-export of an internal module by its export names', () => {
+        mkdirSync(path.join(packageDir, 'dist'), { recursive: true });
+        writeFileSync(path.join(packageDir, 'dist', 'inner.d.ts'), 'declare const hidden: number;\nexport declare const second: typeof hidden;\nexport declare class First { }\nexport {};\n');
+        writePackage("export * as Inner from './inner';\n");
+        expect(computeApiSurface(packageDir)['./Example'].Inner).toBe('namespace { First, second }');
+    });
 });

@@ -30,6 +30,11 @@ const packageName = '@cratis/components';
 const cacheDir = path.join(packageDir, 'node_modules', '.cache');
 mkdirSync(cacheDir, { recursive: true });
 const scratch = mkdtempSync(path.join(cacheDir, 'cratis-api-baseline-'));
+// process.exit skips finally blocks, so every exit removes the unpacked baseline first.
+const finish = (code) => {
+    rmSync(scratch, { recursive: true, force: true });
+    process.exit(code);
+};
 try {
     const pack = spawnSync('npm', ['pack', `${packageName}@${version}`, '--silent', '--fetch-retries=3',
         '--pack-destination', scratch], { encoding: 'utf8' });
@@ -42,21 +47,21 @@ try {
         const reason = /E404|404 Not Found/u.test(output)
             ? `${packageName}@${version} is not published yet, so there is no release to compare with.`
             : `The baseline ${packageName}@${version} could not be downloaded: ${output.split('\n')[0] || 'no output'}`;
-        const report = `## Public API compared with the latest release\n\nNo baseline. ${reason}\n`;
+        const report = `## Public API compared with ${packageName}@${version}\n\nNo baseline. ${reason}\n`;
         console.log(report);
         if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${report}\n`);
         try {
             computeApiSurface(packageDir);
         } catch (error) {
             console.error(`Could not compute the API surface: ${error instanceof Error ? error.message : String(error)}`);
-            process.exit(2);
+            finish(2);
         }
-        process.exit(0);
+        finish(0);
     }
     const extract = spawnSync('tar', ['-xzf', path.join(scratch, archive), '-C', scratch], { encoding: 'utf8' });
     if (extract.status !== 0) {
         console.error(`Could not extract ${archive}: ${extract.stderr.trim()}`);
-        process.exit(2);
+        finish(2);
     }
     const baselineVersion = archive.replace(/^cratis-components-/u, '').replace(/\.tgz$/u, '');
 
@@ -67,7 +72,7 @@ try {
         current = computeApiSurface(packageDir);
     } catch (error) {
         console.error(`Could not compute an API surface: ${error instanceof Error ? error.message : String(error)}`);
-        process.exit(2);
+        finish(2);
     }
     const { removed, changed, added } = compareApiSurfaces(baseline, current);
     const list = (items) => items.length ? items.map((item) => `- \`${item}\``).join('\n') : '- none';
@@ -88,7 +93,7 @@ try {
     ].join('\n');
     console.log(report);
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${report}\n`);
-    if (failOnBreaking && removed.length + changed.length > 0) process.exit(1);
+    if (failOnBreaking && removed.length + changed.length > 0) finish(1);
 } finally {
     rmSync(scratch, { recursive: true, force: true });
 }
