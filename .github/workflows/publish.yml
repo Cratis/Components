@@ -137,9 +137,15 @@ jobs:
                   for name in "${packages[@]}"; do
                     published=$(npm view "$name@$VERSION" version 2>/dev/null || true)
                     tagged=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
-                    echo "$name: published=$published $NPM_PUBLISH_TAG=$tagged"
+                    # Read latest again once the publish is visible: the first read may predate it.
+                    latest=$(npm view "$name" dist-tags.latest)
+                    echo "$name: published=$published $NPM_PUBLISH_TAG=$tagged latest=$latest"
                     if [[ "$published" != "$VERSION" || "$tagged" != "$VERSION" ]]; then
                       echo "::error::$name@$VERSION is not on the registry under $NPM_PUBLISH_TAG."
+                      failed=1
+                    fi
+                    if [[ "$latest" == 3.* ]]; then
+                      echo "::error::$name latest moved to $latest; restore it with npm dist-tag add $name@<current 4.x> latest."
                       failed=1
                     fi
                   done
