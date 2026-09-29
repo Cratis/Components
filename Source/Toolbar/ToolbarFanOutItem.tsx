@@ -80,6 +80,11 @@ export const ToolbarFanOutItem = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const rovingTrigger = useRovingTool<HTMLButtonElement>(pt?.trigger?.tabIndex, pt?.trigger?.onFocus);
+    const rovingTriggerRef = rovingTrigger.ref;
+    const setTriggerRef = useCallback((element: HTMLButtonElement | null) => {
+        triggerRef.current = element;
+        if (typeof rovingTriggerRef === 'function') rovingTriggerRef(element);
+    }, [rovingTriggerRef]);
     const panelRef = useRef<HTMLDivElement>(null);
     const generatedPanelId = useId();
     const panelId = pt?.panel?.id ?? generatedPanelId;
@@ -172,10 +177,7 @@ export const ToolbarFanOutItem = ({
                     {...pt?.trigger}
                     tabIndex={rovingTrigger.tabIndex}
                     onFocus={rovingTrigger.onFocus}
-                    ref={(element: HTMLButtonElement | null) => {
-                        triggerRef.current = element;
-                        if (typeof rovingTrigger.ref === 'function') rovingTrigger.ref(element);
-                    }}
+                    ref={setTriggerRef}
                     type='button'
                     aria-label={tooltip}
                     aria-expanded={isExpanded}

@@ -3,13 +3,14 @@
 
 // @vitest-environment jsdom
 
-import { act, useState } from 'react';
+import { act, StrictMode, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import { expect } from 'chai';
 import { Toolbar } from '../Toolbar';
 import { ToolbarButton } from '../ToolbarButton';
+import { ToolbarFolder } from '../ToolbarFolder';
 import { ActionMenubar } from '../../Common/ActionMenubar';
 import { ToolbarFocusMode } from '../../Common/ToolbarFocusMode';
 
@@ -104,6 +105,80 @@ describe('when a toolbar uses a single Tab stop', () => {
         await render(<Tools />);
         await render(<Tools focusMode={ToolbarFocusMode.Arrows} />);
         expect(tabIndexes()).to.deep.equal(['0', '0', '0', '-1']);
+    });
+});
+
+// State that changes inside a tool's own wrapper does not re-render the toolbar; the toolbar must
+// still notice when its active tool is no longer available.
+let changeFirst: (change: 'optOut' | 'disable' | 'remove' | undefined) => void = () => undefined;
+const WrappedFirstTool = () => {
+    const [change, setChange] = useState<'optOut' | 'disable' | 'remove' | undefined>(undefined);
+    changeFirst = setChange;
+    if (change === 'remove') return null;
+    return (
+        <ToolbarButton
+            icon='pi pi-pencil'
+            title='Draw'
+            pt={change === 'optOut' ? { root: { tabIndex: -1 } } : change === 'disable' ? { root: { disabled: true } } : undefined}
+        />
+    );
+};
+
+describe('when the active tool changes inside its own wrapper', () => {
+    for (const change of ['optOut', 'disable', 'remove'] as const) {
+        it(`should move the Tab stop to the next tool after ${change}`, async () => {
+            await render(
+                <Toolbar focusMode={ToolbarFocusMode.SingleTabStop}>
+                    <WrappedFirstTool />
+                    <ToolbarButton icon='pi pi-eraser' title='Erase' />
+                </Toolbar>,
+            );
+            expect(container.querySelector('[aria-label="Draw"]')!.getAttribute('tabindex')).to.equal('0');
+            await act(async () => changeFirst(change));
+            await act(async () => { await Promise.resolve(); });
+            expect(container.querySelector('[aria-label="Erase"]')!.getAttribute('tabindex')).to.equal('0');
+        });
+    }
+});
+
+describe('when a toolbar with a folder uses a single Tab stop', () => {
+    it('should make the folder trigger part of the single Tab stop', async () => {
+        await render(
+            <Toolbar focusMode={ToolbarFocusMode.SingleTabStop}>
+                <ToolbarButton icon='pi pi-pencil' title='Draw' />
+                <ToolbarFolder icon='pi pi-folder' title='Shapes'>
+                    <ToolbarButton icon='pi pi-circle' title='Circle' />
+                </ToolbarFolder>
+            </Toolbar>,
+        );
+        expect(container.querySelector('[aria-label="Shapes"]')!.getAttribute('tabindex')).to.equal('-1');
+        const draw = container.querySelector<HTMLButtonElement>('[aria-label="Draw"]')!;
+        draw.focus();
+        await key(draw, 'ArrowDown');
+        expect(document.activeElement?.getAttribute('aria-label')).to.equal('Shapes');
+        expect(container.querySelector('[aria-label="Shapes"]')!.getAttribute('tabindex')).to.equal('0');
+    });
+});
+
+describe('when a consumer handles focus on a tool', () => {
+    it('should call the consumer handler and still move the Tab stop', async () => {
+        let focused = 0;
+        await render(
+            <Toolbar focusMode={ToolbarFocusMode.SingleTabStop}>
+                <ToolbarButton icon='pi pi-pencil' title='Draw' />
+                <ToolbarButton icon='pi pi-eraser' title='Erase' pt={{ root: { onFocus: () => { focused++; } } }} />
+            </Toolbar>,
+        );
+        await act(async () => container.querySelector<HTMLButtonElement>('[aria-label="Erase"]')!.focus());
+        expect(focused).to.equal(1);
+        expect(container.querySelector('[aria-label="Erase"]')!.getAttribute('tabindex')).to.equal('0');
+    });
+});
+
+describe('when a single Tab stop toolbar renders in StrictMode', () => {
+    it('should still give exactly one tool the Tab stop', async () => {
+        await render(<StrictMode><Tools /></StrictMode>);
+        expect(tabIndexes()).to.deep.equal(['0', '-1', '-1', '-1']);
     });
 });
 

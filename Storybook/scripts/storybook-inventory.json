@@ -619,6 +619,7 @@
         "toolbar-toolbar--layout-for-editor-modules",
         "toolbar-toolbar--layout-with-global-and-editor-regions",
         "toolbar-toolbar--layout-with-smooth-editor-transitions",
+        "toolbar-toolbar--single-tab-stop",
         "toolbar-toolbar--with-active-button",
         "toolbar-toolbar--with-contexts",
         "toolbar-toolbar--with-editable-tool",

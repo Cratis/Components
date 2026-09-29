@@ -59,6 +59,7 @@ import {
     FaWrench,
 } from 'react-icons/fa6';
 import { Toolbar } from './Toolbar';
+import { ToolbarFocusMode } from '../Common/ToolbarFocusMode';
 import { ToolbarButton } from './ToolbarButton';
 import { ToolbarContext } from './ToolbarContext';
 import { ToolbarFanOutItem } from './ToolbarFanOutItem';
@@ -304,6 +305,36 @@ export const WithEditableTool: Story = {
 };
 
 /** Demonstrates the active (selected) state of a toolbar button. */
+/** One Tab stop for the toolbar's own tools; the input keeps its own Tab stop. */
+export const SingleTabStop: Story = {
+    render: () => (
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button type='button'>Before</button>
+            <Toolbar orientation='horizontal' focusMode={ToolbarFocusMode.SingleTabStop} aria-label='Drawing tools'>
+                <ToolbarButton icon={<FaPencil />} title='Draw' />
+                <ToolbarButton icon={<FaEraser />} title='Erase' />
+                <input aria-label='Brush size' defaultValue='4' style={{ width: '4rem' }} />
+            </Toolbar>
+            <button type='button'>After</button>
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        canvas.getByRole('button', { name: 'Before' }).focus();
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'Draw' })).toHaveFocus();
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(canvas.getByRole('button', { name: 'Erase' })).toHaveFocus();
+        await userEvent.tab();
+        await expect(canvas.getByRole('textbox', { name: 'Brush size' })).toHaveFocus();
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'After' })).toHaveFocus();
+        await userEvent.tab({ shift: true });
+        await userEvent.tab({ shift: true });
+        await expect(canvas.getByRole('button', { name: 'Erase' })).toHaveFocus();
+    },
+};
+
 export const WithActiveButton: Story = {
     render: () => {
         const ActiveDemo = () => {

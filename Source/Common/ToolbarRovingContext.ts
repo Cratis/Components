@@ -1,15 +1,18 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { createContext, useCallback, useContext, useId, type FocusEvent, type Ref } from 'react';
+import { createContext, useCallback, useContext, useId, useSyncExternalStore, type FocusEvent, type Ref } from 'react';
 
-/** The single-Tab-stop state a toolbar shares with the tools it owns. */
+/**
+ * The single-Tab-stop state a toolbar shares with the tools it owns. Its identity is stable for
+ * the toolbar's lifetime in that mode; tools subscribe to the active tool instead of re-rendering
+ * with every focus change.
+ */
 export interface ToolbarRoving {
-    /**
-     * The tab index a registered tool renders: 0 for the active tool, -1 for the others, or
-     * undefined (native) until the toolbar has chosen an active tool.
-     */
-    tabIndexFor(key: string): number | undefined;
+    /** The active tool's key, or null until the toolbar has chosen one. */
+    getActiveKey(): string | null;
+    /** Subscribes to changes of the active tool. */
+    subscribe(listener: () => void): () => void;
     /** Records the element for a tool, or removes it when the element is null. */
     register(key: string, element: HTMLElement | null): void;
     /** Makes a tool the toolbar's single Tab stop. */
@@ -26,6 +29,12 @@ export interface RovingToolProps<TElement extends HTMLElement> {
     onFocus?: (event: FocusEvent<TElement>) => void;
 }
 
+const subscribeToNothing = () => () => undefined;
+const unmanaged = 'unmanaged';
+const undecided = 'undecided';
+const active = 'active';
+const inactive = 'inactive';
+
 /**
  * Makes a Components-owned tool take part in its toolbar's single Tab stop. React renders the
  * tab index, so nothing rewrites DOM attributes that React also owns. A tool with an explicit
@@ -40,14 +49,29 @@ export const useRovingTool = <TElement extends HTMLElement>(
 ): RovingToolProps<TElement> => {
     const roving = useContext(ToolbarRovingContext);
     const key = useId();
-    const managed = roving !== null && explicitTabIndex === undefined;
+    // Only a tool without an explicit tab index is managed by the toolbar.
+    const store = explicitTabIndex === undefined ? roving : null;
+    const state = useSyncExternalStore(
+        store ? store.subscribe : subscribeToNothing,
+        () => {
+            if (!store) return unmanaged;
+            const activeKey = store.getActiveKey();
+            return activeKey === null ? undecided : activeKey === key ? active : inactive;
+        },
+        // Server-rendered markup keeps native Tab stops until the toolbar chooses its active tool.
+        () => (store ? undecided : unmanaged),
+    );
     const ref = useCallback((element: TElement | null) => {
-        if (managed) roving?.register(key, element);
-    }, [managed, roving, key]);
+        store?.register(key, element);
+    }, [store, key]);
     const handleFocus = useCallback((event: FocusEvent<TElement>) => {
         onFocus?.(event);
-        if (managed) roving?.activate(key);
-    }, [managed, onFocus, roving, key]);
-    if (!managed) return { tabIndex: explicitTabIndex, onFocus };
-    return { ref, tabIndex: roving?.tabIndexFor(key), onFocus: handleFocus };
+        store?.activate(key);
+    }, [onFocus, store, key]);
+    if (!store) return { tabIndex: explicitTabIndex, onFocus };
+    return {
+        ref,
+        tabIndex: state === active ? 0 : state === inactive ? -1 : undefined,
+        onFocus: handleFocus,
+    };
 };

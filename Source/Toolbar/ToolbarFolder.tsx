@@ -10,6 +10,7 @@ import {
     useId,
     useMemo,
     useRef,
+    useCallback,
     useState,
 } from 'react';
 import { useRovingTool } from '../Common/ToolbarRovingContext';
@@ -94,6 +95,11 @@ export const ToolbarFolder = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const rovingTrigger = useRovingTool<HTMLButtonElement>(pt?.trigger?.tabIndex, pt?.trigger?.onFocus);
+    const rovingTriggerRef = rovingTrigger.ref;
+    const setTriggerRef = useCallback((element: HTMLButtonElement | null) => {
+        triggerRef.current = element;
+        if (typeof rovingTriggerRef === 'function') rovingTriggerRef(element);
+    }, [rovingTriggerRef]);
     const generatedPanelId = useId();
     const panelId = pt?.panel?.id ?? generatedPanelId;
 
@@ -169,10 +175,7 @@ export const ToolbarFolder = ({
                         {...pt?.trigger}
                         tabIndex={rovingTrigger.tabIndex}
                         onFocus={rovingTrigger.onFocus}
-                        ref={(element: HTMLButtonElement | null) => {
-                            triggerRef.current = element;
-                            if (typeof rovingTrigger.ref === 'function') rovingTrigger.ref(element);
-                        }}
+                        ref={setTriggerRef}
                         type='button'
                         aria-label={title}
                         aria-expanded={isExpanded}

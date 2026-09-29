@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, type KeyboardEvent } from 'react';
 import { ToolbarFocusMode } from './ToolbarFocusMode';
 import type { ToolbarRoving } from './ToolbarRovingContext';
 
@@ -18,7 +18,8 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
     // so it does not make them unreachable by arrow keys.
     const managedByKey = useRef(new Map<string, HTMLElement>());
     const keyByManaged = useRef(new Map<HTMLElement, string>());
-    const [activeKey, setActiveKey] = useState<string | null>(null);
+    const activeKeyRef = useRef<string | null>(null);
+    const listeners = useRef(new Set<() => void>());
 
     const tools = useCallback(() => {
         const root = rootRef.current;
@@ -35,24 +36,46 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
         });
     }, []);
 
-    // Keep the active tool available: when it is removed, disabled, or hidden, the first available
-    // tool the toolbar owns becomes the single Tab stop. This only changes React state.
+    const setActiveKey = useCallback((key: string | null) => {
+        if (activeKeyRef.current === key) return;
+        activeKeyRef.current = key;
+        listeners.current.forEach(listener => listener());
+    }, []);
+
+    // Keep the active tool available: when it is removed, disabled, hidden, or opts out with its
+    // own tab index, the first available tool the toolbar owns becomes the single Tab stop. This
+    // only changes the toolbar's own state; tools render their tab index from it.
     const reconcile = useCallback(() => {
         if (!singleTabStop) return;
         const available = tools();
-        setActiveKey(current => {
-            const element = current === null ? undefined : managedByKey.current.get(current);
-            if (element && available.includes(element)) return current;
-            const first = available.find(tool => keyByManaged.current.has(tool));
-            return first ? keyByManaged.current.get(first)! : null;
+        const current = activeKeyRef.current;
+        const element = current === null ? undefined : managedByKey.current.get(current);
+        if (element && available.includes(element)) return;
+        const first = available.find(tool => keyByManaged.current.has(tool));
+        setActiveKey(first ? keyByManaged.current.get(first)! : null);
+    }, [singleTabStop, tools, setActiveKey]);
+
+    // Several registrations and mutations in one commit or frame need only one check.
+    const reconcileScheduled = useRef(false);
+    const scheduleReconcile = useCallback(() => {
+        if (reconcileScheduled.current) return;
+        reconcileScheduled.current = true;
+        queueMicrotask(() => {
+            reconcileScheduled.current = false;
+            reconcile();
         });
-    }, [singleTabStop, tools]);
+    }, [reconcile]);
 
     useLayoutEffect(reconcile);
     useLayoutEffect(() => {
         const root = rootRef.current;
         if (!root || !singleTabStop) return;
-        const observer = new MutationObserver(reconcile);
+        // Only changes on a managed tool or one of its ancestors can make it unavailable.
+        const affectsManagedTool = (record: MutationRecord) => record.type === 'childList' ||
+            [...keyByManaged.current.keys()].some(tool => record.target === tool || record.target.contains(tool));
+        const observer = new MutationObserver(records => {
+            if (records.some(affectsManagedTool)) scheduleReconcile();
+        });
         observer.observe(root, {
             childList: true,
             subtree: true,
@@ -60,10 +83,14 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
             attributeFilter: ['hidden', 'inert', 'aria-hidden', 'aria-disabled', 'disabled', 'style', 'class'],
         });
         return () => observer.disconnect();
-    }, [singleTabStop, reconcile]);
+    }, [singleTabStop, scheduleReconcile]);
 
     const roving = useMemo<ToolbarRoving | null>(() => singleTabStop ? {
-        tabIndexFor: key => activeKey === null ? undefined : key === activeKey ? 0 : -1,
+        getActiveKey: () => activeKeyRef.current,
+        subscribe: listener => {
+            listeners.current.add(listener);
+            return () => listeners.current.delete(listener);
+        },
         register: (key, element) => {
             const previous = managedByKey.current.get(key);
             if (previous) keyByManaged.current.delete(previous);
@@ -73,9 +100,12 @@ export const useToolbarKeyboardNavigation = (orientation: Orientation, focusMode
             } else {
                 managedByKey.current.delete(key);
             }
+            // A tool that stops being managed (unmounted, or given its own tab index) may have
+            // been the active one; a new tool may be the first available one.
+            scheduleReconcile();
         },
         activate: key => setActiveKey(key),
-    } : null, [singleTabStop, activeKey]);
+    } : null, [singleTabStop, scheduleReconcile, setActiveKey]);
 
     const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
         if (focusMode === ToolbarFocusMode.None || event.defaultPrevented || event.isPropagationStopped() ||
