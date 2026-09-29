@@ -86,9 +86,9 @@ jobs:
 
             - name: Configure npm for OIDC-based publishing
               run: |
-                  # setup-node writes a placeholder _authToken (XXXXX-XXXXX-XXXXX-XXXXX) into
-                  # .npmrc and exports NODE_AUTH_TOKEN with the same placeholder. npm uses this
-                  # token as-is for registry auth → 404. Remove it so npm falls back to OIDC.
+                  # setup-node writes _authToken=${NODE_AUTH_TOKEN} into .npmrc. npm would use
+                  # that entry instead of OIDC trusted publishing, so delete it and make sure
+                  # NODE_AUTH_TOKEN is empty.
                   sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
                   echo "NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
                   echo "--- .npmrc after stripping placeholder ---"
