@@ -59,11 +59,11 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  # yarn.lock is committed and part of the key; caching it would restore a stale copy.
+                  key: ${{ runner.os }}-yarn-v3-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build JS/TS
               run: |
@@ -107,11 +107,11 @@ jobs:
                       .yarn/cache
                       **/node_modules
                       **/.eslintcache
-                      **/yarn.lock
-                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+                  # yarn.lock is committed and part of the key; caching it would restore a stale copy.
+                  key: ${{ runner.os }}-yarn-v3-${{ hashFiles('yarn.lock', '**/package.json', '.yarnrc.yml') }}
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build the published artifact
               working-directory: Source
@@ -141,7 +141,7 @@ jobs:
                   registry-url: 'https://registry.npmjs.org'
 
             - name: Yarn install
-              run: yarn
+              run: yarn install --immutable
 
             - name: Build and pack Components
               run: |

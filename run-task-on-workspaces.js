@@ -79,6 +79,15 @@ function updateDependencyVersionsFromLocalWorkspaces(file, packageJson, version)
 
 const publishFailures = [];
 
+// Maintenance releases publish under their own dist-tag. Without an explicit, non-latest tag,
+// npm would move `latest` to this line and every fresh install would get it instead of the
+// current major, so publishing refuses to start.
+const publishTag = process.env.NPM_PUBLISH_TAG;
+if (task === 'publish-version' && (!publishTag || publishTag === 'latest')) {
+    console.error('Set NPM_PUBLISH_TAG to the maintenance dist-tag (for example v3-lts); refusing to publish under latest.');
+    process.exit(1);
+}
+
 for (const workspaceName in workspaces) {
     const workspaceRelativeLocation = workspaces[workspaceName];
     const workspaceAbsoluteLocation = path.join(process.cwd(), workspaceRelativeLocation);
@@ -105,8 +114,16 @@ for (const workspaceName in workspaces) {
                     fs.copyFileSync(path.join(process.cwd(), "README.md"), targetReadMe);
                 }
 
+                // A re-run after a partial publish continues with the packages that are missing:
+                // npm refuses to publish over an existing version.
+                const existing = spawn('npm', ['view', `${packageJson.name}@${version}`, 'version'], { cwd: workspaceAbsoluteLocation });
+                if (existing.status === 0 && existing.stdout.toString().trim() === version) {
+                    console.log(`Workspace '${workspaceName}' is already published at ${version} - skipping`);
+                    continue;
+                }
+
                 console.log(`Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}'`);
-                const result = spawn('npm', ['publish', '--provenance'], { cwd: workspaceAbsoluteLocation });
+                const result = spawn('npm', ['publish', '--provenance', '--tag', publishTag], { cwd: workspaceAbsoluteLocation });
                 console.log(result.stdout.toString());
                 console.log(result.stderr.toString());
                 if (result.status !== 0) {

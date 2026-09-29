@@ -1,166 +1,168 @@
 name: Publish
 
-on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release'
-        required: true
-        default: '0.0.0'
-        type: string
-      release-notes:
-        description: 'Release notes'
-        required: true
-        default: 'No release notes'
-        type: string
-      logLevel:
-        description: 'Log level'
-        required: true
-        default: 'warning'
-        type: choice
-        options:
-        - info
-        - warning
-        - debug
-  # Releasing on push rather than on the pull_request closed event is deliberate. A pull request from a fork
-  # runs with a read-only GITHUB_TOKEN and no secrets even on merge, so it cannot create the release or reach
-  # the publishing credentials - which is how a merged, labeled fork contribution silently released nothing.
-  # A push to main always runs with a full-permission token, and the release action finds the merged pull
-  # request and its label from the commit.
-  push:
-    # Only main releases. On "**" every base branch released, so merging one pull
-    # request into another one's branch - the ordinary way to stack work - cut and published a version
-    # from a branch that was still in review. That is how Cratis.Fundamentals v7.17.0 came to be
-    # published from the head of an open pull request, carrying every unmerged change on that branch
-    # under release notes describing only the one that had just merged. A release must come from the
-    # branch that is released.
-    branches:
-      - main
+# Maintenance releases for Components 3.x. Dispatch it on support/3.x:
+#   gh workflow run publish.yml --ref support/3.x -f version=3.x.y
+# It keeps the name `publish.yml` so npm trusted publishing, which is bound to the workflow file,
+# accepts it. It publishes under the v3-lts dist-tag, so npm `latest` stays on the current major,
+# and pushes a plain git tag without a GitHub release, so GitHub never marks a 3.x release as the
+# repository's latest release. Publishing skips packages already on the registry, so re-running
+# a failed run continues where it stopped.
 
-permissions:
-  contents: write
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: '3.x version to publish, for example 3.6.2'
+                required: true
+                type: string
+
+concurrency:
+    group: publish-support-3x
+    cancel-in-progress: false
+
+env:
+    NPM_PUBLISH_TAG: v3-lts
+    VERSION: ${{ inputs.version }}
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    outputs:
-      version: ${{ steps.release.outputs.version }}
-      publish: ${{ steps.release.outputs.should-publish }}
-      reason: ${{ steps.release.outputs.reason }}
+    publish:
+        runs-on: ubuntu-latest
+        timeout-minutes: 60
+        # Install, tests and the prepare script run third-party code; this job cannot write to
+        # the repository.
+        permissions:
+            contents: read
+            id-token: write
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
 
-      - name: Release
-        id: release
-        uses: cratis/release-action@v1
-        with:
-          version: ${{ github.event.inputs.version }}
-          release-notes: ${{ github.event.inputs.release-notes }}
+            - name: Validate the maintenance version
+              run: |
+                  set -euo pipefail
+                  if [[ "$GITHUB_REF" != "refs/heads/support/3.x" ]]; then
+                    echo "::error::Maintenance releases are dispatched on support/3.x, not $GITHUB_REF."
+                    exit 1
+                  fi
+                  if [[ ! "$VERSION" =~ ^3\.[0-9]+\.[0-9]+$ ]]; then
+                    echo "::error::'$VERSION' is not a 3.x version."
+                    exit 1
+                  fi
+                  if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+                    echo "::error::v$VERSION is already tagged."
+                    exit 1
+                  fi
+                  highest=$(git tag -l 'v3.*' | sed 's/^v//' | sort -V | tail -1)
+                  if [[ "$(printf '%s\n%s\n' "$highest" "$VERSION" | sort -V | tail -1)" != "$VERSION" ]]; then
+                    echo "::error::$VERSION is not newer than the highest 3.x tag v$highest."
+                    exit 1
+                  fi
+                  echo "Publishing $VERSION under dist-tag $NPM_PUBLISH_TAG (highest existing 3.x tag: v$highest)."
 
-  publish-npm-packages:
-    if: needs.release.outputs.publish == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    needs: [release]
-    permissions:
-      contents: read
-      id-token: write
+            - name: Setup node
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: 24.x
+                  registry-url: 'https://registry.npmjs.org'
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+            - name: Configure npm for OIDC-based publishing
+              run: |
+                  # setup-node writes _authToken=${NODE_AUTH_TOKEN} into .npmrc. npm would use
+                  # that entry instead of OIDC trusted publishing, so delete it and make sure
+                  # NODE_AUTH_TOKEN is empty.
+                  sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
+                  echo "NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
 
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 23.x
-          registry-url: 'https://registry.npmjs.org'
+            - name: Upgrade npm for trusted publishing (requires >= 11.5.1)
+              run: |
+                  npm install -g npm@11
+                  node -e "
+                    const [major, minor, patch] = '$(npm --version)'.split('.').map(Number);
+                    if (major < 11 || (major === 11 && (minor < 5 || (minor === 5 && patch < 1)))) {
+                      console.error('npm >= 11.5.1 is required for trusted publishing');
+                      process.exit(1);
+                    }
+                  "
 
-      - name: Configure npm for OIDC-based publishing
-        run: |
-          # setup-node writes a placeholder _authToken (XXXXX-XXXXX-XXXXX-XXXXX) into
-          # .npmrc and exports NODE_AUTH_TOKEN with the same placeholder. npm uses this
-          # token as-is for registry auth → 404. Remove it so npm falls back to OIDC.
-          sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
-          echo "NODE_AUTH_TOKEN=" >> "$GITHUB_ENV"
-          echo "--- .npmrc after stripping placeholder ---"
-          cat "$NPM_CONFIG_USERCONFIG"
+            - name: Enable Corepack
+              run: corepack enable
 
-      - name: Upgrade npm for trusted publishing (requires >= 11.5.1)
-        run: |
-          npm install -g npm@11
-          NPM_VER="$(npm --version)"
-          echo "Installed npm $NPM_VER"
-          node -e "
-            const v = '$NPM_VER'.split('.').map(Number);
-            if (v[0] < 11 || (v[0] === 11 && v[1] < 5) || (v[0] === 11 && v[1] === 5 && v[2] < 1)) {
-              console.error('npm >= 11.5.1 is required for trusted publishing, got $NPM_VER');
-              process.exit(1);
-            }
-          "
+            - name: Yarn install
+              run: yarn install --immutable
 
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: |
-            .yarn/cache
-            **/node_modules
-            **/.eslintcache
-            **/yarn.lock
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/package.json') }}
+            - name: Build, lint and test
+              run: yarn ci
 
-      - name: Yarn install
-        run: yarn
+            - name: Publish NPM packages
+              run: yarn publish-version "$VERSION"
 
-      - name: Publish NPM packages
-        run: |
-          echo "npm $(npm --version) | node $(node --version)"
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL is $([ -n \"$ACTIONS_ID_TOKEN_REQUEST_URL\" ] && echo 'set' || echo 'NOT set')"
-          echo "NODE_AUTH_TOKEN is '${NODE_AUTH_TOKEN:-(unset)}'"
-          echo "--- .npmrc ---"
-          cat "$NPM_CONFIG_USERCONFIG" 2>/dev/null || echo "(no .npmrc)"
-          echo "---"
-          yarn build
-          yarn publish-version ${{ needs.release.outputs.version }}
+    verify:
+        needs: publish
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        permissions:
+            contents: read
 
-      - name: Git reset (package.json files changed)
-        run: |
-          git reset --hard
+        steps:
+            - name: Verify the release and that latest stayed on the current major
+              run: |
+                  set -euo pipefail
+                  packages=(@cratis/components @cratis/eslint-plugin-components)
+                  failed=0
+                  # A moved latest is reported at once; it needs an npm account to repair.
+                  for name in "${packages[@]}"; do
+                    latest=$(npm view "$name" dist-tags.latest)
+                    echo "$name: latest=$latest"
+                    if [[ "$latest" == 3.* ]]; then
+                      echo "::error::$name latest moved to $latest; restore it with npm dist-tag add $name@<current 4.x> latest."
+                      failed=1
+                    fi
+                  done
+                  # The registry's read path can lag a successful publish by minutes; poll both
+                  # packages together so a slow registry is told apart from a missing publish.
+                  for _ in $(seq 1 30); do
+                    pending=0
+                    for name in "${packages[@]}"; do
+                      published=$(npm view "$name@$VERSION" version 2>/dev/null || true)
+                      tagged=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
+                      [[ "$published" == "$VERSION" && "$tagged" == "$VERSION" ]] || pending=1
+                    done
+                    [[ $pending == 0 ]] && break
+                    sleep 20
+                  done
+                  for name in "${packages[@]}"; do
+                    published=$(npm view "$name@$VERSION" version 2>/dev/null || true)
+                    tagged=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
+                    # Read latest again once the publish is visible: the first read may predate it.
+                    latest=$(npm view "$name" dist-tags.latest)
+                    echo "$name: published=$published $NPM_PUBLISH_TAG=$tagged latest=$latest"
+                    if [[ "$published" != "$VERSION" || "$tagged" != "$VERSION" ]]; then
+                      echo "::error::$name@$VERSION is not on the registry under $NPM_PUBLISH_TAG."
+                      failed=1
+                    fi
+                    if [[ "$latest" == 3.* ]]; then
+                      echo "::error::$name latest moved to $latest; restore it with npm dist-tag add $name@<current 4.x> latest."
+                      failed=1
+                    fi
+                  done
+                  exit $failed
 
-      - name: Trigger Documentation Build
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PAT_DOCUMENTATION }}
-          repository: cratis/documentation
-          event-type: build-docs
+    tag:
+        needs: verify
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        permissions:
+            contents: write
 
-      - name: Trigger Dependency Updates on Sample Repository
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PAT_DOCUMENTATION }}
-          repository: cratis/samples
-          event-type: update-dependencies
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-          
-
-  verify-published:
-    # A merge that publishes nothing is the failure mode that silently costs a release: the release job
-    # succeeds, every publish job is skipped for want of should-publish, and the whole run reports green. Fail
-    # instead, so a release that did not happen cannot be mistaken for one that did.
-    #
-    # Only for the reasons that mean something went wrong. Publishing nothing is correct and routine for the
-    # others - a commit pushed straight to main, a Dependabot merge, a re-run of a run that already released -
-    # and failing on those would make this job noise that everyone learns to ignore.
-    if: always() && needs.release.result == 'success' && contains(fromJSON('["no-label", "error"]'), needs.release.outputs.reason)
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    needs: [release]
-
-    steps:
-      - name: Report that nothing was published
-        run: |
-          echo "::error::Nothing was published and no release was cut (reason: ${{ needs.release.outputs.reason }}). For 'no-label', add exactly one of major, minor or patch to the merged pull request and re-run this workflow - see verify-semver-label, which is meant to catch this before the merge."
-          exit 1
+            - name: Tag the release
+              run: |
+                  git tag "v$VERSION" "$GITHUB_SHA"
+                  git push origin "v$VERSION"
