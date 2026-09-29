@@ -38,6 +38,30 @@ export const Default: Story = {
     },
 };
 
+/** One Tab stop for the actions: arrows move it, and Tab leaves the menubar from the last focused action. */
+export const SingleTabStop: Story = {
+    args: { focusMode: ToolbarFocusMode.SingleTabStop },
+    render: (args) => (
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button type='button'>Before</button>
+            <ActionMenubar {...args} />
+            <button type='button'>After</button>
+        </div>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        canvas.getByRole('button', { name: 'Before' }).focus();
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'New' })).toHaveFocus();
+        await userEvent.keyboard('{ArrowRight}');
+        await expect(canvas.getByRole('button', { name: 'Save' })).toHaveFocus();
+        await userEvent.tab();
+        await expect(canvas.getByRole('button', { name: 'After' })).toHaveFocus();
+        await userEvent.tab({ shift: true });
+        await expect(canvas.getByRole('button', { name: 'Save' })).toHaveFocus();
+    },
+};
+
 export const ArrowsWithWidgets: Story = {
     args: {
         focusMode: ToolbarFocusMode.Arrows,

@@ -15,6 +15,10 @@ The DataTables module provides a semantic local-array table plus specialized Arc
 
 `DataTableCore` accepts a `status` from `DataTableStatus` (`Ready`, `Loading`, `Failed`, or `Unauthorized`) (import `DataTableStatus` from `@cratis/components/DataTables`); it defaults to `Ready`. For a loading table with no rows, it renders a status row; with rows, it retains them and marks the table busy. Failed or unauthorized states render an alert row. Override the text with `loadingMessage`, `failureMessage`, and `unauthorizedMessage` or configure `CratisComponentsProvider`'s `messages.dataTable`.
 
+`DataTableCore` keeps its own sort, column filters, and search text unless you control them. Pass `sort` with `onSortChange`, `filters` with `onFilter`, and `globalFilter` with `onGlobalFilterChange` to own that state, for example to persist it or to send it to the server. `sort={null}` means not sorted; leaving a prop undefined lets the table keep that piece of state itself, and the change callbacks report every change either way. Import `DataTableSort`, `DataTableSortDirection`, and `DataTableRowProcessing` from `@cratis/components/DataTables`.
+
+When the rows already reflect that state, because your query filtered and sorted them on the server, set `rowProcessing={DataTableRowProcessing.None}` so the table renders the rows as given instead of filtering and sorting them a second time. The default, `DataTableRowProcessing.Loaded`, filters and sorts the rows the table was given. The bound query tables do not take these props yet; server-side sorting and filtering for them is tracked in [#178](https://github.com/Cratis/Components/issues/178).
+
 ## When to Use
 
 Use DataTableCore when:

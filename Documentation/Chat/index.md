@@ -97,6 +97,8 @@ export const Workspace = () => {
 | `onRequestTopicName` / `isTopicUnnamed`  | callbacks                                     | —         | The host-side naming contract.                                                                       |
 | `selectedTopicId` / `onTopicSelected`    | `ChatIdentifier \| null`, callback            | Internal  | Owns or observes the open topic.                                                                     |
 | `authorOf`, `renderAvatar`, `renderAuthorName`, `buildAvatarUrl` | callbacks             | —         | Author resolution and rendering. Without `authorOf`, the id is shown as the name.                    |
+| `renderMessageExtra`                                              | `(message) => ReactNode` | —      | Content rendered under a message's body, such as reactions or a failed-reply notice.                 |
+| `renderHeaderActions`                                             | `(openTopic) => ReactNode` | —    | Content rendered in the header between the title and the close button, such as a rename control.     |
 | `actions`, `quickReply`                  | `ChatMessageAction[]`, `boolean`              | —, `true` | Message actions and quick reply; see [Message actions](./message-actions.md).                         |
 | `topicActions`                           | `ChatTopicAction<TTopic>[]`                   | —         | Actions beside available topics; see [Topic actions](./topic-actions.md).                             |
 | `mentionCandidates` / `resolveMentionCandidates` | array or callback                     | —         | See [Mentions and emoji](./mentions-and-emoji.md). Omit both to turn mentions off.                   |
@@ -183,6 +185,25 @@ The built-in avatar shows initials on a color derived from the id. It shows an i
     )}
 />
 ```
+
+## Add your own content to messages and the header
+
+The chat family stays small, so richer per-message features belong to your application. `renderMessageExtra` renders content under each message's body: reactions, a notice for a reply that failed, or anything else keyed off your own message type. `ChatSidebar` forwards it to the conversation. `renderHeaderActions` renders content in the sidebar header, next to the title; it receives the open topic, or `undefined` while the topic list is shown. Returning `null` renders nothing, and the chat's markup is unchanged when you leave both unset.
+
+```tsx
+type AppMessage = ChatMessage & { failed?: boolean; reactions?: string[] };
+
+<ChatSidebar<AppMessage>
+    renderMessageExtra={(message) =>
+        message.failed ? <p role='status'>The agent could not answer.</p> :
+        message.reactions?.length ? <MyReactions reactions={message.reactions} /> : null}
+    renderHeaderActions={(openTopic) =>
+        openTopic ? <MyRenameButton topic={openTopic} /> : null}
+    /* ...the rest of your props */
+/>
+```
+
+`MyReactions` and `MyRenameButton` are your own components. The content you render keeps its own semantics and styling; give interactive controls accessible names.
 
 ## Rendering a message body directly
 

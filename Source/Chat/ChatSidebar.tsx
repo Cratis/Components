@@ -2,7 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import { useEffect, useRef, useState } from 'react';
-import type { ButtonHTMLAttributes, HTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal, ModalOverlay } from 'react-aria-components';
 import type { ChatConversationLabels, ChatConversationProps } from './ChatConversation';
@@ -89,6 +89,14 @@ export interface ChatSidebarProps<
     ChatConversationProps<TMessage>,
     'messages' | 'onSendMessage' | 'labels' | 'className' | 'status'
 > {
+    /**
+     * Renders host content in the header, between the title and the close button, for example a
+     * rename control for the open topic. Nothing is rendered when it returns null or undefined.
+     * @param openTopic The open topic, or undefined while the topic list is shown.
+     * @returns What to render in the header.
+     */
+    renderHeaderActions?: (openTopic: TTopic | undefined) => ReactNode;
+
     /** Whether the sidebar is open. */
     open: boolean;
 
@@ -230,6 +238,7 @@ export const ChatSidebar = <
     topics,
     messages,
     topicActions,
+    renderHeaderActions,
     topicsStatus,
     messagesStatus,
     selectedTopicId,
@@ -379,6 +388,7 @@ export const ChatSidebar = <
                 >
                     {title}
                 </h2>
+                {renderHeaderActions?.(openTopic)}
                 <button
                     {...pt?.close}
                     type='button'

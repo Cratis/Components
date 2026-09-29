@@ -81,8 +81,9 @@ describe('when dismissal is configured on a command dialog', () => {
                 ),
             );
         });
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 300));
+        // Wait for the dialog itself rather than for a fixed delay.
+        await vi.waitFor(() => {
+            if (!document.querySelector('[role="dialog"]')) throw new Error('The dialog has not opened yet.');
         });
     };
 

@@ -11,6 +11,7 @@ import React, {
     useRef,
     useState,
 } from 'react';
+import { useRovingTool } from '../Common/ToolbarRovingContext';
 import { IconDisplay } from '../Common/Icon';
 import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
@@ -78,6 +79,12 @@ export const ToolbarFanOutItem = ({
     const isToolbarItemVisible = useToolbarItemVisibility();
     const containerRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
+    const rovingTrigger = useRovingTool<HTMLButtonElement>(pt?.trigger?.tabIndex, pt?.trigger?.onFocus);
+    const rovingTriggerRef = rovingTrigger.ref;
+    const setTriggerRef = useCallback((element: HTMLButtonElement | null) => {
+        triggerRef.current = element;
+        if (typeof rovingTriggerRef === 'function') rovingTriggerRef(element);
+    }, [rovingTriggerRef]);
     const panelRef = useRef<HTMLDivElement>(null);
     const generatedPanelId = useId();
     const panelId = pt?.panel?.id ?? generatedPanelId;
@@ -168,7 +175,9 @@ export const ToolbarFanOutItem = ({
             >
                 <button
                     {...pt?.trigger}
-                    ref={triggerRef}
+                    tabIndex={rovingTrigger.tabIndex}
+                    onFocus={rovingTrigger.onFocus}
+                    ref={setTriggerRef}
                     type='button'
                     aria-label={tooltip}
                     aria-expanded={isExpanded}

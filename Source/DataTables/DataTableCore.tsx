@@ -6,7 +6,6 @@ import React, {
     useId,
     useMemo,
     useRef,
-    useState,
     type CSSProperties,
     type HTMLAttributes,
     type ReactNode,
@@ -27,6 +26,10 @@ import {
 } from './DataTableFilterMeta';
 import { resolveDataTableFilterMatcher } from './DataTableFilterMatcherRegistry';
 import { DataTableStatus } from './DataTableStatus';
+import type { DataTableSort } from './DataTableSort';
+import { DataTableSortDirection } from './DataTableSortDirection';
+import { DataTableRowProcessing } from './DataTableRowProcessing';
+import { useControllableState } from './useControllableState';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -124,8 +127,24 @@ export interface DataTableCoreProps<TData extends object> {
     globalSearchAriaLabel?: string;
     /** Initial per-field filter constraints. */
     defaultFilters?: DataTableFilterMeta;
+    /** Controlled per-field filter constraints. Leave undefined to let the table keep its own. */
+    filters?: DataTableFilterMeta;
     /** Invoked when applied field filters change. */
     onFilter?: (filters: DataTableFilterMeta) => void;
+    /** Controlled search text. Leave undefined to let the table keep its own. */
+    globalFilter?: string;
+    /** Invoked when the search text changes. */
+    onGlobalFilterChange?: (globalFilter: string) => void;
+    /** Controlled sort; null means not sorted. Leave undefined to let the table keep its own. */
+    sort?: DataTableSort | null;
+    /** Invoked when a sortable column header changes the sort. */
+    onSortChange?: (sort: DataTableSort | null) => void;
+    /**
+     * Whether the table filters and sorts the rows it is given (default:
+     * {@link DataTableRowProcessing.Loaded}). Use {@link DataTableRowProcessing.None} when the
+     * source already applied the controlled filter and sort state.
+     */
+    rowProcessing?: DataTableRowProcessing;
     /** Enables the bounded scroll container. */
     scrollable?: boolean;
     /** Scroll-container maximum height. */
@@ -302,7 +321,13 @@ export const DataTableCore = <TData extends object>({
     globalSearchPlaceholder,
     globalSearchAriaLabel,
     defaultFilters,
+    filters: filtersProp,
     onFilter,
+    globalFilter: globalFilterProp,
+    onGlobalFilterChange,
+    sort: sortProp,
+    onSortChange,
+    rowProcessing = DataTableRowProcessing.Loaded,
     scrollable,
     scrollHeight,
     className,
@@ -331,14 +356,14 @@ export const DataTableCore = <TData extends object>({
     const sortDescendingIcon = icon('sortDescending', '▼');
     const columns = useColumns(children);
     const selectionGroupName = useId();
-    const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters ?? {});
-    const [globalFilter, setGlobalFilter] = useState('');
-    const [sort, setSort] = useState<{
-        field: string;
-        direction: 'ascending' | 'descending';
-    }>();
+    const [filters, setFilters] = useControllableState<DataTableFilterMeta>(filtersProp, defaultFilters ?? {}, onFilter);
+    const [globalFilter, setGlobalFilter] = useControllableState(globalFilterProp, '', onGlobalFilterChange);
+    const [sort, setSort] = useControllableState<DataTableSort | null>(sortProp, null, onSortChange);
 
     const filteredRows = useMemo(() => {
+        if (rowProcessing === DataTableRowProcessing.None) {
+            return data.map((row, loadedIndex) => ({ row, loadedIndex }));
+        }
         const term = globalFilter.trim().toLocaleLowerCase();
         const rows = data
             .map((row, loadedIndex) => ({ row, loadedIndex }))
@@ -364,7 +389,7 @@ export const DataTableCore = <TData extends object>({
             );
             return sort.direction === 'ascending' ? comparison : -comparison;
         });
-    }, [data, filters, globalFilter, globalFilterFields, sort]);
+    }, [data, filters, globalFilter, globalFilterFields, sort, rowProcessing]);
 
     const updateFilter = (
         field: string,
@@ -374,7 +399,6 @@ export const DataTableCore = <TData extends object>({
         if (constraint) next[field] = constraint;
         else delete next[field];
         setFilters(next);
-        onFilter?.(next);
     };
 
     const activateRow = (
@@ -619,17 +643,17 @@ export const DataTableCore = <TData extends object>({
                                                         Boolean(ariaSort) || undefined
                                                     }
                                                     onClick={() =>
-                                                        setSort((current) => ({
+                                                        setSort({
                                                             field: column.props
                                                                 .field as string,
                                                             direction:
-                                                                current?.field ===
+                                                                sort?.field ===
                                                                     column.props.field &&
-                                                                current?.direction ===
-                                                                    'ascending'
-                                                                    ? 'descending'
-                                                                    : 'ascending',
-                                                        }))
+                                                                sort?.direction ===
+                                                                    DataTableSortDirection.Ascending
+                                                                    ? DataTableSortDirection.Descending
+                                                                    : DataTableSortDirection.Ascending,
+                                                        })
                                                     }
                                                 >
                                                     <span>{column.props.header}</span>
