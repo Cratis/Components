@@ -114,6 +114,14 @@ for (const workspaceName in workspaces) {
                     fs.copyFileSync(path.join(process.cwd(), "README.md"), targetReadMe);
                 }
 
+                // A re-run after a partial publish continues with the packages that are missing:
+                // npm refuses to publish over an existing version.
+                const existing = spawn('npm', ['view', `${packageJson.name}@${version}`, 'version'], { cwd: workspaceAbsoluteLocation });
+                if (existing.status === 0 && existing.stdout.toString().trim() === version) {
+                    console.log(`Workspace '${workspaceName}' is already published at ${version} - skipping`);
+                    continue;
+                }
+
                 console.log(`Publishing workspace '${workspaceName}' at '${workspaceRelativeLocation}'`);
                 const result = spawn('npm', ['publish', '--provenance', '--tag', publishTag], { cwd: workspaceAbsoluteLocation });
                 console.log(result.stdout.toString());

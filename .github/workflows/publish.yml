@@ -1,10 +1,12 @@
 name: Publish
 
-# Maintenance releases for Components 3.x. This file keeps the name `publish.yml` so npm trusted
-# publishing, which is bound to the workflow file, accepts it. It runs only when dispatched on
-# support/3.x, publishes under the v3-lts dist-tag so npm `latest` stays on the current major,
-# and creates a plain git tag rather than a GitHub release, because the release action on main
-# computes the next version from the latest GitHub release.
+# Maintenance releases for Components 3.x. Dispatch it on support/3.x:
+#   gh workflow run publish.yml --ref support/3.x -f version=3.x.y
+# It keeps the name `publish.yml` so npm trusted publishing, which is bound to the workflow file,
+# accepts it. It publishes under the v3-lts dist-tag, so npm `latest` stays on the current major,
+# and pushes a plain git tag without a GitHub release, so GitHub never marks a 3.x release as the
+# repository's latest release. Publishing skips packages already on the registry, so re-running
+# a failed run continues where it stopped.
 
 on:
     workflow_dispatch:
@@ -20,13 +22,16 @@ concurrency:
 
 env:
     NPM_PUBLISH_TAG: v3-lts
+    VERSION: ${{ inputs.version }}
 
 jobs:
     publish:
         runs-on: ubuntu-latest
         timeout-minutes: 60
+        # Install, tests and the prepare script run third-party code; this job cannot write to
+        # the repository.
         permissions:
-            contents: write
+            contents: read
             id-token: write
 
         steps:
@@ -34,10 +39,9 @@ jobs:
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   fetch-depth: 0
+                  persist-credentials: false
 
             - name: Validate the maintenance version
-              env:
-                  VERSION: ${{ inputs.version }}
               run: |
                   set -euo pipefail
                   if [[ "$GITHUB_REF" != "refs/heads/support/3.x" ]]; then
@@ -94,27 +98,34 @@ jobs:
               run: yarn ci
 
             - name: Publish NPM packages
-              env:
-                  VERSION: ${{ inputs.version }}
               run: yarn publish-version "$VERSION"
 
+    verify:
+        needs: publish
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        permissions:
+            contents: read
+
+        steps:
             - name: Verify the release and that latest stayed on the current major
-              env:
-                  VERSION: ${{ inputs.version }}
               run: |
                   set -euo pipefail
                   failed=0
                   for name in @cratis/components @cratis/eslint-plugin-components; do
+                    # The registry's read path can lag a successful publish by minutes; separate a
+                    # slow registry from one that never received the publish.
                     published=""
-                    for attempt in 1 2 3 4 5 6; do
+                    tagged=""
+                    for _ in $(seq 1 30); do
                       published=$(npm view "$name@$VERSION" version 2>/dev/null || true)
-                      [[ "$published" == "$VERSION" ]] && break
-                      sleep 10
+                      tagged=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
+                      [[ "$published" == "$VERSION" && "$tagged" == "$VERSION" ]] && break
+                      sleep 20
                     done
-                    tag=$(npm view "$name" "dist-tags.$NPM_PUBLISH_TAG" 2>/dev/null || true)
                     latest=$(npm view "$name" dist-tags.latest)
-                    echo "$name: published=$published $NPM_PUBLISH_TAG=$tag latest=$latest"
-                    if [[ "$published" != "$VERSION" || "$tag" != "$VERSION" ]]; then
+                    echo "$name: published=$published $NPM_PUBLISH_TAG=$tagged latest=$latest"
+                    if [[ "$published" != "$VERSION" || "$tagged" != "$VERSION" ]]; then
                       echo "::error::$name@$VERSION is not on the registry under $NPM_PUBLISH_TAG."
                       failed=1
                     fi
@@ -125,10 +136,18 @@ jobs:
                   done
                   exit $failed
 
+    tag:
+        needs: verify
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
             - name: Tag the release
-              env:
-                  VERSION: ${{ inputs.version }}
               run: |
-                  git reset --hard
-                  git tag "v$VERSION"
+                  git tag "v$VERSION" "$GITHUB_SHA"
                   git push origin "v$VERSION"
