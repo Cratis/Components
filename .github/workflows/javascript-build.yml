@@ -108,7 +108,13 @@ jobs:
                   export NODE_OPTIONS="--max-old-space-size=4096"
                   yarn workspace @cratis/components run ci
 
-            # Source's ci script also checks public API TSDoc and the packed CSS budgets.
+            # Source's ci script also checks public API TSDoc, the packed CSS budgets, and that the
+            # built declarations match the committed api-surface.json snapshot.
+
+            # Informational: which exports this change removes, changes, or adds compared with the
+            # latest published release. Release intent stays with the semver label and the reviewer.
+            - name: Report public API changes against the latest release
+              run: yarn workspace @cratis/components run report-api-compatibility
 
     # Matrix over the renderer-adapter workspaces that today run one after another inside
     # `run-task-on-workspaces.js ci`: Conformance, MUI, PrimeReact 11, PrimeReact 10. In that
