@@ -50,6 +50,8 @@
   href: Filter/toc.yml
 - name: Dropdown
   href: Dropdown/toc.yml
+- name: MarkdownEditor
+  href: MarkdownEditor/toc.yml
 - name: Display
   href: Display/toc.yml
 - name: Notifications
