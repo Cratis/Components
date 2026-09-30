@@ -19,6 +19,13 @@ export interface MessageProps {
     className?: string;
     /** The icon shown ahead of the text. Pass `false` for no icon. */
     icon?: ReactNode | false;
+    /**
+     * Whether the message is its own live region, announced by assistive technology when it
+     * appears. Defaults to `true`: `severity="error"` renders `role="alert"`, every other severity
+     * `role="status"`. Pass `false` to render a plain element with no role when the message sits
+     * inside a live region that already announces it, so it is not announced twice.
+     */
+    live?: boolean;
 }
 
 const severitySymbols: Record<MessageSeverity, string> = {
@@ -37,12 +44,13 @@ export const Message = ({
     children,
     className,
     icon,
+    live = true,
 }: MessageProps) => (
     <div
         className={['cratis-message', className].filter(Boolean).join(' ')}
         data-cratis-part='root'
         data-severity={severity}
-        role={severity === 'error' ? 'alert' : 'status'}
+        role={live ? (severity === 'error' ? 'alert' : 'status') : undefined}
     >
         {icon !== false && (
             <span

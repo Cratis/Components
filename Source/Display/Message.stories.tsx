@@ -33,6 +33,25 @@ export const Error: Story = {
     },
 };
 
+/**
+ * Inside an existing live region, such as a focused error summary, pass `live={false}` so the
+ * message renders as a plain element and is announced once, by the outer region.
+ */
+export const InsideALiveRegion: Story = {
+    args: { severity: 'error', text: 'The name is required.', live: false },
+    decorators: [
+        (Story) => (
+            <div role='alert' aria-label='Error summary'>
+                <Story />
+            </div>
+        ),
+    ],
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await expect(canvas.getAllByRole('alert')).toHaveLength(1);
+    },
+};
+
 export const WithChildren: Story = {
     args: {
         text: undefined,
