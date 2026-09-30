@@ -27,6 +27,8 @@
         "./Dropdown/styles",
         "./Filter",
         "./Filter/styles",
+        "./MarkdownEditor",
+        "./MarkdownEditor/styles",
         "./Notifications",
         "./Notifications/styles",
         "./ObjectContentEditor",

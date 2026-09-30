@@ -66,6 +66,7 @@
 @import './Display/Display.css';
 @import './Dropdown/Dropdown.css';
 @import './Filter/FilterPanel.css';
+@import './MarkdownEditor/MarkdownEditor.css';
 @import './Notifications/Toaster.css';
 @import './ObjectNavigationalBar/ObjectNavigationalBar.css';
 @import './PivotViewer/PivotViewer.css';

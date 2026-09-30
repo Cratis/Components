@@ -555,6 +555,37 @@ export const partDefinitions = {
         parts: ['root', 'icon', 'label', 'remove'],
         sources: ['Display/Chip.tsx'],
     },
+    MarkdownEditor: {
+        parts: [
+            'root',
+            'toolbar',
+            'format',
+            'toggle',
+            'textarea',
+            'preview',
+            'status',
+            'suggestions',
+            'suggestion',
+        ],
+        sources: [
+            'MarkdownEditor/MarkdownEditor.tsx',
+            'MarkdownEditor/MarkdownToolbar.tsx',
+            'MarkdownEditor/MarkdownModeToggle.tsx',
+            'MarkdownEditor/MarkdownWritingArea.tsx',
+            'MarkdownEditor/MarkdownSuggestionList.tsx',
+        ],
+        ptKeys: [
+            'root',
+            'toolbar',
+            'format',
+            'toggle',
+            'textarea',
+            'preview',
+            'status',
+            'suggestions',
+            'suggestion',
+        ],
+    },
 };
 
 /** Canonical boolean state attributes supported by the stable-parts contract. */
@@ -920,6 +951,17 @@ export const partStateDefinitions = {
         icon: [],
         label: [],
         remove: [],
+    },
+    MarkdownEditor: {
+        root: ['disabled', 'invalid', 'readonly', 'busy'],
+        toolbar: [],
+        format: ['disabled'],
+        toggle: ['pressed'],
+        textarea: ['disabled', 'invalid', 'readonly'],
+        preview: [],
+        status: [],
+        suggestions: [],
+        suggestion: ['selected'],
     },
 };
 

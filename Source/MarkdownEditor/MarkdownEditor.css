@@ -1,0 +1,224 @@
+/* Copyright (c) Cratis. All rights reserved. */
+/* Licensed under the MIT license. See LICENSE file in the project root for full license information. */
+
+.cratis-markdown-editor {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--cratis-surface-ground);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: var(--cratis-border-radius, 6px);
+    color: var(--cratis-text-color);
+}
+
+.cratis-markdown-editor:focus-within {
+    border-color: var(--cratis-primary-color);
+}
+
+.cratis-markdown-editor[data-invalid] {
+    border-color: var(--cratis-red-500);
+}
+
+.cratis-markdown-editor[data-disabled] {
+    opacity: var(--cratis-disabled-opacity, 0.6);
+}
+
+.cratis-markdown-editor__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 6px;
+    background: var(--cratis-surface-card);
+    border-bottom: 1px solid var(--cratis-surface-border);
+}
+
+.cratis-markdown-editor--toggleable .cratis-markdown-editor__toolbar {
+    padding-right: 2.75rem;
+}
+
+.cratis-markdown-editor__separator {
+    width: 1px;
+    height: 1rem;
+    margin: 0 4px;
+    background: var(--cratis-surface-border);
+}
+
+.cratis-markdown-editor__format {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    color: var(--cratis-text-color-secondary);
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    font-size: 0.8125rem;
+}
+
+.cratis-markdown-editor__format:hover:not(:disabled) {
+    color: var(--cratis-highlight-text-color);
+    background: var(--cratis-highlight-bg);
+    cursor: pointer;
+}
+
+.cratis-markdown-editor__format:focus-visible,
+.cratis-markdown-editor__toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
+}
+
+.cratis-markdown-editor__toggle {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.35rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    color: var(--cratis-text-color-secondary);
+    background: var(--cratis-surface-card);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.cratis-markdown-editor__toggle:hover {
+    color: var(--cratis-text-color);
+    background: var(--cratis-surface-hover);
+}
+
+.cratis-markdown-editor__toggle[data-pressed],
+.cratis-markdown-editor__toggle[data-pressed]:hover {
+    color: var(--cratis-primary-color-text);
+    background: var(--cratis-primary-color);
+    border-color: var(--cratis-primary-color);
+}
+
+.cratis-markdown-editor__body {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 4rem;
+}
+
+.cratis-markdown-editor__textarea,
+.cratis-markdown-editor__preview {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0.75rem;
+    overflow: auto;
+    color: var(--cratis-text-color);
+    background: transparent;
+}
+
+.cratis-markdown-editor__textarea,
+.cratis-markdown-editor__textarea:hover,
+.cratis-markdown-editor__textarea:focus {
+    border: 0;
+    border-radius: 0;
+    outline: none;
+    box-shadow: none;
+    resize: none;
+    font-family: var(--cratis-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+.cratis-markdown-editor__textarea::placeholder,
+.cratis-markdown-editor__empty {
+    color: var(--cratis-text-color-secondary);
+}
+
+.cratis-markdown-editor__preview {
+    padding-right: 3rem;
+}
+
+.cratis-markdown-editor__empty {
+    margin: 0;
+    font-style: italic;
+}
+
+.cratis-markdown-editor__status {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    color: var(--cratis-text-color-secondary);
+    background: var(--cratis-surface-card);
+    border-top: 1px solid var(--cratis-surface-border);
+    font-size: 0.75rem;
+}
+
+.cratis-markdown-editor__suggestions {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-sizing: border-box;
+    width: min(32rem, calc(100vw - 1rem));
+    max-height: 18rem;
+    padding: 4px;
+    overflow-y: auto;
+    background: var(--cratis-surface-overlay);
+    border: 1px solid var(--cratis-surface-border);
+    border-radius: 6px;
+    box-shadow: var(--cratis-shadow-overlay);
+}
+
+.cratis-markdown-editor__suggestion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    color: var(--cratis-text-color);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8125rem;
+}
+
+.cratis-markdown-editor__suggestion[data-selected] {
+    color: var(--cratis-highlight-text-color);
+    background: var(--cratis-highlight-bg);
+}
+
+.cratis-markdown-editor__suggestion-detail {
+    flex-shrink: 0;
+    color: var(--cratis-text-color-secondary);
+    font-family: var(--cratis-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+}
+
+.cratis-markdown-editor__suggestion-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cratis-markdown-editor__suggestion-annotation {
+    flex-shrink: 0;
+    color: var(--cratis-text-color-secondary);
+    font-size: 0.6875rem;
+}
+
+@media (forced-colors: active) {
+    .cratis-markdown-editor__suggestion[data-selected],
+    .cratis-markdown-editor__toggle[data-pressed] {
+        forced-color-adjust: none;
+        color: HighlightText;
+        background: Highlight;
+    }
+}
