@@ -444,7 +444,7 @@
     "Chip": "Chip: (props: ChipProps) => import(\"react\").JSX.Element",
     "ChipProps": "export interface ChipProps { label?: string; icon?: ReactNode; removable?: boolean; onRemove?: () => void; removeAriaLabel?: string; className?: string; }",
     "Message": "Message: (props: MessageProps) => import(\"react\").JSX.Element",
-    "MessageProps": "export interface MessageProps { severity?: MessageSeverity; text?: ReactNode; children?: ReactNode; className?: string; icon?: ReactNode | false; }",
+    "MessageProps": "export interface MessageProps { severity?: MessageSeverity; text?: ReactNode; children?: ReactNode; className?: string; icon?: ReactNode | false; live?: boolean; }",
     "MessageSeverity": "export type MessageSeverity = 'info' | 'success' | 'warn' | 'error' | 'secondary' | 'contrast';",
     "ProgressBar": "ProgressBar: (props: ProgressBarProps) => import(\"react\").ReactElement<unknown, string | import(\"react\").JSXElementConstructor<any>>",
     "ProgressBarProps": "export interface ProgressBarProps { value?: number; mode?: 'determinate' | 'indeterminate'; showValue?: boolean; 'aria-label'?: string; 'aria-labelledby'?: string; className?: string; }",

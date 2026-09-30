@@ -102,6 +102,14 @@ import { Message } from '@cratis/components/Display';
 <Message severity='info' icon={false}>No icon is shown.</Message>
 ```
 
+To place a message inside a live region that already announces it, pass `live={false}`:
+
+```tsx
+<div role='alert' aria-label='Error summary'>
+    <Message severity='error' live={false}>The name is required.</Message>
+</div>
+```
+
 | Prop        | Type                                                                    | Description                                                                                         |
 | ----------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `severity`  | `'info' \| 'success' \| 'warn' \| 'error' \| 'secondary' \| 'contrast'` | Visual and semantic tone. Defaults to `'info'`.                                                     |
@@ -109,8 +117,9 @@ import { Message } from '@cratis/components/Display';
 | `children`  | `ReactNode`                                                             | Message content; takes precedence over `text`.                                                      |
 | `icon`      | `ReactNode \| false`                                                    | Custom leading icon. Pass `false` to hide the icon; otherwise a severity symbol is used by default. |
 | `className` | `string`                                                                | Extra CSS class on the root.                                                                        |
+| `live`      | `boolean`                                                               | Whether the message is its own live region. Defaults to `true`; pass `false` for no `role`.         |
 
-Error messages use `role='alert'`; every other severity uses `role='status'`. The decorative icon is hidden from assistive technology. Stable `root`, `icon`, and `text` `data-cratis-part` markers are available for styling and tests.
+By default, error messages use `role='alert'` and every other severity uses `role='status'`. With `live={false}` the message renders without a `role`, so it is announced only by the live region around it; do not use it for a message that stands alone. Nesting a live message inside another live region makes screen readers announce it twice. The decorative icon is hidden from assistive technology. Stable `root`, `icon`, and `text` `data-cratis-part` markers are available for styling and tests.
 
 ## ProgressSpinner
 

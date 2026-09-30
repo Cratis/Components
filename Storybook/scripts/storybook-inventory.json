@@ -532,6 +532,7 @@
         "display-chip--with-icon",
         "display-message--error",
         "display-message--info",
+        "display-message--inside-a-live-region",
         "display-message--no-icon",
         "display-message--success",
         "display-message--warn",
