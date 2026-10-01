@@ -66,6 +66,7 @@ export const cratisParts = {
     Tag: ['root', 'icon', 'label'],
     ProgressBar: ['root', 'indicator', 'label'],
     Chip: ['root', 'icon', 'label', 'remove'],
+    MarkdownEditor: ['root', 'toolbar', 'format', 'toggle', 'textarea', 'preview', 'status', 'suggestions', 'suggestion'],
 } as const;
 
 /** The canonical Components part-name manifest. */
@@ -553,6 +554,17 @@ export const cratisPartStates = {
         'icon': [],
         'label': [],
         'remove': [],
+    },
+    MarkdownEditor: {
+        'root': ['disabled', 'invalid', 'readonly', 'busy'],
+        'toolbar': [],
+        'format': ['disabled'],
+        'toggle': ['pressed'],
+        'textarea': ['disabled', 'invalid', 'readonly'],
+        'preview': [],
+        'status': [],
+        'suggestions': [],
+        'suggestion': ['selected'],
     },
 } as const satisfies {
     readonly [Component in keyof CratisPartsManifest]: {

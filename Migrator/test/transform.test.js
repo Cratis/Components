@@ -176,6 +176,9 @@ describe('root namespace maps', () => {
             './CommandStepper',
             // Nested refinement of the historical CommandForm namespace.
             './CommandForm/fields',
+            // Added after Components 4.0 and never a Components 3 root namespace, so no Components 3
+            // import can name it and the codemod has nothing to rewrite.
+            './MarkdownEditor',
             // Per-area CSS entry points (feat/per-area-stylesheets): side-effect stylesheet
             // imports, not symbol imports, so the codemod has nothing to rewrite for them —
             // same as the pre-existing aggregate './styles' above.
@@ -192,6 +195,7 @@ describe('root namespace maps', () => {
             './Display/styles',
             './Dropdown/styles',
             './Filter/styles',
+            './MarkdownEditor/styles',
             './Notifications/styles',
             './ObjectContentEditor/styles',
             './ObjectNavigationalBar/styles',

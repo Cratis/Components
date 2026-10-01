@@ -122,6 +122,11 @@
             "import": "./dist/esm/Filter/index.js"
         },
         "./Filter/styles": "./dist/esm/styles.Filter.css",
+        "./MarkdownEditor": {
+            "types": "./dist/esm/MarkdownEditor/index.d.ts",
+            "import": "./dist/esm/MarkdownEditor/index.js"
+        },
+        "./MarkdownEditor/styles": "./dist/esm/styles.MarkdownEditor.css",
         "./Notifications": {
             "types": "./dist/esm/Notifications/index.d.ts",
             "import": "./dist/esm/Notifications/index.js"
