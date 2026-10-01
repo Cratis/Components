@@ -63,15 +63,21 @@ installs, and `pixi.js` `^8.20.0` is an optional peer needed only by `Canvas` an
 The package does not depend on PrimeReact; the optional MUI and PrimeReact renderer adapters are
 separate packages.
 
-Import `reflect-metadata`, the semantic tokens, and the component structure once at the application
-entry point. The baseline theme is optional. Mount Components' provider inside Arc's `<Arc>`
-provider, which supplies the command and query runtime the generated proxies use:
+Import `reflect-metadata` once at the application entry point, and the semantic tokens and the
+component structure from your CSS entry file. The baseline theme is optional. Mount Components'
+provider inside Arc's `<Arc>` provider, which supplies the command and query runtime the generated
+proxies use:
+
+```css
+/* index.css */
+@import '@cratis/components/tokens';
+@import '@cratis/components/styles';
+@import '@cratis/components/theme'; /* optional baseline appearance */
+```
 
 ```tsx
 import 'reflect-metadata';
-import '@cratis/components/tokens';
-import '@cratis/components/styles';
-import '@cratis/components/theme'; // optional baseline appearance
+import './index.css';
 import { Arc } from '@cratis/arc.react';
 import { CratisComponentsProvider } from '@cratis/components';
 
@@ -83,6 +89,13 @@ export const App = () => (
     </Arc>
 );
 ```
+
+Import the stylesheets from CSS, not from TypeScript. The stylesheet subpaths ship no type
+declarations, so on TypeScript 6, which checks side-effect imports by default,
+`import '@cratis/components/tokens'` in a `.tsx` file fails with TS2882. The `./index.css` import
+type-checks in a Vite project, whose `vite/client` types declare `*.css`; otherwise add
+`declare module '*.css';` to an ambient `.d.ts` file. The [package README](./Source/README.md#styles)
+shows the declarations for importing the stylesheet subpaths from TypeScript instead.
 
 The package root is setup-only: import the provider and configuration helpers there, then import
 every component from its explicit subpath. The built-in renderer needs no additional package or
