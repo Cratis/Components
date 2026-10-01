@@ -156,7 +156,7 @@ export const stringDefaultProviderRegistered = Boolean(stringProvider?.component
         input: consumerEntry,
         external: (specifier) => {
             if (specifier === pkg.name || specifier.startsWith(`${pkg.name}/`)) return false;
-            // Bundle the motion dependency chain so missing upstream exports fail the consumer build.
+            // Check that the locked motion packages are mutually consistent in the packed production bundle.
             if (['framer-motion', 'motion-dom', 'motion-utils'].some(
                 (dependency) => specifier === dependency || specifier.startsWith(`${dependency}/`),
             )) return false;
@@ -224,7 +224,8 @@ console.log('VERIFIED');`;
 
     console.log(
         'Packed production verification passed: AutoCommandForm and its String default provider ' +
-            'survive aggressive Rollup tree shaking; Prime families are absent; cascade-layer order is exact.',
+            'survive aggressive Rollup tree shaking; Prime families are absent; cascade-layer order is exact; ' +
+            'the locked motion packages are mutually consistent in the packed production bundle.',
     );
     if (keepFixture) console.log(`Fixture retained at ${scratchRoot}`);
 } catch (error) {
