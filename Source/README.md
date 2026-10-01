@@ -65,10 +65,20 @@ Keep exactly one compatible Pixi resolution across the application and Component
 
 ## Styles
 
+```css
+/* index.css */
+@import '@cratis/components/tokens';
+@import '@cratis/components/styles';
+@import '@cratis/components/theme'; /* optional baseline appearance */
+```
+
+Import this file once at the application entry point, for example `import './index.css';`. Import the stylesheets from CSS rather than from TypeScript: the subpaths ship no type declarations, so on TypeScript 6, which checks side-effect imports by default, `import '@cratis/components/tokens'` in a `.tsx` file fails with TS2882. A Vite project type-checks `import './index.css'` through its `vite/client` types. A project that still imports the stylesheet subpaths from TypeScript declares them in an ambient `.d.ts` file:
+
 ```ts
-import '@cratis/components/tokens';
-import '@cratis/components/styles';
-import '@cratis/components/theme'; // optional baseline appearance
+declare module '@cratis/components/tokens';
+declare module '@cratis/components/styles';
+declare module '@cratis/components/styles/base';
+declare module '@cratis/components/theme';
 ```
 
 `tokens` supplies conservative light defaults. `styles` contains structural rules and internal utilities in low-priority Cratis cascade layers, with no Tailwind Preflight/reset or token duplication. `theme` adds automatic/explicit dark mode, forced colors, and themed subtrees.
@@ -77,11 +87,11 @@ A custom product design omits `theme`, imports product CSS after `tokens` and `s
 
 `styles` is every component's CSS in one file. To pay only for the surfaces the application mounts, import the shared base plus one entry point per subpath instead:
 
-```ts
-import '@cratis/components/tokens';
-import '@cratis/components/styles/base';
-import '@cratis/components/Dialogs/styles';
-import '@cratis/components/DataTables/styles';
+```css
+@import '@cratis/components/tokens';
+@import '@cratis/components/styles/base';
+@import '@cratis/components/Dialogs/styles';
+@import '@cratis/components/DataTables/styles';
 ```
 
 Every JavaScript subpath publishes a matching `<subpath>/styles`, self-contained for that subpath. `styles/base` carries the internal utilities and the cascade-layer order, and is required exactly once; the aggregate already contains it.
