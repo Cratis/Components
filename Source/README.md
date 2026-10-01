@@ -81,7 +81,7 @@ declare module '@cratis/components/styles/base';
 declare module '@cratis/components/theme';
 ```
 
-`tokens` supplies conservative light defaults. `styles` contains structural rules and internal utilities in low-priority Cratis cascade layers, with no Tailwind Preflight/reset or token duplication. `theme` adds automatic/explicit dark mode, forced colors, and themed subtrees.
+`tokens` supplies conservative light defaults. `styles` contains structural rules and internal utilities in low-priority Cratis cascade layers, with no Tailwind Preflight/reset or token duplication. `theme` adds automatic/explicit dark mode, forced colors, and themed subtrees. It also maps Arc's `--color-error` and `--color-error-bg` for each light and dark scheme, so an app that customizes those Arc tokens sets them after importing `theme`.
 
 A custom product design omits `theme`, imports product CSS after `tokens` and `styles`, and maps its canonical values directly to `--cratis-*`.
 
