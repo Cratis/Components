@@ -35,6 +35,8 @@
     --cratis-green-500: #16a34a;
     --cratis-orange-500: #d97706;
     --cratis-red-500: #dc2626;
+    --color-error: #c00;
+    --color-error-bg: #fee;
     --cratis-info-background: #0369a1;
     --cratis-info-text: #ffffff;
     --cratis-success-background: #15803d;
@@ -70,14 +72,11 @@
     --cratis-shadow-toast: 0 2px 12px rgb(0 0 0 / 10%);
 }
 
-/* Arc draws a field's validation message in var(--color-error, #c00), which is 2.5:1 on the dark
-   surfaces. The dark scheme maps it to the lighter red the field outline already uses (5.3:1 on the
-   card surface). An explicitly light subtree inside a dark root gets the Arc fallback back. */
-:root.cratis-dark.cratis-light,
-.cratis-dark .cratis-theme.cratis-light {
-    --color-error: #c00;
-}
-
+/* Arc draws an error in var(--color-error, #c00) on var(--color-error-bg, #fee): a field's validation
+   message and the command exception panel. Those fallbacks are 2.5:1 / 2.47:1 on the dark surfaces, so
+   the dark schemes below map the pair to a lighter red on a deep red. Every explicit-light selector in
+   the shared light block above restores the Arc fallbacks, including a light subtree under a root that
+   is dark only because of the system setting. */
 :root.cratis-dark,
 .cratis-dark .cratis-theme,
 .cratis-theme.cratis-dark {
@@ -91,6 +90,7 @@
     --cratis-action-text: #030712;
     --cratis-red-500: #f87171;
     --color-error: var(--cratis-red-500);
+    --color-error-bg: #450a0a;
     --cratis-info-background: #38bdf8;
     --cratis-info-text: #082f49;
     --cratis-success-background: #4ade80;
@@ -137,6 +137,7 @@
         --cratis-action-text: #030712;
         --cratis-red-500: #f87171;
         --color-error: var(--cratis-red-500);
+        --color-error-bg: #450a0a;
         --cratis-info-background: #38bdf8;
         --cratis-info-text: #082f49;
         --cratis-success-background: #4ade80;

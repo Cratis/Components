@@ -20,6 +20,15 @@ const textSurfaces = [
     '--cratis-control-background',
 ];
 
+// Every selector that makes a root or subtree explicitly light.
+const explicitLightSelectors = [
+    ':root.cratis-light',
+    ':root.cratis-dark.cratis-light',
+    ':root.cratis-light .cratis-theme:not(.cratis-dark)',
+    '.cratis-theme.cratis-light',
+    '.cratis-dark .cratis-theme.cratis-light',
+];
+
 function declaration(rule: Rule, property: string): string | undefined {
     return rule.nodes.findLast(node => node.type === 'decl' && node.prop === property)?.value;
 }
@@ -48,20 +57,25 @@ function resolve(rule: Rule, value: string): string {
     return resolve(rule, resolved);
 }
 
-describe('when using the error color on dark surfaces', () => {
+describe('when using the error colors on dark surfaces', () => {
     let darkRules: Rule[];
-    let lightSubtreeRules: Rule[];
+    let systemDarkRule: Rule;
+    let lightRules: Map<string, Rule>;
 
     beforeEach(() => {
         darkRules = [];
-        lightSubtreeRules = [];
+        lightRules = new Map();
         postcss.parse(theme).walkRules(rule => {
             // Forced colors replace the palette with system colors, so contrast is the user's own.
             if (rule.parent?.type === 'atrule' && (rule.parent as AtRule).params === '(forced-colors: active)') return;
+            if (rule.selectors.includes(':root:not(.cratis-light)')) systemDarkRule = rule;
             if (rule.selectors.includes(':root.cratis-dark') || rule.selectors.includes(':root:not(.cratis-light)')) {
                 if (declaration(rule, '--cratis-surface-card') !== undefined) darkRules.push(rule);
-            } else if (rule.selectors.includes('.cratis-dark .cratis-theme.cratis-light')) {
-                lightSubtreeRules.push(rule);
+            }
+            for (const selector of rule.selectors) {
+                if (explicitLightSelectors.includes(selector) && declaration(rule, '--color-error') !== undefined) {
+                    lightRules.set(selector, rule);
+                }
             }
         });
     });
@@ -70,9 +84,10 @@ describe('when using the error color on dark surfaces', () => {
         expect(darkRules).to.have.lengthOf(2);
     });
 
-    it('should_map_the_error_color_in_every_dark_scheme', () => {
+    it('should_map_the_error_color_pair_in_every_dark_scheme', () => {
         for (const rule of darkRules) {
             expect(declaration(rule, '--color-error'), rule.selectors.join(', ')).not.to.be.undefined;
+            expect(declaration(rule, '--color-error-bg'), rule.selectors.join(', ')).not.to.be.undefined;
         }
     });
 
@@ -86,9 +101,32 @@ describe('when using the error color on dark surfaces', () => {
         }
     });
 
-    it('should_give_a_light_subtree_inside_a_dark_root_its_own_error_color', () => {
-        const restored = lightSubtreeRules.find(rule => declaration(rule, '--color-error') !== undefined);
-        expect(restored).not.to.be.undefined;
-        expect(contrast(resolve(restored!, declaration(restored!, '--color-error')!), '#ffffff')).to.be.at.least(minimumContrast);
+    it('should_reach_the_minimum_contrast_for_the_error_text_on_the_error_background_in_every_dark_scheme', () => {
+        for (const rule of darkRules) {
+            const error = resolve(rule, declaration(rule, '--color-error')!);
+            const background = resolve(rule, declaration(rule, '--color-error-bg')!);
+            expect(contrast(error, background), rule.selectors[0]).to.be.at.least(minimumContrast);
+        }
+    });
+
+    it('should_restore_the_error_color_pair_for_every_explicit_light_selector', () => {
+        for (const selector of explicitLightSelectors) {
+            const rule = lightRules.get(selector);
+            expect(rule, selector).not.to.be.undefined;
+            expect(declaration(rule!, '--color-error-bg'), selector).not.to.be.undefined;
+            const error = resolve(rule!, declaration(rule!, '--color-error')!);
+            const errorBackground = resolve(rule!, declaration(rule!, '--color-error-bg')!);
+            expect(contrast(error, '#ffffff'), `${selector} on white`).to.be.at.least(minimumContrast);
+            expect(contrast(error, errorBackground), `${selector} on the error background`).to.be.at.least(minimumContrast);
+        }
+    });
+
+    it('should_give_a_light_subtree_under_a_system_dark_root_the_light_error_colors', () => {
+        // The system dark rule must not match the explicit light subtree, otherwise its dark values win.
+        expect(systemDarkRule.selectors).to.include('.cratis-theme:not(.cratis-light)');
+        expect(systemDarkRule.selectors).not.to.include('.cratis-theme');
+        const restored = lightRules.get('.cratis-theme.cratis-light')!;
+        expect(declaration(restored, '--color-error')).to.equal('#c00');
+        expect(declaration(restored, '--color-error-bg')).to.equal('#fee');
     });
 });
