@@ -375,8 +375,8 @@
 
 .toolbar-drawer-tile:focus-visible,
 .toolbar-drawer-close:focus-visible {
-    outline: 2px solid var(--cratis-focus-ring-color, var(--cratis-action-background));
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: var(--cratis-focus-ring);
 }
 
 .toolbar-drawer-tile__icon {
