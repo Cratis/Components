@@ -115,6 +115,23 @@ describe('when navigating by keyboard', () => {
         });
     });
 
+    describe('in a right-to-left layout', () => {
+        let gear: HTMLElement;
+
+        beforeEach(async () => {
+            document.body.setAttribute('dir', 'rtl');
+            gear = tileNamed('Gear')!;
+            await act(async () => gear.focus());
+            await press(gear, 'ArrowLeft');
+        });
+
+        afterEach(() => {
+            document.body.removeAttribute('dir');
+        });
+
+        it('should move to the next icon with Left', () => (document.activeElement === tileNamed('Gear outline')).should.be.true);
+    });
+
     describe('with the category filter', () => {
         const categories = () => [...document.body.querySelectorAll<HTMLElement>('[data-cratis-part="category"]')];
 

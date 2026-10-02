@@ -6,6 +6,9 @@ import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 
 /** The attribute every roving item carries, holding its index. */
 const itemAttribute = 'data-roving-index';
 
+const isRightToLeft = (element: HTMLElement) =>
+    getComputedStyle(element).direction === 'rtl' || element.closest('[dir="rtl"]') !== null;
+
 /** What {@link useRovingFocus} hands to the container and each item. */
 export interface RovingFocus {
     /** The container the items live in. */
@@ -59,13 +62,13 @@ export const useRovingFocus = (count: number, columns: number, preferredIndex = 
         if (!current || !containerRef.current?.contains(current)) return;
         const index = Number(current.getAttribute(itemAttribute));
         const step = columns > 0 ? columns : 0;
+        // Right and Left name visual directions, so they swap places in a right-to-left layout.
+        const forward = isRightToLeft(containerRef.current) ? 'ArrowLeft' : 'ArrowRight';
         let next: number | undefined;
         switch (event.key) {
             case 'ArrowRight':
-                next = index + 1;
-                break;
             case 'ArrowLeft':
-                next = index - 1;
+                next = event.key === forward ? index + 1 : index - 1;
                 break;
             case 'ArrowDown':
                 if (step > 0) next = index + step;
