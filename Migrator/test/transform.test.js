@@ -178,6 +178,7 @@ describe('root namespace maps', () => {
             './CommandForm/fields',
             // Added after Components 4.0 and never a Components 3 root namespace, so no Components 3
             // import can name it and the codemod has nothing to rewrite.
+            './ConfigurationEditor',
             './MarkdownEditor',
             // Per-area CSS entry points (feat/per-area-stylesheets): side-effect stylesheet
             // imports, not symbol imports, so the codemod has nothing to rewrite for them —
@@ -189,6 +190,7 @@ describe('root namespace maps', () => {
             './CommandForm/styles',
             './CommandForm/fields/styles',
             './Common/styles',
+            './ConfigurationEditor/styles',
             './DataPage/styles',
             './DataTables/styles',
             './Dialogs/styles',

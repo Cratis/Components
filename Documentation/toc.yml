@@ -46,6 +46,8 @@
   href: DataTables/toc.yml
 - name: Dialogs
   href: Dialogs/toc.yml
+- name: ConfigurationEditor
+  href: ConfigurationEditor/toc.yml
 - name: Filter
   href: Filter/toc.yml
 - name: Dropdown

@@ -282,11 +282,16 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // already been cut to what they need (no comments, no transitions), so both ceilings move by the
 // measured amount - raw to 210 KiB, gzip to 33 KiB - rather than one stylesheet ending another's
 // ability to ship. A consumer that does not mount an editor imports per-area sheets and pays nothing.
+// Measured when the Toolbar drawer and the ConfigurationEditor stylesheet joined: raw 224726, gzip
+// 35099, 1253 declaration blocks. The drawer adds placement, header and tile rules to the Toolbar
+// area; the configuration editors are a new area with its own sheet. Both ceilings move by the
+// measured amount - raw to 220 KiB, gzip to 35 KiB, blocks to 1260 - and a consumer that does not
+// mount these surfaces imports per-area sheets and pays nothing.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 210 * 1024,
-    gzipBytes: 33 * 1024,
-    declarationBlocks: 1200,
+    rawBytes: 220 * 1024,
+    gzipBytes: 35 * 1024,
+    declarationBlocks: 1260,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
@@ -332,6 +337,7 @@ const areaStyleBudgets = new Map([
     ['styles.Common.css', 5632], // measured 4987
     ['styles.DataPage.css', 8192], // measured 7217
     ['styles.DataTables.css', 7168], // measured 6283
+    ['styles.ConfigurationEditor.css', 2048], // measured 1462
     ['styles.Dialogs.css', 7168], // measured 2972 (6582 before the configuration seam left Common/)
     ['styles.Display.css', 6144], // measured 5398
     ['styles.Dropdown.css', 6144], // measured 5481
@@ -344,7 +350,7 @@ const areaStyleBudgets = new Map([
     ['styles.renderer.builtin.css', 8704], // measured 7987
     ['styles.SchemaEditor.css', 8192], // measured 7417
     ['styles.TimeMachine.css', 5120], // measured 4440
-    ['styles.Toolbar.css', 8192], // measured 7307
+    ['styles.Toolbar.css', 8192], // measured 7758
 ]);
 
 // Self-contained sheets repeat the areas they share, so the emitted set is larger than the sum of

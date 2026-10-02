@@ -63,6 +63,7 @@ check what an entry point carries in the installed package.
 | `@cratis/components/CommandForm/styles` | CommandForm, Common, Dropdown, Notifications |
 | `@cratis/components/CommandForm/fields/styles` | Same sheet as `CommandForm/styles` |
 | `@cratis/components/Common/styles` | Common, Notifications |
+| `@cratis/components/ConfigurationEditor/styles` | ConfigurationEditor |
 | `@cratis/components/DataPage/styles` | Common, DataPage (Allotment), DataTables, Dropdown, Notifications |
 | `@cratis/components/DataTables/styles` | Common, DataTables, Dropdown, Notifications |
 | `@cratis/components/Dialogs/styles` | Dialogs, Display, Notifications |

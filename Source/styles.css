@@ -59,6 +59,7 @@
 @import './Common/NumberInput.css';
 @import './Common/Primitives.css';
 @import './Common/Tooltip.css';
+@import './ConfigurationEditor/ConfigurationEditor.css';
 @import './DataTables/ColumnFilterMenu.css';
 @import './DataTables/DataTableCore.css';
 @import './DataTables/TablePaginator.css';
