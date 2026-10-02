@@ -6,7 +6,7 @@
 import { act } from 'react';
 import { expect } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'vitest';
-import { Harness, allowEverything, restricted } from './given';
+import { Harness, allowEverything, renderIconField, restricted } from './given';
 import { Mount } from './Mount';
 import type { OrderedItemProposal } from '../OrderedItemProposal';
 
@@ -137,9 +137,9 @@ describe('when editing the fields of a configurable item', () => {
         expect(proposal.kind === 'update' && 'destination' in proposal.item).to.equal(false);
     });
 
-    it('should propose the qualified icon reference the host chooser reports', async () => {
+    it('should propose the qualified icon reference an overriding host chooser reports', async () => {
         const proposals: OrderedItemProposal[] = [];
-        await mount.render(<Harness proposals={proposals} />);
+        await mount.render(<Harness proposals={proposals} renderIconField={renderIconField} />);
 
         await mount.click(mount.control('page-a', 'icon').querySelector('button')!);
 
@@ -151,7 +151,11 @@ describe('when editing the fields of a configurable item', () => {
     it('should not propose an icon equal to the current one', async () => {
         const proposals: OrderedItemProposal[] = [];
         await mount.render(
-            <Harness proposals={proposals} initial={[{ id: 'page-a', label: 'Page A', icon: { library: 'example-icons', key: 'star' } }]} />,
+            <Harness
+                proposals={proposals}
+                renderIconField={renderIconField}
+                initial={[{ id: 'page-a', label: 'Page A', icon: { library: 'example-icons', key: 'star' } }]}
+            />,
         );
 
         await mount.click(mount.control('page-a', 'icon').querySelector('button')!);
@@ -160,7 +164,7 @@ describe('when editing the fields of a configurable item', () => {
     });
 
     it('should hand the host chooser a read-only flag and a name that includes the item', async () => {
-        await mount.render(<Harness proposals={[]} />);
+        await mount.render(<Harness proposals={[]} renderIconField={renderIconField} />);
 
         expect(mount.control('page-a', 'icon').querySelector('button')!.getAttribute('aria-label')).to.equal('Icon: Page A');
     });
@@ -177,9 +181,9 @@ describe('when editing the fields of a configurable item', () => {
         expect(input.value).to.equal('Page A');
     });
 
-    it('should not offer an icon chooser that can change when the icon is read-only', async () => {
+    it('should not offer an overriding icon chooser that can change when the icon is read-only', async () => {
         const proposals: OrderedItemProposal[] = [];
-        await mount.render(<Harness proposals={proposals} capabilities={restricted} />);
+        await mount.render(<Harness proposals={proposals} capabilities={restricted} renderIconField={renderIconField} />);
 
         expect(mount.control('page-a', 'icon').querySelector('button')).to.equal(null);
         expect(proposals).to.have.length(0);

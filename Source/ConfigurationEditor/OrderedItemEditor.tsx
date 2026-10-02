@@ -11,6 +11,10 @@ import {
     type DragEvent,
     type ReactNode,
 } from 'react';
+import type { IconPickerAllowed } from '../IconPicker/IconPickerAllowed';
+import type { IconPickerCatalog } from '../IconPicker/IconPickerCatalog';
+import type { IconPickerLabels } from '../IconPicker/IconPickerLabels';
+import { isIconPickerAllowed } from '../IconPicker/isIconPickerAllowed';
 import type { ConfigurationDestination } from './ConfigurationDestination';
 import type { ConfigurationIconReference } from './ConfigurationIconReference';
 import type { OrderedItem } from './OrderedItem';
@@ -53,7 +57,23 @@ export interface OrderedItemEditorProps<TItem extends OrderedItem = OrderedItem>
     /** Creates the item an add proposal carries. The host assigns its stable id. Without it, adding is unavailable. */
     createItem?: () => TItem;
 
-    /** Renders the host's icon chooser for the icon field. Without it the icon is shown as text. */
+    /**
+     * The icons the host offers, as an {@link IconPicker} catalog. When supplied, the icon field is the
+     * Components icon picker; there is no separate icon grid. Icon references are qualified
+     * `{ library, key, variant? }` identities, never names or markup.
+     */
+    iconCatalog?: IconPickerCatalog;
+
+    /** Restricts which catalog icons can be chosen. Other icons are listed but cannot be selected. */
+    allowedIcons?: IconPickerAllowed;
+
+    /** Overrides for the icon picker's own labels. */
+    iconPickerLabels?: IconPickerLabels;
+
+    /**
+     * Overrides the icon field with the host's own chooser, taking precedence over `iconCatalog`.
+     * Without it and without an `iconCatalog`, the icon is shown as text.
+     */
     renderIconField?: (props: OrderedItemIconFieldProps<TItem>) => ReactNode;
 
     /** Tells whether the host's catalog can still supply an icon. An unavailable icon is flagged in text. */
@@ -126,6 +146,9 @@ export const OrderedItemEditor = <TItem extends OrderedItem = OrderedItem>({
     createItem,
     renderIconField,
     isIconAvailable,
+    iconCatalog,
+    allowedIcons,
+    iconPickerLabels,
     validate,
     validation,
     labels: suppliedLabels,
@@ -187,6 +210,13 @@ export const OrderedItemEditor = <TItem extends OrderedItem = OrderedItem>({
 
     const handleField = (item: TItem, field: OrderedItemField, value: string | ConfigurationIconReference | undefined) => {
         if (resolveOrderedItemFieldAccess(capabilities, field) !== 'editable') return;
+        if (field === 'icon' && allowedIcons !== undefined && iconCatalog !== undefined && value !== undefined) {
+            const picked = value as ConfigurationIconReference;
+            const entry = iconCatalog.icons.find(
+                (candidate) => candidate.library === picked.library && candidate.key === picked.key && candidate.variant === picked.variant,
+            );
+            if (entry !== undefined && !isIconPickerAllowed(entry, allowedIcons)) return;
+        }
         const index = items.findIndex((candidate) => candidate.id === item.id);
         if (index < 0) return;
         const previous = items[index];
@@ -304,6 +334,9 @@ export const OrderedItemEditor = <TItem extends OrderedItem = OrderedItem>({
             parts={pt}
             renderIconField={renderIconField}
             isIconAvailable={isIconAvailable}
+            iconCatalog={iconCatalog}
+            allowedIcons={allowedIcons}
+            iconPickerLabels={iconPickerLabels}
             dragging={drag?.id === item.id}
             dropPosition={drag?.overId === item.id && drag.id !== item.id ? drag.position : undefined}
             onField={handleField}

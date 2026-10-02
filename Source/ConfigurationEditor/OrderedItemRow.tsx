@@ -24,6 +24,9 @@ export const OrderedItemRow = <TItem extends OrderedItem>({
     parts,
     renderIconField,
     isIconAvailable,
+    iconCatalog,
+    allowedIcons,
+    iconPickerLabels,
     dragging,
     dropPosition,
     onField,
@@ -179,6 +182,9 @@ export const OrderedItemRow = <TItem extends OrderedItem>({
                         parts={parts}
                         renderIconField={renderIconField}
                         isIconAvailable={isIconAvailable}
+                        iconCatalog={iconCatalog}
+                        allowedIcons={allowedIcons}
+                        iconPickerLabels={iconPickerLabels}
                         onChange={(icon) => onField(item, 'icon', icon)}
                     />
                 )}

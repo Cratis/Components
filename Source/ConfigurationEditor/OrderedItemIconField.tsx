@@ -2,6 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { ReactNode } from 'react';
+import { IconPicker } from '../IconPicker/IconPicker';
+import type { IconPickerAllowed } from '../IconPicker/IconPickerAllowed';
+import type { IconPickerCatalog } from '../IconPicker/IconPickerCatalog';
+import type { IconPickerLabels } from '../IconPicker/IconPickerLabels';
 import type { ConfigurationIconReference } from './ConfigurationIconReference';
 import type { OrderedItem } from './OrderedItem';
 import type { OrderedItemEditorParts } from './OrderedItemEditorParts';
@@ -18,6 +22,9 @@ interface IconFieldProps<TItem extends OrderedItem> {
     parts: OrderedItemEditorParts | undefined;
     renderIconField?: (props: OrderedItemIconFieldProps<TItem>) => ReactNode;
     isIconAvailable?: (icon: ConfigurationIconReference) => boolean;
+    iconCatalog?: IconPickerCatalog;
+    allowedIcons?: IconPickerAllowed;
+    iconPickerLabels?: IconPickerLabels;
     onChange: (icon: ConfigurationIconReference) => void;
 }
 
@@ -25,8 +32,9 @@ const describe = (icon: ConfigurationIconReference): string =>
     `${icon.library}/${icon.key}${icon.variant ? `:${icon.variant}` : ''}`;
 
 /**
- * The icon field of one item. The host supplies the chooser through `renderIconField`; without one
- * the icon is shown as text, because choosing an icon needs the host's catalog.
+ * The icon field of one item. `renderIconField` overrides everything; otherwise the Components
+ * {@link IconPicker} is used when the host supplies an `iconCatalog`. With neither, the icon is
+ * shown as text, because choosing an icon needs the host's catalog.
  */
 export const OrderedItemIconField = <TItem extends OrderedItem>({
     item,
@@ -38,11 +46,39 @@ export const OrderedItemIconField = <TItem extends OrderedItem>({
     parts,
     renderIconField,
     isIconAvailable,
+    iconCatalog,
+    allowedIcons,
+    iconPickerLabels,
     onChange,
 }: IconFieldProps<TItem>) => {
     const unavailable = item.icon !== undefined && isIconAvailable?.(item.icon) === false;
     const feedback = message ?? (unavailable ? labels.iconUnavailable : undefined);
     const accessibleName = `${labels.iconField}: ${itemName}`;
+
+    if (renderIconField === undefined && iconCatalog !== undefined) {
+        // The picker renders its own validation message under the trigger, so none is added here.
+        const pickerMessage = message ?? (unavailable ? labels.iconUnavailable : undefined);
+        return (
+            <div
+                {...parts?.icon}
+                className={`cratis-ordered-item__icon ${parts?.icon?.className ?? ''}`}
+                data-cratis-part='icon'
+                data-control='icon'
+                data-unavailable={unavailable || undefined}
+            >
+                <IconPicker
+                    value={item.icon}
+                    onChange={onChange}
+                    catalog={iconCatalog}
+                    allowed={allowedIcons}
+                    readOnly={!editable}
+                    validationMessage={pickerMessage}
+                    labels={iconPickerLabels}
+                    aria-label={accessibleName}
+                />
+            </div>
+        );
+    }
 
     return (
         <div

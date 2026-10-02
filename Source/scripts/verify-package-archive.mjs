@@ -282,16 +282,19 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // already been cut to what they need (no comments, no transitions), so both ceilings move by the
 // measured amount - raw to 210 KiB, gzip to 33 KiB - rather than one stylesheet ending another's
 // ability to ship. A consumer that does not mount an editor imports per-area sheets and pays nothing.
-// Measured when the Toolbar drawer and the ConfigurationEditor stylesheet joined: raw 224726, gzip
-// 35099, 1253 declaration blocks. The drawer adds placement, header and tile rules to the Toolbar
-// area; the configuration editors are a new area with its own sheet. Both ceilings move by the
-// measured amount - raw to 220 KiB, gzip to 35 KiB, blocks to 1260 - and a consumer that does not
-// mount these surfaces imports per-area sheets and pays nothing.
+// Measured when IconPicker's stylesheet joined: raw 224412, gzip 34552, 1254 declaration blocks.
+// The popout is a self-contained surface (trigger, search, filters, grouped tiles, states, sheet)
+// and its comments and transitions are already cut. A consumer that does not mount an icon picker
+// imports per-area sheets and pays nothing.
+// Measured when the Toolbar drawer and the ConfigurationEditor stylesheet joined on top of it:
+// raw 235806, gzip 36338, 1312 declaration blocks. The drawer adds placement, header and tile rules to the Toolbar area; the
+// configuration editors are a new area with its own sheet. Both ceilings move by the measured
+// amount, and a consumer that does not mount these surfaces imports per-area sheets and pays nothing.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 220 * 1024,
-    gzipBytes: 35 * 1024,
-    declarationBlocks: 1260,
+    rawBytes: 240 * 1024,
+    gzipBytes: 36 * 1024,
+    declarationBlocks: 1320,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
@@ -337,11 +340,12 @@ const areaStyleBudgets = new Map([
     ['styles.Common.css', 5632], // measured 4987
     ['styles.DataPage.css', 8192], // measured 7217
     ['styles.DataTables.css', 7168], // measured 6283
-    ['styles.ConfigurationEditor.css', 2048], // measured 1462
+    ['styles.ConfigurationEditor.css', 3072], // measured 2805 (includes the IconPicker sheet its icon field renders)
     ['styles.Dialogs.css', 7168], // measured 2972 (6582 before the configuration seam left Common/)
     ['styles.Display.css', 6144], // measured 5398
     ['styles.Dropdown.css', 6144], // measured 5481
     ['styles.Filter.css', 3584], // measured 2742
+    ['styles.IconPicker.css', 2560], // measured 1919
     ['styles.MarkdownEditor.css', 2048], // measured 1377
     ['styles.Notifications.css', 5632], // measured 1099 (4988 before the configuration seam left Common/)
     ['styles.ObjectContentEditor.css', 5632], // measured 5049

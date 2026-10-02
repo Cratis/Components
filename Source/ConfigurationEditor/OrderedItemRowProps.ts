@@ -2,6 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 import type { DragEvent, ReactNode } from 'react';
+import type { IconPickerAllowed } from '../IconPicker/IconPickerAllowed';
+import type { IconPickerCatalog } from '../IconPicker/IconPickerCatalog';
+import type { IconPickerLabels } from '../IconPicker/IconPickerLabels';
 import type { ConfigurationDestination } from './ConfigurationDestination';
 import type { ConfigurationIconReference } from './ConfigurationIconReference';
 import type { OrderedItem } from './OrderedItem';
@@ -27,6 +30,9 @@ export interface OrderedItemRowProps<TItem extends OrderedItem> {
     parts: OrderedItemEditorParts | undefined;
     renderIconField?: (props: OrderedItemIconFieldProps<TItem>) => ReactNode;
     isIconAvailable?: (icon: ConfigurationIconReference) => boolean;
+    iconCatalog?: IconPickerCatalog;
+    allowedIcons?: IconPickerAllowed;
+    iconPickerLabels?: IconPickerLabels;
     dragging: boolean;
     dropPosition: 'before' | 'after' | undefined;
     onField: (item: TItem, field: OrderedItemField, value: string | ConfigurationIconReference | undefined) => void;

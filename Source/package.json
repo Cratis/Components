@@ -127,6 +127,11 @@
             "import": "./dist/esm/Filter/index.js"
         },
         "./Filter/styles": "./dist/esm/styles.Filter.css",
+        "./IconPicker": {
+            "types": "./dist/esm/IconPicker/index.d.ts",
+            "import": "./dist/esm/IconPicker/index.js"
+        },
+        "./IconPicker/styles": "./dist/esm/styles.IconPicker.css",
         "./MarkdownEditor": {
             "types": "./dist/esm/MarkdownEditor/index.d.ts",
             "import": "./dist/esm/MarkdownEditor/index.js"

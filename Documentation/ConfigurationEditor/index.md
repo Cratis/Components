@@ -14,7 +14,7 @@ import {
 } from '@cratis/components/ConfigurationEditor';
 ```
 
-Import the stylesheet once, either the aggregate `@cratis/components/styles` or the area sheet `@cratis/components/ConfigurationEditor/styles`.
+Import the stylesheet once, either the aggregate `@cratis/components/styles` or the area sheet `@cratis/components/ConfigurationEditor/styles`, which includes the icon picker's rules.
 
 ## What the controls own, and what the host owns
 
@@ -25,7 +25,7 @@ The controls render, validate entries and emit proposals. They never decide poli
 | Render the values and the controls for exactly the capabilities they receive. | Decides the capabilities: which operations and which fields are allowed, and why a restriction exists. |
 | Validate an entry before proposing it and show the message. | Supplies extra validation rules and server-side feedback, and owns authoritative permission checks. |
 | Emit a **proposal** through `onChange`. | Applies the proposal by passing new values, or ignores it to cancel. |
-| List destinations and call the icon chooser the host supplies. | Supplies the destinations and the icon catalog. Nothing here navigates, discovers an application hierarchy or resolves an icon library package. |
+| List destinations and show the icon picker over the catalog the host supplies. | Supplies the destinations and the icon catalog. Nothing here navigates, discovers an application hierarchy or resolves an icon library package. |
 | Show locked items in text and in accessible state. | Resolves templates: which items are inherited, and what a locked item means. |
 | Carry stable item identities through every proposal. | Creates the identity of a new item and persists the result. |
 

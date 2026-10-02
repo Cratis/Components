@@ -20,6 +20,7 @@ The question is whether confirming the form **runs a command**, and whether it's
 | Collect data and return it **without** running a command   | [`Dialog`](./Dialogs/dialog.md)                           | A confirmation or data-entry dialog that hands values back to the caller. No command involved.        |
 | Edit ordinary local React state                            | [`Common` basic controls](./Common/basic-controls.md)      | Native text and choice controls expose semantic values without binding an Arc command.                 |
 | Select one or more values in ordinary local React state    | [`Dropdown`](./Dropdown/index.md)                         | Binds a value or array to local options without binding an Arc command.                               |
+| Choose an icon from a host-supplied catalog                  | [`IconPicker`](./IconPicker/index.md)                     | A controlled popout with search, categories, provider filtering, and qualified `library`/`key`/`variant` values. |
 | Write markdown with formatting, a preview, and completion   | [`MarkdownEditor`](./MarkdownEditor/index.md)             | A controlled editor with a toolbar, host-rendered preview, configurable triggers, and file uploads.   |
 | Configure a component: ordered items, layout settings, a component-specific editor | [`ConfigurationEditor`](./ConfigurationEditor/index.md) | Controlled editors that emit validated proposals while the host owns capabilities, templates and persistence. |
 

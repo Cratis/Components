@@ -42,11 +42,13 @@ describe('when rendering fixed and configurable items', () => {
         expect(mount.row('page-a').textContent).not.to.contain('Locked');
     });
 
-    it('should give a fixed item no control', async () => {
+    it('should give a fixed item no control that can change it', async () => {
         await mount.render(<Harness proposals={[]} />);
 
         const home = mount.row('home');
-        expect(home.querySelector('button, input, select')).to.equal(null);
+        expect(home.querySelector('input, select')).to.equal(null);
+        const buttons = Array.from(home.querySelectorAll('button'));
+        expect(buttons.every((button) => button.getAttribute('data-cratis-part') === 'trigger' && button.getAttribute('aria-disabled') === 'true')).to.equal(true);
     });
 
     it('should show the fixed label, icon and destination as readable text', async () => {
@@ -54,7 +56,7 @@ describe('when rendering fixed and configurable items', () => {
 
         const text = mount.row('home').textContent!;
         expect(text).to.contain('Home');
-        expect(text).to.contain('example-icons/house');
+        expect(text).to.contain('Home');
         expect(text).to.contain('Overview');
     });
 
@@ -62,7 +64,7 @@ describe('when rendering fixed and configurable items', () => {
         await mount.render(<Harness proposals={[]} />);
 
         expect(mount.control<HTMLInputElement>('page-a', 'label').value).to.equal('Page A');
-        expect(mount.control('page-a', 'icon').textContent).to.contain('example-icons/file');
+        expect(mount.control('page-a', 'icon').textContent).to.contain('Map');
         expect(mount.control<HTMLSelectElement>('page-a', 'destination').value).to.equal('overview');
         expect(mount.control<HTMLSelectElement>('page-b', 'destination').value).to.equal('details');
     });
@@ -100,11 +102,21 @@ describe('when rendering fixed and configurable items', () => {
         expect(mount.control<HTMLSelectElement>('page-a', 'destination').getAttribute('aria-invalid')).to.equal('true');
     });
 
-    it('should flag an icon the catalog can no longer supply', async () => {
+    it('should flag an icon the host says is no longer available', async () => {
         await mount.render(<Harness proposals={[]} isIconAvailable={() => false} />);
 
         expect(mount.control('page-a', 'icon').getAttribute('data-unavailable')).to.equal('true');
         expect(mount.control('page-a', 'icon').textContent).to.contain('This icon is no longer available.');
+    });
+
+    it('should flag an icon that is not in a ready catalog without the host having to say so', async () => {
+        await mount.render(
+            <Harness proposals={[]} initial={[{ id: 'page-a', label: 'Page A', icon: { library: 'retired-icons', key: 'gone' } }]} />,
+        );
+
+        const trigger = mount.control('page-a', 'icon').querySelector('[data-cratis-part="trigger"]')!;
+        expect(trigger.hasAttribute('data-missing')).to.equal(true);
+        expect(trigger.textContent).to.contain('retired-icons');
     });
 
     it('should show icons as text when the host supplies no icon field', async () => {
@@ -117,7 +129,7 @@ describe('when rendering fixed and configurable items', () => {
             />,
         );
 
-        expect(mount.control('page-a', 'icon').textContent).to.contain('example-icons/file');
+        expect(mount.control('page-a', 'icon').textContent).to.contain('example-glyphs/map');
         expect(mount.control('page-a', 'icon').querySelector('button')).to.equal(null);
     });
 
@@ -131,11 +143,13 @@ describe('when rendering fixed and configurable items', () => {
         expect(mount.parts('label').length).to.be.greaterThan(0);
     });
 
-    it('should show a read-only field as text with no input', async () => {
+    it('should show a read-only icon in a picker trigger that stays focusable but cannot open', async () => {
         await mount.render(<Harness proposals={[]} capabilities={restricted} />);
 
-        expect(mount.control('page-a', 'icon').querySelector('button')).to.equal(null);
-        expect(mount.control('page-a', 'icon').textContent).to.contain('example-icons/file');
+        const trigger = mount.control('page-a', 'icon').querySelector<HTMLButtonElement>('[data-cratis-part="trigger"]')!;
+        expect(trigger.textContent).to.contain('Map');
+        expect(trigger.getAttribute('aria-disabled')).to.equal('true');
+        expect(trigger.hasAttribute('disabled')).to.equal(false);
     });
 
     it('should say why an operation is restricted', async () => {

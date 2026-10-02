@@ -91,9 +91,27 @@ After any move, focus returns to the control that was used, and a status region 
 
 **Destination.** Supply `destinations` as `{ id, label, group? }`. The editor shows a select, grouped by `group`, and stores the destination `id`. A stored id the host no longer lists is flagged in text. The editor does not route.
 
-**Icon.** Icons are qualified references, `{ library, key, variant? }`. Only those three fields are identity; names, classes and markup are not. Choosing an icon needs the host's catalog, so the editor takes a `renderIconField` function. It receives the item, the current `value`, `onChange(icon)`, `readOnly`, an accessible name that includes the item, and the validation state, and renders the host's icon chooser. The editor turns the pick into a validated proposal, and ignores it when the field is not editable. Without `renderIconField` the icon is shown as text only.
+**Icon.** The icon field is the Components [icon picker](../IconPicker/index.md); there is no separate icon grid. Supply the icons you offer as `iconCatalog`, an `IconPickerCatalog` of `libraries` and `icons`. Icons are qualified references, `{ library, key, variant? }`; only those three fields are identity, so two libraries that both ship a `home` icon stay distinct and names, classes and markup are never stored.
 
-`isIconAvailable(icon)` lets the host say that its catalog can no longer supply an icon; the field is flagged with text and `data-unavailable`.
+```tsx
+<OrderedItemEditor
+    aria-label='Navigation'
+    items={items}
+    capabilities={capabilities}
+    iconCatalog={iconCatalog}
+    allowedIcons={[{ library: 'example-glyphs', key: 'home' }]}
+    onChange={(proposal) => setItems([...proposal.items])}
+/>
+```
+
+- `allowedIcons` restricts what can be picked. Other icons are still listed, marked unavailable with a dashed border and text, and the editor never proposes one, even from a custom chooser.
+- The field follows the item's `icon` access in `capabilities`. A `'readonly'` icon, and every icon of a locked fixed item, is shown in a trigger that stays focusable but does not open; a `'hidden'` icon is not rendered. A pick becomes a validated `update` proposal for the `icon` field, and the picker closes and returns focus to its trigger.
+- An icon the catalog no longer contains is shown by its identity with a warning, never as another library's icon of the same name. `isIconAvailable(icon)` lets the host flag an icon for its own reasons, for example one that is retired but still in the catalog.
+- Pass `iconPickerLabels` to localize the picker. The picker's own message appears under the trigger, so the editor adds no second one.
+- Import `@cratis/components/ConfigurationEditor/styles`; it includes the icon picker's rules.
+
+**Own chooser.** `renderIconField` replaces the picker with the host's own chooser and takes precedence over `iconCatalog`. It receives the item, the current `value`, `onChange(icon)`, `readOnly`, an accessible name that includes the item, and the validation state. The editor still validates every pick and ignores it when the field is not editable or the icon is not allowed. With neither `iconCatalog` nor `renderIconField`, the icon is shown as text only.
+
 
 ## Localization and styling
 

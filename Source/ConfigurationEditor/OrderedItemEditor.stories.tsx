@@ -3,13 +3,14 @@
 
 import type { Meta, StoryObj } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { OrderedItemEditor } from './OrderedItemEditor';
 import type { OrderedItem } from './OrderedItem';
 import type { OrderedItemCapabilities } from './OrderedItemCapabilities';
-import type { OrderedItemIconFieldProps } from './OrderedItemIconFieldProps';
+import type { IconPickerAllowed } from '../IconPicker/IconPickerAllowed';
+import type { IconPickerCatalog } from '../IconPicker/IconPickerCatalog';
+import type { IconPickerEntry } from '../IconPicker/IconPickerEntry';
 import type { ConfigurationDestination } from './ConfigurationDestination';
-import type { ConfigurationIconReference } from './ConfigurationIconReference';
 
 const meta: Meta<typeof OrderedItemEditor> = {
     title: 'ConfigurationEditor/OrderedItemEditor',
@@ -22,11 +23,11 @@ type Story = StoryObj<typeof meta>;
 
 /** Synthetic "Example Project" fixture: one fixed Home item, two configurable pages. */
 const fixedItems: OrderedItem[] = [
-    { id: 'home', label: 'Home', icon: { library: 'example-icons', key: 'house' }, destination: 'overview' },
+    { id: 'home', label: 'Home', icon: { library: 'example-glyphs', key: 'home' }, destination: 'overview' },
 ];
 
 const initialPages: OrderedItem[] = [
-    { id: 'page-a', label: 'Page A', icon: { library: 'example-icons', key: 'file' }, destination: 'overview' },
+    { id: 'page-a', label: 'Page A', icon: { library: 'example-glyphs', key: 'square' }, destination: 'overview' },
     { id: 'page-b', label: 'Page B', destination: 'details' },
 ];
 
@@ -36,12 +37,43 @@ const destinations: ConfigurationDestination[] = [
     { id: 'settings', label: 'Settings' },
 ];
 
-const exampleIcons: ConfigurationIconReference[] = [
-    { library: 'example-icons', key: 'house' },
-    { library: 'example-icons', key: 'file' },
-    { library: 'example-icons', key: 'star' },
-    { library: 'example-icons', key: 'chart' },
-];
+/** Draws a synthetic glyph from simple geometry. None of these shapes comes from a real icon set. */
+const glyph = (shapes: ReactNode) => () => (
+    <svg width='1em' height='1em' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden='true'>
+        {shapes}
+    </svg>
+);
+
+const house = <path d='M4 11 L12 4 L20 11 V20 H4 Z' />;
+const square = <rect x='4' y='4' width='16' height='16' />;
+const circle = <circle cx='12' cy='12' r='8' />;
+const bars = <path d='M6 20 V10 M12 20 V4 M18 20 V14' />;
+const wave = <path d='M3 12 Q7.5 3 12 12 T21 12' />;
+
+const entry = (
+    library: string,
+    key: string,
+    name: string,
+    categories: string[],
+    shapes: ReactNode,
+    extra: Partial<IconPickerEntry> = {},
+): IconPickerEntry => ({ library, key, name, categories, renderPreview: glyph(shapes), ...extra });
+
+/** Two synthetic libraries that both define `home`: identity is the library plus the key, never the name. */
+const iconCatalog: IconPickerCatalog = {
+    libraries: [
+        { id: 'example-glyphs', name: 'Example Glyphs', attribution: 'Synthetic glyphs drawn for these stories' },
+        { id: 'sample-symbols', name: 'Sample Symbols', attribution: 'Synthetic symbols for these stories' },
+    ],
+    icons: [
+        entry('example-glyphs', 'home', 'Home', ['Places'], house),
+        entry('example-glyphs', 'square', 'Square', ['Shapes'], square),
+        entry('example-glyphs', 'circle', 'Circle', ['Shapes'], circle),
+        entry('sample-symbols', 'home', 'Home', ['Places'], house),
+        entry('sample-symbols', 'bars', 'Bar chart', ['Charts'], bars),
+        entry('sample-symbols', 'wave', 'Wave', ['Charts'], wave),
+    ],
+};
 
 const hostA: OrderedItemCapabilities = {
     add: true,
@@ -61,30 +93,17 @@ const hostB: OrderedItemCapabilities = {
     },
 };
 
-/**
- * A stand-in for the host's icon chooser. A real host renders the Components icon picker here
- * with its own catalog; the editor only hands over the current value and receives the pick.
- */
-const ExampleIconField = ({ value, onChange, readOnly, 'aria-label': ariaLabel }: OrderedItemIconFieldProps) => (
-    <select
-        aria-label={ariaLabel}
-        disabled={readOnly}
-        value={value ? `${value.library}/${value.key}` : ''}
-        onChange={(event) => {
-            const picked = exampleIcons.find((icon) => `${icon.library}/${icon.key}` === event.target.value);
-            if (picked) onChange(picked);
-        }}
-    >
-        <option value=''>No icon</option>
-        {exampleIcons.map((icon) => (
-            <option key={icon.key} value={`${icon.library}/${icon.key}`}>{icon.key}</option>
-        ))}
-    </select>
-);
-
 let counter = 0;
 
-const Host = ({ capabilities, applied }: { capabilities: OrderedItemCapabilities; applied?: (summary: string) => void }) => {
+const Host = ({
+    capabilities,
+    allowedIcons,
+    applied,
+}: {
+    capabilities: OrderedItemCapabilities;
+    allowedIcons?: IconPickerAllowed;
+    applied?: (summary: string) => void;
+}) => {
     const [items, setItems] = useState(initialPages);
     const [last, setLast] = useState('No proposal yet');
     return (
@@ -96,7 +115,8 @@ const Host = ({ capabilities, applied }: { capabilities: OrderedItemCapabilities
                 capabilities={capabilities}
                 destinations={destinations}
                 createItem={() => ({ id: `page-new-${++counter}`, label: 'New page' })}
-                renderIconField={(props) => <ExampleIconField {...props} />}
+                iconCatalog={iconCatalog}
+                allowedIcons={allowedIcons}
                 onChange={(proposal) => {
                     const summary = `${proposal.kind}: ${proposal.items.map((item) => item.label).join(', ')}`;
                     setLast(summary);
@@ -117,6 +137,13 @@ export const HostAllowsEverything: Story = {
         await expect(canvas.getByText('Fixed items')).toBeVisible();
         await expect(canvas.getByText('Locked')).toBeVisible();
 
+        // The icon field is the Components icon picker, fed by the host's synthetic catalog.
+        await userEvent.click(canvas.getByRole('button', { name: /Icon: Page A/ }));
+        const popout = within(await within(document.body).findByRole('dialog'));
+        await userEvent.click(await popout.findByRole('option', { name: /Circle/ }));
+        await waitFor(() => expect(canvas.getByTestId('last-proposal')).toHaveTextContent('update: Page A, Page B'));
+        await waitFor(() => expect(canvas.getByRole('button', { name: /Icon: Page A/ })).toHaveTextContent('Circle'));
+
         await userEvent.click(canvas.getByRole('button', { name: 'Move Page A down' }));
         await waitFor(() => expect(canvas.getByTestId('last-proposal')).toHaveTextContent('move: Page B, Page A'));
         await waitFor(() => expect(canvas.getByRole('button', { name: 'Move Page A down' })).toHaveFocus());
@@ -136,6 +163,35 @@ export const HostRestrictsIconsAndCollection: Story = {
         await expect(canvas.getByText('This template does not allow new pages.')).toBeVisible();
         await expect(canvas.getByText('Icons are set by the template.')).toBeVisible();
         await expect(canvas.getAllByRole('button', { name: /^Move Page/ }).length).toBeGreaterThan(0);
+
+        // A read-only icon stays focusable and readable, but the picker does not open.
+        const icon = canvas.getByRole('button', { name: /Icon: Page A/ });
+        await expect(icon).toHaveAttribute('aria-disabled', 'true');
+        await userEvent.click(icon);
+        await expect(within(document.body).queryByRole('dialog')).toBeNull();
+        await expect(canvas.getByTestId('last-proposal')).toHaveTextContent('No proposal yet');
+    },
+};
+
+/** Host C lets the person change icons, but only to ones from the allowed set; the rest are listed and unavailable. */
+export const HostRestrictsIconsToAnAllowedSet: Story = {
+    render: () => (
+        <Host
+            capabilities={hostA}
+            allowedIcons={[
+                { library: 'example-glyphs', key: 'home' },
+                { library: 'example-glyphs', key: 'square' },
+            ]}
+        />
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: /Icon: Page A/ }));
+        const popout = within(await within(document.body).findByRole('dialog'));
+        const blocked = await popout.findByRole('option', { name: /Circle/ });
+        await expect(blocked).toHaveAttribute('aria-disabled', 'true');
+        await userEvent.click(blocked);
+        await expect(canvas.getByTestId('last-proposal')).toHaveTextContent('No proposal yet');
     },
 };
 
@@ -188,7 +244,7 @@ export const NarrowPanelWithLongLabels: Story = {
     ),
 };
 
-/** The host reports that an icon is no longer in its catalog. */
+/** The item's icon is no longer in the host's catalog, so the picker shows its identity with a warning. */
 export const UnavailableIcon: Story = {
     render: () => (
         <div style={{ maxWidth: 520 }}>
@@ -197,8 +253,7 @@ export const UnavailableIcon: Story = {
                 items={[{ id: 'page-a', label: 'Page A', icon: { library: 'retired-icons', key: 'gone' } }]}
                 capabilities={hostA}
                 destinations={destinations}
-                isIconAvailable={(icon) => icon.library !== 'retired-icons'}
-                renderIconField={(props) => <ExampleIconField {...props} />}
+                iconCatalog={iconCatalog}
                 onChange={() => undefined}
             />
         </div>
