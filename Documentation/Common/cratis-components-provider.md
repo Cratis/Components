@@ -71,7 +71,7 @@ A small inline object as in the basic example is inexpensive; the stable form ma
 | `messages.dataTable`     | `DataTableCore`'s search, selection, and loading (`loading`), failed (`failed`), and access-denied (`unauthorized`) messages.   |
 | `messages.filter`        | `FilterPanel` dialog and PivotViewer filter button name (`label`), and panel/group/standalone `CheckboxListFilter` search name (`searchAriaLabel`). |
 | `messages.columnFilter`  | The built-in column filter popup's clear/apply/boolean/match-mode labels.                                                       |
-| `messages.toolbar`       | `Toolbar`'s accessible-name fallback (`label`, default `Tools`) when neither `aria-label` nor `aria-labelledby` is passed.        |
+| `messages.toolbar`       | `Toolbar`'s accessible-name fallback (`label`, default `Tools`) and the drawer folder's close button (`closeDrawer`, default `Close`).  |
 | `icons`                  | Components-owned icon vocabulary replacing the built-in glyphs the library draws. See [Register an icon set](#register-an-icon-set). |
 | `locales`                | Temporary Components 3 compatibility map; migrate to `messages`.                                                                |
 
@@ -190,6 +190,7 @@ English, spelled out explicitly (this is also what every group defaults to with 
             },
             toolbar: {
                 label: 'Tools',
+                closeDrawer: 'Close',
             },
         },
     }}
@@ -264,6 +265,7 @@ The same shape in Norwegian Bokmål:
             },
             toolbar: {
                 label: 'Verktøy',
+                closeDrawer: 'Lukk',
             },
         },
     }}

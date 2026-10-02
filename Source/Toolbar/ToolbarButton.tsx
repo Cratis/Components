@@ -10,6 +10,8 @@ import type { Icon } from '../Common/Icon';
 import { Tooltip } from '../Common/Tooltip';
 import type { TooltipPosition } from '../Common/Tooltip';
 import { useToolbarDragContext } from './ToolbarDragContext';
+import { useToolbarDrawer } from './ToolbarDrawerContext';
+import { ToolbarDrawerTile } from './ToolbarDrawerTile';
 import { useToolbarFolderMode } from './ToolbarFolderContext';
 import { useToolbarItemVisibility } from './ToolbarItemVisibilityContext';
 import { useRovingTool } from '../Common/ToolbarRovingContext';
@@ -70,11 +72,7 @@ export interface ToolbarButtonProps {
     onDragStart?: (data: unknown, event: React.DragEvent<HTMLButtonElement>) => void;
 }
 
-/**
- * An icon button with a tooltip, intended to be placed inside a {@link Toolbar}.
- * Uses the shared {@link Tooltip} component for consistent hover labels.
- */
-export const ToolbarButton = ({
+const ToolbarButtonContent = ({
     icon,
     text,
     title,
@@ -188,5 +186,37 @@ export const ToolbarButton = ({
                 {buttonContent}
             </button>
         </Tooltip>
+    );
+};
+
+/**
+ * An icon button with a tooltip, intended to be placed inside a {@link Toolbar}.
+ * Uses the shared {@link Tooltip} component for consistent hover labels.
+ *
+ * Inside a drawer {@link ToolbarFolder} the button renders as a labeled tile instead, with its
+ * `title` always visible, so a drawer can be composed from children as well as from `items`.
+ */
+export const ToolbarButton = (props: ToolbarButtonProps) => {
+    const drawer = useToolbarDrawer();
+    const dragContext = useToolbarDragContext();
+
+    if (drawer === null) {
+        return <ToolbarButtonContent {...props} />;
+    }
+
+    return (
+        <ToolbarDrawerTile
+            title={props.title}
+            icon={props.icon}
+            active={props.active}
+            draggable={props.draggable ?? dragContext.draggable}
+            data={props.data}
+            onClick={props.onClick}
+            onDragStart={props.onDragStart}
+            className={props.className}
+            root={props.pt?.root}
+            iconPart={props.pt?.icon}
+            label={props.pt?.label}
+        />
     );
 };

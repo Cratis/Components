@@ -88,3 +88,7 @@ The `maxColumns` prop is ignored in list mode — the panel always uses a single
 |---|---|---|
 | `'grid'` (default) | Square grid, auto-sized columns | Icon-only tools where the icon is self-explanatory |
 | `'list'` | Single column, icon + label | Tools that need a readable name alongside the icon |
+
+## Headed drawer
+
+Set `presentation='drawer'` for a headed panel with a visible title, a close button and labeled tiles that can be driven by a data catalogue. The icon-only grid and the list above remain the defaults. See [Headed drawer](drawer.md).

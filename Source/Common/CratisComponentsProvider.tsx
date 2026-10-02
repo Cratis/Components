@@ -147,6 +147,8 @@ export interface CratisColumnFilterMessages {
 export interface CratisToolbarMessages {
     /** Accessible toolbar name used when neither `aria-label` nor `aria-labelledby` is supplied. */
     label?: string;
+    /** Accessible name of the close button in a drawer {@link ToolbarFolder}. Defaults to 'Close'. */
+    closeDrawer?: string;
 }
 
 /** Components-owned message groups. */

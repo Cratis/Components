@@ -417,6 +417,11 @@
     line-height: 1.2;
 }
 
+/* The selected tile's highlight background is darker than the surface, so secondary text on it falls short of 4.5:1. */
+.cratis-icon-picker__tile[data-selected] .cratis-icon-picker__provider {
+    color: var(--cratis-highlight-text-color);
+}
+
 .cratis-icon-picker__tile .cratis-icon-picker__provider {
     max-width: 100%;
     white-space: normal;

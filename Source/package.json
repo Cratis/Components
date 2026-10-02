@@ -87,6 +87,11 @@
             "import": "./dist/esm/CommandForm/index.js"
         },
         "./CommandForm/fields/styles": "./dist/esm/styles.CommandForm.css",
+        "./ConfigurationEditor": {
+            "types": "./dist/esm/ConfigurationEditor/index.d.ts",
+            "import": "./dist/esm/ConfigurationEditor/index.js"
+        },
+        "./ConfigurationEditor/styles": "./dist/esm/styles.ConfigurationEditor.css",
         "./Common": {
             "types": "./dist/esm/Common/index.d.ts",
             "import": "./dist/esm/Common/index.js"
