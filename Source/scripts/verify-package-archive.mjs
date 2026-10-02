@@ -282,11 +282,16 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // already been cut to what they need (no comments, no transitions), so both ceilings move by the
 // measured amount - raw to 210 KiB, gzip to 33 KiB - rather than one stylesheet ending another's
 // ability to ship. A consumer that does not mount an editor imports per-area sheets and pays nothing.
+// Measured when IconPicker's stylesheet joined: raw 224412, gzip 34552, 1254 declaration blocks.
+// The popout is a self-contained surface (trigger, search, filters, grouped tiles, states, sheet)
+// and its comments and transitions are already cut, so the ceilings move by the measured amount -
+// raw to 220 KiB, gzip to 34 KiB, blocks to 1260. A consumer that does not mount an icon picker
+// imports per-area sheets and pays nothing.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 210 * 1024,
-    gzipBytes: 33 * 1024,
-    declarationBlocks: 1200,
+    rawBytes: 220 * 1024,
+    gzipBytes: 34 * 1024,
+    declarationBlocks: 1260,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
@@ -336,6 +341,7 @@ const areaStyleBudgets = new Map([
     ['styles.Display.css', 6144], // measured 5398
     ['styles.Dropdown.css', 6144], // measured 5481
     ['styles.Filter.css', 3584], // measured 2742
+    ['styles.IconPicker.css', 2560], // measured 1919
     ['styles.MarkdownEditor.css', 2048], // measured 1377
     ['styles.Notifications.css', 5632], // measured 1099 (4988 before the configuration seam left Common/)
     ['styles.ObjectContentEditor.css', 5632], // measured 5049

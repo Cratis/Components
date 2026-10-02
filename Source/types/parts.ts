@@ -67,6 +67,7 @@ export const cratisParts = {
     ProgressBar: ['root', 'indicator', 'label'],
     Chip: ['root', 'icon', 'label', 'remove'],
     MarkdownEditor: ['root', 'toolbar', 'format', 'toggle', 'textarea', 'preview', 'status', 'suggestions', 'suggestion'],
+    IconPicker: ['root', 'trigger', 'glyph', 'name', 'message', 'popover', 'dialog', 'title', 'close', 'search', 'clear', 'categories', 'category', 'library', 'summary', 'status', 'group', 'groupTitle', 'showAll', 'grid', 'tile', 'tileIcon', 'tileName', 'provider', 'attribution'],
 } as const;
 
 /** The canonical Components part-name manifest. */
@@ -565,6 +566,33 @@ export const cratisPartStates = {
         'status': [],
         'suggestions': [],
         'suggestion': ['selected'],
+    },
+    IconPicker: {
+        'root': ['disabled', 'invalid', 'readonly', 'open'],
+        'trigger': ['disabled', 'invalid', 'readonly', 'open'],
+        'glyph': [],
+        'name': [],
+        'message': [],
+        'popover': ['open'],
+        'dialog': [],
+        'title': [],
+        'close': [],
+        'search': [],
+        'clear': [],
+        'categories': [],
+        'category': ['selected'],
+        'library': [],
+        'summary': [],
+        'status': ['loading'],
+        'group': [],
+        'groupTitle': [],
+        'showAll': [],
+        'grid': [],
+        'tile': ['selected', 'disabled'],
+        'tileIcon': [],
+        'tileName': [],
+        'provider': [],
+        'attribution': [],
     },
 } as const satisfies {
     readonly [Component in keyof CratisPartsManifest]: {
