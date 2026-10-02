@@ -75,6 +75,7 @@
         "timemachine-properties--docs",
         "timemachine-readmodelview--docs",
         "timemachine-timemachine--docs",
+        "toolbar-drawer--docs",
         "toolbar-toolbar--docs"
     ],
     "matrixStories": [
@@ -266,7 +267,13 @@
         "schemaeditor-schemaeditor--localized-labels",
         "schemaeditor-schemaeditor--read-only",
         "schemaeditor-schemaeditor--simple-schema",
-        "schemaeditor-schemaeditor--view-mode"
+        "schemaeditor-schemaeditor--view-mode",
+        "toolbar-drawer--closes-after-insert",
+        "toolbar-drawer--composed-from-children",
+        "toolbar-drawer--edge-placement",
+        "toolbar-drawer--keyboard-activation",
+        "toolbar-drawer--layout",
+        "toolbar-drawer--long-localized-titles"
     ],
     "slotOwningModules": [
         "Source/Common/Button.tsx",
@@ -622,6 +629,12 @@
         "timemachine-timemachine--high-scroll-sensitivity",
         "timemachine-timemachine--localized-labels",
         "timemachine-timemachine--start-at-latest-version",
+        "toolbar-drawer--closes-after-insert",
+        "toolbar-drawer--composed-from-children",
+        "toolbar-drawer--edge-placement",
+        "toolbar-drawer--keyboard-activation",
+        "toolbar-drawer--layout",
+        "toolbar-drawer--long-localized-titles",
         "toolbar-toolbar--default",
         "toolbar-toolbar--drag-and-drop",
         "toolbar-toolbar--folder-grid-vs-list",
@@ -724,6 +737,7 @@
         "Source/TimeMachine/Properties.stories.tsx",
         "Source/TimeMachine/ReadModelView.stories.tsx",
         "Source/TimeMachine/TimeMachine.stories.tsx",
-        "Source/Toolbar/Toolbar.stories.tsx"
+        "Source/Toolbar/Toolbar.stories.tsx",
+        "Source/Toolbar/ToolbarDrawer.stories.tsx"
     ]
 }

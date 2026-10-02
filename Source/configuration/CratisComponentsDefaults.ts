@@ -64,6 +64,7 @@ export const cratisDefaults: CratisComponentsConfig = {
         },
         toolbar: {
             label: 'Tools',
+            closeDrawer: 'Close',
         },
     },
 };

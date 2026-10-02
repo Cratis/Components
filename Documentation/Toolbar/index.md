@@ -3,7 +3,7 @@ title: Toolbar
 description: Build canvas-style tool palettes with groups, contexts, slots, folders, and fan-out panels.
 ---
 
-The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, fan-out sub-panels, and drag & drop onto surfaces.
+The `Toolbar` component provides a canvas-style icon toolbar with support for orientations, active states, animated context switching, separators, fan-out sub-panels, and drag & drop onto surfaces, and headed drawers of labeled tiles.
 
 Toolbar belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency, despite its canvas-adjacent purpose.
 
@@ -57,7 +57,7 @@ Deeply styled products should measure and select Toolbar structure through typed
 | `ToolbarSeparator`  | `ToolbarSeparatorParts` | `root` → `toolbar-separator`                                                                                    |
 | `ToolbarLayout`     | `ToolbarLayoutParts`    | `root` → `toolbar-layout`; `slot` → `toolbar-slot`; `incoming` → `toolbar-slot-incoming`; `outgoing` → `toolbar-slot-outgoing` |
 | `ToolbarSection`    | `ToolbarSectionParts`   | `root` → `toolbar-section`; `context` → `toolbar-context`                                                       |
-| `ToolbarFolder`     | `ToolbarFolderParts`    | `root` → `toolbar-folder`; `trigger` → `toolbar-folder-trigger`; `panel` → `toolbar-folder-panel`               |
+| `ToolbarFolder`     | `ToolbarFolderParts`    | `root` → `toolbar-folder`; `trigger` → `toolbar-folder-trigger`; `panel` → `toolbar-folder-panel`; drawer: `drawerHeader`, `drawerTitle`, `drawerClose`, `tile`, `tileIcon`, `tileLabel` (see [Headed drawer](drawer.md)) |
 | `ToolbarFanOutItem` | `ToolbarFanOutParts`    | `root` → `fanout-root`; `trigger` → `fanout-trigger`; `panel` → `fanout-panel`                                  |
 
 The active tool, active context, and an open folder or fan-out also carry the canonical `data-selected` or `data-open` state. Contexts expose `data-context-name` and `data-active`; sections and slots expose `data-transitioning`. Folder and fan-out panels expose `data-expanded` and `data-direction`; fan-out also exposes `data-settled`, while folders expose `data-mode`. Collapsed/inactive panels and contexts are inert so hidden tools do not remain in keyboard navigation.

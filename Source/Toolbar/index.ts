@@ -23,3 +23,5 @@ export { ToolbarSlot, ToolbarSlotProvider, useToolbarSlot } from './ToolbarSlot'
 export type { ToolbarSlotProps, ToolbarSlotProviderProps } from './ToolbarSlot';
 export { ToolbarLayout } from './ToolbarLayout';
 export type { ToolbarLayoutParts, ToolbarLayoutProps } from './ToolbarLayout';
+export type { ToolbarDrawerItem } from './ToolbarDrawerItem';
+export type { ToolbarFolderPresentation } from './ToolbarFolderPresentation';
