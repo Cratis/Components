@@ -121,24 +121,26 @@ export const Layout: Story = {
     render: () => <LayoutDrawerDemo />,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        const trigger = canvas.getByRole('button', { name: 'Layout' });
-        await expect(trigger).toHaveAttribute('aria-expanded', 'false');
-        await userEvent.click(trigger);
-        await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'));
+        // Query again every time: the story can re-render and replace the elements it shows.
+        const findTrigger = () => canvas.getByRole('button', { name: 'Layout' });
+        await expect(findTrigger()).toHaveAttribute('aria-expanded', 'false');
+        await userEvent.click(findTrigger());
+        await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'true'));
 
-        const group = canvas.getByRole('group', { name: 'Layout' });
-        await expect(within(group).getByRole('button', { name: 'Masonry' })).toBeVisible();
-        await userEvent.click(within(group).getByRole('button', { name: 'Masonry' }));
-        await expect(canvas.getByTestId('insertions')).toHaveTextContent('click: {"type":"masonry","columns":3}');
+        const findGroup = () => within(canvas.getByRole('group', { name: 'Layout' }));
+        await waitFor(() => expect(findGroup().getByRole('button', { name: 'Masonry' })).toBeVisible());
+        await userEvent.click(findGroup().getByRole('button', { name: 'Masonry' }));
+        await waitFor(() =>
+            expect(canvas.getByTestId('insertions')).toHaveTextContent('click: {"type":"masonry","columns":3}'),
+        );
 
-        const split = within(group).getByRole('button', { name: /Split/ });
-        await expect(split).toHaveAttribute('aria-disabled', 'true');
-        await userEvent.click(split);
+        await expect(findGroup().getByRole('button', { name: /Split/ })).toHaveAttribute('aria-disabled', 'true');
+        await userEvent.click(findGroup().getByRole('button', { name: /Split/ }));
         await expect(canvas.getByTestId('insertions').children).toHaveLength(1);
 
-        await userEvent.click(within(group).getByRole('button', { name: 'Close' }));
-        await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
-        await waitFor(() => expect(trigger).toHaveFocus());
+        await userEvent.click(findGroup().getByRole('button', { name: 'Close' }));
+        await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'false'));
+        await waitFor(() => expect(findTrigger()).toHaveFocus());
     },
 };
 
@@ -167,11 +169,12 @@ export const ClosesAfterInsert: Story = {
     },
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        const trigger = canvas.getByRole('button', { name: 'Layout' });
-        await userEvent.click(trigger);
-        await userEvent.click(await canvas.findByRole('button', { name: 'Stack' }));
-        await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
-        await waitFor(() => expect(trigger).toHaveFocus());
+        const findTrigger = () => canvas.getByRole('button', { name: 'Layout' });
+        await userEvent.click(findTrigger());
+        await waitFor(() => expect(canvas.getByRole('button', { name: 'Stack' })).toBeVisible());
+        await userEvent.click(canvas.getByRole('button', { name: 'Stack' }));
+        await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'false'));
+        await waitFor(() => expect(findTrigger()).toHaveFocus());
     },
 };
 
@@ -180,15 +183,17 @@ export const KeyboardActivation: Story = {
     render: () => <LayoutDrawerDemo />,
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
-        const trigger = canvas.getByRole('button', { name: 'Layout' });
-        await userEvent.click(trigger);
-        const tile = await canvas.findByRole('button', { name: 'Grid' });
-        tile.focus();
+        const findTrigger = () => canvas.getByRole('button', { name: 'Layout' });
+        await userEvent.click(findTrigger());
+        await waitFor(() => expect(canvas.getByRole('button', { name: 'Grid' })).toBeVisible());
+        canvas.getByRole('button', { name: 'Grid' }).focus();
         await userEvent.keyboard('{Enter}');
-        await expect(canvas.getByTestId('insertions')).toHaveTextContent('click: {"type":"grid","columns":2}');
+        await waitFor(() =>
+            expect(canvas.getByTestId('insertions')).toHaveTextContent('click: {"type":"grid","columns":2}'),
+        );
         await userEvent.keyboard('{Escape}');
-        await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'false'));
-        await waitFor(() => expect(trigger).toHaveFocus());
+        await waitFor(() => expect(findTrigger()).toHaveAttribute('aria-expanded', 'false'));
+        await waitFor(() => expect(findTrigger()).toHaveFocus());
     },
 };
 
@@ -214,7 +219,9 @@ export const LongLocalizedTitles: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByRole('button', { name: 'Oppsett' }));
-        await expect(await canvas.findByRole('button', { name: 'Fleksibelt rutenett med tilpassede kolonner' })).toBeVisible();
+        await waitFor(() =>
+            expect(canvas.getByRole('button', { name: 'Fleksibelt rutenett med tilpassede kolonner' })).toBeVisible(),
+        );
         await expect(canvas.getByRole('button', { name: 'Lukk' })).toBeVisible();
     },
 };
@@ -253,9 +260,9 @@ export const EdgePlacement: Story = {
     play: async ({ canvasElement }) => {
         const canvas = within(canvasElement);
         await userEvent.click(canvas.getByRole('button', { name: 'Layout' }));
-        const panel = await canvas.findByRole('group', { name: 'Layout' });
         await waitFor(() => {
-            const rectangle = panel.getBoundingClientRect();
+            const rectangle = canvas.getByRole('group', { name: 'Layout' }).getBoundingClientRect();
+            expect(canvas.getByRole('button', { name: 'Stack' })).toBeVisible();
             expect(rectangle.bottom).toBeLessThanOrEqual(window.innerHeight);
             expect(rectangle.top).toBeGreaterThanOrEqual(0);
         });

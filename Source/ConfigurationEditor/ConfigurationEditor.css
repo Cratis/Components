@@ -102,7 +102,7 @@
     padding: 0.125rem 0.5rem;
     border: 1px solid var(--cratis-surface-border);
     border-radius: 999px;
-    color: var(--cratis-text-color-secondary);
+    color: var(--cratis-text-color);
     font-size: 0.75rem;
     font-weight: 600;
 }
