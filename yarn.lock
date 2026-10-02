@@ -437,7 +437,7 @@ __metadata:
     "@cratis/arc.vite": "npm:22.16.0"
     "@internationalized/date": "npm:3.12.4"
     allotment: "npm:1.20.5"
-    framer-motion: "npm:13.2.0"
+    framer-motion: "npm:13.5.0"
     pixi.js: "npm:^8.20.1"
     react: "npm:19.3.0"
     react-aria: "npm:3.52.1"
@@ -4948,12 +4948,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:13.2.0":
-  version: 13.2.0
-  resolution: "framer-motion@npm:13.2.0"
+"framer-motion@npm:13.5.0":
+  version: 13.5.0
+  resolution: "framer-motion@npm:13.5.0"
   dependencies:
-    motion-dom: "npm:^13.2.0"
-    motion-utils: "npm:^13.0.0"
+    motion-dom: "npm:^13.5.0"
+    motion-utils: "npm:^13.5.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
     react: ^18.0.0 || ^19.0.0
@@ -4963,7 +4963,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10/57e04da36915ebfd08d1a17a2623fad9ce4bc6f1157e66f16c522f22677c26e5a52a61032cf9afc90e1a403997d5a4d7c03dc364c9f394ccbf8a4a1d489ee477
+  checksum: 10/b62e3d10771a3fe7cef379c900b80071295b49d5fa20c1e6ab8a4498e7ff0afbe34b66a24ed0e5c4205418917e8b6d85d015cb76af89db7e19b3570c58920320
   languageName: node
   linkType: hard
 
@@ -5909,19 +5909,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^13.2.0":
-  version: 13.2.0
-  resolution: "motion-dom@npm:13.2.0"
+"motion-dom@npm:^13.5.0":
+  version: 13.5.0
+  resolution: "motion-dom@npm:13.5.0"
   dependencies:
-    motion-utils: "npm:^13.0.0"
-  checksum: 10/b819cf3b920b9b1aaf8df90d3103f1baa7fc2de180551324f7fa82e58cc8e73f7dd20b6ed68044156dc42f9d4d6d88ea2dc288f9816d3567d2f7d141f0003f28
+    motion-utils: "npm:^13.5.0"
+  checksum: 10/9a8e177c62d3edcdee20d3c4aa7f33380e2fd9cb4c074fe32677c015aa5ce4d3a57a31e5fea4ceb4c8f67791cd64f8d3504bd4d280c4c6ea06c034e9c334cd0f
   languageName: node
   linkType: hard
 
-"motion-utils@npm:^13.0.0":
-  version: 13.0.0
-  resolution: "motion-utils@npm:13.0.0"
-  checksum: 10/ee6296263ed6fd16a46eced143446e9335facdf72d1922ecdcfb945fb498d3723e9c94f3036fed4cc3cda7fca59de9b2971c11496fdfb8511cefb70eb2ec2da3
+"motion-utils@npm:^13.5.0":
+  version: 13.5.0
+  resolution: "motion-utils@npm:13.5.0"
+  checksum: 10/ccdba6179ddd7b22913bb81ca4961df5218efca2d754bfe72e63c90b50ff273666cb06d83319f2299a88263b8f5779ea45ae9e7113b7c893b3515aa2970f8fb0
   languageName: node
   linkType: hard
 

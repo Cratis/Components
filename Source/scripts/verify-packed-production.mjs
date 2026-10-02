@@ -145,8 +145,9 @@ try {
     writeFileSync(
         consumerEntry,
         `import { AutoCommandForm, resolveFieldTypeProvider } from '@cratis/components/CommandForm';
+import { FilterPanel } from '@cratis/components/Filter';
 const stringProvider = resolveFieldTypeProvider({ name: 'value', type: String, isNullable: false });
-export { AutoCommandForm };
+export { AutoCommandForm, FilterPanel };
 export const stringDefaultProviderRegistered = Boolean(stringProvider?.component);
 `,
     );
@@ -155,6 +156,10 @@ export const stringDefaultProviderRegistered = Boolean(stringProvider?.component
         input: consumerEntry,
         external: (specifier) => {
             if (specifier === pkg.name || specifier.startsWith(`${pkg.name}/`)) return false;
+            // Check that the locked motion packages are mutually consistent in the packed production bundle.
+            if (['framer-motion', 'motion-dom', 'motion-utils'].some(
+                (dependency) => specifier === dependency || specifier.startsWith(`${dependency}/`),
+            )) return false;
             return !specifier.startsWith('.') && !path.isAbsolute(specifier) && !specifier.startsWith('\0');
         },
         plugins: [nodeResolve()],
@@ -173,6 +178,14 @@ export const stringDefaultProviderRegistered = Boolean(stringProvider?.component
         throw new Error('Production bundle did not resolve @cratis/components from the packed artifact.');
     }
 
+    for (const dependency of ['framer-motion', 'motion-dom', 'motion-utils']) {
+        const dependencyPrefix = `${realpathSync(path.join(monorepoRoot, 'node_modules', dependency))}${path.sep}`;
+        assert.ok(
+            productionBundle.watchFiles.some((file) => realpathSync(file).startsWith(dependencyPrefix)),
+            `Production bundle did not resolve ${dependency}; its exports were not checked.`,
+        );
+    }
+
     const bundleFile = path.join(scratchRoot, 'production-bundle.mjs');
     await productionBundle.write({
         file: bundleFile,
@@ -189,6 +202,7 @@ export const stringDefaultProviderRegistered = Boolean(stringProvider?.component
 
     const runtimeProbe = `const bundled = await import(${JSON.stringify(pathToFileURL(bundleFile).href)});
 if (typeof bundled.AutoCommandForm !== 'function') throw new Error('AutoCommandForm was tree-shaken away.');
+if (typeof bundled.FilterPanel !== 'function') throw new Error('FilterPanel was tree-shaken away.');
 if (bundled.stringDefaultProviderRegistered !== true) throw new Error('The String default field provider was not registered.');
 console.log('VERIFIED');`;
     const runtimeResult = spawnSync(
@@ -210,7 +224,8 @@ console.log('VERIFIED');`;
 
     console.log(
         'Packed production verification passed: AutoCommandForm and its String default provider ' +
-            'survive aggressive Rollup tree shaking; Prime families are absent; cascade-layer order is exact.',
+            'survive aggressive Rollup tree shaking; Prime families are absent; cascade-layer order is exact; ' +
+            'the locked motion packages are mutually consistent in the packed production bundle.',
     );
     if (keepFixture) console.log(`Fixture retained at ${scratchRoot}`);
 } catch (error) {
