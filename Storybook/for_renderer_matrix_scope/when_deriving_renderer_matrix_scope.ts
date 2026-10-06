@@ -85,6 +85,9 @@ describe('when deriving renderer matrix scope', () => {
             storyEntry('common-tabs--playground', 'Common/Tabs.tsx'),
             storyEntry('common-taggroup--playground', 'Common/TagGroup.tsx'),
             storyEntry('common-breadcrumbs--playground', 'Common/Breadcrumbs.tsx'),
+            // The tree SchemaEditor renders its own row controls instead of slotted primitives,
+            // so it stays out of the renderer matrix (matching storybook-inventory.json).
+            storyEntry('schemaeditor-schemaeditor--basic', 'SchemaEditor/SchemaEditor.tsx'),
         ];
         const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot, sourceRoot });
         expect(matrixStoryIds.size).to.equal(0);
@@ -95,7 +98,6 @@ describe('when deriving renderer matrix scope', () => {
             storyEntry('commanddialog-commanddialog--default', 'CommandDialog/CommandDialog.tsx'),
             storyEntry('datapage-datapage--default', 'DataPage/DataPage.tsx'),
             storyEntry('datatables-columnfiltermenu--default', 'DataTables/ColumnFilterMenu.tsx'),
-            storyEntry('schemaeditor-schemaeditor--default', 'SchemaEditor/SchemaEditor.tsx'),
         ];
         const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot, sourceRoot });
         expect(matrixStoryIds.size).to.equal(storyEntries.length);
