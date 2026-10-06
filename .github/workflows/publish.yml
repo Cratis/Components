@@ -160,6 +160,8 @@ jobs:
                   cat "$NPM_CONFIG_USERCONFIG" 2>/dev/null || echo "(no .npmrc)"
                   echo "---"
                   yarn workspace @cratis/components prepare
+                  # A consumer resolves dependency ranges to the newest releases, not this lockfile.
+                  yarn workspace @cratis/components verify-packed-fresh-dependencies
                   yarn build
                   yarn publish-version "$RELEASE_VERSION"
 

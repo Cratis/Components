@@ -280,6 +280,7 @@
         "verify-package-archive": "node ./scripts/verify-package-archive.mjs",
         "verify-packed-css": "node ./scripts/verify-packed-css.mjs",
         "verify-packed-production": "node ./scripts/verify-packed-production.mjs",
+        "verify-packed-fresh-dependencies": "node ./scripts/verify-packed-fresh-dependencies.mjs",
         "verify-api-docs": "node ./scripts/verify-api-docs.mjs",
         "verify-public-types": "node ./scripts/verify-public-types.mjs",
         "verify-package-graph": "node ./scripts/verify-package-graph.mjs",

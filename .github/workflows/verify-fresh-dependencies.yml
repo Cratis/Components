@@ -1,0 +1,54 @@
+name: Verify Fresh Dependencies
+
+# Installs the packed @cratis/components tarball into a scratch project with no lockfile, so every
+# dependency range resolves to the newest published version, then runs the production bundle. This
+# catches breakage that appears only when a consumer resolves newer dependencies than this
+# repository's lockfile pins (#390). The release workflow runs the same check before it publishes.
+on:
+    schedule:
+        - cron: '17 5 * * 1'
+    workflow_dispatch:
+    pull_request:
+        branches:
+            - '**'
+        paths:
+            - '.github/workflows/verify-fresh-dependencies.yml'
+            - 'Source/scripts/verify-packed-fresh-dependencies.mjs'
+            - 'Source/scripts/lib/fresh-dependency-resolution.mjs'
+            - 'Source/scripts/lib/packed-artifact.mjs'
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    verify:
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+
+            - name: Setup node
+              uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+              with:
+                  node-version: 24.x
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Yarn install
+              run: yarn install --immutable
+
+            - name: Build the published artifact
+              working-directory: Source
+              run: |
+                  export NODE_OPTIONS="--max-old-space-size=4096"
+                  yarn run prepare
+
+            - name: Verify the packed package against freshly resolved dependencies
+              working-directory: Source
+              run: yarn verify-packed-fresh-dependencies
