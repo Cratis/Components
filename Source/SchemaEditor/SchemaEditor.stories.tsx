@@ -181,3 +181,22 @@ export const Controlled: Story = {
 export const ReadOnly: Story = {
     render: () => <SchemaEditor schema={exampleSchema} readOnly />,
 };
+
+/** With concepts enabled but none defined, the menu says so instead of hiding the group. */
+export const NoConceptsDefined: Story = {
+    render: () => <SchemaEditor schema={exampleSchema} concepts={[]} />,
+};
+
+/** The editor marks each type badge with `data-property-type`; a host can also replace it. */
+export const CustomTypeBadge: Story = {
+    render: () => (
+        <SchemaEditor
+            schema={exampleSchema}
+            getPropertyRowState={property => property.name === 'total'
+                ? { lockType: true, lockTypeReason: 'Mapped to an input, so the type cannot change' }
+                : undefined}
+            renderPropertyTypeBadge={(property, _context, defaultBadge) => (
+                <span data-custom-badge={property.type}>{defaultBadge}</span>
+            )} />
+    ),
+};

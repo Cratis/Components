@@ -19,12 +19,13 @@ State that belongs to the host — rules, mapped properties — is kept by the h
 
 | Point | Use it for |
 | --- | --- |
-| `header` | A title, a validation summary, the connector of the root |
+| `header` | A title, a validation summary, the connector of the root. It renders inside the editor's root, so a host that needs a full-bleed card header places its own header outside the editor |
 | `footer` | Actions beside **Add property** |
 | `renderPropertyLeading(property, context)` | Content before the name, such as a connector to drag from or onto |
 | `renderPropertyAccessory(property, context)` | Controls at the end of the row, before the remove button, such as an **Add rule** button |
 | `renderPropertyDetails(property, context)` | Content under the row, above its nested properties, such as the rules of that property. Nothing is rendered for `undefined`, `null` and `false` |
-| `getPropertyRowState(property, context)` | `className`, `attributes` (`data-*`), `title`, and `lockType` for the row |
+| `renderPropertyTypeBadge(property, context, defaultBadge)` | Replace or wrap the type badge; return `defaultBadge` to keep it |
+| `getPropertyRowState(property, context)` | `className`, `attributes` (`data-*`), `title`, `lockType` and `lockTypeReason` for the row |
 | `selectedPropertyId`, `onPropertyClick` | Selection owned by the host |
 | `isPropertyProtected`, `validatePropertyName` | Restrictions and extra name checks |
 | `onPropertiesChange`, `onPropertyRemoved`, `onPropertyRenamed` | Notifications of edits the editor owns |
@@ -84,7 +85,25 @@ Mapping needs a DOM element per row to draw lines from or to, and to know which 
 />
 ```
 
-`Connector` registers its element with the host's drawing code in an effect, which replaces the mount and unmount callbacks of a prop-based design with ordinary React lifecycle. `lockType` keeps a mapped property from changing type under its mapping.
+`Connector` registers its element with the host's drawing code in an effect, which replaces the mount and unmount callbacks of a prop-based design with ordinary React lifecycle. `lockType` keeps a mapped property from changing type under its mapping. Add `lockTypeReason` to say why: it becomes the tooltip of the locked type badge and its accessible description (through `aria-describedby`).
+
+## Restyling the type badge
+
+Every type badge carries `data-property-type="<type>"` (and `data-cratis-part="badge"`), so a host can tint it per type with CSS alone:
+
+```css
+[data-cratis-part='badge'][data-property-type='number'] { color: var(--my-number-color); }
+```
+
+To change the markup, pass `renderPropertyTypeBadge`. It receives the property, the row context and the badge the editor would render, and may return it unchanged, wrap it, or return something else. Inside an editable row the result stays within the button that opens the type menu.
+
+## Selecting a row from a control
+
+A click on a button, input, label or link inside a row does not select the row, so the host's own controls do not trigger selection by accident. To opt a control in, put `data-schema-row-select` on it, or on any ancestor within the row. A click on it, or on anything inside it, calls `onPropertyClick` with the property's id:
+
+```tsx
+renderPropertyAccessory={() => <button type="button" data-schema-row-select>Select</button>}
+```
 
 ## Controlled mode
 
@@ -99,6 +118,8 @@ Pass `properties` to own the tree. The editor then changes nothing itself: it sh
 | `onChangePropertyType(propertyId, type, concept?)` | Change the type |
 | `onSetKeyProperty(propertyId)` | Set or clear the key |
 | `onSetRequiredProperty(propertyId, isRequired)` | Set requiredness |
+
+A toggle callback implies its allow flag. In controlled mode, supplying `onSetRequiredProperty` offers the required toggle as if `allowRequired` were set, and supplying `onSetKeyProperty` offers the key toggle as if `allowKeyProperty` were set. Set the flag to `false` explicitly to hide the toggle while keeping the callback. In owned mode the flags stay off by default, because the editor performs the edits itself.
 
 Apply each callback with the pure functions the package exports (`addChildProperty`, `removeProperty`…), or with your own logic when an edit has side effects, such as removing the mappings of a deleted property.
 

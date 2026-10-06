@@ -7,7 +7,7 @@ Every edit changes the property tree and reports the whole resulting schema thro
 
 ## Add a property
 
-Choose **Add property** under the tree, or under a nested object, and pick a type from the menu. The menu offers the primitives (text, number, yes or no, date, time), then the [concepts](#concepts), then the composite types (list of text, list of numbers, object, list of objects).
+Choose **Add property** under the tree (the `addProperty` label is rendered beside a plus icon, so a translated label must not include `+`), or under a nested object, and pick a type from the menu. The menu offers the primitives (text, number, yes or no, date, time), then the [concepts](#concepts), then the composite types (list of text, list of numbers, object, list of objects).
 
 A new property is named `property<n>` (`nested<n>` for an object or a list of objects), where `n` is one more than the number of properties in the tree. A property added as a concept is named after it instead — `CustomerId` becomes `customerId` — and gets the lowest free number when a sibling already has the name.
 
@@ -49,15 +49,19 @@ const concepts = [
 <SchemaEditor schema={schema} concepts={concepts} />;
 ```
 
-When many editors share the same concepts, provide them once with `PropertyConceptsProvider`; an editor's own `concepts` prop takes precedence. The menu lists concepts alphabetically under their own heading, and only when there are any. A property typed as a concept is written as the primitive plus `x-concept`, so a reader that does not know concepts still sees a valid schema.
+When many editors share the same concepts, provide them once with `PropertyConceptsProvider`; an editor's own `concepts` prop takes precedence. The menu lists concepts alphabetically under their own heading, and only when the host opted into concepts, with the `concepts` prop or a provider. When it did but the list is empty, the menu shows the heading with a disabled `noConcepts` hint (**No concepts defined** by default); when it did not, the group is absent. A property typed as a concept is written as the primitive plus `x-concept`, so a reader that does not know concepts still sees a valid schema.
 
 ## Required properties
+
+In controlled mode, supplying `onSetRequiredProperty` offers the toggle without `allowRequired`; an explicit `allowRequired={false}` hides it.
 
 With `allowRequired`, each row has a **Required** checkbox. It controls whether the property must be present in its parent object: the name is added to, or removed from, the `required` list of that object — the root, a nested object, or the items of a list of objects. Requiring a nested property does not require its parent.
 
 Presence is not value validation: a present empty string satisfies `required`. New properties are optional, and a key, a concept or a protected name never implies required.
 
 ## The key property
+
+In controlled mode, supplying `onSetKeyProperty` offers the toggle without `allowKeyProperty`; an explicit `allowKeyProperty={false}` hides it.
 
 With `allowKeyProperty`, each row has a key toggle. At most one property of an object is the key; choosing another moves it, and choosing the current key again clears it. The key is written as `x-key: true` on the property.
 
@@ -70,6 +74,10 @@ With `allowKeyProperty`, each row has a key toggle. At most one property of an o
 ## Protected properties
 
 `isPropertyProtected` marks properties that can be neither renamed nor removed, such as an identifier every record carries. They show a lock with the explanation in `labels.protectedProperty` instead of a remove button.
+
+## Header placement
+
+`header` renders inside the editor's root, above the list. A host that wants a full-bleed card header, edge to edge with its own background, places that header outside the editor instead of passing it as `header`.
 
 ## Read-only
 
