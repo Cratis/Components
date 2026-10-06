@@ -311,6 +311,21 @@
     text-transform: uppercase;
 }
 
+.cratis-schema-editor__menu-hint {
+    color: var(--cratis-text-color-secondary);
+    font-style: italic;
+    cursor: default;
+}
+
+.cratis-schema-editor__visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 .cratis-schema-editor__menu-separator {
     height: 1px;
     margin: 0.25rem 0;

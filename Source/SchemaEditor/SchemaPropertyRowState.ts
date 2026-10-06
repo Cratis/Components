@@ -14,4 +14,7 @@ export interface SchemaPropertyRowState {
 
     /** When true the type of the property can no longer be changed, for example because something is bound to it. */
     lockType?: boolean;
+
+    /** Why the type is locked. Shown as the tooltip of the locked type badge and exposed to assistive technology as its description. Only used with `lockType`. */
+    lockTypeReason?: string;
 }

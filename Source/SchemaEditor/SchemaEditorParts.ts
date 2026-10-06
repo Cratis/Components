@@ -42,7 +42,7 @@ export interface SchemaEditorParts {
     /** The input shown while renaming. Carries `data-invalid` for a name that cannot be used. */
     nameInput?: InputHTMLAttributes<HTMLInputElement>;
 
-    /** The read-only badge of a property's type. */
+    /** The read-only badge of a property's type. Carries `data-property-type`, and `data-locked` while the type is locked. */
     badge?: SchemaEditorPartAttributes<HTMLSpanElement>;
 
     /** The button that opens the menu of types. */

@@ -6,7 +6,7 @@ import { FaPlus } from 'react-icons/fa6';
 import type { JsonSchema } from '../types/JsonSchema';
 import type { Property } from './Property';
 import type { PropertyConcept } from './PropertyConcept';
-import { usePropertyConcepts } from './PropertyConceptsContext';
+import { useOptionalPropertyConcepts } from './PropertyConceptsContext';
 import { PropertyType } from './PropertyType';
 import { findPropertyById } from './propertyTree';
 import { PropertyTypeMenu } from './PropertyTypeMenu';
@@ -88,11 +88,15 @@ export interface SchemaEditorProps {
 
     /**
      * Offers the key toggle. `true` offers it on every property; a function decides per property, for example
-     * `(property, context) => context.depth > 0` to leave the root properties out. Off by default.
+     * `(property, context) => context.depth > 0` to leave the root properties out. Off by default, except in
+     * controlled mode, where supplying `onSetKeyProperty` implies `true` unless this is explicitly `false`.
      */
     allowKeyProperty?: boolean | ((property: Property, context: SchemaPropertyContext) => boolean);
 
-    /** Offers the toggle for whether a property must be present (the `required` list). Off by default. */
+    /**
+     * Offers the toggle for whether a property must be present (the `required` list). Off by default, except in
+     * controlled mode, where supplying `onSetRequiredProperty` implies `true` unless this is explicitly `false`.
+     */
     allowRequired?: boolean;
 
     /** Offers no edits at all: the tree is shown, and only selection and the host's slots remain. */
@@ -113,7 +117,7 @@ export interface SchemaEditorProps {
     /** Called when a property's row is clicked, or its name is activated from the keyboard. */
     onPropertyClick?: (propertyId: string) => void;
 
-    /** Content above the properties, for example the title of the schema. */
+    /** Content above the properties, for example the title of the schema. Rendered inside the editor's root, so a host that needs a full-bleed header places its own outside the editor. */
     header?: ReactNode;
 
     /** Content beside the add button, for example further actions. */
@@ -130,6 +134,13 @@ export interface SchemaEditorProps {
 
     /** Styles and marks the row of a property: extra class names, `data-*` attributes, a tooltip, and whether its type is locked. */
     getPropertyRowState?: (property: Property, context: SchemaPropertyContext) => SchemaPropertyRowState | undefined;
+
+    /**
+     * Replaces or wraps the badge that shows a property's type. Receives the badge the editor would render, so a
+     * host can return it unchanged, wrap it, or render something else. The badge carries `data-property-type`
+     * for styling per type.
+     */
+    renderPropertyTypeBadge?: (property: Property, context: SchemaPropertyContext, defaultBadge: ReactNode) => ReactNode;
 
     /** Replaces any of the editor's strings. Unset ones stay English. */
     labels?: SchemaEditorLabels;
@@ -156,7 +167,7 @@ const never = () => false;
  * Pass a `schema` and the editor keeps the tree and reports the resulting schema, or pass `properties` and
  * handle each edit yourself. Everything specific to a product — rules, mapping connectors, its own chrome — is
  * attached through the slots (`header`, `footer`, `renderPropertyLeading`, `renderPropertyAccessory`,
- * `renderPropertyDetails`) and `getPropertyRowState`.
+ * `renderPropertyDetails`, `renderPropertyTypeBadge`) and `getPropertyRowState`.
  */
 export const SchemaEditor = ({
     schema,
@@ -173,8 +184,8 @@ export const SchemaEditor = ({
     onSetKeyProperty,
     onSetRequiredProperty,
     concepts: suppliedConcepts,
-    allowKeyProperty = false,
-    allowRequired = false,
+    allowKeyProperty,
+    allowRequired,
     readOnly = false,
     isPropertyProtected,
     validatePropertyName,
@@ -186,6 +197,7 @@ export const SchemaEditor = ({
     renderPropertyAccessory,
     renderPropertyDetails,
     getPropertyRowState,
+    renderPropertyTypeBadge,
     labels: suppliedLabels,
     'aria-label': ariaLabel,
     'aria-labelledby': ariaLabelledBy,
@@ -193,7 +205,7 @@ export const SchemaEditor = ({
     pt,
 }: SchemaEditorProps) => {
     const labels = useMemo(() => resolveSchemaEditorLabels(suppliedLabels), [suppliedLabels]);
-    const providedConcepts = usePropertyConcepts();
+    const providedConcepts = useOptionalPropertyConcepts();
     const concepts = suppliedConcepts ?? providedConcepts;
     const isControlled = controlledProperties !== undefined;
     const [ownedProperties, setOwnedProperties] = useState<Property[]>(() => jsonSchemaToProperties(schema));
@@ -255,9 +267,12 @@ export const SchemaEditor = ({
         : (type: PropertyType, concept?: string) =>
             apply(addProperty(latest.current, type, totalPropertyCount(latest.current), concept));
 
-    const isKeyAllowed = typeof allowKeyProperty === 'function'
-        ? allowKeyProperty
-        : allowKeyProperty ? () => true : never;
+    // In controlled mode a toggle callback implies its allow flag, unless the host set the flag to false.
+    const keyAllowance = allowKeyProperty ?? (isControlled && onSetKeyProperty !== undefined);
+    const isKeyAllowed = typeof keyAllowance === 'function'
+        ? keyAllowance
+        : keyAllowance ? () => true : never;
+    const isRequiredAllowed = allowRequired ?? (isControlled && onSetRequiredProperty !== undefined);
 
     const contextValue: SchemaEditorContextValue = {
         labels,
@@ -269,13 +284,14 @@ export const SchemaEditor = ({
         selectedPropertyId,
         onPropertyClick,
         isKeyAllowed,
-        isRequiredAllowed: allowRequired,
+        isRequiredAllowed,
         isProtected: isPropertyProtected ?? never,
         validateName: validatePropertyName,
         getRowState: getPropertyRowState,
         renderLeading: renderPropertyLeading,
         renderAccessory: renderPropertyAccessory,
         renderDetails: renderPropertyDetails,
+        renderTypeBadge: renderPropertyTypeBadge,
     };
 
     return (

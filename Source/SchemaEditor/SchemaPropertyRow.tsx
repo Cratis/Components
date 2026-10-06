@@ -45,6 +45,7 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
     const canSetRequired = context.isRequiredAllowed && operations.setRequired !== undefined;
     const canSetKey = !readOnly && operations.setKey !== undefined && context.isKeyAllowed(property, rowContext);
     const canAddChild = !readOnly && operations.addChild !== undefined && hasNestedProperties(property.type);
+    const lockReason = rowState?.lockType === true ? rowState.lockTypeReason : undefined;
     const isSelected = context.selectedPropertyId === property.id;
     const typeName = propertyTypeName(property.type, labels);
     const nestedLabel = labels.nestedProperties(property.name);
@@ -100,11 +101,19 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
     };
 
     const handleRowClick = (event: MouseEvent<HTMLDivElement>) => {
-        const interactive = (event.target as HTMLElement).closest(interactiveSelector);
+        const target = event.target as HTMLElement;
+        const optedIn = target.closest('[data-schema-row-select]');
+        if (optedIn && event.currentTarget.contains(optedIn)) {
+            context.onPropertyClick?.(property.id);
+            return;
+        }
+        const interactive = target.closest(interactiveSelector);
         if (interactive && interactive.getAttribute('data-cratis-part') !== 'name') return;
         context.onPropertyClick?.(property.id);
     };
 
+    const defaultBadge = <PropertyTypeBadge property={property} labels={labels} part={parts?.badge} lockReason={lockReason} />;
+    const typeBadge = context.renderTypeBadge ? context.renderTypeBadge(property, rowContext, defaultBadge) : defaultBadge;
     const rowAttributes = rowState?.attributes ?? {};
     const isSelectable = context.onPropertyClick !== undefined;
 
@@ -187,11 +196,9 @@ export const SchemaPropertyRow = ({ property, siblings, depth }: SchemaPropertyR
                         parts={parts}
                         onSelect={(type, concept) => operations.changeType?.(property.id, type, concept)}
                     >
-                        <PropertyTypeBadge property={property} labels={labels} part={parts?.badge} />
+                        {typeBadge}
                     </PropertyTypeMenu>
-                ) : (
-                    <PropertyTypeBadge property={property} labels={labels} part={parts?.badge} />
-                )}
+                ) : typeBadge}
 
                 {canSetRequired && (
                     <label

@@ -25,7 +25,7 @@ export interface SchemaEditorContextValue {
     labels: Required<SchemaEditorLabels>;
     parts: SchemaEditorParts | undefined;
     properties: Property[];
-    concepts: PropertyConcept[];
+    concepts: PropertyConcept[] | undefined;
     readOnly: boolean;
     operations: SchemaEditorOperations;
     selectedPropertyId: string | null | undefined;
@@ -38,6 +38,7 @@ export interface SchemaEditorContextValue {
     renderLeading: ((property: Property, context: SchemaPropertyContext) => ReactNode) | undefined;
     renderAccessory: ((property: Property, context: SchemaPropertyContext) => ReactNode) | undefined;
     renderDetails: ((property: Property, context: SchemaPropertyContext) => ReactNode) | undefined;
+    renderTypeBadge: ((property: Property, context: SchemaPropertyContext, defaultBadge: ReactNode) => ReactNode) | undefined;
 }
 
 /** Carries the editor's shared configuration to its rows. */
