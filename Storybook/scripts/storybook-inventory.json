@@ -632,6 +632,8 @@
         "pivotviewer-pivotviewer--toolbar-labels",
         "schemaeditor-schemaeditor--basic",
         "schemaeditor-schemaeditor--controlled",
+        "schemaeditor-schemaeditor--custom-type-badge",
+        "schemaeditor-schemaeditor--no-concepts-defined",
         "schemaeditor-schemaeditor--read-only",
         "schemaeditor-schemaeditor--required-and-key",
         "schemaeditor-schemaeditor--with-accessory-and-details",
