@@ -1,123 +1,76 @@
 ---
-title: SchemaEditor editing properties
-description: Add, rename, retype, navigate, and remove properties in SchemaEditor, and save or cancel the edit.
+title: Editing properties
+description: Add, rename, retype, nest, require and key properties in SchemaEditor, and what each edit writes.
 ---
 
-SchemaEditor is controlled: it emits each structural change through `onChange`, and the host decides when and where to persist the resulting schema. Save and Cancel are workflow actions around that controlled value; they do not perform transport themselves.
-
-## Enter edit mode
-
-Use the Edit action in the SchemaEditor toolbar. Left/Right and Home/End move between actions, and Tab still reaches each one. Set `editMode` to choose the initial mode, or set `canEdit={false}` to prevent editing.
-
-When `canEdit` is false, the Edit action is still shown but does nothing. Set `canNotEditReason` to render it as a disabled action (`aria-disabled`) with a tooltip that explains why editing is unavailable; without a reason, the action looks enabled.
+Every edit changes the property tree and reports the whole resulting schema through `onChange`. This page describes each edit and what it writes; see [JSON Schema mapping](json-schema.md) for the reverse direction.
 
 ## Add a property
 
-Choose **Add Property** while editing. SchemaEditor creates a unique sibling name:
+Choose **Add property** under the tree, or under a nested object, and pick a type from the menu. The menu offers the primitives (text, number, yes or no, date, time), then the [concepts](#concepts), then the composite types (list of text, list of numbers, object, list of objects).
 
-- `newProperty`
-- `newProperty1` when `newProperty` already exists
-- then the next available numeric suffix
+A new property is named `property<n>` (`nested<n>` for an object or a list of objects), where `n` is one more than the number of properties in the tree. A property added as a concept is named after it instead — `CustomerId` becomes `customerId` — and gets the lowest free number when a sibling already has the name.
 
-The property starts as `{ type: 'string' }`. Rename it and choose its type or format in the table. The generated name is valid immediately; Save is disabled only when a later edit makes a name invalid.
+## Rename a property
+
+Double-click the name or press `F2` on it. Enter commits the name and Escape or leaving the field cancels it. A name is rejected, with its reason in text and `aria-invalid` on the input, when it is:
+
+- blank;
+- `__proto__`, `constructor` or `prototype`, which would shadow members every object inherits;
+- already used by a sibling, because both would collapse into one JSON Schema key.
+
+Anything else is accepted. Naming style, such as identifiers only, is a product decision: pass `validatePropertyName` and return the message to show.
 
 ```tsx
 <SchemaEditor
     schema={schema}
-    editMode
-    onChange={setSchema}
-    onSave={() => persist(schema)}
+    validatePropertyName={name => /^[a-z][A-Za-z0-9]*$/.test(name) ? undefined : 'Use camelCase.'}
 />
 ```
 
-This excerpt assumes `const [schema, setSchema] = useState<JsonSchema>(...)` as in the [overview](index.md#quick-start), and your own `persist` function.
+A property keeps its requiredness and key when it is renamed.
 
-## Rename a property
+## Change the type
 
-The Name input updates the controlled schema as you type. Names must be non-empty, unique among siblings, and match the identifier pattern documented in [Validation](validation.md#property-name-validation).
+Select the type badge of a property and pick another type. Choosing a plain primitive clears the concept. Changing to an object or a list of objects keeps the children the property already had; changing to anything else drops them.
 
-Invalid names receive an accessible invalid state and keep Save disabled. Renaming a required property also updates the matching entry in that object's `required` array.
+## Concepts
 
-## Change type and format
+A concept names a domain value that wraps one primitive, such as `CustomerId` over text. Pass the concepts the editor may offer:
 
-The Type control combines JSON types and configured formats. The maintained defaults include:
+```tsx
+import { SchemaEditor, PropertyType } from '@cratis/components/SchemaEditor';
 
-- `string`, `guid`, `date-time`, `date`, and `time`
-- `integer`, `int16`, `int32`, and `int64`
-- `number`, `float`, and `double`
-- `boolean`
-- container types `object` and `array`
+const concepts = [
+    { name: 'CustomerId', type: PropertyType.String },
+    { name: 'Quantity', type: PropertyType.Number },
+];
 
-Pass `typeFormats` to replace the maintained leaf type/format list. `object` and `array` remain available as container types.
+<SchemaEditor schema={schema} concepts={concepts} />;
+```
 
-Changing type intentionally normalizes the supported structure:
-
-- `array` receives string `items` by default.
-- `object` receives empty `properties`.
-- Moving to a leaf removes stale nested `items`, `properties`, and nested required names.
-- Choosing a type without a format removes the previous format.
-
-For arrays, a second control chooses the item type. Object item schemas can be opened and edited through the same nested navigation.
-
-## Navigate nested schemas
-
-Object properties and object-valued array items expose navigation actions. The breadcrumb shows the current path and lets you return to any ancestor.
-
-Each nested object is edited in its own scope. Its `properties` and `required` array are independent of the parent object's arrays.
+When many editors share the same concepts, provide them once with `PropertyConceptsProvider`; an editor's own `concepts` prop takes precedence. The menu lists concepts alphabetically under their own heading, and only when there are any. A property typed as a concept is written as the primitive plus `x-concept`, so a reader that does not know concepts still sees a valid schema.
 
 ## Required properties
 
-SchemaEditor does not currently render a Required column or an interactive required/optional toggle. Set required names in the schema before rendering, or transform the controlled schema in host code.
+With `allowRequired`, each row has a **Required** checkbox. It controls whether the property must be present in its parent object: the name is added to, or removed from, the `required` list of that object — the root, a nested object, or the items of a list of objects. Requiring a nested property does not require its parent.
 
-SchemaEditor keeps existing required names consistent while editing:
+Presence is not value validation: a present empty string satisfies `required`. New properties are optional, and a key, a concept or a protected name never implies required.
 
-- Renaming a required property renames its required entry.
-- Deleting a required property removes its required entry.
-- Replacing nested object structure removes stale nested required names.
+## The key property
 
-```typescript
-const schema = {
-    type: 'object',
-    properties: {
-        name: { type: 'string' },
-        address: {
-            type: 'object',
-            properties: {
-                city: { type: 'string' },
-            },
-            required: ['city'],
-        },
-    },
-    required: ['name'],
-};
-```
+With `allowKeyProperty`, each row has a key toggle. At most one property of an object is the key; choosing another moves it, and choosing the current key again clears it. The key is written as `x-key: true` on the property.
 
-## Remove a property
-
-Use the row's delete action. Removal is immediate and emits the updated schema through `onChange`; SchemaEditor does not show a confirmation dialog. A removed required property is also removed from the current object's `required` array.
-
-Add confirmation in the host before allowing edit mode, or wrap persistence in the product's own review workflow when removal needs domain-specific approval.
-
-## Save and Cancel
-
-- **Save** invokes `onSave` and leaves edit mode. It is disabled while property-name or schema-shape errors exist.
-- **Cancel** restores the snapshot captured when edit mode began, emits that restored value through `onChange` (with `meta.source` set to `'reset'`) when anything changed, invokes `onCancel`, and leaves edit mode.
-- `saveDisabled` and `cancelDisabled` hide the corresponding actions when the host owns those decisions elsewhere.
-
-Because `onChange` is emitted during editing, keep the latest controlled value in state. If persistence is asynchronous, perform it in `onSave` using that state.
-
-## Host-owned history and batch operations
-
-SchemaEditor does not include undo/redo, row selection, or batch operations. A host can store successive `onChange` values to provide history, or transform the schema before passing a replacement value back.
-
-Do not infer batch or history behavior from the underlying table component; SchemaEditor exposes only the actions documented here.
-
-## Read-only use
-
-Set `canEdit={false}` to keep the schema browsable without exposing editing actions:
+`allowKeyProperty` also accepts a function to decide per property. For example, to offer the key only on nested properties:
 
 ```tsx
-<SchemaEditor schema={schema} canEdit={false} canNotEditReason='Published schemas are read-only' />
+<SchemaEditor schema={schema} allowKeyProperty={(_property, context) => context.depth > 0} />
 ```
 
-Nested object/array navigation and descriptions remain available for review. Add, delete, type, format, Save, and Cancel actions are unavailable.
+## Protected properties
+
+`isPropertyProtected` marks properties that can be neither renamed nor removed, such as an identifier every record carries. They show a lock with the explanation in `labels.protectedProperty` instead of a remove button.
+
+## Read-only
+
+`readOnly` shows the tree with no edit controls: the required checkboxes stay visible but disabled, and the slots receive `context.readOnly`, so they can withhold their own edits.

@@ -76,7 +76,7 @@ check what an entry point carries in the installed package.
 | `@cratis/components/ObjectNavigationalBar/styles` | Common, ObjectNavigationalBar |
 | `@cratis/components/PivotViewer/styles` | Filter, PivotViewer |
 | `@cratis/components/renderer/builtin/styles` | Common, DataTables, Dialogs, Display, Dropdown, Notifications |
-| `@cratis/components/SchemaEditor/styles` | Common, DataTables, Display, Dropdown, Notifications, SchemaEditor |
+| `@cratis/components/SchemaEditor/styles` | SchemaEditor |
 | `@cratis/components/TimeMachine/styles` | TimeMachine |
 | `@cratis/components/Toolbar/styles` | Common, Notifications, Toolbar |
 

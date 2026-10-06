@@ -72,7 +72,7 @@ Use `Json` for the `object` prop on `ObjectContentEditor` and for `onChange` cal
 
 ## TypeFormat
 
-Represents a JSON type and format pair. Used to describe the type/format combinations that a schema editor or form field supports.
+Represents a JSON type and format pair. Used to describe the type/format combinations that a host's own editor or form field supports. The tree-based `SchemaEditor` has a fixed set of types and does not use it.
 
 ```typescript
 import type { TypeFormat } from '@cratis/components/types';
@@ -115,7 +115,7 @@ interface NavigationItem {
 }
 ```
 
-`path` is the ordered list of property keys from the root to this step, for example `['address', 'street']`. Used by `SchemaEditor`, `ObjectContentEditor`, and `ObjectNavigationalBar`.
+`path` is the ordered list of property keys from the root to this step, for example `['address', 'street']`. Exported for hosts that build a navigation path of their own, for example for `ObjectNavigationalBar`.
 
 ## Other exports
 

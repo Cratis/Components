@@ -212,7 +212,7 @@ Commonly used with:
 - **ObjectContentEditor**: renders an `ObjectNavigationalBar` internally for its own nested navigation
 - **Custom data viewers**: Any hierarchical data display
 
-SchemaEditor has its own breadcrumb and does not use this component.
+SchemaEditor shows nested properties as a tree and does not use this component.
 
 ## Best Practices
 

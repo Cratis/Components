@@ -13,7 +13,7 @@ ObjectContentEditor provides a structured view of JSON objects with breadcrumb n
 
 ## JSON Schema support
 
-ObjectContentEditor renders against the same `JsonSchema`/`JsonSchemaProperty` contract as [`SchemaEditor`](../SchemaEditor/index.md) — see [SchemaEditor: JSON Schema support](../SchemaEditor/index.md#json-schema-support) for the exact supported subset (type/format/description/properties/items/required/definitions/$ref) and what is intentionally not supported (composition keywords, `enum`/`const`, numeric/string constraints, `additionalProperties`, boolean schemas). A property whose schema uses an unsupported keyword still renders by its `type`/`format`; the unsupported keyword itself has no effect on rendering or validation here.
+ObjectContentEditor renders against the same `JsonSchema`/`JsonSchemaProperty` contract as [`SchemaEditor`](../SchemaEditor/index.md) — see [SchemaEditor: JSON Schema support](../SchemaEditor/json-schema.md#json-schema-support) for the contract (type/format/description/properties/items/required/definitions/$ref). Composition keywords, `enum`/`const`, numeric/string constraints, `additionalProperties` and boolean schemas are intentionally not supported. A property whose schema uses an unsupported keyword still renders by its `type`/`format`; the unsupported keyword itself has no effect on rendering or validation here.
 
 The schema is only consulted for the top level of the object:
 
@@ -289,7 +289,7 @@ ObjectContentEditor works well with:
 - **TimeMachine**: Display read model states at each version
 - **DataPage**: Show detail panel content
 - **Dialogs**: Display object details in modal
-- **SchemaEditor**: Use schema created by editor
+- **SchemaEditor**: Use a schema authored in the editor
 
 ## Schema Requirements
 

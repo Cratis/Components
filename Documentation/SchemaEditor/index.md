@@ -1,96 +1,95 @@
 ---
 title: SchemaEditor
-description: Create and edit supported JSON Schema structures in an interactive table.
+description: Edit the properties of a JSON Schema as a tree, with concepts, a key, required properties, and slots for product-specific features.
 ---
 
-The `SchemaEditor` component provides an interactive table-based interface for creating and editing JSON schemas.
+`SchemaEditor` edits the properties of a JSON Schema as a tree: each property is a row with a name, a type, and — for objects and lists of objects — its own nested properties.
 
 SchemaEditor belongs to the [Advanced React capability profile](../ui-foundation.md#capability-profiles) — a specialized, React-only surface with no Pixi dependency and no separate peer to install.
 
-## Purpose
-
-SchemaEditor lets users define data structures by adding properties, choosing supported types and formats, and navigating nested object/array schemas in a table interface.
-
-## Key Features
-
-- Interactive property editing
-- Type selection from JSON schema types
-- Format specification for common patterns
-- `required` array tracking per object schema, kept consistent across renames and deletes (see [Editing Properties](editing.md#required-properties) — no in-table toggle control yet)
-- Array and object type support
-- Inline editing with validation
-- Add/remove properties
-- Read-only mode support
-
-## Quick Start
+## Quick start
 
 ```tsx
 import { useState } from 'react';
-import { SchemaEditor } from '@cratis/components/SchemaEditor';
-import type { JsonSchema } from '@cratis/components/types';
+import { SchemaEditor, type JsonSchema } from '@cratis/components/SchemaEditor';
+import '@cratis/components/SchemaEditor/styles';
 
-export function MySchemaEditor() {
-    const [schema, setSchema] = useState<JsonSchema>({
-        type: 'object',
-        properties: {
-            name: { type: 'string' },
-            age: { type: 'number' },
-        },
-        required: ['name'],
-    });
-
-    return <SchemaEditor schema={schema} onChange={setSchema} />;
-}
-```
-
-## Basic Schema Structure
-
-The component works with JSON schemas following the JSON Schema specification:
-
-```json
-{
-    "type": "object",
-    "properties": {
-        "propertyName": {
-            "type": "string",
-            "format": "date"
-        }
+const initial: JsonSchema = {
+    type: 'object',
+    properties: {
+        name: { type: 'string' },
+        age: { type: 'number' },
     },
-    "required": ["propertyName"]
+    required: ['name'],
+};
+
+export function OrderSchema() {
+    const [schema, setSchema] = useState(initial);
+
+    return <SchemaEditor schema={schema} allowRequired onChange={setSchema} />;
 }
 ```
 
-## JSON Schema support
+The editor converts `schema` into a tree, keeps the edited tree itself, and calls `onChange` with the complete schema after every edit. Handing the reported schema back, or the same schema again, changes nothing. A schema that differs from both — loaded from somewhere else, say — replaces the tree, and with it the property ids.
 
-SchemaEditor and [`ObjectContentEditor`](../ObjectContentEditor/index.md) share one `JsonSchema`/`JsonSchemaProperty` contract (`@cratis/components/types`), and it is a **pragmatic authoring subset of JSON Schema, not a general-purpose validator**. The supported shape is exactly what the types declare:
+## What it edits
 
-- `title`, `name`, `$id`, `$ref`, `type`, `format`, `description`
-- `properties` and `items` (recursively, for `object` and `array`)
-- `required` (a string array on every object schema, including an object-valued property, naming required children in that same `properties` object)
-- `definitions`, for schemas reused via `$ref`
+| Capability | How to turn it on |
+| --- | --- |
+| Add, rename, retype and remove properties, nested objects and lists of objects | On by default |
+| Concepts as property types (`x-concept`) | Pass `concepts`, or wrap the editor in `PropertyConceptsProvider` |
+| Whether a property must be present (`required`) | `allowRequired` |
+| The key that identifies an object (`x-key`) | `allowKeyProperty` |
+| Properties that cannot be renamed or removed | `isPropertyProtected` |
+| Showing the tree without editing it | `readOnly` |
 
-The type editor offers `string`, `integer`, `number`, and `boolean` as leaf types, plus `array` and `object` as container types, with the built-in format catalog (`DEFAULT_TYPE_FORMATS`, also exported from `types`): `guid`, `date-time`, `date`, and `time` for `string`; `int16`, `int32`, and `int64` for `integer`; `float` and `double` for `number`.
+The editor owns a single concern: the shape of the schema. Rules, mapping, and the surrounding chrome of a product attach through [slots and callbacks](extending.md).
 
-What is deliberately **not** supported: JSON Schema composition keywords (`oneOf`, `anyOf`, `allOf`, `not`), `enum`/`const`, numeric or string constraints (`minimum`, `maximum`, `minLength`, `maxLength`, `pattern`), `additionalProperties`/`patternProperties`, and boolean schemas (`true`/`false` in place of a schema object). SchemaEditor does not display, edit, or validate these keywords. Unrelated unknown properties are generally preserved by its clone-and-spread mutation paths, but a targeted type change intentionally rewrites fields such as `type`, `format`, `items`, or `properties` and may leave richer external constraints inconsistent. Validate edited schemas with the application's authoritative validator, or use a dedicated editor when richer vocabulary support is required.
+## Props
 
-## Table Interface
+| Prop | Purpose |
+| --- | --- |
+| `schema`, `onChange` | Schema in, complete schema out. The editor keeps the tree |
+| `properties`, `onAddProperty`, `onDeleteProperty`… | [Controlled mode](extending.md#controlled-mode): the host owns the tree and applies each edit |
+| `concepts` | The concepts offered as property types |
+| `allowRequired`, `allowKeyProperty`, `readOnly` | Opt-in features |
+| `isPropertyProtected`, `validatePropertyName` | Per-property restrictions and extra name checks |
+| `selectedPropertyId`, `onPropertyClick` | Row selection, owned by the host |
+| `header`, `footer` | Content above the tree and beside the add button |
+| `renderPropertyLeading`, `renderPropertyAccessory`, `renderPropertyDetails`, `getPropertyRowState` | Per-row [extension points](extending.md#extension-points) |
+| `onPropertiesChange`, `onPropertyRemoved`, `onPropertyRenamed` | Notifications for hosts that keep state beside the tree |
+| `labels` | Every visible and accessible string |
+| `pt`, `className`, `aria-label`, `aria-labelledby` | Styling parts and the accessible name |
 
-Properties are displayed in a table:
+## Styling
 
-| Property  | Type      |
-| --------- | --------- |
-| name      | string    |
-| id        | guid      |
-| age       | number    |
-| createdAt | date-time |
+Import `@cratis/components/SchemaEditor/styles`, or the aggregate `@cratis/components/styles`. The editor is styled only with `--cratis-*` tokens. Its stable `data-cratis-part` names, which `pt` also accepts attributes for, are `root`, `header`, `list`, `property`, `row`, `leading`, `name`, `nameInput`, `badge`, `typeButton`, `menu`, `menuItem`, `required`, `key`, `accessory`, `remove`, `protected`, `details`, `add`, `empty`, `message` and `footer`. A selected row carries `data-selected`, a pressed key toggle `data-pressed`, an invalid name input `data-invalid`, and a read-only root `data-readonly`.
 
-The Type column shows the property's format when one is set, falling back to
-its JSON type otherwise. There is no separate Required column; see
-[Editing Properties](editing.md#required-properties) for how `required` is
-tracked.
+## Localization
 
-## See Also
+Every string the editor shows or announces comes from `labels`; anything you leave out stays English. Labels that act on one property are functions that receive its name, so each control names the property it belongs to.
 
-- [Editing Properties](editing.md) - Add, modify, and remove properties
-- [Types and Formats](types-formats.md) - Available types and format options
-- [Validation](validation.md) - Validation rules and constraints
+```tsx
+<SchemaEditor
+    schema={schema}
+    labels={{
+        addProperty: 'Legg til egenskap',
+        deleteProperty: name => `Slett ${name}`,
+        typeString: 'Tekst',
+    }}
+/>
+```
+
+## Accessibility
+
+- The tree is nested lists; every control is a real button, input or checkbox in the tab order.
+- A name is renamed with a double click or with `F2` (announced through `aria-keyshortcuts`). Enter commits, Escape cancels, and a rejected name stays in the input with its reason in an alert.
+- The type menu is a React Aria menu: arrow keys, typeahead, Escape, and focus returns to its button.
+- The key toggle is a toggle button (`aria-pressed`), and a type is always shown as text, never only as a color or a glyph.
+
+## See also
+
+- [Editing properties](editing.md)
+- [JSON Schema mapping](json-schema.md)
+- [Extending the editor](extending.md)
+- [Migrating from the table editor](../Migration/4-to-5.md)

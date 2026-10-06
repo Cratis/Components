@@ -1,8 +1,8 @@
 - name: Overview
   href: index.md
-- name: Editing Properties
+- name: Editing properties
   href: editing.md
-- name: Types and Formats
-  href: types-formats.md
-- name: Validation
-  href: validation.md
+- name: JSON Schema mapping
+  href: json-schema.md
+- name: Extending the editor
+  href: extending.md
