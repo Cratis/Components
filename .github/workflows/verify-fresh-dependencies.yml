@@ -21,8 +21,9 @@ on:
             - 'Source/scripts/lib/packed-artifact.mjs'
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    # Reusable calls from Publish must not cancel an in-progress release.
+    # Only pull request runs share a group and replace each other. Calls from Publish, scheduled and
+    # dispatched runs get their own group per run, so a queued release is never cancelled.
+    group: ${{ github.event_name == 'pull_request' && format('{0}-{1}', github.workflow, github.ref) || format('{0}-{1}', github.workflow, github.run_id) }}
     cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
