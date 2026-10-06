@@ -82,9 +82,14 @@ The accepted kernel inventory is exact. A directory not listed here is not impli
 - `Source/CommandForm/fields/chipValues.ts`
 - `Source/CommandForm/fields/fieldValueFromEvent.ts`
 
-### Schema paths and validation
+### Schema property tree and conversion
 
-- `Source/SchemaEditor/schemaHelpers.ts`
+- `Source/SchemaEditor/Property.ts`
+- `Source/SchemaEditor/PropertyConcept.ts`
+- `Source/SchemaEditor/PropertyType.ts`
+- `Source/SchemaEditor/propertyNaming.ts`
+- `Source/SchemaEditor/propertyTree.ts`
+- `Source/SchemaEditor/schemaConversion.ts`
 
 ### Chat reducers and mention segmentation
 
@@ -113,7 +118,7 @@ The initial inventory deliberately excludes candidates that are not React-free a
 - `Source/CommandDialog/stepChildren.ts` uses React's runtime child traversal. Dialog, stepper, focus, portal, and component modules remain outside.
 - `Source/CommandForm/FieldTypeProvider.ts` exposes React `ComponentType`, so `fieldTypeProviderRegistry.ts` reaches React through its declaration closure. Default providers and every field component also remain outside. The initial inventory includes only marker, coercion, and validation-mapping helpers with clean closures.
 - Notifications are not included. `toast.ts` exposes React nodes and browser button types, while timeout scheduling lives in `Toaster.tsx`; there is no independent React-free queue contract behind an existing clock boundary to declare yet.
-- SchemaEditor React cells and editor composition remain outside; only `schemaHelpers.ts` is included.
+- SchemaEditor React rows, the type menu, labels and editor composition remain outside; only the property model and the pure tree and JSON Schema conversion modules are included.
 - Chat components, hooks, anchored overlays, focus/portal behavior, and React-valued action descriptors remain outside. `FailedReply` is a React component and the current source has no independent pure retry reducer to declare.
 
 An excluded module receives no broad allowlist. It can enter the inventory only after its dependency closure is genuinely clean, using a type-only dependency or an explicit port at the UI boundary without changing behavior.

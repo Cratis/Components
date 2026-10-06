@@ -70,6 +70,7 @@ export const cratisParts = {
     Chip: ['root', 'icon', 'label', 'remove'],
     MarkdownEditor: ['root', 'toolbar', 'format', 'toggle', 'textarea', 'preview', 'status', 'suggestions', 'suggestion'],
     IconPicker: ['root', 'trigger', 'glyph', 'name', 'message', 'popover', 'dialog', 'title', 'close', 'search', 'clear', 'categories', 'category', 'library', 'summary', 'status', 'group', 'groupTitle', 'showAll', 'grid', 'tile', 'tileIcon', 'tileName', 'provider', 'attribution'],
+    SchemaEditor: ['root', 'header', 'list', 'property', 'row', 'leading', 'name', 'nameInput', 'badge', 'typeButton', 'menu', 'menuItem', 'required', 'key', 'accessory', 'remove', 'protected', 'details', 'add', 'empty', 'message', 'footer'],
 } as const;
 
 /** The canonical Components part-name manifest. */
@@ -633,6 +634,30 @@ export const cratisPartStates = {
         'tileName': [],
         'provider': [],
         'attribution': [],
+    },
+    SchemaEditor: {
+        'root': ['readonly'],
+        'header': [],
+        'list': [],
+        'property': [],
+        'row': ['selected'],
+        'leading': [],
+        'name': [],
+        'nameInput': ['invalid'],
+        'badge': [],
+        'typeButton': [],
+        'menu': [],
+        'menuItem': [],
+        'required': [],
+        'key': ['pressed'],
+        'accessory': [],
+        'remove': [],
+        'protected': [],
+        'details': [],
+        'add': [],
+        'empty': [],
+        'message': [],
+        'footer': [],
     },
 } as const satisfies {
     readonly [Component in keyof CratisPartsManifest]: {

@@ -57,8 +57,8 @@ export interface JsonSchemaProperty {
 
 /**
  * A breadcrumb or navigation-path entry representing one step in a navigable hierarchy.
- * Used by {@link SchemaEditor}, {@link ObjectContentEditor}, and {@link ObjectNavigationalBar}
- * to show the current location within a nested JSON schema or object structure.
+ * Exported for hosts that render a navigation path through a nested JSON schema or object structure; the
+ * tree-based `SchemaEditor` does not use it.
  */
 export interface NavigationItem {
     /** User-facing name of this navigation step (e.g. a property name or "items"). */

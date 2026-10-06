@@ -15,7 +15,7 @@ export interface TypeFormat {
 /**
  * Default JSON type-to-format mapping table.
  * This is a value contract other code can reference or extend, not just an internal default.
- * Consumed by {@link SchemaEditor} and {@link ObjectContentEditor} to populate type/format dropdowns.
+ * Exported for hosts that offer type/format choices of their own; the tree-based `SchemaEditor` does not use it.
  */
 export const DEFAULT_TYPE_FORMATS: TypeFormat[] = [
     { jsonType: 'string', format: '' },

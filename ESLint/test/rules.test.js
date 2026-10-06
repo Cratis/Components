@@ -566,7 +566,7 @@ tsRuleTester.run('no-hooks-in-view-model', noHooksInViewModel, {
 describe('kernel boundary inventory', () => {
     it('exposes one canonical list to the repository config', () => {
         expect(kernelSourcePaths).toContain('Source/PivotViewer/engine/store.ts');
-        expect(kernelSourcePaths).toContain('Source/SchemaEditor/schemaHelpers.ts');
+        expect(kernelSourcePaths).toContain('Source/SchemaEditor/schemaConversion.ts');
     });
 
     it.each([

@@ -290,11 +290,17 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // raw 235806, gzip 36338, 1312 declaration blocks. The drawer adds placement, header and tile rules to the Toolbar area; the
 // configuration editors are a new area with its own sheet. Both ceilings move by the measured
 // amount, and a consumer that does not mount these surfaces imports per-area sheets and pays nothing.
+// Measured when the tree-based SchemaEditor replaced the table editor, whose stylesheet was two
+// declaration blocks: gzip 37040, 1356 declaration blocks. The tree editor styles its own rows,
+// controls and type menu and reuses no other area's rules, and its comments are already cut. Both
+// ceilings move by the measured amount - gzip to 37 KiB, blocks to 1360. The editor's area sheet
+// no longer carries Common, DataTables, Display or Dropdown, and a consumer that does not mount it
+// imports per-area sheets and pays nothing.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
     rawBytes: 240 * 1024,
-    gzipBytes: 36 * 1024,
-    declarationBlocks: 1320,
+    gzipBytes: 37 * 1024,
+    declarationBlocks: 1360,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
@@ -352,7 +358,7 @@ const areaStyleBudgets = new Map([
     ['styles.ObjectNavigationalBar.css', 5120], // measured 4576
     ['styles.PivotViewer.css', 7680], // measured 6840
     ['styles.renderer.builtin.css', 8704], // measured 7987
-    ['styles.SchemaEditor.css', 8192], // measured 7417
+    ['styles.SchemaEditor.css', 6144], // measured 5364 (7417 for the table editor, which pulled in Common, DataTables, Display and Dropdown)
     ['styles.TimeMachine.css', 5120], // measured 4440
     ['styles.Toolbar.css', 8192], // measured 7758
 ]);

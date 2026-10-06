@@ -1,216 +1,183 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
+import { useState } from 'react';
 import { SchemaEditor } from './SchemaEditor';
+import type { Property } from './Property';
+import type { PropertyConcept } from './PropertyConcept';
+import { PropertyType } from './PropertyType';
 import type { JsonSchema } from '../types/JsonSchema';
-
-const onSchemaChange = fn();
-const onSave = fn();
-const onCancel = fn();
 
 const meta: Meta<typeof SchemaEditor> = {
     title: 'SchemaEditor/SchemaEditor',
     component: SchemaEditor,
     tags: ['autodocs'],
-    parameters: {
-        layout: 'padded',
-    },
+    parameters: { layout: 'padded' },
 };
 
 export default meta;
-type Story = StoryObj<typeof SchemaEditor>;
+type Story = StoryObj<typeof meta>;
 
-const sampleSchema: JsonSchema = {
+/** Synthetic "Example Order" fixture: every property is made up for these stories. */
+const exampleSchema: JsonSchema = {
     type: 'object',
     properties: {
-        id: {
-            type: 'string',
-            format: 'guid',
-            description: 'Unique identifier'
-        },
-        name: {
-            type: 'string',
-            description: 'Name of the entity'
-        },
-        email: {
-            type: 'string',
-            description: 'Email address'
-        },
-        age: {
-            type: 'integer',
-            format: 'int32',
-            description: 'Age in years'
-        },
-        isActive: {
-            type: 'boolean',
-            description: 'Whether the entity is active'
-        },
-        address: {
+        orderNumber: { type: 'string' },
+        placedOn: { type: 'string', format: 'date' },
+        total: { type: 'number' },
+        shipped: { type: 'boolean' },
+        tags: { type: 'array', items: { type: 'string' } },
+        shippingAddress: {
             type: 'object',
-            description: 'Address information',
             properties: {
-                street: {
-                    type: 'string',
-                    description: 'Street address'
-                },
-                city: {
-                    type: 'string',
-                    description: 'City name'
-                },
-                zipCode: {
-                    type: 'string',
-                    description: 'ZIP/Postal code'
-                },
-                country: {
-                    type: 'string',
-                    description: 'Country name'
-                }
-            }
+                street: { type: 'string' },
+                city: { type: 'string' },
+            },
         },
-        tags: {
+        lines: {
             type: 'array',
-            description: 'Tags associated with the entity',
-            items: { type: 'string' }
-        },
-        metadata: {
-            type: 'array',
-            description: 'Metadata entries',
             items: {
                 type: 'object',
                 properties: {
-                    key: { type: 'string' },
-                    value: { type: 'string' }
-                }
-            }
-        }
-    }
+                    sku: { type: 'string' },
+                    quantity: { type: 'number' },
+                },
+            },
+        },
+    } as JsonSchema['properties'],
 };
 
-export const Interactive: Story = {
-    render: () => {
-        const [schema, setSchema] = useState<JsonSchema>(JSON.parse(JSON.stringify(sampleSchema)));
+const conceptSchema: JsonSchema = {
+    type: 'object',
+    properties: { customerId: { type: 'string', 'x-concept': 'CustomerId' } as never },
+};
 
-        return (
-            <div style={{ height: '600px', background: 'var(--cratis-surface-ground)' }}>
+const exampleConcepts: PropertyConcept[] = [
+    { name: 'OrderNumber', type: PropertyType.String },
+    { name: 'CustomerId', type: PropertyType.String },
+    { name: 'Quantity', type: PropertyType.Number },
+];
+
+/** Shows the schema the editor last reported, which is what a host would store. */
+const Output = ({ schema }: { schema: JsonSchema }) => (
+    <pre role='region' tabIndex={0} aria-label='Resulting schema' style={{ margin: 0, fontSize: '0.75rem', overflow: 'auto' }}>
+        {JSON.stringify(schema, undefined, 2)}
+    </pre>
+);
+
+const Beside = ({ initial, children }: { initial: JsonSchema; children: (report: (schema: JsonSchema) => void) => React.ReactNode }) => {
+    const [schema, setSchema] = useState(initial);
+    return (
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '1.5rem', alignItems: 'start' }}>
+            {children(setSchema)}
+            <Output schema={schema} />
+        </div>
+    );
+};
+
+/** A schema edited as a tree. The editor keeps the tree and reports the whole schema after each edit. */
+export const Basic: Story = {
+    render: () => (
+        <Beside initial={exampleSchema}>
+            {report => <SchemaEditor schema={exampleSchema} onChange={report} />}
+        </Beside>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: 'Delete shipped' }));
+        await expect(canvas.queryByText('shipped')).toBeNull();
+    },
+};
+
+/** Concepts are offered after the primitives and written as `x-concept` on the primitive they wrap. */
+export const WithConcepts: Story = {
+    render: () => (
+        <Beside initial={conceptSchema}>
+            {report => <SchemaEditor schema={conceptSchema} concepts={exampleConcepts} onChange={report} />}
+        </Beside>
+    ),
+};
+
+/** The key (`x-key`) and whether a property is required (`required`) are opt-in. */
+export const RequiredAndKey: Story = {
+    render: () => (
+        <Beside initial={exampleSchema}>
+            {report => (
                 <SchemaEditor
-                    schema={schema}
-                    eventTypeName="User"
-                    canEdit={true}
-                    onChange={(newSchema) => {
-                        setSchema(newSchema);
-                        onSchemaChange(newSchema);
-                    }}
-                    onSave={() => onSave(schema)}
-                    onCancel={onCancel}
-                />
-            </div>
-        );
+                    schema={{ ...exampleSchema, required: ['orderNumber'] }}
+                    allowRequired
+                    allowKeyProperty
+                    onChange={report} />
+            )}
+        </Beside>
+    ),
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        const keyButton = canvas.getByRole('button', { name: 'Use orderNumber as the key property' });
+        await userEvent.click(keyButton);
+        await expect(keyButton).toHaveAttribute('aria-pressed', 'true');
     },
 };
 
-export const ViewMode: Story = {
-    args: {
-        schema: sampleSchema,
-        eventTypeName: 'User',
-        canEdit: true,
-        onChange: onSchemaChange,
-        onSave,
-        onCancel,
+/**
+ * Product features attach through slots. Here an accessory button and a details area stand in for a rules
+ * editor: the editor knows nothing about rules, and the host keeps them keyed by property name.
+ */
+export const WithAccessoryAndDetails: Story = {
+    render: () => {
+        const Example = () => {
+            const [rules, setRules] = useState<Record<string, string[]>>({ orderNumber: ['Must not be empty'] });
+            const addRule = (property: Property) =>
+                setRules(current => ({ ...current, [property.name]: [...(current[property.name] ?? []), 'Must be unique'] }));
+            return (
+                <SchemaEditor
+                    schema={exampleSchema}
+                    header={<strong>Example order</strong>}
+                    renderPropertyAccessory={property => (
+                        <button type='button' onClick={() => addRule(property)}>{`Add rule to ${property.name}`}</button>
+                    )}
+                    renderPropertyDetails={property => rules[property.name]?.length ? (
+                        <ul aria-label={`Rules for ${property.name}`}>
+                            {rules[property.name].map((rule, index) => <li key={`${rule}-${index}`}>{rule}</li>)}
+                        </ul>
+                    ) : undefined}
+                    onPropertyRenamed={(property, previousName) => setRules(current => {
+                        const { [previousName]: moved, ...rest } = current;
+                        return moved ? { ...rest, [property.name]: moved } : current;
+                    })} />
+            );
+        };
+        return <Example />;
+    },
+    play: async ({ canvasElement }) => {
+        const canvas = within(canvasElement);
+        await userEvent.click(canvas.getByRole('button', { name: 'Add rule to total' }));
+        await expect(canvas.getByRole('list', { name: 'Rules for total' })).toBeInTheDocument();
     },
 };
 
-export const EditMode: Story = {
-    args: {
-        schema: sampleSchema,
-        eventTypeName: 'User',
-        canEdit: true,
-        editMode: true,
-        onChange: onSchemaChange,
-        onSave,
-        onCancel,
+/** Controlled: the host owns the tree and applies each edit itself, here through the exported tree functions. */
+export const Controlled: Story = {
+    render: () => {
+        const initial: Property[] = [
+            { id: 'one', name: 'title', type: PropertyType.String },
+            { id: 'two', name: 'done', type: PropertyType.Boolean },
+        ];
+        const Example = () => {
+            const [properties, setProperties] = useState(initial);
+            return (
+                <SchemaEditor
+                    properties={properties}
+                    onDeleteProperty={propertyId => setProperties(current => current.filter(property => property.id !== propertyId))} />
+            );
+        };
+        return <Example />;
     },
 };
 
-export const LocalizedLabels: Story = {
-    args: {
-        schema: sampleSchema,
-        eventTypeName: 'Bruker',
-        canEdit: true,
-        editMode: true,
-        onChange: onSchemaChange,
-        onSave,
-        onCancel,
-        labels: {
-            edit: 'Rediger',
-            save: 'Lagre',
-            cancel: 'Avbryt',
-            addProperty: 'Legg til egenskap',
-            actions: 'Handlinger',
-            navigateBack: 'Naviger tilbake',
-            emptyMessage: 'Ingen egenskaper',
-            navigateToItemDefinition: 'Åpne elementdefinisjon',
-            navigateToProperties: 'Åpne egenskaper',
-            propertyName: 'Egenskapsnavn',
-            propertyType: 'Egenskapstype',
-            arrayItemType: 'Elementtype',
-            deleteProperty: 'Slett egenskap',
-        },
-    },
-};
-
+/** A read-only editor shows the tree and nothing to edit. */
 export const ReadOnly: Story = {
-    args: {
-        schema: sampleSchema,
-        eventTypeName: 'User',
-        canEdit: false,
-        canNotEditReason: 'Schema is locked for editing',
-        onChange: onSchemaChange,
-    },
-};
-
-const emptySchema: JsonSchema = {
-    type: 'object',
-    properties: {}
-};
-
-export const EmptySchema: Story = {
-    args: {
-        schema: emptySchema,
-        eventTypeName: 'NewType',
-        canEdit: true,
-        editMode: true,
-        onChange: onSchemaChange,
-        onSave,
-        onCancel,
-    },
-};
-
-const simpleSchema: JsonSchema = {
-    type: 'object',
-    properties: {
-        title: {
-            type: 'string',
-            description: 'The title'
-        },
-        count: {
-            type: 'integer',
-            description: 'A count value'
-        },
-        enabled: {
-            type: 'boolean',
-            description: 'Whether enabled'
-        }
-    }
-};
-
-export const SimpleSchema: Story = {
-    args: {
-        schema: simpleSchema,
-        eventTypeName: 'SimpleType',
-        canEdit: true,
-        onChange: onSchemaChange,
-    },
+    render: () => <SchemaEditor schema={exampleSchema} readOnly />,
 };
