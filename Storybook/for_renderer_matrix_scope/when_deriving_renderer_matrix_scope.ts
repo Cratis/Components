@@ -85,6 +85,11 @@ describe('when deriving renderer matrix scope', () => {
             storyEntry('common-tabs--playground', 'Common/Tabs.tsx'),
             storyEntry('common-taggroup--playground', 'Common/TagGroup.tsx'),
             storyEntry('common-breadcrumbs--playground', 'Common/Breadcrumbs.tsx'),
+            // The tree SchemaEditor renders its rows with react-aria-components directly instead of
+            // composing slotted primitives, so it runs on the built-in renderer only. Pinned here so
+            // leaving the renderer matrix stays a deliberate, reviewed expectation rather than
+            // silent drift from the committed matrixStories inventory.
+            storyEntry('schemaeditor-schemaeditor--default', 'SchemaEditor/SchemaEditor.tsx'),
         ];
         const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot, sourceRoot });
         expect(matrixStoryIds.size).to.equal(0);
@@ -95,7 +100,6 @@ describe('when deriving renderer matrix scope', () => {
             storyEntry('commanddialog-commanddialog--default', 'CommandDialog/CommandDialog.tsx'),
             storyEntry('datapage-datapage--default', 'DataPage/DataPage.tsx'),
             storyEntry('datatables-columnfiltermenu--default', 'DataTables/ColumnFilterMenu.tsx'),
-            storyEntry('schemaeditor-schemaeditor--default', 'SchemaEditor/SchemaEditor.tsx'),
         ];
         const { matrixStoryIds } = computeRendererMatrixScope({ storyEntries, repositoryRoot, sourceRoot });
         expect(matrixStoryIds.size).to.equal(storyEntries.length);
