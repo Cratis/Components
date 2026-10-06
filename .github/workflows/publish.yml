@@ -42,7 +42,13 @@ permissions:
     pull-requests: read
 
 jobs:
+    verify-fresh-dependencies:
+        uses: ./.github/workflows/verify-fresh-dependencies.yml
+        permissions:
+            contents: read
+
     release:
+        needs: [verify-fresh-dependencies]
         runs-on: ubuntu-latest
         timeout-minutes: 60
         permissions:
