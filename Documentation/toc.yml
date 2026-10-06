@@ -20,14 +20,16 @@
   href: renderers/toc.yml
 - name: Storybook
   href: storybook.mdx
-- name: Building a form
-  href: building-a-form.md
-- name: Displaying data
-  href: displaying-data.md
-- name: Multi-step form
-  href: multi-step-form.md
-- name: A list screen with actions
-  href: list-screen-with-actions.md
+- name: Recipes
+  items:
+    - name: Building a form
+      href: building-a-form.md
+    - name: Displaying data
+      href: displaying-data.md
+    - name: Multi-step form
+      href: multi-step-form.md
+    - name: A list screen with actions
+      href: list-screen-with-actions.md
 - name: Canvas
   href: Canvas/toc.yml
 - name: Chat
