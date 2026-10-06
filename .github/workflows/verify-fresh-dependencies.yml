@@ -3,8 +3,10 @@ name: Verify Fresh Dependencies
 # Installs the packed @cratis/components tarball into a scratch project with no lockfile, so every
 # dependency range resolves to the newest published version, then runs the production bundle. This
 # catches breakage that appears only when a consumer resolves newer dependencies than this
-# repository's lockfile pins (#390). The release workflow runs the same check before it publishes.
+# repository's lockfile pins (#390). The release workflow calls this read-only check before
+# creating a release; freshly resolved third-party code never runs with publishing credentials.
 on:
+    workflow_call:
     schedule:
         - cron: '17 5 * * 1'
     workflow_dispatch:
@@ -12,6 +14,7 @@ on:
         branches:
             - '**'
         paths:
+            - '.github/workflows/publish.yml'
             - '.github/workflows/verify-fresh-dependencies.yml'
             - 'Source/scripts/verify-packed-fresh-dependencies.mjs'
             - 'Source/scripts/lib/fresh-dependency-resolution.mjs'
@@ -19,7 +22,8 @@ on:
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+    # Reusable calls from Publish must not cancel an in-progress release.
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
     contents: read
