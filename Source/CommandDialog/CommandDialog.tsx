@@ -147,7 +147,9 @@ const CommandDialogWrapper = <TCommand extends object, TResponse = object>({
             }
 
             const childProps = child.props as Record<string, unknown>;
-            if (childProps.children != null) {
+            // A function child is a render prop, not a node: mapping it would replace the
+            // function with its mapped result and break the component that calls it.
+            if (childProps.children != null && typeof childProps.children !== 'function') {
                 return React.cloneElement(
                     child as React.ReactElement<Record<string, unknown>>,
                     {
