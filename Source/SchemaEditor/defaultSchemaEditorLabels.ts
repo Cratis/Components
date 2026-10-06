@@ -16,6 +16,7 @@ export const defaultSchemaEditorLabels: Required<SchemaEditorLabels> = {
     changeType: (propertyName, typeName) => `Change type of ${propertyName}, currently ${typeName}`,
     propertyTypes: 'Property types',
     concepts: 'Concepts',
+    noConcepts: 'No concepts defined',
     required: 'Required',
     requiredProperty: (propertyName) => `Required in schema: ${propertyName}`,
     requiredHelp: 'The property must be present in the object. An empty value still counts as present.',

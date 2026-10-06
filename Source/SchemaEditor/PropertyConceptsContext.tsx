@@ -4,7 +4,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import type { PropertyConcept } from './PropertyConcept';
 
-const PropertyConceptsContext = createContext<PropertyConcept[]>([]);
+const PropertyConceptsContext = createContext<PropertyConcept[] | undefined>(undefined);
 
 /** Props for the {@link PropertyConceptsProvider} component. */
 export interface PropertyConceptsProviderProps {
@@ -27,4 +27,7 @@ export const PropertyConceptsProvider = ({ concepts, children }: PropertyConcept
 );
 
 /** The concepts available as property types in the current scope. Empty when nothing provides them. */
-export const usePropertyConcepts = (): PropertyConcept[] => useContext(PropertyConceptsContext);
+export const usePropertyConcepts = (): PropertyConcept[] => useContext(PropertyConceptsContext) ?? [];
+
+/** The concepts of the current scope, or `undefined` when no provider is above — the host has not opted into concepts. */
+export const useOptionalPropertyConcepts = (): PropertyConcept[] | undefined => useContext(PropertyConceptsContext);

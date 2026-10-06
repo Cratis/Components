@@ -11,7 +11,7 @@ export interface SchemaEditorLabels {
     schema?: string;
     /** Shown when the schema has no properties. */
     noProperties?: string;
-    /** Text of the button that adds a property to the root or to a nested object. */
+    /** Text of the button that adds a property to the root or to a nested object. It is rendered beside a plus icon, so do not include one. */
     addProperty?: string;
     /** Accessible name of the button that adds a property to a nested object. */
     addPropertyTo?: (propertyName: string) => string;
@@ -29,6 +29,8 @@ export interface SchemaEditorLabels {
     propertyTypes?: string;
     /** Heading of the concepts in the menu of types. */
     concepts?: string;
+    /** Disabled hint in the menu of types when concepts are enabled but none are defined. */
+    noConcepts?: string;
     /** Visible text of the toggle for whether a property must be present. */
     required?: string;
     /** Accessible name of the toggle for whether a property must be present. */

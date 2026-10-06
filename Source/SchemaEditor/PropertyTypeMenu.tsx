@@ -23,8 +23,8 @@ export interface PropertyTypeMenuProps {
     /** The resolved labels. */
     labels: Required<SchemaEditorLabels>;
 
-    /** The concepts offered after the primitive types. */
-    concepts: PropertyConcept[];
+    /** The concepts offered after the primitive types. `undefined` when the host has not opted into concepts; an empty list shows a disabled hint. */
+    concepts: PropertyConcept[] | undefined;
 
     /** The part of the editor the trigger button is: the add button or the row's type button. */
     triggerPart: 'add' | 'typeButton';
@@ -54,7 +54,7 @@ export const PropertyTypeMenu = ({ labels, concepts, triggerPart, triggerLabel, 
         : zIndexAboveDialog(nearestDialogZIndex, OVERLAY_OFFSET);
 
     const sortedConcepts = useMemo(
-        () => [...concepts].sort((left, right) => left.name.localeCompare(right.name)),
+        () => [...(concepts ?? [])].sort((left, right) => left.name.localeCompare(right.name)),
         [concepts]);
 
     const handleAction = (key: Key) => {
@@ -101,9 +101,20 @@ export const PropertyTypeMenu = ({ labels, concepts, triggerPart, triggerLabel, 
                 >
                     <Menu aria-label={labels.propertyTypes} onAction={handleAction} className='cratis-schema-editor__menu-list'>
                         {primitivePropertyTypes.map(typeItem)}
-                        {sortedConcepts.length > 0 && (
+                        {concepts !== undefined && (
                             <MenuSection className='cratis-schema-editor__menu-section'>
                                 <Header className='cratis-schema-editor__menu-heading'>{labels.concepts}</Header>
+                                {sortedConcepts.length === 0 && (
+                                    <MenuItem
+                                        id='concept-hint'
+                                        isDisabled
+                                        textValue={labels.noConcepts}
+                                        className={`cratis-schema-editor__menu-item cratis-schema-editor__menu-hint ${parts?.menuItem?.className ?? ''}`}
+                                        data-cratis-part='menuItem'
+                                    >
+                                        {labels.noConcepts}
+                                    </MenuItem>
+                                )}
                                 {sortedConcepts.map(concept => (
                                     <MenuItem
                                         key={concept.name}
