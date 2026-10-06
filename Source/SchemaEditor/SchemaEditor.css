@@ -156,7 +156,8 @@
 }
 
 .cratis-schema-editor__badge-glyph {
-    color: var(--cratis-text-color-secondary);
+    /* Inherits the badge text color: the secondary text token on the surface-100 pill is 4.39:1
+       in light mode, under the 4.5:1 axe threshold the story matrix enforces. */
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.6875rem;
 }
