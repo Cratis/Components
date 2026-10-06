@@ -155,8 +155,9 @@
     white-space: nowrap;
 }
 
+/* The glyph inherits the badge's text color: the secondary text color is only 4.39:1 on
+   surface-100, below the 4.5:1 contrast axe demands for the badge glyph. */
 .cratis-schema-editor__badge-glyph {
-    color: var(--cratis-text-color-secondary);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.6875rem;
 }
