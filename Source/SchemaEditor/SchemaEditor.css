@@ -74,7 +74,8 @@
 }
 
 .cratis-schema-editor__row:hover {
-    background: var(--cratis-surface-hover);
+    border-color: var(--cratis-primary-color);
+    background: color-mix(in srgb, var(--cratis-primary-color) 6%, var(--cratis-surface-card));
 }
 
 .cratis-schema-editor__row[data-selected] {
@@ -160,24 +161,68 @@
     font-size: 0.75rem;
 }
 
+.cratis-schema-editor,
+.cratis-schema-editor__menu {
+    --cratis-schema-editor-type-string: #0e7490;
+    --cratis-schema-editor-type-number: #b91c1c;
+    --cratis-schema-editor-type-boolean: #15803d;
+    --cratis-schema-editor-type-date: #c2410c;
+    --cratis-schema-editor-type-time: #7c6d14;
+    --cratis-schema-editor-type-object: #6d28d9;
+    --cratis-schema-editor-type-string-array: #0f766e;
+    --cratis-schema-editor-type-number-array: #991b1b;
+    --cratis-schema-editor-type-object-array: #5b21b6;
+    --cratis-schema-editor-type-text: #fff;
+    --cratis-schema-editor-concept-background: #b4a5ff;
+    --cratis-schema-editor-concept-text: #1c1040;
+}
+
 .cratis-schema-editor__badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    min-height: 1.25rem;
-    padding: 0 0.375rem;
-    border: 1px solid var(--cratis-surface-border);
-    border-radius: 999px;
-    background: var(--cratis-surface-100);
+    gap: 0.375rem;
     color: var(--cratis-text-color);
     font-size: 0.75rem;
     white-space: nowrap;
 }
 
 .cratis-schema-editor__badge-glyph {
-    color: var(--cratis-text-color);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.6875rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-width: 1.5rem;
+    height: 1.125rem;
+    padding: 0 0.3125rem;
+    border-radius: 0.25rem;
+    background: var(--cratis-schema-editor-type-string);
+    color: var(--cratis-schema-editor-type-text);
+    font-family: system-ui, monospace, sans-serif;
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1;
+    user-select: none;
+}
+
+.cratis-schema-editor__badge-glyph svg {
+    display: block;
+}
+
+.cratis-schema-editor__badge-glyph[data-property-type="number"] { background: var(--cratis-schema-editor-type-number); }
+.cratis-schema-editor__badge-glyph[data-property-type="boolean"] { background: var(--cratis-schema-editor-type-boolean); }
+.cratis-schema-editor__badge-glyph[data-property-type="date"] { background: var(--cratis-schema-editor-type-date); }
+.cratis-schema-editor__badge-glyph[data-property-type="time"] { background: var(--cratis-schema-editor-type-time); }
+.cratis-schema-editor__badge-glyph[data-property-type="object"] { background: var(--cratis-schema-editor-type-object); }
+.cratis-schema-editor__badge-glyph[data-property-type="stringArray"] { background: var(--cratis-schema-editor-type-string-array); }
+.cratis-schema-editor__badge-glyph[data-property-type="numberArray"] { background: var(--cratis-schema-editor-type-number-array); }
+.cratis-schema-editor__badge-glyph[data-property-type="objectArray"] { background: var(--cratis-schema-editor-type-object-array); }
+
+.cratis-schema-editor__badge[data-concept] .cratis-schema-editor__badge-name {
+    padding: 0.0625rem 0.375rem;
+    border-radius: 0.25rem;
+    background: var(--cratis-schema-editor-concept-background);
+    color: var(--cratis-schema-editor-concept-text);
+    font-weight: 600;
 }
 
 .cratis-schema-editor__type-button,
@@ -291,10 +336,10 @@
     max-height: min(24rem, var(--available-height));
     overflow: auto;
     border: 1px solid var(--cratis-surface-border);
-    border-radius: var(--cratis-border-radius);
+    border-radius: 0.375rem;
     background: var(--cratis-surface-overlay);
     color: var(--cratis-text-color);
-    box-shadow: var(--cratis-shadow-overlay);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
 }
 
 .cratis-schema-editor__menu-list {
@@ -307,7 +352,7 @@
     align-items: center;
     gap: 0.5rem;
     min-height: 1.75rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.3125rem 0.75rem;
     border-radius: calc(var(--cratis-border-radius) * 0.75);
     outline: none;
     cursor: default;

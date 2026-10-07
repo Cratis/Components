@@ -21,19 +21,6 @@ export const compositePropertyTypes: readonly PropertyType[] = [
     PropertyType.ObjectArray,
 ];
 
-/** Short text shown in a type badge; decorative, because the badge also carries the type's name. */
-export const propertyTypeGlyph: Record<PropertyType, string> = {
-    [PropertyType.String]: 'Aa',
-    [PropertyType.Number]: '123',
-    [PropertyType.Boolean]: 'T/F',
-    [PropertyType.Date]: 'Date',
-    [PropertyType.Time]: 'Time',
-    [PropertyType.Object]: '{ }',
-    [PropertyType.StringArray]: '[Aa]',
-    [PropertyType.NumberArray]: '[123]',
-    [PropertyType.ObjectArray]: '[{ }]',
-};
-
 /**
  * The display name of a property type.
  * @param type The type.
