@@ -13,7 +13,8 @@ import type { PropertyConcept } from './PropertyConcept';
 import type { PropertyType } from './PropertyType';
 import type { SchemaEditorLabels } from '../SchemaEditorLabels';
 import type { SchemaEditorParts } from './SchemaEditorParts';
-import { compositePropertyTypes, primitivePropertyTypes, propertyTypeGlyph, propertyTypeName } from './propertyTypeDisplay';
+import { compositePropertyTypes, primitivePropertyTypes, propertyTypeName } from './propertyTypeDisplay';
+import { PropertyTypeGlyph } from './PropertyTypeGlyph';
 
 const typePrefix = 'type:';
 const conceptPrefix = 'concept:';
@@ -75,7 +76,7 @@ export const PropertyTypeMenu = ({ labels, concepts, triggerPart, triggerLabel, 
             className={`cratis-schema-editor__menu-item ${parts?.menuItem?.className ?? ''}`}
             data-cratis-part='menuItem'
         >
-            <span className='cratis-schema-editor__badge-glyph' aria-hidden='true'>{propertyTypeGlyph[type]}</span>
+            <PropertyTypeGlyph type={type} />
             {propertyTypeName(type, labels)}
         </MenuItem>
     );
@@ -123,7 +124,7 @@ export const PropertyTypeMenu = ({ labels, concepts, triggerPart, triggerLabel, 
                                         className={`cratis-schema-editor__menu-item ${parts?.menuItem?.className ?? ''}`}
                                         data-cratis-part='menuItem'
                                     >
-                                        <span className='cratis-schema-editor__badge-glyph' aria-hidden='true'>{propertyTypeGlyph[concept.type]}</span>
+                                        <PropertyTypeGlyph type={concept.type} />
                                         {concept.name}
                                     </MenuItem>
                                 ))}

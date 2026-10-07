@@ -5,7 +5,8 @@ import { useId } from 'react';
 import type { Property } from './Property';
 import type { SchemaEditorLabels } from '../SchemaEditorLabels';
 import type { SchemaEditorPartAttributes } from './SchemaEditorParts';
-import { propertyTypeGlyph, propertyTypeName } from './propertyTypeDisplay';
+import { propertyTypeName } from './propertyTypeDisplay';
+import { PropertyTypeGlyph } from './PropertyTypeGlyph';
 
 /** Props for the type badge of a property. */
 export interface PropertyTypeBadgeProps {
@@ -36,9 +37,10 @@ export const PropertyTypeBadge = ({ property, labels, part, lockReason }: Proper
             className={`cratis-schema-editor__badge ${part?.className ?? ''}`}
             data-cratis-part='badge'
             data-property-type={property.type}
+            data-concept={property.concept ? true : undefined}
             data-locked={lockReason ? true : undefined}
         >
-            <span className='cratis-schema-editor__badge-glyph' aria-hidden='true'>{propertyTypeGlyph[property.type]}</span>
+            <PropertyTypeGlyph type={property.type} />
             <span className='cratis-schema-editor__badge-name'>{property.concept ?? propertyTypeName(property.type, labels)}</span>
             {lockReason && <span id={reasonId} className='cratis-schema-editor__visually-hidden'>{lockReason}</span>}
         </span>

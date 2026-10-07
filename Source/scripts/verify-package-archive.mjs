@@ -294,11 +294,13 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // raw 243815, gzip 37365, 1361 declaration blocks. The tree adds its own rows, controls and type menu.
 // gzip moves to 38 KiB and the blocks to 1370 (measured 37365 and 1361); the raw ceiling already holds it. A consumer that does not
 // mount the editor imports per-area sheets and pays nothing.
+// Measured when the SchemaEditor tree layout gained its colored type chips and refreshed menu: raw 246039, 1372 declaration blocks.
+// The raw ceiling moves to 242 KiB and the blocks to 1385; gzip holds. The chips are one rule per property type.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
-    rawBytes: 240 * 1024,
+    rawBytes: 242 * 1024,
     gzipBytes: 38 * 1024,
-    declarationBlocks: 1370,
+    declarationBlocks: 1385,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
