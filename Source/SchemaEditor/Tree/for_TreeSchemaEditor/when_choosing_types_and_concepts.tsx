@@ -21,10 +21,12 @@ const concepts: PropertyConcept[] = [
 describe('when opening the menu of types', () => {
     const mount = new Mount();
     let offered: string[];
+    let conceptsOffered: string[];
     beforeEach(async () => {
         mount.setup();
         await mount.render(<SchemaEditor layout='tree' schema={schema} concepts={concepts} />);
         offered = await mount.openMenu(mount.parts('add')[0]);
+        conceptsOffered = await mount.openSubmenu('Concepts');
     });
     afterEach(() => mount.teardown());
 
@@ -33,11 +35,18 @@ describe('when opening the menu of types', () => {
         expect(offered[4].endsWith('Time')).to.equal(true);
     });
 
-    it('should list the concepts alphabetically after the primitives', () => {
-        const customer = offered.findIndex(label => label.endsWith('CustomerId'));
-        const order = offered.findIndex(label => label.endsWith('OrderNumber'));
-        const time = offered.findIndex(label => label.endsWith('Time'));
-        expect(time).to.be.lessThan(customer);
+    it('should keep the concepts out of the main menu', () => {
+        expect(offered.some(label => label.endsWith('CustomerId'))).to.equal(false);
+    });
+
+    it('should offer a Concepts entry after the primitives', () => {
+        expect(offered[5].startsWith('Concepts')).to.equal(true);
+    });
+
+    it('should list the concepts alphabetically in the submenu', () => {
+        const customer = conceptsOffered.findIndex(label => label.endsWith('CustomerId'));
+        const order = conceptsOffered.findIndex(label => label.endsWith('OrderNumber'));
+        expect(customer).to.be.greaterThan(-1);
         expect(customer).to.be.lessThan(order);
     });
 
@@ -58,6 +67,7 @@ describe('when choosing a concept for a new property', () => {
         schemas = [];
         await mount.render(<SchemaEditor layout='tree' schema={schema} concepts={concepts} onChange={next => schemas.push(next)} />);
         await mount.openMenu(mount.parts('add')[0]);
+        await mount.openSubmenu('Concepts');
         await mount.choose('CustomerId');
     });
     afterEach(() => mount.teardown());
@@ -77,7 +87,8 @@ describe('when concepts come from the surrounding provider', () => {
     beforeEach(async () => {
         mount.setup();
         await mount.render(<PropertyConceptsProvider concepts={concepts}><SchemaEditor layout='tree' schema={schema} /></PropertyConceptsProvider>);
-        offered = await mount.openMenu(mount.parts('add')[0]);
+        await mount.openMenu(mount.parts('add')[0]);
+        offered = await mount.openSubmenu('Concepts');
     });
     afterEach(() => mount.teardown());
 
@@ -94,6 +105,7 @@ describe('when changing the type of a property to a concept and back', () => {
         schemas = [];
         await mount.render(<SchemaEditor layout='tree' schema={schema} concepts={concepts} onChange={next => schemas.push(next)} />);
         await mount.openMenu(mount.control('name', 'typeButton'));
+        await mount.openSubmenu('Concepts');
         await mount.choose('CustomerId');
         await mount.openMenu(mount.control('name', 'typeButton'));
         await mount.choose('Number');

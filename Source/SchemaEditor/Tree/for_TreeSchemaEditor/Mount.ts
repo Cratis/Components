@@ -91,6 +91,15 @@ export class Mount {
         return this.parts('menuItem');
     }
 
+    /** Opens the submenu behind an entry and returns the labels of the entries it offers. */
+    async openSubmenu(label: string): Promise<string[]> {
+        const entry = this.menuItems().find(candidate => candidate.textContent?.startsWith(label));
+        if (!entry) throw new Error(`No menu entry ${label}.`);
+        await act(async () => entry.focus());
+        await this.key(entry, 'ArrowRight');
+        return this.menuItems().map(item => item.textContent ?? '').filter(text => !text.startsWith(label));
+    }
+
     /** Activates a menu entry by its visible label. */
     async choose(label: string) {
         const item = this.menuItems().find(candidate => candidate.textContent?.endsWith(label));

@@ -4,7 +4,7 @@
 import { useMemo, type ButtonHTMLAttributes, type Key, type ReactNode } from 'react';
 import { UNSAFE_PortalProvider } from 'react-aria';
 import { Button as AriaButton } from 'react-aria-components/Button';
-import { Header, Menu, MenuItem, MenuSection, MenuTrigger, Popover, Separator } from 'react-aria-components/Menu';
+import { Menu, MenuItem, MenuTrigger, SubmenuTrigger, Popover, Separator } from 'react-aria-components/Menu';
 import { asReactAriaButtonProps } from '../../Common/reactAriaProps';
 import { OVERLAY_OFFSET, zIndexAboveDialog } from '../../renderer/dialogStack';
 import { useNearestDialogZIndex } from '../../renderer/DialogStackContext';
@@ -103,32 +103,48 @@ export const PropertyTypeMenu = ({ labels, concepts, triggerPart, triggerLabel, 
                     <Menu aria-label={labels.propertyTypes} onAction={handleAction} className='cratis-schema-editor__menu-list'>
                         {primitivePropertyTypes.map(typeItem)}
                         {concepts !== undefined && (
-                            <MenuSection className='cratis-schema-editor__menu-section'>
-                                <Header className='cratis-schema-editor__menu-heading'>{labels.concepts}</Header>
-                                {sortedConcepts.length === 0 && (
-                                    <MenuItem
-                                        id='concept-hint'
-                                        isDisabled
-                                        textValue={labels.noConcepts}
-                                        className={`cratis-schema-editor__menu-item cratis-schema-editor__menu-hint ${parts?.menuItem?.className ?? ''}`}
-                                        data-cratis-part='menuItem'
-                                    >
-                                        {labels.noConcepts}
-                                    </MenuItem>
-                                )}
-                                {sortedConcepts.map(concept => (
-                                    <MenuItem
-                                        key={concept.name}
-                                        id={`${conceptPrefix}${concept.name}`}
-                                        textValue={concept.name}
-                                        className={`cratis-schema-editor__menu-item ${parts?.menuItem?.className ?? ''}`}
-                                        data-cratis-part='menuItem'
-                                    >
-                                        <PropertyTypeGlyph type={concept.type} />
-                                        {concept.name}
-                                    </MenuItem>
-                                ))}
-                            </MenuSection>
+                            <SubmenuTrigger>
+                                <MenuItem
+                                    id='concepts'
+                                    textValue={labels.concepts}
+                                    className={`cratis-schema-editor__menu-item ${parts?.menuItem?.className ?? ''}`}
+                                    data-cratis-part='menuItem'
+                                >
+                                    <span className='cratis-schema-editor__menu-label'>{labels.concepts}</span>
+                                    <span className='cratis-schema-editor__menu-arrow' aria-hidden='true'>›</span>
+                                </MenuItem>
+                                <Popover
+                                    className={`cratis-schema-editor__menu ${parts?.menu?.className ?? ''}`}
+                                    style={{ zIndex } as React.CSSProperties}
+                                    data-cratis-part='menu'
+                                >
+                                    <Menu aria-label={labels.concepts} onAction={handleAction} className='cratis-schema-editor__menu-list'>
+                                        {sortedConcepts.length === 0 && (
+                                            <MenuItem
+                                                id='concept-hint'
+                                                isDisabled
+                                                textValue={labels.noConcepts}
+                                                className={`cratis-schema-editor__menu-item cratis-schema-editor__menu-hint ${parts?.menuItem?.className ?? ''}`}
+                                                data-cratis-part='menuItem'
+                                            >
+                                                {labels.noConcepts}
+                                            </MenuItem>
+                                        )}
+                                        {sortedConcepts.map(concept => (
+                                            <MenuItem
+                                                key={concept.name}
+                                                id={`${conceptPrefix}${concept.name}`}
+                                                textValue={concept.name}
+                                                className={`cratis-schema-editor__menu-item ${parts?.menuItem?.className ?? ''}`}
+                                                data-cratis-part='menuItem'
+                                            >
+                                                <PropertyTypeGlyph type={concept.type} />
+                                                {concept.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Menu>
+                                </Popover>
+                            </SubmenuTrigger>
                         )}
                         <Separator className='cratis-schema-editor__menu-separator' />
                         {compositePropertyTypes.map(typeItem)}
