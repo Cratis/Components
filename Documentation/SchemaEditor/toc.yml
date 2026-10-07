@@ -6,3 +6,9 @@
   href: types-formats.md
 - name: Validation
   href: validation.md
+- name: Tree Layout
+  href: tree-layout.md
+- name: Extending the Editor
+  href: extending.md
+- name: JSON Schema Mapping
+  href: json-schema.md
