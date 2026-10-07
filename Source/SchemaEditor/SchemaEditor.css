@@ -175,7 +175,7 @@
 }
 
 .cratis-schema-editor__badge-glyph {
-    color: var(--cratis-text-color-secondary);
+    color: var(--cratis-text-color);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.6875rem;
 }
