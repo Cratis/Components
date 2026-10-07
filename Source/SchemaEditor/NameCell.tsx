@@ -12,6 +12,10 @@ export interface NameCellProps {
     validationError?: string;
     /** Accessible name for the property-name input. */
     propertyNameLabel: string;
+    /** When true the name cannot be edited (a protected property). */
+    isLocked?: boolean;
+    /** Tooltip explaining why the name is locked. */
+    lockedReason?: string;
 }
 
 export const NameCell = ({
@@ -20,6 +24,8 @@ export const NameCell = ({
     onUpdate,
     validationError,
     propertyNameLabel,
+    isLocked = false,
+    lockedReason,
 }: NameCellProps) => {
     if (!isEditMode) {
         const isNavigable =
@@ -63,7 +69,7 @@ export const NameCell = ({
     }
 
     return (
-        <Tooltip content={validationError} position='top' className='cratis:w-full'>
+        <Tooltip content={isLocked ? lockedReason : validationError} position='top' className='cratis:w-full'>
             <input
                 aria-label={propertyNameLabel}
                 value={rowData.name || ''}
@@ -71,6 +77,7 @@ export const NameCell = ({
                     onUpdate(rowData.name || '', 'name', event.target.value)
                 }
                 className='cratis-field-input cratis:w-full'
+                disabled={isLocked || undefined}
                 aria-invalid={Boolean(validationError) || undefined}
                 data-invalid={Boolean(validationError) || undefined}
             />

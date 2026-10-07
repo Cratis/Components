@@ -22,6 +22,19 @@ SchemaEditor lets users define data structures by adding properties, choosing su
 - Add/remove properties
 - Read-only mode support
 
+## Which layout
+
+`SchemaEditor` has two layouts, chosen with the optional `layout` prop. Existing code keeps the first one without changing anything.
+
+| | `layout='table'` (default) | `layout='tree'` |
+| --- | --- | --- |
+| Shape | A table that drills into nested objects and lists, with breadcrumbs | One tree with nested properties inline |
+| Editing | Edit, Save and Cancel; `onChange` reports each change and Cancel reports a reset | Every edit applies at once through `onChange` |
+| Typical use | Reviewing and editing a schema document | Designing a property shape inside a larger form or product |
+| Extras | `allowRequired` and `allowKeyProperty` columns, `isPropertyProtected`, `validatePropertyName`, `header`, `footer` | Concepts, controlled mode, per-row slots, selection, read-only, `pt`. See [Tree layout](tree-layout.md) |
+
+Props that belong to one layout are ignored by the other. [Extending the editor](extending.md) lists exactly which apply where.
+
 ## Quick Start
 
 ```tsx
@@ -85,7 +98,7 @@ Properties are displayed in a table:
 | createdAt | date-time |
 
 The Type column shows the property's format when one is set, falling back to
-its JSON type otherwise. There is no separate Required column; see
+its JSON type otherwise. There is no separate Required column unless you pass `allowRequired` (and `allowKeyProperty` for a Key column); see
 [Editing Properties](editing.md#required-properties) for how `required` is
 tracked.
 
@@ -94,3 +107,6 @@ tracked.
 - [Editing Properties](editing.md) - Add, modify, and remove properties
 - [Types and Formats](types-formats.md) - Available types and format options
 - [Validation](validation.md) - Validation rules and constraints
+- [Tree layout](tree-layout.md) - The inline tree editor (`layout='tree'`)
+- [Extending the editor](extending.md) - Slots, callbacks and which props apply to which layout
+- [JSON Schema mapping](json-schema.md) - `x-concept`, `x-key` and the conversion helpers

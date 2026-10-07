@@ -290,11 +290,15 @@ const declarationBlocks = styles.match(/\{/gu)?.length ?? 0;
 // raw 235806, gzip 36338, 1312 declaration blocks. The drawer adds placement, header and tile rules to the Toolbar area; the
 // configuration editors are a new area with its own sheet. Both ceilings move by the measured
 // amount, and a consumer that does not mount these surfaces imports per-area sheets and pays nothing.
+// Measured when the SchemaEditor tree layout joined the table layout (both ship, the table unchanged):
+// raw 243815, gzip 37365, 1361 declaration blocks. The tree adds its own rows, controls and type menu.
+// gzip moves to 38 KiB and the blocks to 1370 (measured 37365 and 1361); the raw ceiling already holds it. A consumer that does not
+// mount the editor imports per-area sheets and pays nothing.
 // Never group a :has() selector with others: a browser without :has() drops the whole list.
 const styleBudget = {
     rawBytes: 240 * 1024,
-    gzipBytes: 36 * 1024,
-    declarationBlocks: 1320,
+    gzipBytes: 38 * 1024,
+    declarationBlocks: 1370,
 };
 const exceeded = [
     styleBytes > styleBudget.rawBytes &&
@@ -352,7 +356,7 @@ const areaStyleBudgets = new Map([
     ['styles.ObjectNavigationalBar.css', 5120], // measured 4576
     ['styles.PivotViewer.css', 7680], // measured 6840
     ['styles.renderer.builtin.css', 8704], // measured 7987
-    ['styles.SchemaEditor.css', 8192], // measured 7417
+    ['styles.SchemaEditor.css', 9216], // measured 8387 (7417 before the tree layout joined the table layout)
     ['styles.TimeMachine.css', 5120], // measured 4440
     ['styles.Toolbar.css', 8192], // measured 7758
 ]);
