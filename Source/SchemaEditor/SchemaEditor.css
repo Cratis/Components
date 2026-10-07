@@ -375,6 +375,14 @@
     text-transform: uppercase;
 }
 
+.cratis-schema-editor__menu-label {
+    flex: 1;
+}
+
+.cratis-schema-editor__menu-arrow {
+    opacity: 0.6;
+}
+
 .cratis-schema-editor__menu-hint {
     color: var(--cratis-text-color-secondary);
     font-style: italic;

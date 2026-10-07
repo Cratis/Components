@@ -91,7 +91,7 @@ export const Basic: Story = {
     },
 };
 
-/** Concepts are offered after the primitives and written as `x-concept` on the primitive they wrap. */
+/** Concepts are offered in a submenu after the primitives and written as `x-concept` on the primitive they wrap. */
 export const WithConcepts: Story = {
     render: () => (
         <Beside initial={conceptSchema}>

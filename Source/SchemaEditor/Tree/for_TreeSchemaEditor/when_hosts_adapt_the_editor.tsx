@@ -21,7 +21,8 @@ describe('when concepts are enabled but none are defined', () => {
     beforeEach(async () => {
         mount.setup();
         await mount.render(<SchemaEditor layout='tree' schema={schema} concepts={[]} />);
-        offered = await mount.openMenu(mount.parts('add')[0]);
+        await mount.openMenu(mount.parts('add')[0]);
+        offered = await mount.openSubmenu('Concepts');
     });
     afterEach(() => mount.teardown());
 
@@ -31,7 +32,7 @@ describe('when concepts are enabled but none are defined', () => {
         expect(hint.hasAttribute('data-disabled') || hint.getAttribute('aria-disabled') === 'true').to.equal(true);
     });
 
-    it('should keep the concepts heading', () => {
+    it('should keep the Concepts entry', () => {
         expect(document.body.textContent).to.contain('Concepts');
         expect(offered).to.include('No concepts defined');
     });
@@ -43,6 +44,7 @@ describe('when concepts come from an empty provider', () => {
         mount.setup();
         await mount.render(<PropertyConceptsProvider concepts={[]}><SchemaEditor layout='tree' schema={schema} labels={{ noConcepts: 'Nothing here' }} /></PropertyConceptsProvider>);
         await mount.openMenu(mount.parts('add')[0]);
+        await mount.openSubmenu('Concepts');
     });
     afterEach(() => mount.teardown());
 
