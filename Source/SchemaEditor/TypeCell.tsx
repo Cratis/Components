@@ -23,6 +23,8 @@ export interface TypeCellProps {
     onNavigateToProperty: (propertyName: string) => void;
     onNavigateToArrayItems: (propertyName: string) => void;
     onRemoveProperty: (propertyName: string) => void;
+    /** When false the remove button is not offered (a protected property). Defaults to `true`. */
+    canRemove?: boolean;
     /** Resolved (merged with defaults) SchemaEditor labels for the cell's buttons. */
     labels: SchemaEditorLabels;
 }
@@ -41,6 +43,7 @@ export const TypeCell = ({
     onNavigateToProperty,
     onNavigateToArrayItems,
     onRemoveProperty,
+    canRemove = true,
     labels,
 }: TypeCellProps) => {
     const DEFAULT_TYPE_OPTIONS = [
@@ -223,7 +226,7 @@ export const TypeCell = ({
                         />
                     </Tooltip>
                 )}
-                {rowData.name && (
+                {rowData.name && canRemove && (
                     <Tooltip content={labels.deleteProperty} position='top'>
                         <Button
                             variant='ghost'

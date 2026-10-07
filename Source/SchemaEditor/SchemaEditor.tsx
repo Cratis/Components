@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Button } from '../Common/Button';
+import { Checkbox } from '../Common/Checkbox';
 import { DataTableCore } from '../DataTables/DataTableCore';
 import { Column } from '../DataTables/Column';
 import { ActionMenubar, type ActionMenuItem } from '../Common/ActionMenubar';
@@ -11,64 +12,41 @@ import { Message } from '../Display/Message';
 import * as faIcons from 'react-icons/fa6';
 import { NameCell } from './NameCell';
 import { TypeCell } from './TypeCell';
+import type { ReactNode } from 'react';
 import type { ChangeHandler } from '../types/ChangeHandler';
 import type { JsonSchema, JsonSchemaProperty } from '../types/JsonSchema';
 import { type TypeFormat, DEFAULT_TYPE_FORMATS } from '../types/TypeFormat';
 import { validatePropertyName, buildBreadcrumbItems } from './schemaHelpers';
+import { defaultSchemaEditorLabels } from './defaultSchemaEditorLabels';
+import type { SchemaEditorLabels } from './SchemaEditorLabels';
 
-/**
- * User-facing strings for {@link SchemaEditor}. Every field is optional; pass a
- * partial `labels` to override any of them (for localization). Omitted fields
- * fall back to {@link defaultSchemaEditorLabels} (English).
- */
-export interface SchemaEditorLabels {
-    /** Menu action that enters edit mode. */
-    edit: string;
-    /** Menu action that saves changes. */
-    save: string;
-    /** Menu action that cancels editing. */
-    cancel: string;
-    /** Menu action that adds a property. */
-    addProperty: string;
-    /** Accessible name for the action menubar. */
-    actions: string;
-    /** Accessible name and tooltip for the back button. */
-    navigateBack: string;
-    /** Shown when the schema has no properties. */
-    emptyMessage: string;
-    /** Accessible name for the "drill into array item definition" button. */
-    navigateToItemDefinition: string;
-    /** Accessible name for the "drill into object properties" button. */
-    navigateToProperties: string;
-    /** Accessible name for a property-name input. */
-    propertyName: string;
-    /** Accessible name for a property-type selector. */
-    propertyType: string;
-    /** Accessible name for an array item-type selector. */
-    arrayItemType: string;
-    /** Accessible name for the "remove property" button. */
-    deleteProperty: string;
-    /** Validation message shown when the schema cannot be represented as valid JSON. */
-    invalidJson: string;
-}
+import type { SchemaEditorLayout } from './SchemaEditorLayout';
+import type { Property } from './Tree/Property';
+import { jsonSchemaToProperties, KEY_KEYWORD } from './Tree/schemaConversion';
+import { TreeSchemaEditor, type TreeSchemaEditorProps } from './Tree/TreeSchemaEditor';
 
-/** English defaults for {@link SchemaEditorLabels}. */
-export const defaultSchemaEditorLabels: SchemaEditorLabels = {
-    edit: 'Edit',
-    save: 'Save',
-    cancel: 'Cancel',
-    addProperty: 'Add Property',
-    actions: 'Actions',
-    navigateBack: 'Navigate back',
-    emptyMessage: 'No properties defined',
-    navigateToItemDefinition: 'Navigate to item definition',
-    navigateToProperties: 'Navigate to object properties',
-    propertyName: 'Property name',
-    propertyType: 'Property type',
-    arrayItemType: 'Array item type',
-    deleteProperty: 'Delete property',
-    invalidJson: 'The schema must contain valid JSON before it can be edited.',
-};
+export { defaultSchemaEditorLabels };
+export type { SchemaEditorLabels };
+
+/** Properties of the tree layout the table layout has no counterpart for. They are ignored when `layout` is `'table'`. */
+type TreeOnlyProps = Omit<
+    TreeSchemaEditorProps,
+    | 'schema'
+    | 'onChange'
+    | 'labels'
+    | 'className'
+    | 'allowKeyProperty'
+    | 'allowRequired'
+    | 'readOnly'
+    | 'isPropertyProtected'
+    | 'validatePropertyName'
+    | 'onPropertyRemoved'
+    | 'onPropertyRenamed'
+    | 'header'
+    | 'footer'
+>;
+
+const emptySchema: JsonSchema = {};
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -124,6 +102,21 @@ const cloneSchema = (schema: JsonSchema): JsonSchema | undefined => {
     }
 };
 
+/** Follows a drill-down path (property names and `$items`) to the schema it points at. */
+const findSchemaAtPath = (root: JsonSchema, path: string[]): JsonSchema | undefined => {
+    let target: JsonSchema | JsonSchemaProperty = root;
+    for (const segment of path) {
+        if (target.type === 'array' && segment === '$items') {
+            target = target.items || {};
+        } else if (target.properties && target.properties[segment]) {
+            target = target.properties[segment];
+        } else {
+            return undefined;
+        }
+    }
+    return target as unknown as JsonSchema;
+};
+
 const asJsonSchema = (property: JsonSchemaProperty): JsonSchema => {
     // SAFETY: A nested "object" property has the same editable shape as a schema —
     // `properties`, `items`, and `required` all mean the same thing on both types.
@@ -138,9 +131,19 @@ const asJsonSchemaProperty = (schema: JsonSchema): JsonSchemaProperty => {
 /**
  * Props for {@link SchemaEditor}.
  */
-export interface SchemaEditorProps {
-    /** The JSON Schema being viewed or edited. */
-    schema: JsonSchema;
+export interface SchemaEditorProps extends TreeOnlyProps {
+    /**
+     * Which editor to render. `'table'` (the default) is the breadcrumb-navigated table with an Edit, Save and
+     * Cancel workflow; `'tree'` is the inline tree editor that applies every edit live. See the layout notes in
+     * the documentation for the props each layout honors.
+     */
+    layout?: SchemaEditorLayout;
+
+    /**
+     * The JSON Schema being viewed or edited. Required unless the tree layout is controlled through
+     * `properties`.
+     */
+    schema?: JsonSchema;
 
     /** Optional event-type label displayed in the editor header. */
     eventTypeName?: string;
@@ -188,6 +191,43 @@ export interface SchemaEditorProps {
 
     /** Override any user-facing string (for localization). See {@link SchemaEditorLabels}. */
     labels?: Partial<SchemaEditorLabels>;
+
+    /**
+     * Offers the key toggle (`x-key`, at most one property per object). In the table layout this adds a Key
+     * column, editable in edit mode; a function enables the column for every row. In the tree layout it is
+     * offered on every property, or per property when a function is given.
+     */
+    allowKeyProperty?: TreeSchemaEditorProps['allowKeyProperty'];
+
+    /**
+     * Offers the toggle for whether a property must be present (the `required` list). In the table layout this
+     * adds a Required column, editable in edit mode.
+     */
+    allowRequired?: boolean;
+
+    /** Offers no edits at all. Tree layout only: the table layout is read-only until Edit is chosen, controlled by `canEdit`. */
+    readOnly?: boolean;
+
+    /** Decides which properties can be neither renamed nor removed. By default none. Both layouts. */
+    isPropertyProtected?: (property: Property) => boolean;
+
+    /**
+     * Extra check of a new name, after the editor has rejected blank, reserved and duplicate names. Return the
+     * message to show, or `undefined` to accept the name. Both layouts.
+     */
+    validatePropertyName?: (name: string, property: Property, siblings: Property[]) => string | undefined;
+
+    /** Called after a property was removed, with the property and everything nested under it. Both layouts. */
+    onPropertyRemoved?: (property: Property) => void;
+
+    /** Called after a property was renamed, with the renamed property and the name it had. Both layouts. */
+    onPropertyRenamed?: (property: Property, previousName: string) => void;
+
+    /** Content above the editor, for example the title of the schema. Both layouts. */
+    header?: ReactNode;
+
+    /** Content below the properties, for example further actions. Both layouts. */
+    footer?: ReactNode;
 }
 
 /**
@@ -202,8 +242,8 @@ export interface SchemaEditorProps {
  *
  * @param props - {@link SchemaEditorProps}.
  */
-export const SchemaEditor = ({
-    schema,
+const TableSchemaEditor = ({
+    schema: suppliedSchema,
     eventTypeName = '',
     canEdit = true,
     canNotEditReason,
@@ -216,8 +256,19 @@ export const SchemaEditor = ({
     typeFormats = DEFAULT_TYPE_FORMATS,
     className,
     labels,
+    allowKeyProperty,
+    allowRequired,
+    isPropertyProtected,
+    validatePropertyName: validateCustomPropertyName,
+    onPropertyRemoved,
+    onPropertyRenamed,
+    header,
+    footer,
 }: SchemaEditorProps) => {
-    const l = useMemo(() => ({ ...defaultSchemaEditorLabels, ...labels }), [labels]);
+    const schema = suppliedSchema ?? emptySchema;
+    const l = useMemo(() => ({ ...defaultSchemaEditorLabels, ...labels }) as Required<SchemaEditorLabels>, [labels]);
+    const showKey = allowKeyProperty !== undefined && allowKeyProperty !== false;
+    const showRequired = allowRequired === true;
     const [currentPath, setCurrentPath] = useState<string[]>([]);
     const [properties, setProperties] = useState<JsonSchemaProperty[]>([]);
     const [initialParsedSchema] = useState<JsonSchema | undefined>(() =>
@@ -242,11 +293,17 @@ export const SchemaEditor = ({
     }, [isEditMode]);
 
     const validateAllProperties = useCallback(
-        (properties: JsonSchemaProperty[]) => {
+        (properties: JsonSchemaProperty[], level: Property[] = []) => {
             const errors: Record<string, string> = {};
 
             properties.forEach((prop) => {
-                const error = validatePropertyName(prop.name ?? '', prop.id!, properties);
+                let error = validatePropertyName(prop.name ?? '', prop.id!, properties);
+                if (!error && validateCustomPropertyName) {
+                    const property = level.find((candidate) => candidate.name === prop.name);
+                    if (property) {
+                        error = validateCustomPropertyName(property.name, property, level);
+                    }
+                }
                 if (error) {
                     errors[prop.id!] = error;
                 }
@@ -255,7 +312,7 @@ export const SchemaEditor = ({
             setValidationErrors(errors);
             return Object.keys(errors).length === 0;
         },
-        [validatePropertyName],
+        [validatePropertyName, validateCustomPropertyName],
     );
 
     useEffect(() => {
@@ -312,7 +369,7 @@ export const SchemaEditor = ({
 
         setProperties(schemaProps);
         if (isEditMode) {
-            validateAllProperties(schemaProps);
+            validateAllProperties(schemaProps, jsonSchemaToProperties(targetSchema as unknown as JsonSchema));
         }
     };
 
@@ -376,8 +433,25 @@ export const SchemaEditor = ({
         });
     }, [currentPath, updateSchemaAtPath]);
 
+    /** The editable view of the properties at the current path, for the host callbacks. */
+    const getLevelProperties = useCallback(
+        () => jsonSchemaToProperties(findSchemaAtPath(currentSchema, currentPath)),
+        [currentSchema, currentPath],
+    );
+
+    const isProtected = useCallback(
+        (propertyName: string) => {
+            if (!isPropertyProtected) return false;
+            const property = getLevelProperties().find((candidate) => candidate.name === propertyName);
+            return property !== undefined && isPropertyProtected(property);
+        },
+        [isPropertyProtected, getLevelProperties],
+    );
+
     const removeProperty = useCallback(
         (propertyName: string) => {
+            const removed = getLevelProperties().find((candidate) => candidate.name === propertyName);
+            if (removed && isPropertyProtected?.(removed)) return;
             updateSchemaAtPath(currentPath, (schema) => {
                 const newProps = { ...(schema.properties || {}) };
                 delete newProps[propertyName];
@@ -394,6 +468,39 @@ export const SchemaEditor = ({
 
                 return updated;
             });
+            if (removed) onPropertyRemoved?.(removed);
+        },
+        [currentPath, updateSchemaAtPath, getLevelProperties, isPropertyProtected, onPropertyRemoved],
+    );
+
+    const setRequired = useCallback(
+        (propertyName: string, isRequired: boolean) => {
+            updateSchemaAtPath(currentPath, (schema) => {
+                const others = (schema.required ?? []).filter((name) => name !== propertyName);
+                const required = isRequired ? [...others, propertyName] : others;
+                const updated: JsonSchema = { ...schema };
+                if (required.length > 0) {
+                    updated.required = required;
+                } else {
+                    delete updated.required;
+                }
+                return updated;
+            });
+        },
+        [currentPath, updateSchemaAtPath],
+    );
+
+    const setKey = useCallback(
+        (propertyName: string) => {
+            updateSchemaAtPath(currentPath, (schema) => {
+                const newProps: Record<string, JsonSchemaProperty> = {};
+                for (const [name, property] of Object.entries(schema.properties || {})) {
+                    const { [KEY_KEYWORD]: previousKey, ...rest } = property as JsonSchemaProperty & Record<string, unknown>;
+                    const makeKey = name === propertyName && previousKey !== true;
+                    newProps[name] = (makeKey ? { ...rest, [KEY_KEYWORD]: true } : rest) as JsonSchemaProperty;
+                }
+                return { ...schema, properties: newProps };
+            });
         },
         [currentPath, updateSchemaAtPath],
     );
@@ -405,6 +512,7 @@ export const SchemaEditor = ({
             value: unknown,
             additionalUpdates?: Partial<JsonSchemaProperty>,
         ) => {
+            let renamed: Property | undefined;
             updateSchemaAtPath(currentPath, (schema) => {
                 const newProps = { ...(schema.properties || {}) };
                 const prop = { ...(newProps[oldName] || {}) };
@@ -413,7 +521,8 @@ export const SchemaEditor = ({
 
                 if (field === 'name') {
                     const newName = value as string;
-                    if (newName !== oldName && !newProps[newName]) {
+                    if (newName !== oldName && !newProps[newName] && !isProtected(oldName)) {
+                        renamed = jsonSchemaToProperties({ properties: { [newName]: prop } })[0];
                         newProps[newName] = prop;
                         delete newProps[oldName];
 
@@ -428,6 +537,8 @@ export const SchemaEditor = ({
                     }
                 } else if (field === 'type') {
                     prop.type = value as string;
+                    // A concept belongs to the type it was chosen for; the table offers no concepts.
+                    delete (prop as Record<string, unknown>)['x-concept'];
                     if (value === 'array') {
                         prop.items = { type: 'string' };
                         delete prop.format;
@@ -470,8 +581,9 @@ export const SchemaEditor = ({
 
                 return { ...schema, properties: newProps, required: newRequired };
             });
+            if (renamed) onPropertyRenamed?.(renamed, oldName);
         },
-        [currentPath, updateSchemaAtPath],
+        [currentPath, updateSchemaAtPath, isProtected, onPropertyRenamed],
     );
 
     const updateArrayItemType = useCallback(
@@ -672,12 +784,14 @@ export const SchemaEditor = ({
     const breadcrumbItems = getBreadcrumbItems();
     const isAtRoot = currentPath.length === 0;
     const currentDescription = getCurrentDescription();
+    const currentLevel = findSchemaAtPath(currentSchema, currentPath);
 
     return (
         <div
             className={className ? `schema-editor ${className}` : 'schema-editor'}
             style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
         >
+            {header}
             <div className='cratis:px-4 cratis:py-4'>
                 <div className='schema-editor-menubar'>
                     <ActionMenubar aria-label={l.actions} model={menuItems} />
@@ -810,10 +924,40 @@ export const SchemaEditor = ({
                                 onUpdate={updateProperty}
                                 validationError={validationErrors[rowData.id!]}
                                 propertyNameLabel={l.propertyName}
+                                isLocked={isProtected(rowData.name ?? '')}
+                                lockedReason={l.protectedProperty}
                             />
                         )}
                         style={{ width: '30%' }}
                     />
+                    {showRequired && (
+                        <Column
+                            header={l.requiredColumn}
+                            body={(rowData: JsonSchemaProperty) => (
+                                <Checkbox
+                                    aria-label={l.requiredProperty(rowData.name ?? '')}
+                                    checked={Boolean(currentLevel?.required?.includes(rowData.name ?? ''))}
+                                    readOnly={!isEditMode}
+                                    onChange={(checked) => setRequired(rowData.name ?? '', checked)}
+                                />
+                            )}
+                            style={{ width: '6rem' }}
+                        />
+                    )}
+                    {showKey && (
+                        <Column
+                            header={l.keyColumn}
+                            body={(rowData: JsonSchemaProperty) => (
+                                <Checkbox
+                                    aria-label={l.keyProperty(rowData.name ?? '')}
+                                    checked={isKeyProperty(currentLevel, rowData.name ?? '')}
+                                    readOnly={!isEditMode}
+                                    onChange={() => setKey(rowData.name ?? '')}
+                                />
+                            )}
+                            style={{ width: '6rem' }}
+                        />
+                    )}
                     <Column
                         header='Type'
                         body={(rowData: JsonSchemaProperty) => (
@@ -826,6 +970,7 @@ export const SchemaEditor = ({
                                 onNavigateToProperty={navigateToProperty}
                                 onNavigateToArrayItems={navigateToArrayItems}
                                 onRemoveProperty={removeProperty}
+                                canRemove={!isProtected(rowData.name ?? '')}
                                 labels={l}
                             />
                         )}
@@ -833,6 +978,30 @@ export const SchemaEditor = ({
                     />
                 </DataTableCore>
             </div>
+            {footer}
         </div>
     );
 };
+
+const isKeyProperty = (level: JsonSchema | undefined, propertyName: string): boolean =>
+    (level?.properties?.[propertyName] as Record<string, unknown> | undefined)?.[KEY_KEYWORD] === true;
+
+/**
+ * Edits the properties of a JSON Schema. By default (`layout='table'`) it is a breadcrumb-navigated table: it
+ * lets users browse nested `object` and `array` property definitions, add or remove properties, change types and
+ * formats, and validate naming rules in place, behind an Edit, Save and Cancel workflow. With `layout='tree'` it
+ * is an inline tree that shows nested properties in place and applies every edit live. Designed to drive UIs
+ * around event payload schemas and similar structural documents.
+ *
+ * Both layouts accept `allowRequired`, `allowKeyProperty`, `isPropertyProtected`, `validatePropertyName`,
+ * `onPropertyRenamed`, `onPropertyRemoved`, `header` and `footer`. The tree layout also takes concepts, controlled
+ * mode, per-row slots and selection; see the documentation for the exact split.
+ *
+ * The table layout composes a Cratis data table, action toolbar, and form widgets internally. Restyle it through
+ * semantic tokens, the editor root `className`, and documented `data-cratis-part` values rather than a provider
+ * preset.
+ *
+ * @param props - {@link SchemaEditorProps}.
+ */
+export const SchemaEditor = (props: SchemaEditorProps) =>
+    props.layout === 'tree' ? <TreeSchemaEditor {...props} /> : <TableSchemaEditor {...props} />;

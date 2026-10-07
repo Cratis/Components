@@ -34,6 +34,12 @@
         "Source/PivotViewer/engine/requestCorrelator.ts",
         "Source/PivotViewer/engine/store.ts",
         "Source/PivotViewer/engine/types.ts",
+        "Source/SchemaEditor/Tree/Property.ts",
+        "Source/SchemaEditor/Tree/PropertyConcept.ts",
+        "Source/SchemaEditor/Tree/PropertyType.ts",
+        "Source/SchemaEditor/Tree/propertyNaming.ts",
+        "Source/SchemaEditor/Tree/propertyTree.ts",
+        "Source/SchemaEditor/Tree/schemaConversion.ts",
         "Source/SchemaEditor/schemaHelpers.ts"
     ]
 }
