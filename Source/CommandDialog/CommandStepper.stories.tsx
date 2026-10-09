@@ -121,6 +121,58 @@ export const Default: Story = {
     },
 };
 
+/**
+ * Five steps with names of different lengths in a container no wider than a typical dialog.
+ * Each label sits below its marker and the connector runs between the markers, so the line
+ * never crosses a label, however much the names compete for space. Narrow the canvas to see
+ * long names wrap under their markers.
+ */
+export const FiveStepsWithLongNames: Story = {
+    render: () => (
+        <div style={{ width: '100%', maxWidth: '770px', boxSizing: 'border-box', padding: '1.5rem' }}>
+            <CommandStepper<CreateProjectCommand>
+                command={CreateProjectCommand}
+                autoServerValidate={false}
+                validateOn="change"
+            >
+                <StepperPanel header="Recipient">
+                    <InputTextField<CreateProjectCommand>
+                        value={c => c.name}
+                        title="Recipient Name"
+                        placeholder="Enter recipient name"
+                    />
+                </StepperPanel>
+                <StepperPanel header="Source">
+                    <InputTextField<CreateProjectCommand>
+                        value={c => c.email}
+                        title="Source Email"
+                        placeholder="Enter source email"
+                        type="email"
+                    />
+                </StepperPanel>
+                <StepperPanel header="Allocation details">
+                    <NumberField<CreateProjectCommand>
+                        value={c => c.budget}
+                        title="Amount"
+                        placeholder="Enter amount (must be > 0)"
+                    />
+                </StepperPanel>
+                <StepperPanel header="Distribution">
+                    <p>Review how the amount is distributed.</p>
+                </StepperPanel>
+                <StepperPanel header="Justification">
+                    <TextAreaField<CreateProjectCommand>
+                        value={c => c.description}
+                        title="Justification"
+                        placeholder="Explain the request (min 10 chars)"
+                        rows={3}
+                    />
+                </StepperPanel>
+            </CommandStepper>
+        </div>
+    ),
+};
+
 export const InDialogFrame: Story = {
     render: () => {
         const [result, setResult] = useState('');
