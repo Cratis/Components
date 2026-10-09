@@ -90,9 +90,44 @@
     padding-block: 0.5rem;
 }
 
+/*
+ * Horizontal: each step is an equal column with its label below the marker, and the connector is
+ * drawn in the marker row from one marker's edge to the next. The connector and the labels sit in
+ * different rows, so no label length, width or host override of the label's clipping can put the
+ * line through text (Cratis/Components#411).
+ */
 .cratis-command-stepper--horizontal .cratis-command-stepper__list {
     flex-direction: row;
+    align-items: flex-start;
+}
+.cratis-command-stepper--horizontal .cratis-command-stepper__step {
+    position: relative;
+    flex: 1 1 0;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
+}
+.cratis-command-stepper--horizontal .cratis-command-stepper__header {
+    max-width: 100%;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.cratis-command-stepper--horizontal .cratis-command-stepper__title {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+/* Offsets follow the header padding (0.4rem) and the marker size (1.8rem). */
+.cratis-command-stepper--horizontal .cratis-command-stepper__separator {
+    position: absolute;
+    top: 1.3rem;
+    inset-inline: calc(50% + 1.4rem) calc(-50% + 1.4rem);
+    height: 0;
+    min-width: 0;
+    margin: 0;
+    border-top: 2px solid var(--cratis-surface-border);
+    background: none;
 }
 .cratis-command-stepper--vertical .cratis-command-stepper__root {
     display: flex;
