@@ -1,7 +1,7 @@
 // Copyright (c) Cratis. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { startAnimationLoop as startAnimationLoopExternal } from './animation';
 import { asReactMouseEvent } from './asReactMouseEvent';
 import type { CardSprite } from './constants';
@@ -9,7 +9,7 @@ import {
     createCardSprite as createCardSpriteExternal,
     updateCardContent as updateCardContentExternal,
 } from './sprites';
-import { syncSpritesToViewport } from './visibility';
+import { createTransitionCompleteSync, syncSpritesToViewport, type SyncParams } from './visibility';
 import type { PivotRenderContext } from './PivotRenderContext';
 
 /**
@@ -69,6 +69,59 @@ export const usePivotSpriteSync = <TItem extends object>({
         prevPanRef,
     } = transition;
 
+    // Always holds a builder for the sync parameters of the latest render. It is refreshed before
+    // the sync effect below runs, so deferred callbacks never see stale layout, zoom or items.
+    const buildSyncParamsRef = useRef<(() => SyncParams<TItem>) | null>(null);
+    useEffect(() => {
+        buildSyncParamsRef.current = (): SyncParams<TItem> => {
+            return {
+                root: rootRef.current,
+                groupsContainer: groupsContainerRef.current,
+                container: parentContainerRef.current,
+                sprites: spritesRef.current,
+                layout,
+                visibleIds,
+                items,
+                cardWidth,
+                cardHeight,
+                panX,
+                panY,
+                zoomLevel,
+                viewportWidth,
+                viewportHeight,
+                viewMode,
+                createCardSprite: (id: string | number, x: number, y: number) =>
+                    createCardSpriteExternal(
+                        id,
+                        x,
+                        y,
+                        items as TItem[],
+                        (item: TItem, e: MouseEvent, id: string | number) =>
+                            onCardClickRef.current(item, e, id),
+                        (e: MouseEvent) => onPanStart(asReactMouseEvent(e)),
+                        cardWidth,
+                        cardHeight,
+                        cardColorsRef.current,
+                        cardRenderer,
+                        resolveId,
+                    ),
+                updateCardContent: (sprite: CardSprite, item: TItem) =>
+                    updateCardContentExternal(
+                        sprite,
+                        item,
+                        selectedId,
+                        cardWidth,
+                        cardHeight,
+                        cardColorsRef.current,
+                        cardRenderer,
+                    ),
+                transitionSeenIds: transitionSeenIdsRef.current,
+                prevScrollTop: prevScrollTopRef.current,
+                prevScrollLeft: prevScrollLeftRef.current,
+            };
+        };
+    });
+
     useEffect(() => {
         if (!rootRef.current || !parentContainerRef.current || !pixiReady) {
             return;
@@ -104,56 +157,14 @@ export const usePivotSpriteSync = <TItem extends object>({
         const currentScrollTop = parentContainerRef.current?.scrollTop || 0;
         const currentScrollLeft = parentContainerRef.current?.scrollLeft || 0;
 
-        const syncParams = {
-            root: rootRef.current,
-            groupsContainer: groupsContainerRef.current,
-            container: parentContainerRef.current,
-            sprites: spritesRef.current,
-            layout,
-            visibleIds,
-            items,
-            cardWidth,
-            cardHeight,
-            panX,
-            panY,
+        const syncParams: SyncParams<TItem> = {
+            ...buildSyncParamsRef.current!(),
             panDeltaX,
             panDeltaY,
-            zoomLevel,
-            viewportWidth,
-            viewportHeight,
-            viewMode,
-            createCardSprite: (id: string | number, x: number, y: number) =>
-                createCardSpriteExternal(
-                    id,
-                    x,
-                    y,
-                    items as TItem[],
-                    (item: TItem, e: MouseEvent, id: string | number) =>
-                        onCardClickRef.current(item, e, id),
-                    (e: MouseEvent) => onPanStart(asReactMouseEvent(e)),
-                    cardWidth,
-                    cardHeight,
-                    cardColorsRef.current,
-                    cardRenderer,
-                    resolveId,
-                ),
-            updateCardContent: (sprite: CardSprite, item: TItem) =>
-                updateCardContentExternal(
-                    sprite,
-                    item,
-                    selectedId,
-                    cardWidth,
-                    cardHeight,
-                    cardColorsRef.current,
-                    cardRenderer,
-                ),
             isViewTransition: isViewTransitionRef.current,
             prevLayout: prevLayoutRef.current,
-            transitionSeenIds: transitionSeenIdsRef.current,
-            prevScrollTop: prevScrollTopRef.current,
-            prevScrollLeft: prevScrollLeftRef.current,
         };
-        syncSpritesToViewport(syncParams);
+        const { pending } = syncSpritesToViewport(syncParams);
 
         // Update previous scroll position for next frame
         prevScrollTopRef.current = currentScrollTop;
@@ -174,14 +185,30 @@ export const usePivotSpriteSync = <TItem extends object>({
             needsRenderRef,
             spritesRef,
             isViewTransitionRef,
-            syncVisibility: () =>
-                syncSpritesToViewport({
-                    ...syncParams,
-                    isViewTransition: false,
-                    sweepImmediately: true,
-                }),
+            // Read the current layout, zoom and items when the transition completes, not the
+            // values captured when it started.
+            syncVisibility: createTransitionCompleteSync(() => buildSyncParamsRef.current!()),
             onTransitionComplete: () => transitionSeenIdsRef.current.clear(),
         });
+
+        // Creation was deferred by the per-frame budget: continue on the next frame until
+        // the buffer is filled.
+        let frameHandle = 0;
+        const replenish = () => {
+            const result = syncSpritesToViewport({
+                ...syncParams,
+                panDeltaX: 0,
+                panDeltaY: 0,
+                isViewTransition: isViewTransitionRef.current,
+            });
+            appRef.current?.renderer?.render(appRef.current.stage);
+            frameHandle = result.pending ? requestAnimationFrame(replenish) : 0;
+        };
+        if (pending) frameHandle = requestAnimationFrame(replenish);
+
+        return () => {
+            if (frameHandle) cancelAnimationFrame(frameHandle);
+        };
     }, [
         layout,
         visibleIds,

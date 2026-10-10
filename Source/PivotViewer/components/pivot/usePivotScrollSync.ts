@@ -75,6 +75,7 @@ export const usePivotScrollSync = <TItem extends object>({
         // the scroll event which causes jank and de-synchronisation between the
         // compositor and Pixi render updates.
         const pendingRef = { scheduled: false } as { scheduled: boolean };
+        let frameHandle = 0;
 
         const processScroll = () => {
             pendingRef.scheduled = false;
@@ -83,7 +84,7 @@ export const usePivotScrollSync = <TItem extends object>({
                 // because it encapsulates the logic for conditional vertical alignment (offsetY)
                 // in different view modes. Manually setting position here would overwrite that logic.
 
-                syncScrollSprites(
+                const { pending } = syncScrollSprites(
                     {
                         root: rootRef.current,
                         groupsContainer: groupsContainerRef.current,
@@ -137,6 +138,13 @@ export const usePivotScrollSync = <TItem extends object>({
                 prevScrollLeftRef.current = container.scrollLeft || 0;
                 needsRenderRef.current = true;
                 app.renderer?.render(app.stage);
+
+                // Creation was deferred by the per-frame budget: continue on the next frame
+                // until the buffer is filled.
+                if (pending) {
+                    pendingRef.scheduled = true;
+                    frameHandle = requestAnimationFrame(processScroll);
+                }
             } catch (e) {
                 console.error('[PivotCanvas] processScroll error', e);
             }
@@ -146,7 +154,7 @@ export const usePivotScrollSync = <TItem extends object>({
             // schedule the work for the next animation frame
             if (!pendingRef.scheduled) {
                 pendingRef.scheduled = true;
-                requestAnimationFrame(processScroll);
+                frameHandle = requestAnimationFrame(processScroll);
             }
         };
 
@@ -154,6 +162,7 @@ export const usePivotScrollSync = <TItem extends object>({
 
         return () => {
             container.removeEventListener('scroll', onScroll);
+            cancelAnimationFrame(frameHandle);
         };
     }, [
         pixiReady,

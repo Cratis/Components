@@ -35,9 +35,25 @@ export interface SyncParams<TItem> {
     prevScrollLeft?: number;
 }
 
-export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
+export interface SyncResult {
+    /** True when sprite creation was deferred to respect the per-frame budget; sync again on the next frame. */
+    pending: boolean;
+}
+
+/**
+ * Creates the sync used when a transition completes. Parameters are read when the sync runs, so a
+ * layout, zoom or item change since the transition started is honored and on-screen cards survive the sweep.
+ * @param getParams Returns the current sync parameters.
+ */
+export function createTransitionCompleteSync<TItem>(getParams: () => SyncParams<TItem>) {
+    return () => {
+        syncSpritesToViewport({ ...getParams(), isViewTransition: false, sweepImmediately: true });
+    };
+}
+
+export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncResult {
     const { root, groupsContainer, container, sprites, layout, visibleIds: _visibleIds, items, cardWidth, cardHeight, panX, panY, panDeltaX, panDeltaY, viewportWidth, viewportHeight, createCardSprite, updateCardContent, zoomLevel, isViewTransition, viewMode, prevLayout, transitionSeenIds } = params;
-    if (!root || !container) return;
+    if (!root || !container) return { pending: false };
 
     void _visibleIds;
 
@@ -135,6 +151,15 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
     const viewportTopWorld = panWorldY - bufferWorld;
     const viewportBottomWorld = panWorldY + viewportWorldHeight + bufferWorld;
 
+    // The actual visible rect (no buffer), in world units. Cards intersecting it are
+    // created first and are never subject to the per-frame budget or the sweep.
+    const worldEpsilonVisible = Math.max(0.5, 0.5 * invScale);
+    const intersectsVisibleRect = (x: number, y: number) =>
+        x + cardWidth >= panWorldX - worldEpsilonVisible &&
+        x <= panWorldX + viewportWorldWidth + worldEpsilonVisible &&
+        y + cardHeight >= panWorldY - worldEpsilonVisible &&
+        y <= panWorldY + viewportWorldHeight + worldEpsilonVisible;
+
     const inViewportIds: (string | number)[] = [];
     // Small tolerance in world units to avoid floating-point edge cases when
     // browser/device zoom or high scroll values produce tiny rounding errors.
@@ -225,6 +250,8 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         const now = Date.now();
         for (const [id, sprite] of sprites) {
             const lastHidden = (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
+            const layoutPosition = layout.positions.get(id);
+            if (layoutPosition && intersectsVisibleRect(layoutPosition.x, layoutPosition.y)) continue;
             if (lastHidden && (params.sweepImmediately || now - lastHidden > SWEEP_MS)) {
                 try {
                     // remove from parent if present
@@ -244,10 +271,12 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
         void e;
     }
 
-    // Limit the number of sprites created per frame to avoid choking the GPU/CPU
-    // when scrolling rapidly or zooming out significantly.
+    // Limit the number of buffer-only sprites created per frame to avoid choking the GPU/CPU
+    // when scrolling rapidly or zooming out significantly. Cards in the visible rect are
+    // always created immediately.
     const MAX_SPRITES_PER_FRAME = 50;
     let createdCount = 0;
+    let pending = false;
 
 
     for (const id of inViewportIds) {
@@ -258,10 +287,13 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
 
         let sprite = sprites.get(id);
         if (!sprite) {
-            if (createdCount >= MAX_SPRITES_PER_FRAME) {
-                continue;
+            if (!intersectsVisibleRect(position.x, position.y)) {
+                if (createdCount >= MAX_SPRITES_PER_FRAME) {
+                    pending = true;
+                    continue;
+                }
+                createdCount++;
             }
-            createdCount++;
 
             let startX = position.x;
             let startY = position.y;
@@ -340,4 +372,6 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>) {
             updateCardContent(sprite, item);
         }
     }
+
+    return { pending };
 }
