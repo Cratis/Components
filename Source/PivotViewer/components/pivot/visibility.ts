@@ -57,33 +57,46 @@ interface VisibleRect {
     top: number;
     bottom: number;
     epsilon: number;
+    cardWidth: number;
+    cardHeight: number;
+}
+
+interface VisibleRectSource {
+    panWorldX: number;
+    panWorldY: number;
+    worldWidth: number;
+    worldHeight: number;
+    invScale: number;
+    cardWidth: number;
+    cardHeight: number;
 }
 
 /**
  * Builds the unbuffered visible rect in world units, with a zoom-aware rounding tolerance. Cards
  * intersecting it are created first and are never subject to the per-frame budget or the sweep.
  */
-function createVisibleRect(panWorldX: number, panWorldY: number, worldWidth: number, worldHeight: number, invScale: number): VisibleRect {
+function createVisibleRect(source: VisibleRectSource): VisibleRect {
     return {
-        left: panWorldX,
-        right: panWorldX + worldWidth,
-        top: panWorldY,
-        bottom: panWorldY + worldHeight,
-        epsilon: Math.max(0.5, 0.5 * invScale),
+        left: source.panWorldX,
+        right: source.panWorldX + source.worldWidth,
+        top: source.panWorldY,
+        bottom: source.panWorldY + source.worldHeight,
+        epsilon: Math.max(0.5, 0.5 * source.invScale),
+        cardWidth: source.cardWidth,
+        cardHeight: source.cardHeight,
     };
 }
 
-function rectIntersects(rect: VisibleRect, x: number, y: number, cardWidth: number, cardHeight: number) {
-    return x + cardWidth >= rect.left - rect.epsilon &&
+function rectIntersects(rect: VisibleRect, x: number, y: number) {
+    return x + rect.cardWidth >= rect.left - rect.epsilon &&
         x <= rect.right + rect.epsilon &&
-        y + cardHeight >= rect.top - rect.epsilon &&
+        y + rect.cardHeight >= rect.top - rect.epsilon &&
         y <= rect.bottom + rect.epsilon;
 }
 
 /** When the sprite was hidden, or undefined when it is not hidden or its card is on screen (never swept). */
-function sweepableHiddenAt(sprite: CardSprite, layout: LayoutResult, id: string | number, rect: VisibleRect, cardWidth: number, cardHeight: number) {
-    const position = layout.positions.get(id);
-    if (position && rectIntersects(rect, position.x, position.y, cardWidth, cardHeight)) return undefined;
+function sweepableHiddenAt(sprite: CardSprite, position: { x: number; y: number } | undefined, rect: VisibleRect) {
+    if (position && rectIntersects(rect, position.x, position.y)) return undefined;
     return (sprite as unknown as { __lastHiddenAt?: number }).__lastHiddenAt;
 }
 
@@ -201,7 +214,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
     const viewportTopWorld = panWorldY - bufferWorld;
     const viewportBottomWorld = panWorldY + viewportWorldHeight + bufferWorld;
 
-    const visibleRect = createVisibleRect(panWorldX, panWorldY, viewportWorldWidth, viewportWorldHeight, invScale);
+    const visibleRect = createVisibleRect({ panWorldX, panWorldY, worldWidth: viewportWorldWidth, worldHeight: viewportWorldHeight, invScale, cardWidth, cardHeight });
 
     const inViewportIds: (string | number)[] = [];
     // Small tolerance in world units to avoid floating-point edge cases when
@@ -292,7 +305,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
         const SWEEP_MS = 100; // keep hidden sprites for 100ms before destruction (reduced from 500ms for faster mode transitions)
         const now = Date.now();
         for (const [id, sprite] of sprites) {
-            const lastHidden = sweepableHiddenAt(sprite, layout, id, visibleRect, cardWidth, cardHeight);
+            const lastHidden = sweepableHiddenAt(sprite, layout.positions.get(id), visibleRect);
             if (lastHidden && (params.sweepImmediately || now - lastHidden > SWEEP_MS)) {
                 try {
                     // remove from parent if present
@@ -325,7 +338,7 @@ export function syncSpritesToViewport<TItem>(params: SyncParams<TItem>): SyncRes
 
         let sprite = sprites.get(id);
         if (!sprite) {
-            if (!tryConsumeCreationBudget(budget, rectIntersects(visibleRect, position.x, position.y, cardWidth, cardHeight))) {
+            if (!tryConsumeCreationBudget(budget, rectIntersects(visibleRect, position.x, position.y))) {
                 continue;
             }
 
